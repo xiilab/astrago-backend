@@ -1,0 +1,9 @@
+rootProject.name = 'uyuni'
+
+include 'server-batch'
+include 'server-core'
+include 'server-monitor'
+include 'module-k8s'
+include 'module-user'
+include 'module-common'
+
