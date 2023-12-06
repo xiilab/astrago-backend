@@ -9,7 +9,15 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, linux]
-
+    strategy:
+      matrix:
+        include:
+          - image: xiilab/uyuni-backend-core
+            dockerfile: server-core/Dockerfile
+          - image: xiilab/uyuni-backend-batch
+            dockerfile: server-batch/Dockerfile
+          - image: xiilab/uyuni-backend-monitor
+            dockerfile: server-monitor/Dockerfile
     steps:
     # 원격머신에 repo checkout
     - name: Checkout
@@ -34,12 +42,20 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    # docker metadata 설정
+    - name: Docker Metadata action
+      id: meta
+      uses: docker/metadata-action@v5.3.0
+      with:
+        images: ${{ matrix.image }}
     # Docker Image 빌드 및 푸시
     - name: Build and push Docker images
       uses: docker/build-push-action@v5.1.0
       with:
         context: .
+        file: ${{ matrix.dockerfile }}
         push: true
-        tags: xiilab/uyuni-backend:{{}}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha, mode=max
