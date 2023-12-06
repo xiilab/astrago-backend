@@ -56,9 +56,9 @@ jobs:
       run: pwd
     # Docker Image 빌드 및 푸시
     - name: Build and push Docker images
-      uses: docker/build-push-action@v5.0.0
+      uses: docker/build-push-action@v5.1.0
       with:
-        context: {{ defaultContext }}:${{ matrix.path }}
+        context: {{defaultContext}}:${{ matrix.path }}
         file: ${{ matrix.dockerfile }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
