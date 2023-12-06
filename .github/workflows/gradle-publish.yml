@@ -49,13 +49,11 @@ jobs:
       uses: docker/metadata-action@v5.3.0
       with:
         images: ${{ matrix.image }}
-    - name: Check Dockerfile Context
-      run: ls -R
     # Docker Image 빌드 및 푸시
     - name: Build and push Docker images
       uses: docker/build-push-action@v5.1.0
       with:
-        context: .
+#        context: .
         file: ${{ matrix.dockerfile }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
