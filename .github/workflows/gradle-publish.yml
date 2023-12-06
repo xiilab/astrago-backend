@@ -14,10 +14,13 @@ jobs:
       matrix:
         include:
           - image: xiilab/uyuni-backend-core
+            path: server-core
             dockerfile: server-core/Dockerfile
           - image: xiilab/uyuni-backend-batch
+            path: server-batch
             dockerfile: server-batch/Dockerfile
           - image: xiilab/uyuni-backend-monitor
+            path: server-monitor
             dockerfile: server-monitor/Dockerfile
     steps:
     # 원격머신에 repo checkout
@@ -55,7 +58,7 @@ jobs:
     - name: Build and push Docker images
       uses: docker/build-push-action@v5.0.0
       with:
-        context: .
+        context: ${{ defaultContext }}/${{ matrix.path }}
         file: ${{ matrix.dockerfile }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
