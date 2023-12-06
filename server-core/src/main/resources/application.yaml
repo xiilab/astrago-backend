@@ -1,0 +1,53 @@
+spring:
+  servlet:
+    multipart:
+      max-request-size: 10MB
+      max-file-size: 10MB
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: https://auth.bigdata-car.kr/realms/kadap
+          jwk-set-uri: https://auth.bigdata-car.kr/realms/kadap/protocol/openid-connect/certs
+  datasource:
+    url: jdbc:mariadb://localhost:3306/uyuni
+    username: root
+    password: root
+    hikari:
+      max-lifetime: 57000
+      maximum-pool-size: 24
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+  messages:
+    basename: messages
+    encoding: utf-8
+    fallback-to-system-locale: false
+    always-use-message-format: true
+
+# 연결할 keycloak server 정보
+keycloak:
+  realm: uyuni
+  auth-server-url: http://dev.uyuni-suite.xiilab.com/auth
+  ssl-required: external
+  resource: uyuni
+  use-resource-role-mappings: true
+  bearer-only: true
+  public-client: false
+  principal-attribute: preferred_username
+
+# keycloak server의 admin 정보
+admin:
+  realm: master
+  client: admin-cli
+  name: admin
+  password: xiilabPassword3#
+  init-password: uyuni

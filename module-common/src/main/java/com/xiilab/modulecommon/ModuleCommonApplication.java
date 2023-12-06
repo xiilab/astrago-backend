@@ -1,11 +1,13 @@
-package com.xiilab.servercore;
+package com.xiilab.modulecommon;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ServerCoreApplication {
+public class ModuleCommonApplication {
+
 	public static void main(String[] args) {
-		SpringApplication.run(ServerCoreApplication.class, args);
+		SpringApplication.run(ModuleCommonApplication.class, args);
 	}
+
 }

@@ -18,6 +18,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.keycloak:keycloak-admin-client:23.0.1'
 }
 
 tasks.named('test') {

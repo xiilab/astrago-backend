@@ -1,5 +1,7 @@
 package com.xiilab.moduleuser.dto;
 
+import java.security.Principal;
+
 public record UserInfo(
 	String id,
 	String userUUID,
@@ -15,4 +17,7 @@ public record UserInfo(
 	Double limitCPU,
 	Long limitMEM
 ) {
+	public static UserInfo convertFromPrincipal(Principal principal) {
+		return null;
+	}
 }
