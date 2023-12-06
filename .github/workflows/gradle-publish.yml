@@ -49,6 +49,8 @@ jobs:
       uses: docker/metadata-action@v5.3.0
       with:
         images: ${{ matrix.image }}
+    - name: where are you
+      run: pwd
     # Docker Image 빌드 및 푸시
     - name: Build and push Docker images
       uses: docker/build-push-action@v5.1.0
