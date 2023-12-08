@@ -34,7 +34,7 @@ jobs:
         distribution: 'zulu'
     # Gradle build
     - name: Build with Gradle
-      run: ./${{ matrix.path }}/gradlew clean bootJar
+      run: ./gradlew ${{ matrix.path }}:bootjar
     # Docker buildx 설정
     - name: Docker Setup Buildx
       uses: docker/setup-buildx-action@v3.0.0
@@ -61,5 +61,5 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-#        cache-from: type=gha
-#        cache-to: type=gha, mode=max
+        cache-from: type=gha
+        cache-to: type=gha, mode=max
