@@ -34,9 +34,7 @@ jobs:
         distribution: 'zulu'
     # Gradle build
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@v2.10.0
-      with:
-        arguments: bootJar
+      run: /${{ matrix.path }}/gradlew clean bootJar
     # Docker buildx 설정
     - name: Docker Setup Buildx
       uses: docker/setup-buildx-action@v3.0.0
