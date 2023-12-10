@@ -68,7 +68,8 @@ jobs:
       uses: fjogeleit/yaml-update-action@main
       with:
         repository: xiilab/uyuni-infra
-        valueFile: environments/dev/values.yaml
+        workDir: environments
+        valueFile: dev/values.yaml
         propertyPath: 'uyuni.${{ matrix.module }}'
         value: ${{ steps.meta.outputs.tags }}
     - name: create monochart
