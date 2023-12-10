@@ -67,7 +67,7 @@ jobs:
     - name: create monochart
       run: |
         cd ~
-        git pull xiilab/uyuni-infra
+        git pull https://github.com/xiilab/uyuni-infra
         cd uyuni-infra/environments/dev
         pwd
         ls
