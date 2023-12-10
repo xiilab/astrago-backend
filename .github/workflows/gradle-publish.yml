@@ -67,6 +67,7 @@ jobs:
     - name: create monochart
       run: |
         cd ~
+        apt install helmfile
         git clone https://github.com/xiilab/uyuni-infra
         cd uyuni-infra
         pwd
