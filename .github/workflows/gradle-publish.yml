@@ -67,12 +67,12 @@ jobs:
     - name: create monochart
       run: |
         cd ~
-        git pull https://github.com/xiilab/uyuni-infra
+        git clone https://github.com/xiilab/uyuni-infra
         cd uyuni-infra/environments/dev
         pwd
         ls
         sed -i '/^ *${{ matrix.module }}:/,/^ *imageTag:/ s/\(^ *imageTag: *\).*/\1${{ steps.meta.outputs.tags }}/' values.yaml
-        helmfile template > monochart/monochart.yaml
+        helmfile -e dev template > monochart/monochart.yaml
         git add .
         git commit -m "update monochart'
         git push
