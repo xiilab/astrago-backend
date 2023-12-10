@@ -16,12 +16,15 @@ jobs:
           - image: xiilab/uyuni-backend-core
             path: server-core
             dockerfile: server-core/Dockerfile
+            moudle: core
           - image: xiilab/uyuni-backend-batch
             path: server-batch
             dockerfile: server-batch/Dockerfile
+            moudle: batch
           - image: xiilab/uyuni-backend-monitor
             path: server-monitor
             dockerfile: server-monitor/Dockerfile
+            moudle: monitor
     steps:
     # 원격머신에 repo checkout
     - name: Checkout
@@ -61,3 +64,16 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
 #        cache-from: type=gha
 #        cache-to: type=gha, mode=max
+    - name: update helm project
+      uses: fjogeleit/yaml-update-action@main
+      with:
+        repository: xiilab/uyuni-infra
+        valueFile: environments/dev/values.yaml
+        propertyPath: 'uyuni.${{ matrix.module }}'
+        value: ${{ steps.meta.outputs.tags }}
+    - name: create monochart
+      run: |
+        cd uyuni-infra
+        helmfile template > monochart/monochart.yaml
+        git add .
+        git commit -m "update monochart'
