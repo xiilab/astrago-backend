@@ -64,17 +64,12 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
 #        cache-from: type=gha
 #        cache-to: type=gha, mode=max
-    - name: update helm project
-      uses: fjogeleit/yaml-update-action@main
-      with:
-        repository: xiilab/uyuni-infra
-        workDir: environments
-        valueFile: dev/values.yaml
-        propertyPath: 'uyuni.${{ matrix.module }}'
-        value: ${{ steps.meta.outputs.tags }}
     - name: create monochart
       run: |
-        cd uyuni-infra
+        cd ~
+        git pull xiilab/uyuni-infra
+        cd uyuni-infra/environments/dev
+        sed -i '/^ *${{ matrix.module }}:/,/^ *imageTag:/ s/\(^ *imageTag: *\).*/\1${{ steps.meta.outputs.tags }}/' values.yaml
         helmfile template > monochart/monochart.yaml
         git add .
         git commit -m "update monochart'
