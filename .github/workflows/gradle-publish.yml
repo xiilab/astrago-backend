@@ -91,6 +91,7 @@ jobs:
       - name: push monochart
         run: |
           cat environments/dev/values.yaml
+          echo ${{ needs.build.outputs.image-tag }}
           helmfile -e dev template > monochart/monochart.yaml
           git pull
           git config --global user.email "hc.park@xiilab.com"
