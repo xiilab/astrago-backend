@@ -69,20 +69,6 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
         labels: ${{ steps.meta.outputs.labels }}
-    - name: clone helmproject
-      uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.TOKEN }}
-        repository: "xiilab/uyuni-infra"
-    - name: push monochart
-      run: |
-        sed -i "/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ steps.meta.outputs.tags }}@" environments/dev/values.yaml
-        helmfile -e dev template > monochart/monochart.yaml
-        git config --global user.email "hc.park@xiilab.com"
-        git config --global user.name "hc.park"
-        git add monochart/monochart.yaml
-        git commit -m "update monochart"
-        git push
   push_helm:
     needs: build
     runs-on: [self-hosted, linux]
