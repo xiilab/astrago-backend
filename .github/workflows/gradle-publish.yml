@@ -71,6 +71,8 @@ jobs:
         cd uyuni-infra
         sed -i "/^ *${{ matrix.module }}:/,/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ steps.meta.outputs.tags }}@" environments/dev/values.yaml
         helmfile -e dev template > monochart/monochart.yaml
+        git config --global user.email "uyuni@xiilab.com"
+        git config --global user.name "uyuni-bot"
         git add .
         git commit -m "update monochart"
         git push
