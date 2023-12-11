@@ -73,6 +73,11 @@ jobs:
     needs: build
     runs-on: [self-hosted, linux]
     steps:
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
       - name: clone helmproject
         uses: actions/checkout@v3
         with:
@@ -84,14 +89,13 @@ jobs:
           valueFile: 'environments/dev/values.yaml'
           changes: |
             {
-              "uyuni.core.imageTag" : "${{ steps.build.outputs.image-tag }}",
-              "uyuni.batch.imageTag" : "${{ steps.build.outputs.image-tag }}",
-              "uyuni.monitor.imageTag" : "${{ steps.build.outputs.image-tag }}"
+              "uyuni.core.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}",
+              "uyuni.batch.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}",
+              "uyuni.monitor.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}"
             }
       - name: push monochart
         run: |
           cat environments/dev/values.yaml
-          echo ${{ steps.build.outputs.image-tag }}
           helmfile -e dev template > monochart/monochart.yaml
           git pull
           git config --global user.email "hc.park@xiilab.com"
