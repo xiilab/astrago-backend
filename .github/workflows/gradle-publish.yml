@@ -78,9 +78,18 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           repository: "xiilab/uyuni-infra"
+      - name: update env value file
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'environments/dev/values.yaml'
+          changes: |
+            {
+              "uyuni.core/imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }",
+              "uyuni.batch/imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }",
+              "uyuni.monitor/imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }"
+            }
       - name: push monochart
         run: |
-          sed -i "s/\(imageTag:\) .*/\1-${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}/" environments/dev/values.yaml
           helmfile -e dev template > monochart/monochart.yaml
           git pull
           git config --global user.email "hc.park@xiilab.com"
