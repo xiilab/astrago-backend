@@ -7,7 +7,22 @@ on:
     branches: ["develop", "master"]
 
 jobs:
+  set-up:
+    runs-on: [self-hosted, linux]
+    steps:
+      # 원격머신에 repo checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Image Tag 생성 위한 github sha 저장
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
   build:
+    needs: [set-up]
     runs-on: [self-hosted, linux]
     permissions:
       contents: write
@@ -82,13 +97,13 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.uyuni.core.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
-            yq -i '.uyuni.batch.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
-            yq -i '.uyuni.monitor.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.core.imageTag = "${{ needs.set-up.outputs.image-tag }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.batch.imageTag = "${{ needs.set-up.outputs.image-tag }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.monitor.imageTag = "${{ needs.set-up.outputs.image-tag }}"' 'environments/dev/values.yaml'
       - name: push monochart
         run: |
           cat environments/dev/values.yaml
-          echo "${{ needs.build.outputs.image-tag }}"
+          echo "${{ needs.set-up.outputs.image-tag }}"
           helmfile -e dev template > monochart/monochart.yaml
           git pull
           git config --global user.email "hc.park@xiilab.com"
