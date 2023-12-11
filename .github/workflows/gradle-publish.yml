@@ -9,8 +9,6 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, linux]
-    outputs:
-      image-version: ${{ steps.write-step.ouputs.image-version }}
     permissions:
       contents: write
     strategy:
@@ -69,6 +67,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
         labels: ${{ steps.meta.outputs.labels }}
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
   push_helm:
     needs: build
     runs-on: [self-hosted, linux]
@@ -84,9 +84,9 @@ jobs:
           valueFile: 'environments/dev/values.yaml'
           changes: |
             {
-              "uyuni.core.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}",
-              "uyuni.batch.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}",
-              "uyuni.monitor.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}"
+              "uyuni.core.imageTag" : "${{ needs.build.outputs.image-tag }}",
+              "uyuni.batch.imageTag" : "${{ needs.build.outputs.image-tag }}",
+              "uyuni.monitor.imageTag" : "${{ needs.build.outputs.image-tag }}"
             }
       - name: push monochart
         run: |
