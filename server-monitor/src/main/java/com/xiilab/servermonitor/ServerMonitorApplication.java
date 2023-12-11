@@ -3,7 +3,7 @@ package com.xiilab.servermonitor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.xiilab.modulek8s", "com.xiilab.modulecommon", "com.xiilab.moduleuser"})
 public class ServerMonitorApplication {
 
 	public static void main(String[] args) {
