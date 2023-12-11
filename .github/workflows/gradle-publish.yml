@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, linux]
+    outputs:
+      image-version: ${{ steps.write-step.ouputs.image-version }}
     permissions:
       contents: write
     strategy:
@@ -37,6 +39,10 @@ jobs:
       with:
         java-version: '17'
         distribution: 'zulu'
+    # Image Tag 생성 위한 github sha 저장
+    - name: Set short git commit SHA
+      id: vars
+      run: echo "::set-output name=image-version::${{ steps.git_sha.outputs.git_sha }}"
     # Gradle build
     - name: Build with Gradle
       run: ./gradlew ${{ matrix.path }}:bootjar
@@ -62,7 +68,7 @@ jobs:
         context: ./${{ matrix.path }}
         file: ${{ matrix.dockerfile }}
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
+        tags: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
         labels: ${{ steps.meta.outputs.labels }}
     - name: clone helmproject
       uses: actions/checkout@v3
@@ -71,10 +77,56 @@ jobs:
         repository: "xiilab/uyuni-infra"
     - name: push monochart
       run: |
-        sed -i "/^ *${{ matrix.module }}:/,/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ steps.meta.outputs.tags }}@" environments/dev/values.yaml
+        sed -i "/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ steps.meta.outputs.tags }}@" environments/dev/values.yaml
         helmfile -e dev template > monochart/monochart.yaml
         git config --global user.email "hc.park@xiilab.com"
         git config --global user.name "hc.park"
         git add monochart/monochart.yaml
         git commit -m "update monochart"
         git push
+  push_helm:
+    needs: build
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: clone helmproject
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.TOKEN }}
+          repository: "xiilab/uyuni-infra"
+      - name: push monochart
+        run: |
+          sed -i "/^ *${{ matrix.module }}:/,/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ needs.build.outputs.image-version }}@" environments/dev/values.yaml
+          helmfile -e dev template > monochart/monochart.yaml
+          git pull
+          git config --global user.email "hc.park@xiilab.com"
+          git config --global user.name "hc.park"
+          git add monochart/monochart.yaml
+          git commit -m "update monochart"
+          git push
+  notify_slack:
+    needs: [build, push_helm]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: 작업 상태 확인
+        id: check_status
+        run: 'echo "작업 상태: ${{ job.status }}"'
+
+      - name: 성공 시 Slack 알림 전송
+        if: steps.check_status.outputs.status == 'success'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          color: good
+          text: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 실패 시 Slack 알림 전송
+        if: steps.check_status.outputs.status == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          color: danger
+          text: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
