@@ -64,11 +64,13 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+    - name: clone helmproject
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        repository: "xiilab/uyuni-infra"
     - name: push monochart
       run: |
-        cd ~
-        git clone https://github.com/xiilab/uyuni-infra
-        cd uyuni-infra
         sed -i "/^ *${{ matrix.module }}:/,/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ steps.meta.outputs.tags }}@" environments/dev/values.yaml
         helmfile -e dev template > monochart/monochart.yaml
         git config --global user.email "hc.park@xiilab.com"
