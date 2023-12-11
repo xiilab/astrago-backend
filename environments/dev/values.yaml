@@ -6,13 +6,13 @@ uyuni:
   keycloakUrl: http://192.168.1.235:30051/auth
   core:
     repository: xiilab/uyuni-backend-core
-    imageTag: '-'
+    imageTag: ''
   batch:
     repository: xiilab/uyuni-backend-batch
-    imageTag: '-'
+    imageTag: ''
   monitor:
     repository: xiilab/uyuni-backend-monitor
-    imageTag: '-'
+    imageTag: ''
   frontend:
     repository: null
     imageTag: null
