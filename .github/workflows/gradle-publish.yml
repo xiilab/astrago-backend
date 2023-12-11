@@ -95,7 +95,7 @@ jobs:
       result: "${{ steps.read.outputs.result }}"
 
   push_helm:
-    needs: build
+    needs: [read]
     runs-on: [self-hosted, linux]
     steps:
       - name: clone helmproject
