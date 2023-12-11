@@ -1,4 +1,0 @@
-rootProject.name = 'server-core'
-
-include 'module-k8s'
-include 'module-user'
