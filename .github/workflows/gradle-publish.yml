@@ -67,6 +67,7 @@ jobs:
     - name: clone helmproject
       uses: actions/checkout@v3
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         repository: "xiilab/uyuni-infra"
     - name: push monochart
       run: |
