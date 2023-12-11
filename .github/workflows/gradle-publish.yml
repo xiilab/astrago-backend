@@ -2,7 +2,7 @@ name: uyuni backend image CI
 
 on:
   push:
-    branches: ["develop", "master"]
+    branches: ["develop", "master" , " build-test"]
   pull_request:
     branches: ["develop", "master"]
 
@@ -68,7 +68,10 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
         labels: ${{ steps.meta.outputs.labels }}
     outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
+      #image-tag: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
+      ${{ matrix.include.path }}-result: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
+
+
   push_helm:
     needs: build
     runs-on: [self-hosted, linux]
@@ -82,13 +85,15 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.uyuni.core.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
-            yq -i '.uyuni.batch.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
-            yq -i '.uyuni.monitor.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.core.imageTag = "${{ needs.build.outputs["server-core-result"] }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.batch.imageTag = "${{ needs.build.outputs["server-batch-result"] }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.monitor.imageTag = "${{ needs.build.outputs["server-monitor-result"] }}"' 'environments/dev/values.yaml'
       - name: push monochart
         run: |
           cat environments/dev/values.yaml
-          echo "${{ needs.build.outputs.image-tag }}"
+          echo "${{ needs.build.outputs["server-core-result"] }}"
+          echo "${{ needs.build.outputs["server-batch-result"] }}"
+          echo "${{ needs.build.outputs["server-monitor-result"] }}"
           helmfile -e dev template > monochart/monochart.yaml
           git pull
           git config --global user.email "hc.park@xiilab.com"
