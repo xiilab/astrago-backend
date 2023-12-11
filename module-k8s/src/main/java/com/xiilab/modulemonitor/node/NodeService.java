@@ -1,8 +1,8 @@
-package com.xiilab.modulek8s.node;
+package com.xiilab.modulemonitor.node;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulemonitor.config.K8sAdapter;
 
 import lombok.RequiredArgsConstructor;
 

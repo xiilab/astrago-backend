@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.config;
+package com.xiilab.modulemonitor.config;
 
 import org.springframework.stereotype.Component;
 
