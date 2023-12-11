@@ -84,14 +84,14 @@ jobs:
           valueFile: 'environments/dev/values.yaml'
           changes: |
             {
-              "uyuni.core.imageTag" : "${{ needs.build.outputs.image-tag }}",
-              "uyuni.batch.imageTag" : "${{ needs.build.outputs.image-tag }}",
-              "uyuni.monitor.imageTag" : "${{ needs.build.outputs.image-tag }}"
+              "uyuni.core.imageTag" : "${{ steps.build.outputs.image-tag }}",
+              "uyuni.batch.imageTag" : "${{ steps.build.outputs.image-tag }}",
+              "uyuni.monitor.imageTag" : "${{ steps.build.outputs.image-tag }}"
             }
       - name: push monochart
         run: |
           cat environments/dev/values.yaml
-          echo ${{ needs.build.outputs.image-tag }}
+          echo ${{ steps.build.outputs.image-tag }}
           helmfile -e dev template > monochart/monochart.yaml
           git pull
           git config --global user.email "hc.park@xiilab.com"
