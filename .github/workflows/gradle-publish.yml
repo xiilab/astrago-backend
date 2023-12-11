@@ -79,15 +79,12 @@ jobs:
           token: ${{ secrets.TOKEN }}
           repository: "xiilab/uyuni-infra"
       - name: update env value file
-        uses: fjogeleit/yaml-update-action@main
+        uses: mikefarah/yq@master
         with:
-          valueFile: 'environments/dev/values.yaml'
-          changes: |
-            {
-              "uyuni.core.imageTag" : "${{ needs.build.outputs.image-tag }}",
-              "uyuni.batch.imageTag" : "${{ needs.build.outputs.image-tag }}",
-              "uyuni.monitor.imageTag" : "${{ needs.build.outputs.image-tag }}"
-            }
+          cmd: |
+            yq -i '.uyuni.core.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.batch.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.monitor.imageTag = "${{ needs.build.outputs.image-tag }}"' 'environments/dev/values.yaml'
       - name: push monochart
         run: |
           cat environments/dev/values.yaml
