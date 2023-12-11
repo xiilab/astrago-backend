@@ -84,9 +84,9 @@ jobs:
           valueFile: 'environments/dev/values.yaml'
           changes: |
             {
-              "uyuni.core/imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }",
-              "uyuni.batch/imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }",
-              "uyuni.monitor/imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }"
+              "uyuni.core.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }",
+              "uyuni.batch.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }",
+              "uyuni.monitor.imageTag" : "${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }"
             }
       - name: push monochart
         run: |
