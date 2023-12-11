@@ -14,8 +14,8 @@ uyuni:
     repository: xiilab/uyuni-backend-monitor
     imageTag: ''
   frontend:
-    repository: null
-    imageTag: null
+    repository: xiilab/uyuni-backend-monitor
+    imageTag: dev
     env:
       - name: KEYCLOAK_HOST
         value: https://auth.bigdata-car.kr
