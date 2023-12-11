@@ -67,9 +67,8 @@ jobs:
     - name: clone helmproject
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.TOKEN }}
         repository: "xiilab/uyuni-infra"
-    - name: push monochart
       run: |
         sed -i "/^ *${{ matrix.module }}:/,/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ steps.meta.outputs.tags }}@" environments/dev/values.yaml
         helmfile -e dev template > monochart/monochart.yaml
