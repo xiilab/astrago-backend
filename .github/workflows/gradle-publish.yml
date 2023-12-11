@@ -20,15 +20,12 @@ jobs:
           - image: xiilab/uyuni-backend-core
             path: server-core
             dockerfile: server-core/Dockerfile
-            moudle: core
           - image: xiilab/uyuni-backend-batch
             path: server-batch
             dockerfile: server-batch/Dockerfile
-            moudle: batch
           - image: xiilab/uyuni-backend-monitor
             path: server-monitor
             dockerfile: server-monitor/Dockerfile
-            moudle: monitor
     steps:
     # 원격머신에 repo checkout
     - name: Checkout
@@ -42,7 +39,9 @@ jobs:
     # Image Tag 생성 위한 github sha 저장
     - name: Set short git commit SHA
       id: vars
-      run: echo "::set-output name=image-version::${{ steps.git_sha.outputs.git_sha }}"
+      run: |
+        calculatedSha=$(git rev-parse --short ${{ github.sha }})
+        echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
     # Gradle build
     - name: Build with Gradle
       run: ./gradlew ${{ matrix.path }}:bootjar
@@ -95,7 +94,7 @@ jobs:
           repository: "xiilab/uyuni-infra"
       - name: push monochart
         run: |
-          sed -i "/^ *${{ matrix.module }}:/,/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ needs.build.outputs.image-version }}@" environments/dev/values.yaml
+          sed -i "/^ *imageTag:/ s@^\( *imageTag: *\).*@\1${{ steps.meta.outputs.tags }}@" environments/dev/values.yaml
           helmfile -e dev template > monochart/monochart.yaml
           git pull
           git config --global user.email "hc.park@xiilab.com"
@@ -112,7 +111,7 @@ jobs:
         run: 'echo "작업 상태: ${{ job.status }}"'
 
       - name: 성공 시 Slack 알림 전송
-        if: steps.check_status.outputs.status == 'success'
+        if: ${{ job.status }} == 'success'
         uses: 8398a7/action-slack@v3
         with:
           status: success
@@ -122,7 +121,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: 실패 시 Slack 알림 전송
-        if: steps.check_status.outputs.status == 'failure'
+        if: ${{ job.status }} == 'failure'
         uses: 8398a7/action-slack@v3
         with:
           status: failure
