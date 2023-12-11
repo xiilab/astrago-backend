@@ -2,7 +2,7 @@ name: uyuni backend image CI
 
 on:
   push:
-    branches: ["develop", "master" , " build-test"]
+    branches: ["develop", "master" , "build-test"]
   pull_request:
     branches: ["develop", "master"]
 
