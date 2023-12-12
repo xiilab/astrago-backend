@@ -2,7 +2,7 @@ name: uyuni backend image CI
 
 on:
   push:
-    branches: ["develop", "master" , "build-test"]
+    branches: ["develop", "master" ]
   pull_request:
     branches: ["develop", "master"]
 
@@ -240,7 +240,7 @@ jobs:
         if: ${{ job.status }} == 'failure'
         uses: 8398a7/action-slack@v3
         with:
-          status: '${{ steps.slack-status.outputs }}'
-          text: '${{ steps.slack-message.outputs }}'
+          status: '${{ steps.slack-status.outputs.value }}'
+          text: '${{ steps.slack-message.outputs.value }}'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
