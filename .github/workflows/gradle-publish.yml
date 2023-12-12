@@ -179,18 +179,18 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.uyuni.core.imageTag = "${{ fromJson(needs.read.outputs.result).server-core }}"' 'environments/default/values.yaml'
-            yq -i '.uyuni.batch.imageTag = "${{ fromJson(needs.read.outputs.result).server-batch }}"' 'environments/default/values.yaml'
-            yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).server-monitor }}"' 'environments/default/values.yaml'
+            yq -i '.uyuni.core.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-core }}"' 'environments/default/values.yaml'
+            yq -i '.uyuni.batch.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-batch }}"' 'environments/default/values.yaml'
+            yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-monitor }}"' 'environments/default/values.yaml'
       
       - name: dev 이미지 정보 수정
         if: ${{ needs.read.outputs.branch != 'master' }}
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.uyuni.core.imageTag = "${{ fromJson(needs.read.outputs.result).server-core }}"' 'environments/dev/values.yaml'
-            yq -i '.uyuni.batch.imageTag = "${{ fromJson(needs.read.outputs.result).server-batch }}"' 'environments/dev/values.yaml'
-            yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).server-monitor }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.core.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-core }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.batch.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-batch }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-monitor }}"' 'environments/dev/values.yaml'
       - name: push monochart
         run: |
           cat environments/dev/values.yaml
@@ -199,8 +199,8 @@ jobs:
           echo "${{ fromJson(needs.read.outputs.result) }}"
           helmfile -e dev template > monochart/monochart.yaml
           git pull
-          git config --global user.email "hc.park@xiilab.com"
-          git config --global user.name "hc.park"
+          git config --global user.email "100milliongold@xiilab.com"
+          git config --global user.name "100milliongold"
           git add .
           git commit -m "update monochart"
           git push
