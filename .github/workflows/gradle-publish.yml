@@ -92,7 +92,7 @@ jobs:
     - name: 이미지 레파지토리가 맞는지 디버깅
       run: |
         echo "해당 이미지는 \"${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.extract_branch.outputs.branch }}\" 입니다."
-        echo "${{ steps.meta.outputs.tags }}"
+        echo "${{ steps.meta.outputs.json }}"
 
     # Gradle build
     - name: Build with Gradle
