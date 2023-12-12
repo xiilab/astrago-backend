@@ -220,20 +220,27 @@ jobs:
         id: check_status
         run: 'echo "작업 상태: ${{ job.status }}"'
 
-      - name: 성공 시 Slack 알림 전송
-        if: ${{ job.status }} == 'success'
-        uses: 8398a7/action-slack@v3
+      # 브랜치 네임이 마스터일 경우에만 docker.io 저장소로 보낸다
+      - name: 작업결과에 따른 메세지 지정
+        uses: haya14busa/action-cond@v1
+        id: slack-message
         with:
-          status: success
-          text: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          cond: ${{ needs.build.result  == 'success' }}
+          if_true: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
+          if_false: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
+      - name: 작업결과에 따른 메세지 지정
+        uses: haya14busa/action-cond@v1
+        id: slack-status
+        with:
+          cond: ${{ needs.build.result  == 'success' }}
+          if_true: 'success'
+          if_false: 'failure'
 
-      - name: 실패 시 Slack 알림 전송
+      - name: Slack 알림 전송
         if: ${{ job.status }} == 'failure'
         uses: 8398a7/action-slack@v3
         with:
-          status: failure
-          text: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
+          status: '${{ steps.slack-status.outputs }}'
+          text: '${{ steps.slack-message.outputs }}'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
