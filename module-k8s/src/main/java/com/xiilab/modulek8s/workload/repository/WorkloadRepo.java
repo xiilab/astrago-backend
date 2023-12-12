@@ -15,7 +15,6 @@ public interface WorkloadRepo {
 	 * @return the response DTO containing the details of the created batch job workload
 	 */
 	JobResDTO createBatchJobWorkload(JobReqDTO workloadReqDTO);
-
 	/**
 	 * Creates an interactive job workload based on the provided workload request DTO.
 	 *

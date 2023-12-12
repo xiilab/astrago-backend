@@ -33,6 +33,5 @@ public abstract class WorkloadRes {
 		type = getType();
 	}
 
-	public abstract WorkloadRes convertResDTO(HasMetadata hasMetadata);
 	public abstract WorkloadType getType();
 }
