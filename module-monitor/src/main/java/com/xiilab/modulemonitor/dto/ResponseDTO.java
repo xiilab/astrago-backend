@@ -1,5 +1,7 @@
 package com.xiilab.modulemonitor.dto;
 
+import java.util.List;
+
 import lombok.Builder;
 
 public record ResponseDTO() {
@@ -12,5 +14,26 @@ public record ResponseDTO() {
 							  String podName,
 							  String instance,
 							  String value){
+	}
+	@Builder
+	public record HistoryDTO(String metricName,
+							 String nameSpace,
+							 String nodeName,
+							 String podName,
+							 String instance,
+							 List<ValueDTO> valueDTOS
+	){
+
+	}
+	@Builder
+	public record ValueDTO(String dateTime,
+						   String value){
+	}
+
+	@Builder
+	public record PromqlDTO(String metricName,
+							String description,
+							String type
+	){
 	}
 }

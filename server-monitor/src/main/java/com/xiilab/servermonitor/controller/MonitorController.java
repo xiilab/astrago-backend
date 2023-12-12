@@ -26,4 +26,17 @@ public class MonitorController {
 	public ResponseEntity<List<ResponseDTO.RealTimeDTO>> getPrometheusRealTimeMetric(@RequestBody RequestDTO requestDTO){
 		return new ResponseEntity<>(monitorService.getRealTimeMetricByQuery(requestDTO), HttpStatus.OK);
 	}
+	@GetMapping("/history")
+	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getPrometheusHistoryMetric(@RequestBody RequestDTO requestDTO){
+		return new ResponseEntity<>(monitorService.getHistoryMetric(requestDTO), HttpStatus.OK);
+	}
+
+	/**
+	 * 등록된 Promql List 조회하는 API
+	 * @return 등록된 Promql List
+	 */
+	@GetMapping("/promql")
+	public ResponseEntity<List<ResponseDTO.PromqlDTO>> getPromqlList(){
+		return new ResponseEntity<>(monitorService.getPromqlList(), HttpStatus.OK);
+	}
 }

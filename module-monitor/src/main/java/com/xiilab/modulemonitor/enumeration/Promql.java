@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Promql {
 	POD_INFO("kube_pod_info","파드 정보 조회", "POD"),
-	NODE_INFO("kube_node_info","노드 정보 조회", "NODE"),
+	NODE_INFO("sum(kube_pod_info{node!=\"\"}) by(node)","노드 정보 조회", "NODE"),
 	;
 
 	private final String query;

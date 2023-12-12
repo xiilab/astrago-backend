@@ -1,4 +1,4 @@
-package com.xiilab.modulemonitor.service;
+package com.xiilab.modulemonitor.repository;
 
 import java.util.List;
 
@@ -8,6 +8,7 @@ import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 
 @Service
-public interface PrometheusService {
+public interface PrometheusRepository {
 	List<ResponseDTO.RealTimeDTO> getRealTimeMetricByQuery(String promql, RequestDTO requestDTO);
+	List<ResponseDTO.HistoryDTO> getHistoryMetricByQuery(String promql, RequestDTO requestDTO);
 }
