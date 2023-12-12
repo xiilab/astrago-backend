@@ -147,7 +147,7 @@ jobs:
           tags: ${{ steps.extract_branch.outputs.branch }}-${{ env.COMMIT_SHORT_SHA }}
 
     outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}-${{ env.COMMIT_SHORT_SHA }}
+      branch: "${{ steps.extract_branch.outputs.branch }}"
 
   ## Read matrix outputs 
   read:
@@ -160,6 +160,7 @@ jobs:
           matrix-step-name: build
     outputs:
       result: "${{ steps.read.outputs.result }}"
+      branch: "${{ needs.build.outputs.branch }}"
 
   push_helm:
     needs: [read]
@@ -172,50 +173,61 @@ jobs:
           repository: "xiilab/uyuni-infra"
       - name : debug
         run: echo "${{ needs.read.outputs.result }}"
-      # - name: update env value file
-      #   uses: mikefarah/yq@master
-      #   with:
-      #     cmd: |
-      #       yq -i '.uyuni.core.imageTag = "${{ fromJson(needs.read.outputs.result) }}"' 'environments/dev/values.yaml'
-      #       yq -i '.uyuni.batch.imageTag = "${{ fromJson(needs.read.outputs.result) }}"' 'environments/dev/values.yaml'
-      #       yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result) }}"' 'environments/dev/values.yaml'
-      # - name: push monochart
-      #   run: |
-      #     cat environments/dev/values.yaml
-      #     echo "${{ fromJson(needs.read.outputs.result) }}"
-      #     echo "${{ fromJson(needs.read.outputs.result) }}"
-      #     echo "${{ fromJson(needs.read.outputs.result) }}"
-      #     helmfile -e dev template > monochart/monochart.yaml
-      #     git pull
-      #     git config --global user.email "hc.park@xiilab.com"
-      #     git config --global user.name "hc.park"
-      #     git add monochart/monochart.yaml
-      #     git commit -m "update monochart"
-      #     git push
-  # notify_slack:
-  #   needs: [build, push_helm]  # 이 작업이 의존하는 이전 작업의 이름 추가
-  #   runs-on: [self-hosted, linux]
-  #   steps:
-  #     - name: 작업 상태 확인
-  #       id: check_status
-  #       run: 'echo "작업 상태: ${{ job.status }}"'
 
-  #     - name: 성공 시 Slack 알림 전송
-  #       if: ${{ job.status }} == 'success'
-  #       uses: 8398a7/action-slack@v3
-  #       with:
-  #         status: success
-  #         color: good
-  #         text: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
-  #       env:
-  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: master 이미지 정보 수정
+        if: ${{ needs.read.outputs.branch == 'master' }}
+        uses: mikefarah/yq@master
+        with:
+          cmd: |
+            yq -i '.uyuni.core.imageTag = "${{ fromJson(needs.read.outputs.result).server-core }}"' 'environments/default/values.yaml'
+            yq -i '.uyuni.batch.imageTag = "${{ fromJson(needs.read.outputs.result).server-batch }}"' 'environments/default/values.yaml'
+            yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).server-monitor }}"' 'environments/default/values.yaml'
+      
+      - name: dev 이미지 정보 수정
+        if: ${{ needs.read.outputs.branch != 'master' }}
+        uses: mikefarah/yq@master
+        with:
+          cmd: |
+            yq -i '.uyuni.core.imageTag = "${{ fromJson(needs.read.outputs.result).server-core }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.batch.imageTag = "${{ fromJson(needs.read.outputs.result).server-batch }}"' 'environments/dev/values.yaml'
+            yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).server-monitor }}"' 'environments/dev/values.yaml'
+      - name: push monochart
+        run: |
+          cat environments/dev/values.yaml
+          echo "${{ fromJson(needs.read.outputs.result) }}"
+          echo "${{ fromJson(needs.read.outputs.result) }}"
+          echo "${{ fromJson(needs.read.outputs.result) }}"
+          helmfile -e dev template > monochart/monochart.yaml
+          git pull
+          git config --global user.email "hc.park@xiilab.com"
+          git config --global user.name "hc.park"
+          git add .
+          git commit -m "update monochart"
+          git push
+      
+      
+  notify_slack:
+    needs: [build, push_helm]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: 작업 상태 확인
+        id: check_status
+        run: 'echo "작업 상태: ${{ job.status }}"'
 
-  #     - name: 실패 시 Slack 알림 전송
-  #       if: ${{ job.status }} == 'failure'
-  #       uses: 8398a7/action-slack@v3
-  #       with:
-  #         status: failure
-  #         color: danger
-  #         text: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
-  #       env:
-  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: 성공 시 Slack 알림 전송
+        if: ${{ job.status }} == 'success'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 실패 시 Slack 알림 전송
+        if: ${{ job.status }} == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
