@@ -1,23 +1,33 @@
 package com.xiilab.moduleuser.dto;
 
-import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
 
-public record UserInfo(
-	String id,
-	String userUUID,
-	String userName,
-	String firstName,
-	String lastName,
-	String email,
-	AuthType auth,
-	String phoneNumber,
-	String company,
-	String companyImagePath,
-	Long limitAppCount,
-	Double limitCPU,
-	Long limitMEM
-) {
-	public static UserInfo convertFromPrincipal(Principal principal) {
-		return null;
+import org.keycloak.representations.idm.UserRepresentation;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class UserInfo {
+	private String id;
+	private String userName;
+	private String email;
+	private LocalDate joinDate;
+	private SignUpMethod signUpMethod;
+	private AuthType auth;
+	private List<String> groups;
+	private List<String> workspaces;
+
+	public UserInfo(UserRepresentation userRepresentation) {
+		this.id = userRepresentation.getId();
+		this.userName = userRepresentation.getUsername();
+		this.email = userRepresentation.getEmail();
+		this.joinDate = null;
+		this.signUpMethod = null;
+		this.auth = AuthType.valueOf(userRepresentation.getRealmRoles().get(0));
+		this.groups = userRepresentation.getGroups();
+		this.workspaces = userRepresentation.getGroups();
 	}
 }

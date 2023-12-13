@@ -1,12 +1,14 @@
 package com.xiilab.moduleuser.repository;
 
-import org.springframework.stereotype.Repository;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
 
 import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserSummary;
 
-@Repository
+@Component
 public interface UserRepository {
-	UserInfo getUserById(String id);
-
+	List<UserSummary> getUserList();
 	UserInfo getUserByUserName(String userEmail);
 }
