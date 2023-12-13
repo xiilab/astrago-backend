@@ -1,8 +1,7 @@
 package com.xiilab.modulek8s.workload.dto;
 
 public record ImageDTO(
-        //이미지
-        //환경변수 key,value
-        //포트
+        String imageName,   // 이미지 이름
+        String imageTag    // 이미지 태그
 ) {
 }

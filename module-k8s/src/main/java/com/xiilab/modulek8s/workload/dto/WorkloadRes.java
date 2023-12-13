@@ -1,11 +1,11 @@
 package com.xiilab.modulek8s.workload.dto;
 
-import java.util.List;
-import java.util.Map;
-
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+
+import java.util.List;
+import java.util.Map;
 @Getter
 @SuperBuilder
 public abstract class WorkloadRes {
