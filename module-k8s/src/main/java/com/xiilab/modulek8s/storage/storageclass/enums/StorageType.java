@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.storage.volume.enums;
+package com.xiilab.modulek8s.storage.storageclass.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum StorageType {
 	NFS,
-	PURE
+	PURE;
 
 }
