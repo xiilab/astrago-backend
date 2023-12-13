@@ -10,5 +10,8 @@ import com.xiilab.moduleuser.dto.UserSummary;
 @Component
 public interface UserRepository {
 	List<UserSummary> getUserList();
-	UserInfo getUserByUserName(String userEmail);
+	UserInfo getUserByUserName(String userName);
+	List<UserSummary> getWaitingApprovalUserList();
+	void updateUserActivation(String userId, boolean activationYN);
+	void updateUserApproval(String userId, boolean approvalYN);
 }
