@@ -35,10 +35,10 @@ spring:
 
 # 연결할 keycloak server 정보
 keycloak:
-  realm: uyuni
-  auth-server-url: http://dev.uyuni-suite.xiilab.com/auth
+  realm: myrealm
+  auth-server-url: https://10.61.3.8:30002/
   ssl-required: external
-  resource: uyuni
+  resource: kubernetes-client
   use-resource-role-mappings: true
   bearer-only: true
   public-client: false
@@ -46,8 +46,9 @@ keycloak:
 
 # keycloak server의 admin 정보
 admin:
-  realm: master
+  realm: myrealm
   client: admin-cli
   name: admin
-  password: xiilabPassword3#
-  init-password: uyuni
+  password: xiirock
+  init-password: xiirocks
+  secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
