@@ -28,10 +28,22 @@ public abstract class K8SResourceReqVO {
 	LocalDateTime createdAt;
 	//사용자의 실명
 	String creatorName;
+
 	//label
 	//사용자의 id
 	String creator;
+
 	ResourceType type;
+
+	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
+		String creatorName, String creator) {
+		this.resourceName = resourceName;
+		this.name = name;
+		this.description = description;
+		this.createdAt = createdAt;
+		this.creatorName = creatorName;
+		this.creator = creator;
+	}
 
 	/**
 	* 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
