@@ -1,19 +1,19 @@
-package com.xiilab.modulek8s.storage.volume.dto;
+package com.xiilab.servercore.storage.volume.dto;
 
-import com.xiilab.modulek8s.storage.volume.enums.StorageType;
+import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class RequestInsertDTO {
+public class CreateVolumeDTO {
 	private String volumeName;
 	private StorageType storageType;
 	private String workspaceMetaDataName;
 	private int requestVolume;
 
-	@Builder
-	public RequestInsertDTO(String volumeName, StorageType storageType, String workspaceMetaDataName, int requestVolume) {
+	public CreateVolumeDTO(String volumeName, StorageType storageType, String workspaceMetaDataName,
+		int requestVolume) {
 		this.volumeName = volumeName;
 		this.storageType = storageType;
 		this.workspaceMetaDataName = workspaceMetaDataName;

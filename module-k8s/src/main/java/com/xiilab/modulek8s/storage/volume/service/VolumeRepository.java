@@ -1,7 +1,7 @@
 package com.xiilab.modulek8s.storage.volume.service;
 
-import com.xiilab.modulek8s.storage.volume.dto.RequestInsertDTO;
+import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 
 public interface VolumeRepository {
-	void createVolume(RequestInsertDTO requestInsertDTO);
+	void createVolume(CreateVolumeDTO createVolumeDTO);
 }

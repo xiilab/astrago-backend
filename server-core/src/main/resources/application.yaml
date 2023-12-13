@@ -51,3 +51,4 @@ admin:
   name: admin
   password: xiirock
   init-password: xiirocks
+  secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
