@@ -1,32 +1,37 @@
 package com.xiilab.modulek8s.storage.volume.dto;
 
+import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
 import com.xiilab.modulek8s.storage.facade.dto.StorageReqDTO;
+import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class CreateVolumeDTO {
-	private String volumeName;
-	private String workspaceMetaDataName;
+public class CreateVolumeDTO extends K8SResourceReqDTO {
+	private StorageType storageType;
 	private int requestVolume;
-	private String storageMetaName;
+	private String workspaceMetaDataName;
+	private String storageClassMetaName;
 
 	@Builder
-	public CreateVolumeDTO(String volumeName, String workspaceMetaDataName, int requestVolume, String storageMetaName) {
-		this.volumeName = volumeName;
-		this.workspaceMetaDataName = workspaceMetaDataName;
+	public CreateVolumeDTO(String name, String description, StorageType storageType, int requestVolume,
+		String workspaceMetaDataName, String storageClassMetaName) {
+		super(name, description);
+		this.storageType = storageType;
 		this.requestVolume = requestVolume;
-		this.storageMetaName = storageMetaName;
+		this.workspaceMetaDataName = workspaceMetaDataName;
+		this.storageClassMetaName = storageClassMetaName;
 	}
+
 	public static CreateVolumeDTO storageReqDtoToCreateVolumeDto(StorageReqDTO storageReqDTO){
 		return CreateVolumeDTO.builder()
-			.volumeName(storageReqDTO.getVolumeName())
+			.name(storageReqDTO.getName())
 			.workspaceMetaDataName(storageReqDTO.getWorkspaceMetaDataName())
 			.requestVolume(storageReqDTO.getRequestVolume())
 			.build();
 	}
 	public void setStorageClassMetaName(String storageMetaName){
-		this.storageMetaName = storageMetaName;
+		this.storageClassMetaName = storageMetaName;
 	}
 }
