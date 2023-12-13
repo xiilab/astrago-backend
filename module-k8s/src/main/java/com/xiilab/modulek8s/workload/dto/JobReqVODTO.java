@@ -1,8 +1,13 @@
 package com.xiilab.modulek8s.workload.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
@@ -23,7 +28,7 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class JobReqDTO extends WorkloadReq {
+public class JobReqVODTO extends WorkloadReqVO {
 	private List<CodeDTO> codeReqs;
 
 	@Override
@@ -37,12 +42,22 @@ public class JobReqDTO extends WorkloadReq {
 	@Override
 	public ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(name)
+			.withName(getResourceName())
 			.withNamespace(workspace)
-			.withAnnotations(Map.of(
-				"description", description,
-				"creatorId", creatorId
-			))
+			.withAnnotations(
+				Map.of(
+					AnnotationField.NAME.getField(), getName(),
+					AnnotationField.DESCRIPTION.getField(), getDescription(),
+					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
+					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName()
+				))
+			.withLabels(
+				Map.of(
+					LabelField.CREATOR.getField(), getCreator(),
+					LabelField.IMAGE.getField(), image
+					// LabelField.CODES.getField(), getCodeReqs()
+					// LabelField.CREATOR.getField(), getCreator(),
+				))
 			.build();
 	}
 
@@ -63,7 +78,7 @@ public class JobReqDTO extends WorkloadReq {
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withRestartPolicy("Never")
 			.addNewContainer()
-			.withName(name)
+			.withName(getResourceName())
 			.withImage(image);
 
 		if (port != null && !port.isEmpty()) {
@@ -81,7 +96,7 @@ public class JobReqDTO extends WorkloadReq {
 		AtomicInteger index = new AtomicInteger(1);
 		codeReqs.forEach(codeReq ->
 			podSpecContainer.addNewVolumeMount()
-				.withName(name + "-git-clone-" + index.getAndIncrement())
+				.withName(getResourceName() + "-git-clone-" + index.getAndIncrement())
 				.withMountPath(codeReq.mountPath())
 				.endVolumeMount());
 
@@ -114,7 +129,12 @@ public class JobReqDTO extends WorkloadReq {
 	}
 
 	@Override
-	public WorkloadType getType() {
+	public WorkloadType getworkloadType() {
 		return WorkloadType.BATCH;
+	}
+
+	@Override
+	protected ResourceType getType() {
+		return ResourceType.WORKLOAD;
 	}
 }
