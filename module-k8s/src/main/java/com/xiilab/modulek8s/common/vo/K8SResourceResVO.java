@@ -36,4 +36,6 @@ public abstract class K8SResourceResVO {
 		this.creator = hasMetadata.getMetadata().getLabels().get(LabelField.CREATOR.getField());
 		this.type = getType();
 	}
+	//자식 클래스의 ResourceType을 조회하기 위한 메소드
+	protected abstract ResourceType getType();
 }
