@@ -1,7 +1,7 @@
 package com.xiilab.servercore.service;
 
 import com.xiilab.modulek8s.workload.service.WorkloadInterface;
-import com.xiilab.modulek8s.workload.dto.WorkloadDTO;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

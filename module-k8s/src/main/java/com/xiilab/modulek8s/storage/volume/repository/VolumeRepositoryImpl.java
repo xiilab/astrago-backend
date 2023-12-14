@@ -7,7 +7,9 @@ import java.util.Map;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeRepository;
@@ -52,7 +54,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.orElseThrow(() -> new NullPointerException("해당 볼륨이 존재하지 않습니다."));
 
 			String requestVolume = pvc.getSpec().getResources().getRequests().get("storage").toString();
-
+			StorageType storageType = StorageType.valueOf(
+				pvc.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField()));
 			//사용중인 statefulSets 조회
 			List<StatefulSet> statefulSets = client.apps().statefulSets().withLabelIn(metaName, "true")
 				.list()
@@ -71,6 +74,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.hasMetadata(pvc)
 				.workloadNames(workloadNames)
 				.requestVolume(requestVolume)
+				.storageType(storageType)
 				.build();
 		}catch (NullPointerException e){
 			log.error("volume not found {}", e.getMessage(), e);

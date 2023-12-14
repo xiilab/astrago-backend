@@ -7,6 +7,7 @@ import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
+import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.common.enumeration.AccessMode;
 
@@ -23,6 +24,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public class VolumeVO extends K8SResourceReqVO {
+	private StorageType storageType;
 	private String workspaceMetaDataName;
 	private String storageClassMetaName;
 	private int requestVolume;
@@ -67,12 +69,14 @@ public class VolumeVO extends K8SResourceReqVO {
 			.workspaceMetaDataName(createVolumeDTO.getWorkspaceMetaDataName())
 			.storageClassMetaName(createVolumeDTO.getStorageClassMetaName())
 			.requestVolume(createVolumeDTO.getRequestVolume())
+			.storageType(createVolumeDTO.getStorageType())
 			.build();
 	}
 
 	private HashMap<String, String> createLabels() {
 		HashMap<String, String> labels = new HashMap<>();
 		labels.put(LabelField.CREATOR.getField(), getCreator());
+		labels.put(LabelField.STORAGE_TYPE.getField(), storageType.name());
 		return labels;
 	}
 
