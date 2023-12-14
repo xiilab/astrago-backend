@@ -46,7 +46,7 @@ public class MonitorService {
 	public List<ResponseDTO.PromqlDTO> getPromqlList(){
 		return Arrays.stream(Promql.values())
 			.map(enumValue -> new ResponseDTO.PromqlDTO(
-				enumValue.getQuery(),
+				enumValue.name(),
 				enumValue.getDescription(),
 				enumValue.getType()))
 			.toList();

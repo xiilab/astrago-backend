@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 	private final K8sAdapter k8sAdapter;
-
 	@Override
 	public List<ResponseDTO.RealTimeDTO> getK8sMetricsByQuery(RequestDTO requestDTO) {
 		String metricName = requestDTO.metricName();
@@ -40,8 +39,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 */
 	private List<ResponseDTO.RealTimeDTO> getWorkloadErrorCount(RequestDTO requestDTO){
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			List<String> targetReasons = Arrays.asList("CrashLoopBackOff", "Completed", "ContainerCreating",
-				"ImagePullBackOff", "ErrImagePull", "InvalidImageName");
+			List<String> targetReasons = Arrays.asList("CrashLoopBackOff", "ImagePullBackOff", "ErrImagePull", "InvalidImageName");
 
 			List<Pod> items = new ArrayList<>();
 			if (!requestDTO.namespace().isEmpty() && !requestDTO.podName().isEmpty()) {
@@ -84,6 +82,9 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.filter(node -> node.getStatus().getConditions().stream()
 					.noneMatch(nodeCondition -> nodeCondition.getType().equals("Ready")))
 				.count();
+
+			// 지울거
+
 
 			return List.of(ResponseDTO.RealTimeDTO.builder()
 				.metricName("NODE_ERROR_COUNT")
