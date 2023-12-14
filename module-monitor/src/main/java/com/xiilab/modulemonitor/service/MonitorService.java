@@ -23,7 +23,7 @@ public class MonitorService {
 	 * @return 조회된 Metrics
 	 */
 	public List<ResponseDTO.RealTimeDTO> getRealTimeMetricByQuery(RequestDTO requestDTO){
-		String promql = getPromql(requestDTO.metricName());
+		String promql = getPromql(requestDTO.metricName(), requestDTO);
 		return prometheusRepository.getRealTimeMetricByQuery(promql, requestDTO);
 	}
 	/**
@@ -32,7 +32,7 @@ public class MonitorService {
 	 * @return 조회된 ResponseDTO	 List
 	 */
 	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO){
-		String promql = getPromql(requestDTO.metricName());
+		String promql = getPromql(requestDTO.metricName(), requestDTO);
 		return prometheusRepository.getHistoryMetricByQuery(promql, requestDTO);
 	}
 	/**
@@ -51,12 +51,35 @@ public class MonitorService {
 	 * @param metricName 조회될 metric Name
 	 * @return 조회된 Promql
 	 */
-	public String getPromql(String metricName){
+	private String getPromql(String metricName, RequestDTO requestDTO){
 		try{
-			return Promql.valueOf(metricName).getQuery();
+			return createPromql(Promql.valueOf(metricName), requestDTO);
 		}catch (IllegalArgumentException e){
 			throw new IllegalArgumentException("해당 이름의 Metric(" + metricName + ")이 없습니다.");
 		}
 	}
 
+	/**
+	 * Promql 생성하는 메소드
+	 * @param promql Client가 요청한 promql
+	 * @param requestDTO 조건에 추가될 정보가 담긴 객체
+	 * @return 생성된 Promql
+	 */
+	private String createPromql(Promql promql, RequestDTO requestDTO){
+		String result = "";
+		// GPU일 경우 kubernetes_node 사용
+		if (promql.getType().equals("GPU")) {
+			if (!requestDTO.nodeName().isBlank()) {
+				result = "kubernetes_node=\"" + requestDTO.nodeName() + "\",";
+			}
+		} else{
+			if (!requestDTO.nodeName().isBlank()) {
+				result = "namespace=\"" + requestDTO.namespace() + "\",";
+			}
+		}
+		if (!requestDTO.podName().isBlank()) {
+			result = result + "pod=\"" + requestDTO.podName() + "\"";
+		}
+		return String.format(promql.getQuery(), result.toLowerCase());
+	}
 }

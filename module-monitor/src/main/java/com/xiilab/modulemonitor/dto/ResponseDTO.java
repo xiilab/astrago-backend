@@ -11,8 +11,10 @@ public record ResponseDTO() {
 							  String dateTime,
 							  String nameSpace,
 							  String nodeName,
+							  String kubeNodeName,
 							  String podName,
 							  String instance,
+							  String modelName,
 							  String value){
 	}
 	@Builder

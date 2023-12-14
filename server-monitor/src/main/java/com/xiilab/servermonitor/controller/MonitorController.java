@@ -16,7 +16,7 @@ import com.xiilab.modulemonitor.service.MonitorService;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/api/v1/monitor")
+@RequestMapping("/api/monitor")
 @RequiredArgsConstructor
 public class MonitorController {
 

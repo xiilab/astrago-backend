@@ -84,8 +84,10 @@ public class PrometheusRepositoryImpl implements PrometheusRepository {
 			formatDateTime(result.path("value").get(0).asDouble()),
 			getStringOrNull(metricData, "namespace"),
 			getStringOrNull(metricData, "node"),
+			getStringOrNull(metricData, "kubernetes_node"),
 			getStringOrNull(metricData, "pod"),
 			getStringOrNull(metricData, "instance"),
+			getStringOrNull(metricData, "modelName"),
 			String.valueOf(value)
 		);
 	}
