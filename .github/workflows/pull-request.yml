@@ -1,0 +1,77 @@
+name: uyuni backend image CI
+
+on:
+  pull_request:
+    branches: ["develop", "master"]
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    permissions:
+      contents: write
+    strategy:
+      max-parallel: 3
+      matrix:
+        include:
+          - image: xiilab/uyuni-backend-core
+            harbor: harbor.xiilab.com:32443/uyuni/uyuni-backend-core
+            path: server-core
+            dockerfile: server-core/Dockerfile
+          - image: xiilab/uyuni-backend-batch
+            harbor: harbor.xiilab.com:32443/uyuni/server-batch
+            path: server-batch
+            dockerfile: server-batch/Dockerfile
+          - image: xiilab/uyuni-backend-monitor
+            harbor: harbor.xiilab.com:32443/uyuni/server-monitor
+            path: server-monitor
+            dockerfile: server-monitor/Dockerfile
+    steps:
+    # 원격머신에 repo checkout
+    - name: Checkout
+      uses: actions/checkout@v3
+    # JDK 설정
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+
+    
+    # Gradle build
+    - name: Build with Gradle
+      run: ./gradlew ${{ matrix.path }}:bootjar
+
+
+  
+  notify_slack:
+    needs: [build]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: 작업 상태 확인
+        id: check_status
+        run: 'echo "작업 상태: ${{ job.status }}"'
+
+      # 브랜치 네임이 마스터일 경우에만 docker.io 저장소로 보낸다
+      - name: 작업결과에 따른 메세지 지정
+        uses: haya14busa/action-cond@v1
+        id: slack-message
+        with:
+          cond: ${{ needs.build.result  == 'success' }}
+          if_true: 'Uyuni 백엔드 테스트 결과 성공했습니다! :tada:'
+          if_false: 'Uyuni 백엔드 테스트 결과 실패했습니다. :warning:'
+      - name: 작업결과에 따른 메세지 지정
+        uses: haya14busa/action-cond@v1
+        id: slack-status
+        with:
+          cond: ${{ needs.build.result  == 'success' }}
+          if_true: 'success'
+          if_false: 'failure'
+
+      - name: Slack 알림 전송
+        if: ${{ job.status }} == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: '${{ steps.slack-status.outputs.value }}'
+          text: '${{ steps.slack-message.outputs.value }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

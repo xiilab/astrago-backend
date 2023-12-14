@@ -2,12 +2,9 @@ name: uyuni backend image CI
 
 on:
   push:
-    branches: ["develop", "master", "100milliongold/issue70"]
+    branches: ["develop", "master" ]
     tags:
       - v.**
-  pull_request:
-    branches: ["develop", "master"]
-
 jobs:
   build:
     runs-on: [self-hosted, linux]
