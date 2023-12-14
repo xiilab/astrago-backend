@@ -3,6 +3,7 @@ package com.xiilab.servercore.storage.volume.service;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.storage.facade.StorageService;
+import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsDTO;
 import com.xiilab.servercore.storage.volume.dto.CreateReqDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,9 @@ public class VolumeFacadeService {
 
 	public void createVolume(CreateReqDTO requestDTO){
 		storageService.createVolume(requestDTO.toDto());
+	}
+	public VolumeWithWorkloadsDTO findVolumeWithWorkloadsByMetaName(String volumeMetaName){
+		return storageService.findVolumeWithWorkloadsByMetaName(volumeMetaName);
 	}
 
 }
