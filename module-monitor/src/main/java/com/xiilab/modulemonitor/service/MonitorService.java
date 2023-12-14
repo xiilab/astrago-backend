@@ -16,15 +16,20 @@ import lombok.RequiredArgsConstructor;
 public class MonitorService {
 
 	private final PrometheusRepository prometheusRepository;
-
+	private final K8sMonitorRepository monitorRepository;
 	/**
 	 * Prometheus에 query조회하는 메소드
 	 * @param requestDTO 조회될 정보가 담긴 객체
 	 * @return 조회된 Metrics
 	 */
 	public List<ResponseDTO.RealTimeDTO> getRealTimeMetricByQuery(RequestDTO requestDTO){
+
 		String promql = getPromql(requestDTO.metricName(), requestDTO);
-		return prometheusRepository.getRealTimeMetricByQuery(promql, requestDTO);
+		if(!promql.isBlank()){
+			return prometheusRepository.getRealTimeMetricByQuery(promql, requestDTO);
+		}else{
+			return monitorRepository.getK8sMetricsByQuery(requestDTO);
+		}
 	}
 	/**
 	 * 과거 Promethrus metric을 조회하는 메소드

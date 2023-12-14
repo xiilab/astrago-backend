@@ -5,7 +5,6 @@ public record RequestDTO(String metricName,
 						 String endDate,
 						 String namespace,
 						 String podName,
-						 String nodeName,
-						 String clusterIP
+						 String nodeName
 ) {
 }
