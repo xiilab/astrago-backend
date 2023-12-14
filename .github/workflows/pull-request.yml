@@ -37,6 +37,7 @@ jobs:
   notify_slack:
     needs: [build]  # 이 작업이 의존하는 이전 작업의 이름 추가
     runs-on: [self-hosted, linux]
+    if: always()
     steps:
       - name: 작업 상태 확인
         id: check_status
