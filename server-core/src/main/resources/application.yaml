@@ -7,8 +7,9 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: https://auth.bigdata-car.kr/realms/kadap
-          jwk-set-uri: https://auth.bigdata-car.kr/realms/kadap/protocol/openid-connect/certs
+          issuer-uri: http://10.61.3.8:30001/realms/myrealm
+          jwk-set-uri: http://10.61.3.8:30001/realms/myrealm/protocol/openid-connect/certs
+
   datasource:
     url: jdbc:mariadb://localhost:3306/uyuni
     username: root
@@ -35,10 +36,10 @@ spring:
 
 # 연결할 keycloak server 정보
 keycloak:
-  realm: uyuni
-  auth-server-url: http://dev.uyuni-suite.xiilab.com/auth
+  realm: myrealm
+  auth-server-url: http://10.61.3.8:30001/
   ssl-required: external
-  resource: uyuni
+  resource: kubernetes-client
   use-resource-role-mappings: true
   bearer-only: true
   public-client: false
@@ -46,8 +47,9 @@ keycloak:
 
 # keycloak server의 admin 정보
 admin:
-  realm: master
+  realm: myrealm
   client: admin-cli
   name: admin
-  password: xiilabPassword3#
-  init-password: uyuni
+  password: xiirock
+  init-password: xiirocks
+  secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
