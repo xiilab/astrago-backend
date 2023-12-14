@@ -13,18 +13,9 @@ jobs:
       max-parallel: 3
       matrix:
         include:
-          - image: xiilab/uyuni-backend-core
-            harbor: harbor.xiilab.com:32443/uyuni/uyuni-backend-core
-            path: server-core
-            dockerfile: server-core/Dockerfile
-          - image: xiilab/uyuni-backend-batch
-            harbor: harbor.xiilab.com:32443/uyuni/server-batch
-            path: server-batch
-            dockerfile: server-batch/Dockerfile
-          - image: xiilab/uyuni-backend-monitor
-            harbor: harbor.xiilab.com:32443/uyuni/server-monitor
-            path: server-monitor
-            dockerfile: server-monitor/Dockerfile
+          - path: server-core
+          - path: server-batch
+          - path: server-monitor
     steps:
     # 원격머신에 repo checkout
     - name: Checkout
