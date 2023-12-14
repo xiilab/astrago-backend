@@ -1,6 +1,8 @@
 package com.xiilab.modulek8s.workload.dto;
 
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
@@ -24,6 +26,14 @@ public class JobReqDTO extends WorkloadReq {
 			.withMetadata(createMeta())
 			.withSpec(createSpec())
 			.build();
+	}
+
+	public Deployment updateResource(Deployment deployment) {
+		return new DeploymentBuilder(deployment)
+				.editMetadata()
+				.withAnnotations(Map.of("description", "description"))
+				.endMetadata()
+				.build();
 	}
 
 	@Override
