@@ -155,8 +155,8 @@ jobs:
         file: ${{ matrix.dockerfile }}
         push: true
         tags: |
-          ${{ steps.image_tag.outputs.value }}
-          ${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+          ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value }}
+          ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
         labels: ${{ steps.meta.outputs.labels }}
     
     ## Write for matrix outputs workaround 
@@ -168,7 +168,7 @@ jobs:
         outputs: |-
           image: ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}
           ## Multiline string
-          tags: ${{ steps.image_tag.outputs.value }}-${{ env.COMMIT_SHORT_SHA }}
+          tags: ${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
 
     outputs:
       branch: "${{ steps.extract_branch.outputs.branch }}"
