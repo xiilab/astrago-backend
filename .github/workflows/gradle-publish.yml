@@ -71,7 +71,7 @@ jobs:
       with:
         cond: ${{ github.ref_name != '' }}
         if_true: "${{github.ref_name}}"
-        if_false: "${{steps.cond_branch}}"
+        if_false: "${{steps.cond_branch.outputs.value}}"
     
     # Image Tag 생성 위한 github sha 저장
     - name: Image Tag 생성 위한 github sha 저장
