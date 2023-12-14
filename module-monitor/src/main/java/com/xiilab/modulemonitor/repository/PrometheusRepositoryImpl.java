@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
+import com.xiilab.modulemonitor.service.PrometheusRepository;
 
 @Repository
 public class PrometheusRepositoryImpl implements PrometheusRepository {

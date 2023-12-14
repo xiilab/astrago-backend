@@ -1,4 +1,4 @@
-package com.xiilab.modulemonitor;
+package com.xiilab.modulek8s;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

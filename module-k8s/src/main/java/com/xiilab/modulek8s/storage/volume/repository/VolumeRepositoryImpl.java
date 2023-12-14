@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeRepository;
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
-import com.xiilab.modulemonitor.config.K8sAdapter;
+import com.xiilab.modulek8s.config.K8sAdapter;
 
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.client.KubernetesClient;

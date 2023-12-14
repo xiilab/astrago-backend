@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.workload.dto.WorkloadDTO;
-import com.xiilab.modulemonitor.config.K8sAdapter;
+import com.xiilab.modulek8s.config.K8sAdapter;
 
 import lombok.RequiredArgsConstructor;
 

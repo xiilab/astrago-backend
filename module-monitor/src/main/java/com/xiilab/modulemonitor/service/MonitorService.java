@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
-import com.xiilab.modulemonitor.repository.PrometheusRepository;
 
 import lombok.RequiredArgsConstructor;
 
