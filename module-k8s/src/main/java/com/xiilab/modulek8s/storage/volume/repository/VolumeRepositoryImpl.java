@@ -11,8 +11,7 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
-import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsDTO;
-import com.xiilab.modulek8s.storage.volume.service.VolumeRepository;
+import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -42,35 +41,34 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	@Override
-	public VolumeWithWorkloadsDTO findVolumeWithWorkloadsByMetaName(String metaName) {
+	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
 		try(final KubernetesClient client = k8sAdapter.configServer()) {
 			List<String> workloadNames = new ArrayList<>();
-			List<PersistentVolumeClaim> items = client.persistentVolumeClaims().inAnyNamespace().list().getItems();
-
-			PersistentVolumeClaim pvc = items.stream()
-				.filter(persistentVolumeClaim ->
-					persistentVolumeClaim.getMetadata().getName().equals(metaName))
-				.findFirst()
-				.orElseThrow(() -> new NullPointerException("해당 볼륨이 존재하지 않습니다."));
-
+			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
+				.inNamespace(workspaceMetaName)
+				.withName(volumeMetaName)
+				.get();
+			if(pvc == null){
+				throw new NullPointerException("해당 볼륨이 존재하지 않습니다.");
+			}
 			String requestVolume = pvc.getSpec().getResources().getRequests().get("storage").toString();
 			StorageType storageType = StorageType.valueOf(
 				pvc.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField()));
 			//사용중인 statefulSets 조회
-			List<StatefulSet> statefulSets = client.apps().statefulSets().withLabelIn(metaName, "true")
+			List<StatefulSet> statefulSets = client.apps().statefulSets().withLabelIn(volumeMetaName, "true")
 				.list()
 				.getItems();
 			setWorkloadInUseVolume(statefulSets, workloadNames);
 			//사용중인 deployment 조회
-			List<Deployment> deployments = client.apps().deployments().withLabelIn(metaName, "true")
+			List<Deployment> deployments = client.apps().deployments().withLabelIn(volumeMetaName, "true")
 				.list().getItems();
 			setWorkloadInUseVolume(deployments, workloadNames);
 			//사용중인 job 조회
-			List<Job> jobs = client.batch().v1().jobs().withLabelIn(metaName, "true")
+			List<Job> jobs = client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
 				.list().getItems();
 			setWorkloadInUseVolume(jobs, workloadNames);
 
-			return VolumeWithWorkloadsDTO.builder()
+			return VolumeWithWorkloadsResDTO.builder()
 				.hasMetadata(pvc)
 				.workloadNames(workloadNames)
 				.requestVolume(requestVolume)

@@ -7,13 +7,13 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class StorageReqDTO extends K8SResourceReqDTO {
+public class CreateVolumeReqDTO extends K8SResourceReqDTO {
 	private StorageType storageType;
 	private int requestVolume;
 	private String workspaceMetaDataName;
 
 	@Builder
-	public StorageReqDTO(String name, String description, StorageType storageType, int requestVolume,
+	public CreateVolumeReqDTO(String name, String description, StorageType storageType, int requestVolume,
 		String workspaceMetaDataName) {
 		super(name, description);
 		this.storageType = storageType;
