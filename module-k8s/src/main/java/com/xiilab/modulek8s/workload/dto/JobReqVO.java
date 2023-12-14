@@ -28,7 +28,7 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class JobReqVODTO extends WorkloadReqVO {
+public class JobReqVO extends WorkloadReqVO {
 	private List<CodeDTO> codeReqs;
 
 	@Override
@@ -55,8 +55,6 @@ public class JobReqVODTO extends WorkloadReqVO {
 				Map.of(
 					LabelField.CREATOR.getField(), getCreator(),
 					LabelField.IMAGE.getField(), image
-					// LabelField.CODES.getField(), getCodeReqs()
-					// LabelField.CREATOR.getField(), getCreator(),
 				))
 			.build();
 	}
@@ -64,13 +62,14 @@ public class JobReqVODTO extends WorkloadReqVO {
 	@Override
 	public JobSpec createSpec() {
 		return new JobSpecBuilder()
-			.withTtlSecondsAfterFinished(1000)
+			.withTtlSecondsAfterFinished(100)
 			.withNewTemplate()
 			.withSpec(createPodSpec())
 			.endTemplate()
 			.build();
 	}
 
+	// 컨테이너 정보
 	@Override
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
@@ -94,11 +93,14 @@ public class JobReqVODTO extends WorkloadReqVO {
 		}
 
 		AtomicInteger index = new AtomicInteger(1);
-		codeReqs.forEach(codeReq ->
-			podSpecContainer.addNewVolumeMount()
-				.withName(getResourceName() + "-git-clone-" + index.getAndIncrement())
-				.withMountPath(codeReq.mountPath())
-				.endVolumeMount());
+
+		if (codeReqs != null && codeReqs.size() > 0) {
+			codeReqs.forEach(codeReq ->
+				podSpecContainer.addNewVolumeMount()
+					.withName(getResourceName() + "-git-clone-" + index.getAndIncrement())
+					.withMountPath(codeReq.mountPath())
+					.endVolumeMount());
+		}
 
 		return podSpecContainer.endContainer().build();
 	}
@@ -129,7 +131,7 @@ public class JobReqVODTO extends WorkloadReqVO {
 	}
 
 	@Override
-	public WorkloadType getworkloadType() {
+	public WorkloadType getWorkloadType() {
 		return WorkloadType.BATCH;
 	}
 

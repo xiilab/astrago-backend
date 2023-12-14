@@ -3,7 +3,7 @@ package com.xiilab.modulek8s.workload.repository;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.workload.dto.JobReqVODTO;
+import com.xiilab.modulek8s.workload.dto.JobReqVO;
 import com.xiilab.modulek8s.workload.dto.JobResDTO;
 import com.xiilab.modulek8s.workload.dto.WorkloadReqVO;
 import com.xiilab.modulek8s.workload.dto.WorkloadRes;
@@ -18,8 +18,8 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadRepoImpl implements WorkloadRepo{
 	private final K8sAdapter k8sAdapter;
 	@Override
-	public JobResDTO createBatchJobWorkload(JobReqVODTO jobReqDTO) {
-		Job resource = (Job)createResource(jobReqDTO.createResource());
+	public JobResDTO createBatchJobWorkload(JobReqVO jobReqVO) {
+		Job resource = (Job)createResource(jobReqVO.createResource());
 		return new JobResDTO(resource);
 	}
 
