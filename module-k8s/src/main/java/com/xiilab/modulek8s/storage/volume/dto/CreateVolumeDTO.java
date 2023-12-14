@@ -29,6 +29,7 @@ public class CreateVolumeDTO extends K8SResourceReqDTO {
 			.name(storageReqDTO.getName())
 			.workspaceMetaDataName(storageReqDTO.getWorkspaceMetaDataName())
 			.requestVolume(storageReqDTO.getRequestVolume())
+			.storageType(storageReqDTO.getStorageType())
 			.build();
 	}
 	public void setStorageClassMetaName(String storageMetaName){

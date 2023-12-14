@@ -21,7 +21,9 @@
     - 생성자 이름(실명) : creator-name
 - label
     - 생성자 username : creator
-    - 사용한 볼륨s : volumes
+    - 사용한 볼륨은 label에 list형을 못넣기때문에 row로 나열(볼륨의 meta name : true)
+    - vo-uuid1 : "true"
+    - vo-uuid2 : "true"
     - 사용한 이미지 : image
     - 사용한 codes : codes
 ## Volume(PV,PVC)

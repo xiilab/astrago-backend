@@ -7,8 +7,9 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: https://auth.bigdata-car.kr/realms/kadap
-          jwk-set-uri: https://auth.bigdata-car.kr/realms/kadap/protocol/openid-connect/certs
+          issuer-uri: http://10.61.3.8:30001/realms/myrealm
+          jwk-set-uri: http://10.61.3.8:30001/realms/myrealm/protocol/openid-connect/certs
+
   datasource:
     url: jdbc:mariadb://localhost:3306/uyuni
     username: root
@@ -36,7 +37,7 @@ spring:
 # 연결할 keycloak server 정보
 keycloak:
   realm: myrealm
-  auth-server-url: https://10.61.3.8:30002/
+  auth-server-url: http://10.61.3.8:30001/
   ssl-required: external
   resource: kubernetes-client
   use-resource-role-mappings: true
