@@ -18,6 +18,8 @@ import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.PodSpecFluent;
+import io.fabric8.kubernetes.api.model.VolumeMount;
+import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
@@ -101,6 +103,8 @@ public class JobReqVO extends WorkloadReqVO {
 					.withMountPath(codeReq.mountPath())
 					.endVolumeMount());
 		}
+		// podSpecContainer.withVolumeMounts();
+		VolumeMount mount = new VolumeMountBuilder().withName("test-name").withMountPath("/con").build();
 
 		return podSpecContainer.endContainer().build();
 	}
