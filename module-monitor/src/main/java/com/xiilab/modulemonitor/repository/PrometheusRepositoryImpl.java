@@ -81,10 +81,10 @@ public class PrometheusRepositoryImpl implements PrometheusRepository {
 		return new ResponseDTO.RealTimeDTO(
 			metric,
 			formatDateTime(result.path("value").get(0).asDouble()),
-			getStringOrNull(metricData, "instance"),
 			getStringOrNull(metricData, "namespace"),
 			getStringOrNull(metricData, "node"),
 			getStringOrNull(metricData, "pod"),
+			getStringOrNull(metricData, "instance"),
 			String.valueOf(value)
 		);
 	}
