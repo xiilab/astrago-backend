@@ -54,6 +54,11 @@ jobs:
         cond: ${{ steps.extract_branch.outputs.branch  == 'master' }}
         if_true: "docker.io/xiilab"
         if_false: "harbor.xiilab.com:32443/uyuni"
+
+
+    - name: 태그네임 가져오기
+      id: tags
+      run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
   
 
     # 브랜치 네임이 마스터일 경우에만 master 이름으로 지정하고 나머지는 develop 으로 지정한다.
@@ -69,8 +74,8 @@ jobs:
       uses: haya14busa/action-cond@v1
       id: image_tag
       with:
-        cond: ${{ github.ref_name != '' }}
-        if_true: "${{github.ref_name}}"
+        cond: ${{ steps.tags.outputs.tag != '' }}
+        if_true: "${{steps.tags.outputs.tag}}"
         if_false: "${{steps.cond_branch.outputs.value}}"
     
     # Image Tag 생성 위한 github sha 저장
