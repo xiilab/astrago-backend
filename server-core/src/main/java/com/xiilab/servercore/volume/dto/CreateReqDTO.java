@@ -1,6 +1,6 @@
 package com.xiilab.servercore.volume.dto;
 
-import com.xiilab.modulek8s.storage.facade.dto.CreateVolumeReqDTO;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 import com.xiilab.servercore.common.dto.APIBaseReqDTO;
 
@@ -16,8 +16,8 @@ public class CreateReqDTO extends APIBaseReqDTO {
 		super();
 	}
 
-	public CreateVolumeReqDTO toDto(){
-		return CreateVolumeReqDTO.builder()
+	public CreateVolumeDTO toModuleDto(){
+		return CreateVolumeDTO.builder()
 			.name(getName())
 			.storageType(getStorageType())
 			.requestVolume(getRequestVolume())
