@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -46,9 +47,11 @@ public class WorkloadRepoImpl implements WorkloadRepo {
     }
 
     @Override
-    public List<JobResDTO> getBatchJobWorkloadList(String workSpaceName) {
+    public List<WorkloadRes> getBatchJobWorkloadList(String workSpaceName) {
         JobList batchJobList = getBatchJobList(workSpaceName);
-        return batchJobList.getItems().stream().map(JobResDTO::new).toList();
+        return batchJobList.getItems().stream()
+                .map(JobResDTO::new)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -66,13 +69,13 @@ public class WorkloadRepoImpl implements WorkloadRepo {
     }
 
     @Override
-    public void deleteBatchJobWorkload(String workSpaceName, String workloadName) {
-        deleteJob(workSpaceName, workloadName);
+    public String deleteBatchJobWorkload(String workSpaceName, String workloadName) {
+        return deleteJob(workSpaceName, workloadName);
     }
 
     @Override
-    public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
-        deleteInteractiveJob(workSpaceName, workloadName);
+    public String deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
+        return deleteInteractiveJob(workSpaceName, workloadName);
     }
 
 
@@ -113,15 +116,17 @@ public class WorkloadRepoImpl implements WorkloadRepo {
         }
     }
 
-    private void deleteJob(String workSpaceName, String workloadName) {
+    private String deleteJob(String workSpaceName, String workloadName) {
         try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
             kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).delete();
+            return workloadName;
         }
     }
 
-    private void deleteInteractiveJob(String workSpaceName, String workloadName) {
+    private String deleteInteractiveJob(String workSpaceName, String workloadName) {
         try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
             kubernetesClient.apps().deployments().inNamespace(workSpaceName).withName(workloadName).delete();
+            return workloadName;
         }
     }
 

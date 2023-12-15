@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.dto;
 
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -34,7 +35,11 @@ public class JobResDTO extends WorkloadRes {
     }
 
     @Override
-    public WorkloadType getType() {
+    protected ResourceType getType() {
+        return null;
+    }
+
+    protected WorkloadType getWorkloadType() {
         return WorkloadType.BATCH;
     }
 }

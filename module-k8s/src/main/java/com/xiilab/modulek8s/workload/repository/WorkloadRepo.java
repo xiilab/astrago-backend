@@ -50,7 +50,7 @@ public interface WorkloadRepo {
      * @param workSpaceName
      * @return
      */
-    List<JobResDTO> getBatchJobWorkloadList(String workSpaceName);
+    List<WorkloadRes> getBatchJobWorkloadList(String workSpaceName);
 
     /**
      * interactive job workload list 조회
@@ -74,7 +74,7 @@ public interface WorkloadRepo {
      * @param workSpaceName
      * @param workloadName
      */
-    void deleteBatchJobWorkload(String workSpaceName, String workloadName);
+    String deleteBatchJobWorkload(String workSpaceName, String workloadName);
 
     /**
      * interactive job workload 삭제
@@ -82,5 +82,5 @@ public interface WorkloadRepo {
      * @param workSpaceName
      * @param workloadName
      */
-    void deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
+    String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 }

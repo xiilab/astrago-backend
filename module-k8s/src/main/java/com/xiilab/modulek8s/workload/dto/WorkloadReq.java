@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.dto;
 
+import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import io.fabric8.kubernetes.api.model.*;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -11,13 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @SuperBuilder
-public abstract class WorkloadReq {
-	String name;		// 워크로드 이름
-	String description;		// 워크로드 설명
-	String creatorId;		//생성자 ID
+public abstract class WorkloadReq extends K8SResourceReqVO {
 	String workspace;		//워크스페이스
-	WorkloadType type;		// 워크로드 타입
-	String image;		//사용할 image
+	String image;			//사용할 image
 	int gpuRequest;		// 워크로드 gpu 요청량
 	int cpuRequest;		// 워크로드 cpu 요청량
 	int memRequest;		// 워크로드 mem 요청량
@@ -31,7 +28,7 @@ public abstract class WorkloadReq {
 			AtomicInteger index = new AtomicInteger(1);
 			AtomicInteger volumeIndex = new AtomicInteger(1);
 			List<Container> gitCloneContainers = codeReqs.stream().map(codeReq -> new ContainerBuilder()
-				.withName(name + "-git-clone-" + index)
+				.withName(getName() + "-git-clone-" + index)
 				.withImage("alpine/git")
 				.addAllToArgs(List.of(
 					"clone",
@@ -41,13 +38,13 @@ public abstract class WorkloadReq {
 					codeReq.mountPath()
 				))
 				.addNewVolumeMount()
-				.withName(name + "-git-clone-" + index.getAndIncrement())
+				.withName(getName() + "-git-clone-" + index.getAndIncrement())
 				.withMountPath(codeReq.mountPath())
 				.endVolumeMount()
 				.build()).toList();
 
 			List<Volume> gitCloneVolumes = codeReqs.stream().map(codeReq -> new VolumeBuilder()
-				.withName(name + "-git-clone-" + volumeIndex.getAndIncrement())
+				.withName(getName() + "-git-clone-" + volumeIndex.getAndIncrement())
 				.withNewEmptyDir()
 				.endEmptyDir()
 				.build()).toList();
@@ -57,12 +54,9 @@ public abstract class WorkloadReq {
 		}
 	}
 
-	public abstract HasMetadata createResource();
-	public abstract ObjectMeta createMeta();
 	public abstract KubernetesResource createSpec();
 	public abstract PodSpec createPodSpec();
 	public abstract List<ContainerPort> convertContainerPort();
 	public abstract List<EnvVar> convertEnv();
 	public abstract List<String> convertCmd();
-	public abstract WorkloadType getType();
 }
