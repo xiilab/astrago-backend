@@ -3,16 +3,18 @@ package com.xiilab.modulek8s.storage.volume.repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
-import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
-import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -32,8 +34,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public void createVolume(CreateVolumeDTO createVolumeDTO) {
-		VolumeVO volumeVO = VolumeVO.dtoToVo(createVolumeDTO);
+	public void createVolume(CreateDTO createDTO) {
+		VolumeVO volumeVO = VolumeVO.dtoToVo(createDTO);
 		try(final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim resource = (PersistentVolumeClaim)volumeVO.createResource();
 			client.persistentVolumeClaims().resource(resource).create();
@@ -57,19 +59,13 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			StorageType storageType = StorageType.valueOf(
 				pvc.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField()));
 			//사용중인 statefulSets 조회
-			List<StatefulSet> statefulSets = client.apps().statefulSets().withLabelIn(volumeMetaName, "true")
-				.list()
-				.getItems();
+			List<StatefulSet> statefulSets = getStatefulSetsInUseVolume(volumeMetaName, client);
 			setWorkloadInUseVolume(statefulSets, workloadNames);
 			//사용중인 deployment 조회
-			List<Deployment> deployments = client.apps().deployments().withLabelIn(volumeMetaName, "true")
-				.list()
-				.getItems();
+			List<Deployment> deployments = getDeploymentsInUseVolume(volumeMetaName, client);
 			setWorkloadInUseVolume(deployments, workloadNames);
 			//사용중인 job 조회
-			List<Job> jobs = client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
-				.list()
-				.getItems();
+			List<Job> jobs = getJobsInUseVolume(volumeMetaName, client);
 			setWorkloadInUseVolume(jobs, workloadNames);
 
 			return VolumeWithWorkloadsResDTO.builder()
@@ -87,8 +83,9 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
+
 	@Override
-	public void volumeModifyByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
+	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
 		try(final KubernetesClient client = k8sAdapter.configServer()) {
 			client.persistentVolumeClaims()
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
@@ -100,8 +97,66 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
+	@Override
+	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
+		try(final KubernetesClient client = k8sAdapter.configServer()){
+			//본인이 생성한 볼륨인지 체크
+
+
+			//삭제 전 사용중인지 확인해야함
+			String volumeMetaName = deleteVolumeDTO.getVolumeMetaName();
+			checkAndThrowIfInUse(() -> getDeploymentsInUseVolume(volumeMetaName, client));
+			checkAndThrowIfInUse(() -> getStatefulSetsInUseVolume(volumeMetaName, client));
+			checkAndThrowIfInUse(() -> getJobsInUseVolume(volumeMetaName, client));
+
+			//삭제
+			client.persistentVolumeClaims().inNamespace(deleteVolumeDTO.getWorkspaceMetaName())
+				.withName(deleteVolumeDTO.getVolumeMetaName()).delete();
+		}
+	}
+
+
 	/**
-	 * 해당 볼륨을 사용중인 workload 조회
+	 * 해당 볼륨을 사용중인 job list 조회
+	 * @param volumeMetaName
+	 * @param client
+	 * @return
+	 */
+	private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
+		return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
+			.list()
+			.getItems();
+	}
+
+	/**
+	 * 해당 볼륨을 사용중인 Deployment list 조회
+	 * @param volumeMetaName
+	 * @param client
+	 * @return
+	 */
+	private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
+		return client.apps().deployments().withLabelIn(volumeMetaName, "true")
+			.list()
+			.getItems();
+	}
+
+	/**
+	 * 해당 볼륨을 사용중인 StatefulSet list 조회
+	 * @param volumeMetaName
+	 * @param client
+	 * @return
+	 */
+	private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
+		return client
+			.apps()
+			.statefulSets()
+			.withLabelIn(volumeMetaName, "true")
+			.list()
+			.getItems();
+	}
+
+	/**
+	 * 해당 볼륨을 사용중인 workload set
 	 * @param resources
 	 * @param workloadNames
 	 */
@@ -114,6 +169,18 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 					workloadNames.add(name);
 				}
 			}
+		}
+	}
+
+	/**
+	 * 사용중인 볼륨인 경우 throw exception
+	 * @param resourceFetcher
+	 * @param <T>
+	 */
+	private <T> void checkAndThrowIfInUse(Supplier<List<T>> resourceFetcher) {
+		List<T> resourcesInUse = resourceFetcher.get();
+		if (resourcesInUse != null && !resourcesInUse.isEmpty()) {
+			throw new RuntimeException("사용중인 볼륨은 삭제할 수 없습니다.");
 		}
 	}
 }
