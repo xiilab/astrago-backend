@@ -38,4 +38,11 @@ public record ResponseDTO() {
 							String type
 	){
 	}
+	@Builder
+	public record EventDTO(String type,
+						   String workloadName,
+						   String time,
+						   String reason,
+						   String message){
+	}
 }
