@@ -11,8 +11,8 @@ public class ModifyVolumeDTO extends K8SResourceReqDTO {
 	private String volumeMetaName;
 
 	@Builder
-	public ModifyVolumeDTO(String name, String description, String workspaceMetaName, String volumeMetaName) {
-		super(name, description);
+	public ModifyVolumeDTO(String name, String description, String creatorName, String creator, String workspaceMetaName, String volumeMetaName) {
+		super(name, description, creatorName, creator);
 		this.workspaceMetaName = workspaceMetaName;
 		this.volumeMetaName = volumeMetaName;
 	}

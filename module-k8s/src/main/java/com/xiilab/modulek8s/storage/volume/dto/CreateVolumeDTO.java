@@ -14,9 +14,9 @@ public class CreateVolumeDTO extends K8SResourceReqDTO {
 	private String storageClassMetaName;
 
 	@Builder
-	public CreateVolumeDTO(String name, String description, StorageType storageType, int requestVolume,
+	public CreateVolumeDTO(String name, String description, String creatorName, String creator, StorageType storageType, int requestVolume,
 		String workspaceMetaDataName, String storageClassMetaName) {
-		super(name, description);
+		super(name, description, creatorName, creator);
 		this.storageType = storageType;
 		this.requestVolume = requestVolume;
 		this.workspaceMetaDataName = workspaceMetaDataName;
