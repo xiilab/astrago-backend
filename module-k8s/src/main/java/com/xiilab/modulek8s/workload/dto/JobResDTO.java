@@ -15,9 +15,9 @@ public class JobResDTO extends WorkloadRes {
         super(job);
         Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
         image = container.getImage();
-        // gpuRequest = Integer.parseInt(container.getResources().getRequests().get("gpu").getAmount());
-        // cpuRequest = Integer.parseInt(container.getResources().getRequests().get("cpu").getAmount());
-        // memRequest = Integer.parseInt(container.getResources().getRequests().get("mem").getAmount());		gpuRequest = Integer.parseInt(container.getResources().getRequests().get("gpu").getAmount());
+        // gpuRequest = resourceRequests.get("nvidia.com/gpu") != null ? Integer.parseInt(resourceRequests.get("nvidia.com/gpu").getAmount()) : 0;
+        // cpuRequest = resourceRequests.get("cpu") != null ? Integer.parseInt(resourceRequests.get("cpu").getAmount()) : 0;
+        // memRequest = resourceRequests.get("memory") != null ? Integer.parseInt(resourceRequests.get("memory").getAmount()) : 0;
         gpuRequest = 0;
         cpuRequest = 0;
         memRequest = 0;

@@ -4,9 +4,9 @@ import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,10 +29,22 @@ public abstract class K8SResourceReqVO {
 	LocalDateTime createdAt;
 	//사용자의 실명
 	String creatorName;
+
 	//label
 	//사용자의 id
 	String creator;
+
 	ResourceType type;
+
+	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
+		String creatorName, String creator) {
+		this.resourceName = resourceName;
+		this.name = name;
+		this.description = description;
+		this.createdAt = createdAt;
+		this.creatorName = creatorName;
+		this.creator = creator;
+	}
 
 	/**
 	* 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
