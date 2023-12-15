@@ -26,9 +26,10 @@ public enum Promql {
 	WL_PANDING_COUNT("sum(kube_pod_status_phase{phase=\"Pending\", %s}) by(namespace)","Pending 상태 WorkLoad 개수","WorkSpace", "prometheus"),
 	WS_VOLUM_COUNT("sum(pv_collector_bound_pvc_count{%s}) by(namespace)","Workspace에 생성된 Volum 개수","WorkSpace", "prometheus"),
 	WL_ERROR_COUNT("", "워크로드 에러 개수 조회", "Workload", "k8s"),
-	NODE_ERROR_COUNT("","노드 에러 개수 조회","Node","k8s")
-	;
+	NODE_ERROR_COUNT("","노드 에러 개수 조회","Node","k8s"),
 
+	;
+// GPU 사용량, GPU Limit, GPU Request
 	private final String query;
 	private final String description;
 	private final String type;
