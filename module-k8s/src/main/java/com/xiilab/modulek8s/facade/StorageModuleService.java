@@ -1,11 +1,11 @@
-package com.xiilab.modulek8s.storage.volume.repository;
+package com.xiilab.modulek8s.facade;
 
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
-import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
 
-public interface VolumeRepository {
-	void createVolume(CreateVolumeDTO createVolumeDTO);
+public interface StorageModuleService {
+	void createVolume(CreateVolumeDTO requestDTO);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName);
 
