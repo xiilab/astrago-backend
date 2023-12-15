@@ -28,6 +28,9 @@ class WorkloadRepoImplTest {
 		envReqDtoList.add(new EnvReqDTO("TEST", "TEST1"));
 		System.out.println("UUID.randomUUID().toString().substring(0, 16) = " + UUID.randomUUID().toString().substring(0, 16));
 
+
+		//create
+		//core controller
 		CreateWorkloadReqDTO createWorkloadReqDTO = CreateWorkloadReqDTO.builder()
 			.workspace("default")
 			.name("사용자 지정 이름")
@@ -40,7 +43,16 @@ class WorkloadRepoImplTest {
 			.command("/bin/bash")
 			.build();
 
+		//core service
 		JobReqVO workloadReqDTOToJobReqVO = createWorkloadReqDTO.createWorkloadReqDtoToJobReqVO();
 		workloadRepo.createBatchJobWorkload(workloadReqDTOToJobReqVO);
+
+		//////////////////////////////////////////////////////////////
+		//update
+		//a workspace update -> name, description
+
+
+
+
 	}
 }

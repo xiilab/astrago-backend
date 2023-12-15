@@ -7,25 +7,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.storage.facade.dto.StorageReqDTO;
+import com.xiilab.modulek8s.facade.StorageModuleServiceImpl;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
-import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsDTO;
+import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
 
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimList;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
 @Slf4j
-class StorageServiceTest {
+class StorageModuleServiceImplTest {
 	@Autowired
 	private K8sAdapter k8sAdapter;
 	@Autowired
-	private StorageService storageService;
+	private StorageModuleServiceImpl storageModuleServiceImpl;
 	@Test
 	void getStorageClasses(){
 		try(final KubernetesClient client = k8sAdapter.configServer()){
@@ -116,14 +116,12 @@ class StorageServiceTest {
 	@Test
 	void getVolumesByMetaName(){
 		try(final KubernetesClient client = k8sAdapter.configServer()){
-			List<PersistentVolumeClaim> items = client.persistentVolumeClaims().inAnyNamespace().list().getItems();
+			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
+				.inNamespace("")
+				.withName("vo-422e4d40-3500-47df-ba74-b5851ab33eff")
+				.get();
 
-			PersistentVolumeClaim pvc = items.stream()
-				.filter(persistentVolumeClaim ->
-					persistentVolumeClaim.getMetadata().getName().equals("vo-422e4d40-3500-47df-ba74-b5851ab33eff"))
-				.findFirst()
-				.orElseThrow(() -> new NullPointerException("null!!!!"));
-			VolumeWithWorkloadsDTO build = VolumeWithWorkloadsDTO.builder()
+			VolumeWithWorkloadsResDTO build = VolumeWithWorkloadsResDTO.builder()
 				.hasMetadata(pvc)
 				.workloadNames(List.of("asdf","sdfsdf"))
 				.build();
@@ -141,21 +139,54 @@ class StorageServiceTest {
 	}
 
 	@Test
+	void updateVolume(){
+		try(final KubernetesClient client = k8sAdapter.configServer()){
+			// client.persistentVolumeClaims().
+		}
+	}
+
+
+	@Test
 	void createVolumeService(){
-		StorageReqDTO request = StorageReqDTO.builder()
+		CreateVolumeDTO request = CreateVolumeDTO.builder()
 			.storageType(StorageType.NFS)
 			.requestVolume(5)
 			.name("vo1user123")
 			.workspaceMetaDataName("yc-test-ns")
 			.build();
 
-		storageService.createVolume(request);
+		storageModuleServiceImpl.createVolume(request);
 	}
 
 	@Test
 	void findVolumeWithWorkloadsByMetaName(){
-		VolumeWithWorkloadsDTO result = storageService.findVolumeWithWorkloadsByMetaName(
+		VolumeWithWorkloadsResDTO result = storageModuleServiceImpl.findVolumeWithWorkloadsByMetaName("yc-test-ns",
 			"vo-422e4d40-3500-47df-ba74-b5851ab33eff");
 		System.out.println(result);
 	}
+
+	@Test
+	void 볼륨수정기능(){
+		try(final KubernetesClient client = k8sAdapter.configServer()){
+			PersistentVolumeClaim edit = client.persistentVolumeClaims()
+				.inNamespace("yc-test-ns")
+				.withName("vo-422e4d40-3500-47df-ba74-b5851ab33eff")
+				.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
+					.addToAnnotations("name", "수정된 이름입니당")
+					.endMetadata()
+					.editSpec()
+					.editResources()
+					.addToRequests("storage", new Quantity("11Gi"))
+					.endResources()
+					.endSpec()
+					.editStatus()
+					.addToCapacity("storage", new Quantity("11Gi"))
+					.endStatus()
+					.build());
+
+			System.out.println(edit);
+
+		}
+	}
+
 }
