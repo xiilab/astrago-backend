@@ -11,8 +11,10 @@ public class DeleteVolumeDTO extends K8SResourceReqDTO {
 	private String volumeMetaName;
 
 	@Builder
-	public DeleteVolumeDTO(String name, String description, String workspaceMetaName, String volumeMetaName) {
-		super(name, description);
+	public DeleteVolumeDTO(String name, String description, String creatorName, String creator,
+		String workspaceMetaName,
+		String volumeMetaName) {
+		super(name, description, creatorName, creator);
 		this.workspaceMetaName = workspaceMetaName;
 		this.volumeMetaName = volumeMetaName;
 	}
