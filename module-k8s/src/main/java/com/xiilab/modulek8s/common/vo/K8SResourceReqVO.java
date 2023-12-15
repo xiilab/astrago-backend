@@ -8,6 +8,7 @@ import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 

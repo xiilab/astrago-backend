@@ -1,12 +1,12 @@
-package com.xiilab.servercore.storage.volume.controller;
+package com.xiilab.servercore.volume.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.storage.volume.dto.CreateReqDTO;
-import com.xiilab.servercore.storage.volume.service.VolumeFacadeService;
+import com.xiilab.servercore.volume.dto.CreateReqDTO;
+import com.xiilab.servercore.facade.volume.service.VolumeServiceFacadeImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,10 +14,17 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class VolumeController {
-	private final VolumeFacadeService volumeFacadeService;
+	private final VolumeServiceFacadeImpl volumeServiceFacade;
 
-	@PostMapping("/volume")
+	/**
+	 * 볼륨 생성
+	 * @param requestDTO
+	 */
+	@PostMapping("/volumes")
 	public void createVolume(@RequestBody CreateReqDTO requestDTO){
-		volumeFacadeService.createVolume(requestDTO);
+		volumeServiceFacade.createVolume(requestDTO);
 	}
+
+
+
 }
