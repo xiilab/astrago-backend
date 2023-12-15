@@ -16,7 +16,6 @@ import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.vo.GroupModiVO;
 import com.xiilab.moduleuser.vo.GroupReqVO;
 
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,25 +44,30 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 	@Override
 	public GroupSummaryDTO createGroup(GroupReqVO groupReqVO) {
+		GroupResource rootGroup = getGroupResourceByName(groupReqVO.getGroupCategory().getValue());
 		GroupRepresentation groupRep = groupReqVO.createGroupRep();
-		groupRep.setParentId(getGroupByName(groupReqVO.getGroupCategory().getValue()).getId());
-		Response response = keycloakConfig.getRealmClient().groups().add(groupRep);
-		if (response.getStatus() != 200 && response.getStatus() != 201) {
-			throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
-		}
-		log.info(response.getStatusInfo().getReasonPhrase());
-		return new GroupSummaryDTO(getGroupByName(groupReqVO.getName()));
+		rootGroup.subGroup(groupRep);
+		GroupRepresentation representation = rootGroup.toRepresentation();
+		GroupRepresentation createdGroup = representation.getSubGroups()
+			.stream()
+			.filter(group -> group.getName().equals(groupReqVO.getName()))
+			.toList()
+			.get(0);
+		return new GroupSummaryDTO(createdGroup);
 	}
 
 	@Override
 	public GroupSummaryDTO createChildGroup(GroupReqVO.ChildGroupReqVO groupReqVO) {
+		GroupResource group = getGroupResourceById(groupReqVO.getParentGroupId());
 		GroupRepresentation groupRep = groupReqVO.createGroupRep();
-		Response response = keycloakConfig.getRealmClient().groups().add(groupRep);
-		if (response.getStatus() != 200 && response.getStatus() != 201) {
-			throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
-		}
-		log.info(response.getStatusInfo().getReasonPhrase());
-		return new GroupSummaryDTO(groupRep);
+		group.subGroup(groupRep);
+		GroupRepresentation representation = group.toRepresentation();
+		GroupRepresentation createdGroup = representation.getSubGroups()
+			.stream()
+			.filter(findGroup -> findGroup.getName().equals(groupReqVO.getName()))
+			.toList()
+			.get(0);
+		return new GroupSummaryDTO(createdGroup);
 	}
 
 	@Override
@@ -103,5 +107,14 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.filter(group -> group.getName().equals(groupName))
 			.toList()
 			.get(0);
+	}
+
+	private GroupResource getGroupResourceById(String groupId) {
+		return keycloakConfig.getRealmClient().groups().group(groupId);
+	}
+
+	private GroupResource getGroupResourceByName(String name) {
+		GroupRepresentation group = getGroupByName(name);
+		return getGroupResourceById(group.getId());
 	}
 }

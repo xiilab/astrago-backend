@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 public class KeycloakConfig {
 	@Value("${admin.realm}")
 	private String realm;
+	@Value("${keycloak.realm}")
+	private String keycloakRealm;
 	@Value("${keycloak.auth-server-url}")
 	private String keycloakUrl;
 	@Value("${admin.client}")
@@ -22,7 +24,7 @@ public class KeycloakConfig {
 	private String secret;
 
 	public RealmResource getRealmClient() {
-		return getKeycloakClient().realm(realm);
+		return getKeycloakClient().realm(keycloakRealm);
 	}
 
 	private Keycloak getKeycloakClient() {
