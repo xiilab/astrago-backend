@@ -2,6 +2,7 @@ package com.xiilab.servercore.workspace.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.servercore.facade.workspace.service.WorkspaceServiceFacade;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 
@@ -30,23 +31,31 @@ public class WorkspaceController {
 	@GetMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}/workloads")
 	public ResponseEntity<VolumeWithWorkloadsResDTO> findVolumeWithWorkloadsByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
-		@PathVariable("volumeMetaName") String volumeMetaName){
+		@PathVariable("volumeMetaName") String volumeMetaName) {
 
-		VolumeWithWorkloadsResDTO result = workspaceServiceFacade.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
+		VolumeWithWorkloadsResDTO result = workspaceServiceFacade.findVolumeWithWorkloadsByMetaName(workspaceMetaName,
+			volumeMetaName);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 	@PutMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}")
-	public ResponseEntity<Object> volumeModifyByMetaName(
+	public ResponseEntity<Object> modifyVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName,
 		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO
-		){
+	) {
 		modifyVolumeReqDTO.setMetaNames(workspaceMetaName, volumeMetaName);
-		workspaceServiceFacade.volumeModifyByMetaName(modifyVolumeReqDTO);
+		workspaceServiceFacade.modifyVolumeByMetaName(modifyVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-
+	@DeleteMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}")
+	public ResponseEntity<Object> deleteVolumeByMetaName(
+		@PathVariable("workspaceMetaName") String workspaceMetaName,
+		@PathVariable("volumeMetaName") String volumeMetaName
+	) {
+		workspaceServiceFacade.deleteVolumeByMetaName(workspaceMetaName, volumeMetaName);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 
 }
