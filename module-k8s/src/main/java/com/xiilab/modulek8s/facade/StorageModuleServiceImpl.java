@@ -1,11 +1,11 @@
-package com.xiilab.modulek8s.storage.facade;
+package com.xiilab.modulek8s.facade;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulek8s.storage.facade.dto.CreateVolumeReqDTO;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
-import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 
@@ -24,13 +24,13 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 * @param requestDTO
 	 */
 	@Override
-	public void createVolume(CreateVolumeReqDTO requestDTO){
+	public void createVolume(CreateVolumeDTO requestDTO){
 		//sc type -> sc provisioner 조회
 		StorageClass storageClass = storageClassService.findStorageClassByType(requestDTO.getStorageType());
 		String storageClassMetaName = storageClass.getMetadata().getName();
 
 		//volume 생성
-		CreateVolumeDTO createVolumeDTO = CreateVolumeDTO.storageReqDtoToCreateVolumeDto(requestDTO);
+		com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO createVolumeDTO = com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO.storageReqDtoToCreateVolumeDto(requestDTO);
 		createVolumeDTO.setStorageClassMetaName(storageClassMetaName);
 		volumeService.createVolume(createVolumeDTO);
 	}
@@ -46,4 +46,14 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		return volumeService.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
 	}
 
+	/**
+	 * 볼륨의 이름 변경
+	 * @param workspaceMetaName
+	 * @param volumeMetaName
+	 * @param modityName
+	 */
+	@Override
+	public void volumeModifyByMetaName(ModifyVolumeDTO modifyVolumeDTO){
+		volumeService.volumeModifyByMetaName(modifyVolumeDTO);
+	}
 }

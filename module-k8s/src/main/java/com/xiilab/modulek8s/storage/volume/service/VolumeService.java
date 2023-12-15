@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.storage.volume.service;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
@@ -21,5 +22,9 @@ public class VolumeService {
 
 	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
 		return volumeRepository.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
+	}
+
+	public void volumeModifyByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
+		volumeRepository.volumeModifyByMetaName(modifyVolumeDTO);
 	}
 }

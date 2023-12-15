@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.VolumeWithWorkloadsResDTO;
@@ -16,6 +17,7 @@ import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -61,11 +63,13 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			setWorkloadInUseVolume(statefulSets, workloadNames);
 			//사용중인 deployment 조회
 			List<Deployment> deployments = client.apps().deployments().withLabelIn(volumeMetaName, "true")
-				.list().getItems();
+				.list()
+				.getItems();
 			setWorkloadInUseVolume(deployments, workloadNames);
 			//사용중인 job 조회
 			List<Job> jobs = client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
-				.list().getItems();
+				.list()
+				.getItems();
 			setWorkloadInUseVolume(jobs, workloadNames);
 
 			return VolumeWithWorkloadsResDTO.builder()
@@ -79,13 +83,31 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			throw e;
 		}catch (Exception e){
 			log.error("k8s cluster connect error {}", e.getMessage(), e);
-			return null;
+			throw e;
 		}
 	}
 
+	@Override
+	public void volumeModifyByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
+		try(final KubernetesClient client = k8sAdapter.configServer()) {
+			client.persistentVolumeClaims()
+				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
+				.withName(modifyVolumeDTO.getVolumeMetaName())
+				.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
+					.addToAnnotations("name", modifyVolumeDTO.getName())
+					.endMetadata()
+					.build());
+		}
+	}
+
+	/**
+	 * 해당 볼륨을 사용중인 workload 조회
+	 * @param resources
+	 * @param workloadNames
+	 */
 	private void setWorkloadInUseVolume(List<? extends HasMetadata> resources, List<String> workloadNames){
 		for (HasMetadata resource : resources) {
-			Map<String, String> annotations = resource.getMetadata().getAnnotations();
+			Map<String, String> annotations = resource.getMetadata().getAnnotations() == null ? null : resource.getMetadata().getAnnotations();
 			if (annotations != null) {
 				String name = annotations.get(AnnotationField.NAME.getField());
 				if (name != null) {

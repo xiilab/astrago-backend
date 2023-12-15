@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.storage.facade.dto;
+package com.xiilab.modulek8s.facade.dto;
 
 import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
 import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
@@ -7,13 +7,13 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class CreateVolumeReqDTO extends K8SResourceReqDTO {
+public class CreateVolumeDTO extends K8SResourceReqDTO {
 	private StorageType storageType;
 	private int requestVolume;
 	private String workspaceMetaDataName;
 
 	@Builder
-	public CreateVolumeReqDTO(String name, String description, StorageType storageType, int requestVolume,
+	public CreateVolumeDTO(String name, String description, StorageType storageType, int requestVolume,
 		String workspaceMetaDataName) {
 		super(name, description);
 		this.storageType = storageType;
