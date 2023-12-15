@@ -7,12 +7,12 @@ import com.xiilab.servercore.common.dto.APIBaseReqDTO;
 import lombok.Getter;
 
 @Getter
-public class CreateReqDTO extends APIBaseReqDTO {
+public class CreateVolumeReqDTO extends APIBaseReqDTO {
 	private StorageType storageType;
 	private int requestVolume;
 	private String workspaceMetaDataName;
 
-	public CreateReqDTO() {
+	public CreateVolumeReqDTO() {
 		super();
 	}
 

@@ -3,7 +3,7 @@ package com.xiilab.servercore.facade.volume.service;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.StorageModuleService;
-import com.xiilab.servercore.volume.dto.CreateReqDTO;
+import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +13,7 @@ public class VolumeServiceFacadeImpl implements VolumeServiceFacade{
 	private final StorageModuleService storageModuleService;
 
 	@Override
-	public void createVolume(CreateReqDTO requestDTO){
+	public void createVolume(CreateVolumeReqDTO requestDTO){
 		storageModuleService.createVolume(requestDTO.toModuleDto());
 	}
 
