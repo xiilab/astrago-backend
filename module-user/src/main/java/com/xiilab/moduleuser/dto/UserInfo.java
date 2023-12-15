@@ -3,6 +3,7 @@ package com.xiilab.moduleuser.dto;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import lombok.AllArgsConstructor;
@@ -20,14 +21,29 @@ public class UserInfo {
 	private List<String> groups;
 	private List<String> workspaces;
 
-	public UserInfo(UserRepresentation userRepresentation) {
-		this.id = userRepresentation.getId();
-		this.userName = userRepresentation.getUsername();
-		this.email = userRepresentation.getEmail();
+	public UserInfo(UserRepresentation userRep, List<GroupRepresentation> groupReps) {
+		this.id = userRep.getId();
+		this.userName = userRep.getUsername();
+		this.email = userRep.getEmail();
 		this.joinDate = null;
 		this.signUpMethod = null;
-		this.auth = AuthType.valueOf(userRepresentation.getRealmRoles().get(0));
-		this.groups = userRepresentation.getGroups();
-		this.workspaces = userRepresentation.getGroups();
+		this.auth = userRep.getRealmRoles() != null ? AuthType.valueOf(userRep.getRealmRoles().get(0)) : null;
+		this.groups = groupReps.stream()
+			.filter(group -> group.getPath().contains("/account/"))
+			.map(GroupRepresentation::getName)
+			.toList();
+		this.workspaces = groupReps.stream()
+			.filter(group -> group.getPath().contains("/ws/"))
+			.map(group -> group.getPath().split("/ws/")[1])
+			.toList();
+	}
+
+	public UserInfo(UserRepresentation userRep) {
+		this.id = userRep.getId();
+		this.userName = userRep.getUsername();
+		this.email = userRep.getEmail();
+		this.joinDate = null;
+		this.signUpMethod = null;
+		this.auth = userRep.getRealmRoles() != null ? AuthType.valueOf(userRep.getRealmRoles().get(0)) : null;
 	}
 }
