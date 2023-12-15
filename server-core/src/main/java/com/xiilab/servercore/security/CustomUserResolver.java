@@ -13,13 +13,13 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.nimbusds.jose.shaded.gson.internal.LinkedTreeMap;
 import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.repository.KeycloakRepository;
+import com.xiilab.moduleuser.repository.KeycloakUserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CustomUserResolver implements HandlerMethodArgumentResolver {
-	private final KeycloakRepository repository;
+	private final KeycloakUserRepository repository;
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
