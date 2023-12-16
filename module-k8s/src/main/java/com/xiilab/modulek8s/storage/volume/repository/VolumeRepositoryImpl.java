@@ -90,9 +90,9 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			//본인이 생성한 볼륨인지 체크
 			String creator = modifyVolumeDTO.getCreator();
 			boolean chk = volumeCreatorCheck(modifyVolumeDTO.getWorkspaceMetaName(), modifyVolumeDTO.getVolumeMetaName(),client, creator);
-			if(!chk)
+			if(!chk){
 				throw new RuntimeException("자신이 생성한 볼륨만 수정할 수 있습니다.");
-
+			}
 			client.persistentVolumeClaims()
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
 				.withName(modifyVolumeDTO.getVolumeMetaName())
