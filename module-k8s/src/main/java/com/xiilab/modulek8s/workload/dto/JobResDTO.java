@@ -27,6 +27,7 @@ public class JobResDTO extends WorkloadRes {
 			EnvVar::getName,
 			EnvVar::getValue
 			));
+        workloadType = getWorkloadType();
 		command = container.getCommand().get(2);
 	}
 
@@ -36,11 +37,12 @@ public class JobResDTO extends WorkloadRes {
     }
 
     @Override
-    protected ResourceType getType() {
-        return null;
+    public WorkloadType getWorkloadType() {
+        return WorkloadType.BATCH;
     }
 
-    protected WorkloadType getWorkloadType() {
-        return WorkloadType.BATCH;
+    @Override
+    protected ResourceType getType() {
+        return null;
     }
 }

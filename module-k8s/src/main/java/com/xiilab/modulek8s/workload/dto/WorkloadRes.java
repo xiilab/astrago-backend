@@ -19,6 +19,7 @@ public abstract class WorkloadRes extends K8SResourceResVO {
 	Map<String, String> env;		//env 정의
 	List<PortResDTO> port;		//port 정의
 	String command;		// 워크로드 명령
+	WorkloadType workloadType;
 
 	protected WorkloadRes(HasMetadata hasMetadata) {
         super(hasMetadata);
@@ -26,4 +27,6 @@ public abstract class WorkloadRes extends K8SResourceResVO {
 	}
 
 	public abstract WorkloadRes convertResDTO(HasMetadata hasMetadata);
+
+	public abstract WorkloadType getWorkloadType();
 }
