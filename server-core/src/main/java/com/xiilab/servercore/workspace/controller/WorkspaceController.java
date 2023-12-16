@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.facade.workspace.service.WorkspaceServiceFacade;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 
@@ -31,8 +33,8 @@ public class WorkspaceController {
 	@GetMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}/workloads")
 	public ResponseEntity<VolumeWithWorkloadsResDTO> findVolumeWithWorkloadsByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
-		@PathVariable("volumeMetaName") String volumeMetaName) {
-
+		@PathVariable("volumeMetaName") String volumeMetaName,
+		UserInfoDTO userInfoDTO) {
 		VolumeWithWorkloadsResDTO result = workspaceServiceFacade.findVolumeWithWorkloadsByMetaName(workspaceMetaName,
 			volumeMetaName);
 		return new ResponseEntity<>(result, HttpStatus.OK);
