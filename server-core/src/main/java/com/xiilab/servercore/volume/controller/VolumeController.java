@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
 import com.xiilab.servercore.facade.volume.service.VolumeServiceFacadeImpl;
 
@@ -21,8 +22,9 @@ public class VolumeController {
 	 * @param requestDTO
 	 */
 	@PostMapping("/volumes")
-	public void createVolume(@RequestBody CreateVolumeReqDTO requestDTO){
-		volumeServiceFacade.createVolume(requestDTO);
+	public void createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
+		UserInfoDTO userInfoDTO){
+		volumeServiceFacade.createVolume(requestDTO, userInfoDTO);
 	}
 
 

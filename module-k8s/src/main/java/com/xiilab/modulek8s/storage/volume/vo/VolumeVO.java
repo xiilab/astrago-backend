@@ -64,8 +64,8 @@ public class VolumeVO extends K8SResourceReqVO {
 		return VolumeVO.builder()
 			.name(createDTO.getName())
 			.createdAt(LocalDateTime.now())
-			.creatorName("이용춘")//keycloak
-			.creator("yc.lee")//keycloak
+			.creatorName(createDTO.getCreatorName())
+			.creator(createDTO.getCreator())
 			.workspaceMetaDataName(createDTO.getWorkspaceMetaDataName())
 			.storageClassMetaName(createDTO.getStorageClassMetaName())
 			.requestVolume(createDTO.getRequestVolume())
