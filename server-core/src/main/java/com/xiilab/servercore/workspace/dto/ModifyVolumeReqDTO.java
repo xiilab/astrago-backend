@@ -10,7 +10,8 @@ import lombok.Getter;
 public class ModifyVolumeReqDTO extends APIBaseReqDTO {
 	private String workspaceMetaName;
 	private String volumeMetaName;
-
+	private String creator;
+	private String creatorName;
 
 	public ModifyVolumeReqDTO() {
 		super();
@@ -21,10 +22,16 @@ public class ModifyVolumeReqDTO extends APIBaseReqDTO {
 			.name(getName())
 			.workspaceMetaName(workspaceMetaName)
 			.volumeMetaName(volumeMetaName)
+			.creator(creator)
+			.creatorName(creatorName)
 			.build();
 	}
 	public void setMetaNames(String workspaceMetaName, String volumeMetaName){
 		this.workspaceMetaName = workspaceMetaName;
 		this.volumeMetaName = volumeMetaName;
+	}
+	public void setUserInfo(String creator, String creatorName){
+		this.creator = creator;
+		this.creatorName = creatorName;
 	}
 }
