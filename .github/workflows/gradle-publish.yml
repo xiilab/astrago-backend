@@ -221,12 +221,12 @@ jobs:
             yq -i '.uyuni.monitor.repository = "${{ fromJson(needs.read.outputs.result).image.server-monitor }}"' 'environments/dev/values.yaml'
             yq -i '.uyuni.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-monitor }}"' 'environments/dev/values.yaml'
       - name: push monochart
-        run: |
+        run: | #helmfile -e dev -l type=app template > monochart/monochart.yaml
           cat environments/dev/values.yaml
           echo "${{ fromJson(needs.read.outputs.result) }}"
           echo "${{ fromJson(needs.read.outputs.result) }}"
           echo "${{ fromJson(needs.read.outputs.result) }}"
-          helmfile -e dev -l type=app template > monochart/monochart.yaml
+          
           git pull
           git config --global user.email "100milliongold@xiilab.com"
           git config --global user.name "100milliongold"

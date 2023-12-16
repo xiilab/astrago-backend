@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.storage.volume.dto;
+package com.xiilab.modulek8s.storage.volume.dto.response;
 
 import java.util.List;
 

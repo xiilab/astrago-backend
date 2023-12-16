@@ -13,18 +13,19 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.nimbusds.jose.shaded.gson.internal.LinkedTreeMap;
 import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.repository.KeycloakRepository;
+import com.xiilab.moduleuser.repository.KeycloakUserRepository;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CustomUserResolver implements HandlerMethodArgumentResolver {
-	private final KeycloakRepository repository;
+	private final KeycloakUserRepository repository;
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		// userDto 가 파라미터에 포함되어 있는지 체크하여 true를 리턴한다.
-		return parameter.getParameterType() == UserInfo.class;
+		return parameter.getParameterType() == UserInfoDTO.class;
 	}
 
 	@Override
@@ -33,20 +34,19 @@ public class CustomUserResolver implements HandlerMethodArgumentResolver {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		Jwt principal = (Jwt)authentication.getPrincipal();
-		LinkedTreeMap realmAccess = (LinkedTreeMap)principal.getClaims().get("realm_access");
-		List<String> roles = (List<String>)realmAccess.get("roles");
-		List<String> authList = roles.stream().filter(role -> role.contains("ROLE_"))
-			.map(role -> role.replace("ROLE_", "")).toList();
-		String auth = "";
-		if (authList.contains("ADMIN")) {
-			auth = "ADMIN";
-		} else if (authList.contains("DEVELOPER")) {
-			auth = "DEVELOPER";
-		} else {
-			auth = "USER";
-		}
-
-		return null;
+		String userRealName = principal.getClaims().get("family_name").toString() + principal.getClaims().get("given_name").toString();
+		UserInfo userInfo = repository.getUserInfoById(principal.getSubject());
+		return UserInfoDTO.builder()
+			.id(userInfo.getId())
+			.userName(userInfo.getUserName())
+			.email(userInfo.getEmail())
+			.joinDate(userInfo.getJoinDate())
+			.signUpMethod(userInfo.getSignUpMethod())
+			.auth(userInfo.getAuth())
+			.groups(userInfo.getGroups())
+			.workspaces(userInfo.getWorkspaces())
+			.userRealName(userRealName)
+			.build();
 	}
 
 }
