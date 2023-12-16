@@ -1,10 +1,14 @@
 package com.xiilab.modulek8s.workload.dto;
 
+import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
+import io.fabric8.kubernetes.api.model.*;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+import org.springframework.util.CollectionUtils;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
