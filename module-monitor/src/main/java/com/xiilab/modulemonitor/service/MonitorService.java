@@ -226,14 +226,14 @@ public class MonitorService {
 		// 결과 값 추출
 		JsonNode values = result.path("values");
 		// ResponseDTO 객체 생성하여 반환
-		return new ResponseDTO.HistoryDTO(
-			metric,
-			common.getStringOrNull(metricData, "namespace"),
-			common.getStringOrNull(metricData, "node"),
-			common.getStringOrNull(metricData, "pod"),
-			common.getStringOrNull(metricData, "instance"),
-			createHistoryValue(values)
-		);
+		return ResponseDTO.HistoryDTO.builder()
+			.nameSpace(common.getStringOrNull(metricData, "namespace"))
+			.instance(common.getStringOrNull(metricData, "instance"))
+			.metricName(metric)
+			.podName(common.getStringOrNull(metricData, "pod"))
+			.nodeName(common.getStringOrNull(metricData, "node"))
+			.valueDTOS(createHistoryValue(values))
+			.build();
 	}
 	private List<ResponseDTO.ValueDTO>  createHistoryValue(JsonNode values){
 		List<ResponseDTO.ValueDTO> valueDTOList = new ArrayList<>();
