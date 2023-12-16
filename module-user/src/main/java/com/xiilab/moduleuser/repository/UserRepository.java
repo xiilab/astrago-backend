@@ -20,4 +20,5 @@ public interface UserRepository {
 	void updateUserActivationYN(String userId, boolean activationYN);
 	void deleteUserById(String userId);
 	void updateUserRole(String userId, AuthType authType);
+	void joinGroup(String groupId, String userId);
 }

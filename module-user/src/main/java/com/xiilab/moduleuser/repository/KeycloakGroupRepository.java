@@ -5,7 +5,6 @@ import java.util.List;
 import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.moduleuser.common.KeycloakConfig;
@@ -47,13 +46,8 @@ public class KeycloakGroupRepository implements GroupRepository {
 		GroupResource rootGroup = getGroupResourceByName(groupReqVO.getGroupCategory().getValue());
 		GroupRepresentation groupRep = groupReqVO.createGroupRep();
 		rootGroup.subGroup(groupRep);
-		GroupRepresentation representation = rootGroup.toRepresentation();
-		GroupRepresentation createdGroup = representation.getSubGroups()
-			.stream()
-			.filter(group -> group.getName().equals(groupReqVO.getName()))
-			.toList()
-			.get(0);
-		return new GroupSummaryDTO(createdGroup);
+		GroupRepresentation matchedGroup = findGroupFromRootGroup(rootGroup, groupRep.getName());
+		return new GroupSummaryDTO(matchedGroup);
 	}
 
 	@Override
@@ -61,13 +55,8 @@ public class KeycloakGroupRepository implements GroupRepository {
 		GroupResource group = getGroupResourceById(groupReqVO.getParentGroupId());
 		GroupRepresentation groupRep = groupReqVO.createGroupRep();
 		group.subGroup(groupRep);
-		GroupRepresentation representation = group.toRepresentation();
-		GroupRepresentation createdGroup = representation.getSubGroups()
-			.stream()
-			.filter(findGroup -> findGroup.getName().equals(groupReqVO.getName()))
-			.toList()
-			.get(0);
-		return new GroupSummaryDTO(createdGroup);
+		GroupRepresentation matchedGroup = findGroupFromRootGroup(group, groupRep.getName());
+		return new GroupSummaryDTO(matchedGroup);
 	}
 
 	@Override
@@ -91,12 +80,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 	@Override
 	public void joinMembersIntoGroup(String groupId, List<String> userIds) {
-		RealmResource realmClient = keycloakConfig.getRealmClient();
-		GroupResource group = realmClient.groups().group(groupId);
-		List<UserRepresentation> userReps = userIds.stream()
-			.map(userId -> realmClient.users().get(userId).toRepresentation())
-			.toList();
-		group.members().addAll(userReps);
+		userIds.forEach(userId -> userRepository.joinGroup(groupId,userId));
 	}
 
 	private GroupRepresentation getGroupByName(String groupName) {
@@ -116,5 +100,14 @@ public class KeycloakGroupRepository implements GroupRepository {
 	private GroupResource getGroupResourceByName(String name) {
 		GroupRepresentation group = getGroupByName(name);
 		return getGroupResourceById(group.getId());
+	}
+
+	private GroupRepresentation findGroupFromRootGroup(GroupResource rootGroup, String groupName) {
+		GroupRepresentation representation = rootGroup.toRepresentation();
+		return representation.getSubGroups()
+			.stream()
+			.filter(group -> group.getName().equals(groupName))
+			.toList()
+			.get(0);
 	}
 }

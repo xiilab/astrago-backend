@@ -43,7 +43,8 @@ public class KeycloakUserRepository implements UserRepository {
 	public List<UserSummary> getUserList() {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
 		List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
-				-> user.getAttributes().containsKey("approvalYN")
+				-> user.getAttributes() != null
+				&& user.getAttributes().containsKey("approvalYN")
 				&& user.getAttributes().containsValue(List.of("true")))
 			.toList();
 		return userList.stream().map(UserSummary::new).toList();
@@ -54,8 +55,7 @@ public class KeycloakUserRepository implements UserRepository {
 		UserResource userResource = getUserResourceById(userId);
 		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
 		RoleRepresentation roleRepresentation = roleRepresentations.stream()
-			.filter(role
-				-> role.getName().contains("ROLE_"))
+			.filter(role -> role.getName().contains("ROLE_"))
 			.toList()
 			.get(0);
 		List<GroupRepresentation> groupList = userResource.groups();
@@ -102,6 +102,12 @@ public class KeycloakUserRepository implements UserRepository {
 		UserResource userResource = getUserResourceById(userId);
 		RoleRepresentation roleRepresentation = getRolerepByName(authType.name());
 		userResource.roles().realmLevel().add(List.of(roleRepresentation));
+	}
+
+	@Override
+	public void joinGroup(String groupId, String userId) {
+		UserResource userResource = getUserResourceById(userId);
+		userResource.joinGroup(groupId);
 	}
 
 	private UserResource getUserResourceById(String userId) {

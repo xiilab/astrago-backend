@@ -43,23 +43,8 @@ public class GroupServiceImpl implements GroupService {
 				.groupCategory(GroupCategory.WORKSPACE)
 				.createdBy(groupReqDTO.getCreatedBy())
 				.build());
-		//owner 그룹 생성
-		GroupSummaryDTO ownerGroup = groupRepository.createChildGroup(GroupReqVO.ChildGroupReqVO.builder()
-			.name("owner")
-			.description(groupReqDTO.getDescription())
-			.parentGroupId(groupInfo.getId())
-			.createdBy(groupReqDTO.getCreatedBy())
-			.build());
-		//user 그룹 생성
-		GroupSummaryDTO userGroup = groupRepository.createChildGroup(GroupReqVO.ChildGroupReqVO.builder()
-			.name("user")
-			.description(groupReqDTO.getDescription())
-			.parentGroupId(groupInfo.getId())
-			.createdBy(groupReqDTO.getCreatedBy())
-			.build());
-		//group에 member join
-		groupRepository.joinMembersIntoGroup(ownerGroup.getId(), List.of(groupReqDTO.getCreatedUserId()));
-		groupRepository.joinMembersIntoGroup(userGroup.getId(), groupReqDTO.getUsers());
+		//workspace 그룹의 childGroup 생성 및 유저 추가
+		createWorkspaceChildGroup(groupInfo.getId(), groupReqDTO);
 	}
 
 	@Override
@@ -68,7 +53,7 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public GroupInfoDTO getGroupInfo(String groupId) {
+	public GroupInfoDTO getGroupInfoById(String groupId) {
 		return groupRepository.getGroupById(groupId);
 	}
 
@@ -85,5 +70,26 @@ public class GroupServiceImpl implements GroupService {
 	@Override
 	public void deleteGroupById(String groupId) {
 		groupRepository.deleteGroupById(groupId);
+	}
+
+	private void createWorkspaceChildGroup(String parentId, GroupReqDTO groupReqDTO) {
+		//owner 그룹 생성
+		GroupSummaryDTO ownerGroup = groupRepository.createChildGroup(GroupReqVO.ChildGroupReqVO.builder()
+			.name("owner")
+			.description(groupReqDTO.getDescription())
+			.parentGroupId(parentId)
+			.createdBy(groupReqDTO.getCreatedBy())
+			.build());
+		//user 그룹 생성
+		GroupSummaryDTO userGroup = groupRepository.createChildGroup(GroupReqVO.ChildGroupReqVO.builder()
+			.name("user")
+			.description(groupReqDTO.getDescription())
+			.parentGroupId(parentId)
+			.createdBy(groupReqDTO.getCreatedBy())
+			.build());
+		//생성한 owner group에 유저 추가
+		groupRepository.joinMembersIntoGroup(ownerGroup.getId(), List.of(groupReqDTO.getCreatedUserId()));
+		//생성한 user group에 유저 추가
+		groupRepository.joinMembersIntoGroup(userGroup.getId(), groupReqDTO.getUsers());
 	}
 }
