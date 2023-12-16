@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDT
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.facade.workspace.service.WorkspaceServiceFacade;
+import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -54,9 +55,16 @@ public class WorkspaceController {
 	@DeleteMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}")
 	public ResponseEntity<Object> deleteVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
-		@PathVariable("volumeMetaName") String volumeMetaName
+		@PathVariable("volumeMetaName") String volumeMetaName,
+		UserInfoDTO userInfoDTO
 	) {
-		workspaceServiceFacade.deleteVolumeByMetaName(workspaceMetaName, volumeMetaName);
+		DeleteVolumeReqDTO deleteVolumeReqDTO = DeleteVolumeReqDTO.builder()
+			.workspaceMetaName(workspaceMetaName)
+			.volumeMetaName(volumeMetaName)
+			.creator(userInfoDTO.getUserName())
+			.creatorName(userInfoDTO.getUserRealName())
+			.build();
+		workspaceServiceFacade.deleteVolumeByMetaName(deleteVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

@@ -28,13 +28,7 @@ public class WorkspaceServiceFacadeImpl implements WorkspaceServiceFacade {
 	}
 
 	@Override
-	public void deleteVolumeByMetaName(String workspaceMetaName, String volumeMetaName) {
-		//키클락 유저 정보 조회해서 넘겨야함
-
-		DeleteVolumeReqDTO deleteVolumeReqDTO = DeleteVolumeReqDTO.builder()
-			.workspaceMetaName(workspaceMetaName)
-			.volumeMetaName(volumeMetaName)
-			.build();
+	public void deleteVolumeByMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO) {
 		//볼륨 삭제
 		storageModuleService.deleteVolumeByMetaName(deleteVolumeReqDTO.toModuleDto());
 	}

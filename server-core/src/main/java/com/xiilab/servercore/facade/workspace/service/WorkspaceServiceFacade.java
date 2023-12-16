@@ -12,5 +12,5 @@ public interface WorkspaceServiceFacade {
 
 	void modifyVolumeByMetaName(ModifyVolumeReqDTO modifyVolumeReqDTO);
 
-	void deleteVolumeByMetaName(String workspaceMetaName, String volumeMetaName);
+	void deleteVolumeByMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO);
 }

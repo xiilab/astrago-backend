@@ -109,7 +109,10 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
 		try(final KubernetesClient client = k8sAdapter.configServer()){
 			//본인이 생성한 볼륨인지 체크
-
+			String creator = deleteVolumeDTO.getCreator();
+			boolean chk = volumeCreatorCheck(deleteVolumeDTO.getWorkspaceMetaName(), deleteVolumeDTO.getVolumeMetaName(),client, creator);
+			if(!chk)
+				throw new RuntimeException("자신이 생성한 볼륨만 삭제할 수 있습니다.");
 
 			//삭제 전 사용중인지 확인해야함
 			String volumeMetaName = deleteVolumeDTO.getVolumeMetaName();
