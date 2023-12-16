@@ -33,10 +33,8 @@ public class WorkspaceController {
 	@GetMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}/workloads")
 	public ResponseEntity<VolumeWithWorkloadsResDTO> findVolumeWithWorkloadsByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
-		@PathVariable("volumeMetaName") String volumeMetaName,
-		UserInfoDTO userInfoDTO) {
-		VolumeWithWorkloadsResDTO result = workspaceServiceFacade.findVolumeWithWorkloadsByMetaName(workspaceMetaName,
-			volumeMetaName);
+		@PathVariable("volumeMetaName") String volumeMetaName) {
+		VolumeWithWorkloadsResDTO result = workspaceServiceFacade.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
@@ -44,9 +42,11 @@ public class WorkspaceController {
 	public ResponseEntity<Object> modifyVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName,
-		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO
+		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO,
+		UserInfoDTO userInfoDTO
 	) {
 		modifyVolumeReqDTO.setMetaNames(workspaceMetaName, volumeMetaName);
+		modifyVolumeReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
 		workspaceServiceFacade.modifyVolumeByMetaName(modifyVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

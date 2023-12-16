@@ -87,6 +87,12 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	@Override
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
 		try(final KubernetesClient client = k8sAdapter.configServer()) {
+			//본인이 생성한 볼륨인지 체크
+			String creator = modifyVolumeDTO.getCreator();
+			boolean chk = volumeCreatorCheck(modifyVolumeDTO.getWorkspaceMetaName(), modifyVolumeDTO.getVolumeMetaName(),client, creator);
+			if(!chk)
+				throw new RuntimeException("자신이 생성한 볼륨만 수정할 수 있습니다.");
+
 			client.persistentVolumeClaims()
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
 				.withName(modifyVolumeDTO.getVolumeMetaName())
@@ -96,6 +102,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 					.build());
 		}
 	}
+
+
 
 	@Override
 	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
@@ -182,5 +190,24 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		if (resourcesInUse != null && !resourcesInUse.isEmpty()) {
 			throw new RuntimeException("사용중인 볼륨은 삭제할 수 없습니다.");
 		}
+	}
+
+	/**
+	 * 자신이 생성한 볼륨이 맞는지 체크
+	 * @param workspaceMetaName
+	 * @param volumeMetaName
+	 * @param client
+	 * @param creator
+	 */
+	private static boolean volumeCreatorCheck(String workspaceMetaName, String volumeMetaName, KubernetesClient client, String creator) {
+		PersistentVolumeClaim persistentVolumeClaim = client.persistentVolumeClaims()
+			.inNamespace(workspaceMetaName)
+			.withName(volumeMetaName).get();
+		if(persistentVolumeClaim == null){
+			throw new RuntimeException("볼륨이 존재하지 않습니다.");
+		}
+		String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR.getField());
+
+		return labelCreator.equals(creator) ? true : false;
 	}
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.facade.StorageModuleService;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 
@@ -23,8 +24,6 @@ public class WorkspaceServiceFacadeImpl implements WorkspaceServiceFacade {
 
 	@Override
 	public void modifyVolumeByMetaName(ModifyVolumeReqDTO modifyVolumeReqDTO) {
-		//키클락 유저 정보 조회해서 넘겨야함
-
 		storageModuleService.modifyVolumeByMetaName(modifyVolumeReqDTO.toModuleDto());
 	}
 
