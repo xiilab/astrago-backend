@@ -17,37 +17,48 @@ import java.util.UUID;
 @Getter
 @SuperBuilder
 public abstract class K8SResourceReqVO {
-	//metadata.name
-	String resourceName;
-	//annotation
-	//사용자가 실제 입력한 name
-	@Pattern(regexp = "^[^-_]*$")
-	String name;
-	//resource에 대한 설명
-	String description;
-	//생성 요청 시간
-	LocalDateTime createdAt;
-	//사용자의 실명
-	String creatorName;
-	//label
-	//사용자의 id
-	String creator;
-	ResourceType type;
+    //metadata.name
+    String resourceName;
+    //annotation
+    //사용자가 실제 입력한 name
+    @Pattern(regexp = "^[^-_]*$")
+    String name;
+    //resource에 대한 설명
+    String description;
+    //생성 요청 시간
+    LocalDateTime createdAt;
+    //사용자의 실명
+    String creatorName;
+    //label
+    //사용자의 id
+    String creator;
+    ResourceType type;
 
-	/**
-	* 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
-	*
-	* @return 리소스 이름
-	*/
-	public String getResourceName()	{
-		return getType().getName() + "-" + UUID.randomUUID();
+	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
+		String creatorName, String creator) {
+		this.resourceName = resourceName;
+		this.name = name;
+		this.description = description;
+		this.createdAt = createdAt;
+		this.creatorName = creatorName;
+		this.creator = creator;
 	}
-	//k8s resource 객체를 생성하는 메소드
-	public abstract HasMetadata createResource();
 
-	//k8s Resource의 ObjectMeta를 정의하기 위한 메소드
-	protected abstract ObjectMeta createMeta();
+    /**
+     * 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
+     *
+     * @return 리소스 이름
+     */
+    public String getResourceName() {
+        return getType().getName() + "-" + UUID.randomUUID();
+    }
 
-	//자식 클래스의 ResourceType을 조회하기 위한 메소드
-	protected abstract ResourceType getType();
+    //k8s resource 객체를 생성하는 메소드
+    public abstract HasMetadata createResource();
+
+    //k8s Resource의 ObjectMeta를 정의하기 위한 메소드
+    protected abstract ObjectMeta createMeta();
+
+    //자식 클래스의 ResourceType을 조회하기 위한 메소드
+    protected abstract ResourceType getType();
 }

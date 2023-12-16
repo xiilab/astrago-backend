@@ -1,9 +1,9 @@
 package com.xiilab.modulek8s.workload.repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.workload.dto.JobReqDTO;
+import com.xiilab.modulek8s.workload.dto.JobReqVO;
 import com.xiilab.modulek8s.workload.dto.JobResDTO;
-import com.xiilab.modulek8s.workload.dto.WorkloadReq;
+import com.xiilab.modulek8s.workload.dto.WorkloadReqVO;
 import com.xiilab.modulek8s.workload.dto.WorkloadRes;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -19,19 +19,18 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class WorkloadRepoImpl implements WorkloadRepo {
-    private final K8sAdapter k8sAdapter;
+public class WorkloadRepoImpl implements WorkloadRepo{
+	private final K8sAdapter k8sAdapter;
+	@Override
+	public JobResDTO createBatchJobWorkload(JobReqVO jobReqVO) {
+		Job resource = (Job)createResource(jobReqVO.createResource());
+		return new JobResDTO(resource);
+	}
 
-    @Override
-    public JobResDTO createBatchJobWorkload(JobReqDTO jobReqDTO) {
-        Job resource = (Job) createResource(jobReqDTO.createResource());
-        return new JobResDTO(resource);
-    }
-
-    @Override
-    public WorkloadRes createInteractiveJobWorkload(WorkloadReq workloadReqDTO) {
-        return null;
-    }
+	@Override
+	public WorkloadRes createInteractiveJobWorkload(WorkloadReqVO workloadReqVODTO) {
+		return null;
+	}
 
     @Override
     public JobResDTO getBatchJobWorkload(String workSpaceName, String workloadName) {
@@ -62,7 +61,7 @@ public class WorkloadRepoImpl implements WorkloadRepo {
     }
 
     @Override
-    public WorkloadRes updateInteractiveJobWorkload(WorkloadReq workloadReqDTO) {
+    public WorkloadRes updateInteractiveJobWorkload(WorkloadReqVO workloadReqDTO) {
 //        Deployment deployment = updateInteractiveJob(workloadReqDTO);
 //        return new IntJobDTO(deployment);
         return null;
@@ -109,7 +108,7 @@ public class WorkloadRepoImpl implements WorkloadRepo {
         }
     }
 
-    private Deployment updateInteractiveJob(JobReqDTO jobReqDTO) {
+    private Deployment updateInteractiveJob(JobReqVO jobReqDTO) {
         try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
             return kubernetesClient.apps().deployments().inNamespace(jobReqDTO.getWorkspace()).withName(jobReqDTO.getName())
                     .edit(jobReqDTO::updateResource);
