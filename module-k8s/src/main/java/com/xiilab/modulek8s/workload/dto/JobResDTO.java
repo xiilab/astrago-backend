@@ -10,10 +10,10 @@ import lombok.experimental.SuperBuilder;
 import java.util.stream.Collectors;
 
 @SuperBuilder
-public class JobResDTO extends WorkloadRes{
-	public JobResDTO(Job job) {
-		super(job);
-		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
+public class JobResDTO extends WorkloadRes {
+    public JobResDTO(Job job) {
+        super(job);
+        Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
         image = container.getImage();
         gpuRequest = 0;
         cpuRequest = 0;
