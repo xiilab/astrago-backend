@@ -7,22 +7,29 @@ import com.xiilab.servercore.common.dto.APIBaseReqDTO;
 import lombok.Getter;
 
 @Getter
-public class CreateReqDTO extends APIBaseReqDTO {
+public class CreateVolumeReqDTO extends APIBaseReqDTO {
 	private StorageType storageType;
 	private int requestVolume;
 	private String workspaceMetaDataName;
+	private String creator;
+	private String creatorName;
 
-	public CreateReqDTO() {
+	public CreateVolumeReqDTO() {
 		super();
 	}
 
 	public CreateVolumeDTO toModuleDto(){
 		return CreateVolumeDTO.builder()
 			.name(getName())
-			.storageType(getStorageType())
-			.requestVolume(getRequestVolume())
-			.description(getDescription())
-			.workspaceMetaDataName(getWorkspaceMetaDataName())
+			.creator(creator)
+			.creatorName(creatorName)
+			.storageType(storageType)
+			.requestVolume(requestVolume)
+			.workspaceMetaDataName(workspaceMetaDataName)
 			.build();
+	}
+	public void setUserInfo(String creator, String creatorName){
+		this.creator = creator;
+		this.creatorName = creatorName;
 	}
 }
