@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.storage.storageclass.enums;
+package com.xiilab.modulek8s.common.enumeration;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
