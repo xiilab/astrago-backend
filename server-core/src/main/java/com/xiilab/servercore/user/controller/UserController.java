@@ -1,5 +1,6 @@
 package com.xiilab.servercore.user.controller;
 
+import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.service.UserService;
@@ -51,6 +52,18 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<HttpStatus> joinUser(@RequestBody UserReqVO userReqVO) {
         userService.joinUser(userReqVO);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/reset")
+    public ResponseEntity<HttpStatus> resetPassword(@PathVariable(name = "id") String id) {
+        userService.resetUserPassWord(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/updateRole")
+    public ResponseEntity<HttpStatus> updateUserRole(@PathVariable(name = "id") String id, @RequestParam(name = "authType") AuthType authType) {
+        userService.updateUserRole(id,authType);
         return ResponseEntity.ok().build();
     }
 }

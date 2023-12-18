@@ -1,5 +1,6 @@
 package com.xiilab.moduleuser.service;
 
+import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -24,4 +25,8 @@ public interface UserService {
 
     //사용자 활성화/비활성화
     void updateUserActivationYN(String userId, boolean activationYN);
+
+    void resetUserPassWord(String userId);
+
+    void updateUserRole(String userId, AuthType authType);
 }

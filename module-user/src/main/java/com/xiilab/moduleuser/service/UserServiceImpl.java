@@ -1,5 +1,6 @@
 package com.xiilab.moduleuser.service;
 
+import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.repository.UserRepository;
@@ -52,5 +53,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUserActivationYN(String userId, boolean activationYN) {
         userRepository.updateUserActivationYN(userId, activationYN);
+    }
+
+    @Override
+    public void resetUserPassWord(String userId) {
+        userRepository.resetUserPassWord(userId);
+    }
+
+    @Override
+    public void updateUserRole(String userId, AuthType authType) {
+        userRepository.updateUserRole(userId,authType);
     }
 }
