@@ -8,9 +8,11 @@ import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.xiilab.modulecommon.service.CommonService;
 
 @Repository
-public class CommonRepositoryImpl implements CommonRepository{
+public class CommonRepositoryImpl implements CommonService {
+	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
 	/**
 	 * DateTime 포멧하는 메소드
 	 * @param unixTime  Prometheus에서 조회된 UnixTime
@@ -21,13 +23,13 @@ public class CommonRepositoryImpl implements CommonRepository{
 		LocalDateTime dateTime = Instant.ofEpochSecond((long) unixTime)
 			.atZone(ZoneId.systemDefault())
 			.toLocalDateTime();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
 		return dateTime.format(formatter);
 	}
 	public String formatDateTime(String dateTime) {
 		// 입력된 문자열을 LocalDateTime으로 변환
 		LocalDateTime parsedDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ISO_DATE_TIME);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 원하는 출력 형식 지정
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat); // 원하는 출력 형식 지정
 
 		// 지정된 포맷 형식으로 변환하여 문자열 반환
 		return parsedDateTime.format(formatter);
@@ -50,17 +52,8 @@ public class CommonRepositoryImpl implements CommonRepository{
 	 * @return 변경된 UnixTime
 	 */
 	public String toUnixTime(String formattedDateTime) {
-		LocalDateTime dateTime = LocalDateTime.parse(formattedDateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		LocalDateTime dateTime = LocalDateTime.parse(formattedDateTime, DateTimeFormatter.ofPattern(dateFormat));
 		return String.valueOf(dateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
-	}
-
-	/**
-	 * String null 체크 메소드
-	 * @param str 체크할 String 값
-	 * @return null 여부
-	 */
-	public boolean isStringEmpty(String str) {
-		return str == null || str.isEmpty();
 	}
 
 }

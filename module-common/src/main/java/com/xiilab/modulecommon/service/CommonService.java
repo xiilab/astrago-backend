@@ -1,9 +1,9 @@
-package com.xiilab.modulecommon.repository;
+package com.xiilab.modulecommon.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 
-public interface CommonRepository {
+public interface CommonService {
 	String formatDateTime(double unixTime);
 
 	String getStringOrNull(JsonNode node, String fieldName);

@@ -1,110 +1,96 @@
-package com.xiilab.modulemonitor.service;
+package com.xiilab.servermonitor.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xiilab.modulecommon.repository.CommonRepositoryImpl;
+import com.xiilab.modulecommon.service.CommonService;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
+import com.xiilab.modulemonitor.service.K8sMonitorService;
+import com.xiilab.modulemonitor.service.PrometheusService;
 
-import io.fabric8.kubernetes.api.model.Event;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class MonitorService {
-
-	private final PrometheusRepository prometheusRepository;
-	private final K8sMonitorRepository k8sMonitorRepository;
-	private final CommonRepositoryImpl common;
+	private final PrometheusService prometheus;
+	private final K8sMonitorService k8sMonitorService;
+	private final CommonService common;
 
 	/**
-	 * Prometheus에 query조회하는 메소드
-	 * @param requestDTO 조회될 정보가 담긴 객체
-	 * @return 조회된 Metrics
+	 * Prometheus 실시간 데이터 조회하는 메소드
+	 * @param requestDTO pod, node, namespace 정보가 담긴 객체
+	 * @return Prometheus에서 조회된 실시간 데이터 리스트
 	 */
-	public List<ResponseDTO.RealTimeDTO> getRealTimeMetricByQuery(RequestDTO requestDTO){
+	public List<ResponseDTO.RealTimeDTO> getRealTimeMetric(RequestDTO requestDTO) {
+		// Promql 생성
+		String promql = getPromql(requestDTO);
+		// K8s 조회인 경우
+			// Prometheus 조회
+			String realTimeMetricByQuery = prometheus.getRealTimeMetricByQuery(promql);
+			return extractMetrics(realTimeMetricByQuery, requestDTO);
 
-		String promql = getPromql(requestDTO.metricName(), requestDTO);
-		if(!promql.isBlank()){
-			String metricResult = prometheusRepository.getRealTimeMetricByQuery(promql);
-			return extractMetrics(metricResult, requestDTO);
-		}else{
-			return k8sMonitorRepository.getK8sMetricsByQuery(requestDTO);
+	}
+
+	/**
+	 * Node Error 개수 조회하는 메소드
+	 * @return 조회된 Node Error Count
+	 */
+	public long getNodeErrorCount(){
+		return k8sMonitorService.getNodeErrorCount();
+	}
+
+	/**
+	 * Workload Error Count 조회하는 메소드
+	 * @param nameSpace 조회될 NameSpace
+	 * @param podName 조회될 PodName
+	 * @return 조회된 Workload Error Count
+	 */
+	public long getWorkloadErrorCount(String nameSpace, String podName){
+		if(!StringUtils.hasText(nameSpace) && !StringUtils.hasText(podName)){
+			return k8sMonitorService.getWorkloadErrorCount(nameSpace, podName);
+		}else if(!StringUtils.hasText(nameSpace)){
+			return k8sMonitorService.getWorkloadErrorCount(nameSpace);
+		}else {
+			return k8sMonitorService.getWorkloadErrorCount();
 		}
 	}
+
 	/**
 	 * 과거 Promethrus metric을 조회하는 메소드
 	 * @param requestDTO 조회될 metric 정보가 담긴 객체
 	 * @return 조회된 ResponseDTO	 List
 	 */
-	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO){
-
+	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO) {
 		// 검색시간 UnixTime로 변환
 		String startDate = common.toUnixTime(requestDTO.startDate());
 		String endDate = common.toUnixTime(requestDTO.endDate());
-
-		String promql = getPromql(requestDTO.metricName(), requestDTO);
-		String result = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
+		// Promql 생성
+		String promql = getPromql(requestDTO);
+		String result = prometheus.getHistoryMetricByQuery(promql, startDate, endDate);
 		return extractHistoryMetrics(result, requestDTO);
 	}
 
-	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName){
-		List<Event> eventList = null;
-		if(!common.isStringEmpty(namespace) && !common.isStringEmpty(podName)){
-			eventList = k8sMonitorRepository.getEventList(namespace, podName);
-		}else if(!common.isStringEmpty(namespace)){
-			eventList = k8sMonitorRepository.getEventList(namespace);
-		}else{
-			eventList = k8sMonitorRepository.getEventList();
-		}
-		return eventToDTO(eventList);
-	}
-
-
-	public List<ResponseDTO.EventDTO> eventToDTO(List<Event> eventList){
-		return eventList.stream().map(event ->
-			ResponseDTO.EventDTO.builder()
-				.type(event.getType())
-				.workloadName(event.getMetadata().getNamespace())
-				.time(common.formatDateTime(
-					event.getEventTime() == null ? event.getLastTimestamp() : event.getEventTime().getTime()
-				))
-				.reason(event.getReason())
-				.message(event.getMessage())
-				.build()
-		).toList();
-	}
-
-
 	/**
-	 * Prometheus Metric List 조회하는 메소드
-	 */
-	public List<ResponseDTO.PromqlDTO> getPromqlList(){
-		return Arrays.stream(Promql.values())
-			.map(enumValue -> new ResponseDTO.PromqlDTO(
-				enumValue.name(),
-				enumValue.getDescription(),
-				enumValue.getType()))
-			.toList();
-	}
-	/**
-	 * Promql 조회하는 메소드
-	 * @param metricName 조회될 metric Name
+	 * 조회될 Promql 조회하는 메소드
+	 * @param requestDTO pod, node, namespace 정보가 담긴 객체
 	 * @return 조회된 Promql
 	 */
-	private String getPromql(String metricName, RequestDTO requestDTO){
-		try{
-			return createPromql(Promql.valueOf(metricName), requestDTO);
-		}catch (IllegalArgumentException e){
-			throw new IllegalArgumentException("해당 이름의 Metric(" + metricName + ")이 없습니다.");
+	private String getPromql(RequestDTO requestDTO) {
+		try {
+			// Promql 생성
+			return createPromql(Promql.valueOf(requestDTO.metricName()), requestDTO);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("해당 이름의 Metric(" + requestDTO.metricName() + ")이 없습니다.");
 		}
 	}
 
@@ -114,14 +100,14 @@ public class MonitorService {
 	 * @param requestDTO 조건에 추가될 정보가 담긴 객체
 	 * @return 생성된 Promql
 	 */
-	private String createPromql(Promql promql, RequestDTO requestDTO){
+	private String createPromql(Promql promql, RequestDTO requestDTO) {
 		String result = "";
 		// GPU일 경우 kubernetes_node 사용
 		if (promql.getType().equals("GPU")) {
 			if (!requestDTO.nodeName().isBlank()) {
 				result = "kubernetes_node=\"" + requestDTO.nodeName() + "\",";
 			}
-		} else{
+		} else {
 			if (!requestDTO.nodeName().isBlank()) {
 				result = "namespace=\"" + requestDTO.namespace() + "\",";
 			}
@@ -164,7 +150,7 @@ public class MonitorService {
 	 *
 	 * @param result  Prometheus result 필드 값
 	 * @param metric  Metric Name
-	 * @return        생성된 ResponseDTO
+	 * @return 생성된 ResponseDTO
 	 */
 	private ResponseDTO.RealTimeDTO createResponseDTO(JsonNode result, String metric) {
 		JsonNode metricData = result.path("metric");
@@ -193,7 +179,7 @@ public class MonitorService {
 	 * @param requestDTO Metric 이름
 	 * @return 반환될 HistoryDTO List
 	 */
-	public List<ResponseDTO.HistoryDTO> extractHistoryMetrics(String jsonResponse, RequestDTO requestDTO){
+	public List<ResponseDTO.HistoryDTO> extractHistoryMetrics(String jsonResponse, RequestDTO requestDTO) {
 		List<ResponseDTO.HistoryDTO> responseDTOS = new ArrayList<>();
 
 		try {
@@ -218,7 +204,7 @@ public class MonitorService {
 	 *
 	 * @param result  Prometheus result 필드 값
 	 * @param metric  Metric Name
-	 * @return        생성된 ResponseDTO
+	 * @return 생성된 ResponseDTO
 	 */
 	private ResponseDTO.HistoryDTO createHistoryDTO(JsonNode result, String metric) {
 		JsonNode metricData = result.path("metric");
@@ -235,10 +221,17 @@ public class MonitorService {
 			.valueDTOS(createHistoryValue(values))
 			.build();
 	}
-	private List<ResponseDTO.ValueDTO>  createHistoryValue(JsonNode values){
+
+	/**
+	 * 과거 Values 생성 메소드
+	 * @param values 조회된 Value
+	 * @return 생성된 ValueDTO List
+	 */
+	private List<ResponseDTO.ValueDTO> createHistoryValue(JsonNode values) {
 		List<ResponseDTO.ValueDTO> valueDTOList = new ArrayList<>();
 		if (values.isArray()) {
 			for (JsonNode node : values) {
+				// values DTO List에 추가
 				valueDTOList.add(ResponseDTO.ValueDTO.builder()
 					.dateTime(common.formatDateTime(node.get(0).asDouble()))
 					.value(node.get(1).textValue())
@@ -246,5 +239,36 @@ public class MonitorService {
 			}
 		}
 		return valueDTOList;
+	}
+
+	/**
+	 * K8s에서 발생한 Event List 조회 메소드
+	 * @param namespace 조회될 Namespace
+	 * @param podName 조회될 pod Name
+	 * @return 조회된 Event List
+	 */
+	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName) {
+		// Namespace, podName 둘다 있는 경우
+		if (!StringUtils.hasText(namespace) && !StringUtils.hasText(podName)) {
+			return k8sMonitorService.getEventList(namespace, podName);
+			// Namespace 만으로 조회
+		} else if (!StringUtils.hasText(namespace)) {
+			return k8sMonitorService.getEventList(namespace);
+			// 조건 없이 조회
+		} else {
+			return k8sMonitorService.getEventList();
+		}
+	}
+
+	/**
+	 * Prometheus Metric List 조회하는 메소드
+	 */
+	public List<ResponseDTO.PromqlDTO> getPromqlList() {
+		return Arrays.stream(Promql.values())
+			.map(enumValue -> new ResponseDTO.PromqlDTO(
+				enumValue.name(),
+				enumValue.getDescription(),
+				enumValue.getType()))
+			.toList();
 	}
 }

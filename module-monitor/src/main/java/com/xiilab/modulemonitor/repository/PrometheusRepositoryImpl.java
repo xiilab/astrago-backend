@@ -6,26 +6,42 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.xiilab.modulemonitor.service.PrometheusRepository;
+import com.xiilab.modulemonitor.service.PrometheusService;
 
 @Repository
-public class PrometheusRepositoryImpl implements PrometheusRepository {
+public class PrometheusRepositoryImpl implements PrometheusService {
 	@Value("${prometheus.url}")
 	private String prometheusURL;
 
-	public String getRealTimeMetricByQuery(String query){
+	/**
+	 * Prometheus 실시간 조회 메소드
+	 * @param promql 조회될 Prometheus Query
+	 * @return Prometheus에서 조회된 실시간 값
+	 */
+	public String getRealTimeMetricByQuery(String promql){
 		WebClient webClient = WebClient.builder()
 			.baseUrl(prometheusURL)
 			.build();
 		return webClient
 			.get()
-			.uri("/api/v1/query?query={query}", query)
+			.uri("/api/v1/query?query={promql}", promql)
 			.retrieve()
 			.bodyToMono(String.class)
 			.block();
 	}
 
-
+	/**
+	 * WebClient 실시간 조회 메소드
+	 * @param query 조회될 Prometheus Query
+	 * @return Prometheus에서 조회된 실시간 값
+	 */
+	/**
+	 * Prometheus 과거 데이터 조회 메소드
+	 * @param promql 조회될 Prometheus Query
+	 * @param startDate 검색 시작 시간
+	 * @param endDate 검색 종료 시간
+	 * @return Prometheus에서 조회된 과거 값
+	 */
 	public String getHistoryMetricByQuery(String promql, String startDate, String endDate){
 		RestTemplate restTemplate =    new RestTemplate();
 		ResponseEntity<String> responseEntity = restTemplate.getForEntity(

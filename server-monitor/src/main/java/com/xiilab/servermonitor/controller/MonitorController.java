@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
-import com.xiilab.modulemonitor.service.MonitorService;
+import com.xiilab.servermonitor.service.MonitorService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/monitor")
 @RequiredArgsConstructor
 public class MonitorController {
-
 	private final MonitorService monitorService;
 
 	/**
@@ -29,33 +28,60 @@ public class MonitorController {
 	 * @return 조회된 Monitor Metric
 	 */
 	@GetMapping()
-	public ResponseEntity<List<ResponseDTO.RealTimeDTO>> getPrometheusRealTimeMetric(@RequestBody RequestDTO requestDTO){
-		return new ResponseEntity<>(monitorService.getRealTimeMetricByQuery(requestDTO), HttpStatus.OK);
+	public ResponseEntity<List<ResponseDTO.RealTimeDTO>> getPrometheusRealTimeMetric(
+		@RequestBody RequestDTO requestDTO) {
+		return new ResponseEntity<>(monitorService.getRealTimeMetric(requestDTO), HttpStatus.OK);
 	}
+
+	/**
+	 * Node Error Count 조회 API
+	 * @return 조회된 Node Error 개수
+	 */
+	@GetMapping("/nodeErrorCount")
+	public ResponseEntity<Long> getNodeErrorCount() {
+		return new ResponseEntity<>(monitorService.getNodeErrorCount(), HttpStatus.OK);
+	}
+
+	/**
+	 * Workload Error Count 조회 API
+	 * @param namespace 조회될 namesapce
+	 * @param podName 조회될 podName
+	 * @return
+	 */
+	@GetMapping("/workloadErrorCount")
+	public ResponseEntity<Long> getWorkloadErrorCount(
+		@RequestParam(name = "namespace", required = false) String namespace,
+		@RequestParam(name = "podName", required = false) String podName) {
+		return new ResponseEntity<>(monitorService.getWorkloadErrorCount(namespace, podName), HttpStatus.OK);
+	}
+
 	/**
 	 * 과거 모니터링 조회 API
 	 * @param requestDTO
 	 * @return 조회된 Monitor Metric
 	 */
 	@GetMapping("/history")
-	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getPrometheusHistoryMetric(@RequestBody RequestDTO requestDTO){
+	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getPrometheusHistoryMetric(@RequestBody RequestDTO requestDTO) {
 		return new ResponseEntity<>(monitorService.getHistoryMetric(requestDTO), HttpStatus.OK);
 	}
+
 	/**
-	 * 실시간 모니터링 조회 API
+	 * k8s event list 조회 API
 	 * @return 조회된 Monitor Metric
 	 */
 	@GetMapping("/event")
-	public ResponseEntity<List<ResponseDTO.EventDTO>> getEventList(@RequestParam(name = "namespace", required = false) String namespace,
-		@RequestParam(name = "podName",required = false) String podName){
+	public ResponseEntity<List<ResponseDTO.EventDTO>> getEventList(
+		@RequestParam(name = "namespace", required = false) String namespace,
+		@RequestParam(name = "podName", required = false) String podName) {
 		return new ResponseEntity<>(monitorService.getEventList(namespace, podName), HttpStatus.OK);
 	}
+
 	/**
 	 * 등록된 Promql List 조회하는 API
 	 * @return 등록된 Promql List
 	 */
 	@GetMapping("/promql")
-	public ResponseEntity<List<ResponseDTO.PromqlDTO>> getPromqlList(){
+	public ResponseEntity<List<ResponseDTO.PromqlDTO>> getPromqlList() {
 		return new ResponseEntity<>(monitorService.getPromqlList(), HttpStatus.OK);
 	}
 }
