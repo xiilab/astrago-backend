@@ -1,24 +1,16 @@
 package com.xiilab.servercore.user.controller;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,7 +24,7 @@ public class GroupController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<GroupInfoDTO> getGroupInfoById(@PathVariable String id) {
+	public ResponseEntity<GroupInfoDTO> getGroupInfoById(@PathVariable(name = "id") String id) {
 		return ResponseEntity.ok(groupService.getGroupInfoById(id));
 	}
 
@@ -43,19 +35,19 @@ public class GroupController {
 	}
 
 	@PostMapping("/{groupId}/members/{userId}")
-	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable String groupId, @PathVariable String userId) {
+	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId, @PathVariable(name = "userId") String userId) {
 		groupService.addGroupMember(groupId, userId);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<HttpStatus> deleteGroupById(@PathVariable String id) {
+	public ResponseEntity<HttpStatus> deleteGroupById(@PathVariable(name = "id") String id) {
 		groupService.deleteGroupById(id);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/{groupId}/users")
-	public ResponseEntity<List<GroupUserDTO>> getGroupUsers(@PathVariable String groupId) {
+	public ResponseEntity<List<GroupUserDTO>> getGroupUsers(@PathVariable(name = "groupId") String groupId) {
 		return ResponseEntity.ok(groupService.getGroupUsers(groupId));
 	}
 
