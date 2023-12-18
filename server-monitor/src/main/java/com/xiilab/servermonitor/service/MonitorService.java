@@ -55,9 +55,8 @@ public class MonitorService {
 	 * @param availableSizes 사용가능사이즈
 	 * @return mapping된 Disk Space List
 	 */
-	public static List<ResponseDTO.DiskDTO> mapToDiskDTO(String totalSizes, String availableSizes) {
+	public List<ResponseDTO.DiskDTO> mapToDiskDTO(String totalSizes, String availableSizes) {
 		List<ResponseDTO.DiskDTO> diskDTOList = new ArrayList<>();
-
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode totalSizesNode = objectMapper.readTree(totalSizes);
@@ -72,8 +71,8 @@ public class MonitorService {
 				JsonNode availableResult = availableSizesIterator.next();
 
 				String mountPath = totalResult.get("metric").get("mountpoint").asText();
-				String totalSizeStr = formatSize(totalResult.get("value").get(1).asText());
-				String availableStr = formatSize(availableResult.get("value").get(1).asText());
+				String totalSizeStr = common.formatSize(totalResult.get("value").get(1).asText());
+				String availableStr = common.formatSize(availableResult.get("value").get(1).asText());
 
 				// 사용량, 사용률 게산용
 				long totalSize = Long.parseLong(totalResult.get("value").get(1).asText());
@@ -87,7 +86,7 @@ public class MonitorService {
 						.mountPath(mountPath)
 						.size(totalSizeStr)
 						.available(availableStr)
-						.used(formatSize(String.valueOf(used)))
+						.used(common.formatSize(String.valueOf(used)))
 						.usage(String.format("%.2f", usage))
 					.build());
 			}
@@ -272,25 +271,6 @@ public class MonitorService {
 			}
 		}
 		return valueDTOList;
-	}
-
-	/**
-	 * data size 변환 메소드
-	 * @param sizeStr 변환될 dataSize
-	 * @return 변환된 dataSize
-	 */
-	private static String formatSize(String sizeStr) {
-		long size = Long.parseLong(sizeStr);
-
-		if (size >= 1000000000000L) { // 1 TB
-			return String.format("%.2fTB", (double)size / 1000000000000L);
-		} else if (size >= 1000000000L) { // 1 GB
-			return String.format("%.2fGB", (double)size / 1000000000L);
-		} else if (size >= 1000000L) { // 1 MB
-			return String.format("%.2fMB", (double)size / 1000000L);
-		} else {
-			return String.format("%dbytes", size);
-		}
 	}
 
 	/**

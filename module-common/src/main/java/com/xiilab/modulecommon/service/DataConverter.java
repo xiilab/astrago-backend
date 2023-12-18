@@ -57,4 +57,22 @@ public class DataConverter {
 		LocalDateTime dateTime = LocalDateTime.parse(formattedDateTime, DateTimeFormatter.ofPattern(dateFormat));
 		return String.valueOf(dateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
 	}
+	/**
+	 * data size 변환 메소드
+	 * @param sizeStr 변환될 dataSize
+	 * @return 변환된 dataSize
+	 */
+	public String formatSize(String sizeStr) {
+		long size = Long.parseLong(sizeStr);
+
+		if (size >= 1000000000000L) { // 1 TB
+			return String.format("%.2fTB", (double)size / 1000000000000L);
+		} else if (size >= 1000000000L) { // 1 GB
+			return String.format("%.2fGB", (double)size / 1000000000L);
+		} else if (size >= 1000000L) { // 1 MB
+			return String.format("%.2fMB", (double)size / 1000000L);
+		} else {
+			return String.format("%dbytes", size);
+		}
+	}
 }
