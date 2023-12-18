@@ -7,11 +7,13 @@
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.boot.test.context.SpringBootTest;
 //
+// import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 // import com.xiilab.modulek8s.common.enumeration.LabelField;
 // import com.xiilab.modulek8s.config.K8sAdapter;
 // import com.xiilab.modulek8s.facade.StorageModuleServiceImpl;
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 // import com.xiilab.modulek8s.common.enumeration.StorageType;
+// import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 //
@@ -19,6 +21,9 @@
 // import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 // import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 // import io.fabric8.kubernetes.api.model.Quantity;
+// import io.fabric8.kubernetes.api.model.apps.Deployment;
+// import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+// import io.fabric8.kubernetes.api.model.batch.v1.Job;
 // import io.fabric8.kubernetes.client.KubernetesClient;
 // import lombok.extern.slf4j.Slf4j;
 //
@@ -208,5 +213,84 @@
 // 			List<VolumeResDTO> collect = pvcs.stream().map(VolumeResDTO::toDTO).collect(Collectors.toList());
 //
 // 		}
+// 	}
+// 	@Test
+// 	void 볼륨조회페이징검색포함(){
+// 		String option = "creator-name";
+// 		String workspaceMetaName = "yc-test-ns";
+// 		String keyword = "서준오";
+// 		String searchOption = "";
+// 		if(option.equalsIgnoreCase(AnnotationField.CREATOR_FULL_NAME.getField())){
+// 			searchOption = AnnotationField.CREATOR_FULL_NAME.getField();
+// 		}else if(option.equalsIgnoreCase(AnnotationField.NAME.getField())){
+// 			searchOption = AnnotationField.NAME.getField();
+// 		}
+// 		try(final KubernetesClient client = k8sAdapter.configServer()) {
+// 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+// 				.inNamespace(workspaceMetaName)
+// 				.list()
+// 				.getItems();
+// 			String finalSearchOption = searchOption;
+// 			List<PageVolumeResDTO> collect = pvcs.stream()
+// 				.filter(pvc -> pvc.getMetadata().getAnnotations().get(finalSearchOption).equalsIgnoreCase(keyword))
+// 				.map(pvc -> {
+// 					String volumeName = pvc.getMetadata().getName();
+// 					boolean isUsed = checkUsedVolume(volumeName, client);
+// 					PageVolumeResDTO pageVolumeResDTO = PageVolumeResDTO.toDTO(pvc);
+// 					pageVolumeResDTO.setIsUsed(isUsed);
+// 					return pageVolumeResDTO;
+// 				})
+// 				.collect(Collectors.toList());
+// 			System.out.println(collect.size());
+// 		}
+// 	}
+// 	@Test
+// 	void 전체네임스페이스의볼륨조회(){
+// 		try(final KubernetesClient client = k8sAdapter.configServer()) {
+// 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+// 				.inAnyNamespace()
+// 				.list()
+// 				.getItems();
+//
+// 			System.out.println(pvcs.size());
+// 		}
+// 	}
+// 	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
+// 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
+// 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);
+// 		List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeMetaName, client);
+// 		return !jobsInUseVolume.isEmpty() || !deploymentsInUseVolume.isEmpty() || !statefulSetsInUseVolume.isEmpty();
+// 	}
+// 	private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
+// 		return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
+// 			.list()
+// 			.getItems();
+// 	}
+//
+// 	/**
+// 	 * 해당 볼륨을 사용중인 Deployment list 조회
+// 	 * @param volumeMetaName
+// 	 * @param client
+// 	 * @return
+// 	 */
+// 	private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
+// 		return client.apps().deployments().withLabelIn(volumeMetaName, "true")
+// 			.list()
+// 			.getItems();
+// 	}
+//
+// 	/**
+// 	 * 해당 볼륨을 사용중인 StatefulSet list 조회
+// 	 * @param volumeMetaName
+// 	 * @param client
+// 	 * @return
+// 	 */
+// 	private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
+// 		return client
+// 			.apps()
+// 			.statefulSets()
+// 			.withLabelIn(volumeMetaName, "true")
+// 			.list()
+// 			.getItems();
 // 	}
 // }
