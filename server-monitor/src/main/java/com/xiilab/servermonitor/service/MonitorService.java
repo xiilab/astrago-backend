@@ -34,10 +34,9 @@ public class MonitorService {
 	public List<ResponseDTO.RealTimeDTO> getRealTimeMetric(RequestDTO requestDTO) {
 		// Promql 생성
 		String promql = getPromql(requestDTO);
-		// K8s 조회인 경우
-			// Prometheus 조회
-			String realTimeMetricByQuery = prometheus.getRealTimeMetricByQuery(promql);
-			return extractMetrics(realTimeMetricByQuery, requestDTO);
+		// Prometheus 조회
+		String realTimeMetricByQuery = prometheus.getRealTimeMetricByQuery(promql);
+		return extractMetrics(realTimeMetricByQuery, requestDTO);
 
 	}
 
@@ -45,7 +44,7 @@ public class MonitorService {
 	 * Node Error 개수 조회하는 메소드
 	 * @return 조회된 Node Error Count
 	 */
-	public long getNodeErrorCount(){
+	public long getNodeErrorCount() {
 		return k8sMonitorService.getNodeErrorCount();
 	}
 
@@ -55,12 +54,12 @@ public class MonitorService {
 	 * @param podName 조회될 PodName
 	 * @return 조회된 Workload Error Count
 	 */
-	public long getWorkloadErrorCount(String nameSpace, String podName){
-		if(!StringUtils.hasText(nameSpace) && !StringUtils.hasText(podName)){
+	public long getWorkloadErrorCount(String nameSpace, String podName) {
+		if (!StringUtils.hasText(nameSpace) && !StringUtils.hasText(podName)) {
 			return k8sMonitorService.getWorkloadErrorCount(nameSpace, podName);
-		}else if(!StringUtils.hasText(nameSpace)){
+		} else if (!StringUtils.hasText(nameSpace)) {
 			return k8sMonitorService.getWorkloadErrorCount(nameSpace);
-		}else {
+		} else {
 			return k8sMonitorService.getWorkloadErrorCount();
 		}
 	}

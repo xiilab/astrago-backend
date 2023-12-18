@@ -36,8 +36,6 @@ public enum Promql {
 	WL_DISK_WRITE_BYTE("container_fs_writes_bytes_total{%s}","Workload Disk 쓰기 조회","Workload","prometheus"),
 	WL_NETWORK_RECEIVED("rate(container_network_transmit_packets_total{%s}[1m])","Network 패킷 수신 조회'","Workload","prometheus"),
 	WL_WEYWORK_SEND("rate(container_network_receive_packets_total{%s}[1m])","Network 패킷 송신 조회'","Workload","prometheus"),
-	WL_ERROR_COUNT("", "워크로드 에러 개수 조회", "Workload", "k8s"),
-	NODE_ERROR_COUNT("","노드 에러 개수 조회","Node","k8s"),
 
 	;
 // GPU 사용량, GPU Limit, GPU Request

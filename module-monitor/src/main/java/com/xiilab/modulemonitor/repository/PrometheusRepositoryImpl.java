@@ -18,7 +18,7 @@ public class PrometheusRepositoryImpl implements PrometheusService {
 	 * @param promql 조회될 Prometheus Query
 	 * @return Prometheus에서 조회된 실시간 값
 	 */
-	public String getRealTimeMetricByQuery(String promql){
+	public String getRealTimeMetricByQuery(String promql) {
 		WebClient webClient = WebClient.builder()
 			.baseUrl(prometheusURL)
 			.build();
@@ -31,21 +31,17 @@ public class PrometheusRepositoryImpl implements PrometheusService {
 	}
 
 	/**
-	 * WebClient 실시간 조회 메소드
-	 * @param query 조회될 Prometheus Query
-	 * @return Prometheus에서 조회된 실시간 값
-	 */
-	/**
 	 * Prometheus 과거 데이터 조회 메소드
 	 * @param promql 조회될 Prometheus Query
 	 * @param startDate 검색 시작 시간
 	 * @param endDate 검색 종료 시간
 	 * @return Prometheus에서 조회된 과거 값
 	 */
-	public String getHistoryMetricByQuery(String promql, String startDate, String endDate){
-		RestTemplate restTemplate =    new RestTemplate();
+	public String getHistoryMetricByQuery(String promql, String startDate, String endDate) {
+		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=256", String.class, promql, startDate, endDate);
+			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=256", String.class,
+			promql, startDate, endDate);
 		return responseEntity.getBody();
 	}
 }

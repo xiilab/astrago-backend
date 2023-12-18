@@ -28,6 +28,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 		K8sErrorStatus.ErrImagePull,
 		K8sErrorStatus.InvalidImageName
 	);
+
 	/**
 	 * Workload Error 개수 조회
 	 * @return 조회된 Workload Error Count
@@ -54,6 +55,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 		// pods List중 Error Count 조회
 		return convertErrorCountByPodList(pods);
 	}
+
 	/**
 	 * Workload Error 개수 조회
 	 * @param namespace 조회될 Namespace
@@ -131,6 +133,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 			return eventToDTO(events);
 		}
 	}
+
 	/**
 	 * K8s에서 발생한 Event List 조회하는 메소드
 	 * @param namespace 조회할 NameSpace
@@ -147,6 +150,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 			return eventToDTO(events);
 		}
 	}
+
 	private List<ResponseDTO.EventDTO> eventToDTO(List<Event> eventList) {
 		return eventList.stream().map(event ->
 			ResponseDTO.EventDTO.builder()
