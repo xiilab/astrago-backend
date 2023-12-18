@@ -1,6 +1,7 @@
 package com.xiilab.moduleuser.common;
 
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 public class KeycloakConfig {
 	@Value("${admin.realm}")
 	private String realm;
+	@Value("${keycloak.realm}")
+	private String keycloak_realm;
 	@Value("${keycloak.auth-server-url}")
 	private String keycloakUrl;
 	@Value("${admin.client}")
@@ -22,8 +25,11 @@ public class KeycloakConfig {
 	@Value("${admin.secret}")
 	private String secret;
 
-	@Bean
-	public Keycloak getKeycloakClient() {
+	public RealmResource getRealmClient() {
+		return getKeycloakClient().realm(keycloak_realm);
+	}
+
+	private Keycloak getKeycloakClient() {
 		return Keycloak.getInstance(
 			keycloakUrl,
 			realm,
@@ -32,4 +38,6 @@ public class KeycloakConfig {
 			client,
 			secret);
 	}
+
+
 }

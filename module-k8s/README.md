@@ -48,6 +48,7 @@
     - 생성자 이름(실명) : creator-name
 - label
     - 생성자 username : creator
+    - 스토리지 타입 : storage-type
 ## Plugin(CSI)
 - meta name
     - pg-UUID

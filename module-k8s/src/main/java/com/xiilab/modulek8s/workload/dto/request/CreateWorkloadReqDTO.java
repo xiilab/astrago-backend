@@ -22,10 +22,11 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private List<EnvReqDTO> envs;
 	private String command;
 
+
 	@Builder
 	public CreateWorkloadReqDTO(String name, String description, String creatorName, String workspace, String creator, String image,
 		List<CodeDTO> codes, List<PortReqDTO> ports, List<EnvReqDTO> envs, String command) {
-		super(name, description);
+		super(name, description, creatorName, creator);
 		this.creatorName = creatorName;
 		this.workspace = workspace;
 		this.creator = creator;
