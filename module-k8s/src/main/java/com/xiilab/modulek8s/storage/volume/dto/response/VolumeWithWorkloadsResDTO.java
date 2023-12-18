@@ -28,6 +28,6 @@ public class VolumeWithWorkloadsResDTO extends K8SResourceResVO {
 
 	@Override
 	protected ResourceType getType() {
-		return null;
+		return ResourceType.VOLUME;
 	}
 }

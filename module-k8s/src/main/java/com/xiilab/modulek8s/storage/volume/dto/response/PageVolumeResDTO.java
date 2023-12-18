@@ -1,9 +1,9 @@
 package com.xiilab.modulek8s.storage.volume.dto.response;
 
+import com.xiilab.modulek8s.common.dto.K8SResourceResDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
-import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
@@ -11,7 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class PageVolumeResDTO extends K8SResourceResVO {
+public class PageVolumeResDTO extends K8SResourceResDTO {
 	//용량
 	private String requestVolume;
 	private StorageType storageType;
@@ -27,7 +27,7 @@ public class PageVolumeResDTO extends K8SResourceResVO {
 
 	@Override
 	protected ResourceType getType() {
-		return null;
+		return ResourceType.VOLUME;
 	}
 
 	public static PageVolumeResDTO toDTO(PersistentVolumeClaim pvc){
