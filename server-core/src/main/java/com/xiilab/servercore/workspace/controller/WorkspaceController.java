@@ -20,9 +20,9 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.facade.workspace.service.WorkspaceServiceFacade;
 import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
+import com.xiilab.servercore.workspace.service.WorkspaceService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class WorkspaceController {
-	private final WorkspaceServiceFacade workspaceServiceFacade;
+	private final WorkspaceService workspaceService;
 
 	/**
 	 *
@@ -43,7 +43,7 @@ public class WorkspaceController {
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("storageType") StorageType storageType
 	){
-		List<VolumeResDTO> volumesByStorageType = workspaceServiceFacade.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName,
+		List<VolumeResDTO> volumesByStorageType = workspaceService.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName,
 			storageType);
 
 		return new ResponseEntity<>(volumesByStorageType, HttpStatus.OK);
@@ -59,7 +59,7 @@ public class WorkspaceController {
 	public ResponseEntity<VolumeWithWorkloadsResDTO> findVolumeWithWorkloadsByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName) {
-		VolumeWithWorkloadsResDTO result = workspaceServiceFacade.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
+		VolumeWithWorkloadsResDTO result = workspaceService.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
@@ -75,7 +75,7 @@ public class WorkspaceController {
 	public ResponseEntity<PageResDTO> findVolumesWithPagination(@PathVariable("workspaceMetaName") String workspaceMetaName,
 		Pageable pageable,
 		@ModelAttribute SearchCondition searchCondition){
-		PageResDTO result = workspaceServiceFacade.findVolumesWithPagination(workspaceMetaName, pageable,
+		PageResDTO result = workspaceService.findVolumesWithPagination(workspaceMetaName, pageable,
 			searchCondition);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
@@ -97,7 +97,7 @@ public class WorkspaceController {
 	) {
 		modifyVolumeReqDTO.setMetaNames(workspaceMetaName, volumeMetaName);
 		modifyVolumeReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
-		workspaceServiceFacade.modifyVolumeByMetaName(modifyVolumeReqDTO);
+		workspaceService.modifyVolumeByMetaName(modifyVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -120,7 +120,7 @@ public class WorkspaceController {
 			.creator(userInfoDTO.getUserName())
 			.creatorName(userInfoDTO.getUserRealName())
 			.build();
-		workspaceServiceFacade.deleteVolumeByMetaName(deleteVolumeReqDTO);
+		workspaceService.deleteVolumeByMetaName(deleteVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

@@ -14,13 +14,4 @@ import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 
 public interface WorkspaceServiceFacade {
 
-	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType);
-
-	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName);
-
-	void modifyVolumeByMetaName(ModifyVolumeReqDTO modifyVolumeReqDTO);
-
-	void deleteVolumeByMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO);
-
-	PageResDTO findVolumesWithPagination(String workspaceMetaName, Pageable pageable, SearchCondition searchCondition);
 }
