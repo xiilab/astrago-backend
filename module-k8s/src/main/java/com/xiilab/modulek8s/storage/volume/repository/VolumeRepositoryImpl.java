@@ -1,16 +1,17 @@
 package com.xiilab.modulek8s.storage.volume.repository;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
@@ -161,6 +162,28 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 					return pageVolumeResDTO;
 				})
 				// .sorted(Comparator.comparing(PageVolumeResDTO::getCreatedAt).reversed())
+				.collect(Collectors.toList());
+		}
+	}
+
+	@Override
+	public List<PageVolumeResDTO> findVolumes(String option, String keyword) {
+		try(final KubernetesClient client = k8sAdapter.configServer()) {
+			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+				.inAnyNamespace()
+				.list()
+				.getItems();
+
+			return pvcs.stream()
+				.filter(pvc -> pvc.getMetadata().getName().contains(ResourceType.VOLUME.getName()))
+				.filter(pvc -> matchesSearchOption(pvc, option, keyword))
+				.map(pvc -> {
+					String volumeName = pvc.getMetadata().getName();
+					boolean isUsed = checkUsedVolume(volumeName, client);
+					PageVolumeResDTO pageVolumeResDTO = PageVolumeResDTO.toDTO(pvc);
+					pageVolumeResDTO.setIsUsed(isUsed);
+					return pageVolumeResDTO;
+				})
 				.collect(Collectors.toList());
 		}
 	}

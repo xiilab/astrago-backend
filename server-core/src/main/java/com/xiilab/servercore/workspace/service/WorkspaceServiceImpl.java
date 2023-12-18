@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.StorageModuleService;
-import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
@@ -53,7 +53,7 @@ public class WorkspaceServiceImpl implements WorkspaceService{
 		String option = searchCondition.getOption();
 		String keyword = searchCondition.getKeyword();
 
-		FindVolumeDTO findVolumeDTO = FindVolumeDTO.builder()
+		PageFindVolumeDTO pageFindVolumeDTO = PageFindVolumeDTO.builder()
 			.workspaceMetaName(workspaceMetaName)
 			.pageNumber(pageNumber)
 			.pageSize(pageSize)
@@ -61,6 +61,6 @@ public class WorkspaceServiceImpl implements WorkspaceService{
 			.keyword(keyword)
 			.build();
 
-		return storageModuleService.findVolumesWithPagination(findVolumeDTO);
+		return storageModuleService.findVolumesWithPagination(pageFindVolumeDTO);
 	}
 }
