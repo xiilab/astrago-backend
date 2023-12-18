@@ -8,11 +8,13 @@ import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
@@ -86,13 +88,24 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	}
 
 	/**
-	 * 볼륨 리스트 조회 (검색, 페이징 포함)
+	 * 특정 워크스페이스 내 볼륨 리스트 조회 (검색, 페이징 포함)
+	 *
+	 * @param pageFindVolumeDTO
+	 * @return
+	 */
+	@Override
+	public PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO) {
+		return volumeService.findVolumesWithPagination(pageFindVolumeDTO);
+	}
+
+	/**
+	 * 전체 볼륨 리스트 조회(검색조건 포함)
 	 *
 	 * @param findVolumeDTO
 	 * @return
 	 */
 	@Override
-	public PageResDTO findVolumesWithPagination(FindVolumeDTO findVolumeDTO) {
-		return volumeService.findVolumesWithPagination(findVolumeDTO);
+	public List<PageVolumeResDTO> findVolumes(FindVolumeDTO findVolumeDTO) {
+		return volumeService.findVolumes(findVolumeDTO);
 	}
 }

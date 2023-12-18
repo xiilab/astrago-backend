@@ -22,4 +22,6 @@ public interface VolumeRepository {
 	void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO);
 
 	List<PageVolumeResDTO> findVolumesWithPagination(String workspaceMetaName, String option, String keyword);
+
+	List<PageVolumeResDTO> findVolumes(String option, String keyword);
 }

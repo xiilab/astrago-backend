@@ -1,13 +1,15 @@
 package com.xiilab.modulek8s.storage.volume.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.common.dto.Pageable;
+import com.xiilab.modulek8s.common.dto.SearchCondition;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
@@ -42,11 +44,14 @@ public class VolumeService {
 		volumeRepository.deleteVolumeByMetaName(deleteVolumeDTO);
 	}
 
-	public PageResDTO findVolumesWithPagination(FindVolumeDTO findVolumeDTO) {
+	public PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO) {
+		Pageable pageable = pageFindVolumeDTO.getPageable();
+		SearchCondition searchCondition = pageFindVolumeDTO.getSearchCondition();
+
 		List<PageVolumeResDTO> volumes = volumeRepository.findVolumesWithPagination(
-			findVolumeDTO.getWorkspaceMetaName(), findVolumeDTO.getOption(), findVolumeDTO.getKeyword());
-		int pageNumber = findVolumeDTO.getPageNumber();
-		int pageSize = findVolumeDTO.getPageSize();
+			pageFindVolumeDTO.getWorkspaceMetaName(), searchCondition.getOption(), searchCondition.getKeyword());
+		int pageNumber = pageable.getPageNumber();
+		int pageSize = pageable.getPageSize();
 		int totalSize = volumes.size();
 		// int startIndex = (pageNumber - 1) * pageSize;
 		// int endIndex = Math.min(startIndex + pageSize, totalSize);
@@ -68,5 +73,11 @@ public class VolumeService {
 			.size(pageSize)
 			.totalCount(totalSize)
 			.build();
+	}
+
+	public List<PageVolumeResDTO> findVolumes(FindVolumeDTO findVolumeDTO) {
+		String option = findVolumeDTO.getSearchCondition().getOption();
+		String keyword = findVolumeDTO.getSearchCondition().getKeyword();
+		return volumeRepository.findVolumes(option, keyword);
 	}
 }
