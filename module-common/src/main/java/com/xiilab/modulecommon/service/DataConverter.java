@@ -1,18 +1,18 @@
-package com.xiilab.modulecommon.repository;
+package com.xiilab.modulecommon.service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.xiilab.modulecommon.service.CommonService;
 
-@Repository
-public class CommonRepositoryImpl implements CommonService {
+@Service
+public class DataConverter {
 	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+
 	/**
 	 * DateTime 포멧하는 메소드
 	 * @param unixTime  Prometheus에서 조회된 UnixTime
@@ -20,12 +20,13 @@ public class CommonRepositoryImpl implements CommonService {
 	 */
 	public String formatDateTime(double unixTime) {
 		// UnixTime LocalDateTime으로 변환
-		LocalDateTime dateTime = Instant.ofEpochSecond((long) unixTime)
+		LocalDateTime dateTime = Instant.ofEpochSecond((long)unixTime)
 			.atZone(ZoneId.systemDefault())
 			.toLocalDateTime();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
 		return dateTime.format(formatter);
 	}
+
 	public String formatDateTime(String dateTime) {
 		// 입력된 문자열을 LocalDateTime으로 변환
 		LocalDateTime parsedDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ISO_DATE_TIME);
@@ -40,12 +41,13 @@ public class CommonRepositoryImpl implements CommonService {
 	 *
 	 * @param node       JsonNode
 	 * @param fieldName  필드 이름
-	 * @return           가져온 필드 값 또는 Null
+	 * @return 가져온 필드 값 또는 Null
 	 */
 	public String getStringOrNull(JsonNode node, String fieldName) {
 		JsonNode field = node.get(fieldName);
 		return field == null ? "" : field.asText();
 	}
+
 	/**
 	 * DateTime UnixTime으로 변환하는 메소드
 	 * @param formattedDateTime 변환될 Date Time
@@ -55,5 +57,4 @@ public class CommonRepositoryImpl implements CommonService {
 		LocalDateTime dateTime = LocalDateTime.parse(formattedDateTime, DateTimeFormatter.ofPattern(dateFormat));
 		return String.valueOf(dateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
 	}
-
 }

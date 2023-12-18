@@ -10,7 +10,7 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xiilab.modulecommon.service.CommonService;
+import com.xiilab.modulecommon.service.DataConverter;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class MonitorService {
 	private final PrometheusService prometheus;
 	private final K8sMonitorService k8sMonitorService;
-	private final CommonService common;
+	private final DataConverter common;
 
 	/**
 	 * Prometheus 실시간 데이터 조회하는 메소드
