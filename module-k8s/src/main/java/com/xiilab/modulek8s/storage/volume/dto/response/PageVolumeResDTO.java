@@ -12,14 +12,16 @@ import lombok.Getter;
 
 @Getter
 public class PageVolumeResDTO extends K8SResourceResDTO {
+	private String workspaceName;
 	//용량
 	private String requestVolume;
 	private StorageType storageType;
 	private boolean isUsed;
 
 	@Builder
-	public PageVolumeResDTO(HasMetadata hasMetadata, String requestVolume, StorageType storageType, boolean isUsed) {
+	public PageVolumeResDTO(HasMetadata hasMetadata, String workspaceName,String requestVolume, StorageType storageType, boolean isUsed) {
 		super(hasMetadata);
+		this.workspaceName = workspaceName;
 		this.requestVolume = requestVolume;
 		this.storageType = storageType;
 		this.isUsed = isUsed;
@@ -40,4 +42,8 @@ public class PageVolumeResDTO extends K8SResourceResDTO {
 	public void setIsUsed(boolean isUsed){
 		this.isUsed = isUsed;
 	}
+	public void setWorkspaceName(String workspaceName){
+		this.workspaceName = workspaceName;
+	}
+
 }

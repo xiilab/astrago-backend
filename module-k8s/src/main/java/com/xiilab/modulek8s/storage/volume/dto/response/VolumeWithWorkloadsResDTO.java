@@ -12,15 +12,17 @@ import lombok.Getter;
 
 @Getter
 public class VolumeWithWorkloadsResDTO extends K8SResourceResVO {
+	private String workspaceName;
 	//workload  list
-	List<String> workloadNames;
+	private List<String> workloadNames;
 	//용량
 	private String requestVolume;
 	private StorageType storageType;
 
 	@Builder
-	public VolumeWithWorkloadsResDTO(HasMetadata hasMetadata, List<String> workloadNames, String requestVolume, StorageType storageType) {
+	public VolumeWithWorkloadsResDTO(HasMetadata hasMetadata, String workspaceName, List<String> workloadNames, String requestVolume, StorageType storageType) {
 		super(hasMetadata);
+		this.workspaceName = workspaceName;
 		this.requestVolume = requestVolume;
 		this.workloadNames = workloadNames;
 		this.storageType = storageType;

@@ -17,6 +17,7 @@
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 //
+// import io.fabric8.kubernetes.api.model.Namespace;
 // import io.fabric8.kubernetes.api.model.NamespaceList;
 // import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 // import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
@@ -251,7 +252,8 @@
 // 				.inAnyNamespace()
 // 				.list()
 // 				.getItems();
-//
+// 			String namespace = "ws-uuid123";
+// 			String workspaceName = client.namespaces().withName(namespace).get().getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
 // 			System.out.println(pvcs.size());
 // 		}
 // 	}
