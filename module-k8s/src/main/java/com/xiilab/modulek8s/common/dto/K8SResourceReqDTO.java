@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.common.vo;
+package com.xiilab.modulek8s.common.dto;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;

@@ -11,14 +11,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class VolumeServiceFacadeImpl implements VolumeServiceFacade{
-	private final StorageModuleService storageModuleService;
 
-	@Override
-	public void createVolume(CreateVolumeReqDTO requestDTO, UserInfoDTO userInfoDTO){
-		//키클락 유저 정보 넣어줘야함
-		requestDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
-		storageModuleService.createVolume(requestDTO.toModuleDto());
-	}
 
 
 

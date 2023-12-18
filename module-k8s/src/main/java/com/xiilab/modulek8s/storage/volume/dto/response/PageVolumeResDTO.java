@@ -1,10 +1,8 @@
 package com.xiilab.modulek8s.storage.volume.dto.response;
 
-import java.util.List;
-
+import com.xiilab.modulek8s.common.dto.K8SResourceResDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -13,16 +11,18 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class VolumeResDTO extends K8SResourceResVO {
+public class PageVolumeResDTO extends K8SResourceResDTO {
 	//용량
 	private String requestVolume;
 	private StorageType storageType;
+	private boolean isUsed;
 
 	@Builder
-	public VolumeResDTO(HasMetadata hasMetadata, String requestVolume, StorageType storageType) {
+	public PageVolumeResDTO(HasMetadata hasMetadata, String requestVolume, StorageType storageType, boolean isUsed) {
 		super(hasMetadata);
 		this.requestVolume = requestVolume;
 		this.storageType = storageType;
+		this.isUsed = isUsed;
 	}
 
 	@Override
@@ -30,11 +30,14 @@ public class VolumeResDTO extends K8SResourceResVO {
 		return ResourceType.VOLUME;
 	}
 
-	public static VolumeResDTO toDTO(PersistentVolumeClaim pvc){
-		return VolumeResDTO.builder()
+	public static PageVolumeResDTO toDTO(PersistentVolumeClaim pvc){
+		return PageVolumeResDTO.builder()
 			.hasMetadata(pvc)
 			.requestVolume(pvc.getSpec().getResources().getRequests().get("storage").toString())
 			.storageType(StorageType.valueOf(pvc.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField())))
 			.build();
+	}
+	public void setIsUsed(boolean isUsed){
+		this.isUsed = isUsed;
 	}
 }

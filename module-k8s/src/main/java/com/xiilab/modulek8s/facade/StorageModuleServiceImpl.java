@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
+import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
@@ -81,5 +83,16 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
 		volumeService.deleteVolumeByMetaName(deleteVolumeDTO);
+	}
+
+	/**
+	 * 볼륨 리스트 조회 (검색, 페이징 포함)
+	 *
+	 * @param findVolumeDTO
+	 * @return
+	 */
+	@Override
+	public PageResDTO findVolumesWithPagination(FindVolumeDTO findVolumeDTO) {
+		return volumeService.findVolumesWithPagination(findVolumeDTO);
 	}
 }

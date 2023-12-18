@@ -1,6 +1,6 @@
 package com.xiilab.modulek8s.storage.volume.dto.request;
 
-import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 
 import lombok.Builder;

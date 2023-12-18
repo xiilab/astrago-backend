@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.workload.dto.CodeDTO;
 import com.xiilab.modulek8s.workload.dto.JobReqVO;
 
