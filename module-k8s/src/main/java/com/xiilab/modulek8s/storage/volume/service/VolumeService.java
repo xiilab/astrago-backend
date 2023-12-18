@@ -1,13 +1,17 @@
 package com.xiilab.modulek8s.storage.volume.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
+import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
@@ -36,5 +40,33 @@ public class VolumeService {
 	}
 	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
 		volumeRepository.deleteVolumeByMetaName(deleteVolumeDTO);
+	}
+
+	public PageResDTO findVolumesWithPagination(FindVolumeDTO findVolumeDTO) {
+		List<PageVolumeResDTO> volumes = volumeRepository.findVolumesWithPagination(
+			findVolumeDTO.getWorkspaceMetaName(), findVolumeDTO.getOption(), findVolumeDTO.getKeyword());
+		int pageNumber = findVolumeDTO.getPageNumber();
+		int pageSize = findVolumeDTO.getPageSize();
+		int totalSize = volumes.size();
+		// int startIndex = (pageNumber - 1) * pageSize;
+		// int endIndex = Math.min(startIndex + pageSize, totalSize);
+
+		// if (startIndex >= totalSize || endIndex <= startIndex) {
+		// 	// 페이지 범위를 벗어나면 빈 리스트 반환
+		// 	return PageResDTO.builder()
+		// 		.content(null)
+		// 		.page(pageNumber)
+		// 		.size(pageSize)
+		// 		.totalCount(totalSize)
+		// 		.build();
+		// }
+		// List<PageVolumeResDTO> volumeResDTOS = volumes.subList(startIndex, endIndex);
+
+		return PageResDTO.builder()
+			.content(volumes)
+			.page(pageNumber)
+			.size(pageSize)
+			.totalCount(totalSize)
+			.build();
 	}
 }

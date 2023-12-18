@@ -6,6 +6,7 @@ import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 
@@ -19,4 +20,6 @@ public interface VolumeRepository {
 	void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO);
 
 	void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO);
+
+	List<PageVolumeResDTO> findVolumesWithPagination(String workspaceMetaName, String option, String keyword);
 }

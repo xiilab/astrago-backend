@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.storage.volume.repository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -15,6 +16,7 @@ import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
@@ -22,7 +24,6 @@ import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimList;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -142,6 +143,27 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
+	@Override
+	public List<PageVolumeResDTO> findVolumesWithPagination(String workspaceMetaName, String option, String keyword) {
+		try(final KubernetesClient client = k8sAdapter.configServer()) {
+			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+				.inNamespace(workspaceMetaName)
+				.list()
+				.getItems();
+
+			return pvcs.stream()
+				.filter(pvc -> matchesSearchOption(pvc, option, keyword))
+				.map(pvc -> {
+					String volumeName = pvc.getMetadata().getName();
+					boolean isUsed = checkUsedVolume(volumeName, client);
+					PageVolumeResDTO pageVolumeResDTO = PageVolumeResDTO.toDTO(pvc);
+					pageVolumeResDTO.setIsUsed(isUsed);
+					return pageVolumeResDTO;
+				})
+				// .sorted(Comparator.comparing(PageVolumeResDTO::getCreatedAt).reversed())
+				.collect(Collectors.toList());
+		}
+	}
 
 	/**
 	 * 해당 볼륨을 사용중인 job list 조회
@@ -183,7 +205,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	/**
-	 * 해당 볼륨을 사용중인 workload set
+	 * 해당 볼륨을 사용중인 workload 주입
 	 * @param resources
 	 * @param workloadNames
 	 */
@@ -212,6 +234,19 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	/**
+	 * 해당 볼륨이 사용중인지 체크
+	 * @param volumeMetaName
+	 * @param client
+	 * @return
+	 */
+	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
+		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
+		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);
+		List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeMetaName, client);
+		return !jobsInUseVolume.isEmpty() || !deploymentsInUseVolume.isEmpty() || !statefulSetsInUseVolume.isEmpty();
+	}
+
+	/**
 	 * 자신이 생성한 볼륨이 맞는지 체크
 	 * @param workspaceMetaName
 	 * @param volumeMetaName
@@ -228,5 +263,27 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR.getField());
 
 		return labelCreator.equals(creator) ? true : false;
+	}
+
+	/**
+	 * 검색 조건 체크
+	 * @param pvc
+	 * @param option
+	 * @param keyword
+	 * @return
+	 */
+	private boolean matchesSearchOption(PersistentVolumeClaim pvc, String option, String keyword) {
+		if(option == null || option.isBlank() || keyword == null || keyword.isBlank()){
+			return true;
+		}
+		Map<String, String> annotations = pvc.getMetadata().getAnnotations();
+
+		if (option.equalsIgnoreCase(AnnotationField.CREATOR_FULL_NAME.getField())) {
+			return annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()).equalsIgnoreCase(keyword);
+		} else if (option.equalsIgnoreCase(AnnotationField.NAME.getField())) {
+			return annotations.get(AnnotationField.NAME.getField()).equalsIgnoreCase(keyword);
+		}
+
+		return false;
 	}
 }
