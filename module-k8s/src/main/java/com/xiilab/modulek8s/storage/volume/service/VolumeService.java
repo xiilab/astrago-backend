@@ -1,10 +1,14 @@
 package com.xiilab.modulek8s.storage.volume.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 
@@ -21,6 +25,9 @@ public class VolumeService {
 		volumeRepository.createVolume(createDTO);
 	}
 
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaName(String workspaceMetaName, StorageType storageType){
+		return volumeRepository.findVolumesByWorkspaceMetaName(workspaceMetaName, storageType);
+	}
 	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
 		return volumeRepository.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
 	}

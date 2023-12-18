@@ -1,15 +1,18 @@
 // package com.xiilab.modulek8s.storage.facade;
 //
 // import java.util.List;
+// import java.util.stream.Collectors;
 //
 // import org.junit.jupiter.api.Test;
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.boot.test.context.SpringBootTest;
 //
+// import com.xiilab.modulek8s.common.enumeration.LabelField;
 // import com.xiilab.modulek8s.config.K8sAdapter;
 // import com.xiilab.modulek8s.facade.StorageModuleServiceImpl;
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
-// import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
+// import com.xiilab.modulek8s.common.enumeration.StorageType;
+// import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 //
 // import io.fabric8.kubernetes.api.model.NamespaceList;
@@ -194,4 +197,16 @@
 // 		}
 // 	}
 //
+// 	@Test
+// 	void 워크스페이스명으로볼륨조회(){
+// 		try(final KubernetesClient client = k8sAdapter.configServer()) {
+// 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+// 				.inNamespace("yc-test-ns")
+// 				.withLabel(LabelField.STORAGE_TYPE.getField(), "NFS")
+// 				.list()
+// 				.getItems();
+// 			List<VolumeResDTO> collect = pvcs.stream().map(VolumeResDTO::toDTO).collect(Collectors.toList());
+//
+// 		}
+// 	}
 // }

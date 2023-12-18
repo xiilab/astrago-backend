@@ -1,13 +1,17 @@
 package com.xiilab.modulek8s.facade;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 
@@ -35,6 +39,17 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		CreateDTO createDTO = CreateDTO.createVolumeDtoToCreateDto(createVolumeDTO);
 		createDTO.setStorageClassMetaName(storageClassMetaName);
 		volumeService.createVolume(createDTO);
+	}
+
+	/**
+	 * 해당 워크스페이스에 스토리지 타입으로 볼륨 리스트 조회
+	 * @param workspaceMetaName
+	 * @param storageType
+	 * @return
+	 */
+	@Override
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaName(String workspaceMetaName, StorageType storageType){
+		return volumeService.findVolumesByWorkspaceMetaName(workspaceMetaName,storageType);
 	}
 
 	/**

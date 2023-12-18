@@ -2,32 +2,39 @@ package com.xiilab.modulek8s.storage.volume.dto.response;
 
 import java.util.List;
 
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class VolumeWithWorkloadsResDTO extends K8SResourceResVO {
-	//workload  list
-	List<String> workloadNames;
+public class VolumeResDTO extends K8SResourceResVO {
 	//용량
 	private String requestVolume;
 	private StorageType storageType;
 
 	@Builder
-	public VolumeWithWorkloadsResDTO(HasMetadata hasMetadata, List<String> workloadNames, String requestVolume, StorageType storageType) {
+	public VolumeResDTO(HasMetadata hasMetadata, String requestVolume, StorageType storageType) {
 		super(hasMetadata);
 		this.requestVolume = requestVolume;
-		this.workloadNames = workloadNames;
 		this.storageType = storageType;
 	}
 
 	@Override
 	protected ResourceType getType() {
 		return null;
+	}
+
+	public static VolumeResDTO toDTO(PersistentVolumeClaim pvc){
+		return VolumeResDTO.builder()
+			.hasMetadata(pvc)
+			.requestVolume(pvc.getSpec().getResources().getRequests().get("storage").toString())
+			.storageType(StorageType.valueOf(pvc.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField())))
+			.build();
 	}
 }
