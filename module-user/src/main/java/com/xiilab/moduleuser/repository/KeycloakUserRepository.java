@@ -58,7 +58,12 @@ public class KeycloakUserRepository implements UserRepository {
 			.filter(role -> role.getName().contains("ROLE_"))
 			.toList()
 			.get(0);
-		List<GroupRepresentation> groupList = userResource.groups();
+		List<GroupRepresentation> groupList;
+		try {
+			groupList = userResource.groups();
+		} catch (NullPointerException e) {
+			groupList = null;
+		}
 		UserRepresentation userRepresentation = userResource.toRepresentation();
 		userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
 		return new UserInfo(userRepresentation, groupList);

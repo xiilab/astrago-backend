@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.util.CollectionUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,14 +29,16 @@ public class UserInfo {
 		this.joinDate = null;
 		this.signUpMethod = null;
 		this.auth = userRep.getRealmRoles() != null ? AuthType.valueOf(userRep.getRealmRoles().get(0)) : null;
-		this.groups = groupReps.stream()
-			.filter(group -> group.getPath().contains("/account/"))
-			.map(GroupRepresentation::getName)
-			.toList();
-		this.workspaces = groupReps.stream()
-			.filter(group -> group.getPath().contains("/ws/"))
-			.map(group -> group.getPath().split("/ws/")[1])
-			.toList();
+		if (!CollectionUtils.isEmpty(groupReps)) {
+			this.groups = groupReps.stream()
+				.filter(group -> group.getPath().contains("/account/"))
+				.map(GroupRepresentation::getName)
+				.toList();
+			this.workspaces = groupReps.stream()
+				.filter(group -> group.getPath().contains("/ws/"))
+				.map(group -> group.getPath().split("/ws/")[1])
+				.toList();
+		}
 	}
 
 	public UserInfo(UserRepresentation userRep) {

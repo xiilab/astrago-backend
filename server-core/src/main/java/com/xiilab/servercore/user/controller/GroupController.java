@@ -36,7 +36,7 @@ public class GroupController {
 		return ResponseEntity.ok(groupService.getGroupInfoById(id));
 	}
 
-	@PostMapping("")
+	@PostMapping("/")
 	public ResponseEntity<HttpStatus> createAccountGroup(@RequestBody GroupReqDTO groupReqDTO) {
 		groupService.createAccountGroup(groupReqDTO);
 		return ResponseEntity.ok().build();
