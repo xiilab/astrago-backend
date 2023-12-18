@@ -14,6 +14,11 @@ import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.servermonitor.service.MonitorService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -28,9 +33,29 @@ public class MonitorController {
 	 * @return 조회된 Monitor Metric
 	 */
 	@GetMapping()
+	@Operation(summary = "Get Prometheus Real Time Metric")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "성공",
+			content = {@Content(schema = @Schema(implementation = ResponseDTO.RealTimeDTO.class))}),
+	})
 	public ResponseEntity<List<ResponseDTO.RealTimeDTO>> getPrometheusRealTimeMetric(
 		@RequestBody RequestDTO requestDTO) {
 		return new ResponseEntity<>(monitorService.getRealTimeMetric(requestDTO), HttpStatus.OK);
+	}
+
+	/**
+	 * 과거 모니터링 조회 API
+	 * @param requestDTO
+	 * @return 조회된 Monitor Metric
+	 */
+	@GetMapping("/history")
+	@Operation(summary = "Get Prometheus History Metric")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "성공",
+			content = {@Content(schema = @Schema(implementation = ResponseDTO.HistoryDTO.class))}),
+	})
+	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getPrometheusHistoryMetric(@RequestBody RequestDTO requestDTO) {
+		return new ResponseEntity<>(monitorService.getHistoryMetric(requestDTO), HttpStatus.OK);
 	}
 
 	/**
@@ -38,6 +63,11 @@ public class MonitorController {
 	 * @return 조회된 Node Error 개수
 	 */
 	@GetMapping("/nodeErrorCount")
+	@Operation(summary = "Get Node Error Count")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "성공",
+			content = {@Content(schema = @Schema(implementation = long.class))}),
+	})
 	public ResponseEntity<Long> getNodeErrorCount() {
 		return new ResponseEntity<>(monitorService.getNodeErrorCount(), HttpStatus.OK);
 	}
@@ -49,6 +79,11 @@ public class MonitorController {
 	 * @return
 	 */
 	@GetMapping("/workloadErrorCount")
+	@Operation(summary = "Get Workload Error Count")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "성공",
+			content = {@Content(schema = @Schema(implementation = long.class))}),
+	})
 	public ResponseEntity<Long> getWorkloadErrorCount(
 		@RequestParam(name = "namespace", required = false) String namespace,
 		@RequestParam(name = "podName", required = false) String podName) {
@@ -56,20 +91,15 @@ public class MonitorController {
 	}
 
 	/**
-	 * 과거 모니터링 조회 API
-	 * @param requestDTO
-	 * @return 조회된 Monitor Metric
-	 */
-	@GetMapping("/history")
-	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getPrometheusHistoryMetric(@RequestBody RequestDTO requestDTO) {
-		return new ResponseEntity<>(monitorService.getHistoryMetric(requestDTO), HttpStatus.OK);
-	}
-
-	/**
 	 * k8s event list 조회 API
 	 * @return 조회된 Monitor Metric
 	 */
 	@GetMapping("/event")
+	@Operation(summary = "Get Event List")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "성공",
+			content = {@Content(schema = @Schema(implementation = ResponseDTO.EventDTO.class))}),
+	})
 	public ResponseEntity<List<ResponseDTO.EventDTO>> getEventList(
 		@RequestParam(name = "namespace", required = false) String namespace,
 		@RequestParam(name = "podName", required = false) String podName) {
@@ -81,6 +111,11 @@ public class MonitorController {
 	 * @return 등록된 Promql List
 	 */
 	@GetMapping("/promql")
+	@Operation(summary = "Get Promql List")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "성공",
+			content = {@Content(schema = @Schema(implementation = ResponseDTO.PromqlDTO.class))}),
+	})
 	public ResponseEntity<List<ResponseDTO.PromqlDTO>> getPromqlList() {
 		return new ResponseEntity<>(monitorService.getPromqlList(), HttpStatus.OK);
 	}
@@ -91,6 +126,11 @@ public class MonitorController {
 	 * @return 조회된 Disk Space
 	 */
 	@GetMapping("/disk")
+	@Operation(summary = "Get Disk Space List")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "성공",
+			content = {@Content(schema = @Schema(implementation = ResponseDTO.DiskDTO.class))}),
+	})
 	public ResponseEntity<List<ResponseDTO.DiskDTO>> getDiskSpace(@RequestParam(name = "nodeName", required = false) String nodeName){
 		return new ResponseEntity<>(monitorService.getDiskSpace(nodeName), HttpStatus.OK);
 	}
