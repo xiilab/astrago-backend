@@ -1,16 +1,17 @@
 package com.xiilab.modulek8s.storage.volume.repository;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
@@ -22,6 +23,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDT
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -163,6 +165,65 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				// .sorted(Comparator.comparing(PageVolumeResDTO::getCreatedAt).reversed())
 				.collect(Collectors.toList());
 		}
+	}
+
+	@Override
+	public List<PageVolumeResDTO> findVolumes(String option, String keyword) {
+		try(final KubernetesClient client = k8sAdapter.configServer()) {
+			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+				.inAnyNamespace()
+				.list()
+				.getItems();
+
+			return pvcs.stream()
+				.filter(pvc -> isVolumePVC(pvc))
+				.filter(pvc -> matchesSearchOption(pvc, option, keyword))
+				.map(pvc -> createPageVolumeResDTO(client, pvc))
+				.collect(Collectors.toList());
+		}
+	}
+
+	/**
+	 * pageVolumeResDTO 생성 메서드
+	 * @param client
+	 * @param pvc
+	 * @return
+	 */
+	private PageVolumeResDTO createPageVolumeResDTO(KubernetesClient client, PersistentVolumeClaim pvc) {
+		String volumeName = pvc.getMetadata().getName();
+		boolean isUsed = checkUsedVolume(volumeName, client);
+
+		String namespace = pvc.getMetadata().getNamespace();
+		String workspaceName = getWorkspaceNameByMetaName(client, namespace);
+
+		PageVolumeResDTO pageVolumeResDTO = PageVolumeResDTO.toDTO(pvc);
+		pageVolumeResDTO.setIsUsed(isUsed);
+		pageVolumeResDTO.setWorkspaceName(workspaceName);
+		return pageVolumeResDTO;
+	}
+
+	/**
+	 * 아스트라를 통해 만들어진 PVC가 맞는지 체크
+	 * @param pvc
+	 * @return
+	 */
+	private static boolean isVolumePVC(PersistentVolumeClaim pvc) {
+		return pvc.getMetadata().getName().contains(ResourceType.VOLUME.getName());
+	}
+
+	/**
+	 * 워크스페이스 메타 이름으로 워크스페이스 사용자가 설정한 이름 조회
+	 * @param client
+	 * @param namespace
+	 * @return
+	 */
+	private static String getWorkspaceNameByMetaName(KubernetesClient client, String namespace) {
+		return client.namespaces().
+			withName(namespace)
+			.get()
+			.getMetadata()
+			.getAnnotations()
+			.get(AnnotationField.NAME.getField());
 	}
 
 	/**
