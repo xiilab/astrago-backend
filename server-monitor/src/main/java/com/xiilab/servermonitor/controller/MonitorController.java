@@ -84,4 +84,15 @@ public class MonitorController {
 	public ResponseEntity<List<ResponseDTO.PromqlDTO>> getPromqlList() {
 		return new ResponseEntity<>(monitorService.getPromqlList(), HttpStatus.OK);
 	}
+
+	/**
+	 * Disk Space 조회하는 API
+	 * @param nodeName 조회될 node Name
+	 * @return 조회된 Disk Space
+	 */
+	@GetMapping("/disk")
+	public ResponseEntity<List<ResponseDTO.DiskDTO>> getDiskSpace(@RequestParam(name = "nodeName", required = false) String nodeName){
+		return new ResponseEntity<>(monitorService.getDiskSpace(nodeName), HttpStatus.OK);
+	}
+
 }

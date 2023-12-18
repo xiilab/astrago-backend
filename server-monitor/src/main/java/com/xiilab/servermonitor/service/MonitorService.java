@@ -2,6 +2,7 @@ package com.xiilab.servermonitor.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -49,19 +50,52 @@ public class MonitorService {
 	}
 
 	/**
-	 * Workload Error Count 조회하는 메소드
-	 * @param nameSpace 조회될 NameSpace
-	 * @param podName 조회될 PodName
-	 * @return 조회된 Workload Error Count
+	 * 총사이즈, 사용가능사이즈를 이용한 Disk Space 생성하는 메소드
+	 * @param totalSizes 총사이즈
+	 * @param availableSizes 사용가능사이즈
+	 * @return mapping된 Disk Space List
 	 */
-	public long getWorkloadErrorCount(String nameSpace, String podName) {
-		if (!StringUtils.hasText(nameSpace) && !StringUtils.hasText(podName)) {
-			return k8sMonitorService.getWorkloadErrorCount(nameSpace, podName);
-		} else if (!StringUtils.hasText(nameSpace)) {
-			return k8sMonitorService.getWorkloadErrorCount(nameSpace);
-		} else {
-			return k8sMonitorService.getWorkloadErrorCount();
+	public static List<ResponseDTO.DiskDTO> mapToDiskDTO(String totalSizes, String availableSizes) {
+		List<ResponseDTO.DiskDTO> diskDTOList = new ArrayList<>();
+
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode totalSizesNode = objectMapper.readTree(totalSizes);
+			JsonNode availableSizesNode = objectMapper.readTree(availableSizes);
+			// 총사이즈 매핑
+			Iterator<JsonNode> totalSizesIterator = totalSizesNode.get("data").get("result").elements();
+			// 사용가능 사이즈 매핑
+			Iterator<JsonNode> availableSizesIterator = availableSizesNode.get("data").get("result").elements();
+
+			while (totalSizesIterator.hasNext() && availableSizesIterator.hasNext()) {
+				JsonNode totalResult = totalSizesIterator.next();
+				JsonNode availableResult = availableSizesIterator.next();
+
+				String mountPath = totalResult.get("metric").get("mountpoint").asText();
+				String totalSizeStr = formatSize(totalResult.get("value").get(1).asText());
+				String availableStr = formatSize(availableResult.get("value").get(1).asText());
+
+				// 사용량, 사용률 게산용
+				long totalSize = Long.parseLong(totalResult.get("value").get(1).asText());
+				long available = Long.parseLong(availableResult.get("value").get(1).asText());
+				// 사용량
+				long used = totalSize - available;
+				// 사용률
+				double usage = ((double)used / totalSize) * 100;
+				// diskDTO List 추가
+				diskDTOList.add(ResponseDTO.DiskDTO.builder()
+						.mountPath(mountPath)
+						.size(totalSizeStr)
+						.available(availableStr)
+						.used(formatSize(String.valueOf(used)))
+						.usage(String.format("%.2f", usage))
+					.build());
+			}
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("Disk Space 조회 실패하였습니다.");
 		}
+
+		return diskDTOList;
 	}
 
 	/**
@@ -241,21 +275,21 @@ public class MonitorService {
 	}
 
 	/**
-	 * K8s에서 발생한 Event List 조회 메소드
-	 * @param namespace 조회될 Namespace
-	 * @param podName 조회될 pod Name
-	 * @return 조회된 Event List
+	 * data size 변환 메소드
+	 * @param sizeStr 변환될 dataSize
+	 * @return 변환된 dataSize
 	 */
-	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName) {
-		// Namespace, podName 둘다 있는 경우
-		if (!StringUtils.hasText(namespace) && !StringUtils.hasText(podName)) {
-			return k8sMonitorService.getEventList(namespace, podName);
-			// Namespace 만으로 조회
-		} else if (!StringUtils.hasText(namespace)) {
-			return k8sMonitorService.getEventList(namespace);
-			// 조건 없이 조회
+	private static String formatSize(String sizeStr) {
+		long size = Long.parseLong(sizeStr);
+
+		if (size >= 1000000000000L) { // 1 TB
+			return String.format("%.2fTB", (double)size / 1000000000000L);
+		} else if (size >= 1000000000L) { // 1 GB
+			return String.format("%.2fGB", (double)size / 1000000000L);
+		} else if (size >= 1000000L) { // 1 MB
+			return String.format("%.2fMB", (double)size / 1000000L);
 		} else {
-			return k8sMonitorService.getEventList();
+			return String.format("%dbytes", size);
 		}
 	}
 
@@ -270,4 +304,62 @@ public class MonitorService {
 				enumValue.getType()))
 			.toList();
 	}
+
+	/**
+	 * Workload Error Count 조회하는 메소드
+	 * @param nameSpace 조회될 NameSpace
+	 * @param podName 조회될 PodName
+	 * @return 조회된 Workload Error Count
+	 */
+	public long getWorkloadErrorCount(String nameSpace, String podName) {
+		if (StringUtils.hasText(nameSpace) && StringUtils.hasText(podName)) {
+			return k8sMonitorService.getWorkloadErrorCount(nameSpace, podName);
+		} else if (StringUtils.hasText(nameSpace)) {
+			return k8sMonitorService.getWorkloadErrorCount(nameSpace);
+		} else {
+			return k8sMonitorService.getWorkloadErrorCount();
+		}
+	}
+
+	/**
+	 * K8s에서 발생한 Event List 조회 메소드
+	 * @param namespace 조회될 Namespace
+	 * @param podName 조회될 pod Name
+	 * @return 조회된 Event List
+	 */
+	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName) {
+		// Namespace, podName 둘다 있는 경우
+		if (StringUtils.hasText(namespace) && StringUtils.hasText(podName)) {
+			return k8sMonitorService.getEventList(namespace, podName);
+			// Namespace 만으로 조회
+		} else if (StringUtils.hasText(namespace)) {
+			return k8sMonitorService.getEventList(namespace);
+			// 조건 없이 조회
+		} else {
+			return k8sMonitorService.getEventList();
+		}
+	}
+
+	/**
+	 * Disk Space 조회하는 메소드
+	 * @param nodeName 조회될 Node Name
+	 * @return Mount path별 Disk Space
+	 */
+	public List<ResponseDTO.DiskDTO> getDiskSpace(String nodeName) {
+		String result = "";
+		if (StringUtils.hasText(nodeName)) {
+			result = "node=\"" + nodeName + "\"";
+		}
+		// Disk 전체 사이즈 Query Format
+		String diskSize = String.format(Promql.NODE_DISK_SIZE.getQuery(), result);
+		// Disk 사용 가능 Query Format
+		String diskAvail = String.format(Promql.NODE_DISK_USAGE_SIZE.getQuery(), result);
+		// Disk 전체 사이즈 Metric 조회
+		String totalSize = prometheus.getRealTimeMetricByQuery(diskSize);
+		// Disk 사용 가능 Metric 조회
+		String availableSize = prometheus.getRealTimeMetricByQuery(diskAvail);
+
+		return mapToDiskDTO(totalSize, availableSize);
+	}
 }
+

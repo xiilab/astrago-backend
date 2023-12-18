@@ -48,4 +48,12 @@ public record ResponseDTO() {
 						   String reason,
 						   String message) {
 	}
+	@Builder
+	public record DiskDTO(String mountPath,
+						  String size,
+						  String available,
+						  String used,
+						  String usage){
+
+	}
 }
