@@ -1,6 +1,8 @@
 // package com.xiilab.modulek8s.storage.facade;
 //
+// import java.util.ArrayList;
 // import java.util.List;
+// import java.util.Map;
 // import java.util.stream.Collectors;
 //
 // import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 //
+// import io.fabric8.kubernetes.api.model.HasMetadata;
 // import io.fabric8.kubernetes.api.model.Namespace;
 // import io.fabric8.kubernetes.api.model.NamespaceList;
 // import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
@@ -25,7 +28,9 @@
 // import io.fabric8.kubernetes.api.model.apps.Deployment;
 // import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 // import io.fabric8.kubernetes.api.model.batch.v1.Job;
+// import io.fabric8.kubernetes.api.model.storage.StorageClass;
 // import io.fabric8.kubernetes.client.KubernetesClient;
+// import io.fabric8.kubernetes.client.dsl.Resource;
 // import lombok.extern.slf4j.Slf4j;
 //
 // @SpringBootTest
@@ -247,6 +252,48 @@
 // 	}
 // 	@Test
 // 	void 전체네임스페이스의볼륨조회(){
+// 		List<String> workloadNames = new ArrayList<>();
+// 		try(final KubernetesClient client = k8sAdapter.configServer()) {
+// 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+// 				.inAnyNamespace()
+// 				.list()
+// 				.getItems();
+// 			PersistentVolumeClaim persistentVolumeClaim = pvcs.stream()
+// 				.filter(pvc -> pvc.getMetadata().getName().equals("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89"))
+// 				.findFirst()
+// 				.orElseThrow(() -> new RuntimeException("볼륨이 존재하지 않습니다."));
+//
+// 			String namespace = persistentVolumeClaim.getMetadata().getNamespace();
+// 			String workspaceName = client.namespaces().withName(namespace).get().getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
+//
+// 			//사용중인 statefulSets 조회
+// 			List<StatefulSet> statefulSets = getStatefulSetsInUseVolume("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89", client);
+// 			setWorkloadInUseVolume(statefulSets, workloadNames);
+// 			//사용중인 deployment 조회
+// 			List<Deployment> deployments = getDeploymentsInUseVolume("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89", client);
+// 			setWorkloadInUseVolume(deployments, workloadNames);
+// 			//사용중인 job 조회
+// 			List<Job> jobs = getJobsInUseVolume("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89", client);
+// 			setWorkloadInUseVolume(jobs, workloadNames);
+//
+//
+// 			//sc
+// 			String storageSavePath = client.storage().v1().storageClasses().withName("nfs-csi").get().getParameters().get("share");
+//
+// 			VolumeWithWorkloadsResDTO dto = VolumeWithWorkloadsResDTO.builder()
+// 				.hasMetadata(persistentVolumeClaim)
+// 				.workspaceName(workspaceName)
+// 				.workloadNames(workloadNames)
+// 				.requestVolume(persistentVolumeClaim.getSpec().getResources().getRequests().get("storage").toString())
+// 				.storageType(StorageType.valueOf(
+// 					persistentVolumeClaim.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField())))
+// 				.build();
+//
+// 			System.out.println(dto);
+// 		}
+// 	}
+// 	@Test
+// 	void 관리자_볼륨상세보기(){
 // 		try(final KubernetesClient client = k8sAdapter.configServer()) {
 // 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 // 				.inAnyNamespace()
@@ -257,6 +304,38 @@
 // 			System.out.println(pvcs.size());
 // 		}
 // 	}
+//
+// 	@Test
+// 	void 관리자_볼륨삭제(){
+// 		try (final KubernetesClient client = k8sAdapter.configServer()) {
+// 			//삭제
+// 			PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder().withNewMetadata()
+// 				.withName("vo-bd72cad5-65f7-42c9-a16f-9c924a3c5219")
+// 				.endMetadata()
+// 				.build();
+//
+// 			client.persistentVolumeClaims().inAnyNamespace().resource(pvc).delete();
+// 		}
+// 	}
+//
+// 	@Test
+// 	void 관리자_볼륨수정(){
+// 		try (final KubernetesClient client = k8sAdapter.configServer()) {
+//
+// 			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
+// 				.inAnyNamespace()
+// 				.resources()
+// 				.filter(pvcr -> pvcr.get().getMetadata().getName().equals("vo-619ccb4a-f1bb-4ba7-962a-691d94554214"))
+// 				.findFirst()
+// 				.orElseThrow(() -> new RuntimeException("볼륨이 존재하지않습니다."));
+//
+// 			persistentVolumeClaimResource.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
+// 				.addToAnnotations(AnnotationField.NAME.getField(), "수정한 이름이지롱")
+// 				.endMetadata()
+// 				.build());
+// 		}
+// 	}
+//
 // 	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
 // 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
 // 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);
@@ -294,5 +373,21 @@
 // 			.withLabelIn(volumeMetaName, "true")
 // 			.list()
 // 			.getItems();
+// 	}
+// 	/**
+// 	 * 해당 볼륨을 사용중인 workload 주입
+// 	 * @param resources
+// 	 * @param workloadNames
+// 	 */
+// 	private void setWorkloadInUseVolume(List<? extends HasMetadata> resources, List<String> workloadNames){
+// 		for (HasMetadata resource : resources) {
+// 			Map<String, String> annotations = resource.getMetadata().getAnnotations() == null ? null : resource.getMetadata().getAnnotations();
+// 			if (annotations != null) {
+// 				String name = annotations.get(AnnotationField.NAME.getField());
+// 				if (name != null) {
+// 					workloadNames.add(name);
+// 				}
+// 			}
+// 		}
 // 	}
 // }

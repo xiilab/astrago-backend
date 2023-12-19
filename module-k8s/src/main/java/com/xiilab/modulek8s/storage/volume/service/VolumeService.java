@@ -15,6 +15,7 @@ import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 
@@ -31,8 +32,8 @@ public class VolumeService {
 		volumeRepository.createVolume(createDTO);
 	}
 
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaName(String workspaceMetaName, StorageType storageType){
-		return volumeRepository.findVolumesByWorkspaceMetaName(workspaceMetaName, storageType);
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType){
+		return volumeRepository.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName, storageType);
 	}
 	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
 		return volumeRepository.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
@@ -40,8 +41,8 @@ public class VolumeService {
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
 		volumeRepository.modifyVolumeByMetaName(modifyVolumeDTO);
 	}
-	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
-		volumeRepository.deleteVolumeByMetaName(deleteVolumeDTO);
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO){
+		volumeRepository.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
 	}
 
 	public PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO) {
@@ -79,5 +80,16 @@ public class VolumeService {
 		String option = findVolumeDTO.getSearchCondition().getOption();
 		String keyword = findVolumeDTO.getSearchCondition().getKeyword();
 		return volumeRepository.findVolumes(option, keyword);
+	}
+	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName){
+		return volumeRepository.findVolumeByMetaName(volumeMetaName);
+	}
+
+	public void deleteVolumeByMetaName(String volumeMetaName) {
+		volumeRepository.deleteVolumeByMetaName(volumeMetaName);
+	}
+
+	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
+		volumeRepository.modifyVolume(modifyVolumeDTO);
 	}
 }

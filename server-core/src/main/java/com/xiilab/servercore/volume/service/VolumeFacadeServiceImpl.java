@@ -7,15 +7,17 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.facade.StorageModuleService;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
+import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class VolumeServiceImpl implements VolumeService{
+public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	private final StorageModuleService storageModuleService;
 
 	@Override
@@ -32,5 +34,21 @@ public class VolumeServiceImpl implements VolumeService{
 			.keyword(searchCondition.getKeyword())
 			.build();
 		return storageModuleService.findVolumes(findVolumeDTO);
+	}
+	@Override
+	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName) {
+		VolumeWithStorageResDTO volume = storageModuleService.findVolumeByMetaName(volumeMetaName);
+		return volume;
+	}
+
+	@Override
+	public void deleteVolumeByMetaName(String volumeMetaName) {
+		storageModuleService.deleteVolumeByMetaName(volumeMetaName);
+	}
+
+	@Override
+	public void modifyVolume(ModifyVolumeReqDTO modifyVolumeReqDTO, String volumeMetaName) {
+		modifyVolumeReqDTO.setVolumeMetaName(volumeMetaName);
+		storageModuleService.modifyVolume(modifyVolumeReqDTO.toModuleDto());
 	}
 }

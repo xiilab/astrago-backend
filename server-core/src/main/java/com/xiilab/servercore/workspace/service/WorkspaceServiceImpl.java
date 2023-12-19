@@ -12,20 +12,20 @@ import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
-import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
-import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
+import com.xiilab.servercore.workspace.dto.DeleteWorkspaceVolumeReqDTO;
+import com.xiilab.servercore.workspace.dto.ModifyWorkspaceVolumeReqDTO;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class WorkspaceServiceImpl implements WorkspaceService{
+public class WorkspaceServiceImpl implements WorkspaceService {
 	private final StorageModuleService storageModuleService;
 
 
 	@Override
 	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType){
-		return storageModuleService.findVolumesByWorkspaceMetaName(workspaceMetaName, storageType);
+		return storageModuleService.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName, storageType);
 	}
 
 	@Override
@@ -35,14 +35,15 @@ public class WorkspaceServiceImpl implements WorkspaceService{
 	}
 
 	@Override
-	public void modifyVolumeByMetaName(ModifyVolumeReqDTO modifyVolumeReqDTO) {
-		storageModuleService.modifyVolumeByMetaName(modifyVolumeReqDTO.toModuleDto());
+	public void modifyVolumeByMetaName(ModifyWorkspaceVolumeReqDTO modifyWorkspaceVolumeReqDTO) {
+		storageModuleService.modifyVolumeByMetaName(modifyWorkspaceVolumeReqDTO.toModuleDto());
 	}
 
 	@Override
-	public void deleteVolumeByMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO) {
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(
+		DeleteWorkspaceVolumeReqDTO deleteWorkspaceVolumeReqDTO) {
 		//볼륨 삭제
-		storageModuleService.deleteVolumeByMetaName(deleteVolumeReqDTO.toModuleDto());
+		storageModuleService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteWorkspaceVolumeReqDTO.toModuleDto());
 	}
 
 	@Override
