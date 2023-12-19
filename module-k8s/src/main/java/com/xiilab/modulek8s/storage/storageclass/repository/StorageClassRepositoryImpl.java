@@ -1,10 +1,14 @@
 package com.xiilab.modulek8s.storage.storageclass.repository;
 
+import java.util.HashMap;
+
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -21,4 +25,19 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 			return client.storage().v1().storageClasses().withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name()).list().getItems().get(0);
 		}
 	}
+
+	@Override
+	public void createStorageClass(CreateStorageClassDTO createStorageClassDTO) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			StorageClassVO storageClassVO = StorageClassVO.dtoToVo(createStorageClassDTO);
+			HashMap<String, String> parameters = new HashMap<>();
+			parameters.put("server", createStorageClassDTO.getIp());
+			parameters.put("share", createStorageClassDTO.getStorageSavePath());
+			storageClassVO.setParameters(parameters);
+
+			StorageClass resource = (StorageClass)storageClassVO.createResource();
+			client.storage().v1().storageClasses().resource(resource).create();
+		}
+	}
+
 }

@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.facade;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
@@ -34,4 +35,6 @@ public interface StorageModuleService {
 	void deleteVolumeByMetaName(String volumeMetaName);
 
 	void modifyVolume(ModifyVolumeDTO modifyVolumeDTO);
+
+	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
 }

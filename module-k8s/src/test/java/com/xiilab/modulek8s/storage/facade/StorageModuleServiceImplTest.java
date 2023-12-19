@@ -1,20 +1,26 @@
 // package com.xiilab.modulek8s.storage.facade;
 //
+// import java.time.LocalDateTime;
 // import java.util.ArrayList;
+// import java.util.HashMap;
 // import java.util.List;
 // import java.util.Map;
 // import java.util.stream.Collectors;
 //
 // import org.junit.jupiter.api.Test;
 // import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 // import org.springframework.boot.test.context.SpringBootTest;
 //
 // import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 // import com.xiilab.modulek8s.common.enumeration.LabelField;
+// import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
+// import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 // import com.xiilab.modulek8s.config.K8sAdapter;
 // import com.xiilab.modulek8s.facade.StorageModuleServiceImpl;
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 // import com.xiilab.modulek8s.common.enumeration.StorageType;
+// import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
@@ -336,6 +342,35 @@
 // 		}
 // 	}
 //
+// 	@Test
+// 	void 스토리지클래스생성(){
+// 		try (final KubernetesClient client = k8sAdapter.configServer()) {
+// 			String name = "내가생성한 스토리지 클래스 이름";
+// 			String description = "설명이지요";
+// 			ProvisionerType provisioner = ProvisionerType.NFS;
+// 			HashMap<String, String> parameters = new HashMap<>();
+// 			parameters.put("server", "10.61.3.19");
+// 			parameters.put("share", "/kube-storage");
+// 			LocalDateTime createdAt = LocalDateTime.now();
+// 			String creatorName = "이용춘";
+// 			String creator = "test1";
+//
+// 			StorageClassVO storageClassVO = StorageClassVO.builder()
+// 				.name(name)
+// 				.description(description)
+// 				.storageType(StorageType.NFS)
+// 				.provisioner(provisioner)
+// 				.parameters(parameters)
+// 				.reclaimPolicy(ReclaimPolicyType.DELETE)
+// 				.createdAt(createdAt)
+// 				.creatorName(creatorName)
+// 				.creator(creator)
+// 				.build();
+//
+// 			StorageClass resource = (StorageClass)storageClassVO.createResource();
+// 			client.storage().v1().storageClasses().resource(resource).create();
+// 		}
+// 	}
 // 	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
 // 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
 // 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);

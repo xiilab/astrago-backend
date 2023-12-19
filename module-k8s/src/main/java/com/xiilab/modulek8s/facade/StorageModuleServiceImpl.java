@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
@@ -130,8 +131,17 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		volumeService.deleteVolumeByMetaName(volumeMetaName);
 	}
 
+	/**
+	 * 볼룸 수정
+	 * @param modifyVolumeDTO
+	 */
 	@Override
 	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
 		volumeService.modifyVolume(modifyVolumeDTO);
+	}
+
+	@Override
+	public void createStorageClass(CreateStorageClassDTO createStorageClassDTO) {
+		storageClassService.createStorageClass(createStorageClassDTO);
 	}
 }
