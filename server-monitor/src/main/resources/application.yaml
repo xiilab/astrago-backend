@@ -1,0 +1,7 @@
+prometheus:
+  url: http://10.61.3.12:30090/
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher

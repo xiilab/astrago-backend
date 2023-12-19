@@ -22,7 +22,7 @@ public class JobResDTO extends WorkloadRes{
 		env = container.getEnv().stream().collect(Collectors.toMap(
 			EnvVar::getName,
 			EnvVar::getValue
-			));
+		));
 		command = container.getCommand().get(2);
 	}
 

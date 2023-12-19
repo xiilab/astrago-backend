@@ -18,7 +18,12 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
+    // K8s
+    implementation 'io.fabric8:kubernetes-client:6.9.2'
+    // lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    // webClient
+    implementation 'org.springframework:spring-webflux:6.1.1'
 }
 
 tasks.named('test') {
