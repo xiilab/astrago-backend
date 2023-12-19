@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -114,7 +115,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
 				.withName(modifyVolumeDTO.getVolumeMetaName())
 				.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
-					.addToAnnotations("name", modifyVolumeDTO.getName())
+					.addToAnnotations(AnnotationField.NAME.getField(), modifyVolumeDTO.getName())
 					.endMetadata()
 					.build());
 		}
@@ -236,12 +237,34 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.stream()
 				.filter(persistentVolumeClaim -> persistentVolumeClaim.getMetadata().getName().equals(volumeMetaName))
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("볼륨이 존재하지않습니다."));
+				.orElseThrow(() -> new RuntimeException("볼륨이 존재하지 않습니다."));
 
 			client.persistentVolumeClaims().resource(pvc).delete();
 		}
 	}
 
+	@Override
+	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
+				.inAnyNamespace()
+				.resources()
+				.filter(pvcr -> pvcr.get().getMetadata().getName().equals(modifyVolumeDTO.getVolumeMetaName()))
+				.findFirst()
+				.orElseThrow(() -> new RuntimeException("볼륨이 존재하지 않습니다."));
+
+			persistentVolumeClaimResource.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
+				.addToAnnotations(AnnotationField.NAME.getField(), modifyVolumeDTO.getName())
+				.endMetadata()
+				.build());
+		}
+	}
+
+	/**
+	 * 볼륨 전체 리스트 조회
+	 * @param client
+	 * @return
+	 */
 	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
 		return client.persistentVolumeClaims()
 			.inAnyNamespace()

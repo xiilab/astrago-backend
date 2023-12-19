@@ -11,6 +11,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
+import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,5 +44,11 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	@Override
 	public void deleteVolumeByMetaName(String volumeMetaName) {
 		storageModuleService.deleteVolumeByMetaName(volumeMetaName);
+	}
+
+	@Override
+	public void modifyVolume(ModifyVolumeReqDTO modifyVolumeReqDTO, String volumeMetaName) {
+		modifyVolumeReqDTO.setVolumeMetaName(volumeMetaName);
+		storageModuleService.modifyVolume(modifyVolumeReqDTO.toModuleDto());
 	}
 }

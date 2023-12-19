@@ -20,8 +20,8 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
-import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
+import com.xiilab.servercore.workspace.dto.DeleteWorkspaceVolumeReqDTO;
+import com.xiilab.servercore.workspace.dto.ModifyWorkspaceVolumeReqDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -88,7 +88,7 @@ public class WorkspaceController {
 	 * 볼륨 수정
 	 * @param workspaceMetaName
 	 * @param volumeMetaName
-	 * @param modifyVolumeReqDTO
+	 * @param modifyWorkspaceVolumeReqDTO
 	 * @param userInfoDTO
 	 * @return
 	 */
@@ -97,12 +97,12 @@ public class WorkspaceController {
 	public ResponseEntity<Object> modifyVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName,
-		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO,
+		@RequestBody ModifyWorkspaceVolumeReqDTO modifyWorkspaceVolumeReqDTO,
 		UserInfoDTO userInfoDTO
 	) {
-		modifyVolumeReqDTO.setMetaNames(workspaceMetaName, volumeMetaName);
-		modifyVolumeReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
-		workspaceService.modifyVolumeByMetaName(modifyVolumeReqDTO);
+		modifyWorkspaceVolumeReqDTO.setMetaNames(workspaceMetaName, volumeMetaName);
+		modifyWorkspaceVolumeReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
+		workspaceService.modifyVolumeByMetaName(modifyWorkspaceVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -120,13 +120,13 @@ public class WorkspaceController {
 		@PathVariable("volumeMetaName") String volumeMetaName,
 		UserInfoDTO userInfoDTO
 	) {
-		DeleteVolumeReqDTO deleteVolumeReqDTO = DeleteVolumeReqDTO.builder()
+		DeleteWorkspaceVolumeReqDTO deleteWorkspaceVolumeReqDTO = DeleteWorkspaceVolumeReqDTO.builder()
 			.workspaceMetaName(workspaceMetaName)
 			.volumeMetaName(volumeMetaName)
 			.creator(userInfoDTO.getUserName())
 			.creatorName(userInfoDTO.getUserRealName())
 			.build();
-		workspaceService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeReqDTO);
+		workspaceService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteWorkspaceVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

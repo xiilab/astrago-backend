@@ -7,6 +7,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
+import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 
 public interface VolumeFacadeService {
 	void createVolume(CreateVolumeReqDTO requestDTO, UserInfoDTO userInfoDTO);
@@ -16,4 +17,6 @@ public interface VolumeFacadeService {
 	VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName);
 
 	void deleteVolumeByMetaName(String volumeMetaName);
+
+	void modifyVolume(ModifyVolumeReqDTO modifyVolumeReqDTO, String volumeMetaName);
 }

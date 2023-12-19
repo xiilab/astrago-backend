@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
+import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 import com.xiilab.servercore.volume.service.VolumeFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,6 +65,7 @@ public class VolumeController {
 	 * @return
 	 */
 	@GetMapping("/volumes/{volumeMetaName}")
+	@Operation(summary = "find Volume")
 	public ResponseEntity<VolumeWithStorageResDTO> findVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
 		VolumeWithStorageResDTO volume = volumeFacadeService.findVolumeByMetaName(volumeMetaName);
 		return new ResponseEntity<>(volume, HttpStatus.OK);
@@ -74,8 +77,24 @@ public class VolumeController {
 	 * @return
 	 */
 	@DeleteMapping("/volumes/{volumeMetaName}")
+	@Operation(summary = "delete Volume")
 	public ResponseEntity<Object> deleteVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
 		volumeFacadeService.deleteVolumeByMetaName(volumeMetaName);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	/**
+	 * 볼륨 수정
+	 *
+	 * @param volumeMetaName
+	 * @param modifyVolumeReqDTO
+	 * @return
+	 */
+	@PutMapping("/volumes/{volumeMetaName}")
+	@Operation(summary = "modify Volume")
+	public ResponseEntity<Object> modifyVolume(@PathVariable("volumeMetaName") String volumeMetaName,
+		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO){
+		volumeFacadeService.modifyVolume(modifyVolumeReqDTO, volumeMetaName);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

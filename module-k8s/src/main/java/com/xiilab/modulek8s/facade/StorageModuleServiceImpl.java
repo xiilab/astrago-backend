@@ -129,4 +129,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	public void deleteVolumeByMetaName(String volumeMetaName) {
 		volumeService.deleteVolumeByMetaName(volumeMetaName);
 	}
+
+	@Override
+	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
+		volumeService.modifyVolume(modifyVolumeDTO);
+	}
 }

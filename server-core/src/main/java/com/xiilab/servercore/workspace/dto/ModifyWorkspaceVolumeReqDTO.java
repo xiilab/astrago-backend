@@ -1,19 +1,18 @@
 package com.xiilab.servercore.workspace.dto;
 
-import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.servercore.common.dto.APIBaseReqDTO;
 
 import lombok.Getter;
 
 @Getter
-public class ModifyVolumeReqDTO extends APIBaseReqDTO {
+public class ModifyWorkspaceVolumeReqDTO extends APIBaseReqDTO {
 	private String workspaceMetaName;
 	private String volumeMetaName;
 	private String creator;
 	private String creatorName;
 
-	public ModifyVolumeReqDTO() {
+	public ModifyWorkspaceVolumeReqDTO() {
 		super();
 	}
 

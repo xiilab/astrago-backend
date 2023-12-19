@@ -88,4 +88,8 @@ public class VolumeService {
 	public void deleteVolumeByMetaName(String volumeMetaName) {
 		volumeRepository.deleteVolumeByMetaName(volumeMetaName);
 	}
+
+	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
+		volumeRepository.modifyVolume(modifyVolumeDTO);
+	}
 }

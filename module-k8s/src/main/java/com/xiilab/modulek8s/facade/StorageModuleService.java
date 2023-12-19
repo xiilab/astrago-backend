@@ -32,4 +32,6 @@ public interface StorageModuleService {
 	VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName);
 
 	void deleteVolumeByMetaName(String volumeMetaName);
+
+	void modifyVolume(ModifyVolumeDTO modifyVolumeDTO);
 }
