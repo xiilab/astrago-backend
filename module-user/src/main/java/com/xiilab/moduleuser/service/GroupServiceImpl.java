@@ -1,18 +1,14 @@
 package com.xiilab.moduleuser.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
-import com.xiilab.moduleuser.dto.GroupCategory;
-import com.xiilab.moduleuser.dto.GroupInfoDTO;
-import com.xiilab.moduleuser.dto.GroupReqDTO;
-import com.xiilab.moduleuser.dto.GroupSummaryDTO;
-import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.common.FindDTO;
+import com.xiilab.moduleuser.common.SearchCondition;
+import com.xiilab.moduleuser.dto.*;
 import com.xiilab.moduleuser.repository.GroupRepository;
 import com.xiilab.moduleuser.vo.GroupReqVO;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -48,8 +44,11 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
-		return groupRepository.getGroupList();
+	public List<GroupSummaryDTO> getGroupList(SearchCondition searchCondition) {
+		FindDTO findDTO = FindDTO.builder()
+				.option(searchCondition.getOption())
+				.keyword(searchCondition.getKeyword()).build();
+		return groupRepository.getGroupList(findDTO);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.xiilab.moduleuser.service;
 
+import com.xiilab.moduleuser.common.SearchCondition;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
@@ -12,7 +13,7 @@ public interface UserService {
     UserInfo joinUser(UserReqVO userReqVO);
 
     //사용자 리스트 조회
-    List<UserSummary> getUserList(String searchWord);
+    List<UserSummary> getUserList(SearchCondition searchCondition);
 
     //사용자 승인 신청 계정 리스트 조회
     List<UserSummary> getWaitingApprovalUserList();

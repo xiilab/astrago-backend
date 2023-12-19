@@ -1,5 +1,6 @@
 package com.xiilab.servercore.user.controller;
 
+import com.xiilab.moduleuser.common.SearchCondition;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
@@ -19,8 +20,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/")
-    public ResponseEntity<List<UserSummary>> getUserList(@RequestParam(required = false, name = "searchWord") String searchWord) {
-        return ResponseEntity.ok(userService.getUserList(searchWord));
+    public ResponseEntity<List<UserSummary>> getUserList(@RequestBody SearchCondition searchCondition) {
+        return ResponseEntity.ok(userService.getUserList(searchCondition));
     }
 
     @GetMapping("/{id}")

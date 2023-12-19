@@ -1,5 +1,6 @@
 package com.xiilab.moduleuser.repository;
 
+import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
@@ -45,14 +46,14 @@ public class KeycloakUserRepository implements UserRepository {
     }
 
     @Override
-    public List<UserSummary> getUserList(String searchWord) {
+    public List<UserSummary> getUserList(FindDTO findDTO) {
         RealmResource realmClient = keycloakConfig.getRealmClient();
         List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
                         -> user.getAttributes() != null
                         && user.getAttributes().containsKey("approvalYN")
                         && user.getAttributes().containsValue(List.of("true"))
-                        && searchInfo(searchWord,user)
-                        )
+                        && searchInfo(findDTO, user)
+                )
                 .toList();
         return userList.stream().map(UserSummary::new).toList();
     }
@@ -193,11 +194,16 @@ public class KeycloakUserRepository implements UserRepository {
         return newCredential;
     }
 
-    private boolean searchInfo(String searchWord, UserRepresentation user) {
-        boolean searchCondition = true;
-        if (StringUtils.isNotBlank(searchWord)) {
-            searchCondition = user.getFirstName().contains(searchWord) || user.getLastName().contains(searchWord) || user.getEmail().contains(searchWord);
+    private boolean searchInfo(FindDTO findDTO, UserRepresentation user) {
+        boolean search = true;
+        if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(findDTO.getSearchCondition().getKeyword())) {
+            return search;
         }
-        return searchCondition;
+        if (findDTO.getSearchCondition().getOption().equalsIgnoreCase("ALL")) {
+            search = user.getFirstName().contains(findDTO.getSearchCondition().getKeyword())
+                    || user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
+                    || user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
+        }
+        return search;
     }
 }

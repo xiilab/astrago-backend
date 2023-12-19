@@ -1,5 +1,6 @@
 package com.xiilab.servercore.user.controller;
 
+import com.xiilab.moduleuser.common.SearchCondition;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -19,8 +20,8 @@ public class GroupController {
 	private final GroupService groupService;
 
 	@GetMapping("/")
-	public ResponseEntity<List<GroupSummaryDTO>> getGroupList() {
-		return ResponseEntity.ok(groupService.getGroupList());
+	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(@RequestBody SearchCondition searchCondition) {
+		return ResponseEntity.ok(groupService.getGroupList(searchCondition));
 	}
 
 	@GetMapping("/{id}")

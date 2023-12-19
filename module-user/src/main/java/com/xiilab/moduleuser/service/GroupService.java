@@ -1,11 +1,12 @@
 package com.xiilab.moduleuser.service;
 
-import java.util.List;
-
+import com.xiilab.moduleuser.common.SearchCondition;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
+
+import java.util.List;
 
 public interface GroupService {
 	//사용자 그룹 생성
@@ -13,7 +14,7 @@ public interface GroupService {
 	//워크스페이스 그룹 생성
 	void createWorkspaceGroup(GroupReqDTO groupReqDTO);
 	//그룹 전체 목록 조회
-	List<GroupSummaryDTO> getGroupList();
+	List<GroupSummaryDTO> getGroupList(SearchCondition searchCondition);
 	//그룹 상세 조회
 	GroupInfoDTO getGroupInfoById(String groupId);
 	//그룹 멤버 추가
