@@ -45,12 +45,14 @@ public class KeycloakUserRepository implements UserRepository {
     }
 
     @Override
-    public List<UserSummary> getUserList() {
+    public List<UserSummary> getUserList(String searchWord) {
         RealmResource realmClient = keycloakConfig.getRealmClient();
         List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
                         -> user.getAttributes() != null
                         && user.getAttributes().containsKey("approvalYN")
-                        && user.getAttributes().containsValue(List.of("true")))
+                        && user.getAttributes().containsValue(List.of("true"))
+                        && searchInfo(searchWord,user)
+                        )
                 .toList();
         return userList.stream().map(UserSummary::new).toList();
     }
@@ -189,5 +191,13 @@ public class KeycloakUserRepository implements UserRepository {
         newCredential.setTemporary(isTemporary);
 
         return newCredential;
+    }
+
+    private boolean searchInfo(String searchWord, UserRepresentation user) {
+        boolean searchCondition = true;
+        if (StringUtils.isNotBlank(searchWord)) {
+            searchCondition = user.getFirstName().contains(searchWord) || user.getLastName().contains(searchWord) || user.getEmail().contains(searchWord);
+        }
+        return searchCondition;
     }
 }
