@@ -14,4 +14,6 @@ public interface VolumeFacadeService {
 	List<PageVolumeResDTO> findVolumes(SearchCondition searchCondition);
 
 	VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName);
+
+	void deleteVolumeByMetaName(String volumeMetaName);
 }

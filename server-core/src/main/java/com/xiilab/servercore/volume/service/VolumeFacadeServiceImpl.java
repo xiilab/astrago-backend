@@ -39,4 +39,9 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 		VolumeWithStorageResDTO volume = storageModuleService.findVolumeByMetaName(volumeMetaName);
 		return volume;
 	}
+
+	@Override
+	public void deleteVolumeByMetaName(String volumeMetaName) {
+		storageModuleService.deleteVolumeByMetaName(volumeMetaName);
+	}
 }

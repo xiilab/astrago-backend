@@ -304,6 +304,19 @@ class StorageModuleServiceImplTest {
 		}
 	}
 
+	@Test
+	void 관리자_볼륨삭제(){
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			//삭제
+			PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder().withNewMetadata()
+				.withName("vo-bd72cad5-65f7-42c9-a16f-9c924a3c5219")
+				.endMetadata()
+				.build();
+
+			client.persistentVolumeClaims().inAnyNamespace().resource(pvc).delete();
+		}
+	}
+
 	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);

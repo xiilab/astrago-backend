@@ -80,8 +80,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	}
 
 	/**
-	 * 볼륨 삭제
+	 * 워크스페이스 명과 볼륨 명으로 볼륨 삭제
 	 * @param deleteVolumeDTO
+	 *
 	 */
 	@Override
 	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO){
@@ -118,5 +119,14 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName){
 		return volumeService.findVolumeByMetaName(volumeMetaName);
+	}
+
+	/**
+	 * 볼륨명으로 볼륨 삭제
+	 * @param volumeMetaName
+	 */
+	@Override
+	public void deleteVolumeByMetaName(String volumeMetaName) {
+		volumeService.deleteVolumeByMetaName(volumeMetaName);
 	}
 }

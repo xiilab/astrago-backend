@@ -27,4 +27,6 @@ public interface VolumeRepository {
 	List<PageVolumeResDTO> findVolumes(String option, String keyword);
 
 	VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName);
+
+	void deleteVolumeByMetaName(String volumeMetaName);
 }

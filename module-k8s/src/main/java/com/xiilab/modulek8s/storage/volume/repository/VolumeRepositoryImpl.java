@@ -219,6 +219,29 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
+	@Override
+	public void deleteVolumeByMetaName(String volumeMetaName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+
+			//삭제 전 사용중인지 확인해야함
+			checkAndThrowIfInUse(() -> getDeploymentsInUseVolume(volumeMetaName, client));
+			checkAndThrowIfInUse(() -> getStatefulSetsInUseVolume(volumeMetaName, client));
+			checkAndThrowIfInUse(() -> getJobsInUseVolume(volumeMetaName, client));
+
+			//삭제
+			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
+				.inAnyNamespace()
+				.list()
+				.getItems()
+				.stream()
+				.filter(persistentVolumeClaim -> persistentVolumeClaim.getMetadata().getName().equals(volumeMetaName))
+				.findFirst()
+				.orElseThrow(() -> new RuntimeException("볼륨이 존재하지않습니다."));
+
+			client.persistentVolumeClaims().resource(pvc).delete();
+		}
+	}
+
 	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
 		return client.persistentVolumeClaims()
 			.inAnyNamespace()

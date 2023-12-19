@@ -84,4 +84,8 @@ public class VolumeService {
 	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName){
 		return volumeRepository.findVolumeByMetaName(volumeMetaName);
 	}
+
+	public void deleteVolumeByMetaName(String volumeMetaName) {
+		volumeRepository.deleteVolumeByMetaName(volumeMetaName);
+	}
 }

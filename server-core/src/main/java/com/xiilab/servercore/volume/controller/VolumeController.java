@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,5 +68,14 @@ public class VolumeController {
 		return new ResponseEntity<>(volume, HttpStatus.OK);
 	}
 
-
+	/**
+	 * 볼륨 삭제
+	 * @param volumeMetaName
+	 * @return
+	 */
+	@DeleteMapping("/volumes/{volumeMetaName}")
+	public ResponseEntity<Object> deleteVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
+		volumeFacadeService.deleteVolumeByMetaName(volumeMetaName);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }
