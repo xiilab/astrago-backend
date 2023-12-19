@@ -25,7 +25,7 @@ public class WorkspaceServiceImpl implements WorkspaceService{
 
 	@Override
 	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType){
-		return storageModuleService.findVolumesByWorkspaceMetaName(workspaceMetaName, storageType);
+		return storageModuleService.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName, storageType);
 	}
 
 	@Override

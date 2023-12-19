@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -19,11 +18,11 @@ import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -42,17 +41,17 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	@Override
 	public void createVolume(CreateDTO createDTO) {
 		VolumeVO volumeVO = VolumeVO.dtoToVo(createDTO);
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim resource = (PersistentVolumeClaim)volumeVO.createResource();
 			client.persistentVolumeClaims().resource(resource).create();
-		}catch (Exception e){
+		} catch (Exception e) {
 			log.error("k8s cluster connect error {}", e.getMessage(), e);
 		}
 	}
 
 	@Override
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaName(String workspaceMetaName, StorageType storageType){
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
 				.withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
@@ -62,21 +61,20 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
-
 	@Override
-	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName,
+		String volumeMetaName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<String> workloadNames = new ArrayList<>();
 			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
 				.withName(volumeMetaName)
 				.get();
-			if(pvc == null){
+			if (pvc == null) {
 				throw new NullPointerException("해당 볼륨이 존재하지 않습니다.");
 			}
-			String requestVolume = pvc.getSpec().getResources().getRequests().get("storage").toString();
-			StorageType storageType = StorageType.valueOf(
-				pvc.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField()));
+			String requestVolume = getRequestVolume(pvc);
+			StorageType storageType = getStorageType(pvc);
 			//사용중인 statefulSets 조회
 			List<StatefulSet> statefulSets = getStatefulSetsInUseVolume(volumeMetaName, client);
 			setWorkloadInUseVolume(statefulSets, workloadNames);
@@ -93,23 +91,23 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.requestVolume(requestVolume)
 				.storageType(storageType)
 				.build();
-		}catch (NullPointerException e){
+		} catch (NullPointerException e) {
 			log.error("volume not found {}", e.getMessage(), e);
 			throw e;
-		}catch (Exception e){
+		} catch (Exception e) {
 			log.error("k8s cluster connect error {}", e.getMessage(), e);
 			throw e;
 		}
 	}
 
-
 	@Override
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			//본인이 생성한 볼륨인지 체크
 			String creator = modifyVolumeDTO.getCreator();
-			boolean chk = volumeCreatorCheck(modifyVolumeDTO.getWorkspaceMetaName(), modifyVolumeDTO.getVolumeMetaName(),client, creator);
-			if(!chk){
+			boolean chk = volumeCreatorCheck(modifyVolumeDTO.getWorkspaceMetaName(),
+				modifyVolumeDTO.getVolumeMetaName(), client, creator);
+			if (!chk) {
 				throw new RuntimeException("자신이 생성한 볼륨만 수정할 수 있습니다.");
 			}
 			client.persistentVolumeClaims()
@@ -122,15 +120,14 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
-
-
 	@Override
-	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			//본인이 생성한 볼륨인지 체크
 			String creator = deleteVolumeDTO.getCreator();
-			boolean chk = volumeCreatorCheck(deleteVolumeDTO.getWorkspaceMetaName(), deleteVolumeDTO.getVolumeMetaName(),client, creator);
-			if(!chk)
+			boolean chk = volumeCreatorCheck(deleteVolumeDTO.getWorkspaceMetaName(),
+				deleteVolumeDTO.getVolumeMetaName(), client, creator);
+			if (!chk)
 				throw new RuntimeException("자신이 생성한 볼륨만 삭제할 수 있습니다.");
 
 			//삭제 전 사용중인지 확인해야함
@@ -147,7 +144,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 
 	@Override
 	public List<PageVolumeResDTO> findVolumesWithPagination(String workspaceMetaName, String option, String keyword) {
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
 				.list()
@@ -169,11 +166,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 
 	@Override
 	public List<PageVolumeResDTO> findVolumes(String option, String keyword) {
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
-			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
-				.inAnyNamespace()
-				.list()
-				.getItems();
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			List<PersistentVolumeClaim> pvcs = getAllVolumes(client);
 
 			return pvcs.stream()
 				.filter(pvc -> isVolumePVC(pvc))
@@ -181,6 +175,55 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.map(pvc -> createPageVolumeResDTO(client, pvc))
 				.collect(Collectors.toList());
 		}
+	}
+
+	@Override
+	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			List<String> workloadNames = new ArrayList<>();
+			List<PersistentVolumeClaim> pvcs = getAllVolumes(client);
+			PersistentVolumeClaim persistentVolumeClaim = findPVCByMetaName(volumeMetaName, pvcs);
+
+			String namespace = getNamespace(persistentVolumeClaim);
+			String workspaceName = getWorkspaceNameByMetaName(client, namespace);
+
+			String requestVolume = getRequestVolume(persistentVolumeClaim);
+			StorageType storageType = getStorageType(persistentVolumeClaim);
+
+			//사용중인 statefulSets 조회
+			List<StatefulSet> statefulSets = getStatefulSetsInUseVolume(volumeMetaName, client);
+			setWorkloadInUseVolume(statefulSets, workloadNames);
+			//사용중인 deployment 조회
+			List<Deployment> deployments = getDeploymentsInUseVolume(volumeMetaName, client);
+			setWorkloadInUseVolume(deployments, workloadNames);
+			//사용중인 job 조회
+			List<Job> jobs = getJobsInUseVolume(volumeMetaName, client);
+			setWorkloadInUseVolume(jobs, workloadNames);
+			String storageName = getStorageClassName(persistentVolumeClaim);
+			String storageSavePath = getStorageSavePath(client, storageName);
+
+			return VolumeWithStorageResDTO.builder()
+				.hasMetadata(persistentVolumeClaim)
+				.workspaceName(workspaceName)
+				.requestVolume(requestVolume)
+				.storageType(storageType)
+				.workloadNames(workloadNames)
+				.savePath(storageSavePath)
+				.build();
+		} catch (NullPointerException e) {
+			log.error("volume not found {}", e.getMessage(), e);
+			throw e;
+		} catch (Exception e) {
+			log.error("k8s cluster connect error {}", e.getMessage(), e);
+			throw e;
+		}
+	}
+
+	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
+		return client.persistentVolumeClaims()
+			.inAnyNamespace()
+			.list()
+			.getItems();
 	}
 
 	/**
@@ -193,13 +236,42 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		String volumeName = pvc.getMetadata().getName();
 		boolean isUsed = checkUsedVolume(volumeName, client);
 
-		String namespace = pvc.getMetadata().getNamespace();
+		String namespace = getNamespace(pvc);
 		String workspaceName = getWorkspaceNameByMetaName(client, namespace);
 
 		PageVolumeResDTO pageVolumeResDTO = PageVolumeResDTO.toDTO(pvc);
 		pageVolumeResDTO.setIsUsed(isUsed);
 		pageVolumeResDTO.setWorkspaceName(workspaceName);
 		return pageVolumeResDTO;
+	}
+
+	private static PersistentVolumeClaim findPVCByMetaName(String volumeMetaName,
+		List<PersistentVolumeClaim> pvcs) {
+		return pvcs.stream()
+			.filter(pvc -> pvc.getMetadata().getName().equals(volumeMetaName))
+			.findFirst()
+			.orElseThrow(() -> new RuntimeException("볼륨이 존재하지 않습니다."));
+	}
+
+	private static String getStorageSavePath(KubernetesClient client, String storageName) {
+		return client.storage().v1().storageClasses().withName(storageName).get().getParameters().get("share");
+	}
+
+	private static String getStorageClassName(PersistentVolumeClaim persistentVolumeClaim) {
+		return persistentVolumeClaim.getSpec().getStorageClassName();
+	}
+
+	private static StorageType getStorageType(PersistentVolumeClaim persistentVolumeClaim) {
+		return StorageType.valueOf(
+			persistentVolumeClaim.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField()));
+	}
+
+	private static String getRequestVolume(PersistentVolumeClaim persistentVolumeClaim) {
+		return persistentVolumeClaim.getSpec().getResources().getRequests().get("storage").toString();
+	}
+
+	private static String getNamespace(PersistentVolumeClaim persistentVolumeClaim) {
+		return persistentVolumeClaim.getMetadata().getNamespace();
 	}
 
 	/**
@@ -218,8 +290,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	 * @return
 	 */
 	private static String getWorkspaceNameByMetaName(KubernetesClient client, String namespace) {
-		return client.namespaces().
-			withName(namespace)
+		return client.namespaces()
+			.withName(namespace)
 			.get()
 			.getMetadata()
 			.getAnnotations()
@@ -270,9 +342,10 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	 * @param resources
 	 * @param workloadNames
 	 */
-	private void setWorkloadInUseVolume(List<? extends HasMetadata> resources, List<String> workloadNames){
+	private void setWorkloadInUseVolume(List<? extends HasMetadata> resources, List<String> workloadNames) {
 		for (HasMetadata resource : resources) {
-			Map<String, String> annotations = resource.getMetadata().getAnnotations() == null ? null : resource.getMetadata().getAnnotations();
+			Map<String, String> annotations =
+				resource.getMetadata().getAnnotations() == null ? null : resource.getMetadata().getAnnotations();
 			if (annotations != null) {
 				String name = annotations.get(AnnotationField.NAME.getField());
 				if (name != null) {
@@ -300,7 +373,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	 * @param client
 	 * @return
 	 */
-	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
+	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client) {
 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);
 		List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeMetaName, client);
@@ -314,11 +387,12 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	 * @param client
 	 * @param creator
 	 */
-	private static boolean volumeCreatorCheck(String workspaceMetaName, String volumeMetaName, KubernetesClient client, String creator) {
+	private static boolean volumeCreatorCheck(String workspaceMetaName, String volumeMetaName, KubernetesClient client,
+		String creator) {
 		PersistentVolumeClaim persistentVolumeClaim = client.persistentVolumeClaims()
 			.inNamespace(workspaceMetaName)
 			.withName(volumeMetaName).get();
-		if(persistentVolumeClaim == null){
+		if (persistentVolumeClaim == null) {
 			throw new RuntimeException("볼륨이 존재하지 않습니다.");
 		}
 		String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR.getField());
@@ -334,7 +408,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	 * @return
 	 */
 	private boolean matchesSearchOption(PersistentVolumeClaim pvc, String option, String keyword) {
-		if(option == null || option.isBlank() || keyword == null || keyword.isBlank()){
+		if (option == null || option.isBlank() || keyword == null || keyword.isBlank()) {
 			return true;
 		}
 		Map<String, String> annotations = pvc.getMetadata().getAnnotations();

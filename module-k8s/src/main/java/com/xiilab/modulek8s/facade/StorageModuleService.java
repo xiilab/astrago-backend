@@ -11,12 +11,13 @@ import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 
 public interface StorageModuleService {
 	void createVolume(CreateVolumeDTO requestDTO);
 
-	List<VolumeResDTO> findVolumesByWorkspaceMetaName(String workspaceMetaName, StorageType storageType);
+	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName);
 
@@ -27,4 +28,6 @@ public interface StorageModuleService {
 	PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO);
 
 	List<PageVolumeResDTO> findVolumes(FindVolumeDTO findVolumeDTO);
+
+	VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName);
 }

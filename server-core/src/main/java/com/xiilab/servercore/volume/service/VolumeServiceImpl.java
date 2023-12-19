@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.facade.StorageModuleService;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
@@ -32,5 +33,10 @@ public class VolumeServiceImpl implements VolumeService{
 			.keyword(searchCondition.getKeyword())
 			.build();
 		return storageModuleService.findVolumes(findVolumeDTO);
+	}
+	@Override
+	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName) {
+		VolumeWithStorageResDTO volume = storageModuleService.findVolumeByMetaName(volumeMetaName);
+		return volume;
 	}
 }

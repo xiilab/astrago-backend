@@ -16,6 +16,7 @@ import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 
@@ -52,8 +53,8 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 * @return
 	 */
 	@Override
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaName(String workspaceMetaName, StorageType storageType){
-		return volumeService.findVolumesByWorkspaceMetaName(workspaceMetaName,storageType);
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType){
+		return volumeService.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName,storageType);
 	}
 
 	/**
@@ -107,5 +108,15 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public List<PageVolumeResDTO> findVolumes(FindVolumeDTO findVolumeDTO) {
 		return volumeService.findVolumes(findVolumeDTO);
+	}
+
+	/**
+	 * 볼륨 상세 조회
+	 * @param volumeMetaName
+	 * @return
+	 */
+	@Override
+	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName){
+		return volumeService.findVolumeByMetaName(volumeMetaName);
 	}
 }
