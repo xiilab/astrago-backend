@@ -227,7 +227,6 @@ jobs:
           echo "${{ fromJson(needs.read.outputs.result) }}"
           echo "${{ fromJson(needs.read.outputs.result) }}"
           
-          helmfile -e dev -l type=app template > monochart/monochart.yaml
           git pull
           git config --global user.email "100milliongold@xiilab.com"
           git config --global user.name "100milliongold"
