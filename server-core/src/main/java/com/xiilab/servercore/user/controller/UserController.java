@@ -19,8 +19,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/")
-    public ResponseEntity<List<UserSummary>> getUserList() {
-        return ResponseEntity.ok(userService.getUserList());
+    public ResponseEntity<List<UserSummary>> getUserList(@RequestParam(required = false, name = "searchWord") String searchWord) {
+        return ResponseEntity.ok(userService.getUserList(searchWord));
     }
 
     @GetMapping("/{id}")

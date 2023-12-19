@@ -22,8 +22,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserSummary> getUserList() {
-        return userRepository.getUserList();
+    public List<UserSummary> getUserList(String searchWord) {
+        return userRepository.getUserList(searchWord);
     }
 
     @Override

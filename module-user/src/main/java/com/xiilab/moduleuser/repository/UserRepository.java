@@ -12,7 +12,7 @@ import java.util.Map;
 @Component
 public interface UserRepository {
 	UserInfo joinUser(UserReqVO userReqVO);
-	List<UserSummary> getUserList();
+	List<UserSummary> getUserList(String searchWord);
 	UserInfo getUserInfoById(String userId);
 	List<UserSummary> getUserListSearchByAttribute(String attribute);
 	void updateUserAttribute(String userId, Map<String,String> map);

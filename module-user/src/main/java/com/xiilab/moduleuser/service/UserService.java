@@ -12,7 +12,7 @@ public interface UserService {
     UserInfo joinUser(UserReqVO userReqVO);
 
     //사용자 리스트 조회
-    List<UserSummary> getUserList();
+    List<UserSummary> getUserList(String searchWord);
 
     //사용자 승인 신청 계정 리스트 조회
     List<UserSummary> getWaitingApprovalUserList();
