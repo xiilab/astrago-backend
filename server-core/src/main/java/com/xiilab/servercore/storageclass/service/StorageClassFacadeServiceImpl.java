@@ -18,4 +18,9 @@ public class StorageClassFacadeServiceImpl implements StorageClassFacadeService{
 		createStorageClassReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
 		storageModuleService.createStorageClass(createStorageClassReqDTO.toModuleDto());
 	}
+
+	@Override
+	public boolean storageClassConnectionTest(String storageType) {
+		return storageModuleService.storageClassConnectionTest(storageType);
+	}
 }

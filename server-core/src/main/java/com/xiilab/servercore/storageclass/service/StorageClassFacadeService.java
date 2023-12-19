@@ -5,4 +5,6 @@ import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 
 public interface StorageClassFacadeService {
 	void createStorageClass(CreateStorageClassReqDTO createStorageClassReqDTO, UserInfoDTO userInfoDTO);
+
+	boolean storageClassConnectionTest(String storageType);
 }

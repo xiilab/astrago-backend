@@ -144,4 +144,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	public void createStorageClass(CreateStorageClassDTO createStorageClassDTO) {
 		storageClassService.createStorageClass(createStorageClassDTO);
 	}
+
+	@Override
+	public boolean storageClassConnectionTest(String storageType) {
+		return storageClassService.storageClassConnectionTest(storageType);
+	}
 }

@@ -9,4 +9,6 @@ public interface StorageClassRepository {
 	StorageClass findStorageClassByType(StorageType storageType);
 
 	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
+
+	boolean storageClassConnectionTest(String storageType);
 }

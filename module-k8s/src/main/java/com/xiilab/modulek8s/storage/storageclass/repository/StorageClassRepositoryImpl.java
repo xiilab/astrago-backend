@@ -5,11 +5,13 @@ import java.util.HashMap;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 
+import io.fabric8.kubernetes.api.model.storage.CSIDriver;
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,22 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 			StorageClass resource = (StorageClass)storageClassVO.createResource();
 			client.storage().v1().storageClasses().resource(resource).create();
 		}
+	}
+
+	@Override
+	public boolean storageClassConnectionTest(String storageType) {
+		try(final KubernetesClient client = k8sAdapter.configServer()){
+			ProvisionerType provisionerType = ProvisionerType.valueOf(storageType);
+			CSIDriver csiDriver = client.storage()
+				.v1()
+				.csiDrivers()
+				.withName(provisionerType.getProvisionerName())
+				.get();
+			if(csiDriver != null){
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

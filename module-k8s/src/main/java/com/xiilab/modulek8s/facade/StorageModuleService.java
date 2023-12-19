@@ -37,4 +37,6 @@ public interface StorageModuleService {
 	void modifyVolume(ModifyVolumeDTO modifyVolumeDTO);
 
 	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
+
+	boolean storageClassConnectionTest(String storageType);
 }

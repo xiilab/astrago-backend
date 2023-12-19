@@ -2,9 +2,12 @@ package com.xiilab.servercore.storageclass.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.servercore.common.dto.UserInfoDTO;
@@ -26,5 +29,11 @@ public class StorageClassController {
 		UserInfoDTO userInfoDTO){
 		storageClassFacadeService.createStorageClass(createStorageClassReqDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/storageClasses/connection-test")
+	public ResponseEntity<Boolean> storageClassConnectionTest(@RequestParam("storageType") String storageType){
+		boolean connectionCheck = storageClassFacadeService.storageClassConnectionTest(storageType);
+		return new ResponseEntity<>(connectionCheck, HttpStatus.OK);
 	}
 }

@@ -22,4 +22,8 @@ public class StorageClassService {
 	public void createStorageClass(CreateStorageClassDTO createStorageClassDTO) {
 		storageClassRepository.createStorageClass(createStorageClassDTO);
 	}
+
+	public boolean storageClassConnectionTest(String storageType) {
+		return storageClassRepository.storageClassConnectionTest(storageType);
+	}
 }
