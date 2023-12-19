@@ -12,7 +12,7 @@ import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 
-public interface WorkspaceFacadeService {
+public interface WorkspaceService {
 	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName,

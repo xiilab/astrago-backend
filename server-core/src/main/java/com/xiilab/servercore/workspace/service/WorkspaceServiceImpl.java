@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
+public class WorkspaceServiceImpl implements WorkspaceService {
 	private final StorageModuleService storageModuleService;
 
 
