@@ -121,7 +121,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	@Override
-	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO) {
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			//본인이 생성한 볼륨인지 체크
 			String creator = deleteVolumeDTO.getCreator();

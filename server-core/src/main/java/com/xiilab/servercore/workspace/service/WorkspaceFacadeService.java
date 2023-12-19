@@ -12,7 +12,7 @@ import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 
-public interface WorkspaceService {
+public interface WorkspaceFacadeService {
 	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName,
@@ -20,7 +20,7 @@ public interface WorkspaceService {
 
 	void modifyVolumeByMetaName(ModifyVolumeReqDTO modifyVolumeReqDTO);
 
-	void deleteVolumeByMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO);
+	void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO);
 
 	PageResDTO findVolumesWithPagination(String workspaceMetaName, Pageable pageable,
 		SearchCondition searchCondition);

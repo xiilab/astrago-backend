@@ -41,8 +41,8 @@ public class VolumeService {
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
 		volumeRepository.modifyVolumeByMetaName(modifyVolumeDTO);
 	}
-	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
-		volumeRepository.deleteVolumeByMetaName(deleteVolumeDTO);
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO){
+		volumeRepository.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
 	}
 
 	public PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO) {

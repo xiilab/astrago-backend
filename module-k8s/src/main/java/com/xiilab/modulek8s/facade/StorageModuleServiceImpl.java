@@ -84,8 +84,8 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 * @param deleteVolumeDTO
 	 */
 	@Override
-	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
-		volumeService.deleteVolumeByMetaName(deleteVolumeDTO);
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO){
+		volumeService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
 	}
 
 	/**

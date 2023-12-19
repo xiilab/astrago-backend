@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class VolumeServiceImpl implements VolumeService{
+public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	private final StorageModuleService storageModuleService;
 
 	@Override

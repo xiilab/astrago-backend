@@ -23,7 +23,7 @@ public interface StorageModuleService {
 
 	void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO);
 
-	void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO);
+	void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO);
 
 	PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO);
 

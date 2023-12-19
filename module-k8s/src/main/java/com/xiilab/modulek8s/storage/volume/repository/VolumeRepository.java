@@ -20,7 +20,7 @@ public interface VolumeRepository {
 
 	void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO);
 
-	void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO);
+	void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO);
 
 	List<PageVolumeResDTO> findVolumesWithPagination(String workspaceMetaName, String option, String keyword);
 

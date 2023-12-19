@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class WorkspaceServiceImpl implements WorkspaceService{
+public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final StorageModuleService storageModuleService;
 
 
@@ -40,9 +40,9 @@ public class WorkspaceServiceImpl implements WorkspaceService{
 	}
 
 	@Override
-	public void deleteVolumeByMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO) {
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeReqDTO deleteVolumeReqDTO) {
 		//볼륨 삭제
-		storageModuleService.deleteVolumeByMetaName(deleteVolumeReqDTO.toModuleDto());
+		storageModuleService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeReqDTO.toModuleDto());
 	}
 
 	@Override

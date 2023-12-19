@@ -8,7 +8,7 @@ import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
 
-public interface VolumeService {
+public interface VolumeFacadeService {
 	void createVolume(CreateVolumeReqDTO requestDTO, UserInfoDTO userInfoDTO);
 
 	List<PageVolumeResDTO> findVolumes(SearchCondition searchCondition);

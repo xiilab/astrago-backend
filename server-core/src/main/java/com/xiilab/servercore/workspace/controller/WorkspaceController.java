@@ -126,7 +126,7 @@ public class WorkspaceController {
 			.creator(userInfoDTO.getUserName())
 			.creatorName(userInfoDTO.getUserRealName())
 			.build();
-		workspaceService.deleteVolumeByMetaName(deleteVolumeReqDTO);
+		workspaceService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
