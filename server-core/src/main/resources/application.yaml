@@ -7,8 +7,9 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: https://auth.bigdata-car.kr/realms/kadap
-          jwk-set-uri: https://auth.bigdata-car.kr/realms/kadap/protocol/openid-connect/certs
+          issuer-uri: http://10.61.3.8:30001/realms/myrealm
+          jwk-set-uri: http://10.61.3.8:30001/realms/myrealm/protocol/openid-connect/certs
+
   datasource:
     url: jdbc:mariadb://localhost:3306/uyuni
     username: root

@@ -1,9 +1,10 @@
 package com.xiilab.moduleuser.dto;
 
-import lombok.Getter;
+import java.time.LocalDate;
+
 import org.keycloak.representations.idm.UserRepresentation;
 
-import java.time.LocalDate;
+import lombok.Getter;
 
 @Getter
 public class UserSummary{
