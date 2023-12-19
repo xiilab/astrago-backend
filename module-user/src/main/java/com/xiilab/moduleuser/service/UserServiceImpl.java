@@ -1,7 +1,6 @@
 package com.xiilab.moduleuser.service;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.common.SearchCondition;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
@@ -24,11 +23,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserSummary> getUserList(SearchCondition searchCondition) {
-        FindDTO findDTO = FindDTO.builder()
-                .option(searchCondition.getOption())
-                .keyword(searchCondition.getKeyword())
-                .build();
+    public List<UserSummary> getUserList(FindDTO findDTO) {
         return userRepository.getUserList(findDTO);
     }
 

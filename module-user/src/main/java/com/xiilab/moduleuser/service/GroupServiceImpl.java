@@ -1,7 +1,6 @@
 package com.xiilab.moduleuser.service;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.common.SearchCondition;
 import com.xiilab.moduleuser.dto.*;
 import com.xiilab.moduleuser.repository.GroupRepository;
 import com.xiilab.moduleuser.vo.GroupReqVO;
@@ -44,10 +43,7 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList(SearchCondition searchCondition) {
-		FindDTO findDTO = FindDTO.builder()
-				.option(searchCondition.getOption())
-				.keyword(searchCondition.getKeyword()).build();
+	public List<GroupSummaryDTO> getGroupList(FindDTO findDTO) {
 		return groupRepository.getGroupList(findDTO);
 	}
 
