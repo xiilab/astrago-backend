@@ -17,6 +17,7 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
 import com.xiilab.servercore.volume.service.VolumeService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,6 +33,7 @@ public class VolumeController {
 	 * @return
 	 */
 	@PostMapping("/volumes")
+	@Operation(summary = "create Volume")
 	public ResponseEntity<Object> createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
 		UserInfoDTO userInfoDTO){
 		volumeService.createVolume(requestDTO, userInfoDTO);
@@ -45,6 +47,7 @@ public class VolumeController {
 	 * @return
 	 */
 	@GetMapping("/volumes")
+	@Operation(summary = "find Volumes")
 	public ResponseEntity<List<PageVolumeResDTO>> findVolumes(@ModelAttribute SearchCondition searchCondition){
 		List<PageVolumeResDTO> volumes = volumeService.findVolumes(searchCondition);
 		return new ResponseEntity<>(volumes, HttpStatus.OK);

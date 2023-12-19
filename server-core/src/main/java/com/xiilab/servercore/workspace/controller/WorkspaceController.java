@@ -24,6 +24,7 @@ import com.xiilab.servercore.workspace.dto.DeleteVolumeReqDTO;
 import com.xiilab.servercore.workspace.dto.ModifyVolumeReqDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,6 +40,7 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@GetMapping("/workspaces/{workspaceMetaName}/volumes/storages/{storageType}")
+	@Operation(summary = "find Volumes By Workspace MetaName")
 	public ResponseEntity<List<VolumeResDTO>> findVolumesByWorkspaceMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("storageType") StorageType storageType
@@ -56,6 +58,7 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@GetMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}/workloads")
+	@Operation(summary = "find Volume With Workloads By MetaName")
 	public ResponseEntity<VolumeWithWorkloadsResDTO> findVolumeWithWorkloadsByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName) {
@@ -72,6 +75,7 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@GetMapping("/workspaces/{workspaceMetaName}/volumes")
+	@Operation(summary = "find Volumes With Pagination")
 	public ResponseEntity<PageResDTO> findVolumesWithPagination(@PathVariable("workspaceMetaName") String workspaceMetaName,
 		Pageable pageable,
 		@ModelAttribute SearchCondition searchCondition){
@@ -89,6 +93,7 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@PutMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}")
+	@Operation(summary = "modify Volume By MetaName")
 	public ResponseEntity<Object> modifyVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName,
@@ -109,6 +114,7 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@DeleteMapping("/workspaces/{workspaceMetaName}/volumes/{volumeMetaName}")
+	@Operation(summary = "delete Volume By MetaName")
 	public ResponseEntity<Object> deleteVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName,
