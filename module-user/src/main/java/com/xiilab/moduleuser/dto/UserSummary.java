@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 public class UserSummary{
 	private final String uid;
+	private final String fullName;
 	private final String name;
 	private final String email;
 	private final SignUpMethod signUpMethod;
@@ -17,6 +18,7 @@ public class UserSummary{
 
 	public UserSummary(UserRepresentation userRepresentation) {
 		this.uid = userRepresentation.getId();
+		this.fullName = userRepresentation.getLastName() + userRepresentation.getFirstName();
 		this.name = userRepresentation.getUsername();
 		this.email = userRepresentation.getEmail();
 		this.signUpMethod = null;

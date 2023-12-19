@@ -5,7 +5,9 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum AuthType {
-	ROLE_ADMIN,
-	ROLE_USER
+public enum GroupCategory {
+	ACCOUNT("account"),
+	WORKSPACE("ws");
+
+	private final String value;
 }
