@@ -13,4 +13,6 @@ public interface StorageClassFacadeService {
 	StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName);
 
 	void modifyStorageClass(ModifyStorageClassReqDTO modifyStorageClassReqDTO, String storageClassMetaName);
+
+	void deleteStorageClass(String storageClassMetaName);
 }

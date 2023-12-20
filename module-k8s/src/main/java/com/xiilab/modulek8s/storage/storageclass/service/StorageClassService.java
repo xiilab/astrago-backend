@@ -36,4 +36,8 @@ public class StorageClassService {
 	public void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO) {
 		storageClassRepository.modifyStorageClassDTO(modifyStorageClassDTO);
 	}
+
+	public void deleteStorageClass(String storageClassMetaName) {
+		storageClassRepository.deleteStorageClass(storageClassMetaName);
+	}
 }

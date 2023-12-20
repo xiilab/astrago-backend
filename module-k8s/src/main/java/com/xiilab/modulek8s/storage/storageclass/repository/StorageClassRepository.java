@@ -17,4 +17,6 @@ public interface StorageClassRepository {
 	StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName);
 
 	void modifyStorageClassDTO(ModifyStorageClassDTO modifyStorageClassDTO);
+
+	void deleteStorageClass(String storageClassMetaName);
 }

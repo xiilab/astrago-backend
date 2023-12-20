@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.storage.storageclass.repository;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +19,7 @@ import io.fabric8.kubernetes.api.model.storage.CSIDriver;
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import io.fabric8.kubernetes.api.model.storage.StorageClassBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -28,7 +30,16 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 	@Override
 	public StorageClass findStorageClassByType(StorageType storageType) {
 		try(final KubernetesClient client = k8sAdapter.configServer()){
-			return client.storage().v1().storageClasses().withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name()).list().getItems().get(0);
+			List<StorageClass> storageClasses = client.storage()
+				.v1()
+				.storageClasses()
+				.withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
+				.list()
+				.getItems();
+			if(storageClasses.size() == 0){
+				throw new RuntimeException("해당 타입의 스토리지 클래스가 존재하지 않습니다.");
+			}
+			return storageClasses.get(0);
 		}
 	}
 
@@ -69,6 +80,9 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.v1()
 				.storageClasses()
 				.withName(storageClassMetaName).get();
+			if(storageClass == null){
+				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
+			}
 			return StorageClassResDTO.toDTO(storageClass);
 		}
 	}
@@ -76,16 +90,30 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 	@Override
 	public void modifyStorageClassDTO(ModifyStorageClassDTO modifyStorageClassDTO) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			client.storage()
+			Resource<StorageClass> storageClassResource = client.storage()
 				.v1()
 				.storageClasses()
-				.withName(modifyStorageClassDTO.getStorageClassMetaName())
-				.edit(
+				.withName(modifyStorageClassDTO.getStorageClassMetaName());
+			if(storageClassResource.get() == null){
+				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
+			}
+			storageClassResource.edit(
 					s -> new StorageClassBuilder(s).editMetadata()
 						.addToAnnotations(AnnotationField.NAME.getField(), modifyStorageClassDTO.getName())
 						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), modifyStorageClassDTO.getDescription())
 						.endMetadata()
 						.build());
+		}
+	}
+
+	@Override
+	public void deleteStorageClass(String storageClassMetaName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.storage()
+				.v1()
+				.storageClasses()
+				.withName(storageClassMetaName)
+				.delete();
 		}
 	}
 

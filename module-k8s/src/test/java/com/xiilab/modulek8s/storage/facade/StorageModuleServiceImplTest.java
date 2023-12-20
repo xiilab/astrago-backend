@@ -57,7 +57,7 @@ class StorageModuleServiceImplTest {
 	@Test
 	void getStorageClasseByLabel(){
 		try(final KubernetesClient client = k8sAdapter.configServer()){
-			client.storage().v1().storageClasses().withLabel("storage-type", "NFS").list().getItems().get(0).getProvisioner();
+			client.storage().v1().storageClasses().withLabel("storage-type", "NFS3").list().getItems().get(0);
 		}
 	}
 

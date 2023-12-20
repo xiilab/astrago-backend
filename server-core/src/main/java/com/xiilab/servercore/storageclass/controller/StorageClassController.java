@@ -81,10 +81,17 @@ public class StorageClassController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	/**
+	 * 스토리지 클래스 삭제
+	 *
+	 * @param storageClassMetaName
+	 * @return
+	 */
 	@DeleteMapping("/storageClasses/{storageClassMetaName}")
 	@Operation(summary = "delete StorageClass")
-	public void deleteStorageClass(@PathVariable("storageClassMetaName") String storageClassMetaName){
-
+	public ResponseEntity<Object> deleteStorageClass(@PathVariable("storageClassMetaName") String storageClassMetaName){
+		storageClassFacadeService.deleteStorageClass(storageClassMetaName);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 }

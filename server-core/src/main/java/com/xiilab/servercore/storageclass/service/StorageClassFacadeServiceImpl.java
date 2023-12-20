@@ -36,4 +36,9 @@ public class StorageClassFacadeServiceImpl implements StorageClassFacadeService{
 		modifyStorageClassReqDTO.setStorageClassMetaName(storageClassMetaName);
 		storageModuleService.modifyStorageClass(modifyStorageClassReqDTO.toModuleDto());
 	}
+
+	@Override
+	public void deleteStorageClass(String storageClassMetaName) {
+		storageModuleService.deleteStorageClass(storageClassMetaName);
+	}
 }
