@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum StorageType {
 	NFS,
-	NFS1,
 	PURE;
 
 }
