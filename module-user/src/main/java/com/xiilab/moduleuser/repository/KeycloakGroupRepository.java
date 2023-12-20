@@ -1,9 +1,11 @@
 package com.xiilab.moduleuser.repository;
 
+import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.*;
 import com.xiilab.moduleuser.vo.GroupModiVO;
 import com.xiilab.moduleuser.vo.GroupReqVO;
+import io.micrometer.common.util.StringUtils;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +23,11 @@ public class KeycloakGroupRepository implements GroupRepository {
     private final UserRepository userRepository;
 
     @Override
-    public List<GroupSummaryDTO> getGroupList() {
+    public List<GroupSummaryDTO> getGroupList(FindDTO findDTO) {
         GroupResource rootGroup = getGroupResourceByName(GroupCategory.ACCOUNT.getValue());
-        return rootGroup.toRepresentation().getSubGroups().stream().map(GroupSummaryDTO::new).toList();
+        return rootGroup.toRepresentation().getSubGroups().stream()
+                .filter(group -> searchInfo(findDTO, group))
+                .map(GroupSummaryDTO::new).toList();
     }
 
     @Override
@@ -108,5 +112,16 @@ public class KeycloakGroupRepository implements GroupRepository {
                 .filter(group -> group.getName().equals(groupName))
                 .toList()
                 .get(0);
+    }
+
+    private boolean searchInfo(FindDTO findDTO, GroupRepresentation group) {
+        boolean search = true;
+        if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(findDTO.getSearchCondition().getKeyword())) {
+            return search;
+        }
+        if (findDTO.getSearchCondition().getOption().equalsIgnoreCase("groupName")) {
+            search = group.getName().contains(findDTO.getSearchCondition().getKeyword());
+        }
+        return search;
     }
 }

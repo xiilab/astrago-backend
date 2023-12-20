@@ -1,19 +1,19 @@
-package com.xiilab.moduleuser.service;
+package com.xiilab.servercore.user.service;
 
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
+import com.xiilab.servercore.common.dto.SearchCondition;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserFacadeService {
     //회원가입
-    UserInfo joinUser(UserReqVO userReqVO);
+    UserInfo joinUser(UserReqVO userReqVO, String groupId);
 
     //사용자 리스트 조회
-    List<UserSummary> getUserList(FindDTO findDTO);
+    List<UserSummary> getUserList(SearchCondition searchCondition);
 
     //사용자 승인 신청 계정 리스트 조회
     List<UserSummary> getWaitingApprovalUserList();
@@ -31,7 +31,5 @@ public interface UserService {
 
     void updateUserRole(String userId, AuthType authType);
 
-    void joinGroup(String groupId, String userId);
-
-    void deleteUserById(List<String> userId);
+    void deleteUserById(List<String> userIdList);
 }
