@@ -6,15 +6,12 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.dto.Pageable;
 import com.xiilab.modulek8s.common.dto.SearchCondition;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
-import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
-import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
@@ -34,8 +31,8 @@ public class VolumeService {
 		volumeRepository.createVolume(createVolumeDTO);
 	}
 
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType){
-		return volumeRepository.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName, storageType);
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName){
+		return volumeRepository.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
 	}
 	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
 		return volumeRepository.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);

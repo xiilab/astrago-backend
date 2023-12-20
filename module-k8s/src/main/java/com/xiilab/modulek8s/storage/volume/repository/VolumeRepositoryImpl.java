@@ -1,9 +1,6 @@
 package com.xiilab.modulek8s.storage.volume.repository;
 
-import java.awt.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -13,17 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
-import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
-import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
-import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
-import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
@@ -36,7 +28,6 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
@@ -60,11 +51,11 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	@Override
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType) {
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
-				.withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
+				.withLabel(LabelField.STORAGE_NAME.getField(), storageMetaName)
 				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems();
@@ -96,11 +87,15 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			List<Job> jobs = getJobsInUseVolume(volumeMetaName, client);
 			setWorkloadInUseVolume(jobs, workloadNames);
 
+			String storageMetaName = pvc.getMetadata().getLabels().get(LabelField.STORAGE_NAME.getField());
+			String storageName = getStorageClassName(client, storageMetaName);
+
 			return VolumeWithWorkloadsResDTO.builder()
 				.hasMetadata(pvc)
 				.workloadNames(workloadNames)
 				.requestVolume(requestVolume)
 				.storageType(storageType)
+				.storageClassName(storageName)
 				.build();
 		} catch (NullPointerException e) {
 			log.error("volume not found {}", e.getMessage(), e);
@@ -221,14 +216,15 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			//사용중인 job 조회
 			List<Job> jobs = getJobsInUseVolume(volumeMetaName, client);
 			setWorkloadInUseVolume(jobs, workloadNames);
-			String storageName = getStorageClassName(persistentVolumeClaim);
-			String storageSavePath = getStorageSavePath(client, storageName);
-
+			String storageMetaName = getStorageClassName(persistentVolumeClaim);
+			String storageSavePath = getStorageSavePath(client, storageMetaName);
+			String storageName = getStorageClassName(client, storageMetaName);
 			return VolumeWithStorageResDTO.builder()
 				.hasMetadata(persistentVolumeClaim)
 				.workspaceName(workspaceName)
 				.requestVolume(requestVolume)
 				.storageType(storageType)
+				.storageClassName(storageName)
 				.workloadNames(workloadNames)
 				.savePath(storageSavePath)
 				.build();
@@ -239,6 +235,23 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			log.error("k8s cluster connect error {}", e.getMessage(), e);
 			throw e;
 		}
+	}
+
+	/**
+	 * 유저가 설정한 스토리지 이름 조회
+	 * @param client
+	 * @param storageMetaName
+	 * @return
+	 */
+	private static String getStorageClassName(KubernetesClient client, String storageMetaName) {
+		return client.storage()
+			.v1()
+			.storageClasses()
+			.withName(storageMetaName)
+			.get()
+			.getMetadata()
+			.getAnnotations()
+			.get(AnnotationField.NAME.getField());
 	}
 
 	@Override

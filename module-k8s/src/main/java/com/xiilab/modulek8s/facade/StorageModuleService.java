@@ -2,7 +2,6 @@ package com.xiilab.modulek8s.facade;
 
 import java.util.List;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
@@ -20,7 +19,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDT
 public interface StorageModuleService {
 	void createVolume(CreateVolumeDTO requestDTO);
 
-	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType);
+	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName);
 
