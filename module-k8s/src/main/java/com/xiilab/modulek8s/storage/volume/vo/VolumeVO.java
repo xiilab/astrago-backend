@@ -77,6 +77,7 @@ public class VolumeVO extends K8SResourceReqVO {
 		HashMap<String, String> labels = new HashMap<>();
 		labels.put(LabelField.CREATOR.getField(), getCreator());
 		labels.put(LabelField.STORAGE_TYPE.getField(), storageType.name());
+		labels.put(LabelField.CONTROL_BY.getField(), "astra");
 		return labels;
 	}
 
