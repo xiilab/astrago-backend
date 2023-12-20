@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
+import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.service.StorageClassFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,6 +62,13 @@ public class StorageClassController {
 		StorageClassResDTO storageClass = storageClassFacadeService.findStorageClassByMetaName(
 			storageClassMetaName);
 		return new ResponseEntity<>(storageClass, HttpStatus.OK);
+	}
+
+	@PutMapping("/storageClasses/{storageClassMetaName}")
+	public ResponseEntity<Object> modifyStorageClass(@PathVariable("storageClassMetaName") String storageClassMetaName,
+		@RequestBody ModifyStorageClassReqDTO modifyStorageClassReqDTO){
+		storageClassFacadeService.modifyStorageClass(modifyStorageClassReqDTO, storageClassMetaName);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 

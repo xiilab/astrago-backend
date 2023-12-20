@@ -6,6 +6,7 @@ import com.xiilab.modulek8s.facade.StorageModuleService;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
+import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,5 +29,11 @@ public class StorageClassFacadeServiceImpl implements StorageClassFacadeService{
 	@Override
 	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
 		return storageModuleService.findStorageClassByMetaName(storageClassMetaName);
+	}
+
+	@Override
+	public void modifyStorageClass(ModifyStorageClassReqDTO modifyStorageClassReqDTO, String storageClassMetaName) {
+		modifyStorageClassReqDTO.setStorageClassMetaName(storageClassMetaName);
+		storageModuleService.modifyStorageClass(modifyStorageClassReqDTO.toModuleDto());
 	}
 }

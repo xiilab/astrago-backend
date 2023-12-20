@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.repository.StorageClassRepository;
 
@@ -30,5 +31,9 @@ public class StorageClassService {
 
 	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
 		return storageClassRepository.findStorageClassByMetaName(storageClassMetaName);
+	}
+
+	public void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO) {
+		storageClassRepository.modifyStorageClassDTO(modifyStorageClassDTO);
 	}
 }

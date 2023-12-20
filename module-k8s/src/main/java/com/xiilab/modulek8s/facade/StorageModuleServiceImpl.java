@@ -9,6 +9,7 @@ import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
@@ -154,5 +155,10 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
 		return storageClassService.findStorageClassByMetaName(storageClassMetaName);
+	}
+
+	@Override
+	public void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO) {
+		storageClassService.modifyStorageClass(modifyStorageClassDTO);
 	}
 }

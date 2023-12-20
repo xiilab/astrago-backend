@@ -7,6 +7,7 @@ import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
@@ -42,4 +43,6 @@ public interface StorageModuleService {
 	boolean storageClassConnectionTest(String storageType);
 
 	StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName);
+
+	void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO);
 }
