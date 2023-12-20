@@ -18,6 +18,7 @@ import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
@@ -48,8 +49,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public void createVolume(CreateDTO createDTO) {
-		VolumeVO volumeVO = VolumeVO.dtoToVo(createDTO);
+	public void createVolume(CreateVolumeDTO createVolumeDTO) {
+		VolumeVO volumeVO = VolumeVO.dtoToVo(createVolumeDTO);
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim resource = (PersistentVolumeClaim)volumeVO.createResource();
 			client.persistentVolumeClaims().resource(resource).create();

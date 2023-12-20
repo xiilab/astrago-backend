@@ -39,14 +39,8 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public void createVolume(CreateVolumeDTO createVolumeDTO){
-		//sc type -> sc provisioner 조회
-		StorageClass storageClass = storageClassService.findStorageClassByType(createVolumeDTO.getStorageType());
-		String storageClassMetaName = storageClass.getMetadata().getName();
-
 		//volume 생성
-		CreateDTO createDTO = CreateDTO.createVolumeDtoToCreateDto(createVolumeDTO);
-		createDTO.setStorageClassMetaName(storageClassMetaName);
-		volumeService.createVolume(createDTO);
+		volumeService.createVolume(createVolumeDTO);
 	}
 
 	/**
