@@ -58,7 +58,7 @@ public class StorageClassVO extends K8SResourceReqVO {
 			.description(createStorageClassDTO.getDescription())
 			.storageType(createStorageClassDTO.getStorageType())
 			.provisioner(ProvisionerType.valueOf(createStorageClassDTO.getStorageType().name()))
-			.reclaimPolicy(ReclaimPolicyType.DELETE)
+			.reclaimPolicy(ReclaimPolicyType.RETAIN)
 			.createdAt(LocalDateTime.now())
 			.creatorName(createStorageClassDTO.getCreatorName())
 			.creator(createStorageClassDTO.getCreator())
