@@ -22,4 +22,8 @@ public interface GroupService {
 	List<GroupUserDTO> getGroupUsers(String groupId);
 	//그룹 Id로 group을 삭제
 	void deleteGroupById(String groupId);
+
+	void deleteWorkspaceGroupByName(String groupName);
+
+	void deleteAccountGroupByName(String groupName);
 }
