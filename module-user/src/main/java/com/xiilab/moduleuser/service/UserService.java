@@ -30,4 +30,6 @@ public interface UserService {
     void resetUserPassWord(String userId);
 
     void updateUserRole(String userId, AuthType authType);
+
+    void deleteUserById(List<String> userId);
 }

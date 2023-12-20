@@ -70,4 +70,10 @@ public class UserController {
         userFacadeService.updateUserRole(id, authType);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<HttpStatus> deleteUserById(@RequestBody List<String> idList) {
+        userFacadeService.deleteUserById(idList);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -67,4 +67,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
     public void updateUserRole(String userId, AuthType authType) {
         userService.updateUserRole(userId, authType);
     }
+
+    @Override
+    public void deleteUserById(List<String> userIdList) {
+        userService.deleteUserById(userIdList);
+    }
 }

@@ -65,4 +65,9 @@ public class UserServiceImpl implements UserService {
     public void updateUserRole(String userId, AuthType authType) {
         userRepository.updateUserRole(userId,authType);
     }
+
+    @Override
+    public void deleteUserById(List<String> userId) {
+        userRepository.deleteUserById(userId);
+    }
 }
