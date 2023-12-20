@@ -67,6 +67,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void joinGroup(String groupId, String userId) {
+        userRepository.joinGroup(groupId, userId);
+    }
+
+    @Override
     public void deleteUserById(List<String> userId) {
         userRepository.deleteUserById(userId);
     }

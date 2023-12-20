@@ -4,7 +4,6 @@ import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
-import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.common.dto.SearchCondition;
@@ -18,13 +17,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserFacadeServiceImpl implements UserFacadeService {
     private final UserService userService;
-    private final GroupService groupService;
 
     @Override
     public UserInfo joinUser(UserReqVO userReqVO, String groupId) {
         UserInfo userInfo = userService.joinUser(userReqVO);
         if (StringUtils.isNotBlank(groupId)) {
-            groupService.addGroupMember(groupId, List.of(userInfo.getId()));
+            userService.joinGroup(groupId, userInfo.getId());
         }
         return userService.getUserInfoById(userInfo.getId());
     }

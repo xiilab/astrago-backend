@@ -31,5 +31,7 @@ public interface UserService {
 
     void updateUserRole(String userId, AuthType authType);
 
+    void joinGroup(String groupId, String userId);
+
     void deleteUserById(List<String> userId);
 }
