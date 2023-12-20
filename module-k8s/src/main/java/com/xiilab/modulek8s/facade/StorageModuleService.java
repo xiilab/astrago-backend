@@ -3,12 +3,15 @@ package com.xiilab.modulek8s.facade;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
@@ -34,4 +37,16 @@ public interface StorageModuleService {
 	void deleteVolumeByMetaName(String volumeMetaName);
 
 	void modifyVolume(ModifyVolumeDTO modifyVolumeDTO);
+
+	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
+
+	boolean storageClassConnectionTest(String storageType);
+
+	StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName);
+
+	void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO);
+
+	void deleteStorageClass(String storageClassMetaName);
+
+	List<StorageClassResDTO> findStorageClasses();
 }

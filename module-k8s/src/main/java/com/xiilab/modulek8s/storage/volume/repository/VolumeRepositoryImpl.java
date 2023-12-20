@@ -1,6 +1,9 @@
 package com.xiilab.modulek8s.storage.volume.repository;
 
+import java.awt.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -10,11 +13,15 @@ import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
+import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
@@ -28,6 +35,7 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +64,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
 				.withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems();
 			return pvcs.stream().map(VolumeResDTO::toDTO).collect(Collectors.toList());
@@ -71,7 +80,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.inNamespace(workspaceMetaName)
 				.withName(volumeMetaName)
 				.get();
-			if (pvc == null) {
+			if (pvc == null || !isControlledByAstra(pvc.getMetadata().getLabels())) {
 				throw new NullPointerException("해당 볼륨이 존재하지 않습니다.");
 			}
 			String requestVolume = getRequestVolume(pvc);
@@ -111,9 +120,14 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			if (!chk) {
 				throw new RuntimeException("자신이 생성한 볼륨만 수정할 수 있습니다.");
 			}
-			client.persistentVolumeClaims()
+			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
-				.withName(modifyVolumeDTO.getVolumeMetaName())
+				.withName(modifyVolumeDTO.getVolumeMetaName());
+
+			if(persistentVolumeClaimResource.get() == null || !isControlledByAstra(persistentVolumeClaimResource.get().getMetadata().getLabels())){
+				throw new RuntimeException("볼륨이 존재하지 않습니다.");
+			}
+			persistentVolumeClaimResource
 				.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
 					.addToAnnotations(AnnotationField.NAME.getField(), modifyVolumeDTO.getName())
 					.endMetadata()
@@ -138,8 +152,13 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			checkAndThrowIfInUse(() -> getJobsInUseVolume(volumeMetaName, client));
 
 			//삭제
-			client.persistentVolumeClaims().inNamespace(deleteVolumeDTO.getWorkspaceMetaName())
-				.withName(deleteVolumeDTO.getVolumeMetaName()).delete();
+			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
+				.inNamespace(deleteVolumeDTO.getWorkspaceMetaName())
+				.withName(deleteVolumeDTO.getVolumeMetaName());
+			if(persistentVolumeClaimResource.get() == null || !isControlledByAstra(persistentVolumeClaimResource.get().getMetadata().getLabels())){
+				throw new RuntimeException("볼륨이 존재하지 않습니다.");
+			}
+			persistentVolumeClaimResource.delete();
 		}
 	}
 
@@ -148,6 +167,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems();
 
@@ -232,6 +252,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			//삭제
 			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
 				.inAnyNamespace()
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems()
 				.stream()
@@ -248,6 +269,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
 				.inAnyNamespace()
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.resources()
 				.filter(pvcr -> pvcr.get().getMetadata().getName().equals(modifyVolumeDTO.getVolumeMetaName()))
 				.findFirst()
@@ -268,6 +290,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
 		return client.persistentVolumeClaims()
 			.inAnyNamespace()
+			.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 			.list()
 			.getItems();
 	}
@@ -466,5 +489,9 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 
 		return false;
+	}
+
+	private boolean isControlledByAstra(Map<String, String> map) {
+		return map != null && "astra".equals(map.get("control-by"));
 	}
 }

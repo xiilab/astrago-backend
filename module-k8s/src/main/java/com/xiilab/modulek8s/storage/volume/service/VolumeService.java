@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.common.dto.Pageable;
 import com.xiilab.modulek8s.common.dto.SearchCondition;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
