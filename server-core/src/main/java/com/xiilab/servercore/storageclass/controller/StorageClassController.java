@@ -1,5 +1,7 @@
 package com.xiilab.servercore.storageclass.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -94,4 +96,14 @@ public class StorageClassController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	/**
+	 * 스토리지 클래스 전체 조회
+	 *
+	 * @return
+	 */
+	@GetMapping("/storageClasses")
+	public ResponseEntity<List<StorageClassResDTO>> findStorageClasses(){
+		List<StorageClassResDTO> storageClasses = storageClassFacadeService.findStorageClasses();
+		return new ResponseEntity<>(storageClasses, HttpStatus.OK);
+	}
 }

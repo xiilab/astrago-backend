@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.storage.storageclass.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
@@ -39,5 +41,9 @@ public class StorageClassService {
 
 	public void deleteStorageClass(String storageClassMetaName) {
 		storageClassRepository.deleteStorageClass(storageClassMetaName);
+	}
+
+	public List<StorageClassResDTO> findStorageClasses() {
+		return storageClassRepository.findStorageClasses();
 	}
 }

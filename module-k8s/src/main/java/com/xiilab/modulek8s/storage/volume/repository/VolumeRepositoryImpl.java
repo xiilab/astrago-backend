@@ -474,4 +474,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 
 		return false;
 	}
+
+	private boolean isControlledByAstra(Map<String, String> map) {
+		return map != null && "astra".equals(map.get("control-by"));
+	}
 }

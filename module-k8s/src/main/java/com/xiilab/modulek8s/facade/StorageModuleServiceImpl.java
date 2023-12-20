@@ -166,4 +166,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	public void deleteStorageClass(String storageClassMetaName) {
 		storageClassService.deleteStorageClass(storageClassMetaName);
 	}
+
+	@Override
+	public List<StorageClassResDTO> findStorageClasses() {
+		return storageClassService.findStorageClasses();
+	}
 }

@@ -47,4 +47,6 @@ public interface StorageModuleService {
 	void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO);
 
 	void deleteStorageClass(String storageClassMetaName);
+
+	List<StorageClassResDTO> findStorageClasses();
 }

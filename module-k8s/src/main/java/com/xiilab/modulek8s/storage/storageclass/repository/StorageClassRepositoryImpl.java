@@ -2,6 +2,8 @@ package com.xiilab.modulek8s.storage.storageclass.repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -80,7 +82,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.v1()
 				.storageClasses()
 				.withName(storageClassMetaName).get();
-			if(storageClass == null){
+			if(storageClass == null || !isControlledByAstra(storageClass.getMetadata().getLabels())){
 				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
 			}
 			return StorageClassResDTO.toDTO(storageClass);
@@ -94,7 +96,8 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.v1()
 				.storageClasses()
 				.withName(modifyStorageClassDTO.getStorageClassMetaName());
-			if(storageClassResource.get() == null){
+
+			if(storageClassResource.get() == null || !isControlledByAstra(storageClassResource.get().getMetadata().getLabels())){
 				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
 			}
 			storageClassResource.edit(
@@ -115,6 +118,19 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.withName(storageClassMetaName)
 				.delete();
 		}
+	}
+
+	@Override
+	public List<StorageClassResDTO> findStorageClasses() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			List<StorageClass> storageClasses = client.storage().v1().storageClasses().withLabel(LabelField.CONTROL_BY.getField(),"astra").list().getItems();
+			return storageClasses.stream().map(StorageClassResDTO::toDTO).collect(Collectors.toList());
+		}
+	}
+
+
+	private boolean isControlledByAstra(Map<String, String> map) {
+		return map != null && "astra".equals(map.get("control-by"));
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.xiilab.servercore.storageclass.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.StorageModuleService;
@@ -40,5 +42,10 @@ public class StorageClassFacadeServiceImpl implements StorageClassFacadeService{
 	@Override
 	public void deleteStorageClass(String storageClassMetaName) {
 		storageModuleService.deleteStorageClass(storageClassMetaName);
+	}
+
+	@Override
+	public List<StorageClassResDTO> findStorageClasses() {
+		return storageModuleService.findStorageClasses();
 	}
 }
