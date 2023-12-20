@@ -18,7 +18,7 @@ public interface GroupService {
 	//그룹 상세 조회
 	GroupInfoDTO getGroupInfoById(String groupId);
 	//그룹 멤버 추가
-	void addGroupMember(String groupId, String userId);
+	void addGroupMember(String groupId, List<String> userIdList);
 	//그룹 안의 유저 리스트 조회
 	List<GroupUserDTO> getGroupUsers(String groupId);
 	//그룹 Id로 group을 삭제

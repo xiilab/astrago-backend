@@ -53,8 +53,8 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void addGroupMember(String groupId, String userId) {
-		groupRepository.joinMembersIntoGroup(groupId, List.of(userId));
+	public void addGroupMember(String groupId, List<String> userIdList) {
+		groupRepository.joinMembersIntoGroup(groupId, userIdList);
 	}
 
 	@Override

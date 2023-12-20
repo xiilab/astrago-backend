@@ -21,8 +21,12 @@ public class UserFacadeServiceImpl implements UserFacadeService {
     private final GroupService groupService;
 
     @Override
-    public UserInfo joinUser(UserReqVO userReqVO) {
-        return userService.joinUser(userReqVO);
+    public UserInfo joinUser(UserReqVO userReqVO, String groupId) {
+        UserInfo userInfo = userService.joinUser(userReqVO);
+        if (StringUtils.isNotBlank(groupId)) {
+            groupService.addGroupMember(groupId, List.of(userInfo.getId()));
+        }
+        return userService.getUserInfoById(userInfo.getId());
     }
 
     @Override
@@ -45,16 +49,13 @@ public class UserFacadeServiceImpl implements UserFacadeService {
     }
 
     @Override
-    public void updateUserApprovalYN(String userId, boolean approvalYN, String groupId) {
+    public void updateUserApprovalYN(List<String> userId, boolean approvalYN) {
         userService.updateUserApprovalYN(userId, approvalYN);
-        if (StringUtils.isNotBlank(groupId)) {
-            groupService.addGroupMember(groupId, userId);
-        }
     }
 
     @Override
-    public void updateUserActivationYN(String userId, boolean activationYN) {
-        userService.updateUserActivationYN(userId, activationYN);
+    public void updateUserActivationYN(List<String> userIdList, boolean activationYN) {
+        userService.updateUserActivationYN(userIdList, activationYN);
     }
 
     @Override

@@ -42,8 +42,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
     }
 
     @Override
-    public void addGroupMember(String groupId, String userId) {
-        groupService.addGroupMember(groupId, userId);
+    public void addGroupMember(String groupId, List<String> userIdList) {
+        groupService.addGroupMember(groupId, userIdList);
     }
 
     @Override

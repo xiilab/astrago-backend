@@ -22,7 +22,7 @@ public interface GroupFacadeService {
     GroupInfoDTO getGroupInfoById(String groupId);
 
     //그룹 멤버 추가
-    void addGroupMember(String groupId, String userId);
+    void addGroupMember(String groupId, List<String> userIdList);
 
     //그룹 안의 유저 리스트 조회
     List<GroupUserDTO> getGroupUsers(String groupId);

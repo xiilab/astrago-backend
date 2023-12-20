@@ -22,10 +22,10 @@ public interface UserService {
     UserInfo getUserInfoById(String userId);
 
     //사용자 승인/거절 업데이트
-    void updateUserApprovalYN(String userId, boolean approvalYN);
+    void updateUserApprovalYN(List<String> userIdList, boolean approvalYN);
 
     //사용자 활성화/비활성화
-    void updateUserActivationYN(String userId, boolean activationYN);
+    void updateUserActivationYN(List<String> userIdList, boolean activationYN);
 
     void resetUserPassWord(String userId);
 

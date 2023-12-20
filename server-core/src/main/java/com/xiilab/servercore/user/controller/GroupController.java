@@ -19,7 +19,7 @@ import java.util.List;
 public class GroupController {
 	private final GroupFacadeService groupFacadeService;
 
-	@GetMapping("/")
+	@GetMapping()
 	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(@ModelAttribute SearchCondition searchCondition) {
 		return ResponseEntity.ok(groupFacadeService.getGroupList(searchCondition));
 	}
@@ -29,15 +29,16 @@ public class GroupController {
 		return ResponseEntity.ok(groupFacadeService.getGroupInfoById(id));
 	}
 
-	@PostMapping("/")
+	@PostMapping()
 	public ResponseEntity<HttpStatus> createAccountGroup(@RequestBody GroupReqDTO groupReqDTO) {
 		groupFacadeService.createAccountGroup(groupReqDTO);
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("/{groupId}/members/{userId}")
-	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId, @PathVariable(name = "userId") String userId) {
-		groupFacadeService.addGroupMember(groupId, userId);
+	@PostMapping("/{groupId}/members")
+	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId,
+													 @RequestBody List<String> userIdList) {
+		groupFacadeService.addGroupMember(groupId, userIdList);
 		return ResponseEntity.ok().build();
 	}
 

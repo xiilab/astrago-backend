@@ -93,29 +93,35 @@ public class KeycloakUserRepository implements UserRepository {
     }
 
     @Override
-    public void updateUserAttribute(String userId, Map<String, String> map) {
-        UserResource userResource = getUserResourceById(userId);
-        UserRepresentation representation = userResource.toRepresentation();
-        Map<String, List<String>> attributes = representation.getAttributes();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            attributes.put(key, List.of(value));
-        }
-        userResource.update(representation);
+    public void updateUserAttribute(List<String> userIdList, Map<String, String> map) {
+        userIdList.forEach(user -> {
+            UserResource userResource = getUserResourceById(user);
+            UserRepresentation representation = userResource.toRepresentation();
+            Map<String, List<String>> attributes = representation.getAttributes();
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                attributes.put(key, List.of(value));
+            }
+            userResource.update(representation);
+        });
     }
 
     @Override
-    public void updateUserActivationYN(String userId, boolean activationYN) {
-        UserResource userResource = getUserResourceById(userId);
-        UserRepresentation representation = userResource.toRepresentation();
-        representation.setEnabled(activationYN);
-        userResource.update(representation);
+    public void updateUserActivationYN(List<String> userIdList, boolean activationYN) {
+        userIdList.forEach(user -> {
+            UserResource userResource = getUserResourceById(user);
+            UserRepresentation representation = userResource.toRepresentation();
+            representation.setEnabled(activationYN);
+            userResource.update(representation);
+        });
     }
 
     @Override
-    public void deleteUserById(String userId) {
-        getUserResourceById(userId).remove();
+    public void deleteUserById(List<String> userIdList) {
+        userIdList.forEach(user -> {
+            getUserResourceById(user).remove();
+        });
     }
 
     @Override

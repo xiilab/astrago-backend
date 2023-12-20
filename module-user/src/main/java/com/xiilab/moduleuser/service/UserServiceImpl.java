@@ -38,22 +38,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserApprovalYN(String userId, boolean approvalYN) {
+    public void updateUserApprovalYN(List<String> userIdList, boolean approvalYN) {
         // false 일떄 해당 유저 keycloak 에서 삭제
         if (approvalYN) {
             //update attribute approval value
-            userRepository.updateUserAttribute(userId, Map.of("approvalYN", String.valueOf(approvalYN)));
+            userRepository.updateUserAttribute(userIdList, Map.of("approvalYN", String.valueOf(approvalYN)));
             //사용자 활성화 처리
-            userRepository.updateUserActivationYN(userId, true);
+            userRepository.updateUserActivationYN(userIdList, true);
         } else {
             //사용자 삭제 처리
-            userRepository.deleteUserById(userId);
+            userRepository.deleteUserById(userIdList);
         }
     }
 
     @Override
-    public void updateUserActivationYN(String userId, boolean activationYN) {
-        userRepository.updateUserActivationYN(userId, activationYN);
+    public void updateUserActivationYN(List<String> userIdList, boolean activationYN) {
+        userRepository.updateUserActivationYN(userIdList, activationYN);
     }
 
     @Override

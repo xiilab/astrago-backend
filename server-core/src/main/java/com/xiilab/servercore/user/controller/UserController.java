@@ -19,7 +19,7 @@ import java.util.List;
 public class UserController {
     private final UserFacadeService userFacadeService;
 
-    @GetMapping("/")
+    @GetMapping()
     public ResponseEntity<List<UserSummary>> getUserList(@ModelAttribute SearchCondition searchCondition) {
         return ResponseEntity.ok(userFacadeService.getUserList(searchCondition));
     }
@@ -34,26 +34,27 @@ public class UserController {
         return ResponseEntity.ok(userFacadeService.getWaitingApprovalUserList());
     }
 
-    @PatchMapping("/{id}/approval")
+    @PatchMapping("/approval")
     public ResponseEntity<HttpStatus> updateUserApprovalYN(
-            @PathVariable(name = "id") String id,
-            @RequestParam(required = false, name = "groupId") String groupId,
+            @RequestBody List<String> idList,
             @RequestParam(name = "approvalYN") boolean approvalYN) {
-        userFacadeService.updateUserApprovalYN(id, approvalYN, groupId);
+        userFacadeService.updateUserApprovalYN(idList, approvalYN);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{id}/activation")
     public ResponseEntity<HttpStatus> updateUserActivationYN(
-            @PathVariable(name = "id") String id,
+            @RequestBody List<String> idList,
             @RequestParam(name = "activationYN") boolean activationYN) {
-        userFacadeService.updateUserActivationYN(id, activationYN);
+        userFacadeService.updateUserActivationYN(idList, activationYN);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/join")
-    public ResponseEntity<HttpStatus> joinUser(@RequestBody UserReqVO userReqVO) {
-        userFacadeService.joinUser(userReqVO);
+    public ResponseEntity<HttpStatus> joinUser(
+            @RequestParam(required = false, name = "groupId") String groupId,
+            @RequestBody UserReqVO userReqVO) {
+        userFacadeService.joinUser(userReqVO, groupId);
         return ResponseEntity.ok().build();
     }
 

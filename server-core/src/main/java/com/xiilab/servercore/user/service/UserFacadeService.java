@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface UserFacadeService {
     //회원가입
-    UserInfo joinUser(UserReqVO userReqVO);
+    UserInfo joinUser(UserReqVO userReqVO, String groupId);
 
     //사용자 리스트 조회
     List<UserSummary> getUserList(SearchCondition searchCondition);
@@ -22,10 +22,10 @@ public interface UserFacadeService {
     UserInfo getUserInfoById(String userId);
 
     //사용자 승인/거절 업데이트
-    void updateUserApprovalYN(String userId, boolean approvalYN, String groupId);
+    void updateUserApprovalYN(List<String> userIdList, boolean approvalYN);
 
     //사용자 활성화/비활성화
-    void updateUserActivationYN(String userId, boolean activationYN);
+    void updateUserActivationYN(List<String> userIdList, boolean activationYN);
 
     void resetUserPassWord(String userId);
 
