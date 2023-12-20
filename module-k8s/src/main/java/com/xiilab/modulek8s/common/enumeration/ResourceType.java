@@ -8,7 +8,8 @@ public enum ResourceType {
 	WORKLOAD("wl"),
 	VOLUME("vo"),
 	STORAGE("st"),
-	PLUGIN("pg");
+	PLUGIN("pg"),
+	RESOURCE_QUOTA("rq");
 
 	private String name;
 
