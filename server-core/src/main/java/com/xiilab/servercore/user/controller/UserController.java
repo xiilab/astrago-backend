@@ -6,6 +6,7 @@ import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.user.service.UserFacadeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +54,7 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<HttpStatus> joinUser(
             @RequestParam(required = false, name = "groupId") String groupId,
-            @RequestBody UserReqVO userReqVO) {
+            @RequestBody @Valid UserReqVO userReqVO) {
         userFacadeService.joinUser(userReqVO, groupId);
         return ResponseEntity.ok().build();
     }

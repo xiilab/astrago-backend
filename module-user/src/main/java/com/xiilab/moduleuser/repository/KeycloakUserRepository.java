@@ -34,7 +34,8 @@ public class KeycloakUserRepository implements UserRepository {
 
     @Override
     public UserInfo joinUser(UserReqVO userReqVO) {
-        Response response = keycloakConfig.getRealmClient().users().create(userReqVO.convertUserRep());
+        UserRepresentation userRepresentation = userReqVO.convertUserRep();
+        Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
         if (response.getStatus() != 200 && response.getStatus() != 201) {
             throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
         }
@@ -42,6 +43,7 @@ public class KeycloakUserRepository implements UserRepository {
         UserRepresentation userRep = getUserByUsername(userReqVO.getUsername());
         UserResource userResource = getUserResourceById(userRep.getId());
         userResource.resetPassword(userReqVO.createCredentialRep());
+        userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
         return new UserInfo(userResource.toRepresentation());
     }
 
