@@ -3,6 +3,7 @@ package com.xiilab.servercore.storageclass.service;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.StorageModuleService;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 
@@ -22,5 +23,10 @@ public class StorageClassFacadeServiceImpl implements StorageClassFacadeService{
 	@Override
 	public boolean storageClassConnectionTest(String storageType) {
 		return storageModuleService.storageClassConnectionTest(storageType);
+	}
+
+	@Override
+	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
+		return storageModuleService.findStorageClassByMetaName(storageClassMetaName);
 	}
 }

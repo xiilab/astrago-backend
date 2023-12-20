@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.repository.StorageClassRepository;
 
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
@@ -25,5 +26,9 @@ public class StorageClassService {
 
 	public boolean storageClassConnectionTest(String storageType) {
 		return storageClassRepository.storageClassConnectionTest(storageType);
+	}
+
+	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
+		return storageClassRepository.findStorageClassByMetaName(storageClassMetaName);
 	}
 }

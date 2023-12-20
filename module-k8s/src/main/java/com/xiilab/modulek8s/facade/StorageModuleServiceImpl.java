@@ -13,6 +13,7 @@ import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
@@ -148,5 +149,10 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public boolean storageClassConnectionTest(String storageType) {
 		return storageClassService.storageClassConnectionTest(storageType);
+	}
+
+	@Override
+	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
+		return storageClassService.findStorageClassByMetaName(storageClassMetaName);
 	}
 }

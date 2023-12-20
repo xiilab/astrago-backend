@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.service.StorageClassFacadeService;
@@ -23,6 +24,12 @@ import lombok.RequiredArgsConstructor;
 public class StorageClassController {
 	private final StorageClassFacadeService storageClassFacadeService;
 
+	/**
+	 * 스토리지 클래스 생성
+	 * @param createStorageClassReqDTO
+	 * @param userInfoDTO
+	 * @return
+	 */
 	@PostMapping("/storageClasses")
 	@Operation(summary = "create StorageClass")
 	public ResponseEntity<Object> createStorageClass(@RequestBody CreateStorageClassReqDTO createStorageClassReqDTO,
@@ -31,9 +38,29 @@ public class StorageClassController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	/**
+	 * 스토리지 연결 테스트
+	 * @param storageType
+	 * @return
+	 */
 	@GetMapping("/storageClasses/connection-test")
 	public ResponseEntity<Boolean> storageClassConnectionTest(@RequestParam("storageType") String storageType){
 		boolean connectionCheck = storageClassFacadeService.storageClassConnectionTest(storageType);
 		return new ResponseEntity<>(connectionCheck, HttpStatus.OK);
 	}
+
+	/**
+	 * 스토리지 클래스 단건 조회
+	 *
+	 * @param storageClassMetaName
+	 * @return
+	 */
+	@GetMapping("/storageClasses/{storageClassMetaName}")
+	public ResponseEntity<StorageClassResDTO> findStorageClassByMetaName(@PathVariable("storageClassMetaName") String storageClassMetaName){
+		StorageClassResDTO storageClass = storageClassFacadeService.findStorageClassByMetaName(
+			storageClassMetaName);
+		return new ResponseEntity<>(storageClass, HttpStatus.OK);
+	}
+
+
 }

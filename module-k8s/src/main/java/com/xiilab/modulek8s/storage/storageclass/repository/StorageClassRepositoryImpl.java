@@ -9,6 +9,7 @@ import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 
 import io.fabric8.kubernetes.api.model.storage.CSIDriver;
@@ -56,6 +57,17 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			StorageClass storageClass = client.storage()
+				.v1()
+				.storageClasses()
+				.withName(storageClassMetaName).get();
+			return StorageClassResDTO.toDTO(storageClass);
+		}
 	}
 
 }
