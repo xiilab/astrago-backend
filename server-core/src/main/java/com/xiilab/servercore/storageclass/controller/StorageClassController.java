@@ -2,6 +2,7 @@ package com.xiilab.servercore.storageclass.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,6 +47,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("/storageClasses/connection-test")
+	@Operation(summary = "connection test")
 	public ResponseEntity<Boolean> storageClassConnectionTest(@RequestParam("storageType") String storageType){
 		boolean connectionCheck = storageClassFacadeService.storageClassConnectionTest(storageType);
 		return new ResponseEntity<>(connectionCheck, HttpStatus.OK);
@@ -58,18 +60,31 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("/storageClasses/{storageClassMetaName}")
+	@Operation(summary = "find StorageClass")
 	public ResponseEntity<StorageClassResDTO> findStorageClassByMetaName(@PathVariable("storageClassMetaName") String storageClassMetaName){
 		StorageClassResDTO storageClass = storageClassFacadeService.findStorageClassByMetaName(
 			storageClassMetaName);
 		return new ResponseEntity<>(storageClass, HttpStatus.OK);
 	}
 
+	/**
+	 * 스토리지 클래스 수정
+	 * @param storageClassMetaName
+	 * @param modifyStorageClassReqDTO
+	 * @return
+	 */
 	@PutMapping("/storageClasses/{storageClassMetaName}")
+	@Operation(summary = "modify StorageClass")
 	public ResponseEntity<Object> modifyStorageClass(@PathVariable("storageClassMetaName") String storageClassMetaName,
 		@RequestBody ModifyStorageClassReqDTO modifyStorageClassReqDTO){
 		storageClassFacadeService.modifyStorageClass(modifyStorageClassReqDTO, storageClassMetaName);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@DeleteMapping("/storageClasses/{storageClassMetaName}")
+	@Operation(summary = "delete StorageClass")
+	public void deleteStorageClass(@PathVariable("storageClassMetaName") String storageClassMetaName){
+
+	}
 
 }
