@@ -43,7 +43,7 @@ public abstract class WorkloadReqVO extends K8SResourceReqVO {
 			AtomicInteger volumeIndex = new AtomicInteger(1);
 			List<Container> gitCloneContainers = codeReqs.stream()
 				.map(codeReq -> new ContainerBuilder()
-					.withName(getResourceName() + "-git-clone-" + index)
+					.withName(getUniqueResourceName() + "-git-clone-" + index)
 					.withImage("alpine/git")
 					.addAllToArgs(List.of(
 						"clone",
@@ -53,13 +53,13 @@ public abstract class WorkloadReqVO extends K8SResourceReqVO {
 						codeReq.mountPath()
 					))
 					.addNewVolumeMount()
-					.withName(getResourceName() + "-git-clone-" + index.getAndIncrement())
+					.withName(getUniqueResourceName() + "-git-clone-" + index.getAndIncrement())
 					.withMountPath(codeReq.mountPath())
 					.endVolumeMount()
 					.build()).toList();
 
 			List<Volume> gitCloneVolumes = codeReqs.stream().map(codeReq -> new VolumeBuilder()
-				.withName(getResourceName() + "-git-clone-" + volumeIndex.getAndIncrement())
+				.withName(getUniqueResourceName() + "-git-clone-" + volumeIndex.getAndIncrement())
 				.withNewEmptyDir()
 				.endEmptyDir()
 				.build()).toList();

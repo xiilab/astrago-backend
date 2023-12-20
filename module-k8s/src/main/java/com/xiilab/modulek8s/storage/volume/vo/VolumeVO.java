@@ -3,13 +3,13 @@ package com.xiilab.modulek8s.storage.volume.vo;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
+import com.xiilab.modulek8s.common.enumeration.AccessMode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
-import com.xiilab.modulek8s.common.enumeration.AccessMode;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -39,7 +39,7 @@ public class VolumeVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName()) //vo-uuid
+			.withName(getUniqueResourceName()) //vo-uuid
 			.withNamespace(workspaceMetaDataName)
 			.addToAnnotations(createAnnotation())
 			.addToLabels(createLabels())

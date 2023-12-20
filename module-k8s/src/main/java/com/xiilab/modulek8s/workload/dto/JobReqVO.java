@@ -44,7 +44,7 @@ public class JobReqVO extends WorkloadReqVO {
 	@Override
 	public ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName())
+			.withName(getUniqueResourceName())
 			.withNamespace(workspace)
 			.withAnnotations(
 				Map.of(
@@ -79,7 +79,7 @@ public class JobReqVO extends WorkloadReqVO {
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withRestartPolicy("Never")
 			.addNewContainer()
-			.withName(getResourceName())
+			.withName(getUniqueResourceName())
 			.withImage(image);
 
 		if (port != null && !port.isEmpty()) {
@@ -99,7 +99,7 @@ public class JobReqVO extends WorkloadReqVO {
 		if (codeReqs != null && codeReqs.size() > 0) {
 			codeReqs.forEach(codeReq ->
 				podSpecContainer.addNewVolumeMount()
-					.withName(getResourceName() + "-git-clone-" + index.getAndIncrement())
+					.withName(getUniqueResourceName() + "-git-clone-" + index.getAndIncrement())
 					.withMountPath(codeReq.mountPath())
 					.endVolumeMount());
 		}
