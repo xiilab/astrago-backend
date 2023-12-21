@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -49,8 +50,8 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
-		return groupRepository.getGroupList();
+	public List<GroupSummaryDTO> getGroupList(FindDTO findDTO) {
+		return groupRepository.getGroupList(findDTO);
 	}
 
 	@Override
@@ -59,8 +60,8 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void addGroupMember(String groupId, String userId) {
-		groupRepository.joinMembersIntoGroup(groupId, List.of(userId));
+	public void addGroupMember(String groupId, List<String> userIdList) {
+		groupRepository.joinMembersIntoGroup(groupId, userIdList);
 	}
 
 	@Override

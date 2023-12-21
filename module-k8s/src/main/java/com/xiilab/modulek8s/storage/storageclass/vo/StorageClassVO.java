@@ -1,76 +1,72 @@
-package com.xiilab.modulek8s.storage.volume.vo;
+package com.xiilab.modulek8s.storage.storageclass.vo;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Map;
 
-import com.xiilab.modulek8s.common.enumeration.AccessMode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
+import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpec;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpecBuilder;
-import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.storage.StorageClassBuilder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class VolumeVO extends K8SResourceReqVO {
+public class StorageClassVO extends K8SResourceReqVO {
 	private StorageType storageType;
-	private String workspaceMetaDataName;
-	private String storageClassMetaName;
-	private int requestVolume;
+	private ProvisionerType provisioner;
+	private ReclaimPolicyType reclaimPolicy;
+	private Map<String, String> parameters;
+
+	public static StorageClassVO dtoToVo(CreateStorageClassDTO createStorageClassDTO) {
+		return StorageClassVO.builder()
+			.name(createStorageClassDTO.getName())
+			.description(createStorageClassDTO.getDescription())
+			.storageType(createStorageClassDTO.getStorageType())
+			.provisioner(ProvisionerType.valueOf(createStorageClassDTO.getStorageType().name()))
+			.reclaimPolicy(ReclaimPolicyType.RETAIN)
+			.createdAt(LocalDateTime.now())
+			.creatorName(createStorageClassDTO.getCreatorName())
+			.creator(createStorageClassDTO.getCreator())
+			.build();
+	}
 
 	@Override
 	public HasMetadata createResource() {
-		return new PersistentVolumeClaimBuilder()
+		return new StorageClassBuilder()
 			.withMetadata(createMeta())
-			.withSpec(createSpec())
+			.withParameters(parameters)
+			.withProvisioner(provisioner.getProvisionerName())
+			.withReclaimPolicy(reclaimPolicy.getField())
 			.build();
 	}
+
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName()) //vo-uuid
-			.withNamespace(workspaceMetaDataName)
+			.withName(getResourceName()) //vo-uuid
 			.addToAnnotations(createAnnotation())
 			.addToLabels(createLabels())
-			.build();
-	}
-	private PersistentVolumeClaimSpec createSpec() {
-		return new PersistentVolumeClaimSpecBuilder()
-			.withStorageClassName(storageClassMetaName) //st-uuid
-			.withAccessModes(AccessMode.RWM.getAccessMode())
-			.withNewResources()
-			.addToRequests("storage", new Quantity(requestVolume + "Gi"))
-			.endResources()
 			.build();
 	}
 
 	@Override
 	protected ResourceType getType() {
-		return ResourceType.VOLUME;
+		return ResourceType.STORAGE;
 	}
 
-	public static VolumeVO dtoToVo(CreateDTO createDTO){
-		return VolumeVO.builder()
-			.name(createDTO.getName())
-			.createdAt(LocalDateTime.now())
-			.creatorName(createDTO.getCreatorName())
-			.creator(createDTO.getCreator())
-			.workspaceMetaDataName(createDTO.getWorkspaceMetaDataName())
-			.storageClassMetaName(createDTO.getStorageClassMetaName())
-			.requestVolume(createDTO.getRequestVolume())
-			.storageType(createDTO.getStorageType())
-			.build();
+	public void setParameters(Map<String, String> parameters) {
+		this.parameters = parameters;
 	}
 
 	private HashMap<String, String> createLabels() {

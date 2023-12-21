@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
@@ -50,12 +50,26 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
+	/**
+	 * 볼륨 전체 리스트 조회
+	 * @param client
+	 * @return
+	 */
+	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
+		return client.persistentVolumeClaims()
+			.inAnyNamespace()
+			.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+			.list()
+			.getItems();
+	}
+
 	@Override
 	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
 				.withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems();
 			return pvcs.stream().map(VolumeResDTO::toDTO).collect(Collectors.toList());
@@ -71,7 +85,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.inNamespace(workspaceMetaName)
 				.withName(volumeMetaName)
 				.get();
-			if (pvc == null) {
+			if (pvc == null || !isControlledByAstra(pvc.getMetadata().getLabels())) {
 				throw new NullPointerException("해당 볼륨이 존재하지 않습니다.");
 			}
 			String requestVolume = getRequestVolume(pvc);
@@ -111,9 +125,15 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			if (!chk) {
 				throw new RuntimeException("자신이 생성한 볼륨만 수정할 수 있습니다.");
 			}
-			client.persistentVolumeClaims()
+			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
-				.withName(modifyVolumeDTO.getVolumeMetaName())
+				.withName(modifyVolumeDTO.getVolumeMetaName());
+
+			if (persistentVolumeClaimResource.get() == null || !isControlledByAstra(
+				persistentVolumeClaimResource.get().getMetadata().getLabels())) {
+				throw new RuntimeException("볼륨이 존재하지 않습니다.");
+			}
+			persistentVolumeClaimResource
 				.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
 					.addToAnnotations(AnnotationField.NAME.getField(), modifyVolumeDTO.getName())
 					.endMetadata()
@@ -138,30 +158,14 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			checkAndThrowIfInUse(() -> getJobsInUseVolume(volumeMetaName, client));
 
 			//삭제
-			client.persistentVolumeClaims().inNamespace(deleteVolumeDTO.getWorkspaceMetaName())
-				.withName(deleteVolumeDTO.getVolumeMetaName()).delete();
-		}
-	}
-
-	@Override
-	public List<PageVolumeResDTO> findVolumesWithPagination(String workspaceMetaName, String option, String keyword) {
-		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
-				.inNamespace(workspaceMetaName)
-				.list()
-				.getItems();
-
-			return pvcs.stream()
-				.filter(pvc -> matchesSearchOption(pvc, option, keyword))
-				.map(pvc -> {
-					String volumeName = pvc.getMetadata().getName();
-					boolean isUsed = checkUsedVolume(volumeName, client);
-					PageVolumeResDTO pageVolumeResDTO = PageVolumeResDTO.toDTO(pvc);
-					pageVolumeResDTO.setIsUsed(isUsed);
-					return pageVolumeResDTO;
-				})
-				// .sorted(Comparator.comparing(PageVolumeResDTO::getCreatedAt).reversed())
-				.collect(Collectors.toList());
+			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
+				.inNamespace(deleteVolumeDTO.getWorkspaceMetaName())
+				.withName(deleteVolumeDTO.getVolumeMetaName());
+			if (persistentVolumeClaimResource.get() == null || !isControlledByAstra(
+				persistentVolumeClaimResource.get().getMetadata().getLabels())) {
+				throw new RuntimeException("볼륨이 존재하지 않습니다.");
+			}
+			persistentVolumeClaimResource.delete();
 		}
 	}
 
@@ -221,6 +225,29 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	@Override
+	public List<PageVolumeResDTO> findVolumesWithPagination(String workspaceMetaName, String option, String keyword) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
+				.inNamespace(workspaceMetaName)
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.list()
+				.getItems();
+
+			return pvcs.stream()
+				.filter(pvc -> matchesSearchOption(pvc, option, keyword))
+				.map(pvc -> {
+					String volumeName = pvc.getMetadata().getName();
+					boolean isUsed = checkUsedVolume(volumeName, client);
+					PageVolumeResDTO pageVolumeResDTO = PageVolumeResDTO.toDTO(pvc);
+					pageVolumeResDTO.setIsUsed(isUsed);
+					return pageVolumeResDTO;
+				})
+				// .sorted(Comparator.comparing(PageVolumeResDTO::getCreatedAt).reversed())
+				.collect(Collectors.toList());
+		}
+	}
+
+	@Override
 	public void deleteVolumeByMetaName(String volumeMetaName) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 
@@ -232,6 +259,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			//삭제
 			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
 				.inAnyNamespace()
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems()
 				.stream()
@@ -248,6 +276,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
 				.inAnyNamespace()
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.resources()
 				.filter(pvcr -> pvcr.get().getMetadata().getName().equals(modifyVolumeDTO.getVolumeMetaName()))
 				.findFirst()
@@ -258,18 +287,6 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.endMetadata()
 				.build());
 		}
-	}
-
-	/**
-	 * 볼륨 전체 리스트 조회
-	 * @param client
-	 * @return
-	 */
-	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
-		return client.persistentVolumeClaims()
-			.inAnyNamespace()
-			.list()
-			.getItems();
 	}
 
 	/**
@@ -466,5 +483,9 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 
 		return false;
+	}
+
+	private boolean isControlledByAstra(Map<String, String> map) {
+		return map != null && "astra".equals(map.get("control-by"));
 	}
 }

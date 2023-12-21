@@ -5,13 +5,16 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
-import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
@@ -130,8 +133,43 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		volumeService.deleteVolumeByMetaName(volumeMetaName);
 	}
 
+	/**
+	 * 볼룸 수정
+	 *
+	 * @param modifyVolumeDTO
+	 */
 	@Override
 	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
 		volumeService.modifyVolume(modifyVolumeDTO);
+	}
+
+	@Override
+	public void createStorageClass(CreateStorageClassDTO createStorageClassDTO) {
+		storageClassService.createStorageClass(createStorageClassDTO);
+	}
+
+	@Override
+	public boolean storageClassConnectionTest(String storageType) {
+		return storageClassService.storageClassConnectionTest(storageType);
+	}
+
+	@Override
+	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
+		return storageClassService.findStorageClassByMetaName(storageClassMetaName);
+	}
+
+	@Override
+	public void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO) {
+		storageClassService.modifyStorageClass(modifyStorageClassDTO);
+	}
+
+	@Override
+	public void deleteStorageClass(String storageClassMetaName) {
+		storageClassService.deleteStorageClass(storageClassMetaName);
+	}
+
+	@Override
+	public List<StorageClassResDTO> findStorageClasses() {
+		return storageClassService.findStorageClasses();
 	}
 }
