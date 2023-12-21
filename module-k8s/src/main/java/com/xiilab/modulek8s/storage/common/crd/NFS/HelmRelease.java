@@ -11,5 +11,6 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Version("v2beta2")
 @Group("helm.toolkit.fluxcd.io")
 public class HelmRelease extends CustomResource<HelmReleaseSpec, HelmReleaseStatus> implements Namespaced {
-
+	public HelmRelease() {
+	}
 }
