@@ -10,7 +10,8 @@ public enum LabelField {
 	IMAGE("image"),
 	VOLUMES("volumes"),
 	CODES("codes"),
-	STORAGE_TYPE("storage-type");
+	STORAGE_TYPE("storage-type"),
+	RESOURCE_NAME("resource-name");
 
 	private final String field;
 }

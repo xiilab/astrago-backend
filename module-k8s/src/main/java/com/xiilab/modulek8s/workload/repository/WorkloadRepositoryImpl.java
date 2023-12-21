@@ -3,10 +3,10 @@ package com.xiilab.modulek8s.workload.repository;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.workload.dto.JobReqVO;
-import com.xiilab.modulek8s.workload.dto.JobResDTO;
-import com.xiilab.modulek8s.workload.dto.WorkloadReqVO;
-import com.xiilab.modulek8s.workload.dto.WorkloadRes;
+import com.xiilab.modulek8s.workload.vo.JobVO;
+import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
+import com.xiilab.modulek8s.workload.vo.WorkloadVO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -15,16 +15,16 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class WorkloadRepoImpl implements WorkloadRepo{
+public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 	@Override
-	public JobResDTO createBatchJobWorkload(JobReqVO jobReqVO) {
-		Job resource = (Job)createResource(jobReqVO.createResource());
+	public JobResDTO createBatchJobWorkload(JobVO jobVO) {
+		Job resource = (Job)createResource(jobVO.createResource());
 		return new JobResDTO(resource);
 	}
 
 	@Override
-	public WorkloadRes createInteractiveJobWorkload(WorkloadReqVO workloadReqVODTO) {
+	public JobResDTO createInteractiveJobWorkload(JobVO jobVO) {
 		return null;
 	}
 
