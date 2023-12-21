@@ -36,6 +36,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.v1()
 				.storageClasses()
 				.withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems();
 			if (storageClasses.size() == 0) {

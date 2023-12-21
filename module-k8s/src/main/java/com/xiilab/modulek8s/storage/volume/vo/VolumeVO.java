@@ -9,7 +9,7 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -36,13 +36,17 @@ public class VolumeVO extends K8SResourceReqVO {
 			.withSpec(createSpec())
 			.build();
 	}
-	@Override
-	protected ObjectMeta createMeta() {
-		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName()) //vo-uuid
-			.withNamespace(workspaceMetaDataName)
-			.addToAnnotations(createAnnotation())
-			.addToLabels(createLabels())
+
+	public static VolumeVO dtoToVo(CreateVolumeDTO createVolumeDTO) {
+		return VolumeVO.builder()
+			.name(createVolumeDTO.getName())
+			.createdAt(LocalDateTime.now())
+			.creatorName(createVolumeDTO.getCreatorName())
+			.creator(createVolumeDTO.getCreator())
+			.workspaceMetaDataName(createVolumeDTO.getWorkspaceMetaDataName())
+			.storageClassMetaName(createVolumeDTO.getStorageClassMetaName())
+			.requestVolume(createVolumeDTO.getRequestVolume())
+			.storageType(createVolumeDTO.getStorageType())
 			.build();
 	}
 	private PersistentVolumeClaimSpec createSpec() {
@@ -60,16 +64,13 @@ public class VolumeVO extends K8SResourceReqVO {
 		return ResourceType.VOLUME;
 	}
 
-	public static VolumeVO dtoToVo(CreateDTO createDTO){
-		return VolumeVO.builder()
-			.name(createDTO.getName())
-			.createdAt(LocalDateTime.now())
-			.creatorName(createDTO.getCreatorName())
-			.creator(createDTO.getCreator())
-			.workspaceMetaDataName(createDTO.getWorkspaceMetaDataName())
-			.storageClassMetaName(createDTO.getStorageClassMetaName())
-			.requestVolume(createDTO.getRequestVolume())
-			.storageType(createDTO.getStorageType())
+	@Override
+	protected ObjectMeta createMeta() {
+		return new ObjectMetaBuilder()
+			.withName(getResourceName()) //vo-uuid
+			.withNamespace(workspaceMetaDataName)
+			.addToAnnotations(createAnnotation())
+			.addToLabels(createLabels())
 			.build();
 	}
 
@@ -78,6 +79,7 @@ public class VolumeVO extends K8SResourceReqVO {
 		labels.put(LabelField.CREATOR.getField(), getCreator());
 		labels.put(LabelField.STORAGE_TYPE.getField(), storageType.name());
 		labels.put(LabelField.CONTROL_BY.getField(), "astra");
+		labels.put(LabelField.STORAGE_NAME.getField(), storageClassMetaName);
 		return labels;
 	}
 

@@ -7,7 +7,6 @@ import java.util.Set;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.StorageModuleService;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaReqDTO;
@@ -92,9 +91,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName,
-		StorageType storageType) {
-		return storageModuleService.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName, storageType);
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName,
+		String storageMetaName) {
+		return storageModuleService.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName,
+			storageMetaName);
 	}
 
 	@Override

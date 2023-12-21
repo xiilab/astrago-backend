@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
@@ -32,7 +31,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/workspaces")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
@@ -64,19 +63,20 @@ public class WorkspaceController {
 	}
 
 	/**
+	 * 해당 워크스페이스 & 스토리지 타입에 맞는 볼륨 리스트 조회
 	 * @param workspaceMetaName
-	 * @param storageType
+	 * @param storageMetaName
 	 * @return
 	 */
-	@GetMapping("/{workspaceMetaName}/volumes/storages/{storageType}")
+	@GetMapping("/{workspaceMetaName}/volumes/storages/{storageMetaName}")
 	@Operation(summary = "find Volumes By Workspace MetaName")
-	public ResponseEntity<List<VolumeResDTO>> findVolumesByWorkspaceMetaName(
+	public ResponseEntity<List<VolumeResDTO>> findVolumesByWorkspaceMetaNameAndStorageMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
-		@PathVariable("storageType") StorageType storageType
+		@PathVariable("storageMetaName") String storageMetaName
 	) {
-		List<VolumeResDTO> volumesByStorageType = workspaceService.findVolumesByWorkspaceMetaNameAndStorageType(
+		List<VolumeResDTO> volumesByStorageType = workspaceService.findVolumesByWorkspaceMetaNameAndStorageMetaName(
 			workspaceMetaName,
-			storageType);
+			storageMetaName);
 
 		return new ResponseEntity<>(volumesByStorageType, HttpStatus.OK);
 	}

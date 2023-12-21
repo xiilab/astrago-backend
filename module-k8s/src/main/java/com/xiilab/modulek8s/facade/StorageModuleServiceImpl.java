@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
@@ -16,14 +15,12 @@ import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
-import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 
-import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,18 +32,14 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	/**
 	 * 워크스페이스(namespace)에 볼륨 생성
+	 *
 	 * @param createVolumeDTO
+	 * @return
 	 */
 	@Override
 	public void createVolume(CreateVolumeDTO createVolumeDTO){
-		//sc type -> sc provisioner 조회
-		StorageClass storageClass = storageClassService.findStorageClassByType(createVolumeDTO.getStorageType());
-		String storageClassMetaName = storageClass.getMetadata().getName();
-
 		//volume 생성
-		CreateDTO createDTO = CreateDTO.createVolumeDtoToCreateDto(createVolumeDTO);
-		createDTO.setStorageClassMetaName(storageClassMetaName);
-		volumeService.createVolume(createDTO);
+		volumeService.createVolume(createVolumeDTO);
 	}
 
 	/**
@@ -56,8 +49,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 * @return
 	 */
 	@Override
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType){
-		return volumeService.findVolumesByWorkspaceMetaNameAndStorageType(workspaceMetaName,storageType);
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName,
+		String storageMetaName) {
+		return volumeService.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
 	}
 
 	/**

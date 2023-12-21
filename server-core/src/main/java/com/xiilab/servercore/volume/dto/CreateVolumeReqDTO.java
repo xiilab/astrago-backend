@@ -1,7 +1,7 @@
 package com.xiilab.servercore.volume.dto;
 
-import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.servercore.common.dto.APIBaseReqDTO;
 
 import lombok.Getter;
@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 public class CreateVolumeReqDTO extends APIBaseReqDTO {
 	private StorageType storageType;
+	private String storageClassMetaName;
 	private int requestVolume;
 	private String workspaceMetaDataName;
 	private String creator;
@@ -22,6 +23,7 @@ public class CreateVolumeReqDTO extends APIBaseReqDTO {
 		return CreateVolumeDTO.builder()
 			.name(getName())
 			.creator(creator)
+			.storageClassMetaName(storageClassMetaName)
 			.creatorName(creatorName)
 			.storageType(storageType)
 			.requestVolume(requestVolume)
