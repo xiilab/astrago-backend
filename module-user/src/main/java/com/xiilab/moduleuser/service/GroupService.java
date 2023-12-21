@@ -1,12 +1,12 @@
 package com.xiilab.moduleuser.service;
 
+import java.util.List;
+
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
-
-import java.util.List;
 
 public interface GroupService {
 	//사용자 그룹 생성
@@ -23,4 +23,8 @@ public interface GroupService {
 	List<GroupUserDTO> getGroupUsers(String groupId);
 	//그룹 Id로 group을 삭제
 	void deleteGroupById(String groupId);
+
+	void deleteWorkspaceGroupByName(String groupName);
+
+	void deleteAccountGroupByName(String groupName);
 }

@@ -44,7 +44,7 @@ public abstract class K8SResourceReqVO {
 	 *
 	 * @return 리소스 이름
 	 */
-	public String getResourceName() {
+	public String getUniqueResourceName() {
 		return getType().getName() + "-" + UUID.randomUUID();
 	}
 

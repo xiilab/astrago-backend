@@ -9,24 +9,22 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.StorageModuleServiceImpl;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
@@ -47,30 +45,68 @@ class StorageModuleServiceImplTest {
 	private K8sAdapter k8sAdapter;
 	@Autowired
 	private StorageModuleServiceImpl storageModuleServiceImpl;
+
+	private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
+		return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
+			.list()
+			.getItems();
+	}
+
+	/**
+	 * 해당 볼륨을 사용중인 Deployment list 조회
+	 *
+	 * @param volumeMetaName
+	 * @param client
+	 * @return
+	 */
+	private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
+		return client.apps().deployments().withLabelIn(volumeMetaName, "true")
+			.list()
+			.getItems();
+	}
+
+	/**
+	 * 해당 볼륨을 사용중인 StatefulSet list 조회
+	 *
+	 * @param volumeMetaName
+	 * @param client
+	 * @return
+	 */
+	private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
+		return client
+			.apps()
+			.statefulSets()
+			.withLabelIn(volumeMetaName, "true")
+			.list()
+			.getItems();
+	}
+
 	@Test
-	void getStorageClasses(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getStorageClasses() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			client.storage().v1().storageClasses().list().getItems()
 				.forEach(sc -> log.info(" - {}", sc.getMetadata().getName()));
 		}
 	}
+
 	@Test
-	void getStorageClasseByLabel(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getStorageClasseByLabel() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			client.storage().v1().storageClasses().withLabel("storage-type", "NFS3").list().getItems().get(0);
 		}
 	}
 
 	@Test
-	void getCSIDrivers(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getCSIDrivers() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			client.storage().v1().csiDrivers().list().getItems()
 				.forEach(sc -> log.info(" - {}", sc.getMetadata().getName()));
 		}
 	}
+
 	@Test
-	void getHelmStatusByRelease(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getHelmStatusByRelease() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			// final OpenShiftClient openShiftClient = client.adapt(OpenShiftClient.class);
 			// HelmChartRepositoryList list = openShiftClient.helmChartRepositories().list();
 			// System.out.println(list.getItems().size());
@@ -78,8 +114,8 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void getNSByWorkspaceName(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getNSByWorkspaceName() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			String namespaceName = client.namespaces()
 				.withLabel("workspace-name", "ws1")
 				.list()
@@ -91,8 +127,8 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void getAllNS(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getAllNS() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			NamespaceList namespaceList = client.namespaces().list();
 
 		}
@@ -100,8 +136,8 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void createVolume(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void createVolume() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim persistentVolumeClaim = new PersistentVolumeClaimBuilder()
 				.withNewMetadata()
 				.withName("testpvc1")
@@ -121,9 +157,10 @@ class StorageModuleServiceImplTest {
 			client.persistentVolumeClaims().resource(persistentVolumeClaim).create();
 		}
 	}
+
 	@Test
-	void getVolumesByNamespace(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getVolumesByNamespace() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> items = client.persistentVolumeClaims()
 				.inNamespace("yc-test-ns")
 				.list()
@@ -134,9 +171,10 @@ class StorageModuleServiceImplTest {
 
 		}
 	}
+
 	@Test
-	void getVolumesByMetaName(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void getVolumesByMetaName() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
 				.inNamespace("")
 				.withName("vo-422e4d40-3500-47df-ba74-b5851ab33eff")
@@ -144,31 +182,56 @@ class StorageModuleServiceImplTest {
 
 			VolumeWithWorkloadsResDTO build = VolumeWithWorkloadsResDTO.builder()
 				.hasMetadata(pvc)
-				.workloadNames(List.of("asdf","sdfsdf"))
+				.workloadNames(List.of("asdf", "sdfsdf"))
 				.build();
 			System.out.println(pvc);
 		}
 	}
+
 	@Test
-	void getAllResourceByLabels(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
-			client.apps().statefulSets().withLabelIn("vo-422e4d40-3500-47df-ba74-b5851ab33eff","true").list().getItems().get(0).getMetadata().getAnnotations().get("name");
-			client.apps().deployments().withLabelIn("vo-422e4d40-3500-47df-ba74-b5851ab33eff","true").list().getItems().get(0).getMetadata().getAnnotations().get("name");
-			client.batch().v1().jobs().withLabelIn("vo-422e4d40-3500-47df-ba74-b5851ab33eff","true").list().getItems().get(0).getMetadata().getAnnotations().get("name");
+	void getAllResourceByLabels() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.apps()
+				.statefulSets()
+				.withLabelIn("vo-422e4d40-3500-47df-ba74-b5851ab33eff", "true")
+				.list()
+				.getItems()
+				.get(0)
+				.getMetadata()
+				.getAnnotations()
+				.get("name");
+			client.apps()
+				.deployments()
+				.withLabelIn("vo-422e4d40-3500-47df-ba74-b5851ab33eff", "true")
+				.list()
+				.getItems()
+				.get(0)
+				.getMetadata()
+				.getAnnotations()
+				.get("name");
+			client.batch()
+				.v1()
+				.jobs()
+				.withLabelIn("vo-422e4d40-3500-47df-ba74-b5851ab33eff", "true")
+				.list()
+				.getItems()
+				.get(0)
+				.getMetadata()
+				.getAnnotations()
+				.get("name");
 
 		}
 	}
 
 	@Test
-	void updateVolume(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void updateVolume() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			// client.persistentVolumeClaims().
 		}
 	}
 
-
 	@Test
-	void createVolumeService(){
+	void createVolumeService() {
 		CreateVolumeDTO request = CreateVolumeDTO.builder()
 			.storageType(StorageType.NFS)
 			.requestVolume(5)
@@ -180,15 +243,15 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void findVolumeWithWorkloadsByMetaName(){
+	void findVolumeWithWorkloadsByMetaName() {
 		VolumeWithWorkloadsResDTO result = storageModuleServiceImpl.findVolumeWithWorkloadsByMetaName("yc-test-ns",
 			"vo-422e4d40-3500-47df-ba74-b5851ab33eff");
 		System.out.println(result);
 	}
 
 	@Test
-	void 볼륨수정기능(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void 볼륨수정기능() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim edit = client.persistentVolumeClaims()
 				.inNamespace("yc-test-ns")
 				.withName("vo-422e4d40-3500-47df-ba74-b5851ab33eff")
@@ -208,16 +271,16 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void 볼륨삭제기능(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	void 볼륨삭제기능() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			client.persistentVolumeClaims().inNamespace("yc-test-ns").withName("testtest").delete();
 
 		}
 	}
 
 	@Test
-	void 워크스페이스명으로볼륨조회(){
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+	void 워크스페이스명으로볼륨조회() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace("yc-test-ns")
 				.withLabel(LabelField.STORAGE_TYPE.getField(), "NFS")
@@ -227,18 +290,19 @@ class StorageModuleServiceImplTest {
 
 		}
 	}
+
 	@Test
-	void 볼륨조회페이징검색포함(){
+	void 볼륨조회페이징검색포함() {
 		String option = "creator-name";
 		String workspaceMetaName = "yc-test-ns";
 		String keyword = "서준오";
 		String searchOption = "";
-		if(option.equalsIgnoreCase(AnnotationField.CREATOR_FULL_NAME.getField())){
+		if (option.equalsIgnoreCase(AnnotationField.CREATOR_FULL_NAME.getField())) {
 			searchOption = AnnotationField.CREATOR_FULL_NAME.getField();
-		}else if(option.equalsIgnoreCase(AnnotationField.NAME.getField())){
+		} else if (option.equalsIgnoreCase(AnnotationField.NAME.getField())) {
 			searchOption = AnnotationField.NAME.getField();
 		}
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
 				.list()
@@ -257,10 +321,11 @@ class StorageModuleServiceImplTest {
 			System.out.println(collect.size());
 		}
 	}
+
 	@Test
-	void 전체네임스페이스의볼륨조회(){
+	void 전체네임스페이스의볼륨조회() {
 		List<String> workloadNames = new ArrayList<>();
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inAnyNamespace()
 				.list()
@@ -271,10 +336,16 @@ class StorageModuleServiceImplTest {
 				.orElseThrow(() -> new RuntimeException("볼륨이 존재하지 않습니다."));
 
 			String namespace = persistentVolumeClaim.getMetadata().getNamespace();
-			String workspaceName = client.namespaces().withName(namespace).get().getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
+			String workspaceName = client.namespaces()
+				.withName(namespace)
+				.get()
+				.getMetadata()
+				.getAnnotations()
+				.get(AnnotationField.NAME.getField());
 
 			//사용중인 statefulSets 조회
-			List<StatefulSet> statefulSets = getStatefulSetsInUseVolume("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89", client);
+			List<StatefulSet> statefulSets = getStatefulSetsInUseVolume("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89",
+				client);
 			setWorkloadInUseVolume(statefulSets, workloadNames);
 			//사용중인 deployment 조회
 			List<Deployment> deployments = getDeploymentsInUseVolume("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89", client);
@@ -283,9 +354,14 @@ class StorageModuleServiceImplTest {
 			List<Job> jobs = getJobsInUseVolume("vo-dc4a488b-06a9-4a59-bde6-ceb7f58d7b89", client);
 			setWorkloadInUseVolume(jobs, workloadNames);
 
-
 			//sc
-			String storageSavePath = client.storage().v1().storageClasses().withName("nfs-csi").get().getParameters().get("share");
+			String storageSavePath = client.storage()
+				.v1()
+				.storageClasses()
+				.withName("nfs-csi")
+				.get()
+				.getParameters()
+				.get("share");
 
 			VolumeWithWorkloadsResDTO dto = VolumeWithWorkloadsResDTO.builder()
 				.hasMetadata(persistentVolumeClaim)
@@ -299,21 +375,27 @@ class StorageModuleServiceImplTest {
 			System.out.println(dto);
 		}
 	}
+
 	@Test
-	void 관리자_볼륨상세보기(){
-		try(final KubernetesClient client = k8sAdapter.configServer()) {
+	void 관리자_볼륨상세보기() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inAnyNamespace()
 				.list()
 				.getItems();
 			String namespace = "ws-uuid123";
-			String workspaceName = client.namespaces().withName(namespace).get().getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
+			String workspaceName = client.namespaces()
+				.withName(namespace)
+				.get()
+				.getMetadata()
+				.getAnnotations()
+				.get(AnnotationField.NAME.getField());
 			System.out.println(pvcs.size());
 		}
 	}
 
 	@Test
-	void 관리자_볼륨삭제(){
+	void 관리자_볼륨삭제() {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			//삭제
 			PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder().withNewMetadata()
@@ -326,7 +408,7 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void 관리자_볼륨수정(){
+	void 관리자_볼륨수정() {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 
 			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
@@ -344,7 +426,7 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void 스토리지클래스생성(){
+	void 스토리지클래스생성() {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			String name = "내가생성한 스토리지 클래스 이름";
 			String description = "설명이지요";
@@ -374,7 +456,7 @@ class StorageModuleServiceImplTest {
 	}
 
 	@Test
-	void 관리자_스토리지클래스_수정(){
+	void 관리자_스토리지클래스_수정() {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			final StorageClass updatedStorageClass = client.storage()
 				.v1()
@@ -391,53 +473,23 @@ class StorageModuleServiceImplTest {
 		}
 	}
 
-
-	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
+	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client) {
 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);
 		List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeMetaName, client);
 		return !jobsInUseVolume.isEmpty() || !deploymentsInUseVolume.isEmpty() || !statefulSetsInUseVolume.isEmpty();
 	}
-	private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
 
-	/**
-	 * 해당 볼륨을 사용중인 Deployment list 조회
-	 * @param volumeMetaName
-	 * @param client
-	 * @return
-	 */
-	private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client.apps().deployments().withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
-
-	/**
-	 * 해당 볼륨을 사용중인 StatefulSet list 조회
-	 * @param volumeMetaName
-	 * @param client
-	 * @return
-	 */
-	private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client
-			.apps()
-			.statefulSets()
-			.withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
 	/**
 	 * 해당 볼륨을 사용중인 workload 주입
+	 *
 	 * @param resources
 	 * @param workloadNames
 	 */
-	private void setWorkloadInUseVolume(List<? extends HasMetadata> resources, List<String> workloadNames){
+	private void setWorkloadInUseVolume(List<? extends HasMetadata> resources, List<String> workloadNames) {
 		for (HasMetadata resource : resources) {
-			Map<String, String> annotations = resource.getMetadata().getAnnotations() == null ? null : resource.getMetadata().getAnnotations();
+			Map<String, String> annotations =
+				resource.getMetadata().getAnnotations() == null ? null : resource.getMetadata().getAnnotations();
 			if (annotations != null) {
 				String name = annotations.get(AnnotationField.NAME.getField());
 				if (name != null) {

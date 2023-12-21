@@ -13,7 +13,8 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDT
 public interface VolumeRepository {
 	String createVolume(CreateVolumeDTO createVolumeDTO);
 
-	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName);
+	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName,
+		String storageMetaName);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName);
 

@@ -1,7 +1,9 @@
 package com.xiilab.moduleuser.dto;
 
-import java.time.LocalDate;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -16,7 +18,7 @@ public class UserInfo {
 	private String id;
 	private String userName;
 	private String email;
-	private LocalDate joinDate;
+	private LocalDateTime joinDate;
 	private SignUpMethod signUpMethod;
 	private AuthType auth;
 	private List<String> groups;
@@ -26,9 +28,9 @@ public class UserInfo {
 		this.id = userRep.getId();
 		this.userName = userRep.getUsername();
 		this.email = userRep.getEmail();
-		this.joinDate = null;
+		this.joinDate = convertUnixToLocalDateTime(userRep.getCreatedTimestamp());
 		this.signUpMethod = null;
-		this.auth = userRep.getRealmRoles() != null ? AuthType.valueOf(userRep.getRealmRoles().get(0)) : null;
+		this.auth = getUserRole(userRep.getRealmRoles());
 		if (!CollectionUtils.isEmpty(groupReps)) {
 			this.groups = groupReps.stream()
 				.filter(group -> group.getPath().contains("/account/"))
@@ -45,8 +47,17 @@ public class UserInfo {
 		this.id = userRep.getId();
 		this.userName = userRep.getUsername();
 		this.email = userRep.getEmail();
-		this.joinDate = null;
+		this.joinDate = convertUnixToLocalDateTime(userRep.getCreatedTimestamp());
 		this.signUpMethod = null;
-		this.auth = userRep.getRealmRoles() != null ? AuthType.valueOf(userRep.getRealmRoles().get(0)) : null;
+		this.auth = getUserRole(userRep.getRealmRoles());
+	}
+
+	private LocalDateTime convertUnixToLocalDateTime(Long unixStr) {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(unixStr),
+			TimeZone.getDefault().toZoneId());
+	}
+
+	private AuthType getUserRole(List<String> roles) {
+		return roles != null ? AuthType.valueOf(roles.get(0)) : null;
 	}
 }

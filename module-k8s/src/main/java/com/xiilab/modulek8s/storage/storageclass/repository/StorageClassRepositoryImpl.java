@@ -39,7 +39,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems();
-			if(storageClasses.size() == 0){
+			if (storageClasses.size() == 0) {
 				throw new RuntimeException("해당 타입의 스토리지 클래스가 존재하지 않습니다.");
 			}
 			return storageClasses.get(0);
@@ -62,14 +62,14 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 
 	@Override
 	public boolean storageClassConnectionTest(String storageType) {
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			ProvisionerType provisionerType = ProvisionerType.valueOf(storageType);
 			CSIDriver csiDriver = client.storage()
 				.v1()
 				.csiDrivers()
 				.withName(provisionerType.getProvisionerName())
 				.get();
-			if(csiDriver != null){
+			if (csiDriver != null) {
 				return true;
 			}
 		}
@@ -83,7 +83,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.v1()
 				.storageClasses()
 				.withName(storageClassMetaName).get();
-			if(storageClass == null || !isControlledByAstra(storageClass.getMetadata().getLabels())){
+			if (storageClass == null || !isControlledByAstra(storageClass.getMetadata().getLabels())) {
 				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
 			}
 			return StorageClassResDTO.toDTO(storageClass);
@@ -98,15 +98,16 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.storageClasses()
 				.withName(modifyStorageClassDTO.getStorageClassMetaName());
 
-			if(storageClassResource.get() == null || !isControlledByAstra(storageClassResource.get().getMetadata().getLabels())){
+			if (storageClassResource.get() == null || !isControlledByAstra(
+				storageClassResource.get().getMetadata().getLabels())) {
 				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
 			}
 			storageClassResource.edit(
-					s -> new StorageClassBuilder(s).editMetadata()
-						.addToAnnotations(AnnotationField.NAME.getField(), modifyStorageClassDTO.getName())
-						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), modifyStorageClassDTO.getDescription())
-						.endMetadata()
-						.build());
+				s -> new StorageClassBuilder(s).editMetadata()
+					.addToAnnotations(AnnotationField.NAME.getField(), modifyStorageClassDTO.getName())
+					.addToAnnotations(AnnotationField.DESCRIPTION.getField(), modifyStorageClassDTO.getDescription())
+					.endMetadata()
+					.build());
 		}
 	}
 
@@ -124,11 +125,15 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 	@Override
 	public List<StorageClassResDTO> findStorageClasses() {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			List<StorageClass> storageClasses = client.storage().v1().storageClasses().withLabel(LabelField.CONTROL_BY.getField(),"astra").list().getItems();
+			List<StorageClass> storageClasses = client.storage()
+				.v1()
+				.storageClasses()
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.list()
+				.getItems();
 			return storageClasses.stream().map(StorageClassResDTO::toDTO).collect(Collectors.toList());
 		}
 	}
-
 
 	private boolean isControlledByAstra(Map<String, String> map) {
 		return map != null && "astra".equals(map.get("control-by"));

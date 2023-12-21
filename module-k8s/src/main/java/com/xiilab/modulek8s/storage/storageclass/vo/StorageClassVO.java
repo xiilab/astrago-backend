@@ -28,6 +28,19 @@ public class StorageClassVO extends K8SResourceReqVO {
 	private ReclaimPolicyType reclaimPolicy;
 	private Map<String, String> parameters;
 
+	public static StorageClassVO dtoToVo(CreateStorageClassDTO createStorageClassDTO) {
+		return StorageClassVO.builder()
+			.name(createStorageClassDTO.getName())
+			.description(createStorageClassDTO.getDescription())
+			.storageType(createStorageClassDTO.getStorageType())
+			.provisioner(ProvisionerType.valueOf(createStorageClassDTO.getStorageType().name()))
+			.reclaimPolicy(ReclaimPolicyType.RETAIN)
+			.createdAt(LocalDateTime.now())
+			.creatorName(createStorageClassDTO.getCreatorName())
+			.creator(createStorageClassDTO.getCreator())
+			.build();
+	}
+
 	@Override
 	public HasMetadata createResource() {
 		return new StorageClassBuilder()
@@ -52,21 +65,10 @@ public class StorageClassVO extends K8SResourceReqVO {
 		return ResourceType.STORAGE;
 	}
 
-	public static StorageClassVO dtoToVo(CreateStorageClassDTO createStorageClassDTO){
-		return StorageClassVO.builder()
-			.name(createStorageClassDTO.getName())
-			.description(createStorageClassDTO.getDescription())
-			.storageType(createStorageClassDTO.getStorageType())
-			.provisioner(ProvisionerType.valueOf(createStorageClassDTO.getStorageType().name()))
-			.reclaimPolicy(ReclaimPolicyType.RETAIN)
-			.createdAt(LocalDateTime.now())
-			.creatorName(createStorageClassDTO.getCreatorName())
-			.creator(createStorageClassDTO.getCreator())
-			.build();
-	}
-	public void setParameters(Map<String, String> parameters){
+	public void setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
 	}
+
 	private HashMap<String, String> createLabels() {
 		HashMap<String, String> labels = new HashMap<>();
 		labels.put(LabelField.CREATOR.getField(), getCreator());

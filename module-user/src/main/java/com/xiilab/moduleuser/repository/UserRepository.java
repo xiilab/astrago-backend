@@ -1,14 +1,15 @@
 package com.xiilab.moduleuser.repository;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
 
 @Component
 public interface UserRepository {

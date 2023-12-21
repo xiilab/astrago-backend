@@ -37,7 +37,7 @@
 - label
     - 생성자 username : creator
     - storage type : storage-type
-    - 스토리지 실제 이름 : storage-name
+  - 스토리지 실제 이름 : storage-name
 ## Storage(Storage Class)
 - meta name
     - st-UUID

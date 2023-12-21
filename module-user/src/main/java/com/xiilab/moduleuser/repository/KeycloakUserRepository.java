@@ -1,16 +1,8 @@
 package com.xiilab.moduleuser.repository;
 
-import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.common.KeycloakConfig;
-import com.xiilab.moduleuser.dto.AuthType;
-import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.dto.UserSummary;
-import com.xiilab.moduleuser.vo.UserReqVO;
-import io.micrometer.common.util.StringUtils;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.Response;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Map;
+
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -20,8 +12,18 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
+import com.xiilab.moduleuser.common.FindDTO;
+import com.xiilab.moduleuser.common.KeycloakConfig;
+import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserSummary;
+import com.xiilab.moduleuser.vo.UserReqVO;
+
+import io.micrometer.common.util.StringUtils;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
@@ -54,8 +56,8 @@ public class KeycloakUserRepository implements UserRepository {
                         -> user.getAttributes() != null
                         && user.getAttributes().containsKey("approvalYN")
                         && user.getAttributes().containsValue(List.of("true"))
-                        && searchInfo(findDTO, user)
-                )
+                && searchInfo(findDTO, user)
+            )
                 .toList();
         return userList.stream().map(UserSummary::new).toList();
     }
@@ -204,13 +206,14 @@ public class KeycloakUserRepository implements UserRepository {
 
     private boolean searchInfo(FindDTO findDTO, UserRepresentation user) {
         boolean search = true;
-        if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(findDTO.getSearchCondition().getKeyword())) {
+        if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(
+            findDTO.getSearchCondition().getKeyword())) {
             return search;
         }
         if (findDTO.getSearchCondition().getOption().equalsIgnoreCase("ALL")) {
             search = user.getFirstName().contains(findDTO.getSearchCondition().getKeyword())
-                    || user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
-                    || user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
+                || user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
+                || user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
         }
         return search;
     }

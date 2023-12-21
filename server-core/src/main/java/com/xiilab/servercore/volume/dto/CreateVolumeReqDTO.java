@@ -1,7 +1,7 @@
 package com.xiilab.servercore.volume.dto;
 
-import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.servercore.common.dto.APIBaseReqDTO;
 
 import lombok.Getter;
