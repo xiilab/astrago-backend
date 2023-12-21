@@ -1,8 +1,8 @@
 package com.xiilab.servercore.workspace.service;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -79,10 +79,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public List<WorkspaceDTO.ResponseDTO> getWorkspaceList(UserInfoDTO userInfoDTO) {
-		HashSet<String> collect = new HashSet<>(
-			userInfoDTO.getGroups().stream().map(group -> group.split("/")[0]).toList());
+		Set<String> groupList = userInfoDTO.getWorkspaceList();
 		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceService.getWorkspaceList();
-		return workspaceList.stream().filter(workspace -> collect.contains(workspace.getResourceName())).toList();
+		return workspaceList.stream().filter(workspace -> groupList.contains(workspace.getResourceName())).toList();
 	}
 
 	@Override
