@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
@@ -165,5 +166,10 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public List<StorageClassResDTO> findStorageClasses() {
 		return storageClassService.findStorageClasses();
+	}
+
+	@Override
+	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
+		return storageClassService.findStorageClassesWithVolumes();
 	}
 }
