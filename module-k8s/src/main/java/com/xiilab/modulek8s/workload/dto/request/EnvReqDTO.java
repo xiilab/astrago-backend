@@ -1,11 +1,12 @@
 package com.xiilab.modulek8s.workload.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.xiilab.modulek8s.workload.vo.JobEnvVO;
 
-@Getter
-@AllArgsConstructor
-public class EnvReqDTO {
-	private String name;
-	private String value;
+public record EnvReqDTO(
+	String variable,	// 변수명
+	String value 	// 값
+	) {
+	public JobEnvVO toJobEnvVO() {
+		return new JobEnvVO(variable, value);
+	}
 }

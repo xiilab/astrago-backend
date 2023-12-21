@@ -8,7 +8,8 @@ public enum ResourceType {
 	WORKLOAD("wl"),
 	VOLUME("vo"),
 	STORAGE("st"),
-	PLUGIN("pg");
+	PLUGIN("pg"),
+	SERVICE("sv");
 
 	private String name;
 
