@@ -8,14 +8,16 @@ import lombok.Getter;
 
 @Getter
 public class CreateVolumeDTO extends K8SResourceReqDTO {
+	private String storageClassMetaName;
 	private StorageType storageType;
 	private int requestVolume;
 	private String workspaceMetaDataName;
 
 	@Builder
-	public CreateVolumeDTO(String name, String description, String creatorName, String creator, StorageType storageType, int requestVolume,
+	public CreateVolumeDTO(String name, String description, String creatorName, String creator, String storageClassMetaName, StorageType storageType, int requestVolume,
 		String workspaceMetaDataName) {
 		super(name, description, creatorName, creator);
+		this.storageClassMetaName = storageClassMetaName;
 		this.storageType = storageType;
 		this.requestVolume = requestVolume;
 		this.workspaceMetaDataName = workspaceMetaDataName;

@@ -2,20 +2,18 @@ package com.xiilab.modulek8s.storage.volume.repository;
 
 import java.util.List;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
-import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
-import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 
 public interface VolumeRepository {
-	void createVolume(CreateDTO createDTO);
+	String createVolume(CreateVolumeDTO createVolumeDTO);
 
-	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType);
+	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName);
 

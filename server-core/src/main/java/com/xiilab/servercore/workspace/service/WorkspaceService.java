@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
@@ -13,7 +12,7 @@ import com.xiilab.servercore.workspace.dto.DeleteWorkspaceVolumeReqDTO;
 import com.xiilab.servercore.workspace.dto.ModifyWorkspaceVolumeReqDTO;
 
 public interface WorkspaceService {
-	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageType(String workspaceMetaName, StorageType storageType);
+	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName);
 
 	VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName,
 		String volumeMetaName);

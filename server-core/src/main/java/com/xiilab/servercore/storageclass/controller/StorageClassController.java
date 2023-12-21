@@ -102,6 +102,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("/storageClasses")
+	@Operation(summary = "find StorageClasses")
 	public ResponseEntity<List<StorageClassResDTO>> findStorageClasses(){
 		List<StorageClassResDTO> storageClasses = storageClassFacadeService.findStorageClasses();
 		return new ResponseEntity<>(storageClasses, HttpStatus.OK);
