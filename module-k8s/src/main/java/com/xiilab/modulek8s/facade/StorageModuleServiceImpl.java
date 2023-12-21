@@ -32,7 +32,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	/**
 	 * 워크스페이스(namespace)에 볼륨 생성
+	 *
 	 * @param createVolumeDTO
+	 * @return
 	 */
 	@Override
 	public void createVolume(CreateVolumeDTO createVolumeDTO){

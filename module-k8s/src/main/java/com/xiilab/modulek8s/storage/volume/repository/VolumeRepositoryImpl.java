@@ -40,13 +40,15 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public void createVolume(CreateVolumeDTO createVolumeDTO) {
+	public String createVolume(CreateVolumeDTO createVolumeDTO) {
 		VolumeVO volumeVO = VolumeVO.dtoToVo(createVolumeDTO);
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim resource = (PersistentVolumeClaim)volumeVO.createResource();
 			client.persistentVolumeClaims().resource(resource).create();
+			return resource.getMetadata().getName();
 		} catch (Exception e) {
 			log.error("k8s cluster connect error {}", e.getMessage(), e);
+			return null;
 		}
 	}
 

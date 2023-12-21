@@ -27,8 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 public class VolumeService {
 	private final VolumeRepository volumeRepository;
 
-	public void createVolume(CreateVolumeDTO createVolumeDTO){
-		volumeRepository.createVolume(createVolumeDTO);
+	public String createVolume(CreateVolumeDTO createVolumeDTO){
+		return volumeRepository.createVolume(createVolumeDTO);
 	}
 
 	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName){
