@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SchedulingType {
-	DEFAULT("default"),
-	BIN_PACKING("binpack-scheduler"),
-	GANG("gang");
+    DEFAULT("default"),
+    BIN_PACKING("binpack-scheduler"),
+    GANG("gang");
 
-	private final String type;
+    private final String type;
 }

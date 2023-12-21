@@ -1,9 +1,8 @@
 package com.xiilab.modulek8s.workload.dto.request;
 
-import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
-
 import lombok.Builder;
 
 @Builder

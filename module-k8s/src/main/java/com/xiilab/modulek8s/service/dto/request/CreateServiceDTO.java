@@ -1,15 +1,13 @@
 package com.xiilab.modulek8s.service.dto.request;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.service.enums.ServiceType;
-import com.xiilab.modulek8s.service.vo.ServiceVO;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
-
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @SuperBuilder

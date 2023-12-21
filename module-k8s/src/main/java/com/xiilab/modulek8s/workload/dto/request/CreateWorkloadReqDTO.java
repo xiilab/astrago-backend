@@ -1,19 +1,15 @@
 package com.xiilab.modulek8s.workload.dto.request;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.workload.enums.ImageType;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
-import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 import com.xiilab.modulek8s.workload.vo.JobVO;
-
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @SuperBuilder

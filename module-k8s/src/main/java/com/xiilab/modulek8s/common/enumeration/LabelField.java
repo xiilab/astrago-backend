@@ -11,7 +11,9 @@ public enum LabelField {
 	VOLUMES("volumes"),
 	CODES("codes"),
 	STORAGE_TYPE("storage-type"),
-	RESOURCE_NAME("resource-name");
+	RESOURCE_NAME("resource-name"),
+	STORAGE_NAME("storage-name"),
+	CONTROL_BY("control-by");
 
 	private final String field;
 }

@@ -1,17 +1,17 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-import java.util.List;
-
+import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
-
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @Getter
 @SuperBuilder
-public abstract class WorkloadRes extends K8SResourceResVO {
+public abstract class WorkloadResDTO extends K8SResourceResVO {
 	String workspace;		//워크스페이스
 	WorkloadType workloadType;        // 워크로드 타입
 	String image;		//사용할 image
@@ -23,12 +23,10 @@ public abstract class WorkloadRes extends K8SResourceResVO {
 	List<PortResDTO> ports;		//port 정의
 	String command;		// 워크로드 명령
 
-	protected WorkloadRes(HasMetadata hasMetadata) {
+	protected WorkloadResDTO(HasMetadata hasMetadata) {
         super(hasMetadata);
         workspace = hasMetadata.getMetadata().getNamespace();
 	}
-
-	public abstract WorkloadRes convertResDTO(HasMetadata hasMetadata);
 
 	public abstract WorkloadType getWorkloadType();
 }

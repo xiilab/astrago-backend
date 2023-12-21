@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum WorkloadType {
-	BATCH("batch"),
-	INTERACTIVE("interactive"),
-	SERVICE("service");
+    BATCH("batch"),
+    INTERACTIVE("interactive"),
+    SERVICE("service");
 
-	private final String type;
+    private final String type;
 }

@@ -1,13 +1,10 @@
 package com.xiilab.modulek8s.workload.repository;
 
-import org.springframework.stereotype.Repository;
-
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.workload.vo.JobVO;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
-import com.xiilab.modulek8s.workload.vo.WorkloadVO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-
+import com.xiilab.modulek8s.workload.vo.JobVO;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
@@ -42,14 +39,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
     }
 
     @Override
-    public WorkloadRes getInteractiveJobWorkload(String workSpaceName, String workloadName) {
+    public WorkloadResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName) {
         Deployment deployment = (Deployment) getInteractiveJob(workSpaceName, workloadName);
         return null;
 //        return new IntJobDTO(deployment);
     }
 
     @Override
-    public List<WorkloadRes> getBatchJobWorkloadList(String workSpaceName) {
+    public List<WorkloadResDTO> getBatchJobWorkloadList(String workSpaceName) {
         JobList batchJobList = getBatchJobList(workSpaceName);
         return batchJobList.getItems().stream()
                 .map(JobResDTO::new)
@@ -57,14 +54,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
     }
 
     @Override
-    public List<WorkloadRes> getInteractiveJobWorkloadList(String workSpaceName) {
+    public List<WorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
         DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
 //        return interactiveJobList.getItems().stream().map(IntJobDTO::new).toList();
         return null;
     }
 
     @Override
-    public WorkloadRes updateInteractiveJobWorkload(WorkloadReqVO workloadReqDTO) {
+    public WorkloadResDTO updateInteractiveJobWorkload(CreateWorkloadReqDTO workloadReqDTO) {
 //        Deployment deployment = updateInteractiveJob(workloadReqDTO);
 //        return new IntJobDTO(deployment);
         return null;
@@ -111,12 +108,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
         }
     }
 
-    private Deployment updateInteractiveJob(JobReqVO jobReqDTO) {
-        try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-            return kubernetesClient.apps().deployments().inNamespace(jobReqDTO.getWorkspace()).withName(jobReqDTO.getName())
-                    .edit(jobReqDTO::updateResource);
-        }
-    }
+//    private Deployment updateInteractiveJob(JobResDTO jobReqDTO) {
+//        try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+//            return kubernetesClient.apps().deployments().inNamespace(jobReqDTO.getWorkspace()).withName(jobReqDTO.getName())
+//                    .edit(jobReqDTO::updateResource);
+//        }
+//    }
 
     private String deleteJob(String workSpaceName, String workloadName) {
         try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {

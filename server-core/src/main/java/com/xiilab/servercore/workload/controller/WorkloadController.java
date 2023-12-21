@@ -1,7 +1,7 @@
 package com.xiilab.servercore.workload.controller;
 
-import com.xiilab.modulek8s.workload.dto.JobResDTO;
-import com.xiilab.modulek8s.workload.dto.WorkloadRes;
+import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.servercore.workload.service.WorkloadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,7 +30,7 @@ public class WorkloadController {
 //    }
 
     @GetMapping("/jobList")
-    public ResponseEntity<List<WorkloadRes>> getWorkloadList(@RequestParam("workSpaceName") String workSpaceName) {
+    public ResponseEntity<List<WorkloadResDTO>> getWorkloadList(@RequestParam("workSpaceName") String workSpaceName) {
         return new ResponseEntity<>(workloadService.getWorkloadList(workSpaceName),HttpStatus.OK);
     }
 

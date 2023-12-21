@@ -1,9 +1,9 @@
 package com.xiilab.servercore.workload.service;
 
 import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
-import com.xiilab.modulek8s.workload.dto.JobResDTO;
-import com.xiilab.modulek8s.workload.dto.WorkloadRes;
-import com.xiilab.modulek8s.workload.repository.WorkloadRepo;
+import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WorkloadService {
 
-    private final WorkloadRepo workloadRepo;
+    private final WorkloadRepository workloadRepository;
 
 
     /**
@@ -27,7 +27,7 @@ public class WorkloadService {
      * @return
      */
     public JobResDTO getBatchJob(String workSpaceName, String workloadName) {
-        return workloadRepo.getBatchJobWorkload(workSpaceName, workloadName);
+        return workloadRepository.getBatchJobWorkload(workSpaceName, workloadName);
     }
 
     /**
@@ -38,7 +38,7 @@ public class WorkloadService {
      * @return
      */
     public String deleteBatchJob(String workSpaceName, String workloadName) {
-        return workloadRepo.deleteBatchJobWorkload(workSpaceName, workloadName);
+        return workloadRepository.deleteBatchJobWorkload(workSpaceName, workloadName);
     }
 
     /**
@@ -49,7 +49,7 @@ public class WorkloadService {
      * @return
      */
     public String deleteInteractiveJob(String workSpaceName, String workloadName) {
-        return workloadRepo.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+        return workloadRepository.deleteInteractiveJobWorkload(workSpaceName, workloadName);
     }
 
     /**
@@ -57,10 +57,10 @@ public class WorkloadService {
      * @param workSpaceName
      * @return
      */
-    public List<WorkloadRes> getWorkloadList(String workSpaceName) {
-        List<WorkloadRes> workloadList = new ArrayList<>();
-        List<WorkloadRes> jobWorkloadList = workloadRepo.getBatchJobWorkloadList(workSpaceName);
-        List<WorkloadRes> workloadResList = workloadRepo.getInteractiveJobWorkloadList(workSpaceName);
+    public List<WorkloadResDTO> getWorkloadList(String workSpaceName) {
+        List<WorkloadResDTO> workloadList = new ArrayList<>();
+        List<WorkloadResDTO> jobWorkloadList = workloadRepository.getBatchJobWorkloadList(workSpaceName);
+        List<WorkloadResDTO> workloadResList = workloadRepository.getInteractiveJobWorkloadList(workSpaceName);
 
         if(!jobWorkloadList.isEmpty()) {
             workloadList.addAll(jobWorkloadList);
