@@ -10,7 +10,8 @@ public class ResponseDTO {
 
 	@Builder
 	public record NodeDTO(String nodeName,
-						  List<String> gpuNames){
+						  String gpuName,
+						  String gpuCount){
 	}
 
 	@Builder

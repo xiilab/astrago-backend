@@ -28,7 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class NodeRepositoryImpl implements NodeRepository {
 	private final K8sAdapter k8sAdapter;
 	private final ObjectMapper objectMapper;
-	private final String NVIDIA_LABEL = "nvidia.com/gpu.product";
+	private final String GPU_NAME = "nvidia.com/gpu.product";
+	private final String GPU_COUNT = "nvidia.com/gpu.count";
 	@Value("${mig-profile-path}")
 	private String migProfilePath;
 
@@ -38,11 +39,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 			List<Node> nodes = client.nodes().list().getItems();
 
 			return nodes.stream().filter(node ->
-				node.getMetadata().getLabels().get(NVIDIA_LABEL) != null)
+				node.getMetadata().getLabels().get(GPU_NAME) != null)
 				.map(node ->
 					ResponseDTO.NodeDTO.builder()
 						.nodeName(node.getMetadata().getName())
-						// .gpuName(node.getMetadata().getLabels().get(NVIDIA_LABEL))
+						.gpuName(node.getMetadata().getLabels().get(GPU_NAME))
+						.gpuCount(node.getMetadata().getLabels().get(GPU_COUNT))
 						.build()).toList();
 		}
 	}
@@ -126,7 +128,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 * @return productName
 	 */
 	private String getGPUProductName(Node node) {
-		return node.getMetadata().getLabels().get(NVIDIA_LABEL);
+		return node.getMetadata().getLabels().get(GPU_NAME);
 	}
 
 	/**
