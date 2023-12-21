@@ -20,6 +20,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'io.fabric8:kubernetes-client:6.9.2'
+    // K8s Test Mock
+    implementation group: 'io.fabric8', name: 'openshift-server-mock', version: '5.12.4'
 }
 
 tasks.named('test') {
