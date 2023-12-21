@@ -3,11 +3,9 @@ package com.xiilab.modulek8s.storage.common.crd.NFS.status;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
-@Setter
 public class Conditions {
 	private String lastTransitionTime;
 	private String message;
