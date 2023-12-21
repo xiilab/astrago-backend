@@ -3,11 +3,12 @@ package com.xiilab.modulek8s.workload.dto;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @SuperBuilder

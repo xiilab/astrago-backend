@@ -11,7 +11,7 @@ import java.util.Map;
 @SuperBuilder
 public abstract class WorkloadRes extends K8SResourceResVO {
 	String workspace;		//워크스페이스
-	WorkloadType type;		// 워크로드 타입
+	WorkloadType workloadType;        // 워크로드 타입
 	String image;		//사용할 image
 	int gpuRequest;		// 워크로드 gpu 요청량
 	int cpuRequest;		// 워크로드 cpu 요청량
