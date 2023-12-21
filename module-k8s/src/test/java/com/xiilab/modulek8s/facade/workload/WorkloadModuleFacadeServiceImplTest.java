@@ -1,7 +1,5 @@
 package com.xiilab.modulek8s.facade.workload;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.xiilab.modulek8s.common.enumeration.CodeRepositoryType;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.service.service.ServiceService;
-import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CodeReqDTO;
@@ -47,10 +45,10 @@ class WorkloadModuleFacadeServiceImplTest {
 
 		List<VolumeReqDTO> envReqDtoList = new ArrayList<>();
 		envReqDtoList.add(
-			new VolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume1", "vo-2370c9b3-ee2d-4acc-8add-7bdc187d1a9d", 5, "/usr/local/etc")
+			new VolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume1", null, 5, "/usr/local/etc", "nfs-csi")
 		);
 		envReqDtoList.add(
-			new VolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume2", "vo-422e4d40-3500-47df-ba74-b5851ab33eff", 5, "/usr/local/src/code")
+			new VolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume2", null, 5, "/usr/local/src/code", "nfs-csi")
 		);
 
 		List<CodeReqDTO> codeReqs = new ArrayList<>();
@@ -71,7 +69,7 @@ class WorkloadModuleFacadeServiceImplTest {
 			.command("/bin/bash")
 			.volumes(envReqDtoList)
 			.cpuRequest(0.5123312132f)
-			// .gpuRequest(1)
+			.gpuRequest(1)
 			.memRequest(0.5123312132132f)
 			.codes(codeReqs)
 			.build();

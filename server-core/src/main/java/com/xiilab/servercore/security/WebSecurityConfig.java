@@ -3,7 +3,6 @@ package com.xiilab.servercore.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -36,6 +35,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET,"/api/v1/test").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/manager/user/**").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/manager/app/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
                 );
 

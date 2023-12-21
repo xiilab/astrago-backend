@@ -37,6 +37,7 @@
 - label
     - 생성자 username : creator
     - storage type : storage-type
+    - 스토리지 실제 이름 : storage-name
 ## Storage(Storage Class)
 - meta name
     - st-UUID
@@ -48,6 +49,7 @@
     - 생성자 이름(실명) : creator-name
 - label
     - 생성자 username : creator
+    - 스토리지 타입 : storage-type
 ## Plugin(CSI)
 - meta name
     - pg-UUID

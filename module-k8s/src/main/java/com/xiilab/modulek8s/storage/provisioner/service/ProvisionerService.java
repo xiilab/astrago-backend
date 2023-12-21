@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulek8s.config.K8sAdapter;
-
 import io.fabric8.kubernetes.api.model.storage.CSIDriver;
 import lombok.RequiredArgsConstructor;
 

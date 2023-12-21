@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.util.CollectionUtils;
 
-import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
+import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
@@ -51,7 +51,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
 				.map(codeReq -> new ContainerBuilder()
-					.withName(getResourceName() + "-git-clone-" + index)
+					.withName(getUniqueResourceName() + "-git-clone-" + index)
 					.withImage("alpine/git")
 					.addAllToArgs(List.of(
 						"clone",

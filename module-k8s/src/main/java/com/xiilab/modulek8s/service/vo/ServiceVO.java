@@ -44,7 +44,7 @@ public class ServiceVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName())
+			.withName(getUniqueResourceName())
 			.withNamespace(workspace)
 			.withAnnotations(Map.of(
 				AnnotationField.NAME.getField(), getName(),

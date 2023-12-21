@@ -9,7 +9,9 @@ spring:
         jwt:
           issuer-uri: http://10.61.3.8:30001/realms/myrealm
           jwk-set-uri: http://10.61.3.8:30001/realms/myrealm/protocol/openid-connect/certs
-
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   datasource:
     url: jdbc:mariadb://localhost:3306/uyuni
     username: root
@@ -47,9 +49,9 @@ keycloak:
 
 # keycloak server의 admin 정보
 admin:
-  realm: myrealm
+  realm: master
   client: admin-cli
   name: admin
-  password: xiirock
+  password: xiirocks
   init-password: xiirocks
   secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv

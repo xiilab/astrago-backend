@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
+import org.springframework.util.CollectionUtils;
+
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.workload.enums.ImageType;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
-import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 import com.xiilab.modulek8s.workload.vo.JobVO;
 
 import lombok.Getter;
@@ -50,6 +51,19 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	}
 
 	public JobVO toJobVO() {
+		if (CollectionUtils.isEmpty(this.codes)) {
+			this.codes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.volumes)) {
+			this.volumes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.ports)) {
+			this.ports = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.envs)) {
+			this.envs = new ArrayList<>();
+		}
+
 		return JobVO.builder()
 			.workspace(this.workspace)
 			.name(this.getName())

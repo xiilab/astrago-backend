@@ -1,23 +1,52 @@
 package com.xiilab.moduleuser.dto;
 
-import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
 
-public record UserInfo(
-	String id,
-	String userUUID,
-	String userName,
-	String firstName,
-	String lastName,
-	String email,
-	AuthType auth,
-	String phoneNumber,
-	String company,
-	String companyImagePath,
-	Long limitAppCount,
-	Double limitCPU,
-	Long limitMEM
-) {
-	public static UserInfo convertFromPrincipal(Principal principal) {
-		return null;
+import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.util.CollectionUtils;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class UserInfo {
+	private String id;
+	private String userName;
+	private String email;
+	private LocalDate joinDate;
+	private SignUpMethod signUpMethod;
+	private AuthType auth;
+	private List<String> groups;
+	private List<String> workspaces;
+
+	public UserInfo(UserRepresentation userRep, List<GroupRepresentation> groupReps) {
+		this.id = userRep.getId();
+		this.userName = userRep.getUsername();
+		this.email = userRep.getEmail();
+		this.joinDate = null;
+		this.signUpMethod = null;
+		this.auth = userRep.getRealmRoles() != null ? AuthType.valueOf(userRep.getRealmRoles().get(0)) : null;
+		if (!CollectionUtils.isEmpty(groupReps)) {
+			this.groups = groupReps.stream()
+				.filter(group -> group.getPath().contains("/account/"))
+				.map(GroupRepresentation::getName)
+				.toList();
+			this.workspaces = groupReps.stream()
+				.filter(group -> group.getPath().contains("/ws/"))
+				.map(group -> group.getPath().split("/ws/")[1])
+				.toList();
+		}
+	}
+
+	public UserInfo(UserRepresentation userRep) {
+		this.id = userRep.getId();
+		this.userName = userRep.getUsername();
+		this.email = userRep.getEmail();
+		this.joinDate = null;
+		this.signUpMethod = null;
+		this.auth = userRep.getRealmRoles() != null ? AuthType.valueOf(userRep.getRealmRoles().get(0)) : null;
 	}
 }

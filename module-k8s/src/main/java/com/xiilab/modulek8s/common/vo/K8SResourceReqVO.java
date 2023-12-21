@@ -8,7 +8,6 @@ import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import jakarta.validation.constraints.Pattern;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -35,27 +34,20 @@ public abstract class K8SResourceReqVO {
 	//label
 	//사용자의 id
 	String creator;
+	//astra에서 생성되었는지 체크하는 값
+	String controlBy;
 
 	ResourceType type;
 
-	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
-		String creatorName, String creator) {
-		this.resourceName = resourceName;
-		this.name = name;
-		this.description = description;
-		this.createdAt = createdAt;
-		this.creatorName = creatorName;
-		this.creator = creator;
-	}
-
 	/**
-	* 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
-	*
-	* @return 리소스 이름
-	*/
-	public String getResourceName()	{
+	 * 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
+	 *
+	 * @return 리소스 이름
+	 */
+	public String getUniqueResourceName() {
 		return getType().getName() + "-" + UUID.randomUUID();
 	}
+
 	//k8s resource 객체를 생성하는 메소드
 	public abstract HasMetadata createResource();
 
@@ -65,3 +57,4 @@ public abstract class K8SResourceReqVO {
 	//자식 클래스의 ResourceType을 조회하기 위한 메소드
 	protected abstract ResourceType getType();
 }
+

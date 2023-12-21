@@ -1,7 +1,11 @@
 package com.xiilab.moduleuser.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum AuthType {
-	ADMIN,
-	MANAGER,
-	USER
+	ROLE_ADMIN,
+	ROLE_USER
 }
