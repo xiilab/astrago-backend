@@ -3,7 +3,6 @@ package com.xiilab.modulek8s.facade.workload;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.service.dto.request.CreateServiceDTO;
 import com.xiilab.modulek8s.service.service.ServiceService;
-import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.VolumeReqDTO;
@@ -20,7 +19,6 @@ import java.util.List;
 public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeService {
 	private final WorkloadService workloadService;
 	private final VolumeService volumeService;
-	private final StorageClassService storageClassService;
 	private final ServiceService serviceService;
 
 	@Override
@@ -47,16 +45,17 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private void addNewVolume(CreateWorkloadReqDTO createWorkloadReqDTO) {
 		List<VolumeReqDTO> volumes = createWorkloadReqDTO.getVolumes();
 		for (VolumeReqDTO volume : volumes) {
-			if (volume.volumeSelectionType().equals(VolumeSelectionType.NEW)) {
+			if (volume.getVolumeSelectionType().equals(VolumeSelectionType.NEW)) {
 				CreateVolumeDTO createVolumeDTO = CreateVolumeDTO.builder()
-					.name(volume.name())
+						.name(volume.getName())
 					.workspaceMetaDataName(createWorkloadReqDTO.getWorkspace())
-					.storageType(volume.storageType())
+						.storageType(volume.getStorageType())
 					.creator(createWorkloadReqDTO.getCreator())
 					.creatorName(createWorkloadReqDTO.getCreatorName())
-					.requestVolume(volume.requestVolume())
+						.requestVolume(volume.getRequestVolume())
+						.storageClassMetaName(volume.getStorageClassMetaName())
 					.build();
-				createVolume(createVolumeDTO);
+				volume.setVolumeMetaDataName(createVolume(createVolumeDTO));
 			}
 		}
 	}

@@ -1,29 +1,17 @@
 package com.xiilab.modulek8s.workload.vo;
 
+import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
+import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
+import com.xiilab.modulek8s.workload.enums.SchedulingType;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import io.fabric8.kubernetes.api.model.*;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+import org.springframework.util.CollectionUtils;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.springframework.util.CollectionUtils;
-
-import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
-import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
-
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.ContainerBuilder;
-import io.fabric8.kubernetes.api.model.ContainerPort;
-import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.KubernetesResource;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
-import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.api.model.PodSpecBuilder;
-import io.fabric8.kubernetes.api.model.Quantity;
-import io.fabric8.kubernetes.api.model.Volume;
-import io.fabric8.kubernetes.api.model.VolumeBuilder;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
@@ -51,7 +39,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
 				.map(codeReq -> new ContainerBuilder()
-					.withName(getResourceName() + "-git-clone-" + index)
+                        .withName(getUniqueResourceName() + "-git-clone-" + index)
 					.withImage("alpine/git")
 					.addAllToArgs(List.of(
 						"clone",

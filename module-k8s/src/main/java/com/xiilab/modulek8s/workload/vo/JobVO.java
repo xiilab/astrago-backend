@@ -1,41 +1,26 @@
 package com.xiilab.modulek8s.workload.vo;
 
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
+import com.xiilab.modulek8s.workload.enums.SchedulingType;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
+import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
+import io.fabric8.kubernetes.api.model.batch.v1.JobSpecBuilder;
+import io.micrometer.common.util.StringUtils;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+import org.springframework.util.CollectionUtils;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.springframework.util.CollectionUtils;
-
-import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.micrometer.common.util.StringUtils;
-
-import com.xiilab.modulek8s.common.enumeration.AnnotationField;
-import com.xiilab.modulek8s.common.enumeration.LabelField;
-import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulek8s.workload.enums.ImageType;
-import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
-
-import io.fabric8.kubernetes.api.model.ContainerPort;
-import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
-import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.api.model.PodSpecBuilder;
-import io.fabric8.kubernetes.api.model.PodSpecFluent;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpecBuilder;
-
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
@@ -56,7 +41,7 @@ public class JobVO extends WorkloadVO {
 	@Override
 	public ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName())
+                .withName(getUniqueResourceName())
 			.withNamespace(workspace)
 			.withAnnotations(
 				Map.of(
@@ -107,7 +92,7 @@ public class JobVO extends WorkloadVO {
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withRestartPolicy("Never")
 			.addNewContainer()
-			.withName(getResourceName())
+                .withName(getUniqueResourceName())
 			.withImage(image);
 
 		addContainerPort(podSpecContainer);

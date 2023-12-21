@@ -1,29 +1,19 @@
 package com.xiilab.modulek8s.service.vo;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.util.CollectionUtils;
-
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.service.dto.request.CreateServiceDTO;
 import com.xiilab.modulek8s.service.enums.ServiceType;
-
-import io.fabric8.kubernetes.api.model.IntOrString;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
-import io.fabric8.kubernetes.api.model.ServicePort;
-import io.fabric8.kubernetes.api.model.ServicePortBuilder;
-import io.fabric8.kubernetes.api.model.ServiceSpec;
-import io.fabric8.kubernetes.api.model.ServiceSpecBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.util.CollectionUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 @SuperBuilder
@@ -44,7 +34,7 @@ public class ServiceVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName())
+                .withName(getUniqueResourceName())
 			.withNamespace(workspace)
 			.withAnnotations(Map.of(
 				AnnotationField.NAME.getField(), getName(),

@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.service.dto.request;
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.service.enums.ServiceType;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.PortReqDTO;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -34,7 +35,7 @@ public class CreateServiceDTO extends K8SResourceReqDTO {
 			.workspace(createWorkloadReqDTO.getWorkspace())
 			.serviceType(ServiceType.NODE_PORT)
 			.jobName(jobName)
-			.ports(createWorkloadReqDTO.getPorts().stream().map(port -> port.port()).collect(Collectors.toList()))
+				.ports(createWorkloadReqDTO.getPorts().stream().map(PortReqDTO::port).collect(Collectors.toList()))
 			.build();
 	}
 }

@@ -2,18 +2,17 @@ package com.xiilab.modulek8s.storage.volume.dto.request;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
-
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
+@SuperBuilder
 public class CreateDTO extends K8SResourceReqDTO {
 	private StorageType storageType;
 	private int requestVolume;
 	private String workspaceMetaDataName;
 	private String storageClassMetaName;
 
-	@Builder
 	public CreateDTO(String name, String description, String creatorName, String creator, StorageType storageType, int requestVolume,
 		String workspaceMetaDataName, String storageClassMetaName) {
 		super(name, description, creatorName, creator);

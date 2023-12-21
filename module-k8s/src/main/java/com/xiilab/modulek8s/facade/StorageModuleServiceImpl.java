@@ -29,7 +29,7 @@ public class StorageModuleServiceImpl implements StorageModuleService {
 	 * @return
 	 */
 	@Override
-	public void createVolume(CreateVolumeDTO createVolumeDTO) {
+    public void createVolume(CreateVolumeDTO createVolumeDTO) {
 		//volume 생성
 		volumeService.createVolume(createVolumeDTO);
 	}
@@ -62,7 +62,7 @@ public class StorageModuleServiceImpl implements StorageModuleService {
 	 * @param modifyVolumeDTO
 	 */
 	@Override
-	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
+    public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
 		volumeService.modifyVolumeByMetaName(modifyVolumeDTO);
 	}
 

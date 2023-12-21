@@ -1,36 +1,14 @@
 package com.xiilab.modulek8s.storage.facade;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import com.xiilab.modulek8s.common.enumeration.AnnotationField;
-import com.xiilab.modulek8s.common.enumeration.LabelField;
-import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
-import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
+import com.xiilab.modulek8s.common.enumeration.*;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.StorageModuleServiceImpl;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
-
-import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.NamespaceList;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
-import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -39,6 +17,16 @@ import io.fabric8.kubernetes.api.model.storage.StorageClassBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 @Slf4j
@@ -54,11 +42,11 @@ class StorageModuleServiceImplTest {
 				.forEach(sc -> log.info(" - {}", sc.getMetadata().getName()));
 		}
 	}
-	@Test
-	void getStorageClasseByLabel(){
-		try(final KubernetesClient client = k8sAdapter.configServer()){
-			client.storage().v1().storageClasses().withLabel("storage-type", "NFS3").list().getItems().get(0);
-		}
+
+    private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
+        return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
+                .list()
+                .getItems();
 	}
 
 	@Test
@@ -186,6 +174,42 @@ class StorageModuleServiceImplTest {
 		System.out.println(result);
 	}
 
+    /**
+     * 해당 볼륨을 사용중인 Deployment list 조회
+     *
+     * @param volumeMetaName
+     * @param client
+     * @return
+     */
+    private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
+        return client.apps().deployments().withLabelIn(volumeMetaName, "true")
+                .list()
+                .getItems();
+    }
+
+    /**
+     * 해당 볼륨을 사용중인 StatefulSet list 조회
+     *
+     * @param volumeMetaName
+     * @param client
+     * @return
+     */
+    private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
+        return client
+                .apps()
+                .statefulSets()
+                .withLabelIn(volumeMetaName, "true")
+                .list()
+                .getItems();
+    }
+
+    @Test
+    void getStorageClasseByLabel() {
+        try (final KubernetesClient client = k8sAdapter.configServer()) {
+            client.storage().v1().storageClasses().withLabel("storage-type", "NFS3").list().getItems().get(0);
+        }
+    }
+
 	@Test
 	void 볼륨수정기능(){
 		try(final KubernetesClient client = k8sAdapter.configServer()){
@@ -227,6 +251,7 @@ class StorageModuleServiceImplTest {
 
 		}
 	}
+
 	@Test
 	void 볼륨조회페이징검색포함(){
 		String option = "creator-name";
@@ -254,9 +279,10 @@ class StorageModuleServiceImplTest {
 					return pageVolumeResDTO;
 				})
 				.collect(Collectors.toList());
-			System.out.println(collect.size());
+            System.out.println(collect.size());
 		}
 	}
+
 	@Test
 	void 전체네임스페이스의볼륨조회(){
 		List<String> workloadNames = new ArrayList<>();
@@ -299,6 +325,7 @@ class StorageModuleServiceImplTest {
 			System.out.println(dto);
 		}
 	}
+
 	@Test
 	void 관리자_볼륨상세보기(){
 		try(final KubernetesClient client = k8sAdapter.configServer()) {
@@ -391,45 +418,13 @@ class StorageModuleServiceImplTest {
 		}
 	}
 
-
 	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client){
 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);
 		List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeMetaName, client);
 		return !jobsInUseVolume.isEmpty() || !deploymentsInUseVolume.isEmpty() || !statefulSetsInUseVolume.isEmpty();
 	}
-	private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
 
-	/**
-	 * 해당 볼륨을 사용중인 Deployment list 조회
-	 * @param volumeMetaName
-	 * @param client
-	 * @return
-	 */
-	private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client.apps().deployments().withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
-
-	/**
-	 * 해당 볼륨을 사용중인 StatefulSet list 조회
-	 * @param volumeMetaName
-	 * @param client
-	 * @return
-	 */
-	private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client
-			.apps()
-			.statefulSets()
-			.withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
 	/**
 	 * 해당 볼륨을 사용중인 workload 주입
 	 * @param resources

@@ -1,27 +1,18 @@
 package com.xiilab.modulek8s.storage.volume.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Repository;
-
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
-
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
@@ -32,12 +23,169 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class VolumeRepositoryImpl implements VolumeRepository {
 	private final K8sAdapter k8sAdapter;
+
+    /**
+     * 유저가 설정한 스토리지 이름 조회
+     *
+     * @param client
+     * @param storageMetaName
+     * @return
+     */
+    private static String getStorageClassName(KubernetesClient client, String storageMetaName) {
+        return client.storage()
+                .v1()
+                .storageClasses()
+                .withName(storageMetaName)
+                .get()
+                .getMetadata()
+                .getAnnotations()
+                .get(AnnotationField.NAME.getField());
+    }
+
+    /**
+     * 볼륨 전체 리스트 조회
+     *
+     * @param client
+     * @return
+     */
+    private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
+        return client.persistentVolumeClaims()
+                .inAnyNamespace()
+                .withLabel(LabelField.CONTROL_BY.getField(), "astra")
+                .list()
+                .getItems();
+    }
+
+    private static PersistentVolumeClaim findPVCByMetaName(String volumeMetaName,
+                                                           List<PersistentVolumeClaim> pvcs) {
+        return pvcs.stream()
+                .filter(pvc -> pvc.getMetadata().getName().equals(volumeMetaName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("볼륨이 존재하지 않습니다."));
+    }
+
+    private static String getStorageSavePath(KubernetesClient client, String storageName) {
+        return client.storage().v1().storageClasses().withName(storageName).get().getParameters().get("share");
+    }
+
+    private static String getStorageClassName(PersistentVolumeClaim persistentVolumeClaim) {
+        return persistentVolumeClaim.getSpec().getStorageClassName();
+    }
+
+    private static StorageType getStorageType(PersistentVolumeClaim persistentVolumeClaim) {
+        return StorageType.valueOf(
+                persistentVolumeClaim.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField()));
+    }
+
+    private static String getRequestVolume(PersistentVolumeClaim persistentVolumeClaim) {
+        return persistentVolumeClaim.getSpec().getResources().getRequests().get("storage").toString();
+    }
+
+    private static String getNamespace(PersistentVolumeClaim persistentVolumeClaim) {
+        return persistentVolumeClaim.getMetadata().getNamespace();
+    }
+
+    /**
+     * 아스트라를 통해 만들어진 PVC가 맞는지 체크
+     *
+     * @param pvc
+     * @return
+     */
+    private static boolean isVolumePVC(PersistentVolumeClaim pvc) {
+        return pvc.getMetadata().getName().contains(ResourceType.VOLUME.getName());
+    }
+
+    /**
+     * 워크스페이스 메타 이름으로 워크스페이스 사용자가 설정한 이름 조회
+     *
+     * @param client
+     * @param namespace
+     * @return
+     */
+    private static String getWorkspaceNameByMetaName(KubernetesClient client, String namespace) {
+        return client.namespaces()
+                .withName(namespace)
+                .get()
+                .getMetadata()
+                .getAnnotations()
+                .get(AnnotationField.NAME.getField());
+    }
+
+    /**
+     * 해당 볼륨을 사용중인 job list 조회
+     *
+     * @param volumeMetaName
+     * @param client
+     * @return
+     */
+    private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
+        return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
+                .list()
+                .getItems();
+    }
+
+    /**
+     * 해당 볼륨을 사용중인 Deployment list 조회
+     *
+     * @param volumeMetaName
+     * @param client
+     * @return
+     */
+    private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
+        return client.apps().deployments().withLabelIn(volumeMetaName, "true")
+                .list()
+                .getItems();
+    }
+
+    /**
+     * 해당 볼륨을 사용중인 StatefulSet list 조회
+     *
+     * @param volumeMetaName
+     * @param client
+     * @return
+     */
+    private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
+        return client
+                .apps()
+                .statefulSets()
+                .withLabelIn(volumeMetaName, "true")
+                .list()
+                .getItems();
+    }
+
+    /**
+     * 자신이 생성한 볼륨이 맞는지 체크
+     *
+     * @param workspaceMetaName
+     * @param volumeMetaName
+     * @param client
+     * @param creator
+     */
+    private static boolean volumeCreatorCheck(String workspaceMetaName, String volumeMetaName, KubernetesClient client,
+                                              String creator) {
+        PersistentVolumeClaim persistentVolumeClaim = client.persistentVolumeClaims()
+                .inNamespace(workspaceMetaName)
+                .withName(volumeMetaName).get();
+        if (persistentVolumeClaim == null) {
+            throw new RuntimeException("볼륨이 존재하지 않습니다.");
+        }
+        String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR.getField());
+
+        return labelCreator.equals(creator) ? true : false;
+    }
 
 	@Override
 	public String createVolume(CreateVolumeDTO createVolumeDTO) {
@@ -239,23 +387,6 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 	}
 
-	/**
-	 * 유저가 설정한 스토리지 이름 조회
-	 * @param client
-	 * @param storageMetaName
-	 * @return
-	 */
-	private static String getStorageClassName(KubernetesClient client, String storageMetaName) {
-		return client.storage()
-			.v1()
-			.storageClasses()
-			.withName(storageMetaName)
-			.get()
-			.getMetadata()
-			.getAnnotations()
-			.get(AnnotationField.NAME.getField());
-	}
-
 	@Override
 	public void deleteVolumeByMetaName(String volumeMetaName) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
@@ -299,19 +430,6 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	/**
-	 * 볼륨 전체 리스트 조회
-	 * @param client
-	 * @return
-	 */
-	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
-		return client.persistentVolumeClaims()
-			.inAnyNamespace()
-			.withLabel(LabelField.CONTROL_BY.getField(), "astra")
-			.list()
-			.getItems();
-	}
-
-	/**
 	 * pageVolumeResDTO 생성 메서드
 	 * @param client
 	 * @param pvc
@@ -328,98 +446,6 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		pageVolumeResDTO.setIsUsed(isUsed);
 		pageVolumeResDTO.setWorkspaceName(workspaceName);
 		return pageVolumeResDTO;
-	}
-
-	private static PersistentVolumeClaim findPVCByMetaName(String volumeMetaName,
-		List<PersistentVolumeClaim> pvcs) {
-		return pvcs.stream()
-			.filter(pvc -> pvc.getMetadata().getName().equals(volumeMetaName))
-			.findFirst()
-			.orElseThrow(() -> new RuntimeException("볼륨이 존재하지 않습니다."));
-	}
-
-	private static String getStorageSavePath(KubernetesClient client, String storageName) {
-		return client.storage().v1().storageClasses().withName(storageName).get().getParameters().get("share");
-	}
-
-	private static String getStorageClassName(PersistentVolumeClaim persistentVolumeClaim) {
-		return persistentVolumeClaim.getSpec().getStorageClassName();
-	}
-
-	private static StorageType getStorageType(PersistentVolumeClaim persistentVolumeClaim) {
-		return StorageType.valueOf(
-			persistentVolumeClaim.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField()));
-	}
-
-	private static String getRequestVolume(PersistentVolumeClaim persistentVolumeClaim) {
-		return persistentVolumeClaim.getSpec().getResources().getRequests().get("storage").toString();
-	}
-
-	private static String getNamespace(PersistentVolumeClaim persistentVolumeClaim) {
-		return persistentVolumeClaim.getMetadata().getNamespace();
-	}
-
-	/**
-	 * 아스트라를 통해 만들어진 PVC가 맞는지 체크
-	 * @param pvc
-	 * @return
-	 */
-	private static boolean isVolumePVC(PersistentVolumeClaim pvc) {
-		return pvc.getMetadata().getName().contains(ResourceType.VOLUME.getName());
-	}
-
-	/**
-	 * 워크스페이스 메타 이름으로 워크스페이스 사용자가 설정한 이름 조회
-	 * @param client
-	 * @param namespace
-	 * @return
-	 */
-	private static String getWorkspaceNameByMetaName(KubernetesClient client, String namespace) {
-		return client.namespaces()
-			.withName(namespace)
-			.get()
-			.getMetadata()
-			.getAnnotations()
-			.get(AnnotationField.NAME.getField());
-	}
-
-	/**
-	 * 해당 볼륨을 사용중인 job list 조회
-	 * @param volumeMetaName
-	 * @param client
-	 * @return
-	 */
-	private static List<Job> getJobsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client.batch().v1().jobs().withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
-
-	/**
-	 * 해당 볼륨을 사용중인 Deployment list 조회
-	 * @param volumeMetaName
-	 * @param client
-	 * @return
-	 */
-	private static List<Deployment> getDeploymentsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client.apps().deployments().withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
-	}
-
-	/**
-	 * 해당 볼륨을 사용중인 StatefulSet list 조회
-	 * @param volumeMetaName
-	 * @param client
-	 * @return
-	 */
-	private static List<StatefulSet> getStatefulSetsInUseVolume(String volumeMetaName, KubernetesClient client) {
-		return client
-			.apps()
-			.statefulSets()
-			.withLabelIn(volumeMetaName, "true")
-			.list()
-			.getItems();
 	}
 
 	/**
@@ -463,26 +489,6 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);
 		List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeMetaName, client);
 		return !jobsInUseVolume.isEmpty() || !deploymentsInUseVolume.isEmpty() || !statefulSetsInUseVolume.isEmpty();
-	}
-
-	/**
-	 * 자신이 생성한 볼륨이 맞는지 체크
-	 * @param workspaceMetaName
-	 * @param volumeMetaName
-	 * @param client
-	 * @param creator
-	 */
-	private static boolean volumeCreatorCheck(String workspaceMetaName, String volumeMetaName, KubernetesClient client,
-		String creator) {
-		PersistentVolumeClaim persistentVolumeClaim = client.persistentVolumeClaims()
-			.inNamespace(workspaceMetaName)
-			.withName(volumeMetaName).get();
-		if (persistentVolumeClaim == null) {
-			throw new RuntimeException("볼륨이 존재하지 않습니다.");
-		}
-		String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR.getField());
-
-		return labelCreator.equals(creator) ? true : false;
 	}
 
 	/**

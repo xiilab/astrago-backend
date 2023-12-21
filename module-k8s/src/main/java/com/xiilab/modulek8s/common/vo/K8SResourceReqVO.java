@@ -48,14 +48,14 @@ public abstract class K8SResourceReqVO {
 		this.creator = creator;
 	}
 
-    /**
-     * 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
-     *
-     * @return 리소스 이름
-     */
-    public String getResourceName() {
-        return getType().getName() + "-" + UUID.randomUUID();
-    }
+	/**
+	 * 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
+	 *
+	 * @return 리소스 이름
+	 */
+	public String getUniqueResourceName() {
+		return getType().getName() + "-" + UUID.randomUUID();
+	}
 
     //k8s resource 객체를 생성하는 메소드
     public abstract HasMetadata createResource();

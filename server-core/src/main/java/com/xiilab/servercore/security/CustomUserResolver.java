@@ -1,7 +1,9 @@
 package com.xiilab.servercore.security;
 
-import java.util.List;
-
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.repository.KeycloakUserRepository;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,13 +12,6 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
-import com.nimbusds.jose.shaded.gson.internal.LinkedTreeMap;
-import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.repository.KeycloakUserRepository;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
-
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CustomUserResolver implements HandlerMethodArgumentResolver {

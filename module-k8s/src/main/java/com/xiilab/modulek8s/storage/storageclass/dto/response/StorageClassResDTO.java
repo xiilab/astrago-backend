@@ -1,17 +1,15 @@
 package com.xiilab.modulek8s.storage.storageclass.dto.response;
 
-import java.util.Map;
-
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
-
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.Map;
 
 @Getter
 public class StorageClassResDTO extends K8SResourceResVO {
@@ -28,11 +26,6 @@ public class StorageClassResDTO extends K8SResourceResVO {
 		this.storageSavePath = storageSavePath;
 	}
 
-	@Override
-	protected ResourceType getType() {
-		return ResourceType.STORAGE;
-	}
-
 	public static StorageClassResDTO toDTO(StorageClass sc){
 		Map<String, String> parameters = sc.getParameters();
 		return StorageClassResDTO.builder()
@@ -42,4 +35,9 @@ public class StorageClassResDTO extends K8SResourceResVO {
 			.storageSavePath(parameters.get("share"))
 			.build();
 	}
+
+    @Override
+    protected ResourceType getType() {
+        return ResourceType.STORAGE;
+    }
 }
