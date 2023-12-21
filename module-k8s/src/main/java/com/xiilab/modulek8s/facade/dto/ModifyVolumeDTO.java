@@ -1,6 +1,6 @@
 package com.xiilab.modulek8s.facade.dto;
 
-import com.xiilab.modulek8s.common.vo.K8SResourceReqDTO;
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 
 import lombok.Builder;
 import lombok.Getter;

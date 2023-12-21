@@ -21,7 +21,7 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests()
+        http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.GET,"/docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/faqs").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/faqs/**").permitAll()
@@ -35,13 +35,15 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET,"/api/v1/test").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/manager/user/**").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/manager/app/**").permitAll()
-            // .requestMatchers("/api/**").permitAll()
-                .anyRequest().authenticated();
-         http.oauth2ResourceServer()
-                 .jwt()
-                 .jwtAuthenticationConverter(jwtAuthConverter);
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.csrf().disable();
+                .requestMatchers(HttpMethod.GET,"/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .anyRequest().authenticated()
+                );
+
+        http.oauth2ResourceServer((oauth2) -> oauth2
+            .jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
+        http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.disable());
         return http.build();
     }
 }

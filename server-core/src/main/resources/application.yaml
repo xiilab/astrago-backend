@@ -9,7 +9,9 @@ spring:
         jwt:
           issuer-uri: http://10.61.3.8:30001/realms/myrealm
           jwk-set-uri: http://10.61.3.8:30001/realms/myrealm/protocol/openid-connect/certs
-
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   datasource:
     url: jdbc:mariadb://localhost:3306/uyuni
     username: root

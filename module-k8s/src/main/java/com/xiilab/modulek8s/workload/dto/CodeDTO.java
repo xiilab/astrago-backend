@@ -11,6 +11,4 @@ public record CodeDTO(
         String branch,          // repository branch
         String mountPath        // 소스코드 마운트 경로
 ) {
-
-
 }

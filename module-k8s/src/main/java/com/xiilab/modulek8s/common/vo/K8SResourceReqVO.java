@@ -17,22 +17,26 @@ import java.util.UUID;
 @Getter
 @SuperBuilder
 public abstract class K8SResourceReqVO {
-    //metadata.name
-    String resourceName;
-    //annotation
-    //사용자가 실제 입력한 name
-    @Pattern(regexp = "^[^-_]*$")
-    String name;
-    //resource에 대한 설명
-    String description;
-    //생성 요청 시간
-    LocalDateTime createdAt;
-    //사용자의 실명
-    String creatorName;
-    //label
-    //사용자의 id
-    String creator;
-    ResourceType type;
+	//metadata.name
+	String resourceName;
+	//annotation
+	//사용자가 실제 입력한 name
+	@Pattern(regexp = "^[^-_]*$")
+	String name;
+	//resource에 대한 설명
+	String description;
+	//생성 요청 시간
+	LocalDateTime createdAt;
+	//사용자의 실명
+	String creatorName;
+
+	//label
+	//사용자의 id
+	String creator;
+	//astra에서 생성되었는지 체크하는 값
+	String controlBy;
+
+	ResourceType type;
 
 	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
 		String creatorName, String creator) {

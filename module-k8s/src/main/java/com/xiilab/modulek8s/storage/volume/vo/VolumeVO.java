@@ -7,7 +7,8 @@ import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.storage.storageclass.enums.StorageType;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
 import com.xiilab.modulek8s.common.enumeration.AccessMode;
 
@@ -60,16 +61,16 @@ public class VolumeVO extends K8SResourceReqVO {
 		return ResourceType.VOLUME;
 	}
 
-	public static VolumeVO dtoToVo(CreateDTO createDTO){
+	public static VolumeVO dtoToVo(CreateVolumeDTO createVolumeDTO){
 		return VolumeVO.builder()
-			.name(createDTO.getName())
+			.name(createVolumeDTO.getName())
 			.createdAt(LocalDateTime.now())
-			.creatorName(createDTO.getCreatorName())
-			.creator(createDTO.getCreator())
-			.workspaceMetaDataName(createDTO.getWorkspaceMetaDataName())
-			.storageClassMetaName(createDTO.getStorageClassMetaName())
-			.requestVolume(createDTO.getRequestVolume())
-			.storageType(createDTO.getStorageType())
+			.creatorName(createVolumeDTO.getCreatorName())
+			.creator(createVolumeDTO.getCreator())
+			.workspaceMetaDataName(createVolumeDTO.getWorkspaceMetaDataName())
+			.storageClassMetaName(createVolumeDTO.getStorageClassMetaName())
+			.requestVolume(createVolumeDTO.getRequestVolume())
+			.storageType(createVolumeDTO.getStorageType())
 			.build();
 	}
 
@@ -77,6 +78,8 @@ public class VolumeVO extends K8SResourceReqVO {
 		HashMap<String, String> labels = new HashMap<>();
 		labels.put(LabelField.CREATOR.getField(), getCreator());
 		labels.put(LabelField.STORAGE_TYPE.getField(), storageType.name());
+		labels.put(LabelField.CONTROL_BY.getField(), "astra");
+		labels.put(LabelField.STORAGE_NAME.getField(), storageClassMetaName);
 		return labels;
 	}
 

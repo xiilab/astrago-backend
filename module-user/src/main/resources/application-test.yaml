@@ -1,0 +1,16 @@
+admin:
+  realm: master
+  client: admin-cli
+  name: admin
+  password: xiirocks
+
+
+keycloak:
+  realm: kadap
+  auth-server-url: https://10.61.3.8:30002/
+  ssl-required: external
+  resource: marketplace
+  use-resource-role-mappings: true
+  bearer-only: true
+  public-client: false
+  principal-attribute: preferred_username

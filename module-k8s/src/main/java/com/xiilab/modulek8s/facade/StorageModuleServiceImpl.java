@@ -1,17 +1,26 @@
 package com.xiilab.modulek8s.facade;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
+import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
-import com.xiilab.modulek8s.storage.volume.dto.request.CreateDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 
-import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,18 +32,25 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	/**
 	 * 워크스페이스(namespace)에 볼륨 생성
+	 *
 	 * @param createVolumeDTO
+	 * @return
 	 */
 	@Override
 	public void createVolume(CreateVolumeDTO createVolumeDTO){
-		//sc type -> sc provisioner 조회
-		StorageClass storageClass = storageClassService.findStorageClassByType(createVolumeDTO.getStorageType());
-		String storageClassMetaName = storageClass.getMetadata().getName();
-
 		//volume 생성
-		CreateDTO createDTO = CreateDTO.createVolumeDtoToCreateDto(createVolumeDTO);
-		createDTO.setStorageClassMetaName(storageClassMetaName);
-		volumeService.createVolume(createDTO);
+		volumeService.createVolume(createVolumeDTO);
+	}
+
+	/**
+	 * 해당 워크스페이스에 스토리지 타입으로 볼륨 리스트 조회
+	 * @param workspaceMetaName
+	 * @param storageType
+	 * @return
+	 */
+	@Override
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName){
+		return volumeService.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName,storageMetaName);
 	}
 
 	/**
@@ -60,11 +76,92 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	}
 
 	/**
-	 * 볼륨 삭제
+	 * 워크스페이스 명과 볼륨 명으로 볼륨 삭제
 	 * @param deleteVolumeDTO
+	 *
 	 */
 	@Override
-	public void deleteVolumeByMetaName(DeleteVolumeDTO deleteVolumeDTO){
-		volumeService.deleteVolumeByMetaName(deleteVolumeDTO);
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO){
+		volumeService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
+	}
+
+	/**
+	 * 특정 워크스페이스 내 볼륨 리스트 조회 (검색, 페이징 포함)
+	 *
+	 * @param pageFindVolumeDTO
+	 * @return
+	 */
+	@Override
+	public PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO) {
+		return volumeService.findVolumesWithPagination(pageFindVolumeDTO);
+	}
+
+	/**
+	 * 전체 볼륨 리스트 조회(검색조건 포함)
+	 *
+	 * @param findVolumeDTO
+	 * @return
+	 */
+	@Override
+	public List<PageVolumeResDTO> findVolumes(FindVolumeDTO findVolumeDTO) {
+		return volumeService.findVolumes(findVolumeDTO);
+	}
+
+	/**
+	 * 볼륨 상세 조회
+	 * @param volumeMetaName
+	 * @return
+	 */
+	@Override
+	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName){
+		return volumeService.findVolumeByMetaName(volumeMetaName);
+	}
+
+	/**
+	 * 볼륨명으로 볼륨 삭제
+	 * @param volumeMetaName
+	 */
+	@Override
+	public void deleteVolumeByMetaName(String volumeMetaName) {
+		volumeService.deleteVolumeByMetaName(volumeMetaName);
+	}
+
+	/**
+	 * 볼룸 수정
+	 * @param modifyVolumeDTO
+	 */
+	@Override
+	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
+		volumeService.modifyVolume(modifyVolumeDTO);
+	}
+
+	@Override
+	public void createStorageClass(CreateStorageClassDTO createStorageClassDTO) {
+		storageClassService.createStorageClass(createStorageClassDTO);
+	}
+
+	@Override
+	public boolean storageClassConnectionTest(String storageType) {
+		return storageClassService.storageClassConnectionTest(storageType);
+	}
+
+	@Override
+	public StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName) {
+		return storageClassService.findStorageClassByMetaName(storageClassMetaName);
+	}
+
+	@Override
+	public void modifyStorageClass(ModifyStorageClassDTO modifyStorageClassDTO) {
+		storageClassService.modifyStorageClass(modifyStorageClassDTO);
+	}
+
+	@Override
+	public void deleteStorageClass(String storageClassMetaName) {
+		storageClassService.deleteStorageClass(storageClassMetaName);
+	}
+
+	@Override
+	public List<StorageClassResDTO> findStorageClasses() {
+		return storageClassService.findStorageClasses();
 	}
 }

@@ -1,8 +1,5 @@
 package com.xiilab.modulek8s.workload.dto.request;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
