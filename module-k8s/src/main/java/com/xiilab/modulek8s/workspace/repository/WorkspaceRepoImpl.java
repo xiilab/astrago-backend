@@ -26,15 +26,19 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 
 	@Override
 	public WorkspaceResVO getWorkspaceByName(String name) {
-		KubernetesClient kubernetesClient = k8sAdapter.configServer();
-		Namespace namespace = kubernetesClient.namespaces().withName(name).get();
+		Namespace namespace;
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			namespace = kubernetesClient.namespaces().withName(name).get();
+		}
 		return new WorkspaceResVO(namespace);
 	}
 
 	@Override
 	public List<WorkspaceResVO> getWorkspaceList() {
-		KubernetesClient kubernetesClient = k8sAdapter.configServer();
-		List<Namespace> items = kubernetesClient.namespaces().list().getItems();
+		List<Namespace> items;
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			items = kubernetesClient.namespaces().list().getItems();
+		}
 		return items.stream().map(WorkspaceResVO::new).toList();
 	}
 

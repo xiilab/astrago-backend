@@ -17,20 +17,24 @@ public class ResourceQuotaRepoImpl implements ResourceQuotaRepo {
 
 	@Override
 	public void createResourceQuotas(ResourceQuotaReqVO resourceQuotaReqVO) {
-		KubernetesClient kubernetesClient = k8sAdapter.configServer();
-		kubernetesClient.resource(resourceQuotaReqVO.createResource()).create();
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resource(resourceQuotaReqVO.createResource()).create();
+		}
 	}
 
 	@Override
 	public void deleteResourceQuotas(String name, String namespace) {
-		KubernetesClient kubernetesClient = k8sAdapter.configServer();
-		kubernetesClient.resourceQuotas().inNamespace(namespace).withName(name).delete();
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resourceQuotas().inNamespace(namespace).withName(name).delete();
+		}
 	}
 
 	@Override
 	public ResourceQuotaResVO getResourceQuotas(String name, String namespace) {
-		KubernetesClient kubernetesClient = k8sAdapter.configServer();
-		ResourceQuota resourceQuota = kubernetesClient.resourceQuotas().inNamespace(namespace).withName(name).get();
+		ResourceQuota resourceQuota;
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			resourceQuota = kubernetesClient.resourceQuotas().inNamespace(namespace).withName(name).get();
+		}
 		return new ResourceQuotaResVO(resourceQuota);
 	}
 }
