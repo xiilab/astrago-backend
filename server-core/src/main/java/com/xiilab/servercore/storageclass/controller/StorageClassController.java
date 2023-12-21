@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
@@ -111,5 +112,12 @@ public class StorageClassController {
 	public ResponseEntity<List<StorageClassResDTO>> findStorageClasses() {
 		List<StorageClassResDTO> storageClasses = storageClassFacadeService.findStorageClasses();
 		return new ResponseEntity<>(storageClasses, HttpStatus.OK);
+	}
+
+	@GetMapping("/storageClasses/volumes")
+	@Operation(summary = "find StorageClasses And Volumes")
+	public ResponseEntity<List<StorageClassWithVolumesResDTO>> findStorageClassesWithVolumes(){
+		List<StorageClassWithVolumesResDTO> storages = storageClassFacadeService.findStorageClassesWithVolumes();
+		return new ResponseEntity<>(storages, HttpStatus.OK);
 	}
 }
