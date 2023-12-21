@@ -4,15 +4,12 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.stereotype.Repository;
-
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 
 import io.fabric8.kubernetes.api.model.Node;
 
-@Repository
 public interface NodeRepository {
 	List<ResponseDTO.NodeDTO> getNodeList();
 	ResponseDTO.MIGProfile getNodeMIGProfiles(String nodeName);
