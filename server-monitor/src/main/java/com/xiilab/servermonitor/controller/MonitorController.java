@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/api/monitor")
+@RequestMapping("/api/v1/monitor")
 @RequiredArgsConstructor
 public class MonitorController {
 	private final MonitorService monitorService;
