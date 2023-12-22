@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/workspace")
 @RequiredArgsConstructor
 public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
