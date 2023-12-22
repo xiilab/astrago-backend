@@ -1,17 +1,17 @@
-package com.xiilab.modulek8s.service.vo;
+package com.xiilab.modulek8s.workload.svc.vo;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.service.dto.request.CreateServiceDTO;
-import com.xiilab.modulek8s.service.enums.ServiceType;
+import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
+import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -29,9 +29,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ServiceVO extends K8SResourceReqVO {
 	private String workspace;        //워크스페이스
-	private ServiceType serviceType;        // 서비스 타입
-	private String jobName;
-	private List<Integer> ports;
+	private SvcType svcType;        // 서비스 타입
+	private String jobName;	// 잡 메타데이터 이름 (selector로 검색하기 위해 추가)
+	private List<ServicePortVO> ports; // 연결할 포트 목록
 
 	@Override
 	public Service createResource() {
@@ -39,6 +39,23 @@ public class ServiceVO extends K8SResourceReqVO {
 			.withMetadata(createMeta())
 			.withSpec(createSpec())
 			.build();
+	}
+
+	public static ServiceVO createServiceDtoToServiceVO(CreateSvcReqDTO createSvcReqDTO) {
+		return ServiceVO.builder()
+			.name(createSvcReqDTO.getName())
+			.description(createSvcReqDTO.getDescription())
+			.creatorName(createSvcReqDTO.getCreatorName())
+			.creator(createSvcReqDTO.getCreator())
+			.workspace(createSvcReqDTO.getWorkspace())
+			.svcType(createSvcReqDTO.getSvcType())
+			.jobName(createSvcReqDTO.getJobName())
+			.ports(createSvcReqDTO.getPorts().stream().map(port -> new ServicePortVO(port.name(), port.port())).toList())
+			.build();
+	}
+
+	protected ResourceType getType() {
+		return ResourceType.SERVICE;
 	}
 
 	@Override
@@ -51,20 +68,16 @@ public class ServiceVO extends K8SResourceReqVO {
 				AnnotationField.DESCRIPTION.getField(), getDescription(),
 				AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
 				AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName(),
-				AnnotationField.TYPE.getField(), getServiceType().getType()
+				AnnotationField.TYPE.getField(), getSvcType().getType()
 			))
 			.build();
 	}
 
-	protected ResourceType getType() {
-		return ResourceType.SERVICE;
-	}
-
 	public ServiceSpec createSpec() {
 		ServiceSpecBuilder serviceSpecBuilder = new ServiceSpecBuilder()
-			.withType(ServiceType.NODE_PORT.getType())
+			.withType(SvcType.NODE_PORT.getType())
 			.withSelector(Map.of(
-				"job-name", jobName
+				LabelField.JOB_NAME.getField(), jobName
 			));
 
 		if (!CollectionUtils.isEmpty(ports)) {
@@ -77,22 +90,10 @@ public class ServiceVO extends K8SResourceReqVO {
 	public List<ServicePort> convertNodePort() {
 		return ports.stream()
 			.map(port -> new ServicePortBuilder()
-				.withPort(port)
-				.withTargetPort(new IntOrString(port))
+				.withName(port.name())
+				.withPort(port.port())
+				.withTargetPort(new IntOrString(port.port()))
 				.build()
-			).collect(Collectors.toList());
-	}
-
-	public static ServiceVO CreateServiceDtoTOServiceVO(CreateServiceDTO createServiceDTO) {
-		return ServiceVO.builder()
-			.name(createServiceDTO.getName())
-			.description(createServiceDTO.getDescription())
-			.creatorName(createServiceDTO.getCreatorName())
-			.creator(createServiceDTO.getCreator())
-			.workspace(createServiceDTO.getWorkspace())
-			.serviceType(createServiceDTO.getServiceType())
-			.jobName(createServiceDTO.getJobName())
-			.ports(createServiceDTO.getPorts())
-			.build();
+			).toList();
 	}
 }

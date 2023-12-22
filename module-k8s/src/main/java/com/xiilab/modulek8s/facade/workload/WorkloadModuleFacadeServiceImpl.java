@@ -5,14 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
-import com.xiilab.modulek8s.service.dto.request.CreateServiceDTO;
-import com.xiilab.modulek8s.service.service.ServiceService;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.VolumeReqDTO;
-import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.BatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.InteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.service.WorkloadService;
+import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
+import com.xiilab.modulek8s.workload.svc.service.SvcService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,27 +22,39 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeService {
 	private final WorkloadService workloadService;
 	private final VolumeService volumeService;
-	private final ServiceService serviceService;
+	private final SvcService svcService;
 
 	@Override
-	public JobResDTO createBatchJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO) {
+	public BatchJobResDTO createBatchJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO) {
 		// 볼륨 추가
 		addNewVolume(createWorkloadReqDTO);
 
 		// 잡 생성
-		JobResDTO jobResDTO = workloadService.createBatchJobWorkload(createWorkloadReqDTO);
+		BatchJobResDTO batchJobResDTO = workloadService.createBatchJobWorkload(createWorkloadReqDTO);
 
-		CreateServiceDTO createServiceDTO = CreateServiceDTO.CreateWorkloadReqDTOToCreateServiceDto(
-			createWorkloadReqDTO, jobResDTO.getName());
+		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+			createWorkloadReqDTO, batchJobResDTO.getName());
 		// 노드포트 연결
-		serviceService.createService(createServiceDTO);
+		svcService.createNodePortService(createSvcReqDTO);
 
-		return jobResDTO;
+		return batchJobResDTO;
 	}
 
 	@Override
-	public JobResDTO createInteractiveJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO) {
-		return null;
+	public InteractiveJobResDTO createInteractiveJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO) {
+		// 볼륨 추가
+		addNewVolume(createWorkloadReqDTO);
+
+		// 잡 생성
+		InteractiveJobResDTO interactiveJobResDTO = workloadService.createInteractiveJobWorkload(
+			createWorkloadReqDTO);
+
+		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+			createWorkloadReqDTO, interactiveJobResDTO.getName());
+		// 노드포트 연결
+		svcService.createNodePortService(createSvcReqDTO);
+
+		return interactiveJobResDTO;
 	}
 
 	private void addNewVolume(CreateWorkloadReqDTO createWorkloadReqDTO) {

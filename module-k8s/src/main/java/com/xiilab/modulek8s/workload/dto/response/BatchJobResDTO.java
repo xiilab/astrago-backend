@@ -1,7 +1,6 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
@@ -12,8 +11,8 @@ import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
-public class JobResDTO extends WorkloadResDTO {
-	public JobResDTO(Job job) {
+public class BatchJobResDTO extends WorkloadResDTO {
+	public BatchJobResDTO(Job job) {
 		super(job);
 
 		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
@@ -28,10 +27,10 @@ public class JobResDTO extends WorkloadResDTO {
 		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() : "0" + ResourcesUnit.MEM_UNIT.getUnit();
 		envs = container.getEnv().stream()
 			.map(env -> new EnvResDTO(env.getName(), env.getValue()))
-			.collect(Collectors.toList());
+			.toList();
 		ports = container.getPorts().stream()
 			.map(port -> new PortResDTO(port.getName(), port.getContainerPort()))
-			.collect(Collectors.toList());
+			.toList();
 		command = container.getCommand().get(0);
 	}
 

@@ -2,7 +2,6 @@ package com.xiilab.modulek8s.workload.dto.request;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 
@@ -10,7 +9,8 @@ import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.workload.enums.ImageType;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
-import com.xiilab.modulek8s.workload.vo.JobVO;
+import com.xiilab.modulek8s.workload.vo.BatchJobVO;
+import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -50,7 +50,7 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 		this.memRequest = memRequest;
 	}
 
-	public JobVO toJobVO() {
+	public BatchJobVO toBatchJobVO() {
 		if (CollectionUtils.isEmpty(this.codes)) {
 			this.codes = new ArrayList<>();
 		}
@@ -64,17 +64,50 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 			this.envs = new ArrayList<>();
 		}
 
-		return JobVO.builder()
+		return BatchJobVO.builder()
 			.workspace(this.workspace)
 			.name(this.getName())
 			.description(this.getDescription())
 			.creatorName(this.getCreatorName())
 			.creator(this.getCreator())
 			.image(this.image)
-			.codes(this.codes.stream().map(CodeReqDTO::toJobCodeVO).collect(Collectors.toList()))
-			.volumes(this.volumes.stream().map(VolumeReqDTO::toJobVolumeVO).collect(Collectors.toList()))
-			.ports(this.ports.stream().map(PortReqDTO::toJobPortVO).collect(Collectors.toList()))
-			.envs(this.envs.stream().map(EnvReqDTO::toJobEnvVO).collect(Collectors.toList()))
+			.codes(this.codes.stream().map(CodeReqDTO::toJobCodeVO).toList())
+			.volumes(this.volumes.stream().map(VolumeReqDTO::toJobVolumeVO).toList())
+			.ports(this.ports.stream().map(PortReqDTO::toJobPortVO).toList())
+			.envs(this.envs.stream().map(EnvReqDTO::toJobEnvVO).toList())
+			.command(this.command)
+			.workloadType(this.workloadType)
+			.cpuRequest(this.cpuRequest)
+			.gpuRequest(this.gpuRequest)
+			.memRequest(this.memRequest)
+			.build();
+	}
+
+	public InteractiveJobVO toInteractiveJobVO() {
+		if (CollectionUtils.isEmpty(this.codes)) {
+			this.codes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.volumes)) {
+			this.volumes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.ports)) {
+			this.ports = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.envs)) {
+			this.envs = new ArrayList<>();
+		}
+
+		return InteractiveJobVO.builder()
+			.workspace(this.workspace)
+			.name(this.getName())
+			.description(this.getDescription())
+			.creatorName(this.getCreatorName())
+			.creator(this.getCreator())
+			.image(this.image)
+			.codes(this.codes.stream().map(CodeReqDTO::toJobCodeVO).toList())
+			.volumes(this.volumes.stream().map(VolumeReqDTO::toJobVolumeVO).toList())
+			.ports(this.ports.stream().map(PortReqDTO::toJobPortVO).toList())
+			.envs(this.envs.stream().map(EnvReqDTO::toJobEnvVO).toList())
 			.command(this.command)
 			.workloadType(this.workloadType)
 			.cpuRequest(this.cpuRequest)

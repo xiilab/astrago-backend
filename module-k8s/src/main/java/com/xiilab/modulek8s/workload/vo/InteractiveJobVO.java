@@ -1,11 +1,11 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 
@@ -24,24 +24,25 @@ import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.PodSpecFluent;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpecBuilder;
+import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
+import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
+import io.fabric8.kubernetes.api.model.apps.DeploymentSpecBuilder;
 import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class JobVO extends WorkloadVO {
+public class InteractiveJobVO extends WorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
 	private String command;        // 워크로드 명령
 
 	@Override
-	public Job createResource() {
-		return new JobBuilder()
+	public Deployment createResource() {
+		return new DeploymentBuilder()
 			.withMetadata(createMeta())
 			.withSpec(createSpec())
 			.build();
@@ -72,21 +73,23 @@ public class JobVO extends WorkloadVO {
 		Map<String, String> map = new HashMap<>();
 
 		map.put(LabelField.CREATOR.getField(), getCreator());
-		this.volumes.forEach(volume -> {
-			map.put(volume.name(), "true");
-		});
+		this.volumes.forEach(volume -> map.put(volume.name(), "true"));
 
 		return map;
 	}
 
 	// 스펙 정의
 	@Override
-	public JobSpec createSpec() {
-		return new JobSpecBuilder()
-			.withTtlSecondsAfterFinished(1000)
-			.withNewTemplate()
-			.withSpec(createPodSpec())
-			.endTemplate()
+	public DeploymentSpec createSpec() {
+		String uniqueResourceName = getUniqueResourceName();
+		return new DeploymentSpecBuilder()
+			.withReplicas(1)
+			.withNewSelector().withMatchLabels(Map.of(LabelField.JOB_NAME.getField(), uniqueResourceName)).endSelector()
+			.withTemplate(new PodTemplateSpecBuilder()
+				.withNewMetadata().withLabels(Collections.singletonMap(LabelField.JOB_NAME.getField(), uniqueResourceName)).endMetadata()
+				.withSpec(createPodSpec())
+				.build()
+			)
 			.build();
 	}
 
@@ -100,7 +103,6 @@ public class JobVO extends WorkloadVO {
 		addVolumes(podSpecBuilder, volumes);
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
-			.withRestartPolicy("Never")
 			.addNewContainer()
 			.withName(getUniqueResourceName())
 			.withImage(image);
@@ -111,20 +113,17 @@ public class JobVO extends WorkloadVO {
 		addVolumeMount(podSpecContainer);
 		addContainerSourceCode(podSpecContainer);
 		addContainerResource(podSpecContainer);
-		// podSpecContainer.endContainer().build();
 
 		return podSpecContainer.endContainer().build();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		if (!CollectionUtils.isEmpty(volumes)) {
-			volumes.forEach(volume -> {
-				podSpecContainer
-					.addNewVolumeMount()
-					.withName(volume.name())
-					.withMountPath(volume.mountPath())
-					.endVolumeMount();
-			});
+			volumes.forEach(volume -> podSpecContainer
+				.addNewVolumeMount()
+				.withName(volume.name())
+				.withMountPath(volume.mountPath())
+				.endVolumeMount());
 		}
 	}
 
@@ -177,7 +176,7 @@ public class JobVO extends WorkloadVO {
 				.withName(port.name())
 				.withContainerPort(port.port())
 				.build()
-			).collect(Collectors.toList());
+			).toList();
 	}
 
 	@Override
@@ -187,12 +186,12 @@ public class JobVO extends WorkloadVO {
 				.withName(env.variable())
 				.withValue(env.value())
 				.build()
-			).collect(Collectors.toList());
+			).toList();
 	}
 
 	@Override
 	public List<String> convertCmd() {
-		return List.of(command);
+		return List.of("sh", "-c", command);
 	}
 
 	@Override
