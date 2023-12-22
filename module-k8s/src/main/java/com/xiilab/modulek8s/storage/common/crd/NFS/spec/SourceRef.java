@@ -7,8 +7,15 @@ import lombok.Getter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
-@Builder
 public class SourceRef {
 	private String kind;
 	private String name;
+
+	public SourceRef() {
+	}
+	@Builder
+	public SourceRef(String kind, String name) {
+		this.kind = kind;
+		this.name = name;
+	}
 }

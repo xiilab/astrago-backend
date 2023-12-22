@@ -5,6 +5,7 @@ import java.util.List;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
+import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 
@@ -26,4 +27,6 @@ public interface StorageClassRepository {
 	List<StorageClassResDTO> findStorageClasses();
 
 	List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes();
+
+	List<ProvisionerResDTO> getProvisioners();
 }

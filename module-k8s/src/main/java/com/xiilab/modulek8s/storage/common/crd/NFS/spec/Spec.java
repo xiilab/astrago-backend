@@ -7,10 +7,16 @@ import lombok.Getter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
-@Builder
 public class Spec {
 	private String chart;
-	private String reconcileStrategy;
 	private SourceRef sourceRef;
-	private String version;
+
+	public Spec() {
+	}
+
+	@Builder
+	public Spec(String chart, SourceRef sourceRef) {
+		this.chart = chart;
+		this.sourceRef = sourceRef;
+	}
 }

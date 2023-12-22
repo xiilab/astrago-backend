@@ -7,8 +7,14 @@ import lombok.Getter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
-@Builder
 public class Chart {
 	private Spec Spec;
 
+	public Chart() {
+	}
+
+	@Builder
+	public Chart(com.xiilab.modulek8s.storage.common.crd.NFS.spec.Spec spec) {
+		Spec = spec;
+	}
 }

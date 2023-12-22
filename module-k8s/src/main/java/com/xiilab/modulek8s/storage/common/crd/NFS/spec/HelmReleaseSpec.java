@@ -7,7 +7,6 @@ import lombok.Getter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
-@Builder
 public class HelmReleaseSpec {
 	private Chart chart;
 	private Install install;
@@ -16,5 +15,16 @@ public class HelmReleaseSpec {
 	private String storageNamespace;
 	private String targetNamespace;
 
-
+	public HelmReleaseSpec() {
+	}
+	@Builder
+	public HelmReleaseSpec(Chart chart, Install install, String interval, String releaseName, String storageNamespace,
+		String targetNamespace) {
+		this.chart = chart;
+		this.install = install;
+		this.interval = interval;
+		this.releaseName = releaseName;
+		this.storageNamespace = storageNamespace;
+		this.targetNamespace = targetNamespace;
+	}
 }
