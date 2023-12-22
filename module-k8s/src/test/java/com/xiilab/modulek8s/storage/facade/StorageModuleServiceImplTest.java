@@ -5,12 +5,15 @@
 // import java.util.HashMap;
 // import java.util.List;
 // import java.util.Map;
+// import java.util.UUID;
 // import java.util.stream.Collectors;
 //
 // import org.junit.jupiter.api.Test;
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.boot.test.context.SpringBootTest;
+// import org.springframework.boot.test.mock.mockito.MockBean;
 //
+// import com.fasterxml.jackson.databind.ObjectMapper;
 // import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 // import com.xiilab.modulek8s.common.enumeration.LabelField;
 // import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
@@ -26,6 +29,7 @@
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.SourceRef;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Spec;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.status.Conditions;
+// import com.xiilab.modulek8s.storage.common.crd.NFS.status.HelmReleaseStatus;
 // import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 // import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
@@ -57,7 +61,8 @@
 // 	private K8sAdapter k8sAdapter;
 // 	@Autowired
 // 	private StorageModuleServiceImpl storageModuleServiceImpl;
-//
+// 	@MockBean
+// 	private ObjectMapper objectMapper;
 // 	@Test
 // 	void getStorageClasses() {
 // 		try (final KubernetesClient client = k8sAdapter.configServer()) {
@@ -468,8 +473,8 @@
 // 	void NFS설치() {
 // 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 // 			ObjectMeta objectMeta = new ObjectMetaBuilder()
-// 				.withName("pr-uuid123") //vo-uuid
-// 				.addToAnnotations(AnnotationField.NAME.getField(), "nfspr")
+// 				.withName("csi-"+ UUID.randomUUID()) //pr-uuid
+// 				.addToAnnotations(AnnotationField.NAME.getField(), "자바단에서 만든 플로그인")
 // 				.addToLabels(LabelField.STORAGE_TYPE.getField(), "NFS")
 // 				.build();
 // 			HelmRelease helmRelease = new HelmRelease();
@@ -477,39 +482,36 @@
 //
 // 			SourceRef sourceRef = SourceRef.builder()
 // 				.kind("HelmRepository")
-// 				.name("csi-nfs")
+// 				.name("nfs-helmrepository")
 // 				.build();
 //
 // 			Spec spec = Spec.builder()
 // 				.chart("csi-driver-nfs")
-// 				.reconcileStrategy("ChartVersion")
 // 				.sourceRef(sourceRef)
-// 				.version("*")
 // 				.build();
 //
 // 			Chart chart = Chart.builder()
-// 				.Spec(spec)
+// 				.spec(spec)
 // 				.build();
 //
 // 			Install install = Install.builder()
-// 				.createNamespace("true")
+// 				.createNamespace(true)
 // 				.build();
 //
 // 			HelmReleaseSpec helmReleaseSpec = HelmReleaseSpec.builder()
 // 				.chart(chart)
 // 				.interval("1m0s")
 // 				.install(install)
-// 				.releaseName("csi-nfs")
-// 				.storageNamespace("csi-nfs")
-// 				.targetNamespace("csi-nfs")
+// 				.releaseName("csi")
+// 				.storageNamespace("csi")
+// 				.targetNamespace("csi")
 // 				.build();
 //
 // 			helmRelease.setSpec(helmReleaseSpec);
-//
 // 			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
 // 				HelmRelease.class);
 //
-// 			helmClient.inNamespace("nfs-csi").resource(helmRelease).create();
+// 			helmClient.inNamespace("csi").resource(helmRelease).create();
 //
 // 		}
 // 	}

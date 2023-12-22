@@ -7,7 +7,14 @@ import lombok.Getter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
-@Builder
 public class Install {
-	private String createNamespace;
+	private boolean createNamespace;
+
+	public Install() {
+	}
+
+	@Builder
+	public Install(boolean createNamespace) {
+		this.createNamespace = createNamespace;
+	}
 }
