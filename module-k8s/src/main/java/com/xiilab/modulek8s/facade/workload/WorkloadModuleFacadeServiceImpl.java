@@ -42,6 +42,18 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return null;
 	}
 
+	@Override
+	public void deleteBatchHobWorkload(String workSpaceName, String workloadName) {
+		workloadService.deleteBatchJobWorkload(workSpaceName, workloadName);
+		serviceService.deleteService(workSpaceName, workloadName);
+	}
+
+	@Override
+	public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
+		workloadService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+		serviceService.deleteService(workSpaceName, workloadName);
+	}
+
 	private void addNewVolume(CreateWorkloadReqDTO createWorkloadReqDTO) {
 		List<VolumeReqDTO> volumes = createWorkloadReqDTO.getVolumes();
 		for (VolumeReqDTO volume : volumes) {

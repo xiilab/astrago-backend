@@ -6,7 +6,6 @@ import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.JobVO;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
@@ -38,11 +37,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
         return new JobResDTO(job);
     }
 
+
     @Override
     public WorkloadResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName) {
-        Deployment deployment = (Deployment) getInteractiveJob(workSpaceName, workloadName);
+//        Deployment deployment = (Deployment) getInteractiveJob(workSpaceName, workloadName);
         return null;
-//        return new IntJobDTO(deployment);
+//        return new InteractiveJobResDTO(deployment);
     }
 
     @Override
@@ -56,14 +56,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
     @Override
     public List<WorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
         DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
-//        return interactiveJobList.getItems().stream().map(IntJobDTO::new).toList();
+//        return interactiveJobList.getItems().stream().map(InteractiveJobResDTO::new).toList();
         return null;
     }
 
     @Override
     public WorkloadResDTO updateInteractiveJobWorkload(CreateWorkloadReqDTO workloadReqDTO) {
 //        Deployment deployment = updateInteractiveJob(workloadReqDTO);
-//        return new IntJobDTO(deployment);
+//        return new InteractiveJobResDTO(deployment);
         return null;
     }
 

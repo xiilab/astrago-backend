@@ -6,4 +6,8 @@ import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
 public interface WorkloadModuleFacadeService {
 	JobResDTO createBatchJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO);
 	JobResDTO createInteractiveJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO);
+
+    void deleteBatchHobWorkload(String workSpaceName, String workloadName);
+
+    void deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 }
