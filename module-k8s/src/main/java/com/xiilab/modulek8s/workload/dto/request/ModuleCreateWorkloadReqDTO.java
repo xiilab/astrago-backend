@@ -17,14 +17,14 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
+public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private String workspace;    // 워크스페이스명
 	private ImageType imageType;    // 이미지 타입(빌트인, Dockerhub)
-	private String image;    // 이미지명
-	private List<CodeReqDTO> codes;    // import할 코드 목록
-	private List<VolumeReqDTO> volumes;    // 마운트할 볼륨 목록 (볼륨명, 마운트할 경로)
-	private List<PortReqDTO> ports;    // 노드 포토 목록 (포트명, 포트번호)
-	private List<EnvReqDTO> envs;	// 환경변수 목록 (변수명, 값)
+	private ModuleImageReqDTO image;    // 이미지명
+	private List<ModuleCodeReqDTO> codes;    // import할 코드 목록
+	private List<ModuleVolumeReqDTO> volumes;    // 마운트할 볼륨 목록 (볼륨명, 마운트할 경로)
+	private List<ModulePortReqDTO> ports;    // 노드 포토 목록 (포트명, 포트번호)
+	private List<ModuleEnvReqDTO> envs;	// 환경변수 목록 (변수명, 값)
 	private String command;	// 실행할 명령어
 	private WorkloadType workloadType;	// 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
 	private VolumeSelectionType volumeSelectionType;
@@ -32,23 +32,6 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private float cpuRequest;
 	private float memRequest;
 
-	public CreateWorkloadReqDTO(String name, String description, String creatorName, String workspace, String creator,
-		String image, List<CodeReqDTO> codes, List<VolumeReqDTO> volumes, List<PortReqDTO> ports,
-		List<EnvReqDTO> envs, String command, WorkloadType workloadType,
-		int gpuRequest, float cpuRequest, float memRequest) {
-		super(name, description, creatorName, creator);
-		this.workspace = workspace;
-		this.image = image;
-		this.codes = codes;
-		this.volumes = volumes;
-		this.ports = ports;
-		this.envs = envs;
-		this.command = command;
-		this.workloadType = workloadType;
-		this.gpuRequest = gpuRequest;
-		this.cpuRequest = cpuRequest;
-		this.memRequest = memRequest;
-	}
 
 	public BatchJobVO toBatchJobVO() {
 		if (CollectionUtils.isEmpty(this.codes)) {
@@ -70,11 +53,11 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.description(this.getDescription())
 			.creatorName(this.getCreatorName())
 			.creator(this.getCreator())
-			.image(this.image)
-			.codes(this.codes.stream().map(CodeReqDTO::toJobCodeVO).toList())
-			.volumes(this.volumes.stream().map(VolumeReqDTO::toJobVolumeVO).toList())
-			.ports(this.ports.stream().map(PortReqDTO::toJobPortVO).toList())
-			.envs(this.envs.stream().map(EnvReqDTO::toJobEnvVO).toList())
+			.image(this.image.toJobImageVO())
+			.codes(this.codes.stream().map(ModuleCodeReqDTO::toJobCodeVO).toList())
+			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
+			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.command(this.command)
 			.workloadType(this.workloadType)
 			.cpuRequest(this.cpuRequest)
@@ -103,11 +86,11 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.description(this.getDescription())
 			.creatorName(this.getCreatorName())
 			.creator(this.getCreator())
-			.image(this.image)
-			.codes(this.codes.stream().map(CodeReqDTO::toJobCodeVO).toList())
-			.volumes(this.volumes.stream().map(VolumeReqDTO::toJobVolumeVO).toList())
-			.ports(this.ports.stream().map(PortReqDTO::toJobPortVO).toList())
-			.envs(this.envs.stream().map(EnvReqDTO::toJobEnvVO).toList())
+			.image(this.image.toJobImageVO())
+			.codes(this.codes.stream().map(ModuleCodeReqDTO::toJobCodeVO).toList())
+			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
+			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.command(this.command)
 			.workloadType(this.workloadType)
 			.cpuRequest(this.cpuRequest)

@@ -59,7 +59,8 @@ public class BatchJobVO extends WorkloadVO {
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
 					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName(),
 					AnnotationField.TYPE.getField(), getWorkloadType().getType(),
-					AnnotationField.IMAGE.getField(), getImage()
+					AnnotationField.IMAGE_NAME.getField(), getImage().name(),
+					AnnotationField.IMAGE_TAG.getField(), getImage().tag()
 				))
 			.withLabels(
 				getLabelMap()
@@ -71,6 +72,7 @@ public class BatchJobVO extends WorkloadVO {
 		Map<String, String> map = new HashMap<>();
 
 		map.put(LabelField.CREATOR.getField(), getCreator());
+		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		this.volumes.forEach(volume -> map.put(volume.name(), "true"));
 
 		return map;
@@ -100,7 +102,7 @@ public class BatchJobVO extends WorkloadVO {
 			.withRestartPolicy("Never")
 			.addNewContainer()
 			.withName(getUniqueResourceName())
-			.withImage(image);
+			.withImage(image.name() + ":" + image.tag());
 
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
@@ -179,7 +181,7 @@ public class BatchJobVO extends WorkloadVO {
 		return envs.stream()
 			.map(env -> new EnvVarBuilder()
 				.withName(env.variable())
-				.withValue(env.value())
+				.withValue(env.value() )
 				.build()
 			).toList();
 	}
@@ -191,7 +193,7 @@ public class BatchJobVO extends WorkloadVO {
 
 	@Override
 	public WorkloadType getWorkloadType() {
-		return workloadType;
+		return WorkloadType.BATCH;
 	}
 
 	@Override

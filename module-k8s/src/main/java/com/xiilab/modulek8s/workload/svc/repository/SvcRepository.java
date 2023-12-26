@@ -1,7 +1,7 @@
 package com.xiilab.modulek8s.workload.svc.repository;
 
-import com.xiilab.modulek8s.workload.svc.vo.ServiceVO;
+import com.xiilab.modulek8s.workload.svc.vo.NodeSvcVO;
 
 public interface SvcRepository {
-	void createNodePortService(ServiceVO serviceVO);
+	void createNodePortService(NodeSvcVO nodeSvcVO);
 }

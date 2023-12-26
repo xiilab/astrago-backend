@@ -2,7 +2,7 @@ package com.xiilab.modulek8s.workload.dto.request;
 
 import com.xiilab.modulek8s.workload.vo.JobPortVO;
 
-public record PortReqDTO(
+public record ModulePortReqDTO(
 	String name,	// 포트명
 	Integer port	// 포트번호
 ) {

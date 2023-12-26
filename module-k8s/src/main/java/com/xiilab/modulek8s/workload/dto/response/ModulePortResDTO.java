@@ -1,6 +1,6 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-public record PortResDTO(
+public record ModulePortResDTO(
 	String name,
 	int originPort
 ) {

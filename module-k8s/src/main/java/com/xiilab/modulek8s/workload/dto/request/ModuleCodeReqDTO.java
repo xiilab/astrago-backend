@@ -5,7 +5,7 @@ import java.io.File;
 import com.xiilab.modulek8s.common.enumeration.CodeRepositoryType;
 import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 
-public record CodeReqDTO(
+public record ModuleCodeReqDTO(
 	CodeRepositoryType codeRepositoryType,  // repository 타입
 	// String userName,        // userName (private 타입에서 사용)
 	// String token,           // 토큰 (private 타입에서 사용)

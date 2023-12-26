@@ -27,11 +27,11 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class ServiceVO extends K8SResourceReqVO {
+public class NodeSvcVO extends K8SResourceReqVO {
 	private String workspace;        //워크스페이스
 	private SvcType svcType;        // 서비스 타입
 	private String jobName;	// 잡 메타데이터 이름 (selector로 검색하기 위해 추가)
-	private List<ServicePortVO> ports; // 연결할 포트 목록
+	private List<SvcPortVO> ports; // 연결할 포트 목록
 
 	@Override
 	public Service createResource() {
@@ -41,8 +41,8 @@ public class ServiceVO extends K8SResourceReqVO {
 			.build();
 	}
 
-	public static ServiceVO createServiceDtoToServiceVO(CreateSvcReqDTO createSvcReqDTO) {
-		return ServiceVO.builder()
+	public static NodeSvcVO createServiceDtoToServiceVO(CreateSvcReqDTO createSvcReqDTO) {
+		return NodeSvcVO.builder()
 			.name(createSvcReqDTO.getName())
 			.description(createSvcReqDTO.getDescription())
 			.creatorName(createSvcReqDTO.getCreatorName())
@@ -50,7 +50,7 @@ public class ServiceVO extends K8SResourceReqVO {
 			.workspace(createSvcReqDTO.getWorkspace())
 			.svcType(createSvcReqDTO.getSvcType())
 			.jobName(createSvcReqDTO.getJobName())
-			.ports(createSvcReqDTO.getPorts().stream().map(port -> new ServicePortVO(port.name(), port.port())).toList())
+			.ports(createSvcReqDTO.getPorts().stream().map(port -> new SvcPortVO(port.name(), port.port())).toList())
 			.build();
 	}
 
@@ -69,6 +69,9 @@ public class ServiceVO extends K8SResourceReqVO {
 				AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
 				AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName(),
 				AnnotationField.TYPE.getField(), getSvcType().getType()
+			))
+			.withLabels(Map.of(
+				LabelField.CONTROL_BY.getField(), "astra"
 			))
 			.build();
 	}

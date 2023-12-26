@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
-import com.xiilab.modulek8s.workload.svc.vo.ServiceVO;
+import com.xiilab.modulek8s.workload.svc.vo.NodeSvcVO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +17,6 @@ public class SvcServiceImpl implements SvcService {
 
 	@Override
 	public void createNodePortService(CreateSvcReqDTO createSvcReqDTO) {
-		svcRepository.createNodePortService(ServiceVO.createServiceDtoToServiceVO(createSvcReqDTO));
+		svcRepository.createNodePortService(NodeSvcVO.createServiceDtoToServiceVO(createSvcReqDTO));
 	}
 }

@@ -39,6 +39,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
 	private String command;        // 워크로드 명령
+	private String jobName;
 
 	@Override
 	public Deployment createResource() {
@@ -51,8 +52,9 @@ public class InteractiveJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
+		jobName = getUniqueResourceName();
 		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName())
+			.withName(jobName)
 			.withNamespace(workspace)
 			.withAnnotations(
 				Map.of(
@@ -61,7 +63,8 @@ public class InteractiveJobVO extends WorkloadVO {
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
 					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName(),
 					AnnotationField.TYPE.getField(), getWorkloadType().getType(),
-					AnnotationField.IMAGE.getField(), getImage()
+					AnnotationField.IMAGE_NAME.getField(), getImage().name(),
+					AnnotationField.IMAGE_TAG.getField(), getImage().tag()
 				))
 			.withLabels(
 				getLabelMap()
@@ -73,7 +76,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		Map<String, String> map = new HashMap<>();
 
 		map.put(LabelField.CREATOR.getField(), getCreator());
-		this.volumes.forEach(volume -> map.put(volume.name(), "true"));
+		map.put(LabelField.CONTROL_BY.getField(), "astra");
+		volumes.forEach(volume -> map.put(volume.name(), "true"));
 
 		return map;
 	}
@@ -81,12 +85,11 @@ public class InteractiveJobVO extends WorkloadVO {
 	// 스펙 정의
 	@Override
 	public DeploymentSpec createSpec() {
-		String uniqueResourceName = getUniqueResourceName();
 		return new DeploymentSpecBuilder()
 			.withReplicas(1)
-			.withNewSelector().withMatchLabels(Map.of(LabelField.JOB_NAME.getField(), uniqueResourceName)).endSelector()
+			.withNewSelector().withMatchLabels(Map.of(LabelField.JOB_NAME.getField(), jobName)).endSelector()
 			.withTemplate(new PodTemplateSpecBuilder()
-				.withNewMetadata().withLabels(Collections.singletonMap(LabelField.JOB_NAME.getField(), uniqueResourceName)).endMetadata()
+				.withNewMetadata().withLabels(Collections.singletonMap(LabelField.JOB_NAME.getField(), jobName)).endMetadata()
 				.withSpec(createPodSpec())
 				.build()
 			)
@@ -105,7 +108,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.addNewContainer()
 			.withName(getUniqueResourceName())
-			.withImage(image);
+			.withImage(image.name() + ":" + image.tag());
 
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
@@ -196,7 +199,7 @@ public class InteractiveJobVO extends WorkloadVO {
 
 	@Override
 	public WorkloadType getWorkloadType() {
-		return workloadType;
+		return WorkloadType.INTERACTIVE;
 	}
 
 	@Override

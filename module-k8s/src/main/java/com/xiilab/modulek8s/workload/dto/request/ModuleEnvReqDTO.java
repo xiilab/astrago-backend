@@ -2,7 +2,7 @@ package com.xiilab.modulek8s.workload.dto.request;
 
 import com.xiilab.modulek8s.workload.vo.JobEnvVO;
 
-public record EnvReqDTO(
+public record ModuleEnvReqDTO(
 	String variable,	// 변수명
 	String value 	// 값
 	) {

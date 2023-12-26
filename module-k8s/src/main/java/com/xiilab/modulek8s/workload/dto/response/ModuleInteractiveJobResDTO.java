@@ -7,15 +7,15 @@ import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Quantity;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
-public class BatchJobResDTO extends WorkloadResDTO {
-	public BatchJobResDTO(Job job) {
-		super(job);
+public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
+	public ModuleInteractiveJobResDTO(Deployment deployment) {
+		super(deployment);
 
-		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
+		Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
 		name = getName();
 		Map<String, Quantity> resourceRequests = container.getResources().getLimits();
 		image = container.getImage();
@@ -26,10 +26,10 @@ public class BatchJobResDTO extends WorkloadResDTO {
 		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() : "0" + ResourcesUnit.CPU_UNIT.getUnit();
 		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() : "0" + ResourcesUnit.MEM_UNIT.getUnit();
 		envs = container.getEnv().stream()
-			.map(env -> new EnvResDTO(env.getName(), env.getValue()))
+			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
 		ports = container.getPorts().stream()
-			.map(port -> new PortResDTO(port.getName(), port.getContainerPort()))
+			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
 		command = container.getCommand().get(0);
 	}

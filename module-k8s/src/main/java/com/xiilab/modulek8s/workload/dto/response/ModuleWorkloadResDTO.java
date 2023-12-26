@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
-public abstract class WorkloadResDTO {
+public abstract class ModuleWorkloadResDTO {
 	String uid;		//워크로드 고유 ID
 	String name;		// 워크로드 이름
 	String description;		// 워크로드 설명
@@ -22,11 +22,11 @@ public abstract class WorkloadResDTO {
 	String cpuRequest;		// 워크로드 cpu 요청량
 	String memRequest;		// 워크로드 mem 요청량
 	SchedulingType schedulingType;		// 스케줄링 방식
-	List<EnvResDTO> envs;		//env 정의
-	List<PortResDTO> ports;		//port 정의
+	List<ModuleEnvResDTO> envs;		//env 정의
+	List<ModulePortResDTO> ports;		//port 정의
 	String command;		// 워크로드 명령
 
-	protected WorkloadResDTO(HasMetadata hasMetadata) {
+	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
 		name = hasMetadata.getMetadata().getName();
 		description = hasMetadata.getMetadata().getAnnotations().get("description");

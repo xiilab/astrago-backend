@@ -11,7 +11,8 @@ public enum AnnotationField {
 	CREATED_AT("created-at"),
 	CREATOR_FULL_NAME("creator-name"),
 	TYPE("type"),
-	IMAGE("image"),
+	IMAGE_NAME("image-name"),
+	IMAGE_TAG("image-tag")
 	;
 
 	private final String field;
