@@ -8,12 +8,14 @@ import com.xiilab.modulek8s.common.enumeration.ResourceType;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 /**
  * K8SResourceReq 클래스는 Kubernetes 리소스 요청 생성을 위한 기반 역할을 하는 추상 클래스입니다.
  * 다양한 Kubernetes 리소스 신청시 일반적으로 사용되는 속성과 메서드가 포함되어 있습니다.
  */
 @Getter
+@SuperBuilder
 public abstract class K8SResourceResDTO {
 	String uid;
 	String resourceName;

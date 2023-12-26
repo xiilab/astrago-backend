@@ -56,8 +56,8 @@ public class KeycloakUserRepository implements UserRepository {
                         -> user.getAttributes() != null
                         && user.getAttributes().containsKey("approvalYN")
                         && user.getAttributes().containsValue(List.of("true"))
-                        && searchInfo(findDTO, user)
-                )
+                && searchInfo(findDTO, user)
+            )
                 .toList();
         return userList.stream().map(UserSummary::new).toList();
     }
@@ -206,13 +206,14 @@ public class KeycloakUserRepository implements UserRepository {
 
     private boolean searchInfo(FindDTO findDTO, UserRepresentation user) {
         boolean search = true;
-        if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(findDTO.getSearchCondition().getKeyword())) {
+        if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(
+            findDTO.getSearchCondition().getKeyword())) {
             return search;
         }
         if (findDTO.getSearchCondition().getOption().equalsIgnoreCase("ALL")) {
             search = user.getFirstName().contains(findDTO.getSearchCondition().getKeyword())
-                    || user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
-                    || user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
+                || user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
+                || user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
         }
         return search;
     }

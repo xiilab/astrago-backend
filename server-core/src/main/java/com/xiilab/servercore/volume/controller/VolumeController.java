@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/core/volumes")
 @RequiredArgsConstructor
 public class VolumeController {
 	private final VolumeFacadeService volumeFacadeService;
@@ -37,7 +37,7 @@ public class VolumeController {
 	 * @param requestDTO
 	 * @return
 	 */
-	@PostMapping("/volumes")
+	@PostMapping("")
 	@Operation(summary = "create Volume")
 	public ResponseEntity<Object> createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
 		UserInfoDTO userInfoDTO){
@@ -51,7 +51,7 @@ public class VolumeController {
 	 * @param searchCondition
 	 * @return
 	 */
-	@GetMapping("/volumes")
+	@GetMapping("")
 	@Operation(summary = "find Volumes")
 	public ResponseEntity<List<PageVolumeResDTO>> findVolumes(@ModelAttribute SearchCondition searchCondition){
 		List<PageVolumeResDTO> volumes = volumeFacadeService.findVolumes(searchCondition);
@@ -64,7 +64,7 @@ public class VolumeController {
 	 * @param volumeMetaName
 	 * @return
 	 */
-	@GetMapping("/volumes/{volumeMetaName}")
+	@GetMapping("/{volumeMetaName}")
 	@Operation(summary = "find Volume")
 	public ResponseEntity<VolumeWithStorageResDTO> findVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
 		VolumeWithStorageResDTO volume = volumeFacadeService.findVolumeByMetaName(volumeMetaName);
@@ -76,7 +76,7 @@ public class VolumeController {
 	 * @param volumeMetaName
 	 * @return
 	 */
-	@DeleteMapping("/volumes/{volumeMetaName}")
+	@DeleteMapping("/{volumeMetaName}")
 	@Operation(summary = "delete Volume")
 	public ResponseEntity<Object> deleteVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
 		volumeFacadeService.deleteVolumeByMetaName(volumeMetaName);
@@ -90,7 +90,7 @@ public class VolumeController {
 	 * @param modifyVolumeReqDTO
 	 * @return
 	 */
-	@PutMapping("/volumes/{volumeMetaName}")
+	@PutMapping("/{volumeMetaName}")
 	@Operation(summary = "modify Volume")
 	public ResponseEntity<Object> modifyVolume(@PathVariable("volumeMetaName") String volumeMetaName,
 		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO){

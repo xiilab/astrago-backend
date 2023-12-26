@@ -10,7 +10,8 @@ public class ModifyStorageClassDTO extends K8SResourceReqDTO {
 	private String storageClassMetaName;
 
 	@Builder
-	public ModifyStorageClassDTO(String name, String description, String creatorName, String creator, String storageClassMetaName) {
+	public ModifyStorageClassDTO(String name, String description, String creatorName, String creator,
+		String storageClassMetaName) {
 		super(name, description, creatorName, creator);
 		this.storageClassMetaName = storageClassMetaName;
 	}

@@ -72,7 +72,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					.requestVolume(volume.getRequestVolume())
 					.storageClassMetaName(volume.getStorageClassMetaName())
 					.build();
-				volume.setVolumeMetaDataName(createVolume(createVolumeDTO));
+				String volume1 = createVolume(createVolumeDTO);
+				volume.setVolumeMetaDataName(volume1);
 			}
 		}
 	}

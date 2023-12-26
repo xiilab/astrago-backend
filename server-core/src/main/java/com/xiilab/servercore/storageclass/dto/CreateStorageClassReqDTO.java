@@ -18,7 +18,7 @@ public class CreateStorageClassReqDTO extends APIBaseReqDTO {
 		super();
 	}
 
-	public CreateStorageClassDTO toModuleDto(){
+	public CreateStorageClassDTO toModuleDto() {
 		return CreateStorageClassDTO.builder()
 			.name(getName())
 			.description(getDescription())
@@ -29,7 +29,8 @@ public class CreateStorageClassReqDTO extends APIBaseReqDTO {
 			.storageSavePath(storageSavePath)
 			.build();
 	}
-	public void setUserInfo(String creator, String creatorName){
+
+	public void setUserInfo(String creator, String creatorName) {
 		this.creator = creator;
 		this.creatorName = creatorName;
 	}

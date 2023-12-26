@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -21,29 +22,22 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(AbstractHttpConfigurer::disable);
+
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.GET,"/docs/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/faqs").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/faqs/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/notices").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/tos").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/tos/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/notices/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/categories").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/app").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/preview/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/test").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/manager/user/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/manager/app/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/core/user").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/core/group").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/core/user/join").permitAll()
                 .requestMatchers(HttpMethod.GET,"/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .anyRequest().authenticated()
-                );
+                .anyRequest().authenticated());
 
         http.oauth2ResourceServer((oauth2) -> oauth2
             .jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
         http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.disable());
+
         return http.build();
     }
 }

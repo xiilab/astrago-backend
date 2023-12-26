@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class SearchCondition {
-    private String option;
-    private String keyword;
+	private String option;
+	private String keyword;
 }

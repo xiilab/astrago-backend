@@ -1,11 +1,12 @@
 package com.xiilab.moduleuser.service;
 
+import static com.xiilab.moduleuser.dto.GroupCategory.*;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.dto.GroupCategory;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -27,7 +28,7 @@ public class GroupServiceImpl implements GroupService {
 			GroupReqVO.builder()
 				.name(groupReqDTO.getName())
 				.description(groupReqDTO.getDescription())
-				.groupCategory(GroupCategory.ACCOUNT)
+				.groupCategory(ACCOUNT)
 				.createdBy(groupReqDTO.getCreatedBy())
 				.build());
 		//group에 member join
@@ -41,7 +42,7 @@ public class GroupServiceImpl implements GroupService {
 			GroupReqVO.builder()
 				.name(groupReqDTO.getName())
 				.description(groupReqDTO.getDescription())
-				.groupCategory(GroupCategory.WORKSPACE)
+				.groupCategory(WORKSPACE)
 				.createdBy(groupReqDTO.getCreatedBy())
 				.build());
 		//workspace 그룹의 childGroup 생성 및 유저 추가
@@ -71,6 +72,19 @@ public class GroupServiceImpl implements GroupService {
 	@Override
 	public void deleteGroupById(String groupId) {
 		groupRepository.deleteGroupById(groupId);
+	}
+
+	@Override
+	public void deleteWorkspaceGroupByName(String groupName) {
+		GroupInfoDTO groupInfo = groupRepository.getGroupInfoByCategoryAndName(WORKSPACE,
+			groupName);
+		groupRepository.deleteGroupById(groupInfo.getUid());
+	}
+
+	@Override
+	public void deleteAccountGroupByName(String groupName) {
+		GroupInfoDTO groupInfo = groupRepository.getGroupInfoByCategoryAndName(ACCOUNT, groupName);
+		groupRepository.deleteGroupById(groupInfo.getUid());
 	}
 
 	private void createWorkspaceChildGroup(String parentId, GroupReqDTO groupReqDTO) {

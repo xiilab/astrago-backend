@@ -28,7 +28,7 @@ public class StorageClassVO extends K8SResourceReqVO {
 	private ReclaimPolicyType reclaimPolicy;
 	private Map<String, String> parameters;
 
-	public static StorageClassVO dtoToVo(CreateStorageClassDTO createStorageClassDTO){
+	public static StorageClassVO dtoToVo(CreateStorageClassDTO createStorageClassDTO) {
 		return StorageClassVO.builder()
 			.name(createStorageClassDTO.getName())
 			.description(createStorageClassDTO.getDescription())
@@ -54,7 +54,7 @@ public class StorageClassVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName()) //vo-uuid
+			.withName(getResourceName()) //vo-uuid
 			.addToAnnotations(createAnnotation())
 			.addToLabels(createLabels())
 			.build();
@@ -65,9 +65,10 @@ public class StorageClassVO extends K8SResourceReqVO {
 		return ResourceType.STORAGE;
 	}
 
-	public void setParameters(Map<String, String> parameters){
+	public void setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
 	}
+
 	private HashMap<String, String> createLabels() {
 		HashMap<String, String> labels = new HashMap<>();
 		labels.put(LabelField.CREATOR.getField(), getCreator());

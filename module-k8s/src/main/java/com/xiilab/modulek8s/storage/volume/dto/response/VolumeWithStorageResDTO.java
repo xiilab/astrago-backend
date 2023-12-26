@@ -23,7 +23,7 @@ public class VolumeWithStorageResDTO extends K8SResourceResVO {
 
 	@Builder
 	public VolumeWithStorageResDTO(HasMetadata hasMetadata, String workspaceName, List<String> workloadNames,
-		String requestVolume, StorageType storageType, String storageClassName,String savePath) {
+		String requestVolume, StorageType storageType, String storageClassName, String savePath) {
 		super(hasMetadata);
 		this.workspaceName = workspaceName;
 		this.workloadNames = workloadNames;

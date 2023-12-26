@@ -36,7 +36,8 @@ public class VolumeVO extends K8SResourceReqVO {
 			.withSpec(createSpec())
 			.build();
 	}
-	public static VolumeVO dtoToVo(CreateVolumeDTO createVolumeDTO){
+
+	public static VolumeVO dtoToVo(CreateVolumeDTO createVolumeDTO) {
 		return VolumeVO.builder()
 			.name(createVolumeDTO.getName())
 			.createdAt(LocalDateTime.now())
