@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.facade;
+package com.xiilab.modulek8s.facade.storage;
 
 import java.util.List;
 
@@ -10,7 +10,6 @@ import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
-import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
@@ -54,5 +53,4 @@ public interface StorageModuleService {
 
 	List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes();
 
-	List<ProvisionerResDTO> getProvisioners();
 }

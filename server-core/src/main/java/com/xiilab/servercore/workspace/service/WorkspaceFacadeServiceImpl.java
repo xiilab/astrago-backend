@@ -7,8 +7,8 @@ import java.util.Set;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulek8s.facade.StorageModuleService;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
+import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaReqDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;

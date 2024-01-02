@@ -21,8 +21,8 @@ public class ProvisionerController {
 
 
 	@GetMapping("/provisioners")
-	public ResponseEntity<List<ProvisionerResDTO>> getProvisioners(){
-		List<ProvisionerResDTO> provisioners = provisionerFacadeService.getProvisioners();
+	public ResponseEntity<List<ProvisionerResDTO>> findProvisioners(){
+		List<ProvisionerResDTO> provisioners = provisionerFacadeService.findProvisioners();
 		return new ResponseEntity<>(provisioners, HttpStatus.OK);
 	}
 }
