@@ -14,7 +14,7 @@ import com.xiilab.servercore.provisioner.service.ProvisionerFacadeService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/core")
 @RequiredArgsConstructor
 public class ProvisionerController {
 	private final ProvisionerFacadeService provisionerFacadeService;
