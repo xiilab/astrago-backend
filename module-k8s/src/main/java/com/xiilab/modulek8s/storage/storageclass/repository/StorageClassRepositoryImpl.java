@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.storage.storageclass.repository;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 import com.xiilab.modulek8s.storage.common.crd.NFS.status.History;
+import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.VolumeDTO;
@@ -38,7 +40,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public StorageClass findStorageClassByType(StorageType storageType) {
+	public List<StorageClass> findStorageClassByType(StorageType storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<StorageClass> storageClasses = client.storage()
 				.v1()
@@ -50,7 +52,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 			if (storageClasses.size() == 0) {
 				throw new RuntimeException("해당 타입의 스토리지 클래스가 존재하지 않습니다.");
 			}
-			return storageClasses.get(0);
+			return storageClasses;
 		}
 	}
 
@@ -184,6 +186,70 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 					return StorageClassWithVolumesResDTO.toDTO(storageClass, volumeDTOS, status);
 				}).toList();
 			return storages;
+		}
+	}
+
+	@Override
+	public List<ProvisionerResDTO> getProvisioners() {
+		//추 후 디비에서 관리하고 조회해와야함
+		HashMap<String, String> nfsProvisioner = new HashMap<>();
+		nfsProvisioner.put("name", "NFS_Provisioner");
+		nfsProvisioner.put("type", "NFS");
+
+		HashMap<String, String> pureProvisioner = new HashMap<>();
+		nfsProvisioner.put("name", "PURE_Provisioner");
+		nfsProvisioner.put("type", "PURE");
+
+		List<Map<String, String>> provisioners = new ArrayList<>();
+		provisioners.add(nfsProvisioner);
+		provisioners.add(pureProvisioner);
+
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			List<ProvisionerResDTO> provisionerResDTOS = new ArrayList<>();
+			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
+				HelmRelease.class);
+			for (Map<String, String> provisioner : provisioners) {
+				String provisionerName = provisioner.get("name");
+				String storageType = provisioner.get("type");
+				//설치된 리스트 조회
+				List<HelmRelease> helmReleases = nfsClient.inAnyNamespace()
+					.withLabel(LabelField.STORAGE_TYPE.getField(), storageType)
+					.list().getItems();
+
+				if(helmReleases.isEmpty()){
+					ProvisionerResDTO provisionerResDTO = ProvisionerResDTO.builder()
+						.provisionerName(provisionerName)
+						.status(ProvisionerStatus.NONE)
+						.storageCnt(0)
+						.build();
+					provisionerResDTOS.add(provisionerResDTO);
+					continue;
+				}
+				for (HelmRelease helmRelease : helmReleases) {
+					//상태 조회
+					List<History> historyList = helmRelease.getStatus().getHistory();
+					String lastStatus = historyList.get(historyList.size() - 1).getStatus();
+					ProvisionerStatus status = lastStatus.equalsIgnoreCase("deployed") ? ProvisionerStatus.ENABLE : ProvisionerStatus.DISABLE;
+
+					//연결된 sc 개수 조회
+					int storageSize = client.storage()
+						.v1()
+						.storageClasses()
+						.withLabel(LabelField.STORAGE_TYPE.getField(), storageType)
+						.list()
+						.getItems()
+						.size();
+
+					ProvisionerResDTO provisionerResDTO = ProvisionerResDTO.builder()
+						.provisionerMetaName(helmRelease.getMetadata().getName())
+						.provisionerName(helmRelease.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
+						.status(status)
+						.storageCnt(storageSize)
+						.build();
+					provisionerResDTOS.add(provisionerResDTO);
+				}
+			}
+			return provisionerResDTOS;
 		}
 	}
 
