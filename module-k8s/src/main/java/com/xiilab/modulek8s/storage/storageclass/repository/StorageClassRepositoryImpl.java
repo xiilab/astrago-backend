@@ -40,7 +40,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public StorageClass findStorageClassByType(StorageType storageType) {
+	public List<StorageClass> findStorageClassByType(StorageType storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<StorageClass> storageClasses = client.storage()
 				.v1()
@@ -52,7 +52,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 			if (storageClasses.size() == 0) {
 				throw new RuntimeException("해당 타입의 스토리지 클래스가 존재하지 않습니다.");
 			}
-			return storageClasses.get(0);
+			return storageClasses;
 		}
 	}
 

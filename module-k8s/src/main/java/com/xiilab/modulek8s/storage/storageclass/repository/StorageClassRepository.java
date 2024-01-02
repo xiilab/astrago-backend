@@ -12,7 +12,7 @@ import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVo
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 
 public interface StorageClassRepository {
-	StorageClass findStorageClassByType(StorageType storageType);
+	List<StorageClass> findStorageClassByType(StorageType storageType);
 
 	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
 
