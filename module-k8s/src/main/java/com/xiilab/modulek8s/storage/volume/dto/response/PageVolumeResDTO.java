@@ -27,11 +27,6 @@ public class PageVolumeResDTO extends K8SResourceResDTO {
 		this.isUsed = isUsed;
 	}
 
-	@Override
-	protected ResourceType getType() {
-		return ResourceType.VOLUME;
-	}
-
 	public static PageVolumeResDTO toDTO(PersistentVolumeClaim pvc){
 		return PageVolumeResDTO.builder()
 			.hasMetadata(pvc)
@@ -39,6 +34,12 @@ public class PageVolumeResDTO extends K8SResourceResDTO {
 			.storageType(StorageType.valueOf(pvc.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField())))
 			.build();
 	}
+
+	@Override
+	protected ResourceType getType() {
+		return ResourceType.VOLUME;
+	}
+
 	public void setIsUsed(boolean isUsed){
 		this.isUsed = isUsed;
 	}

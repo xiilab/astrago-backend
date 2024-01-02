@@ -21,13 +21,13 @@ import lombok.RequiredArgsConstructor;
 public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 
 	private final K8sAdapter k8sAdapter;
-	List<Pod> pods = new ArrayList<>();
 	private final List<K8sErrorStatus> targetReasons = Arrays.asList(
 		K8sErrorStatus.CrashLoopBackOff,
 		K8sErrorStatus.ImagePullBackOff,
 		K8sErrorStatus.ErrImagePull,
 		K8sErrorStatus.InvalidImageName
 	);
+	List<Pod> pods = new ArrayList<>();
 
 	/**
 	 * Workload Error 개수 조회

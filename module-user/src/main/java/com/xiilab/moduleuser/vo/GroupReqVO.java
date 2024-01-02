@@ -1,13 +1,15 @@
 package com.xiilab.moduleuser.vo;
 
-import com.xiilab.moduleuser.dto.GroupCategory;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
-import org.keycloak.representations.idm.GroupRepresentation;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import org.keycloak.representations.idm.GroupRepresentation;
+
+import com.xiilab.moduleuser.dto.GroupCategory;
+
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder

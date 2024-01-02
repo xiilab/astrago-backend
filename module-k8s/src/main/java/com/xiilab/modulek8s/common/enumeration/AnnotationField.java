@@ -9,7 +9,11 @@ public enum AnnotationField {
 	NAME("name"),
 	DESCRIPTION("description"),
 	CREATED_AT("created-at"),
-	CREATOR_FULL_NAME("creator-name");
+	CREATOR_FULL_NAME("creator-name"),
+	TYPE("type"),
+	IMAGE_NAME("image-name"),
+	IMAGE_TAG("image-tag")
+	;
 
 	private final String field;
 }

@@ -19,6 +19,9 @@
     - 생성자 username : creator
     - 생성시각 : created-at
     - 생성자 이름(실명) : creator-name
+    - 이미지명 : image-name
+    - 이미지 태그명: image-tag
+    - 잡 타입: type(batch, interactive)
 - label
     - 생성자 username : creator
     - 사용한 볼륨은 label에 list형을 못넣기때문에 row로 나열(볼륨의 meta name : true)
@@ -26,6 +29,8 @@
     - vo-uuid2 : "true"
     - 사용한 이미지 : image
     - 사용한 codes : codes
+    - 생성 플랫폼: control-by (astra)
+    - 잡 이름(pod에만 존재): job-name 
 ## Volume(PV,PVC)
 - meta name
     - vo-UUID

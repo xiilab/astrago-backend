@@ -57,3 +57,4 @@ public abstract class K8SResourceReqVO {
 	//자식 클래스의 ResourceType을 조회하기 위한 메소드
 	protected abstract ResourceType getType();
 }
+

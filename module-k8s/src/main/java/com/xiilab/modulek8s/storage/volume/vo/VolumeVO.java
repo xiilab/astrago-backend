@@ -67,7 +67,7 @@ public class VolumeVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName()) //vo-uuid
+			.withName(getUniqueResourceName()) //vo-uuid
 			.withNamespace(workspaceMetaDataName)
 			.addToAnnotations(createAnnotation())
 			.addToLabels(createLabels())

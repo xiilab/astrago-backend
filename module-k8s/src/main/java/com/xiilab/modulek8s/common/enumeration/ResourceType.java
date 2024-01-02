@@ -9,7 +9,9 @@ public enum ResourceType {
 	VOLUME("vo"),
 	STORAGE("st"),
 	PLUGIN("pg"),
-	RESOURCE_QUOTA("rq");
+	RESOURCE_QUOTA("rq"),
+	SERVICE("sv");
+
 
 	private String name;
 
