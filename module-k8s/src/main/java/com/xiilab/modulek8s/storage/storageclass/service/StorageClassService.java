@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StorageClassService {
 	private final StorageClassRepository storageClassRepository;
-	public StorageClass findStorageClassByType(StorageType storageType) {
+	public List<StorageClass> findStorageClassByType(StorageType storageType) {
 		return storageClassRepository.findStorageClassByType(storageType);
 	}
 
