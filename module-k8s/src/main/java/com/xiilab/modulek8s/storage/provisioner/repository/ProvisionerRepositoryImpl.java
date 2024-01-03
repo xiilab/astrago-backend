@@ -30,16 +30,28 @@ import lombok.extern.slf4j.Slf4j;
 public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 	private final K8sAdapter k8sAdapter;
 
+	private static void checkInstallation(StorageType storageType, KubernetesClient client) {
+		MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
+			HelmRelease.class);
+		String type = storageType.name();
+		List<HelmRelease> items = nfsClient.inAnyNamespace()
+			.withLabel(LabelField.STORAGE_TYPE.getField(), type)
+			.list().getItems();
+		if (items != null && !items.isEmpty()) {
+			throw new RuntimeException("이미 설치된 플러그인입니다.");
+		}
+	}
+
 	@Override
 	public List<ProvisionerResDTO> findProvisioners() {
 		//추 후 디비에서 관리하고 조회해와야함
-		HashMap<String, String> nfsProvisioner = new HashMap<>();
+		Map<String, String> nfsProvisioner = new HashMap<>();
 		nfsProvisioner.put("name", "NFS_Provisioner");
 		nfsProvisioner.put("type", "NFS");
 
-		HashMap<String, String> pureProvisioner = new HashMap<>();
-		nfsProvisioner.put("name", "PURE_Provisioner");
-		nfsProvisioner.put("type", "PURE");
+		Map<String, String> pureProvisioner = new HashMap<>();
+		pureProvisioner.put("name", "PURE_Provisioner");
+		pureProvisioner.put("type", "PURE");
 
 		List<Map<String, String>> provisioners = new ArrayList<>();
 		provisioners.add(nfsProvisioner);
@@ -57,7 +69,7 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 					.withLabel(LabelField.STORAGE_TYPE.getField(), storageType)
 					.list().getItems();
 
-				if (helmReleases.isEmpty()) {
+				if (helmReleases == null || helmReleases.isEmpty()) {
 					ProvisionerResDTO provisionerResDTO = ProvisionerResDTO.builder()
 						.provisionerName(provisionerName)
 						.status(ProvisionerStatus.NONE)
@@ -69,9 +81,12 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 				for (HelmRelease helmRelease : helmReleases) {
 					//상태 조회
 					List<History> historyList = helmRelease.getStatus().getHistory();
-					String lastStatus = historyList.get(historyList.size() - 1).getStatus();
-					ProvisionerStatus status =
-						lastStatus.equalsIgnoreCase("deployed") ? ProvisionerStatus.ENABLE : ProvisionerStatus.DISABLE;
+					ProvisionerStatus status = ProvisionerStatus.DISABLE;
+					if (historyList != null && !historyList.isEmpty()) {
+						String lastStatus = historyList.get(historyList.size() - 1).getStatus();
+						status = "deployed".equalsIgnoreCase(lastStatus) ? ProvisionerStatus.ENABLE :
+							ProvisionerStatus.DISABLE;
+					}
 
 					//연결된 sc 개수 조회
 					int storageSize = client.storage()
@@ -93,18 +108,6 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 				}
 			}
 			return provisionerResDTOS;
-		}
-	}
-
-	private static void checkInstallation(StorageType storageType, KubernetesClient client) {
-		MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
-			HelmRelease.class);
-		String type = storageType.name();
-		List<HelmRelease> items = nfsClient.inAnyNamespace()
-			.withLabel(LabelField.STORAGE_TYPE.getField(), type)
-			.list().getItems();
-		if(items != null && !items.isEmpty()){
-			throw new RuntimeException("이미 설치된 플러그인입니다.");
 		}
 	}
 
