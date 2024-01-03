@@ -1,15 +1,15 @@
-package com.xiilab.servercore.provisioner.service;
+package com.xiilab.modulek8s.storage.provisioner.repository;
 
 import java.util.List;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
-import com.xiilab.servercore.provisioner.dto.InstallProvisioner;
 
-public interface ProvisionerFacadeService {
+public interface ProvisionerRepository {
+
 	List<ProvisionerResDTO> findProvisioners();
 
-	void installProvisioner(InstallProvisioner installProvisioner);
+	void installProvisioner(StorageType storageType);
 
 	void unInstallProvisioner(StorageType storageType);
 }

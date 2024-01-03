@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.facade;
+package com.xiilab.modulek8s.facade.storage;
 
 import java.util.List;
 
@@ -12,8 +12,6 @@ import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
-import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
-import com.xiilab.modulek8s.storage.provisioner.service.ProvisionerService;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
@@ -28,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class StorageModuleServiceImpl implements StorageModuleService{
-	private final ProvisionerService provisionerService;
 	private final VolumeService volumeService;
 	private final StorageClassService storageClassService;
 
@@ -172,10 +169,5 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
 		return storageClassService.findStorageClassesWithVolumes();
-	}
-
-	@Override
-	public List<ProvisionerResDTO> getProvisioners() {
-		return storageClassService.getProvisioners();
 	}
 }

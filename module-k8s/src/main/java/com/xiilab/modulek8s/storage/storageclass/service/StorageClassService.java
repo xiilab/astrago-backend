@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
-import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.modulek8s.storage.storageclass.repository.StorageClassRepository;
@@ -51,9 +50,5 @@ public class StorageClassService {
 
 	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
 		return storageClassRepository.findStorageClassesWithVolumes();
-	}
-
-	public List<ProvisionerResDTO> getProvisioners() {
-		return storageClassRepository.getProvisioners();
 	}
 }

@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import io.fabric8.kubernetes.api.model.storage.CSIDriver;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
+import com.xiilab.modulek8s.storage.provisioner.repository.ProvisionerRepository;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -12,7 +15,15 @@ import lombok.RequiredArgsConstructor;
 public class ProvisionerService {
 	private final ProvisionerRepository provisionerRepository;
 
-	public List<CSIDriver> findProvisioner(){
-		return provisionerRepository.findProvisioner();
+	public List<ProvisionerResDTO> findProvisioners() {
+		return provisionerRepository.findProvisioners();
+	}
+
+	public void installProvisioner(StorageType storageType) {
+		provisionerRepository.installProvisioner(storageType);
+	}
+
+	public void unInstallProvisioner(StorageType storageType) {
+		provisionerRepository.unInstallProvisioner(storageType);
 	}
 }

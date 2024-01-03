@@ -20,7 +20,7 @@
 // import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 // import com.xiilab.modulek8s.common.enumeration.StorageType;
 // import com.xiilab.modulek8s.config.K8sAdapter;
-// import com.xiilab.modulek8s.facade.StorageModuleServiceImpl;
+// import com.xiilab.modulek8s.facade.storage.StorageModuleServiceImpl;
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Chart;
@@ -513,6 +513,16 @@
 //
 // 			helmClient.inNamespace("csi").resource(helmRelease).create();
 //
+// 		}
+// 	}
+//
+// 	@Test
+// 	void unInstallCSI(){
+// 		try (final KubernetesClient client = k8sAdapter.configServer()) {
+// 			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
+// 				HelmRelease.class);
+// 			helmClient.inNamespace("csi").withLabel(LabelField.STORAGE_TYPE.getField(), "NFS")
+// 				.delete();
 // 		}
 // 	}
 //
