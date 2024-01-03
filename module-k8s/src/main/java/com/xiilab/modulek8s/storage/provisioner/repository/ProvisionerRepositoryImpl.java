@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
@@ -14,17 +13,11 @@ import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
-import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Chart;
-import com.xiilab.modulek8s.storage.common.crd.NFS.spec.HelmReleaseSpec;
-import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Install;
-import com.xiilab.modulek8s.storage.common.crd.NFS.spec.SourceRef;
-import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Spec;
 import com.xiilab.modulek8s.storage.common.crd.NFS.status.History;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
+import com.xiilab.modulek8s.storage.provisioner.vo.ProvisionerVO;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
@@ -103,60 +96,28 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 		}
 	}
 
+	private static void checkInstallation(StorageType storageType, KubernetesClient client) {
+		MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
+			HelmRelease.class);
+		String type = storageType.name();
+		List<HelmRelease> items = nfsClient.inAnyNamespace()
+			.withLabel(LabelField.STORAGE_TYPE.getField(), type)
+			.list().getItems();
+		if(items != null && !items.isEmpty()){
+			throw new RuntimeException("이미 설치된 플러그인입니다.");
+		}
+	}
+
 	@Override
 	public void installProvisioner(StorageType storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			if (storageType.equals(StorageType.NFS)) {
 				//이미 설치된 provisioner가 있는지 확인
-				MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
-					HelmRelease.class);
-				String type = storageType.name();
-				List<HelmRelease> items = nfsClient.inAnyNamespace()
-					.withLabel(LabelField.STORAGE_TYPE.getField(), type)
-					.list().getItems();
-				if(items != null && !items.isEmpty()){
-					throw new RuntimeException("이미 설치된 플러그인입니다.");
-				}
-				ObjectMeta objectMeta = new ObjectMetaBuilder()
-					.withName("csi-" + UUID.randomUUID()) //pr-uuid
-					.addToAnnotations(AnnotationField.NAME.getField(), "NFS 플러그인")
-					.addToLabels(LabelField.STORAGE_TYPE.getField(), type)
-					.build();
-				HelmRelease helmRelease = new HelmRelease();
-				helmRelease.setMetadata(objectMeta);
-
-				SourceRef sourceRef = SourceRef.builder()
-					.kind("HelmRepository")
-					.name("nfs-helmrepository")
-					.build();
-
-				Spec spec = Spec.builder()
-					.chart("csi-driver-nfs")
-					.sourceRef(sourceRef)
-					.build();
-
-				Chart chart = Chart.builder()
-					.spec(spec)
-					.build();
-
-				Install install = Install.builder()
-					.createNamespace(true)
-					.build();
-
-				HelmReleaseSpec helmReleaseSpec = HelmReleaseSpec.builder()
-					.chart(chart)
-					.interval("1m0s")
-					.install(install)
-					.releaseName("csi")
-					.storageNamespace("csi")
-					.targetNamespace("csi")
-					.build();
-
-				helmRelease.setSpec(helmReleaseSpec);
+				checkInstallation(storageType, client);
 				MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
 					HelmRelease.class);
-
-				helmClient.inNamespace("csi").resource(helmRelease).create();
+				HelmRelease nfsResource = ProvisionerVO.createNFSResource();
+				helmClient.inNamespace("csi").resource(nfsResource).create();
 			}
 		}
 	}
