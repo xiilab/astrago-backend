@@ -9,4 +9,6 @@ public interface ProvisionerModuleService {
 	List<ProvisionerResDTO> findProvisioners();
 
 	void installProvisioner(StorageType storageType);
+
+	void unInstallProvisioner(StorageType storageType);
 }

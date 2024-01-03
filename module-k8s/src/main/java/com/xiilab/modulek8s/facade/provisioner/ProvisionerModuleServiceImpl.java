@@ -26,4 +26,9 @@ public class ProvisionerModuleServiceImpl implements ProvisionerModuleService {
 	public void installProvisioner(StorageType storageType) {
 		provisionerService.installProvisioner(storageType);
 	}
+
+	@Override
+	public void unInstallProvisioner(StorageType storageType) {
+		provisionerService.unInstallProvisioner(storageType);
+	}
 }

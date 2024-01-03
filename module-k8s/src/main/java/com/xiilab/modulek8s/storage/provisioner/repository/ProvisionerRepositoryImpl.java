@@ -121,4 +121,14 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 			}
 		}
 	}
+
+	@Override
+	public void unInstallProvisioner(StorageType storageType) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
+				HelmRelease.class);
+			helmClient.inNamespace("csi").withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
+				.delete();
+		}
+	}
 }

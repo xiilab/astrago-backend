@@ -22,4 +22,8 @@ public class ProvisionerService {
 	public void installProvisioner(StorageType storageType) {
 		provisionerRepository.installProvisioner(storageType);
 	}
+
+	public void unInstallProvisioner(StorageType storageType) {
+		provisionerRepository.unInstallProvisioner(storageType);
+	}
 }

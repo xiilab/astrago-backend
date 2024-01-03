@@ -516,6 +516,16 @@
 // 		}
 // 	}
 //
+// 	@Test
+// 	void unInstallCSI(){
+// 		try (final KubernetesClient client = k8sAdapter.configServer()) {
+// 			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
+// 				HelmRelease.class);
+// 			helmClient.inNamespace("csi").withLabel(LabelField.STORAGE_TYPE.getField(), "NFS")
+// 				.delete();
+// 		}
+// 	}
+//
 // 	private boolean checkUsedVolume(String volumeMetaName, KubernetesClient client) {
 // 		List<Job> jobsInUseVolume = getJobsInUseVolume(volumeMetaName, client);
 // 		List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeMetaName, client);

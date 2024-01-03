@@ -4,12 +4,15 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.servercore.provisioner.dto.InstallProvisioner;
 import com.xiilab.servercore.provisioner.service.ProvisionerFacadeService;
@@ -32,6 +35,12 @@ public class ProvisionerController {
 	@PostMapping("/provisioners")
 	public ResponseEntity<Void> installProvisioner(@RequestBody InstallProvisioner installProvisioner){
 		provisionerFacadeService.installProvisioner(installProvisioner);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@DeleteMapping("/provisioners/types/{type}")
+	public ResponseEntity<Void> unInstallProvisioner(@PathVariable("type") StorageType storageType){
+		provisionerFacadeService.unInstallProvisioner(storageType);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }
