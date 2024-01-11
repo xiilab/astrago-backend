@@ -38,6 +38,9 @@ bin/
 ### VS Code ###
 .vscode/
 
+### swaggerUI + restDocs
+server-core/src/main/resources/static/
+
 ### Mac OS ###
 .DS_Store
 /.idea/sonarlint/issuestore/0/1/01d5e5e80e2910c4cf2f2364cc2eb717cb8bc117

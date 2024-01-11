@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: /astrago
 spring:
   servlet:
     multipart:
@@ -13,7 +16,7 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
   datasource:
-    url: jdbc:mariadb://localhost:3306/astrago
+    url: jdbc:mariadb://localhost:33066/astrago
     username: root
     password: root
     hikari:
@@ -22,7 +25,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:

@@ -22,7 +22,6 @@ import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
 import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 import com.xiilab.servercore.volume.service.VolumeFacadeService;
 
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,7 +37,6 @@ public class VolumeController {
 	 * @return
 	 */
 	@PostMapping("")
-	@Operation(summary = "create Volume")
 	public ResponseEntity<Object> createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
 		UserInfoDTO userInfoDTO){
 		volumeFacadeService.createVolume(requestDTO, userInfoDTO);
@@ -52,7 +50,6 @@ public class VolumeController {
 	 * @return
 	 */
 	@GetMapping("")
-	@Operation(summary = "find Volumes")
 	public ResponseEntity<List<PageVolumeResDTO>> findVolumes(@ModelAttribute SearchCondition searchCondition){
 		List<PageVolumeResDTO> volumes = volumeFacadeService.findVolumes(searchCondition);
 		return new ResponseEntity<>(volumes, HttpStatus.OK);
@@ -65,7 +62,6 @@ public class VolumeController {
 	 * @return
 	 */
 	@GetMapping("/{volumeMetaName}")
-	@Operation(summary = "find Volume")
 	public ResponseEntity<VolumeWithStorageResDTO> findVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
 		VolumeWithStorageResDTO volume = volumeFacadeService.findVolumeByMetaName(volumeMetaName);
 		return new ResponseEntity<>(volume, HttpStatus.OK);
@@ -77,7 +73,6 @@ public class VolumeController {
 	 * @return
 	 */
 	@DeleteMapping("/{volumeMetaName}")
-	@Operation(summary = "delete Volume")
 	public ResponseEntity<Object> deleteVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
 		volumeFacadeService.deleteVolumeByMetaName(volumeMetaName);
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -91,7 +86,6 @@ public class VolumeController {
 	 * @return
 	 */
 	@PutMapping("/{volumeMetaName}")
-	@Operation(summary = "modify Volume")
 	public ResponseEntity<Object> modifyVolume(@PathVariable("volumeMetaName") String volumeMetaName,
 		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO){
 		volumeFacadeService.modifyVolume(modifyVolumeReqDTO, volumeMetaName);

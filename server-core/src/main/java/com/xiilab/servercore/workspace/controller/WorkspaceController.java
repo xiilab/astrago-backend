@@ -27,7 +27,6 @@ import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.servercore.workspace.dto.WorkspaceTotalDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -37,26 +36,22 @@ public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
 
 	@PostMapping("")
-	@Operation(summary = "create workspace")
 	public ResponseEntity<HttpStatus> createWorkspace(@RequestBody WorkspaceApplicationForm workspaceApplicationForm) {
 		workspaceService.createWorkspace(workspaceApplicationForm);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/{name}")
-	@Operation(summary = "get workspace info by name")
 	public ResponseEntity<WorkspaceTotalDTO> getWorkspaceInfo(@PathVariable(name = "name") String name) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceInfoByName(name));
 	}
 
 	@GetMapping("")
-	@Operation(summary = "get workspace list")
 	public ResponseEntity<List<WorkspaceDTO.ResponseDTO>> getWorkspaceList(UserInfoDTO userInfoDTO) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceList(userInfoDTO));
 	}
 
 	@DeleteMapping("/{name}")
-	@Operation(summary = "delete workspace by name")
 	public ResponseEntity<HttpStatus> deleteWorkspaceByName(@PathVariable(name = "name") String name) {
 		workspaceService.deleteWorkspaceByName(name);
 		return ResponseEntity.ok().build();
@@ -69,7 +64,6 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@GetMapping("/{workspaceMetaName}/volumes/storages/{storageMetaName}")
-	@Operation(summary = "find Volumes By Workspace MetaName")
 	public ResponseEntity<List<VolumeResDTO>> findVolumesByWorkspaceMetaNameAndStorageMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("storageMetaName") String storageMetaName
@@ -89,7 +83,6 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@GetMapping("/{workspaceMetaName}/volumes/{volumeMetaName}/workloads")
-	@Operation(summary = "find Volume With Workloads By MetaName")
 	public ResponseEntity<VolumeWithWorkloadsResDTO> findVolumeWithWorkloadsByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName) {
@@ -107,7 +100,6 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@GetMapping("/{workspaceMetaName}/volumes")
-	@Operation(summary = "find Volumes With Pagination")
 	public ResponseEntity<PageResDTO> findVolumesWithPagination(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		Pageable pageable,
@@ -127,7 +119,6 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@PutMapping("/{workspaceMetaName}/volumes/{volumeMetaName}")
-	@Operation(summary = "modify Volume By MetaName")
 	public ResponseEntity<Object> modifyVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName,
@@ -149,7 +140,6 @@ public class WorkspaceController {
 	 * @return
 	 */
 	@DeleteMapping("/{workspaceMetaName}/volumes/{volumeMetaName}")
-	@Operation(summary = "delete Volume By MetaName")
 	public ResponseEntity<Object> deleteVolumeByMetaName(
 		@PathVariable("workspaceMetaName") String workspaceMetaName,
 		@PathVariable("volumeMetaName") String volumeMetaName,

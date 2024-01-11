@@ -26,14 +26,14 @@ public class WebSecurityConfig {
         http.cors(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.GET,"/docs/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/core/user").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/core/group").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/core/user/join").permitAll()
                 .requestMatchers(HttpMethod.GET,"/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated());
 
-        http.oauth2ResourceServer((oauth2) -> oauth2
+        http.oauth2ResourceServer(oauth2 -> oauth2
             .jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
         http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS));

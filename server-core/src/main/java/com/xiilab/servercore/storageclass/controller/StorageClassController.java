@@ -21,7 +21,7 @@ import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.service.StorageClassFacadeService;
 
-import io.swagger.v3.oas.annotations.Operation;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,7 +38,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@PostMapping("")
-	@Operation(summary = "create StorageClass")
+	// @Operation(summary = "create StorageClass")
 	public ResponseEntity<Object> createStorageClass(@RequestBody CreateStorageClassReqDTO createStorageClassReqDTO,
 		UserInfoDTO userInfoDTO) {
 		storageClassFacadeService.createStorageClass(createStorageClassReqDTO, userInfoDTO);
@@ -52,7 +52,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("/connection-test")
-	@Operation(summary = "connection test")
+	// @Operation(summary = "connection test")
 	public ResponseEntity<Boolean> storageClassConnectionTest(@RequestParam("storageType") String storageType) {
 		boolean connectionCheck = storageClassFacadeService.storageClassConnectionTest(storageType);
 		return new ResponseEntity<>(connectionCheck, HttpStatus.OK);
@@ -65,7 +65,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("/{storageClassMetaName}")
-	@Operation(summary = "find StorageClass")
+	// @Operation(summary = "find StorageClass")
 	public ResponseEntity<StorageClassResDTO> findStorageClassByMetaName(
 		@PathVariable("storageClassMetaName") String storageClassMetaName) {
 		StorageClassResDTO storageClass = storageClassFacadeService.findStorageClassByMetaName(
@@ -81,7 +81,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@PutMapping("/{storageClassMetaName}")
-	@Operation(summary = "modify StorageClass")
+	// @Operation(summary = "modify StorageClass")
 	public ResponseEntity<Object> modifyStorageClass(@PathVariable("storageClassMetaName") String storageClassMetaName,
 		@RequestBody ModifyStorageClassReqDTO modifyStorageClassReqDTO) {
 		storageClassFacadeService.modifyStorageClass(modifyStorageClassReqDTO, storageClassMetaName);
@@ -95,7 +95,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@DeleteMapping("/{storageClassMetaName}")
-	@Operation(summary = "delete StorageClass")
+	// @Operation(summary = "delete StorageClass")
 	public ResponseEntity<Object> deleteStorageClass(
 		@PathVariable("storageClassMetaName") String storageClassMetaName) {
 		storageClassFacadeService.deleteStorageClass(storageClassMetaName);
@@ -108,14 +108,14 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("")
-	@Operation(summary = "find StorageClasses")
+	// @Operation(summary = "find StorageClasses")
 	public ResponseEntity<List<StorageClassResDTO>> findStorageClasses() {
 		List<StorageClassResDTO> storageClasses = storageClassFacadeService.findStorageClasses();
 		return new ResponseEntity<>(storageClasses, HttpStatus.OK);
 	}
 
 	@GetMapping("/storageClasses/volumes")
-	@Operation(summary = "find StorageClasses And Volumes")
+	// @Operation(summary = "find StorageClasses And Volumes")
 	public ResponseEntity<List<StorageClassWithVolumesResDTO>> findStorageClassesWithVolumes(){
 		List<StorageClassWithVolumesResDTO> storages = storageClassFacadeService.findStorageClassesWithVolumes();
 		return new ResponseEntity<>(storages, HttpStatus.OK);
