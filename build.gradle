@@ -1,9 +1,3 @@
-buildscript{
-    repositories {
-        mavenCentral()
-    }
-}
-
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.0'
@@ -46,10 +40,14 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter'
     }
 
+    if (name.contains("module")) {
+        bootJar { enabled = false }
+        jar { enabled = true }
+    }
+
     test {
         useJUnitPlatform()
     }
 }
 
 bootJar { enabled = false }
-jar { enabled = true }

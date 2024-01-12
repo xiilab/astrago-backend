@@ -21,9 +21,11 @@ import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.service.StorageClassFacadeService;
 
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "StorageClassController", description = "스토리지 클래스 테스트용 API")
 @RestController
 @RequestMapping("/api/v1/core/storageClasses")
 @RequiredArgsConstructor
@@ -38,7 +40,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@PostMapping("")
-	// @Operation(summary = "create StorageClass")
+	@Operation(summary = "스토리지 클래스 생성")
 	public ResponseEntity<Object> createStorageClass(@RequestBody CreateStorageClassReqDTO createStorageClassReqDTO,
 		UserInfoDTO userInfoDTO) {
 		storageClassFacadeService.createStorageClass(createStorageClassReqDTO, userInfoDTO);
@@ -52,7 +54,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("/connection-test")
-	// @Operation(summary = "connection test")
+	@Operation(summary = "스토리지클래스 연결 테스트")
 	public ResponseEntity<Boolean> storageClassConnectionTest(@RequestParam("storageType") String storageType) {
 		boolean connectionCheck = storageClassFacadeService.storageClassConnectionTest(storageType);
 		return new ResponseEntity<>(connectionCheck, HttpStatus.OK);
@@ -65,11 +67,10 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("/{storageClassMetaName}")
-	// @Operation(summary = "find StorageClass")
+	@Operation(summary = "스토리지 클래스 메타명으로 스토리지 조회")
 	public ResponseEntity<StorageClassResDTO> findStorageClassByMetaName(
 		@PathVariable("storageClassMetaName") String storageClassMetaName) {
-		StorageClassResDTO storageClass = storageClassFacadeService.findStorageClassByMetaName(
-			storageClassMetaName);
+		StorageClassResDTO storageClass = storageClassFacadeService.findStorageClassByMetaName(storageClassMetaName);
 		return new ResponseEntity<>(storageClass, HttpStatus.OK);
 	}
 
@@ -81,7 +82,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@PutMapping("/{storageClassMetaName}")
-	// @Operation(summary = "modify StorageClass")
+	@Operation(summary = "스토리지 메타명으로 스토리지 수정")
 	public ResponseEntity<Object> modifyStorageClass(@PathVariable("storageClassMetaName") String storageClassMetaName,
 		@RequestBody ModifyStorageClassReqDTO modifyStorageClassReqDTO) {
 		storageClassFacadeService.modifyStorageClass(modifyStorageClassReqDTO, storageClassMetaName);
@@ -95,7 +96,7 @@ public class StorageClassController {
 	 * @return
 	 */
 	@DeleteMapping("/{storageClassMetaName}")
-	// @Operation(summary = "delete StorageClass")
+	@Operation(summary = "스토리지 클래스 메타명으로 스토리지 삭제")
 	public ResponseEntity<Object> deleteStorageClass(
 		@PathVariable("storageClassMetaName") String storageClassMetaName) {
 		storageClassFacadeService.deleteStorageClass(storageClassMetaName);
@@ -108,15 +109,15 @@ public class StorageClassController {
 	 * @return
 	 */
 	@GetMapping("")
-	// @Operation(summary = "find StorageClasses")
+	@Operation(summary = "스토리지 클래스 목록 조회")
 	public ResponseEntity<List<StorageClassResDTO>> findStorageClasses() {
 		List<StorageClassResDTO> storageClasses = storageClassFacadeService.findStorageClasses();
 		return new ResponseEntity<>(storageClasses, HttpStatus.OK);
 	}
 
 	@GetMapping("/storageClasses/volumes")
-	// @Operation(summary = "find StorageClasses And Volumes")
-	public ResponseEntity<List<StorageClassWithVolumesResDTO>> findStorageClassesWithVolumes(){
+	@Operation(summary = "스토리지 클래스와 볼륨 조회")
+	public ResponseEntity<List<StorageClassWithVolumesResDTO>> findStorageClassesWithVolumes() {
 		List<StorageClassWithVolumesResDTO> storages = storageClassFacadeService.findStorageClassesWithVolumes();
 		return new ResponseEntity<>(storages, HttpStatus.OK);
 	}

@@ -10,6 +10,7 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -24,6 +25,7 @@ public class WorkloadController {
 	 * @return
 	 */
 	@PostMapping("/batch")
+	@Operation(summary = "배치 잡 생성")
 	public ResponseEntity<Void> createBatchJobWorkload(@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
 		UserInfoDTO userInfoDTO) {
 		createWorkloadJobReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
@@ -37,6 +39,7 @@ public class WorkloadController {
 	 * @return
 	 */
 	@PostMapping("/interactive")
+	@Operation(summary = "인터렉티브 잡 생성")
 	public ResponseEntity<Void> createInteractiveJobWorkload(@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
 		UserInfoDTO userInfoDTO) {
 		createWorkloadJobReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());

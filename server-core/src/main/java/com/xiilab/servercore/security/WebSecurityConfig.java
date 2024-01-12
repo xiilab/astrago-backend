@@ -16,28 +16,28 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    public static final String ADMIN = "admin";
-    public static final String USER = "user";
-    private final JwtAuthConverter jwtAuthConverter;
+	public static final String ADMIN = "admin";
+	public static final String USER = "user";
+	private final JwtAuthConverter jwtAuthConverter;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.cors(AbstractHttpConfigurer::disable);
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http.csrf(AbstractHttpConfigurer::disable);
+		http.cors(AbstractHttpConfigurer::disable);
 
-        http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.GET,"/api-docs/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/core/user").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/core/group").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/core/user/join").permitAll()
-                .requestMatchers(HttpMethod.GET,"/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .anyRequest().authenticated());
+		http.authorizeHttpRequests(authorize -> authorize
+			.requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/v1/core/user").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/v1/core/group").permitAll()
+			.requestMatchers(HttpMethod.POST, "/api/v1/core/user/join").permitAll()
+			.requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+			.anyRequest().authenticated());
 
-        http.oauth2ResourceServer(oauth2 -> oauth2
-            .jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
-        http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		http.oauth2ResourceServer(oauth2 -> oauth2
+			.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
+		http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        return http.build();
-    }
+		return http.build();
+	}
 }

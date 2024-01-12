@@ -17,6 +17,7 @@ import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.servercore.provisioner.dto.InstallProvisioner;
 import com.xiilab.servercore.provisioner.service.ProvisionerFacadeService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,21 +26,23 @@ import lombok.RequiredArgsConstructor;
 public class ProvisionerController {
 	private final ProvisionerFacadeService provisionerFacadeService;
 
-
 	@GetMapping("/provisioners")
-	public ResponseEntity<List<ProvisionerResDTO>> findProvisioners(){
+	@Operation(summary = "프로비저너 조회")
+	public ResponseEntity<List<ProvisionerResDTO>> findProvisioners() {
 		List<ProvisionerResDTO> provisioners = provisionerFacadeService.findProvisioners();
 		return new ResponseEntity<>(provisioners, HttpStatus.OK);
 	}
 
 	@PostMapping("/provisioners")
-	public ResponseEntity<Void> installProvisioner(@RequestBody InstallProvisioner installProvisioner){
+	@Operation(summary = "프로비저너 설치")
+	public ResponseEntity<Void> installProvisioner(@RequestBody InstallProvisioner installProvisioner) {
 		provisionerFacadeService.installProvisioner(installProvisioner);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/provisioners/types/{type}")
-	public ResponseEntity<Void> unInstallProvisioner(@PathVariable("type") StorageType storageType){
+	@Operation(summary = "프로비저너 제거")
+	public ResponseEntity<Void> unInstallProvisioner(@PathVariable("type") StorageType storageType) {
 		provisionerFacadeService.unInstallProvisioner(storageType);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
