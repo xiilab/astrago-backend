@@ -45,7 +45,7 @@ subprojects {
         jar { enabled = true }
     }
 
-    test {
+    tasks.named('test') {
         useJUnitPlatform()
     }
 }

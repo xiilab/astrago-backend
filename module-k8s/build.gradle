@@ -6,4 +6,5 @@ dependencies {
     implementation 'io.fabric8:kubernetes-client:6.9.2'
     // K8s Test Mock
     implementation group: 'io.fabric8', name: 'openshift-server-mock', version: '5.12.4'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
 }
