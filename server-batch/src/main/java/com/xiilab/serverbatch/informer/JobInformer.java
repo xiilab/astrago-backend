@@ -45,6 +45,7 @@ public class JobInformer {
 
 			@Override
 			public void onUpdate(Job job1, Job job2) {
+				log.info(job2.toString());
 			}
 
 			@Override

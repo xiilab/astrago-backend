@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.common.utils;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +27,7 @@ public class K8sInfoPicker {
 		try {
 			List<EnvVar> env = container.getEnv();
 			Map<String, String> map = new HashMap<>();
-			env.forEach(envVar -> map.put(envVar.getName(),envVar.getValue()));
+			env.forEach(envVar -> map.put(envVar.getName(), envVar.getValue()));
 			return map;
 		} catch (NullPointerException e) {
 			log.debug("{} container env 출력 중 npe", container.getName());
@@ -38,7 +40,7 @@ public class K8sInfoPicker {
 			if (isCreatedByAstra(hasMetadata)) {
 				return getMetadataFromAstraResource(hasMetadata);
 			} else {
-				return null;
+				return getMetadataFromNormalResource(hasMetadata);
 			}
 		} catch (NullPointerException e) {
 			return null;
@@ -58,7 +60,6 @@ public class K8sInfoPicker {
 	private static K8SResourceMetadataDTO getMetadataFromAstraResource(HasMetadata hasMetadata) {
 		try {
 			ObjectMeta metadata = hasMetadata.getMetadata();
-			Map<String, String> labels = metadata.getLabels();
 			Map<String, String> annotations = metadata.getAnnotations();
 			return K8SResourceMetadataDTO.builder()
 				.name(annotations.get("name"))
@@ -71,6 +72,35 @@ public class K8sInfoPicker {
 				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
 				.build();
 
+		} catch (NullPointerException e) {
+			return null;
+		}
+	}
+
+	private static K8SResourceMetadataDTO getMetadataFromNormalResource(HasMetadata hasMetadata) {
+		try {
+			String kind = hasMetadata.getKind();
+			ObjectMeta metadata = hasMetadata.getMetadata();
+			K8SResourceMetadataDTO.K8SResourceMetadataDTOBuilder metadataBuilder = K8SResourceMetadataDTO.builder();
+
+			if (kind.equals("Job")) {
+				Job job = (Job)hasMetadata;
+				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
+
+				metadataBuilder =
+					K8SResourceMetadataDTO.builder()
+						.imgName(container.getImage().split(":")[0])
+						.imgTag(container.getImage().split(":")[1]);
+			}
+
+			return metadataBuilder
+				.name(metadata.getName())
+				.description(null)
+				.resourceName(metadata.getName())
+				.creator(null)
+				.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
+				.deletedAt(LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
+				.build();
 		} catch (NullPointerException e) {
 			return null;
 		}

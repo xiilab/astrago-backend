@@ -23,9 +23,4 @@ public class WorkloadDTO {
 	protected ImageDTO image;
 	protected Map<String,String> envs;
 	protected List<PortDTO> ports;
-
-	@Getter
-	@SuperBuilder
-	public class JobDTO extends WorkloadDTO {
-	}
 }
