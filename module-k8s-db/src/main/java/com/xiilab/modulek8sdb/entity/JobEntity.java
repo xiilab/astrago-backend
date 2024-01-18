@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 public class JobEntity extends WorkloadEntity {
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
-	JobEntity(String name, String description, String resourceName, int cpuReq, int gpuReq, int memReq,
+	JobEntity(String name, String description, String resourceName, Integer cpuReq, Integer gpuReq, Integer memReq,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creator, String creatorId, Map<String, String> envs,
 		List<String> volumes, List<PortDTO> ports, WorkloadType workloadType) {
 		this.name = name;

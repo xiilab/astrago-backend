@@ -54,12 +54,20 @@ public class JobInformer {
 
 				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getMetadataFromResource(job);
-				jobHistoryRepo.save(JobEntity.jobBuilder()
-					.name(metadataFromResource.getName())
-					.description(metadataFromResource.getDescription())
-					.envs(getEnvFromContainer(container))
-					.workloadType(WorkloadType.BATCH)
-					.build());
+				if (metadataFromResource != null) {
+					jobHistoryRepo.save(JobEntity.jobBuilder()
+						.name(metadataFromResource.getName())
+						.description(metadataFromResource.getDescription())
+						.envs(getEnvFromContainer(container))
+						.cpuReq(metadataFromResource.getCpuReq())
+						.memReq(metadataFromResource.getMemReq())
+						.gpuReq(metadataFromResource.getGpuReq())
+						.resourceName(metadataFromResource.getResourceName())
+						.createdAt(metadataFromResource.getCreatedAt())
+						.deletedAt(metadataFromResource.getDeletedAt())
+						.workloadType(WorkloadType.BATCH)
+						.build());
+				}
 			}
 		});
 
