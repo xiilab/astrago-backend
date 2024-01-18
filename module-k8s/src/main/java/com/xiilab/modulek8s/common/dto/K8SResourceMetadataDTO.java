@@ -15,9 +15,9 @@ public class K8SResourceMetadataDTO {
 	private LocalDateTime deletedAt;
 	private String creator;
 	private String creatorId;
-	private int cpuReq;
-	private int gpuReq;
-	private int memReq;
+	private Integer cpuReq;
+	private Integer gpuReq;
+	private Integer memReq;
 	private String imgName;
 	private String imgTag;
 }
