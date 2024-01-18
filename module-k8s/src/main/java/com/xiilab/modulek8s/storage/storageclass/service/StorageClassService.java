@@ -8,6 +8,7 @@ import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.modulek8s.storage.storageclass.repository.StorageClassRepository;
 
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StorageClassService {
 	private final StorageClassRepository storageClassRepository;
-	public StorageClass findStorageClassByType(StorageType storageType) {
+	public List<StorageClass> findStorageClassByType(StorageType storageType) {
 		return storageClassRepository.findStorageClassByType(storageType);
 	}
 
@@ -45,5 +46,9 @@ public class StorageClassService {
 
 	public List<StorageClassResDTO> findStorageClasses() {
 		return storageClassRepository.findStorageClasses();
+	}
+
+	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
+		return storageClassRepository.findStorageClassesWithVolumes();
 	}
 }

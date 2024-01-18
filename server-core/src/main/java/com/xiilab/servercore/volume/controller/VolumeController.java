@@ -23,10 +23,12 @@ import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 import com.xiilab.servercore.volume.service.VolumeFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "VolumeController", description = "볼륨 테스트용 API")
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/core/volumes")
 @RequiredArgsConstructor
 public class VolumeController {
 	private final VolumeFacadeService volumeFacadeService;
@@ -37,10 +39,10 @@ public class VolumeController {
 	 * @param requestDTO
 	 * @return
 	 */
-	@PostMapping("/volumes")
-	@Operation(summary = "create Volume")
+	@PostMapping("")
+	@Operation(summary = "볼륨 생성")
 	public ResponseEntity<Object> createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
-		UserInfoDTO userInfoDTO){
+		UserInfoDTO userInfoDTO) {
 		volumeFacadeService.createVolume(requestDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -51,9 +53,9 @@ public class VolumeController {
 	 * @param searchCondition
 	 * @return
 	 */
-	@GetMapping("/volumes")
-	@Operation(summary = "find Volumes")
-	public ResponseEntity<List<PageVolumeResDTO>> findVolumes(@ModelAttribute SearchCondition searchCondition){
+	@GetMapping("")
+	@Operation(summary = "볼륨 목록 조회")
+	public ResponseEntity<List<PageVolumeResDTO>> findVolumes(@ModelAttribute SearchCondition searchCondition) {
 		List<PageVolumeResDTO> volumes = volumeFacadeService.findVolumes(searchCondition);
 		return new ResponseEntity<>(volumes, HttpStatus.OK);
 	}
@@ -64,21 +66,23 @@ public class VolumeController {
 	 * @param volumeMetaName
 	 * @return
 	 */
-	@GetMapping("/volumes/{volumeMetaName}")
-	@Operation(summary = "find Volume")
-	public ResponseEntity<VolumeWithStorageResDTO> findVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
+	@GetMapping("/{volumeMetaName}")
+	@Operation(summary = "볼륨 메타명으로 볼륨 조회")
+	public ResponseEntity<VolumeWithStorageResDTO> findVolumeByMetaName(
+		@PathVariable("volumeMetaName") String volumeMetaName) {
 		VolumeWithStorageResDTO volume = volumeFacadeService.findVolumeByMetaName(volumeMetaName);
 		return new ResponseEntity<>(volume, HttpStatus.OK);
 	}
 
 	/**
 	 * 볼륨 삭제
+	 *
 	 * @param volumeMetaName
 	 * @return
 	 */
-	@DeleteMapping("/volumes/{volumeMetaName}")
-	@Operation(summary = "delete Volume")
-	public ResponseEntity<Object> deleteVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName){
+	@DeleteMapping("/{volumeMetaName}")
+	@Operation(summary = "볼륨 메타명으로 볼륨 삭제")
+	public ResponseEntity<Object> deleteVolumeByMetaName(@PathVariable("volumeMetaName") String volumeMetaName) {
 		volumeFacadeService.deleteVolumeByMetaName(volumeMetaName);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -90,10 +94,10 @@ public class VolumeController {
 	 * @param modifyVolumeReqDTO
 	 * @return
 	 */
-	@PutMapping("/volumes/{volumeMetaName}")
-	@Operation(summary = "modify Volume")
+	@PutMapping("/{volumeMetaName}")
+	@Operation(summary = "볼륨 메타명으로 볼륨 수정")
 	public ResponseEntity<Object> modifyVolume(@PathVariable("volumeMetaName") String volumeMetaName,
-		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO){
+		@RequestBody ModifyVolumeReqDTO modifyVolumeReqDTO) {
 		volumeFacadeService.modifyVolume(modifyVolumeReqDTO, volumeMetaName);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

@@ -1,17 +1,20 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import org.springframework.stereotype.Repository;
+
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
-import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8s.workload.vo.JobVO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.vo.BatchJobVO;
+import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,15 +23,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
+
 	@Override
-	public JobResDTO createBatchJobWorkload(JobVO jobVO) {
-		Job resource = (Job)createResource(jobVO.createResource());
-		return new JobResDTO(resource);
+	public ModuleBatchJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
+		Job resource = (Job)createResource(batchJobVO.createResource());
+		return new ModuleBatchJobResDTO(resource);
 	}
 
 	@Override
-	public JobResDTO createInteractiveJobWorkload(JobVO jobVO) {
-		return null;
+	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
+		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
+		return new ModuleInteractiveJobResDTO(resource);
 	}
 
     @Override
@@ -107,13 +112,6 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
             return kubernetesClient.apps().deployments().inNamespace(workSpaceName).list();
         }
     }
-
-//    private Deployment updateInteractiveJob(JobResDTO jobReqDTO) {
-//        try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-//            return kubernetesClient.apps().deployments().inNamespace(jobReqDTO.getWorkspace()).withName(jobReqDTO.getName())
-//                    .edit(jobReqDTO::updateResource);
-//        }
-//    }
 
     private String deleteJob(String workSpaceName, String workloadName) {
         try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {

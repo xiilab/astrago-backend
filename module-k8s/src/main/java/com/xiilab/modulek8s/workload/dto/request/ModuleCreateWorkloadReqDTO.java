@@ -1,0 +1,101 @@
+package com.xiilab.modulek8s.workload.dto.request;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.util.CollectionUtils;
+
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
+import com.xiilab.modulek8s.workload.enums.ImageType;
+import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulek8s.workload.vo.BatchJobVO;
+import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
+
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@SuperBuilder
+public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
+	private String workspace;    // 워크스페이스명
+	private ImageType imageType;    // 이미지 타입(빌트인, Dockerhub)
+	private ModuleImageReqDTO image;    // 이미지명
+	private List<ModuleCodeReqDTO> codes;    // import할 코드 목록
+	private List<ModuleVolumeReqDTO> volumes;    // 마운트할 볼륨 목록 (볼륨명, 마운트할 경로)
+	private List<ModulePortReqDTO> ports;    // 노드 포토 목록 (포트명, 포트번호)
+	private List<ModuleEnvReqDTO> envs;	// 환경변수 목록 (변수명, 값)
+	private String command;	// 실행할 명령어
+	private WorkloadType workloadType;	// 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
+	private VolumeSelectionType volumeSelectionType;
+	private int gpuRequest;
+	private float cpuRequest;
+	private float memRequest;
+
+
+	public BatchJobVO toBatchJobVO() {
+		if (CollectionUtils.isEmpty(this.codes)) {
+			this.codes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.volumes)) {
+			this.volumes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.ports)) {
+			this.ports = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.envs)) {
+			this.envs = new ArrayList<>();
+		}
+
+		return BatchJobVO.builder()
+			.workspace(this.workspace)
+			.name(this.getName())
+			.description(this.getDescription())
+			.creatorName(this.getCreatorName())
+			.creator(this.getCreator())
+			.image(this.image.toJobImageVO())
+			.codes(this.codes.stream().map(ModuleCodeReqDTO::toJobCodeVO).toList())
+			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
+			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
+			.command(this.command)
+			.workloadType(this.workloadType)
+			.cpuRequest(this.cpuRequest)
+			.gpuRequest(this.gpuRequest)
+			.memRequest(this.memRequest)
+			.build();
+	}
+
+	public InteractiveJobVO toInteractiveJobVO() {
+		if (CollectionUtils.isEmpty(this.codes)) {
+			this.codes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.volumes)) {
+			this.volumes = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.ports)) {
+			this.ports = new ArrayList<>();
+		}
+		if (CollectionUtils.isEmpty(this.envs)) {
+			this.envs = new ArrayList<>();
+		}
+
+		return InteractiveJobVO.builder()
+			.workspace(this.workspace)
+			.name(this.getName())
+			.description(this.getDescription())
+			.creatorName(this.getCreatorName())
+			.creator(this.getCreator())
+			.image(this.image.toJobImageVO())
+			.codes(this.codes.stream().map(ModuleCodeReqDTO::toJobCodeVO).toList())
+			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
+			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
+			.command(this.command)
+			.workloadType(this.workloadType)
+			.cpuRequest(this.cpuRequest)
+			.gpuRequest(this.gpuRequest)
+			.memRequest(this.memRequest)
+			.build();
+	}
+}

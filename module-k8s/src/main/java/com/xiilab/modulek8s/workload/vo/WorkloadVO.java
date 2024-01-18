@@ -2,7 +2,6 @@ package com.xiilab.modulek8s.workload.vo;
 
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
-import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import io.fabric8.kubernetes.api.model.*;
 import lombok.Getter;
@@ -18,11 +17,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class WorkloadVO extends K8SResourceReqVO {
 	String workspace;        //워크스페이스
 	WorkloadType workloadType;        // 워크로드 타입
-	String image;        //사용할 image
+	JobImageVO image;        //사용할 image
 	int gpuRequest;        // 워크로드 gpu 요청량
 	float cpuRequest;        // 워크로드 cpu 요청량
 	float memRequest;        // 워크로드 mem 요청량
-	SchedulingType schedulingType;        // 스케줄링 방식
+	//SchedulingType schedulingType;        // 스케줄링 방식
 	List<JobCodeVO> codes;	// code 정의
 	List<JobVolumeVO> volumes;	// volume 정의
 

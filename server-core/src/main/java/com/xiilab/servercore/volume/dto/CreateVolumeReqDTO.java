@@ -29,6 +29,7 @@ public class CreateVolumeReqDTO extends APIBaseReqDTO {
 			.workspaceMetaDataName(workspaceMetaDataName)
 			.build();
 	}
+
 	public void setUserInfo(String creator, String creatorName){
 		this.creator = creator;
 		this.creatorName = creatorName;

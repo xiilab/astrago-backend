@@ -8,11 +8,11 @@ import lombok.Getter;
 public class ModifyStorageClassReqDTO extends APIBaseReqDTO {
 	private String storageClassMetaName;
 
-	public void setStorageClassMetaName(String storageClassMetaName){
+	public void setStorageClassMetaName(String storageClassMetaName) {
 		this.storageClassMetaName = storageClassMetaName;
 	}
 
-	public ModifyStorageClassDTO toModuleDto(){
+	public ModifyStorageClassDTO toModuleDto() {
 		return ModifyStorageClassDTO.builder()
 			.name(getName())
 			.storageClassMetaName(storageClassMetaName)

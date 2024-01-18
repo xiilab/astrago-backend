@@ -13,7 +13,7 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
   datasource:
-    url: jdbc:mariadb://localhost:3306/uyuni
+    url: jdbc:mariadb://localhost:3306/astrago
     username: root
     password: root
     hikari:
@@ -22,7 +22,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
@@ -55,3 +55,5 @@ admin:
   password: xiirocks
   init-password: xiirocks
   secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
+
+mig-profile-path: src/main/resources/MigProfile.json

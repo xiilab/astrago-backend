@@ -26,7 +26,7 @@ public class StorageClassResDTO extends K8SResourceResVO {
 		this.storageSavePath = storageSavePath;
 	}
 
-	public static StorageClassResDTO toDTO(StorageClass sc){
+	public static StorageClassResDTO toDTO(StorageClass sc) {
 		Map<String, String> parameters = sc.getParameters();
 		return StorageClassResDTO.builder()
 			.hasMetadata(sc)

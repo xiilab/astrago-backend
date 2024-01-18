@@ -1,4 +1,4 @@
-rootProject.name = 'uyuni'
+rootProject.name = 'astrago'
 
 include 'module-k8s'
 include 'module-user'

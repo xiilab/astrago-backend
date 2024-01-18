@@ -1,39 +1,53 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.sonarqube' version '4.0.0.2929'
 }
 
-group = 'org.xiilab'
-version = '1.0-SNAPSHOT'
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testImplementation platform('org.junit:junit-bom:5.9.1')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-}
-
-subprojects {
-    group 'com.xiilab'
-    version '1.0'
-
-    apply plugin: 'java'
-    apply plugin: 'java-library'
-    apply plugin: 'jacoco'
+allprojects {
+    group = 'com.xiilab'
+    version = '0.0.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: "org.sonarqube"
+
+    java {
+        sourceCompatibility = '17'
+    }
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
     }
 
     dependencies {
         compileOnly 'org.projectlombok:lombok:1.18.30'
         annotationProcessor 'org.projectlombok:lombok:1.18.30'
         testCompileOnly 'org.projectlombok:lombok:1.18.30'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+        implementation 'org.springframework.boot:spring-boot-starter'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation platform('org.junit:junit-bom:5.9.1')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+    }
+
+    if (name.contains("module")) {
+        bootJar { enabled = false }
+        jar { enabled = true }
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
     }
 }
 
-test {
-    useJUnitPlatform()
-}
+bootJar { enabled = false }

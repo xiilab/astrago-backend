@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/group")
+@RequestMapping("/api/v1/core/group")
 public class GroupController {
 	private final GroupFacadeService groupFacadeService;
 
@@ -42,7 +42,7 @@ public class GroupController {
 	@PostMapping("/{groupId}/members")
 	@Operation(summary = "그룹 멤버 추가")
 	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId,
-													 @RequestBody List<String> userIdList) {
+		@RequestBody List<String> userIdList) {
 		groupFacadeService.addGroupMember(groupId, userIdList);
 		return ResponseEntity.ok().build();
 	}

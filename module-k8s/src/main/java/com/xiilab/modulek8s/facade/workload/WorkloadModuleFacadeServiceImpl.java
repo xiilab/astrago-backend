@@ -1,73 +1,91 @@
 package com.xiilab.modulek8s.facade.workload;
 
-import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
-import com.xiilab.modulek8s.service.dto.request.CreateServiceDTO;
-import com.xiilab.modulek8s.service.service.ServiceService;
-import com.xiilab.modulek8s.storage.volume.service.VolumeService;
-import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
-import com.xiilab.modulek8s.workload.dto.request.VolumeReqDTO;
-import com.xiilab.modulek8s.workload.dto.response.JobResDTO;
-import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
-import com.xiilab.modulek8s.workload.service.WorkloadService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+import com.xiilab.modulek8s.storage.volume.service.VolumeService;
+import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
+import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
+import com.xiilab.modulek8s.workload.svc.service.SvcService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeService {
-	private final WorkloadService workloadService;
+	private final WorkloadModuleService workloadModuleService;
 	private final VolumeService volumeService;
-	private final ServiceService serviceService;
+	private final SvcService svcService;
 
 	@Override
-	public JobResDTO createBatchJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO) {
+	public ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		// 볼륨 추가
-		addNewVolume(createWorkloadReqDTO);
+		addNewVolume(moduleCreateWorkloadReqDTO);
 
 		// 잡 생성
-		JobResDTO jobResDTO = workloadService.createBatchJobWorkload(createWorkloadReqDTO);
+		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
 
-		CreateServiceDTO createServiceDTO = CreateServiceDTO.CreateWorkloadReqDTOToCreateServiceDto(
-			createWorkloadReqDTO, jobResDTO.getName());
+		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+			moduleCreateWorkloadReqDTO, moduleBatchJobResDTO.getName());
+
 		// 노드포트 연결
-		serviceService.createService(createServiceDTO);
+		svcService.createNodePortService(createSvcReqDTO);
 
-		return jobResDTO;
+		return moduleBatchJobResDTO;
 	}
 
 	@Override
-	public JobResDTO createInteractiveJobWorkload(CreateWorkloadReqDTO createWorkloadReqDTO) {
-		return null;
+	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+		// 볼륨 추가
+		addNewVolume(moduleCreateWorkloadReqDTO);
+
+		// 디플로이먼트 생성
+		ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleService.createInteractiveJobWorkload(
+			moduleCreateWorkloadReqDTO);
+
+		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+			moduleCreateWorkloadReqDTO, moduleInteractiveJobResDTO.getName());
+
+		// 노드포트 연결
+		svcService.createNodePortService(createSvcReqDTO);
+
+		return moduleInteractiveJobResDTO;
 	}
 
-	@Override
-	public void deleteBatchHobWorkload(String workSpaceName, String workloadName) {
-		workloadService.deleteBatchJobWorkload(workSpaceName, workloadName);
-		serviceService.deleteService(workSpaceName, workloadName);
-	}
+    @Override
+    public void deleteBatchHobWorkload(String workSpaceName, String workloadName) {
+        WorkloadModuleService.deleteBatchJobWorkload(workSpaceName, workloadName);
+        svcService.deleteService(workSpaceName, workloadName);
+    }
 
-	@Override
-	public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
-		workloadService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
-		serviceService.deleteService(workSpaceName, workloadName);
-	}
+    @Override
+    public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
+        WorkloadModuleService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+        svcService.deleteService(workSpaceName, workloadName);
+    }
 
-	private void addNewVolume(CreateWorkloadReqDTO createWorkloadReqDTO) {
-		List<VolumeReqDTO> volumes = createWorkloadReqDTO.getVolumes();
-		for (VolumeReqDTO volume : volumes) {
+	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+		List<ModuleVolumeReqDTO> volumes = moduleCreateWorkloadReqDTO.getVolumes();
+		for (ModuleVolumeReqDTO volume : volumes) {
 			if (volume.getVolumeSelectionType().equals(VolumeSelectionType.NEW)) {
 				CreateVolumeDTO createVolumeDTO = CreateVolumeDTO.builder()
-						.name(volume.getName())
-					.workspaceMetaDataName(createWorkloadReqDTO.getWorkspace())
-						.storageType(volume.getStorageType())
-					.creator(createWorkloadReqDTO.getCreator())
-					.creatorName(createWorkloadReqDTO.getCreatorName())
-						.requestVolume(volume.getRequestVolume())
-						.storageClassMetaName(volume.getStorageClassMetaName())
+					.name(volume.getName())
+					.workspaceMetaDataName(moduleCreateWorkloadReqDTO.getWorkspace())
+					.storageType(volume.getStorageType())
+					.creator(moduleCreateWorkloadReqDTO.getCreator())
+					.creatorName(moduleCreateWorkloadReqDTO.getCreatorName())
+					.requestVolume(volume.getRequestVolume())
+					.storageClassMetaName(volume.getStorageClassMetaName())
 					.build();
-				volume.setVolumeMetaDataName(createVolume(createVolumeDTO));
+				String volume1 = createVolume(createVolumeDTO);
+				volume.setVolumeMetaDataName(volume1);
 			}
 		}
 	}

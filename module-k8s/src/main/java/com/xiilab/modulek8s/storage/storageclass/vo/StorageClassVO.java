@@ -1,18 +1,24 @@
 package com.xiilab.modulek8s.storage.storageclass.vo;
 
-import com.xiilab.modulek8s.common.enumeration.*;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
+import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.storage.StorageClassBuilder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter
 @SuperBuilder
@@ -22,18 +28,18 @@ public class StorageClassVO extends K8SResourceReqVO {
 	private ReclaimPolicyType reclaimPolicy;
 	private Map<String, String> parameters;
 
-    public static StorageClassVO dtoToVo(CreateStorageClassDTO createStorageClassDTO) {
-        return StorageClassVO.builder()
-                .name(createStorageClassDTO.getName())
-                .description(createStorageClassDTO.getDescription())
-                .storageType(createStorageClassDTO.getStorageType())
-                .provisioner(ProvisionerType.valueOf(createStorageClassDTO.getStorageType().name()))
-                .reclaimPolicy(ReclaimPolicyType.RETAIN)
-                .createdAt(LocalDateTime.now())
-                .creatorName(createStorageClassDTO.getCreatorName())
-                .creator(createStorageClassDTO.getCreator())
-                .build();
-    }
+	public static StorageClassVO dtoToVo(CreateStorageClassDTO createStorageClassDTO) {
+		return StorageClassVO.builder()
+			.name(createStorageClassDTO.getName())
+			.description(createStorageClassDTO.getDescription())
+			.storageType(createStorageClassDTO.getStorageType())
+			.provisioner(ProvisionerType.valueOf(createStorageClassDTO.getStorageType().name()))
+			.reclaimPolicy(ReclaimPolicyType.RETAIN)
+			.createdAt(LocalDateTime.now())
+			.creatorName(createStorageClassDTO.getCreatorName())
+			.creator(createStorageClassDTO.getCreator())
+			.build();
+	}
 
 	@Override
 	public HasMetadata createResource() {
@@ -48,7 +54,7 @@ public class StorageClassVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-                .withName(getUniqueResourceName()) //vo-uuid
+			.withName(getResourceName()) //vo-uuid
 			.addToAnnotations(createAnnotation())
 			.addToLabels(createLabels())
 			.build();
@@ -59,9 +65,10 @@ public class StorageClassVO extends K8SResourceReqVO {
 		return ResourceType.STORAGE;
 	}
 
-	public void setParameters(Map<String, String> parameters){
+	public void setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
 	}
+
 	private HashMap<String, String> createLabels() {
 		HashMap<String, String> labels = new HashMap<>();
 		labels.put(LabelField.CREATOR.getField(), getCreator());

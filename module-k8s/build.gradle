@@ -1,27 +1,10 @@
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.4'
-}
-
-group = 'com.xiilab'
-version = '0.0.1-SNAPSHOT'
-
-java {
-    sourceCompatibility = '17'
-}
-
-repositories {
-    mavenCentral()
-}
+bootJar { enabled = false }
+jar { enabled = true }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'io.fabric8:kubernetes-client:6.9.2'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
+    // K8s Test Mock
+    implementation group: 'io.fabric8', name: 'openshift-server-mock', version: '5.12.4'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
 }

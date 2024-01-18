@@ -6,11 +6,12 @@ import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 
 public interface StorageClassRepository {
-	StorageClass findStorageClassByType(StorageType storageType);
+	List<StorageClass> findStorageClassByType(StorageType storageType);
 
 	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
 
@@ -23,4 +24,6 @@ public interface StorageClassRepository {
 	void deleteStorageClass(String storageClassMetaName);
 
 	List<StorageClassResDTO> findStorageClasses();
+
+	List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes();
 }

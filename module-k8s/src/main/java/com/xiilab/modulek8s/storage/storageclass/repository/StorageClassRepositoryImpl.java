@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.storage.storageclass.repository;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,18 +10,25 @@ import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
+import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
+import com.xiilab.modulek8s.storage.common.crd.NFS.status.History;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
+import com.xiilab.modulek8s.storage.storageclass.dto.response.VolumeDTO;
 import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 
+import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.storage.CSIDriver;
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import io.fabric8.kubernetes.api.model.storage.StorageClassBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
 
@@ -30,8 +38,8 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public StorageClass findStorageClassByType(StorageType storageType) {
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+	public List<StorageClass> findStorageClassByType(StorageType storageType) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<StorageClass> storageClasses = client.storage()
 				.v1()
 				.storageClasses()
@@ -39,10 +47,10 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
 				.list()
 				.getItems();
-			if(storageClasses.size() == 0){
+			if (storageClasses.size() == 0) {
 				throw new RuntimeException("해당 타입의 스토리지 클래스가 존재하지 않습니다.");
 			}
-			return storageClasses.get(0);
+			return storageClasses;
 		}
 	}
 
@@ -62,14 +70,14 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 
 	@Override
 	public boolean storageClassConnectionTest(String storageType) {
-		try(final KubernetesClient client = k8sAdapter.configServer()){
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			ProvisionerType provisionerType = ProvisionerType.valueOf(storageType);
 			CSIDriver csiDriver = client.storage()
 				.v1()
 				.csiDrivers()
 				.withName(provisionerType.getProvisionerName())
 				.get();
-			if(csiDriver != null){
+			if (csiDriver != null) {
 				return true;
 			}
 		}
@@ -83,7 +91,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.v1()
 				.storageClasses()
 				.withName(storageClassMetaName).get();
-			if(storageClass == null || !isControlledByAstra(storageClass.getMetadata().getLabels())){
+			if (storageClass == null || !isControlledByAstra(storageClass.getMetadata().getLabels())) {
 				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
 			}
 			return StorageClassResDTO.toDTO(storageClass);
@@ -98,15 +106,16 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.storageClasses()
 				.withName(modifyStorageClassDTO.getStorageClassMetaName());
 
-			if(storageClassResource.get() == null || !isControlledByAstra(storageClassResource.get().getMetadata().getLabels())){
+			if (storageClassResource.get() == null || !isControlledByAstra(
+				storageClassResource.get().getMetadata().getLabels())) {
 				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
 			}
 			storageClassResource.edit(
-					s -> new StorageClassBuilder(s).editMetadata()
-						.addToAnnotations(AnnotationField.NAME.getField(), modifyStorageClassDTO.getName())
-						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), modifyStorageClassDTO.getDescription())
-						.endMetadata()
-						.build());
+				s -> new StorageClassBuilder(s).editMetadata()
+					.addToAnnotations(AnnotationField.NAME.getField(), modifyStorageClassDTO.getName())
+					.addToAnnotations(AnnotationField.DESCRIPTION.getField(), modifyStorageClassDTO.getDescription())
+					.endMetadata()
+					.build());
 		}
 	}
 
@@ -124,11 +133,59 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 	@Override
 	public List<StorageClassResDTO> findStorageClasses() {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			List<StorageClass> storageClasses = client.storage().v1().storageClasses().withLabel(LabelField.CONTROL_BY.getField(),"astra").list().getItems();
+			List<StorageClass> storageClasses = client.storage()
+				.v1()
+				.storageClasses()
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.list()
+				.getItems();
 			return storageClasses.stream().map(StorageClassResDTO::toDTO).collect(Collectors.toList());
 		}
 	}
 
+	@Override
+	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			List<StorageClassWithVolumesResDTO> storages = client.storage()
+				.v1()
+				.storageClasses()
+				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.list()
+				.getItems()
+				.stream()
+				.map(storageClass -> {
+					String storageClassMetaName = storageClass.getMetadata().getName();
+					List<VolumeDTO> volumeDTOS = client.persistentVolumeClaims()
+						.inAnyNamespace()
+						.withLabel(LabelField.STORAGE_NAME.getField(), storageClassMetaName)
+						.list()
+						.getItems()
+						.stream()
+						.map(VolumeDTO::toDTO)
+						.collect(Collectors.toList());
+
+					String storageType = storageClass.getMetadata().getLabels().get(LabelField.STORAGE_TYPE.getField());
+					MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
+						HelmRelease.class);
+
+					List<History> crdHistory = nfsClient.inAnyNamespace()
+						.withLabel(LabelField.STORAGE_TYPE.getField(), storageType)
+						.list().getItems()
+						.stream()
+						.findFirst()
+						.map(helmRelease -> helmRelease.getStatus().getHistory())
+						.orElse(Collections.emptyList());
+
+					ProvisionerStatus status = crdHistory.stream()
+						.allMatch(history -> history.getStatus().equals("deployed"))
+						? ProvisionerStatus.ENABLE
+						: ProvisionerStatus.DISABLE;
+
+					return StorageClassWithVolumesResDTO.toDTO(storageClass, volumeDTOS, status);
+				}).toList();
+			return storages;
+		}
+	}
 
 	private boolean isControlledByAstra(Map<String, String> map) {
 		return map != null && "astra".equals(map.get("control-by"));

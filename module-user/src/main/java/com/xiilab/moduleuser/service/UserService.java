@@ -13,7 +13,7 @@ public interface UserService {
     UserInfo joinUser(UserReqVO userReqVO);
 
     //사용자 리스트 조회
-    List<UserSummary> getUserList(FindDTO findDTO);
+	List<UserSummary> getUserList(FindDTO findDTO);
 
     //사용자 승인 신청 계정 리스트 조회
     List<UserSummary> getWaitingApprovalUserList();
@@ -22,16 +22,16 @@ public interface UserService {
     UserInfo getUserInfoById(String userId);
 
     //사용자 승인/거절 업데이트
-    void updateUserApprovalYN(List<String> userIdList, boolean approvalYN);
+	void updateUserApprovalYN(List<String> userIdList, boolean approvalYN);
 
     //사용자 활성화/비활성화
-    void updateUserActivationYN(List<String> userIdList, boolean activationYN);
+	void updateUserActivationYN(List<String> userIdList, boolean activationYN);
 
     void resetUserPassWord(String userId);
 
     void updateUserRole(String userId, AuthType authType);
 
-    void joinGroup(String groupId, String userId);
+	void joinGroup(String groupId, String userId);
 
-    void deleteUserById(List<String> userId);
+	void deleteUserById(List<String> userId);
 }

@@ -1,14 +1,17 @@
 package com.xiilab.modulek8s.common.vo;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import java.util.Map;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
 
 /**
  * K8SResourceReq 클래스는 Kubernetes 리소스 요청 생성을 위한 기반 역할을 하는 추상 클래스입니다.
@@ -47,6 +50,7 @@ public abstract class K8SResourceResVO {
 			this.resourceName = hasMetadata.getMetadata().getName();
 			this.name = hasMetadata.getMetadata().getName();
 			this.description = null;
+			this.createdAt = convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 		}
 
 	}
@@ -56,5 +60,12 @@ public abstract class K8SResourceResVO {
 
 	private boolean isControlledByAstra(Map<String, String> map) {
 		return map != null && "astra".equals(map.get("control-by"));
+	}
+
+	private LocalDateTime convertK8sUtcTimeString(String utcTimeStr) {
+		// UTC 문자열을 ZonedDateTime 객체로 변환
+		ZonedDateTime utcTime = ZonedDateTime.parse(utcTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX"));
+		// ZonedDateTime 객체를 LocalDateTime으로 변환
+		return utcTime.toLocalDateTime();
 	}
 }

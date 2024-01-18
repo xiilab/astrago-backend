@@ -21,11 +21,12 @@ import java.util.List;
 public class VolumeService {
 	private final VolumeRepository volumeRepository;
 
-	public String createVolume(CreateVolumeDTO createVolumeDTO){
+	public String createVolume(CreateVolumeDTO createVolumeDTO) {
 		return volumeRepository.createVolume(createVolumeDTO);
 	}
 
-	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName, String storageMetaName){
+	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName,
+		String storageMetaName) {
 		return volumeRepository.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
 	}
 	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
