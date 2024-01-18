@@ -1,11 +1,14 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
+
+import java.util.List;
 
 @Repository
 public interface WorkloadRepository {
@@ -40,7 +43,7 @@ public interface WorkloadRepository {
      * @param workloadName
      * @return
      */
-    WorkloadResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
+    ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
 
     /**
      * batch job workload list 조회
@@ -48,7 +51,7 @@ public interface WorkloadRepository {
      * @param workSpaceName
      * @return
      */
-    List<WorkloadResDTO> getBatchJobWorkloadList(String workSpaceName);
+    List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName);
 
     /**
      * interactive job workload list 조회
@@ -56,15 +59,7 @@ public interface WorkloadRepository {
      * @param workSpaceName
      * @return
      */
-    List<WorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName);
-
-    /**
-     * interactive job workload 수정
-     *
-     * @param workloadReqDTO
-     * @return
-     */
-    WorkloadResDTO updateInteractiveJobWorkload(CreateWorkloadReqDTO workloadReqDTO);
+    List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName);
 
     /**
      * batch job workload 삭제

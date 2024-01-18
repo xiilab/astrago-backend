@@ -1,10 +1,11 @@
 package com.xiilab.servercore.workload.controller;
 
+import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
@@ -12,6 +13,8 @@ import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/core/workloads")
@@ -50,36 +53,37 @@ public class WorkloadController {
 
     @GetMapping("/batch")
     @Operation(summary = "워크로드 상세 조회 - Batch Job 타입")
-    public ResponseEntity<JobResDTO> getBatchJob(@RequestParam("workSpaceName") String workSpaceName,
-                                                 @RequestParam("workloadName") String workloadName) {
-        return new ResponseEntity<>(workloadModuleFacadeService.getBatchJob(workSpaceName, workloadName), HttpStatus.OK);
+    public ResponseEntity<ModuleBatchJobResDTO> getBatchJob(@RequestParam("workSpaceName") String workSpaceName,
+															@RequestParam("workloadName") String workloadName) {
+        return new ResponseEntity<>(workloadModuleFacadeService.getBatchWorkload(workSpaceName, workloadName), HttpStatus.OK);
     }
 
     @GetMapping("/interactive")
     @Operation(summary = "워크로드 상세 조회 - Interactive Job 타입")
-    public ResponseEntity<WorkloadResDTO> getInteractiveJob(@RequestParam("workSpaceName") String workSpaceName,
-                                                            @RequestParam("workloadName") String workloadName) {
-        return new ResponseEntity<>(workloadModuleFacadeService.getInteractiveJob(workSpaceName, workloadName), HttpStatus.OK);
+    public ResponseEntity<ModuleInteractiveJobResDTO> getInteractiveJob(@RequestParam("workSpaceName") String workSpaceName,
+																		@RequestParam("workloadName") String workloadName) {
+        return new ResponseEntity<>(workloadModuleFacadeService.getInteractiveWorkload(workSpaceName, workloadName), HttpStatus.OK);
     }
 
     @GetMapping("/jobList")
     @Operation(summary = "워크로드 리스트 조회")
-    public ResponseEntity<List<WorkloadResDTO>> getWorkloadList(@RequestParam("workSpaceName") String workSpaceName) {
+    public ResponseEntity<List<ModuleWorkloadResDTO>> getWorkloadList(@RequestParam("workSpaceName") String workSpaceName) {
         return new ResponseEntity<>(workloadModuleFacadeService.getWorkloadList(workSpaceName), HttpStatus.OK);
     }
 
     @DeleteMapping("/batch")
     @Operation(summary = "워크로드 삭제 - Batch Job 타입")
-    public ResponseEntity<String> deleteBatchJob(@RequestParam("workSpaceName") String workSpaceName,
+    public ResponseEntity<HttpStatus> deleteBatchJob(@RequestParam("workSpaceName") String workSpaceName,
                                                  @RequestParam("workloadName") String workloadName) {
-        return new ResponseEntity<>(workloadModuleFacadeService.deleteBatchJob(workSpaceName, workloadName), HttpStatus.OK);
+		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/interactive")
     @Operation(summary = "워크로드 삭제 - Interactive Job 타입")
-    public ResponseEntity<String> deleteInteractiveJob(@RequestParam("workSpaceName") String workSpaceName,
+    public ResponseEntity<HttpStatus> deleteInteractiveJob(@RequestParam("workSpaceName") String workSpaceName,
                                                        @RequestParam("workloadName") String workloadName) {
-        return new ResponseEntity<>(workloadModuleFacadeService.deleteInteractiveJob(workSpaceName, workloadName), HttpStatus.OK);
+		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
-
 }

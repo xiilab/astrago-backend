@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
+import java.util.List;
 import java.util.Map;
 
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
@@ -31,7 +32,7 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 		ports = container.getPorts().stream()
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
-		command = container.getCommand().get(0);
+		command = container.getCommand() != null ? null : container.getCommand().get(0);
 	}
 
 	@Override

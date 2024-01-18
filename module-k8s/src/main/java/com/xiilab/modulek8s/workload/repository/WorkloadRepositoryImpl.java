@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -37,39 +38,32 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
     @Override
-    public JobResDTO getBatchJobWorkload(String workSpaceName, String workloadName) {
+    public ModuleBatchJobResDTO getBatchJobWorkload(String workSpaceName, String workloadName) {
         Job job = (Job) getBatchJob(workSpaceName, workloadName);
-        return new JobResDTO(job);
+        return new ModuleBatchJobResDTO(job);
     }
 
 
     @Override
-    public WorkloadResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName) {
-//        Deployment deployment = (Deployment) getInteractiveJob(workSpaceName, workloadName);
-        return null;
-//        return new InteractiveJobResDTO(deployment);
+    public ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName) {
+        Deployment deployment = (Deployment) getInteractiveJob(workSpaceName, workloadName);
+        return new ModuleInteractiveJobResDTO(deployment);
     }
 
     @Override
-    public List<WorkloadResDTO> getBatchJobWorkloadList(String workSpaceName) {
+    public List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName) {
         JobList batchJobList = getBatchJobList(workSpaceName);
         return batchJobList.getItems().stream()
-                .map(JobResDTO::new)
+                .map(ModuleBatchJobResDTO::new)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<WorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
+    public List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
         DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
-//        return interactiveJobList.getItems().stream().map(InteractiveJobResDTO::new).toList();
-        return null;
-    }
-
-    @Override
-    public WorkloadResDTO updateInteractiveJobWorkload(CreateWorkloadReqDTO workloadReqDTO) {
-//        Deployment deployment = updateInteractiveJob(workloadReqDTO);
-//        return new InteractiveJobResDTO(deployment);
-        return null;
+        return interactiveJobList.getItems().stream()
+                .map(ModuleInteractiveJobResDTO::new)
+                .collect(Collectors.toList());
     }
 
     @Override

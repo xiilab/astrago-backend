@@ -1,7 +1,12 @@
 package com.xiilab.modulek8s.facade.workload;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.xiilab.modulek8s.common.dto.K8SResourceResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
@@ -59,17 +64,43 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return moduleInteractiveJobResDTO;
 	}
 
-    @Override
+	@Override
+	public ModuleBatchJobResDTO getBatchWorkload(String workSpaceName, String workloadName) {
+		return workloadModuleService.getBatchJobWorkload(workSpaceName, workloadName);
+	}
+
+	@Override
+	public ModuleInteractiveJobResDTO getInteractiveWorkload(String workSpaceName, String workloadName) {
+		return workloadModuleService.getInteractiveJobWorkload(workSpaceName, workloadName);
+	}
+
+	@Override
     public void deleteBatchHobWorkload(String workSpaceName, String workloadName) {
-        WorkloadModuleService.deleteBatchJobWorkload(workSpaceName, workloadName);
+        workloadModuleService.deleteBatchJobWorkload(workSpaceName, workloadName);
         svcService.deleteService(workSpaceName, workloadName);
     }
 
     @Override
     public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
-        WorkloadModuleService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+        workloadModuleService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
         svcService.deleteService(workSpaceName, workloadName);
     }
+
+	@Override
+	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
+		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
+		List<ModuleWorkloadResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
+		List<ModuleWorkloadResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
+
+		if (!jobWorkloadList.isEmpty()) {
+			workloadList.addAll(jobWorkloadList);
+		}
+        if(!workloadResList.isEmpty()) {
+			workloadList.addAll(workloadResList);
+		}
+
+		return workloadList;
+	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		List<ModuleVolumeReqDTO> volumes = moduleCreateWorkloadReqDTO.getVolumes();
