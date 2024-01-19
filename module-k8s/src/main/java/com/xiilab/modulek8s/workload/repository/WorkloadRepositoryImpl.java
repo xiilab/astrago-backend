@@ -39,13 +39,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	@Override
 	public ModuleBatchJobResDTO getBatchJobWorkload(String workSpaceName, String workloadName) {
-		Job job = (Job)getBatchJob(workSpaceName, workloadName);
+		Job job = getBatchJob(workSpaceName, workloadName);
 		return new ModuleBatchJobResDTO(job);
 	}
 
 	@Override
 	public ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName) {
-		Deployment deployment = (Deployment)getInteractiveJob(workSpaceName, workloadName);
+		Deployment deployment = getInteractiveJob(workSpaceName, workloadName);
 		return new ModuleInteractiveJobResDTO(deployment);
 	}
 
@@ -81,13 +81,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private HasMetadata getBatchJob(String workSpaceName, String workloadName) {
+	private Job getBatchJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get();
 		}
 	}
 
-	private HasMetadata getInteractiveJob(String workSpaceName, String workloadName) {
+	private Deployment getInteractiveJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.apps().deployments().inNamespace(workSpaceName).withName(workloadName).get();
 		}
