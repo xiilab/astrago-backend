@@ -33,6 +33,12 @@ public class CredentialServiceImpl implements CredentialService {
 	public CredentialResDTO.CredentialInfo findCredentialById(long id, UserInfoDTO userInfoDTO) {
 		CredentialEntity credentialEntity = credentialRepository.findById(id)
 			.orElseThrow(IllegalArgumentException::new);
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN && !(credentialEntity.getUser()
+			.getId()
+			.equals(userInfoDTO.getId()))) {
+			//TODO 에러 처리에 대한 메시지 및 방안 고려해야함
+			throw new IllegalArgumentException();
+		}
 		return new CredentialResDTO.CredentialInfo(credentialEntity);
 	}
 
