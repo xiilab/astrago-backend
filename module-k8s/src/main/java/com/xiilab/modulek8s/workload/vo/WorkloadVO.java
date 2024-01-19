@@ -1,16 +1,28 @@
 package com.xiilab.modulek8s.workload.vo;
 
-import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
-import io.fabric8.kubernetes.api.model.*;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
-import org.springframework.util.CollectionUtils;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.springframework.util.CollectionUtils;
+
+import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
+import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
+
+import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.ContainerBuilder;
+import io.fabric8.kubernetes.api.model.ContainerPort;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
+import io.fabric8.kubernetes.api.model.PodSpec;
+import io.fabric8.kubernetes.api.model.PodSpecBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.Volume;
+import io.fabric8.kubernetes.api.model.VolumeBuilder;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
@@ -22,8 +34,8 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	float cpuRequest;        // 워크로드 cpu 요청량
 	float memRequest;        // 워크로드 mem 요청량
 	//SchedulingType schedulingType;        // 스케줄링 방식
-	List<JobCodeVO> codes;	// code 정의
-	List<JobVolumeVO> volumes;	// volume 정의
+	List<JobCodeVO> codes;    // code 정의
+	List<JobVolumeVO> volumes;    // volume 정의
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
@@ -38,7 +50,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
 				.map(codeReq -> new ContainerBuilder()
-                        .withName(getUniqueResourceName() + "-git-clone-" + index)
+					.withName(getUniqueResourceName() + "-git-clone-" + index)
 					.withImage("alpine/git")
 					.addAllToArgs(List.of(
 						"clone",
@@ -91,17 +103,17 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
 
 		// gpu 요청여부에 따라 다른 결과 반환
-		return gpuRequest == 0?
-				Map.of(
-					"cpu", new Quantity(strCpuRequest),
-					"memory", new Quantity(strMemRequest)
-					)
-				:
-				Map.of(
-					"nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)),
-					"cpu", new Quantity(strCpuRequest),
-					"memory", new Quantity(strMemRequest)
-					);
+		return gpuRequest == 0 ?
+			Map.of(
+				"cpu", new Quantity(strCpuRequest),
+				"memory", new Quantity(strMemRequest)
+			)
+			:
+			Map.of(
+				"nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)),
+				"cpu", new Quantity(strCpuRequest),
+				"memory", new Quantity(strMemRequest)
+			);
 	}
 
 	public abstract KubernetesResource createSpec();

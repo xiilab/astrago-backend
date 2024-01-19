@@ -1,23 +1,24 @@
 package com.xiilab.modulek8s.storage.volume.dto.response;
 
+import java.util.List;
+
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter
 public class VolumeWithWorkloadsResDTO extends K8SResourceResVO {
-	private String workspaceName;
+	private final String workspaceName;
 	//workload  list
-	private List<String> workloadNames;
+	private final List<String> workloadNames;
 	//용량
-	private String requestVolume;
-	private StorageType storageType;
-	private String storageClassName;
+	private final String requestVolume;
+	private final StorageType storageType;
+	private final String storageClassName;
 
 	@Builder
 	public VolumeWithWorkloadsResDTO(HasMetadata hasMetadata, String workspaceName, List<String> workloadNames,

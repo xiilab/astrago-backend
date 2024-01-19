@@ -1,19 +1,25 @@
 package com.xiilab.moduleuser.repository;
 
-import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.common.KeycloakConfig;
-import com.xiilab.moduleuser.dto.*;
-import com.xiilab.moduleuser.vo.GroupModiVO;
-import com.xiilab.moduleuser.vo.GroupReqVO;
-import io.micrometer.common.util.StringUtils;
-import jakarta.ws.rs.NotFoundException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.xiilab.moduleuser.common.FindDTO;
+import com.xiilab.moduleuser.common.KeycloakConfig;
+import com.xiilab.moduleuser.dto.GroupCategory;
+import com.xiilab.moduleuser.dto.GroupInfoDTO;
+import com.xiilab.moduleuser.dto.GroupSummaryDTO;
+import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.vo.GroupModiVO;
+import com.xiilab.moduleuser.vo.GroupReqVO;
+
+import io.micrometer.common.util.StringUtils;
+import jakarta.ws.rs.NotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @RequiredArgsConstructor

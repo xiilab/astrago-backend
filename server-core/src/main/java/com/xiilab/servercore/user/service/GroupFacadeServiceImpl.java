@@ -1,5 +1,9 @@
 package com.xiilab.servercore.user.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -7,10 +11,8 @@ import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.common.dto.SearchCondition;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

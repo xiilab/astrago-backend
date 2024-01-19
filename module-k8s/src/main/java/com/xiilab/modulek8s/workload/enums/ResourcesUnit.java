@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ResourcesUnit {
-    GPU_UNIT("Qty"),
-    MEM_UNIT("Gi"),
-    CPU_UNIT("m");
+	GPU_UNIT("Qty"),
+	MEM_UNIT("Gi"),
+	CPU_UNIT("m");
 
-    private final String unit;
+	private final String unit;
 }

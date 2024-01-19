@@ -1,6 +1,5 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-import java.util.List;
 import java.util.Map;
 
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
@@ -23,9 +22,12 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 		Quantity getGpuRequest = resourceRequests.get("nvidia.com/gpu");
 		Quantity getCpuRequest = resourceRequests.get("cpu");
 		Quantity getMemory = resourceRequests.get("memory");
-		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() + ResourcesUnit.GPU_UNIT.getUnit() : "0" + ResourcesUnit.GPU_UNIT.getUnit();
-		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() : "0" + ResourcesUnit.CPU_UNIT.getUnit();
-		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() : "0" + ResourcesUnit.MEM_UNIT.getUnit();
+		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() + ResourcesUnit.GPU_UNIT.getUnit() :
+			"0" + ResourcesUnit.GPU_UNIT.getUnit();
+		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() :
+			"0" + ResourcesUnit.CPU_UNIT.getUnit();
+		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() :
+			"0" + ResourcesUnit.MEM_UNIT.getUnit();
 		envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();

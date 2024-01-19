@@ -1,12 +1,12 @@
 package com.xiilab.servercore.user.service;
 
+import java.util.List;
+
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.common.dto.SearchCondition;
-
-import java.util.List;
 
 public interface UserFacadeService {
 	//회원가입

@@ -1,12 +1,12 @@
 package com.xiilab.servercore.user.service;
 
+import java.util.List;
+
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
-
-import java.util.List;
 
 public interface GroupFacadeService {
 	//사용자 그룹 생성

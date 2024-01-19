@@ -1,5 +1,9 @@
 package com.xiilab.servercore.user.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.UserInfo;
@@ -7,11 +11,9 @@ import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.common.dto.SearchCondition;
+
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

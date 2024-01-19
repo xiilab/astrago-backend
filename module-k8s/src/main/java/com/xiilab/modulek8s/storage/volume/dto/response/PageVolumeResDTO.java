@@ -4,6 +4,7 @@ import com.xiilab.modulek8s.common.dto.K8SResourceResDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import lombok.Builder;
@@ -13,12 +14,13 @@ import lombok.Getter;
 public class PageVolumeResDTO extends K8SResourceResDTO {
 	private String workspaceName;
 	//용량
-	private String requestVolume;
-	private StorageType storageType;
+	private final String requestVolume;
+	private final StorageType storageType;
 	private boolean isUsed;
 
 	@Builder
-	public PageVolumeResDTO(HasMetadata hasMetadata, String workspaceName,String requestVolume, StorageType storageType, boolean isUsed) {
+	public PageVolumeResDTO(HasMetadata hasMetadata, String workspaceName, String requestVolume,
+		StorageType storageType, boolean isUsed) {
 		super(hasMetadata);
 		this.workspaceName = workspaceName;
 		this.requestVolume = requestVolume;
@@ -26,7 +28,7 @@ public class PageVolumeResDTO extends K8SResourceResDTO {
 		this.isUsed = isUsed;
 	}
 
-	public static PageVolumeResDTO toDTO(PersistentVolumeClaim pvc){
+	public static PageVolumeResDTO toDTO(PersistentVolumeClaim pvc) {
 		return PageVolumeResDTO.builder()
 			.hasMetadata(pvc)
 			.requestVolume(pvc.getSpec().getResources().getRequests().get("storage").toString())
@@ -34,15 +36,16 @@ public class PageVolumeResDTO extends K8SResourceResDTO {
 			.build();
 	}
 
-    @Override
-    protected ResourceType getType() {
-        return ResourceType.VOLUME;
-    }
+	@Override
+	protected ResourceType getType() {
+		return ResourceType.VOLUME;
+	}
 
-	public void setIsUsed(boolean isUsed){
+	public void setIsUsed(boolean isUsed) {
 		this.isUsed = isUsed;
 	}
-	public void setWorkspaceName(String workspaceName){
+
+	public void setWorkspaceName(String workspaceName) {
 		this.workspaceName = workspaceName;
 	}
 
