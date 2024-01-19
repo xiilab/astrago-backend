@@ -39,8 +39,8 @@ public class CredentialResDTO {
 
 		public CredentialInfo(CredentialEntity credential) {
 			super(credential.getId(), credential.getName(), credential.getType(), credential.getUser().getName(), credential.getCreatedAt());
-			this.loginId = credential.getLogin_id();
-			this.loginPw = credential.getLogin_pw();
+			this.loginId = credential.getLoginId();
+			this.loginPw = credential.getLoginPw();
 		}
 	}
 }
