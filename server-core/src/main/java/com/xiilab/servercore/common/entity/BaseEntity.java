@@ -20,7 +20,7 @@ import lombok.experimental.SuperBuilder;
 @MappedSuperclass
 @EntityListeners(value = {AuditingEntityListener.class})
 @Getter
-@SuperBuilder
+// @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 //모든 테이블에 공통적으로 들어가는 Entity로 이 BaseEntity를 extend 받아 Entity를 만든다.
