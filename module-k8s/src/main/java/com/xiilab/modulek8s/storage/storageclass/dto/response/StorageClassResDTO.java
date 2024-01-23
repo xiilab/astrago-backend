@@ -15,9 +15,9 @@ import lombok.Getter;
 @Getter
 public class StorageClassResDTO extends K8SResourceResVO {
 	//용량
-	private StorageType storageType;
-	private String ip;
-	private String storageSavePath;
+	private final StorageType storageType;
+	private final String ip;
+	private final String storageSavePath;
 
 	@Builder
 	public StorageClassResDTO(HasMetadata hasMetadata, StorageType storageType, String ip, String storageSavePath) {

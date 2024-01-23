@@ -35,13 +35,17 @@ public class VolumeService {
 		String storageMetaName) {
 		return volumeRepository.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
 	}
-	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName) {
+
+	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName,
+		String volumeMetaName) {
 		return volumeRepository.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
 	}
+
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
 		volumeRepository.modifyVolumeByMetaName(modifyVolumeDTO);
 	}
-	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO){
+
+	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO) {
 		volumeRepository.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
 	}
 
@@ -81,7 +85,8 @@ public class VolumeService {
 		String keyword = findVolumeDTO.getSearchCondition().getKeyword();
 		return volumeRepository.findVolumes(option, keyword);
 	}
-	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName){
+
+	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName) {
 		return volumeRepository.findVolumeByMetaName(volumeMetaName);
 	}
 

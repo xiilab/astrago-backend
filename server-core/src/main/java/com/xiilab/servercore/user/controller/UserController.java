@@ -86,7 +86,8 @@ public class UserController {
 
 	@PatchMapping("/{id}/updateRole")
 	@Operation(summary = "사용자 권한 업데이트")
-	public ResponseEntity<HttpStatus> updateUserRole(@PathVariable(name = "id") String id, @RequestParam(name = "authType") AuthType authType) {
+	public ResponseEntity<HttpStatus> updateUserRole(@PathVariable(name = "id") String id,
+		@RequestParam(name = "authType") AuthType authType) {
 		userFacadeService.updateUserRole(id, authType);
 		return ResponseEntity.ok().build();
 	}

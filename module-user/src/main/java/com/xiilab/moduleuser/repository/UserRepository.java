@@ -16,7 +16,9 @@ public interface UserRepository {
 	UserInfo joinUser(UserReqVO userReqVO);
 
 	List<UserSummary> getUserList(FindDTO findDTO);
+
 	UserInfo getUserInfoById(String userId);
+
 	List<UserSummary> getUserListSearchByAttribute(String attribute);
 
 	void updateUserAttribute(List<String> userIdList, Map<String, String> map);
@@ -24,7 +26,10 @@ public interface UserRepository {
 	void updateUserActivationYN(List<String> userIdList, boolean activationYN);
 
 	void deleteUserById(List<String> userIdList);
+
 	void updateUserRole(String userId, AuthType authType);
+
 	void joinGroup(String groupId, String userId);
+
 	void resetUserPassWord(String userId);
 }

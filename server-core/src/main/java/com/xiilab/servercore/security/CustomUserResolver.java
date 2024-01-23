@@ -31,7 +31,8 @@ public class CustomUserResolver implements HandlerMethodArgumentResolver {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		Jwt principal = (Jwt)authentication.getPrincipal();
-		String userRealName = principal.getClaims().get("family_name").toString() + principal.getClaims().get("given_name").toString();
+		String userRealName =
+			principal.getClaims().get("family_name").toString() + principal.getClaims().get("given_name").toString();
 		UserInfo userInfo = repository.getUserInfoById(principal.getSubject());
 		return UserInfoDTO.builder()
 			.id(userInfo.getId())
@@ -45,5 +46,4 @@ public class CustomUserResolver implements HandlerMethodArgumentResolver {
 			.userRealName(userRealName)
 			.build();
 	}
-
 }

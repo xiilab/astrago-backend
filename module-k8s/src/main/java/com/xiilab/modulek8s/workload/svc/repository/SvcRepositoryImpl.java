@@ -18,4 +18,11 @@ public class SvcRepositoryImpl implements SvcRepository {
 			client.resource(nodeSvcVO.createResource()).create();
 		}
 	}
+
+	@Override
+	public void deleteService(String workSpaceName, String workloadName) {
+		try (KubernetesClient client = new KubernetesClientBuilder().build()) {
+			client.services().inNamespace(workloadName).withLabelSelector(workloadName).delete();
+		}
+	}
 }
