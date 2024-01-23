@@ -9,4 +9,6 @@ public interface SvcService {
 	 * @param createSvcReqDTO
 	 */
 	void createNodePortService(CreateSvcReqDTO createSvcReqDTO);
+
+	void deleteService(String workSpaceName, String workloadName);
 }

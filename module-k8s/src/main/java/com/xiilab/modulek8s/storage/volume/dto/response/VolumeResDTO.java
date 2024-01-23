@@ -13,8 +13,8 @@ import lombok.Getter;
 @Getter
 public class VolumeResDTO extends K8SResourceResVO {
 	//용량
-	private String requestVolume;
-	private StorageType storageType;
+	private final String requestVolume;
+	private final StorageType storageType;
 
 	@Builder
 	public VolumeResDTO(HasMetadata hasMetadata, String requestVolume, StorageType storageType) {
@@ -23,7 +23,7 @@ public class VolumeResDTO extends K8SResourceResVO {
 		this.storageType = storageType;
 	}
 
-	public static VolumeResDTO toDTO(PersistentVolumeClaim pvc){
+	public static VolumeResDTO toDTO(PersistentVolumeClaim pvc) {
 		return VolumeResDTO.builder()
 			.hasMetadata(pvc)
 			.requestVolume(pvc.getSpec().getResources().getRequests().get("storage").toString())

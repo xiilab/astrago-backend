@@ -14,12 +14,13 @@ import lombok.Getter;
 public class PageVolumeResDTO extends K8SResourceResDTO {
 	private String workspaceName;
 	//용량
-	private String requestVolume;
-	private StorageType storageType;
+	private final String requestVolume;
+	private final StorageType storageType;
 	private boolean isUsed;
 
 	@Builder
-	public PageVolumeResDTO(HasMetadata hasMetadata, String workspaceName,String requestVolume, StorageType storageType, boolean isUsed) {
+	public PageVolumeResDTO(HasMetadata hasMetadata, String workspaceName, String requestVolume,
+		StorageType storageType, boolean isUsed) {
 		super(hasMetadata);
 		this.workspaceName = workspaceName;
 		this.requestVolume = requestVolume;
@@ -27,7 +28,7 @@ public class PageVolumeResDTO extends K8SResourceResDTO {
 		this.isUsed = isUsed;
 	}
 
-	public static PageVolumeResDTO toDTO(PersistentVolumeClaim pvc){
+	public static PageVolumeResDTO toDTO(PersistentVolumeClaim pvc) {
 		return PageVolumeResDTO.builder()
 			.hasMetadata(pvc)
 			.requestVolume(pvc.getSpec().getResources().getRequests().get("storage").toString())
@@ -40,10 +41,11 @@ public class PageVolumeResDTO extends K8SResourceResDTO {
 		return ResourceType.VOLUME;
 	}
 
-	public void setIsUsed(boolean isUsed){
+	public void setIsUsed(boolean isUsed) {
 		this.isUsed = isUsed;
 	}
-	public void setWorkspaceName(String workspaceName){
+
+	public void setWorkspaceName(String workspaceName) {
 		this.workspaceName = workspaceName;
 	}
 

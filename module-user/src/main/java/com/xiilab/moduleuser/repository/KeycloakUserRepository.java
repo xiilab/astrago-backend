@@ -29,192 +29,192 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class KeycloakUserRepository implements UserRepository {
-    private final KeycloakConfig keycloakConfig;
+	private final KeycloakConfig keycloakConfig;
 
-    @Value("${admin.init-password}")
-    private String initPassword;
+	@Value("${admin.init-password}")
+	private String initPassword;
 
-    @Override
-    public UserInfo joinUser(UserReqVO userReqVO) {
-        UserRepresentation userRepresentation = userReqVO.convertUserRep();
-        Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
-        if (response.getStatus() != 200 && response.getStatus() != 201) {
-            throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
-        }
-        log.info(response.getStatusInfo().getReasonPhrase());
-        UserRepresentation userRep = getUserByUsername(userReqVO.getUsername());
-        UserResource userResource = getUserResourceById(userRep.getId());
-        userResource.resetPassword(userReqVO.createCredentialRep());
-        userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
-        return new UserInfo(userResource.toRepresentation());
-    }
+	@Override
+	public UserInfo joinUser(UserReqVO userReqVO) {
+		UserRepresentation userRepresentation = userReqVO.convertUserRep();
+		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
+		if (response.getStatus() != 200 && response.getStatus() != 201) {
+			throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
+		}
+		log.info(response.getStatusInfo().getReasonPhrase());
+		UserRepresentation userRep = getUserByUsername(userReqVO.getUsername());
+		UserResource userResource = getUserResourceById(userRep.getId());
+		userResource.resetPassword(userReqVO.createCredentialRep());
+		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
+		return new UserInfo(userResource.toRepresentation());
+	}
 
-    @Override
-    public List<UserSummary> getUserList(FindDTO findDTO) {
-        RealmResource realmClient = keycloakConfig.getRealmClient();
-        List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
-                        -> user.getAttributes() != null
-                        && user.getAttributes().containsKey("approvalYN")
-                        && user.getAttributes().containsValue(List.of("true"))
-                && searchInfo(findDTO, user)
-            )
-                .toList();
-        return userList.stream().map(UserSummary::new).toList();
-    }
+	@Override
+	public List<UserSummary> getUserList(FindDTO findDTO) {
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+		List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
+				-> user.getAttributes() != null
+				&& user.getAttributes().containsKey("approvalYN")
+				&& user.getAttributes().containsValue(List.of("true"))
+				&& searchInfo(findDTO, user)
+			)
+			.toList();
+		return userList.stream().map(UserSummary::new).toList();
+	}
 
-    @Override
-    public UserInfo getUserInfoById(String userId) {
-        UserResource userResource = getUserResourceById(userId);
-        List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
-        UserRepresentation userRepresentation = userResource.toRepresentation();
-        try {
-            RoleRepresentation roleRepresentation = roleRepresentations.stream()
-                    .filter(role -> role.getName().contains("ROLE_"))
-                    .toList()
-                    .get(0);
-            userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException("일치하는 정보가 없습니다.");
-        }
-        List<GroupRepresentation> groupList;
-        try {
-            groupList = userResource.groups();
-        } catch (NullPointerException e) {
-            groupList = null;
-        }
-        return new UserInfo(userRepresentation, groupList);
-    }
+	@Override
+	public UserInfo getUserInfoById(String userId) {
+		UserResource userResource = getUserResourceById(userId);
+		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
+		UserRepresentation userRepresentation = userResource.toRepresentation();
+		try {
+			RoleRepresentation roleRepresentation = roleRepresentations.stream()
+				.filter(role -> role.getName().contains("ROLE_"))
+				.toList()
+				.get(0);
+			userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new ArrayIndexOutOfBoundsException("일치하는 정보가 없습니다.");
+		}
+		List<GroupRepresentation> groupList;
+		try {
+			groupList = userResource.groups();
+		} catch (NullPointerException e) {
+			groupList = null;
+		}
+		return new UserInfo(userRepresentation, groupList);
+	}
 
-    @Override
-    public List<UserSummary> getUserListSearchByAttribute(String attribute) {
-        RealmResource realmClient = keycloakConfig.getRealmClient();
-        List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
-                        -> user.getAttributes() != null
-                        && user.getAttributes().containsKey(attribute)
-                        && user.getAttributes().containsValue(List.of("false")))
-                .toList();
-        return userList.stream().map(UserSummary::new).toList();
-    }
+	@Override
+	public List<UserSummary> getUserListSearchByAttribute(String attribute) {
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+		List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
+				-> user.getAttributes() != null
+				&& user.getAttributes().containsKey(attribute)
+				&& user.getAttributes().containsValue(List.of("false")))
+			.toList();
+		return userList.stream().map(UserSummary::new).toList();
+	}
 
-    @Override
-    public void updateUserAttribute(List<String> userIdList, Map<String, String> map) {
-        userIdList.forEach(user -> {
-            UserResource userResource = getUserResourceById(user);
-            UserRepresentation representation = userResource.toRepresentation();
-            Map<String, List<String>> attributes = representation.getAttributes();
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                attributes.put(key, List.of(value));
-            }
-            userResource.update(representation);
-        });
-    }
+	@Override
+	public void updateUserAttribute(List<String> userIdList, Map<String, String> map) {
+		userIdList.forEach(user -> {
+			UserResource userResource = getUserResourceById(user);
+			UserRepresentation representation = userResource.toRepresentation();
+			Map<String, List<String>> attributes = representation.getAttributes();
+			for (Map.Entry<String, String> entry : map.entrySet()) {
+				String key = entry.getKey();
+				String value = entry.getValue();
+				attributes.put(key, List.of(value));
+			}
+			userResource.update(representation);
+		});
+	}
 
-    @Override
-    public void updateUserActivationYN(List<String> userIdList, boolean activationYN) {
-        userIdList.forEach(user -> {
-            UserResource userResource = getUserResourceById(user);
-            UserRepresentation representation = userResource.toRepresentation();
-            representation.setEnabled(activationYN);
-            userResource.update(representation);
-        });
-    }
+	@Override
+	public void updateUserActivationYN(List<String> userIdList, boolean activationYN) {
+		userIdList.forEach(user -> {
+			UserResource userResource = getUserResourceById(user);
+			UserRepresentation representation = userResource.toRepresentation();
+			representation.setEnabled(activationYN);
+			userResource.update(representation);
+		});
+	}
 
-    @Override
-    public void deleteUserById(List<String> userIdList) {
-        userIdList.forEach(user -> {
-            getUserResourceById(user).remove();
-        });
-    }
+	@Override
+	public void deleteUserById(List<String> userIdList) {
+		userIdList.forEach(user -> {
+			getUserResourceById(user).remove();
+		});
+	}
 
-    @Override
-    public void updateUserRole(String userId, AuthType authType) {
-        UserResource userResource = getUserResourceById(userId);
-        // ROLE list 조회
-        List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll()
-                .stream().filter(role -> role.getName().contains("ROLE_"))
-                .toList();
-        // 기존 ROLE 삭제
-        if (!roleRepresentations.isEmpty()) {
-            userResource.roles().realmLevel().remove(roleRepresentations);
-            RoleRepresentation roleRepresentation = getRolerepByName(authType.name());
-            userResource.roles().realmLevel().add(List.of(roleRepresentation));
-        }
-        // ROLE 추가
-        RoleRepresentation roleRepresentation = getRolerepByName(authType.name());
-        userResource.roles().realmLevel().add(List.of(roleRepresentation));
-    }
+	@Override
+	public void updateUserRole(String userId, AuthType authType) {
+		UserResource userResource = getUserResourceById(userId);
+		// ROLE list 조회
+		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll()
+			.stream().filter(role -> role.getName().contains("ROLE_"))
+			.toList();
+		// 기존 ROLE 삭제
+		if (!roleRepresentations.isEmpty()) {
+			userResource.roles().realmLevel().remove(roleRepresentations);
+			RoleRepresentation roleRepresentation = getRolerepByName(authType.name());
+			userResource.roles().realmLevel().add(List.of(roleRepresentation));
+		}
+		// ROLE 추가
+		RoleRepresentation roleRepresentation = getRolerepByName(authType.name());
+		userResource.roles().realmLevel().add(List.of(roleRepresentation));
+	}
 
-    @Override
-    public void joinGroup(String groupId, String userId) {
-        UserResource userResource = getUserResourceById(userId);
-        userResource.joinGroup(groupId);
-    }
+	@Override
+	public void joinGroup(String groupId, String userId) {
+		UserResource userResource = getUserResourceById(userId);
+		userResource.joinGroup(groupId);
+	}
 
-    @Override
-    public void resetUserPassWord(String userId) {
-        try {
-            UserResource userResource = getUserResourceById(userId);
-            // userId 유효 체크
-            userResource.toRepresentation();
-            // 비밀번호 변경을 위해 credential 설정
-            CredentialRepresentation authenticationSettings = getAuthenticationSettings(true, userId);
-            //비밀번호 리셋
-            userResource.resetPassword(authenticationSettings);
-        } catch (NotFoundException e) {
-            throw new NotFoundException("일치하는 사용자가 없습니다.");
-        }
+	@Override
+	public void resetUserPassWord(String userId) {
+		try {
+			UserResource userResource = getUserResourceById(userId);
+			// userId 유효 체크
+			userResource.toRepresentation();
+			// 비밀번호 변경을 위해 credential 설정
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(true, userId);
+			//비밀번호 리셋
+			userResource.resetPassword(authenticationSettings);
+		} catch (NotFoundException e) {
+			throw new NotFoundException("일치하는 사용자가 없습니다.");
+		}
 
-    }
+	}
 
-    private UserResource getUserResourceById(String userId) {
-        return keycloakConfig.getRealmClient().users().get(userId);
-    }
+	private UserResource getUserResourceById(String userId) {
+		return keycloakConfig.getRealmClient().users().get(userId);
+	}
 
-    private UserRepresentation getUserByUsername(String username) {
-        return keycloakConfig.getRealmClient().users().search(username).get(0);
-    }
+	private UserRepresentation getUserByUsername(String username) {
+		return keycloakConfig.getRealmClient().users().search(username).get(0);
+	}
 
-    private RoleRepresentation getRolerepByName(String roleName) {
-        return keycloakConfig.getRealmClient().roles().get(roleName).toRepresentation();
-    }
+	private RoleRepresentation getRolerepByName(String roleName) {
+		return keycloakConfig.getRealmClient().roles().get(roleName).toRepresentation();
+	}
 
-    /**
-     * 사용자 비밀번호를 초기화 해주기 위해 세팅하는 메서드
-     *
-     * @param isTemporary true 비밀번호 초기화 하여 임의이 비밀번호가 세팅되었을 때
-     *                    false 사용자가 비밀번호를 변경하였을 때
-     * @param password    비밀번호 정보
-     * @return
-     */
-    private CredentialRepresentation getAuthenticationSettings(boolean isTemporary, String password) {
-        CredentialRepresentation newCredential = new CredentialRepresentation();
-        String pw = password;
-        if (StringUtils.isEmpty(password)) {
-            pw = initPassword;
-        }
-        // credential Type 설정
-        newCredential.setType(CredentialRepresentation.PASSWORD);
-        // credential value 설정
-        newCredential.setValue(pw);
-        // password temporary 설정
-        newCredential.setTemporary(isTemporary);
+	/**
+	 * 사용자 비밀번호를 초기화 해주기 위해 세팅하는 메서드
+	 *
+	 * @param isTemporary true 비밀번호 초기화 하여 임의이 비밀번호가 세팅되었을 때
+	 *                    false 사용자가 비밀번호를 변경하였을 때
+	 * @param password    비밀번호 정보
+	 * @return
+	 */
+	private CredentialRepresentation getAuthenticationSettings(boolean isTemporary, String password) {
+		CredentialRepresentation newCredential = new CredentialRepresentation();
+		String pw = password;
+		if (StringUtils.isEmpty(password)) {
+			pw = initPassword;
+		}
+		// credential Type 설정
+		newCredential.setType(CredentialRepresentation.PASSWORD);
+		// credential value 설정
+		newCredential.setValue(pw);
+		// password temporary 설정
+		newCredential.setTemporary(isTemporary);
 
-        return newCredential;
-    }
+		return newCredential;
+	}
 
-    private boolean searchInfo(FindDTO findDTO, UserRepresentation user) {
-        boolean search = true;
-        if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(
-            findDTO.getSearchCondition().getKeyword())) {
-            return search;
-        }
-        if (findDTO.getSearchCondition().getOption().equalsIgnoreCase("ALL")) {
-            search = user.getFirstName().contains(findDTO.getSearchCondition().getKeyword())
-                || user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
-                || user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
-        }
-        return search;
-    }
+	private boolean searchInfo(FindDTO findDTO, UserRepresentation user) {
+		boolean search = true;
+		if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(
+			findDTO.getSearchCondition().getKeyword())) {
+			return search;
+		}
+		if (findDTO.getSearchCondition().getOption().equalsIgnoreCase("ALL")) {
+			search = user.getFirstName().contains(findDTO.getSearchCondition().getKeyword())
+				|| user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
+				|| user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
+		}
+		return search;
+	}
 }

@@ -39,6 +39,16 @@ public abstract class K8SResourceReqVO {
 
 	ResourceType type;
 
+	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
+		String creatorName, String creator) {
+		this.resourceName = resourceName;
+		this.name = name;
+		this.description = description;
+		this.createdAt = createdAt;
+		this.creatorName = creatorName;
+		this.creator = creator;
+	}
+
 	/**
 	 * 임의로 생성된 UUID와 리소스 유형을 연결하여 리소스 이름을 반환합니다.
 	 *
@@ -57,4 +67,3 @@ public abstract class K8SResourceReqVO {
 	//자식 클래스의 ResourceType을 조회하기 위한 메소드
 	protected abstract ResourceType getType();
 }
-
