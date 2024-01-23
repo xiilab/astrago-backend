@@ -2,12 +2,9 @@ package com.xiilab.servercore.pin.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.dto.PinDTO;
 
-@Service
 public interface PinService {
 	List<PinDTO.ResponseDTO> getUserWorkspacePinList(String userId);
 
