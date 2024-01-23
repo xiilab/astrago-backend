@@ -4,15 +4,18 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class DataConverter {
 	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
-
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	/**
 	 * DateTime 포멧하는 메소드
 	 * @param unixTime  Prometheus에서 조회된 UnixTime
@@ -25,15 +28,6 @@ public class DataConverter {
 			.toLocalDateTime();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
 		return dateTime.format(formatter);
-	}
-
-	public String formatDateTime(String dateTime) {
-		// 입력된 문자열을 LocalDateTime으로 변환
-		LocalDateTime parsedDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ISO_DATE_TIME);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat); // 원하는 출력 형식 지정
-
-		// 지정된 포맷 형식으로 변환하여 문자열 반환
-		return parsedDateTime.format(formatter);
 	}
 
 	/**
@@ -57,22 +51,51 @@ public class DataConverter {
 		LocalDateTime dateTime = LocalDateTime.parse(formattedDateTime, DateTimeFormatter.ofPattern(dateFormat));
 		return String.valueOf(dateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
 	}
-	/**
-	 * data size 변환 메소드
-	 * @param sizeStr 변환될 dataSize
-	 * @return 변환된 dataSize
-	 */
-	public String formatSize(String sizeStr) {
-		long size = Long.parseLong(sizeStr);
 
-		if (size >= 1000000000000L) { // 1 TB
-			return String.format("%.2fTB", (double)size / 1000000000000L);
-		} else if (size >= 1000000000L) { // 1 GB
-			return String.format("%.2fGB", (double)size / 1000000000L);
-		} else if (size >= 1000000L) { // 1 MB
-			return String.format("%.2fMB", (double)size / 1000000L);
-		} else {
-			return String.format("%dbytes", size);
+	/**
+	 * data 소수점 두번째 자리 반올림 메소드
+	 * @param sizeStr 반올림될 값
+	 * @return 변환된 값
+	 */
+	public long formatRoundTo(String sizeStr) {
+		try {
+			// 문자열을 double로 변환
+			double inputValue = Double.parseDouble(sizeStr);
+
+			// 소수점 두 번째 자리까지 반올림
+			double roundedValue = Math.round(inputValue * 100.0) / 100.0;
+
+			// 정수로 변환하여 반환
+			return (int) roundedValue;
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("반올림 실패하였습니다.");
+		}
+	}
+	public JsonNode jsonparser(String jsonResponse) throws JsonProcessingException {
+		return objectMapper.readTree(jsonResponse);
+	}
+	/**
+	 * Prometheus에서 조회된 Metric objectMapper 매핑하는 메소드
+	 * @param metric 매핑될 metric
+	 * @return 매핑된 값
+	 */
+	public String formatObjectMapper(String metric){
+		try{
+			return objectMapper.readTree(metric).get("data").get("result").elements().next().get("value").get(1).asText();
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("data format fail");
+		}
+	}
+	/**
+	 * Prometheus에서 조회된 Metric JsonNode 매핑하는 메소드
+	 * @param metric 매핑될 metric
+	 * @return 매핑된 값
+	 */
+	public Iterator<JsonNode> formatJsonNode(String metric){
+		try{
+			return objectMapper.readTree(metric).get("data").get("result").elements();
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("data format fail");
 		}
 	}
 }

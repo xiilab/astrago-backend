@@ -13,6 +13,7 @@ import com.xiilab.modulemonitor.service.K8sMonitorService;
 
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
 
@@ -27,20 +28,6 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 		K8sErrorStatus.ErrImagePull,
 		K8sErrorStatus.InvalidImageName
 	);
-	List<Pod> pods = new ArrayList<>();
-
-	/**
-	 * Workload Error 개수 조회
-	 * @return 조회된 Workload Error Count
-	 */
-	@Override
-	public long getWorkloadErrorCount() {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			pods = kubernetesClient.pods().list().getItems();
-		}
-		// pods List중 Error Count 조회
-		return convertErrorCountByPodList(pods);
-	}
 
 	/**
 	 * Workload Error 개수 조회
@@ -49,29 +36,9 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 	 */
 	@Override
 	public long getWorkloadErrorCount(String namespace) {
+		List<Pod> pods = new ArrayList<>();
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			pods = kubernetesClient.pods().inNamespace(namespace).list().getItems();
-		}
-		// pods List중 Error Count 조회
-		return convertErrorCountByPodList(pods);
-	}
-
-	/**
-	 * Workload Error 개수 조회
-	 * @param namespace 조회될 Namespace
-	 * @param podName 조회될 podName
-	 * @return 조회된 Workload Error Count
-	 */
-	@Override
-	public long getWorkloadErrorCount(String namespace, String podName) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			Pod specificPod = kubernetesClient.pods()
-				.inNamespace(namespace)
-				.withName(podName)
-				.get();
-			if (specificPod != null) {
-				pods.add(specificPod);
-			}
 		}
 		// pods List중 Error Count 조회
 		return convertErrorCountByPodList(pods);
@@ -96,16 +63,14 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 	}
 
 	/**
-	 * Node에서 발생된 Error Count 조경
-	 * @return
+	 * Workspace에 생성된 Workload Count하는 메소드
+	 * @param namespace 조회될 Workspace name
+	 * @return 해당 Workspace에 생성된 Workload
 	 */
 	@Override
-	public long getNodeErrorCount() {
+	public long getWorkloadCountByNamespace(String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.nodes().list().getItems().stream()
-				.filter(node -> node.getStatus().getConditions().stream()
-					.noneMatch(nodeCondition -> nodeCondition.getType().equals("Ready")))
-				.count();
+			return kubernetesClient.pods().inNamespace(namespace).list().getItems().size();
 		}
 	}
 
@@ -151,6 +116,10 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 		}
 	}
 
+	/**
+	 * K8s에서 발생한 이벤트 EventDTO로 변환하는 메소드
+	 * @param eventList 변환될 K8s Event List
+	 */
 	private List<ResponseDTO.EventDTO> eventToDTO(List<Event> eventList) {
 		return eventList.stream().map(event ->
 			ResponseDTO.EventDTO.builder()
@@ -161,5 +130,70 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 				.message(event.getMessage())
 				.build()
 		).toList();
+	}
+
+	/**
+	 * 노드 전체 리스트 조회 메소드
+	 */
+	@Override
+	public List<ResponseDTO.NodeResponseDTO> getNodeList(){
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.nodes().list().getItems().stream().map(node ->
+				ResponseDTO.NodeResponseDTO.builder()
+					.nodeName(node.getMetadata().getName())
+					.ip(node.getStatus().getAddresses().get(0).getAddress())
+					.status(node.getStatus().getConditions().stream().filter(nodeCondition -> nodeCondition.getStatus().equals("True")).toList().get(0).getType())
+					.build()).toList();
+		}
+	}
+
+	/**
+	 * 워크스페이스 리소스 정보 조회 메소드
+	 */
+	@Override
+	public List<ResponseDTO.WorkloadResponseDTO> getWlList(){
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			// K8s 워크로드 리스트 조회
+			return kubernetesClient.pods().list().getItems().stream().map(pod ->
+				ResponseDTO.WorkloadResponseDTO.builder()
+					.wlName(pod.getMetadata().getNamespace())
+					.status(pod.getStatus().getPhase())
+					.build()).toList();
+		}
+	}
+	/**
+	 * 해당 WS의 Resource Info 조회 API
+	 * @param namespace 조회될 WS name
+	 * @return CPU,GPU,MEM등의 ResourceQuota, 상태별 워크로드 리스트
+	 */
+	@Override
+	public ResponseDTO.WorkspaceResponseDTO getWlList(String namespace){
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			// namespace의 resourceQuota 조회
+			ResourceQuotaStatus resourceQuota = kubernetesClient.resourceQuotas()
+				.inNamespace(namespace)
+				.list()
+				.getItems()
+				.get(0)
+				.getStatus();
+			// Workspace별 Workload List
+			List<ResponseDTO.WorkloadResponseDTO> wlList = kubernetesClient.pods().list().getItems().stream()
+				.filter(pod -> pod.getMetadata().getNamespace().equals(namespace))
+				.map(pod -> ResponseDTO.WorkloadResponseDTO.builder()
+					.wlName(pod.getMetadata().getNamespace())
+					.status(pod.getStatus().getPhase())
+					.build()).toList();
+
+			return ResponseDTO.WorkspaceResponseDTO.builder()
+				.wsName(namespace)
+				.gpuUsed(resourceQuota.getUsed().get("requests.nvidia.com/gpu").toString())
+				.gpuHard(resourceQuota.getHard().get("requests.nvidia.com/gpu").toString())
+				.cpuUsed(resourceQuota.getUsed().get("requests.cpu").toString())
+				.cpuHard(resourceQuota.getHard().get("requests.cpu").toString())
+				.memUsed(resourceQuota.getUsed().get("requests.memory").toString())
+				.memHard(resourceQuota.getHard().get("requests.memory").toString())
+				.workloadResponseDTOS(wlList)
+				.build();
+		}
 	}
 }

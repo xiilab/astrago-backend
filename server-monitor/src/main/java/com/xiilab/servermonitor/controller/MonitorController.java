@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/api/v1/monitor")
+@RequestMapping("/api/v1/core/monitor")
 @RequiredArgsConstructor
 public class MonitorController {
 	private final MonitorService monitorService;
@@ -47,30 +48,6 @@ public class MonitorController {
 	}
 
 	/**
-	 * Node Error Count 조회 API
-	 * @return 조회된 Node Error 개수
-	 */
-	@GetMapping("/nodeErrorCount")
-	@Operation(summary = "Get Node Error Count")
-	public ResponseEntity<Long> getNodeErrorCount() {
-		return new ResponseEntity<>(monitorService.getNodeErrorCount(), HttpStatus.OK);
-	}
-
-	/**
-	 * Workload Error Count 조회 API
-	 * @param namespace 조회될 namesapce
-	 * @param podName 조회될 podName
-	 * @return
-	 */
-	@GetMapping("/workloadErrorCount")
-	@Operation(summary = "Get Workload Error Count")
-	public ResponseEntity<Long> getWorkloadErrorCount(
-		@RequestParam(name = "namespace", required = false) String namespace,
-		@RequestParam(name = "podName", required = false) String podName) {
-		return new ResponseEntity<>(monitorService.getWorkloadErrorCount(namespace, podName), HttpStatus.OK);
-	}
-
-	/**
 	 * k8s event list 조회 API
 	 * @return 조회된 Monitor Metric
 	 */
@@ -93,14 +70,51 @@ public class MonitorController {
 	}
 
 	/**
-	 * Disk Space 조회하는 API
-	 * @param nodeName 조회될 node Name
-	 * @return 조회된 Disk Space
+	 * 워크스페이스별 자원의 사용량 조회하는 API
+	 * @return 조회된 사용량
 	 */
-	@GetMapping("/disk")
-	@Operation(summary = "Get Disk Space List")
-	public ResponseEntity<List<ResponseDTO.DiskDTO>> getDiskSpace(@RequestParam(name = "nodeName", required = false) String nodeName){
-		return new ResponseEntity<>(monitorService.getDiskSpace(nodeName), HttpStatus.OK);
+	@GetMapping("/dashboard/workspace")
+	@Operation(summary = "관리자 대시보드  워크스페이스 자원 사용량 리스트")
+	public ResponseEntity<List<ResponseDTO.WorkspaceDTO>> getWorkspaceResourceList(){
+		return new ResponseEntity<>(monitorService.getWorkspaceResourceList(), HttpStatus.OK);
+	}
+	/**
+	 * 대시보드 노드 사용량 조회하는 API
+	 */
+	@GetMapping("/dashboard/node/{nodeName}")
+	@Operation(summary = "관리자 대시보드  노드별 자원 사용량 조회")
+	public ResponseEntity<ResponseDTO.NodeResourceDTO> getNodeResource(@PathVariable String nodeName){
+		return new ResponseEntity<>(monitorService.getNodeResource(nodeName), HttpStatus.OK);
+	}
+	/**
+	 * 대시보드 노드 List 조회 API
+	 * @return
+	 */
+	@GetMapping("/dashboard/node")
+	@Operation(summary = "관리자 대시보드 Node 리스트 조회")
+	public ResponseEntity<List<ResponseDTO.NodeResponseDTO>> getNodeList(){
+		return new ResponseEntity<>(monitorService.getNodeList(), HttpStatus.OK);
+}
+
+	/**
+	 * 대시보드 워크로드 List 조회 API
+	 * @return
+	 */
+	@GetMapping("/dashboard/wl")
+	@Operation(summary = "관리자 대시보드  워크로드 리스트 조회")
+	public ResponseEntity<List<ResponseDTO.WorkloadResponseDTO>> getWlList(){
+		return new ResponseEntity<>(monitorService.getWlList(), HttpStatus.OK);
+	}
+
+	/**
+	 * 해당 WS의 Resource Info 조회 API
+	 * @param namespace 조회될 WS name
+	 * @return CPU,GPU,MEM등의 ResourceQuota, 상태별 워크로드 리스트
+	 */
+	@GetMapping("/ws/{namespace}")
+	@Operation(summary = "Workspace Resource 조회")
+	public ResponseEntity<ResponseDTO.WorkspaceResponseDTO> getWorkspaceResourcesInfo(@PathVariable(name = "namespace") String namespace){
+		return new ResponseEntity<>(monitorService.getWorkspaceResourcesInfo(namespace), HttpStatus.OK);
 	}
 
 }
