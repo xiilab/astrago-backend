@@ -19,4 +19,9 @@ public class SvcServiceImpl implements SvcService {
 	public void createNodePortService(CreateSvcReqDTO createSvcReqDTO) {
 		svcRepository.createNodePortService(NodeSvcVO.createServiceDtoToServiceVO(createSvcReqDTO));
 	}
+
+	@Override
+	public void deleteService(String workSpaceName, String workloadName) {
+		svcRepository.deleteService(workSpaceName, workloadName);
+	}
 }

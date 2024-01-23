@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.facade.workload;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
@@ -30,7 +32,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		addNewVolume(moduleCreateWorkloadReqDTO);
 
 		// 잡 생성
-		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
+		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleService.createBatchJobWorkload(
+			moduleCreateWorkloadReqDTO);
 
 		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
 			moduleCreateWorkloadReqDTO, moduleBatchJobResDTO.getName());
@@ -42,7 +45,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(
+		ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		// 볼륨 추가
 		addNewVolume(moduleCreateWorkloadReqDTO);
 
@@ -57,6 +61,44 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		svcService.createNodePortService(createSvcReqDTO);
 
 		return moduleInteractiveJobResDTO;
+	}
+
+	@Override
+	public ModuleBatchJobResDTO getBatchWorkload(String workSpaceName, String workloadName) {
+		return workloadModuleService.getBatchJobWorkload(workSpaceName, workloadName);
+	}
+
+	@Override
+	public ModuleInteractiveJobResDTO getInteractiveWorkload(String workSpaceName, String workloadName) {
+		return workloadModuleService.getInteractiveJobWorkload(workSpaceName, workloadName);
+	}
+
+	@Override
+	public void deleteBatchHobWorkload(String workSpaceName, String workloadName) {
+		workloadModuleService.deleteBatchJobWorkload(workSpaceName, workloadName);
+		svcService.deleteService(workSpaceName, workloadName);
+	}
+
+	@Override
+	public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
+		workloadModuleService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+		svcService.deleteService(workSpaceName, workloadName);
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
+		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
+		List<ModuleWorkloadResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
+		List<ModuleWorkloadResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
+
+		if (!jobWorkloadList.isEmpty()) {
+			workloadList.addAll(jobWorkloadList);
+		}
+		if (!workloadResList.isEmpty()) {
+			workloadList.addAll(workloadResList);
+		}
+
+		return workloadList;
 	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {

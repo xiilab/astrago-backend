@@ -34,8 +34,8 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	float cpuRequest;        // 워크로드 cpu 요청량
 	float memRequest;        // 워크로드 mem 요청량
 	//SchedulingType schedulingType;        // 스케줄링 방식
-	List<JobCodeVO> codes;	// code 정의
-	List<JobVolumeVO> volumes;	// volume 정의
+	List<JobCodeVO> codes;    // code 정의
+	List<JobVolumeVO> volumes;    // volume 정의
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
@@ -103,17 +103,17 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
 
 		// gpu 요청여부에 따라 다른 결과 반환
-		return gpuRequest == 0?
-				Map.of(
-					"cpu", new Quantity(strCpuRequest),
-					"memory", new Quantity(strMemRequest)
-					)
-				:
-				Map.of(
-					"nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)),
-					"cpu", new Quantity(strCpuRequest),
-					"memory", new Quantity(strMemRequest)
-					);
+		return gpuRequest == 0 ?
+			Map.of(
+				"cpu", new Quantity(strCpuRequest),
+				"memory", new Quantity(strMemRequest)
+			)
+			:
+			Map.of(
+				"nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)),
+				"cpu", new Quantity(strCpuRequest),
+				"memory", new Quantity(strMemRequest)
+			);
 	}
 
 	public abstract KubernetesResource createSpec();
