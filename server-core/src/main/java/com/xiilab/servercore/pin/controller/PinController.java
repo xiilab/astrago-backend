@@ -30,8 +30,9 @@ public class PinController {
 
 	@PostMapping("/workload")
 	@Operation(summary = "workload pin 등록")
-	public ResponseEntity<HttpStatus> createWorkloadPin(@RequestParam(value = "resourceId") String resourceId) {
-		pinService.createWorkloadPin(resourceId);
+	public ResponseEntity<HttpStatus> createWorkloadPin(@RequestParam(value = "resourceId") String resourceId,
+		UserInfoDTO userInfoDTO) {
+		pinService.createWorkloadPin(resourceId, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

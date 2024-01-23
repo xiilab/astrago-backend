@@ -13,4 +13,6 @@ public interface PinRepository extends JpaRepository<PinEntity, Long> {
 	List<PinEntity> findByTypeAndUser_Id(PinType type, String id);
 
 	long deleteByTypeAndResourceIdAndUser_Id(PinType type, String resourceId, String id);
+
+	PinEntity findByTypeAndResourceIdAndUser_Id(PinType type, String resourceId, String id);
 }

@@ -51,6 +51,13 @@ public class PinServiceImpl implements PinService {
 
 	@Override
 	public void createWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
+		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndUser_Id(PinType.WORKSPACE,
+			resourceId, userInfoDTO.getId());
+
+		if (pinEntity != null) {
+			throw new IllegalArgumentException("이미 pin이 추가되었습니다.");
+		}
+
 		//해당 유저가 pin을 6개 이상 생성했는지 검사
 		List<PinEntity> workspaceList = pinRepository.findByTypeAndUser_Id(PinType.WORKSPACE, userInfoDTO.getId());
 		if (workspaceList.size() >= 6) {
@@ -60,7 +67,14 @@ public class PinServiceImpl implements PinService {
 	}
 
 	@Override
-	public void createWorkloadPin(String resourceId) {
+	public void createWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
+		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndUser_Id(PinType.WORKLOAD,
+			resourceId, userInfoDTO.getId());
+
+		if (pinEntity != null) {
+			throw new IllegalArgumentException("이미 pin이 추가되었습니다.");
+		}
+
 		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceId));
 	}
 
