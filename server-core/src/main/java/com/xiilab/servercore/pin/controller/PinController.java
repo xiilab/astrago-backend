@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/pin")
+@RequestMapping("/api/v1/core/pin")
 @RequiredArgsConstructor
 public class PinController {
 	private final PinService pinService;
