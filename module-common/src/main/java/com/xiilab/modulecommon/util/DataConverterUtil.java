@@ -14,14 +14,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class DataConverterUtil {
-	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private static final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 	/**
 	 * DateTime 포멧하는 메소드
 	 * @param unixTime  Prometheus에서 조회된 UnixTime
 	 * @return 포멧된 DateTime
 	 */
-	public String formatDateTime(double unixTime) {
+	public static String formatDateTime(double unixTime) {
 		// UnixTime LocalDateTime으로 변환
 		LocalDateTime dateTime = Instant.ofEpochSecond((long)unixTime)
 			.atZone(ZoneId.systemDefault())
@@ -37,7 +37,7 @@ public class DataConverterUtil {
 	 * @param fieldName  필드 이름
 	 * @return 가져온 필드 값 또는 Null
 	 */
-	public String getStringOrNull(JsonNode node, String fieldName) {
+	public static String getStringOrNull(JsonNode node, String fieldName) {
 		JsonNode field = node.get(fieldName);
 		return field == null ? "" : field.asText();
 	}
@@ -47,7 +47,7 @@ public class DataConverterUtil {
 	 * @param formattedDateTime 변환될 Date Time
 	 * @return 변경된 UnixTime
 	 */
-	public String toUnixTime(String formattedDateTime) {
+	public static String toUnixTime(String formattedDateTime) {
 		LocalDateTime dateTime = LocalDateTime.parse(formattedDateTime, DateTimeFormatter.ofPattern(dateFormat));
 		return String.valueOf(dateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
 	}
@@ -57,7 +57,7 @@ public class DataConverterUtil {
 	 * @param sizeStr 반올림될 값
 	 * @return 변환된 값
 	 */
-	public double formatRoundTo(String sizeStr) {
+	public static double formatRoundTo(String sizeStr) {
 		try {
 			// 문자열을 double로 변환
 			double inputValue = Double.parseDouble(sizeStr);
@@ -68,7 +68,7 @@ public class DataConverterUtil {
 			throw new IllegalArgumentException("반올림 실패하였습니다.");
 		}
 	}
-	public JsonNode jsonparser(String jsonResponse) throws JsonProcessingException {
+	public static JsonNode jsonparser(String jsonResponse) throws JsonProcessingException {
 		return objectMapper.readTree(jsonResponse);
 	}
 	/**
@@ -76,7 +76,7 @@ public class DataConverterUtil {
 	 * @param metric 매핑될 metric
 	 * @return 매핑된 값
 	 */
-	public String formatObjectMapper(String metric){
+	public static String formatObjectMapper(String metric){
 		try{
 			return objectMapper.readTree(metric).get("data").get("result").elements().next().get("value").get(1).asText();
 		} catch (JsonProcessingException e) {
@@ -88,7 +88,7 @@ public class DataConverterUtil {
 	 * @param metric 매핑될 metric
 	 * @return 매핑된 값
 	 */
-	public Iterator<JsonNode> formatJsonNode(String metric){
+	public static Iterator<JsonNode> formatJsonNode(String metric){
 		try{
 			return objectMapper.readTree(metric).get("data").get("result").elements();
 		} catch (JsonProcessingException e) {

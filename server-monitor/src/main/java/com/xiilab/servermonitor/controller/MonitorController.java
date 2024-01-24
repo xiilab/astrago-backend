@@ -83,7 +83,7 @@ public class MonitorController {
 	 */
 	@GetMapping("/dashboard/node/{nodeName}")
 	@Operation(summary = "관리자 대시보드  노드별 자원 사용량 조회")
-	public ResponseEntity<ResponseDTO.NodeResourceDTO> getNodeResource(@PathVariable String nodeName){
+	public ResponseEntity<ResponseDTO.NodeResourceDTO> getNodeResource(@PathVariable(name = "nodeName") String nodeName){
 		return new ResponseEntity<>(monitorService.getNodeResource(nodeName), HttpStatus.OK);
 	}
 	/**

@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class MonitorService {
 	private final PrometheusService prometheus;
 	private final K8sMonitorService k8sMonitorService;
-	private final DataConverterUtil common;
 
 	/**
 	 * Prometheus 실시간 데이터 조회하는 메소드
@@ -48,8 +47,8 @@ public class MonitorService {
 	 */
 	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO) {
 		// 검색시간 UnixTime로 변환
-		String startDate = common.toUnixTime(requestDTO.startDate());
-		String endDate = common.toUnixTime(requestDTO.endDate());
+		String startDate = DataConverterUtil.toUnixTime(requestDTO.startDate());
+		String endDate = DataConverterUtil.toUnixTime(requestDTO.endDate());
 		// Promql 생성
 		String promql = getPromql(requestDTO);
 		String result = prometheus.getHistoryMetricByQuery(promql, startDate, endDate);
@@ -106,7 +105,7 @@ public class MonitorService {
 
 		try {
 			// JSON 파싱을 위한 ObjectMapper 생성
-			JsonNode jsonparser = common.jsonparser(jsonResponse);
+			JsonNode jsonparser = DataConverterUtil.jsonparser(jsonResponse);
 			// result 필드 추출
 			JsonNode results = jsonparser.path("data").path("result");
 			for (JsonNode result : results) {
@@ -135,14 +134,14 @@ public class MonitorService {
 		// ResponseDTO 객체 생성하여 반환
 		return new ResponseDTO.RealTimeDTO(
 			metric,
-			common.formatDateTime(result.path("value").get(0).asDouble()),
-			common.getStringOrNull(metricData, "namespace"),
-			common.getStringOrNull(metricData, "node"),
-			common.getStringOrNull(metricData, "kubernetes_node"),
-			common.getStringOrNull(metricData, "pod"),
-			common.getStringOrNull(metricData, "instance"),
-			common.getStringOrNull(metricData, "modelName"),
-			common.getStringOrNull(metricData, "gpu"),
+			DataConverterUtil.formatDateTime(result.path("value").get(0).asDouble()),
+			DataConverterUtil.getStringOrNull(metricData, "namespace"),
+			DataConverterUtil.getStringOrNull(metricData, "node"),
+			DataConverterUtil.getStringOrNull(metricData, "kubernetes_node"),
+			DataConverterUtil.getStringOrNull(metricData, "pod"),
+			DataConverterUtil.getStringOrNull(metricData, "instance"),
+			DataConverterUtil.getStringOrNull(metricData, "modelName"),
+			DataConverterUtil.getStringOrNull(metricData, "gpu"),
 			String.valueOf(value)
 		);
 	}
@@ -188,11 +187,11 @@ public class MonitorService {
 		JsonNode values = result.path("values");
 		// ResponseDTO 객체 생성하여 반환
 		return ResponseDTO.HistoryDTO.builder()
-			.nameSpace(common.getStringOrNull(metricData, "namespace"))
-			.instance(common.getStringOrNull(metricData, "instance"))
+			.nameSpace(DataConverterUtil.getStringOrNull(metricData, "namespace"))
+			.instance(DataConverterUtil.getStringOrNull(metricData, "instance"))
 			.metricName(metric)
-			.podName(common.getStringOrNull(metricData, "pod"))
-			.nodeName(common.getStringOrNull(metricData, "node"))
+			.podName(DataConverterUtil.getStringOrNull(metricData, "pod"))
+			.nodeName(DataConverterUtil.getStringOrNull(metricData, "node"))
 			.valueDTOS(createHistoryValue(values))
 			.build();
 	}
@@ -208,7 +207,7 @@ public class MonitorService {
 			for (JsonNode node : values) {
 				// values DTO List에 추가
 				valueDTOList.add(ResponseDTO.ValueDTO.builder()
-					.dateTime(common.formatDateTime(node.get(0).asDouble()))
+					.dateTime(DataConverterUtil.formatDateTime(node.get(0).asDouble()))
 					.value(node.get(1).textValue())
 					.build());
 			}
@@ -310,20 +309,20 @@ public class MonitorService {
 
 	private ResponseDTO.NodeResourceDTO mapToNodeResourceDTO(String gpuMetric, String memMetric, String cpuMetric, String diskUsage, String nodeName){
 		// gpu 사용량 매핑
-		String gpuResult = common.formatObjectMapper(gpuMetric);
+		String gpuResult = DataConverterUtil.formatObjectMapper(gpuMetric);
 		// cpu 사용량 매핑
-		String cpuResult = common.formatObjectMapper(cpuMetric);
+		String cpuResult = DataConverterUtil.formatObjectMapper(cpuMetric);
 		// mem 사용량 매핑
-		String memResult = common.formatObjectMapper(memMetric);
+		String memResult = DataConverterUtil.formatObjectMapper(memMetric);
 		// disk 사용량 매핑
-		String diskResult = common.formatObjectMapper(diskUsage);
+		String diskResult = DataConverterUtil.formatObjectMapper(diskUsage);
 
 		return ResponseDTO.NodeResourceDTO.builder()
 			.nodeName(nodeName)
-			.gpuUsage(common.formatRoundTo(gpuResult))
-			.cpuUsage(common.formatRoundTo(cpuResult))
-			.memUsage(common.formatRoundTo(memResult))
-			.diskUsage(common.formatRoundTo(diskResult))
+			.gpuUsage(DataConverterUtil.formatRoundTo(gpuResult))
+			.cpuUsage(DataConverterUtil.formatRoundTo(cpuResult))
+			.memUsage(DataConverterUtil.formatRoundTo(memResult))
+			.diskUsage(DataConverterUtil.formatRoundTo(diskResult))
 			.build();
 	}
 
@@ -338,10 +337,10 @@ public class MonitorService {
 	private List<ResponseDTO.WorkspaceDTO> mapToWorkspaceDTO(String gpuMetric, String cpuMetric, String memMetric, String wlPendingMetric){
 		List<ResponseDTO.WorkspaceDTO> workspaceDTOList = new ArrayList<>();
 
-		Iterator<JsonNode> gpuIterator = common.formatJsonNode(gpuMetric);
-		Iterator<JsonNode> cpuSizesIterator = common.formatJsonNode(cpuMetric);
-		Iterator<JsonNode> memSizesIterator = common.formatJsonNode(memMetric);
-		Iterator<JsonNode> wlPendingSizesIterator = common.formatJsonNode(wlPendingMetric);
+		Iterator<JsonNode> gpuIterator = DataConverterUtil.formatJsonNode(gpuMetric);
+		Iterator<JsonNode> cpuSizesIterator = DataConverterUtil.formatJsonNode(cpuMetric);
+		Iterator<JsonNode> memSizesIterator = DataConverterUtil.formatJsonNode(memMetric);
+		Iterator<JsonNode> wlPendingSizesIterator = DataConverterUtil.formatJsonNode(wlPendingMetric);
 
 		while (gpuIterator.hasNext() && cpuSizesIterator.hasNext() && memSizesIterator.hasNext() && wlPendingSizesIterator.hasNext()) {
 			JsonNode gpuResult = gpuIterator.next();
@@ -349,9 +348,9 @@ public class MonitorService {
 			JsonNode memResult = memSizesIterator.next();
 			JsonNode wlPendingResult = wlPendingSizesIterator.next();
 
-			double gpu = common.formatRoundTo(gpuResult.get("value").get(1).asText());
-			double cpu = common.formatRoundTo(cpuResult.get("value").get(1).asText());
-			double mem = common.formatRoundTo(memResult.get("value").get(1).asText());
+			double gpu = DataConverterUtil.formatRoundTo(gpuResult.get("value").get(1).asText());
+			double cpu = DataConverterUtil.formatRoundTo(cpuResult.get("value").get(1).asText());
+			double mem = DataConverterUtil.formatRoundTo(memResult.get("value").get(1).asText());
 			long wlPending = Long.parseLong(wlPendingResult.get("value").get(1).asText());
 
 			String nameSpace = gpuResult.get("metric").get("namespace").asText();
