@@ -1,4 +1,4 @@
-package com.xiilab.modulecommon.service;
+package com.xiilab.modulecommon.util;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-public class DataConverter {
+public class DataConverterUtil {
 	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	/**
@@ -57,16 +57,13 @@ public class DataConverter {
 	 * @param sizeStr 반올림될 값
 	 * @return 변환된 값
 	 */
-	public long formatRoundTo(String sizeStr) {
+	public double formatRoundTo(String sizeStr) {
 		try {
 			// 문자열을 double로 변환
 			double inputValue = Double.parseDouble(sizeStr);
 
 			// 소수점 두 번째 자리까지 반올림
-			double roundedValue = Math.round(inputValue * 100.0) / 100.0;
-
-			// 정수로 변환하여 반환
-			return (int) roundedValue;
+			return Math.round(inputValue * 100.0) / 100.0;
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("반올림 실패하였습니다.");
 		}

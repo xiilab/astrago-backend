@@ -70,9 +70,9 @@ public record ResponseDTO() {
 	 */
 	@Builder
 	public record WorkspaceDTO(String workspaceName,
-							   long gpuUsage,
-							   long cpuUsage,
-							   long memUsage,
+							   double gpuUsage,
+							   double cpuUsage,
+							   double memUsage,
 							   long wlCount,
 							   long pendingCount,
 							   long errorCount) {
@@ -83,10 +83,10 @@ public record ResponseDTO() {
 	 */
 	@Builder
 	public record NodeResourceDTO(String nodeName,
-								  long gpuUsage,
-								  long cpuUsage,
-								  long diskUsage,
-								  long memUsage) {
+								  double gpuUsage,
+								  double cpuUsage,
+								  double diskUsage,
+								  double memUsage) {
 	}
 
 	/**
