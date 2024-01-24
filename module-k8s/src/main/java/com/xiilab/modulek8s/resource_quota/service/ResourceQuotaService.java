@@ -11,5 +11,5 @@ public interface ResourceQuotaService {
 
 	void deleteResourceQuotas(String name, String workspace);
 
-	ResourceQuotaResDTO getResourceQuotas(String name, String namespace);
+	ResourceQuotaResDTO getResourceQuotas(String namespace);
 }

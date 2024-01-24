@@ -30,10 +30,10 @@ public class ResourceQuotaRepoImpl implements ResourceQuotaRepo {
 	}
 
 	@Override
-	public ResourceQuotaResVO getResourceQuotas(String name, String namespace) {
+	public ResourceQuotaResVO getResourceQuotas(String namespace) {
 		ResourceQuota resourceQuota;
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			resourceQuota = kubernetesClient.resourceQuotas().inNamespace(namespace).withName(name).get();
+			resourceQuota = kubernetesClient.resourceQuotas().inNamespace(namespace).list().getItems().get(0);
 		}
 		return new ResourceQuotaResVO(resourceQuota);
 	}
