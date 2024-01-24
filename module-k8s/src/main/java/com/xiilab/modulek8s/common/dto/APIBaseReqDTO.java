@@ -1,4 +1,4 @@
-package com.xiilab.servercore.common.dto;
+package com.xiilab.modulek8s.common.dto;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;

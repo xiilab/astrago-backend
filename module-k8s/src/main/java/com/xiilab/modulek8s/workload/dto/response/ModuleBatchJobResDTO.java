@@ -3,15 +3,18 @@ package com.xiilab.modulek8s.workload.dto.response;
 import java.util.Map;
 
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
+import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
+	private WorkloadStatus status;
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
 
@@ -32,10 +35,27 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
 		command = container.getCommand().get(0);
+		status = getWorkloadStatus(job.getStatus());
 	}
 
 	@Override
 	public WorkloadType getType() {
 		return WorkloadType.BATCH;
+	}
+
+	private WorkloadStatus getWorkloadStatus(JobStatus jobStatus) {
+		Integer active = jobStatus.getActive();
+		Integer failed = jobStatus.getFailed();
+		Integer succeeded = jobStatus.getSucceeded();
+		Integer ready = jobStatus.getReady();
+		if (failed != null && failed > 0) {
+			return WorkloadStatus.ERROR;
+		} else if (ready != null && ready > 0) {
+			return WorkloadStatus.RUNNING;
+		} else if (active != null && active > 0) {
+			return WorkloadStatus.PENDING;
+		} else {
+			return WorkloadStatus.END;
+		}
 	}
 }
