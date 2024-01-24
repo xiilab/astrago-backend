@@ -11,5 +11,5 @@ public interface ResourceQuotaRepo {
 
 	void deleteResourceQuotas(String name, String namespace);
 
-	ResourceQuotaResVO getResourceQuotas(String name, String namespace);
+	ResourceQuotaResVO getResourceQuotas(String namespace);
 }

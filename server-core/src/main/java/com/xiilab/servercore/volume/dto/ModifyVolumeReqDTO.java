@@ -1,7 +1,7 @@
 package com.xiilab.servercore.volume.dto;
 
+import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
-import com.xiilab.servercore.common.dto.APIBaseReqDTO;
 
 import lombok.Getter;
 
