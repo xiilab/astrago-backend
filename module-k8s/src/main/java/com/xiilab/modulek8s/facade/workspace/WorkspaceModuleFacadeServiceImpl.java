@@ -1,0 +1,67 @@
+package com.xiilab.modulek8s.facade.workspace;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
+import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
+import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaReqDTO;
+import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
+import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
+import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeService{
+	private final WorkspaceService workspaceService;
+	private final ResourceQuotaService resourceQuotaService;
+	@Override
+	public WorkspaceDTO.ResponseDTO createWorkspace(CreateWorkspaceDTO createWorkspaceDTO) {
+		//워크스페이스 생성
+		WorkspaceDTO.ResponseDTO workspace = workspaceService.createWorkspace(new WorkspaceDTO.RequestDTO(
+			createWorkspaceDTO.getName(),
+			createWorkspaceDTO.getDescription(),
+			LocalDateTime.now(),
+			createWorkspaceDTO.getCreatorName(),
+			createWorkspaceDTO.getCreator()
+		));
+
+		//워크스페이스 resource quota 생성
+		resourceQuotaService.createResourceQuotas(
+			ResourceQuotaReqDTO.builder()
+				.name(createWorkspaceDTO.getName())
+				.namespace(workspace.getResourceName())
+				.description(createWorkspaceDTO.getDescription())
+				.creator(createWorkspaceDTO.getCreator())
+				.creatorName(createWorkspaceDTO.getCreator())
+				.reqCPU(createWorkspaceDTO.getReqCPU())
+				.reqGPU(createWorkspaceDTO.getReqGPU())
+				.reqMEM(createWorkspaceDTO.getReqMEM())
+				.reqDisk(createWorkspaceDTO.getReqDisk())
+				.build());
+
+		return workspace;
+	}
+
+	@Override
+	public List<WorkspaceDTO.ResponseDTO> getWorkspaceList() {
+		return workspaceService.getWorkspaceList();
+	}
+
+	@Override
+	public void deleteWorkspaceByName(String workspaceName) {
+		workspaceService.deleteWorkspaceByName(workspaceName);
+	}
+
+	@Override
+	public WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceName) {
+		WorkspaceDTO.ResponseDTO workspaceByName = workspaceService.getWorkspaceByName(workspaceName);
+		ResourceQuotaResDTO resourceQuotas = resourceQuotaService.getResourceQuotas(workspaceName);
+		return new WorkspaceTotalDTO(workspaceByName, resourceQuotas);
+	}
+}

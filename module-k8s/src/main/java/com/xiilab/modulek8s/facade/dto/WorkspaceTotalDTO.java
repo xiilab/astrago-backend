@@ -1,4 +1,4 @@
-package com.xiilab.servercore.workspace.dto;
+package com.xiilab.modulek8s.facade.dto;
 
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
