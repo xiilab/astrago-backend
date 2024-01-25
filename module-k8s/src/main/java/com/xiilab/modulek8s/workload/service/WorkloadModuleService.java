@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.workload.service;
 
+import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import java.util.List;
 
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
@@ -11,6 +13,14 @@ public interface WorkloadModuleService {
 	ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 
 	ModuleInteractiveJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
+
+	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
+
+	boolean IsAvailableTestConnectPod(String connectTestLabelName, String namespace);
+
+	void deleteConnectTestDeployment(String deploymentName, String namespace);
+
+	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
 
 	/**
 	 * batch job workload 조회
