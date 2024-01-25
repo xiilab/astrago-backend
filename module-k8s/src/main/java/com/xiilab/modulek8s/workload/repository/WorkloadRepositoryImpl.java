@@ -30,9 +30,11 @@ import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
@@ -67,9 +69,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				.list()
 				.getItems()
 				.get(0);
+			log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+			log.info(connectPod.getMetadata().getName());
+			log.info(connectPod.getMetadata().getLabels().get("app"));
+			log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 			List<PodCondition> conditions = connectPod.getStatus().getConditions();
 			boolean isAvailable = false;
 			for (PodCondition condition : conditions) {
+				log.info(condition.getStatus());
 				String status = condition.getStatus();
 				isAvailable = "true".equalsIgnoreCase(status) ? true : false;
 				if(!isAvailable){
