@@ -12,6 +12,8 @@ import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.PageFindVolumeDTO;
 import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
@@ -96,5 +98,21 @@ public class VolumeService {
 
 	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
 		volumeRepository.modifyVolume(modifyVolumeDTO);
+	}
+
+	public void createPV(CreatePV createPV) {
+		volumeRepository.createPV(createPV);
+	}
+
+	public void createPVC(CreatePVC createPVC) {
+		volumeRepository.createPVC(createPVC);
+	}
+
+	public void deletePVC(String pvcName, String namespace) {
+		volumeRepository.deletePVC(pvcName, namespace);
+	}
+
+	public void deletePV(String pvName) {
+		volumeRepository.deletePV(pvName);
 	}
 }

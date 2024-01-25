@@ -16,13 +16,18 @@ import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
+import com.xiilab.modulek8s.storage.volume.vo.PersistentVolumeClaimVO;
+import com.xiilab.modulek8s.storage.volume.vo.PersistentVolumeVO;
 import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.PersistentVolume;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -152,6 +157,45 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.addToAnnotations(AnnotationField.NAME.getField(), modifyVolumeDTO.getName())
 				.endMetadata()
 				.build());
+		}
+	}
+
+	/**
+	 * 스토리지 생성 - PV 생성
+	 * @param createPV
+	 */
+	@Override
+	public void createPV(CreatePV createPV) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			PersistentVolumeVO persistentVolumeVO = PersistentVolumeVO.dtoToEntity(createPV);
+			PersistentVolume resource = (PersistentVolume)persistentVolumeVO.createResource();
+			client.persistentVolumes().resource(resource).create();
+		}
+	}
+
+	@Override
+	public void deletePVC(String pvcName, String namespace) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.persistentVolumeClaims().inNamespace(namespace).withName(pvcName).delete();
+		}
+	}
+
+	@Override
+	public void deletePV(String pvName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.persistentVolumes().withName(pvName).delete();
+		}
+	}
+
+	/**
+	 * 스토리지 생성 - PVC 생성
+	 */
+	@Override
+	public void createPVC(CreatePVC createPVC){
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			PersistentVolumeClaimVO pvc = PersistentVolumeClaimVO.dtoToEntity(createPVC);
+			PersistentVolumeClaim resource = (PersistentVolumeClaim)pvc.createResource();
+			client.persistentVolumeClaims().resource(resource).create();
 		}
 	}
 

@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.storage.dto.CreateStorageReqDTO;
+import com.xiilab.servercore.storage.dto.StorageDTO;
+import com.xiilab.servercore.storage.service.StorageFacadeService;
 import com.xiilab.servercore.storage.service.StorageService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,12 +20,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/storages")
 public class StorageController {
 	private final StorageService storageService;
+	private final StorageFacadeService storageFacadeService;
 
 	@PostMapping("/")
-	public ResponseEntity<Void> insertStorage(@RequestBody CreateStorageReqDTO createStorageReqDTO){
-		storageService.insertStorage(createStorageReqDTO);
+	public ResponseEntity<Void> insertStorage(@RequestBody StorageDTO storageDTO){
+		storageFacadeService.insertStorage(storageDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
-
 }

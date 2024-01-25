@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.facade.storage;
 import java.util.List;
 
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
@@ -52,5 +53,7 @@ public interface StorageModuleService {
 	List<StorageClassResDTO> findStorageClasses();
 
 	List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes();
+
+	void createStorage(CreateStorageReqDTO createStorageReqDTO);
 
 }
