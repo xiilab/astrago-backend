@@ -8,10 +8,11 @@ import com.xiilab.modulemonitor.dto.ResponseDTO;
 
 @Service
 public interface K8sMonitorService {
-	long getWorkloadErrorCount();
 	long getWorkloadErrorCount(String namespace);
-	long getWorkloadErrorCount(String namespace, String podName);
-	long getNodeErrorCount();
+	long getWorkloadCountByNamespace(String namespace);
+	List<ResponseDTO.NodeResponseDTO> getNodeList();
+	List<ResponseDTO.WorkloadResponseDTO> getWlList();
+	ResponseDTO.WorkspaceResponseDTO getWlList(String namespace);
 	List<ResponseDTO.EventDTO> getEventList();
 	List<ResponseDTO.EventDTO> getEventList(String namespace);
 	List<ResponseDTO.EventDTO> getEventList(String namespace, String podName);
