@@ -15,7 +15,6 @@ import lombok.experimental.SuperBuilder;
 @Entity(name = "TB_HUB_CATEGORY_MAPPING")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@SuperBuilder
 @Getter
 public class HubCategoryMappingEntity {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,10 +1,12 @@
 package com.xiilab.modulek8s.facade.storage;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
@@ -15,11 +17,16 @@ import com.xiilab.modulek8s.storage.common.dto.PageResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
 import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
+import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
+import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class StorageModuleServiceImpl implements StorageModuleService{
 	private final VolumeService volumeService;
 	private final StorageClassService storageClassService;
+	private final WorkloadModuleService workloadModuleService;
 
 	/**
 	 * 워크스페이스(namespace)에 볼륨 생성
@@ -169,5 +177,72 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
 		return storageClassService.findStorageClassesWithVolumes();
+	}
+
+	@Override
+	public void createStorage(CreateStorageReqDTO createStorageReqDTO) {
+		String pvcName = "astrago-pvc-"+ UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-pv-"+ UUID.randomUUID().toString().substring(6);
+		String connectTestDeploymentName = "astrago-deployment-"+ UUID.randomUUID().toString().substring(6);
+		String volumeLabelSelectorName = "storage-volume-"+ UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "connect-test-"+ UUID.randomUUID().toString().substring(6);
+		String hostPath = createStorageReqDTO.getHostPath();
+		String namespace = createStorageReqDTO.getNamespace();
+		String astragoDeploymentName = createStorageReqDTO.getAstragoDeploymentName();
+		//pv 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvName(pvName)
+			.pvcName(pvcName)
+			.ip(createStorageReqDTO.getIp())
+			.storagePath(createStorageReqDTO.getStoragePath())
+			.storageType(createStorageReqDTO.getStorageType())
+			.requestVolume(createStorageReqDTO.getRequestVolume())
+			.namespace(namespace)
+			.build();
+		volumeService.createPV(createPV);
+
+		//pvc 생성
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(namespace)
+			.requestVolume(createStorageReqDTO.getRequestVolume())
+			.build();
+		volumeService.createPVC(createPVC);
+
+		//connect test pod 생성 후 pvc 연결 테스트
+		ConnectTestDTO connectTestDTO = ConnectTestDTO.builder()
+			.deploymentName(connectTestDeploymentName)
+			.volumeLabelSelectorName(volumeLabelSelectorName)
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.namespace(namespace)
+			.connectTestLabelName(connectTestLabelName)
+			.build();
+		//connect test deployment 생성
+		workloadModuleService.createConnectTestDeployment(connectTestDTO);
+
+		//deployment 상태 조회
+		boolean isAvailable = workloadModuleService.IsAvailableTestConnectPod(connectTestLabelName, namespace);
+
+		//connection 실패
+		if(!isAvailable){
+			//pvc, pv, connect deployment 삭제
+			workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+			volumeService.deletePVC(pvcName, namespace);
+			volumeService.deletePV(pvName);
+			//연결 실패 응답
+			throw new RuntimeException("NFS 스토리지 연결 실패");
+		}
+		//connection 성공
+		//connect deployment 삭제, astrago deployment mount edit
+		workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+		EditAstragoDeployment editAstragoDeployment = EditAstragoDeployment.builder()
+			.hostPath(hostPath)
+			.pvcName(pvcName)
+			.volumeLabelSelectorName(volumeLabelSelectorName)
+			.namespace(namespace)
+			.astragoDeploymentName(astragoDeploymentName)
+			.build();
+		workloadModuleService.editAstragoDeployment(editAstragoDeployment);
 	}
 }
