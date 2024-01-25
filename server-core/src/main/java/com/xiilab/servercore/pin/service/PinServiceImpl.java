@@ -21,19 +21,19 @@ public class PinServiceImpl implements PinService {
 
 	@Override
 	public Set<String> getUserWorkspacePinList(String userId) {
-		List<PinEntity> workspacePins = pinRepository.findByTypeAndUser_Id(PinType.WORKSPACE, userId);
+		List<PinEntity> workspacePins = pinRepository.findByTypeAndAndRegUser_RegUserId(PinType.WORKSPACE, userId);
 		return workspacePins.stream().map(PinEntity::getResourceId).collect(Collectors.toSet());
 	}
 
 	@Override
 	public Set<String> getUserWorkloadPinList(String userId) {
-		List<PinEntity> workloadPins = pinRepository.findByTypeAndUser_Id(PinType.WORKLOAD, userId);
+		List<PinEntity> workloadPins = pinRepository.findByTypeAndAndRegUser_RegUserId(PinType.WORKLOAD, userId);
 		return workloadPins.stream().map(PinEntity::getResourceId).collect(Collectors.toSet());
 	}
 
 	@Override
 	public void createWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
-		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndUser_Id(PinType.WORKSPACE,
+		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKSPACE,
 			resourceId, userInfoDTO.getId());
 
 		if (pinEntity != null) {
@@ -41,7 +41,7 @@ public class PinServiceImpl implements PinService {
 		}
 
 		//해당 유저가 pin을 6개 이상 생성했는지 검사
-		List<PinEntity> workspaceList = pinRepository.findByTypeAndUser_Id(PinType.WORKSPACE, userInfoDTO.getId());
+		List<PinEntity> workspaceList = pinRepository.findByTypeAndAndRegUser_RegUserId(PinType.WORKSPACE, userInfoDTO.getId());
 		if (workspaceList.size() >= 6) {
 			throw new IllegalArgumentException("");
 		}
@@ -50,7 +50,7 @@ public class PinServiceImpl implements PinService {
 
 	@Override
 	public void createWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
-		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndUser_Id(PinType.WORKLOAD,
+		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKLOAD,
 			resourceId, userInfoDTO.getId());
 
 		if (pinEntity != null) {
@@ -63,12 +63,12 @@ public class PinServiceImpl implements PinService {
 	@Override
 	@Transactional
 	public void deleteWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
-		pinRepository.deleteByTypeAndResourceIdAndUser_Id(PinType.WORKSPACE, resourceId, userInfoDTO.getId());
+		pinRepository.deleteByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKSPACE, resourceId, userInfoDTO.getId());
 	}
 
 	@Override
 	@Transactional
 	public void deleteWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
-		pinRepository.deleteByTypeAndResourceIdAndUser_Id(PinType.WORKLOAD, resourceId, userInfoDTO.getId());
+		pinRepository.deleteByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKLOAD, resourceId, userInfoDTO.getId());
 	}
 }

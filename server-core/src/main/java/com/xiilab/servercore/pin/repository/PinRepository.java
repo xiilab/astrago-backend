@@ -10,9 +10,9 @@ import com.xiilab.servercore.pin.enumeration.PinType;
 
 @Repository
 public interface PinRepository extends JpaRepository<PinEntity, Long> {
-	List<PinEntity> findByTypeAndUser_Id(PinType type, String id);
+	List<PinEntity> findByTypeAndAndRegUser_RegUserId(PinType type, String id);
 
-	long deleteByTypeAndResourceIdAndUser_Id(PinType type, String resourceId, String id);
+	long deleteByTypeAndResourceIdAndRegUser_RegUserId(PinType type, String resourceId, String id);
 
-	PinEntity findByTypeAndResourceIdAndUser_Id(PinType type, String resourceId, String id);
+	PinEntity findByTypeAndResourceIdAndRegUser_RegUserId(PinType type, String resourceId, String id);
 }

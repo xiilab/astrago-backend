@@ -33,8 +33,8 @@ public class CredentialServiceImpl implements CredentialService {
 	public CredentialResDTO.CredentialInfo findCredentialById(long id, UserInfoDTO userInfoDTO) {
 		CredentialEntity credentialEntity = credentialRepository.findById(id)
 			.orElseThrow(IllegalArgumentException::new);
-		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN && !(credentialEntity.getUser()
-			.getId()
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN && !(credentialEntity.getRegUser()
+			.getRegUserId()
 			.equals(userInfoDTO.getId()))) {
 			//TODO 에러 처리에 대한 메시지 및 방안 고려해야함
 			throw new IllegalArgumentException();
@@ -48,7 +48,7 @@ public class CredentialServiceImpl implements CredentialService {
 		if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN) {
 			credentialEntities = credentialRepository.findAll(pageable);
 		} else {
-			credentialEntities = credentialRepository.findByUser_Name(userInfoDTO.getUserName(), pageable);
+			credentialEntities = credentialRepository.findByRegUser_RegUserId(userInfoDTO.getUserName(), pageable);
 		}
 		return Objects.requireNonNull(credentialEntities).map(CredentialResDTO::new);
 	}

@@ -10,17 +10,17 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.repository.KeycloakUserRepository;
-import com.xiilab.servercore.common.entity.User;
+import com.xiilab.servercore.common.entity.RegUser;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AuditorAwareImpl implements AuditorAware<User> {
+public class AuditorAwareImpl implements AuditorAware<RegUser> {
 	@Autowired
 	private KeycloakUserRepository repository;
 
 	@Override
-	public Optional<User> getCurrentAuditor() {
+	public Optional<RegUser> getCurrentAuditor() {
 		Authentication authentication = SecurityContextHolder
 			.getContext()
 			.getAuthentication();
@@ -32,6 +32,6 @@ public class AuditorAwareImpl implements AuditorAware<User> {
 		Jwt principal = (Jwt)authentication.getPrincipal();
 		UserInfo userInfo = repository.getUserInfoById(principal.getSubject());
 
-		return Optional.of(new User(userInfo.getId(), userInfo.getUserName()));
+		return Optional.of(new RegUser(userInfo.getId(), userInfo.getUserName()));
 	}
 }
