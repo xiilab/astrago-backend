@@ -75,7 +75,7 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 		return ResourceType.PV;
 	}
 	private PersistentVolumeSpec createSpec() {
-		if(storageType.equals(StorageType.NFS.name())){
+		if(storageType.name().equals(StorageType.NFS.name())){
 			return new PersistentVolumeSpecBuilder()
 				.addToCapacity(Collections.singletonMap("storage", new Quantity(requestVolume + "Gi")))
 				.withAccessModes(AccessMode.RWM.getAccessMode())
