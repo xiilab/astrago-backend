@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-public class RegUser {
+public class RegUser{
 	@Column(name = "REG_USER_ID")
 	protected String regUserId;
 	@Column(name = "REG_USER_NAME")
