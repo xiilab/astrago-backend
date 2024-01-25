@@ -22,12 +22,14 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
         default_batch_fetch_size: 100
+        show_sql: true
+        format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
   messages:

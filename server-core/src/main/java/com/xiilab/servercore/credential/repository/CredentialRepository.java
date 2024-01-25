@@ -9,5 +9,5 @@ import com.xiilab.servercore.credential.entity.CredentialEntity;
 @Repository
 public interface CredentialRepository extends JpaRepository<CredentialEntity, Long> {
 
-	Page<CredentialEntity> findByUser_Name(String name, Pageable pageable);
+	Page<CredentialEntity> findByRegUser_RegUserId(String name, Pageable pageable);
 }

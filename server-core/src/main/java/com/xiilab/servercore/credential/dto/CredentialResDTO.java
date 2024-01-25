@@ -25,7 +25,7 @@ public class CredentialResDTO {
 		this.id = credential.getId();
 		this.name = credential.getName();
 		this.type = credential.getType();
-		this.creator = credential.getUser().getName();
+		this.creator = credential.getRegUser().getRegUserName();
 		this.createdAt = credential.getCreatedAt();
 	}
 
@@ -38,7 +38,7 @@ public class CredentialResDTO {
 		private String loginPw;
 
 		public CredentialInfo(CredentialEntity credential) {
-			super(credential.getId(), credential.getName(), credential.getType(), credential.getUser().getName(), credential.getCreatedAt());
+			super(credential.getId(), credential.getName(), credential.getType(), credential.getRegUser().getRegUserName(), credential.getCreatedAt());
 			this.loginId = credential.getLoginId();
 			this.loginPw = credential.getLoginPw();
 		}

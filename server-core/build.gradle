@@ -12,6 +12,8 @@ dependencies {
     // KeyCloak
     implementation 'org.keycloak:keycloak-admin-client:23.0.1'
     implementation 'org.keycloak:keycloak-spring-boot-starter:23.0.1'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     // websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket:3.2.1'
