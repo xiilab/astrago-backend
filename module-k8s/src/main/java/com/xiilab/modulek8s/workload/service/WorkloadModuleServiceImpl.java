@@ -37,7 +37,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace) {
+	public boolean IsAvailableTestConnectPod(String connectTestLabelName, String namespace) {
 		return workloadRepository.testConnectPodIsAvailable(connectTestLabelName, namespace);
 	}
 

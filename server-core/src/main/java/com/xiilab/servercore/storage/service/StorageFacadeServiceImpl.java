@@ -27,13 +27,15 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private String namespace;
 	@Value("${astrago.deployment-name}")
 	private String astragoDeploymentName;
+	@Value("${astrago.storage-default-path}")
+	private String storageDefaultPath;
 
 	@Override
 	public void insertStorage(StorageDTO storageDTO) {
 		//1. host에 스토리지 path 디렉토리 생성
 		String storageName = storageDTO.getStorageName();
 		Path hostPath = Paths.get(
-			"/root/kube-storage/" + storageName + "-" + UUID.randomUUID().toString().substring(6));
+			System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID().toString().substring(6));
 		try {
 			Files.createDirectories(hostPath);
 		} catch (IOException e) {

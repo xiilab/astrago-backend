@@ -16,7 +16,7 @@ public interface WorkloadModuleService {
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
-	boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace);
+	boolean IsAvailableTestConnectPod(String connectTestLabelName, String namespace);
 
 	void deleteConnectTestDeployment(String deploymentName, String namespace);
 

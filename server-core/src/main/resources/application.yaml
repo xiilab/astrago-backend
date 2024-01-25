@@ -61,5 +61,6 @@ admin:
 astrago:
   namespace: astrago
   deployment-name: astrago-backend-core
+  storage-default-path: "/kube-storage/"
 
 mig-profile-path: src/main/resources/MigProfile.json
