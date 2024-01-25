@@ -25,8 +25,8 @@ public class ResourceQuotaServiceImpl implements ResourceQuotaService {
 	}
 
 	@Override
-	public ResourceQuotaResDTO getResourceQuotas(String name, String namespace) {
-		ResourceQuotaResVO resourceQuotas = resourceQuotaRepo.getResourceQuotas(name, namespace);
+	public ResourceQuotaResDTO getResourceQuotas(String namespace) {
+		ResourceQuotaResVO resourceQuotas = resourceQuotaRepo.getResourceQuotas(namespace);
 		return ResourceQuotaResDTO.builder()
 			.name(resourceQuotas.getName())
 			.namespace(resourceQuotas.getNamespace())

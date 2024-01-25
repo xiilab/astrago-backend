@@ -1,17 +1,21 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.util.Map;
+import java.util.Objects;
 
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
+import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
+	private WorkloadStatus status;
 	public ModuleInteractiveJobResDTO(Deployment deployment) {
 		super(deployment);
 
@@ -35,10 +39,24 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
 		command = container.getCommand() != null ? null : container.getCommand().get(0);
+		status = getWorkloadStatus(deployment.getStatus());
 	}
 
 	@Override
 	public WorkloadType getType() {
 		return WorkloadType.BATCH;
+	}
+
+	private WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {
+		Integer replicas = deploymentStatus.getReplicas();
+		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
+		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
+		if (unavailableReplicas != null && unavailableReplicas > 0) {
+			return WorkloadStatus.ERROR;
+		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+			return WorkloadStatus.RUNNING;
+		} else {
+			return WorkloadStatus.PENDING;
+		}
 	}
 }

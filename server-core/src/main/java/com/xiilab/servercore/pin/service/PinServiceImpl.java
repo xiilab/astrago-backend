@@ -1,13 +1,13 @@
 package com.xiilab.servercore.pin.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.pin.dto.PinDTO;
 import com.xiilab.servercore.pin.entity.PinEntity;
 import com.xiilab.servercore.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.repository.PinRepository;
@@ -20,33 +20,15 @@ public class PinServiceImpl implements PinService {
 	private final PinRepository pinRepository;
 
 	@Override
-	public List<PinDTO.ResponseDTO> getUserWorkspacePinList(String userId) {
+	public Set<String> getUserWorkspacePinList(String userId) {
 		List<PinEntity> workspacePins = pinRepository.findByTypeAndUser_Id(PinType.WORKSPACE, userId);
-		return workspacePins.stream().map(pinEntity
-				-> PinDTO.ResponseDTO
-				.builder()
-				.id(pinEntity.getId())
-				.type(pinEntity.getType())
-				.resourceId(pinEntity.getResourceId())
-				.userId(pinEntity.getUser().getId())
-				.userName(pinEntity.getUser().getName())
-				.build())
-			.collect(Collectors.toList());
+		return workspacePins.stream().map(PinEntity::getResourceId).collect(Collectors.toSet());
 	}
 
 	@Override
-	public List<PinDTO.ResponseDTO> getUserWorkloadPinList(String userId) {
-		List<PinEntity> workspacePins = pinRepository.findByTypeAndUser_Id(PinType.WORKLOAD, userId);
-		return workspacePins.stream().map(pinEntity
-				-> PinDTO.ResponseDTO
-				.builder()
-				.id(pinEntity.getId())
-				.type(pinEntity.getType())
-				.resourceId(pinEntity.getResourceId())
-				.userId(pinEntity.getUser().getId())
-				.userName(pinEntity.getUser().getName())
-				.build())
-			.collect(Collectors.toList());
+	public Set<String> getUserWorkloadPinList(String userId) {
+		List<PinEntity> workloadPins = pinRepository.findByTypeAndUser_Id(PinType.WORKLOAD, userId);
+		return workloadPins.stream().map(PinEntity::getResourceId).collect(Collectors.toSet());
 	}
 
 	@Override
