@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -28,7 +29,11 @@ public class BaseEntity {
 	//SecurityContext에서 현재 로그인한 ID를 가져와 자동으로 넣어줌
 	@Embedded
 	@CreatedBy
-	protected User user;
+	protected RegUser regUser;
+
+	@Embedded
+	@LastModifiedBy
+	protected ModUser modUser;
 
 	//데이터의 등록시간과 수정시간과 같이 자동으로 추가되고 변경되어야하는 칼럼 처리해주기 위한 Entity
 	@CreatedDate
