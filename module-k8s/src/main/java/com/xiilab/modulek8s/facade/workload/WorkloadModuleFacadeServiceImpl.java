@@ -13,10 +13,12 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
+import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.service.SvcService;
 
+import io.fabric8.kubernetes.client.dsl.LogWatch;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -25,6 +27,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final WorkloadModuleService workloadModuleService;
 	private final VolumeService volumeService;
 	private final SvcService svcService;
+	private final LogService logService;
 
 	@Override
 	public ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -99,6 +102,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		}
 
 		return workloadList;
+	}
+
+	@Override
+	public LogWatch watchLogByWorkload(String workspaceId, String workloadId) {
+		return logService.watchLogByWorkload(workspaceId, workloadId);
 	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {

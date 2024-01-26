@@ -7,6 +7,8 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 
+import io.fabric8.kubernetes.client.dsl.LogWatch;
+
 public interface WorkloadModuleFacadeService {
 	/**
 	 * 워크로드 - 배치잡 생성
@@ -26,4 +28,6 @@ public interface WorkloadModuleFacadeService {
 	void deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 
 	List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
+
+	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 }
