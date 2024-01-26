@@ -1,13 +1,16 @@
 package com.xiilab.modulek8s.workload.service;
 
-import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
-import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import java.util.List;
 
+import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
+
+import io.fabric8.kubernetes.client.dsl.ExecListenable;
 
 public interface WorkloadModuleService {
 	ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
@@ -71,4 +74,6 @@ public interface WorkloadModuleService {
 	 * @param workloadName
 	 */
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
+
+	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
 }
