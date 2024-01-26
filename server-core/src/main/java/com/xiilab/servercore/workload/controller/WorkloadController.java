@@ -1,7 +1,5 @@
 package com.xiilab.servercore.workload.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,12 +10,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
+import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +29,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkloadController {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final WorkloadFacadeService workloadFacadeService;
 
 	/**
 	 * 워크로드 생성 - 배치 잡
+	 *
 	 * @param createWorkloadJobReqDTO
 	 * @return
 	 */
@@ -44,6 +48,7 @@ public class WorkloadController {
 
 	/**
 	 * 워크로드 생성 - 배치 잡
+	 *
 	 * @param createWorkloadJobReqDTO
 	 * @return
 	 */
@@ -76,9 +81,18 @@ public class WorkloadController {
 
 	@GetMapping("/jobList")
 	@Operation(summary = "워크로드 리스트 조회")
-	public ResponseEntity<List<ModuleWorkloadResDTO>> getWorkloadList(
-		@RequestParam("workSpaceName") String workSpaceName) {
-		return new ResponseEntity<>(workloadModuleFacadeService.getWorkloadList(workSpaceName), HttpStatus.OK);
+	public ResponseEntity<PageDTO> getWorkloadList(
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "searchName", required = false) String searchName,
+		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
+		@RequestParam(value = "workloadSortCondition", required = false) WorkloadSortCondition workloadSortCondition,
+		@RequestParam(value = "pageNum") int pageNum,
+		UserInfoDTO userInfoDTO
+	) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadListByCondition(workloadType, workspaceName, searchName, workloadStatus,
+				workloadSortCondition, pageNum, userInfoDTO), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/batch")

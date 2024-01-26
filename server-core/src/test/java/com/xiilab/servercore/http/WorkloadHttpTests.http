@@ -1,0 +1,23 @@
+### 로그인
+POST http://10.61.3.8:30001/realms/myrealm/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=kubernetes-client&grant_type=password&username=hc.park&password=xiirocks&client_secret=7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
+
+> {%
+    client.test("Validate", function() { // Validate라는 이름의 테스트를 수행
+        client.assert(response.status === 200, "Response status is not 200"); // 응답값이 200이면 통과
+        client.assert(response.contentType.mimeType === "application/json", "Expected 'application/json'"); // 응답값이 application/json이면 통과
+        client.assert(response.body.accessToken.trim().length > 0); // 토큰 길이가 0보다 크면 통과
+    });
+
+    client.log(response.body.access_token); // 토큰 값 로깅, body에는 응답받은 json이 객체 형식으로 저장된다. 즉 { accessToken:"value" }가 응답이라면, 여기선 value라 로깅된다.
+    client.global.set("access_token",response.body.access_token) // 토큰 값을 global 변수에 set
+%}
+
+### workspace pin 추가
+GET http://localhost:8080/api/v1/core/workloads/jobList
+Authorization: Bearer {{access_token}}
+Content-Type: application/x-www-form-urlencoded
+
+workloadType="batch"&workspaceName="astrago"&pageNum=1

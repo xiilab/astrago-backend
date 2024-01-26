@@ -29,6 +29,8 @@ public class PinEntity extends BaseEntity {
 	private PinType type;
 	@Column(name = "PIN_RESOURCE_ID")
 	private String resourceId;
+	@Column(name = "PIN_WORKSPACE_NAME")
+	private String workspaceName;
 
 	public PinEntity(PinType type, String resourceId) {
 		this.type = type;

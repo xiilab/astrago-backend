@@ -88,8 +88,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	@Override
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
-		List<ModuleWorkloadResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
-		List<ModuleWorkloadResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
+		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
+		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
 
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);

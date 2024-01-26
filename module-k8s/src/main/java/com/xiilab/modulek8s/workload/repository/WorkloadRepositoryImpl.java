@@ -1,14 +1,12 @@
 package com.xiilab.modulek8s.workload.repository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
@@ -50,19 +48,19 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName) {
 		JobList batchJobList = getBatchJobList(workSpaceName);
 		return batchJobList.getItems().stream()
 			.map(ModuleBatchJobResDTO::new)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
+	public List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
 		DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
 		return interactiveJobList.getItems().stream()
 			.map(ModuleInteractiveJobResDTO::new)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	@Override

@@ -12,21 +12,22 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public abstract class ModuleWorkloadResDTO {
-	String uid;							//워크로드 고유 ID
+	String uid;							// 워크로드 고유 ID
 	String name;						// 워크로드 이름
 	String description;					// 워크로드 설명
-	String creatorId;					//생성자 ID
-	String workspace;					//워크스페이스
+	String creatorId;					// 생성자 ID
+	String workspace;					// 워크스페이스
 	WorkloadType type;					// 워크로드 타입
-	String image;						//사용할 image
+	String image;						// 사용할 image
 	String gpuRequest;					// 워크로드 gpu 요청량
 	String cpuRequest;					// 워크로드 cpu 요청량
 	String memRequest;					// 워크로드 mem 요청량
 	SchedulingType schedulingType;		// 스케줄링 방식
-	List<ModuleEnvResDTO> envs;			//env 정의
-	List<ModulePortResDTO> ports;		//port 정의
+	List<ModuleEnvResDTO> envs;			// env 정의
+	List<ModulePortResDTO> ports;		// port 정의
 	String command;						// 워크로드 명령
-	WorkloadStatus status;				//워크로드 status
+	WorkloadStatus status;				// 워크로드 status
+	int age;							// 실행시간
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
 		name = hasMetadata.getMetadata().getName();

@@ -5,7 +5,6 @@ import java.util.List;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 
 public interface WorkloadModuleService {
 	ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
@@ -36,7 +35,7 @@ public interface WorkloadModuleService {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName);
+	List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName);
 
 	/**
 	 * interactive job workload list 조회
@@ -44,7 +43,7 @@ public interface WorkloadModuleService {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName);
+	List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName);
 
 	/**
 	 * batch job workload 삭제
