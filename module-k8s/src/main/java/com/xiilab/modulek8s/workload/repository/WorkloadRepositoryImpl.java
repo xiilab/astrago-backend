@@ -15,9 +15,7 @@ import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
-import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.ListOptionsBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
@@ -178,16 +176,17 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName) {
 		KubernetesClient kubernetesClient = k8sAdapter.configServer();
-		// List<Pod> items = kubernetesClient.pods().inNamespace(workspaceName).list(new ListOptionsBuilder().build());
 		Deployment deployment = kubernetesClient.apps()
 			.deployments()
 			.inNamespace(workspaceName)
 			.withName(workloadName)
 			.get();
-		deployment.getSpec().getTemplate().getSpec().
+		String app = deployment.getMetadata().getLabels().get("app");
+		String namespace = deployment.getMetadata().getNamespace();
+		Pod pod = kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		return kubernetesClient.pods()
 			.inNamespace(workspaceName)
-			.withName(name)
+			.withName(pod.getMetadata().getName())
 			.redirectingInput()
 			.redirectingOutput()
 			.redirectingError()

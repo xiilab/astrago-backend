@@ -16,7 +16,7 @@ public class TerminalMessage {
 	/**
 	 * 메세지 종류
 	 */
-	private TerminalMessageType type;
+	private TerminalMessageType messageType;
 	/**
 	 * user key press key
 	 */
@@ -40,11 +40,11 @@ public class TerminalMessage {
 	/**
 	 * workspace name
 	 */
-	private String workspaceName;
+	private String workspace;
 	/**
 	 * worklaod name
 	 */
-	private String workloadName;
+	private String workload;
 	/**
 	 * workload type(BATCH, INTERACTIVE)
 	 */

@@ -71,7 +71,9 @@ public class NodeSvcVO extends K8SResourceReqVO {
 				AnnotationField.TYPE.getField(), getSvcType().getType()
 			))
 			.withLabels(Map.of(
-				LabelField.CONTROL_BY.getField(), "astra"
+				LabelField.CONTROL_BY.getField(), "astra",
+				LabelField.JOB_NAME.getField(), jobName,
+				LabelField.APP.getField(), jobName
 			))
 			.build();
 	}
@@ -80,7 +82,7 @@ public class NodeSvcVO extends K8SResourceReqVO {
 		ServiceSpecBuilder serviceSpecBuilder = new ServiceSpecBuilder()
 			.withType(SvcType.NODE_PORT.getType())
 			.withSelector(Map.of(
-				LabelField.JOB_NAME.getField(), jobName
+				LabelField.APP.getField(), jobName
 			));
 
 		if (!CollectionUtils.isEmpty(ports)) {

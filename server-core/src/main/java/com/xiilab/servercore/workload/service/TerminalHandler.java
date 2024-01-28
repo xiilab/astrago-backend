@@ -34,7 +34,7 @@ public class TerminalHandler {
 		}
 
 		// 메세제 타입에 따른 분류처리
-		switch (messageMap.getType()) {
+		switch (messageMap.getMessageType()) {
 			// TERMINAL_HELP : 타입 제공
 			case TERMINAL_HELP:
 				terminalService.sendLogMessage("TERMINAL_HOST | TERMINAL_INIT | TERMINAL_COMMAND | TERMINAL_RESIZE | TERMINAL_ALERT | TERMINAL_LOG ");

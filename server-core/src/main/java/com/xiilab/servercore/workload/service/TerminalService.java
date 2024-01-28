@@ -113,18 +113,16 @@ public class TerminalService {
 	 */
 	private void initializeProcess() throws KubernetesClientException {
 		WorkloadType workloadType = messageInfo.getWorkloadType();
-		String workloadName = messageInfo.getWorkloadName();
-		String workspaceName = messageInfo.getWorkspaceName();
-		this.watch = k8sService.connectWorkloadTerminal(workloadName,workspaceName,workloadType).usingListener(
-			new ExecListener() {
-				@Override
-				public void onClose(int code, String reason) {
-					log.info("close terminal : {}", code);
-					try {
-						disConnect();
-					} catch (IOException | InterruptedException e) {
-						log.error(e.getMessage());
-					}
+		String workloadName = messageInfo.getWorkload();
+		String workspaceName = messageInfo.getWorkspace();
+		this.watch = k8sService.connectWorkloadTerminal(workloadName, workspaceName, workloadType).usingListener(
+			(code, reason) -> {
+				log.info("close terminal : {}", code);
+				try {
+					disConnect();
+				} catch (IOException | InterruptedException e) {
+					log.error(e.getMessage());
+					Thread.currentThread().interrupt();
 				}
 			}
 		).exec("/bin/bash");
@@ -143,12 +141,10 @@ public class TerminalService {
 		out = new BufferedReader(new InputStreamReader(terminalInputStream));
 
 		try {
-			String message = new ObjectMapper().writeValueAsString(new HashMap<String, String>() {{
-				put("type", "TERMINAL_INIT");
-			}});
+			String message = new ObjectMapper().writeValueAsString(Map.of("type", "TERMINAL_INIT"));
 			webSocketSession.sendMessage(new TextMessage(message));
 		} catch (IOException e) {
-
+			log.error(e.getMessage());
 		}
 
 		// 클라이언트에서 수신받은 인풋스트림을 별도의 쓰레드로 받아와서 문자열로 치한후 웹소켓으로 클라이언트에게 전송
