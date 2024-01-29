@@ -53,6 +53,7 @@ public class StorageServiceImpl implements StorageService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteById(Long storageId) {
 		storageRepository.deleteById(storageId);
 	}
