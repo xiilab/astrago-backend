@@ -223,7 +223,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
 
 		//deployment 상태 조회
-		boolean isAvailable = workloadModuleService.IsAvailableTestConnectPod(connectTestLabelName, namespace);
+		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
 
 		//connection 실패
 		if(!isAvailable){
