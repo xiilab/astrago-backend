@@ -1,10 +1,8 @@
 package com.xiilab.servercore.common.dto;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,22 +25,24 @@ public class UserInfoDTO {
 	private List<String> workspaces;
 	private String userRealName;
 
-	public Set<String> getWorkspaceList() {
+	public Set<String> getWorkspaceList(boolean isMyWorkspace) {
 		if (workspaces != null && !workspaces.isEmpty()) {
-			return workspaces.stream().map(group -> group.split("/")[0]).collect(Collectors.toSet());
+			if (isMyWorkspace) {
+				//내가 생성한 워크스페이스만 리턴
+				return getMyWorkspace();
+			} else {
+				//내가 생성했거나, 멤버로 속해있는 워크스페이스 리턴
+				return workspaces.stream().map(group -> group.split("/")[0]).collect(Collectors.toSet());
+			}
 		} else {
 			return new HashSet<>();
 		}
 	}
 
-	public Map<String, String> getUserWorkspace() {
-		if (workspaces != null && !workspaces.isEmpty()) {
-			return workspaces.stream().map(workspace -> workspace.split("/")).collect(Collectors.toMap(
-				v -> v[0],
-				v -> v[1]
-			));
-		} else {
-			return new HashMap<>();
-		}
+	private Set<String> getMyWorkspace() {
+		return workspaces.stream()
+			.filter(ws -> ws.contains("/owner"))
+			.map(group -> group.split("/")[0])
+			.collect(Collectors.toSet());
 	}
 }
