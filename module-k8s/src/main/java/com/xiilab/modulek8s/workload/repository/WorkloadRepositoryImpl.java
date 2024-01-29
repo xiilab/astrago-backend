@@ -163,10 +163,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName) {
 		KubernetesClient kubernetesClient = k8sAdapter.configServer();
 		Job job = kubernetesClient.batch().v1().jobs().inNamespace(workspaceName).withName(workloadName).get();
-		String name = job.getSpec().getTemplate().getSpec().getContainers().get(0).getName();
+		String app = job.getMetadata().getLabels().get("app");
+		String namespace = job.getMetadata().getNamespace();
+		Pod pod = kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		return kubernetesClient.pods()
 			.inNamespace(workspaceName)
-			.withName(name)
+			.withName(pod.getMetadata().getName())
 			.redirectingInput()
 			.redirectingOutput()
 			.redirectingError()
