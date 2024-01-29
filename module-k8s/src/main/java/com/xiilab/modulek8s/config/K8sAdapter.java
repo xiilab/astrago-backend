@@ -14,7 +14,6 @@ public class K8sAdapter {
 	 */
 	public KubernetesClient configServer() {
 		Config config = new ConfigBuilder()
-			.withRequestTimeout(0)
 			.build();
 		return new KubernetesClientBuilder().withConfig(config).build();
 	}

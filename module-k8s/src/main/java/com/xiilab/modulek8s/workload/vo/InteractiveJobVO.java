@@ -77,6 +77,8 @@ public class InteractiveJobVO extends WorkloadVO {
 
 		map.put(LabelField.CREATOR.getField(), getCreator());
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
+		map.put(LabelField.APP.getField(), jobName);
+		map.put(LabelField.JOB_NAME.getField(), jobName);
 		volumes.forEach(volume -> map.put(volume.name(), "true"));
 
 		return map;
@@ -87,9 +89,9 @@ public class InteractiveJobVO extends WorkloadVO {
 	public DeploymentSpec createSpec() {
 		return new DeploymentSpecBuilder()
 			.withReplicas(1)
-			.withNewSelector().withMatchLabels(Map.of(LabelField.JOB_NAME.getField(), jobName)).endSelector()
+			.withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
 			.withTemplate(new PodTemplateSpecBuilder()
-				.withNewMetadata().withLabels(Collections.singletonMap(LabelField.JOB_NAME.getField(), jobName)).endMetadata()
+				.withNewMetadata().withLabels(Collections.singletonMap(LabelField.APP.getField(), jobName)).endMetadata()
 				.withSpec(createPodSpec())
 				.build()
 			)

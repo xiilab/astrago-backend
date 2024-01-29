@@ -31,7 +31,7 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 
 	// 소켓 연결됐을 때
 	@Override
-	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+	public void afterConnectionEstablished(WebSocketSession session) {
 		log.info("Socket 연결! sessionID: {}", session.getId());
 		workloadLogWebSocketSessionMap.put(session.getId(), session);
 	}

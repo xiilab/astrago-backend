@@ -15,10 +15,13 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-
     // websocket
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket:3.2.1'
+    //k8s
     implementation 'io.fabric8:kubernetes-client:6.9.2'
+    //terminal
+    implementation 'jakarta.inject:jakarta.inject-api:2.0.1' //추가
+
 }
 
 

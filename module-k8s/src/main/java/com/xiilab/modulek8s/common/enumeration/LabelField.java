@@ -14,7 +14,8 @@ public enum LabelField {
 	RESOURCE_NAME("resource-name"),
 	STORAGE_NAME("storage-name"),
 	CONTROL_BY("control-by"),
-	JOB_NAME("job-name");
+	JOB_NAME("job-name"),
+	APP("app");
 
 	private final String field;
 }

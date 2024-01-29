@@ -12,6 +12,8 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
+import io.fabric8.kubernetes.client.dsl.ExecListenable;
+
 @Repository
 public interface WorkloadRepository {
 	/**
@@ -87,4 +89,7 @@ public interface WorkloadRepository {
 	 * @param workloadName
 	 */
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
+
+	ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName);
+	ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName);
 }
