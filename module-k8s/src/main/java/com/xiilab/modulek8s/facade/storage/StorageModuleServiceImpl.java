@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
@@ -20,6 +21,7 @@ import com.xiilab.modulek8s.storage.storageclass.service.StorageClassService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
@@ -180,7 +182,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	}
 
 	@Override
-	public void createStorage(CreateStorageReqDTO createStorageReqDTO) {
+	public StorageResDTO createStorage(CreateStorageReqDTO createStorageReqDTO) {
 		String pvcName = "astrago-pvc-"+ UUID.randomUUID().toString().substring(6);
 		String pvName = "astrago-pv-"+ UUID.randomUUID().toString().substring(6);
 		String connectTestDeploymentName = "astrago-deployment-"+ UUID.randomUUID().toString().substring(6);
@@ -246,5 +248,29 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.connectTestLabelName(connectTestLabelName)
 			.build();
 		workloadModuleService.editAstragoDeployment(editAstragoDeployment);
+
+		return StorageResDTO.builder()
+			.storageName(createStorageReqDTO.getStorageName())
+			.description(createStorageReqDTO.getDescription())
+			.storageType(createStorageReqDTO.getStorageType())
+			.ip(createStorageReqDTO.getIp())
+			.storagePath(createStorageReqDTO.getStoragePath())
+			.namespace(namespace)
+			.astragoDeploymentName(astragoDeploymentName)
+			.hostPath(hostPath)
+			.volumeName(volumeLabelSelectorName)
+			.pvName(pvName)
+			.pvcName(pvcName)
+			.requestVolume(createStorageReqDTO.getRequestVolume())
+			.build();
+	}
+
+	@Override
+	public void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
+		//astrago deployment에 볼륨 제거
+		volumeService.deleteStorage(deleteStorageReqDTO);
+		//PVC, PV 삭제
+		volumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
+		volumeService.deletePV(deleteStorageReqDTO.getPvName());
 	}
 }

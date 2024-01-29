@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.common.dto.Pageable;
 import com.xiilab.modulek8s.common.dto.SearchCondition;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
@@ -114,5 +115,9 @@ public class VolumeService {
 
 	public void deletePV(String pvName) {
 		volumeRepository.deletePV(pvName);
+	}
+
+	public void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
+		volumeRepository.deleteStorage(deleteStorageReqDTO);
 	}
 }

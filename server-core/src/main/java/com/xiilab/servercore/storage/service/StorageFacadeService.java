@@ -4,4 +4,6 @@ import com.xiilab.servercore.storage.dto.StorageDTO;
 
 public interface StorageFacadeService {
 	void insertStorage(StorageDTO storageDTO);
+
+	void deleteStorage(Long storageId);
 }
