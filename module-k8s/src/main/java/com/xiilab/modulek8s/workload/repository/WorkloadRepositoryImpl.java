@@ -1,8 +1,6 @@
 package com.xiilab.modulek8s.workload.repository;
 
 import java.util.List;
-
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
@@ -29,8 +27,8 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentList;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @RequiredArgsConstructor
@@ -78,7 +76,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			for (PodCondition condition : conditions) {
 				String status = condition.getStatus();
 				isAvailable = "true".equalsIgnoreCase(status) ? true : false;
-				if(!isAvailable){
+				if (!isAvailable) {
 					break;
 				}
 			}
@@ -98,9 +96,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Volume vol = new VolumeBuilder()
 				.withName(editAstragoDeployment.getVolumeLabelSelectorName())
-				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(editAstragoDeployment.getPvcName(), false))
+				.withPersistentVolumeClaim(
+					new PersistentVolumeClaimVolumeSource(editAstragoDeployment.getPvcName(), false))
 				.build();
-			kubernetesClient.apps().deployments().inNamespace(editAstragoDeployment.getNamespace()).withName(editAstragoDeployment.getAstragoDeploymentName())
+			kubernetesClient.apps()
+				.deployments()
+				.inNamespace(editAstragoDeployment.getNamespace())
+				.withName(editAstragoDeployment.getAstragoDeploymentName())
 				.edit(d -> new DeploymentBuilder(d)
 					.editSpec()
 					.editOrNewTemplate()
@@ -155,6 +157,40 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public String deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
 		return deleteInteractiveJob(workSpaceName, workloadName);
+	}
+
+	@Override
+	public ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName) {
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		Job job = kubernetesClient.batch().v1().jobs().inNamespace(workspaceName).withName(workloadName).get();
+		String name = job.getSpec().getTemplate().getSpec().getContainers().get(0).getName();
+		return kubernetesClient.pods()
+			.inNamespace(workspaceName)
+			.withName(name)
+			.redirectingInput()
+			.redirectingOutput()
+			.redirectingError()
+			.withTTY();
+	}
+
+	@Override
+	public ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName) {
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		Deployment deployment = kubernetesClient.apps()
+			.deployments()
+			.inNamespace(workspaceName)
+			.withName(workloadName)
+			.get();
+		String app = deployment.getMetadata().getLabels().get("app");
+		String namespace = deployment.getMetadata().getNamespace();
+		Pod pod = kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
+		return kubernetesClient.pods()
+			.inNamespace(workspaceName)
+			.withName(pod.getMetadata().getName())
+			.redirectingInput()
+			.redirectingOutput()
+			.redirectingError()
+			.withTTY();
 	}
 
 	private HasMetadata createResource(HasMetadata hasMetadata) {
