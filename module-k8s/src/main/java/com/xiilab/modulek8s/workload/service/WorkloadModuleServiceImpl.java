@@ -4,11 +4,16 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
+import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,5 +61,17 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public String deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
 		return workloadRepository.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+	}
+
+	@Override
+	public ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName,
+		WorkloadType workloadType) {
+		if (workloadType == WorkloadType.INTERACTIVE) {
+			return workloadRepository.connectInteractiveJobTerminal(workspaceName, workloadName);
+		} else if (workloadType == WorkloadType.BATCH) {
+			return workloadRepository.connectBatchJobTerminal(workspaceName, workloadName);
+		} else {
+			return null;
+		}
 	}
 }

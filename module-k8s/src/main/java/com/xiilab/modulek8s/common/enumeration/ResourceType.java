@@ -7,6 +7,8 @@ public enum ResourceType {
 	WORKSPACE("ws"),
 	WORKLOAD("wl"),
 	VOLUME("vo"),
+	PV("pv"),
+	PVC("pvc"),
 	STORAGE("st"),
 	PLUGIN("pg"),
 	RESOURCE_QUOTA("rq"),

@@ -60,4 +60,6 @@ public interface WorkloadModuleService {
 	 * @param workloadName
 	 */
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
+
+	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
 }

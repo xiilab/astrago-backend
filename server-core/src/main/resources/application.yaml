@@ -58,4 +58,9 @@ admin:
   init-password: xiirocks
   secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
 
+astrago:
+  namespace: astrago
+  deployment-name: astrago-backend-core
+  storage-default-path: "/kube-storage/"
+
 mig-profile-path: src/main/resources/MigProfile.json
