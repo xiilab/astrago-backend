@@ -11,4 +11,5 @@ public class EditAstragoDeployment {
 	private String hostPath;
 	private String namespace;
 	private String astragoDeploymentName;
+	private String connectTestLabelName;
 }

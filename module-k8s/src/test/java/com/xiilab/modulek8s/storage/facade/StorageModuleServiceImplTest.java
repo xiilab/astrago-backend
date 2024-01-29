@@ -31,6 +31,7 @@
 // import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 // import com.xiilab.modulek8s.common.enumeration.StorageType;
 // import com.xiilab.modulek8s.config.K8sAdapter;
+// import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 // import com.xiilab.modulek8s.facade.storage.StorageModuleServiceImpl;
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
@@ -750,5 +751,22 @@
 // 		} catch (InterruptedException e) {
 // 			throw new RuntimeException(e);
 // 		}
+// 	}
+//
+// 	@Test
+// 	@DisplayName("스토리지 생성 테스트")
+// 	void createStorageTest(){
+// 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
+// 			.namespace("astrago")
+// 			.storagePath("/kube_storage/")
+// 			.storageName("storage1")
+// 			.astragoDeploymentName("astrago-backend-core")
+// 			.requestVolume(50)
+// 			.storageType(StorageType.NFS)
+// 			.ip("10.61.3.2")
+// 			.hostPath(System.getProperty("user.home"))
+// 			.description("설명어어엉")
+// 			.build();
+// 		storageModuleServiceImpl.createStorage(createStorageReqDTO);
 // 	}
 // }

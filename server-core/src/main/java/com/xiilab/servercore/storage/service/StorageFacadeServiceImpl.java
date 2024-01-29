@@ -41,6 +41,18 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		} catch (IOException e) {
 			throw new RuntimeException("스토리지 전용 디렉토리 생성을 실패했습니다.");
 		}
+		StorageDTO.Create createStorage = StorageDTO.Create.builder()
+			.storageName(storageDTO.getStorageName())
+			.description(storageDTO.getDescription())
+			.storageType(storageDTO.getStorageType())
+			.ip(storageDTO.getIp())
+			.storagePath(storageDTO.getStoragePath())
+			.hostPath(String.valueOf(hostPath))
+			.requestVolume(storageDTO.getRequestVolume())
+			.build();
+		//db 세팅
+		storageService.insertStorage(createStorage);
+
 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
 			.storageName(storageDTO.getStorageName())
 			.storageType(storageDTO.getStorageType())
@@ -53,16 +65,5 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.namespace(namespace)
 			.build();
 		storageModuleService.createStorage(createStorageReqDTO);
-		//db 세팅
-		StorageDTO.Create createStorage = StorageDTO.Create.builder()
-			.storageName(storageDTO.getStorageName())
-			.description(storageDTO.getDescription())
-			.storageType(storageDTO.getStorageType())
-			.ip(storageDTO.getIp())
-			.storagePath(storageDTO.getStoragePath())
-			.hostPath(String.valueOf(hostPath))
-			.requestVolume(storageDTO.getRequestVolume())
-			.build();
-		storageService.insertStorage(createStorage);
 	}
 }

@@ -32,6 +32,7 @@ public class DeploymentVO extends WorkloadVO {
 	private String deploymentName;
 	private String connectTestLabelName;
 	private String namespace;
+	private String hostPath;
 
 	public static DeploymentVO dtoToEntity(ConnectTestDTO connectTestDTO) {
 		return DeploymentVO.builder()
@@ -42,6 +43,7 @@ public class DeploymentVO extends WorkloadVO {
 			.description(connectTestDTO.getDeploymentName())
 			.connectTestLabelName(connectTestDTO.getConnectTestLabelName())
 			.namespace(connectTestDTO.getNamespace())
+			.hostPath(connectTestDTO.getHostPath())
 			.build();
 	}
 
@@ -104,7 +106,7 @@ public class DeploymentVO extends WorkloadVO {
 		podSpecContainer
 			.addNewVolumeMount()
 			.withName(volumeLabelSelectorName)
-			.withMountPath(pvcName)
+			.withMountPath(hostPath)
 			.endVolumeMount();
 	}
 

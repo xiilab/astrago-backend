@@ -12,4 +12,5 @@ public class ConnectTestDTO {
 	private String volumeLabelSelectorName;
 	private String connectTestLabelName;
 	private String namespace;
+	private String hostPath;
 }

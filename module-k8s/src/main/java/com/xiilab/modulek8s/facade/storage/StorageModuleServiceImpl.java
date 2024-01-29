@@ -217,6 +217,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.pvName(pvName)
 			.namespace(namespace)
 			.connectTestLabelName(connectTestLabelName)
+			.hostPath(hostPath)
 			.build();
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
@@ -242,6 +243,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.volumeLabelSelectorName(volumeLabelSelectorName)
 			.namespace(namespace)
 			.astragoDeploymentName(astragoDeploymentName)
+			.connectTestLabelName(connectTestLabelName)
 			.build();
 		workloadModuleService.editAstragoDeployment(editAstragoDeployment);
 	}

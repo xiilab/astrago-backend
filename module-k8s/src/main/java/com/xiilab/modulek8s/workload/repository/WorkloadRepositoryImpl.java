@@ -34,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
@@ -62,6 +61,11 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 			//테스트용 pod 조회
 			Pod connectPod = kubernetesClient.pods()
 				.inNamespace(namespace)
@@ -69,14 +73,9 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				.list()
 				.getItems()
 				.get(0);
-			log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-			log.info(connectPod.getMetadata().getName());
-			log.info(connectPod.getMetadata().getLabels().get("app"));
-			log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 			List<PodCondition> conditions = connectPod.getStatus().getConditions();
 			boolean isAvailable = false;
 			for (PodCondition condition : conditions) {
-				log.info(condition.getStatus());
 				String status = condition.getStatus();
 				isAvailable = "true".equalsIgnoreCase(status) ? true : false;
 				if(!isAvailable){
@@ -109,7 +108,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 					.addAllToVolumes(List.of(vol))
 					.editContainer(0)
 					.addNewVolumeMount()
-					.withName(editAstragoDeployment.getAstragoDeploymentName())
+					.withName(editAstragoDeployment.getVolumeLabelSelectorName())
 					.withMountPath(editAstragoDeployment.getHostPath())
 					.endVolumeMount()
 					.endContainer()

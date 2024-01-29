@@ -88,7 +88,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		if (!CollectionUtils.isEmpty(volumes)) {
 			List<Volume> addVolumes = volumes.stream().map(volume -> new VolumeBuilder()
 				.withName(volume.name())
-				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(volume.name(), false))
+				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(volume.mountPath(), false))
 				.build()).toList();
 
 			podSpecBuilder.addAllToVolumes(addVolumes);
