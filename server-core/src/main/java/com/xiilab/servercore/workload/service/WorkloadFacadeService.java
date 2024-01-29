@@ -71,12 +71,13 @@ public class WorkloadFacadeService {
 			normalListPageSize);
 		//TODO 종료된 workload list 조회 및 추가
 		int totalSize = normalList.size() + pinList.size();
-		//TODO 리스트 개수가 0일 경우 리턴
+
 		if (totalPageSize == 0) {
 			return new PageDTO(0, 0, 0, null);
 		}
-		//사용자가 더 많은 페이지 인덱스를 입력했을 경우
+
 		if (totalPageSize < pageNum) {
+			//사용자가 더 많은 페이지 인덱스를 입력했을 경우
 			throw new IllegalArgumentException("total page size보다 입력한 pageNum이 더 큽니다.");
 		}
 
@@ -99,13 +100,15 @@ public class WorkloadFacadeService {
 		pinList = applyInteractiveWorkloadListCondition(pinList, searchName,
 			workloadStatus, sortCondition);
 
-		// 10 - pin list size
+		// PIN 등록하지 않은 전체 Job List
 		List<ModuleInteractiveJobResDTO> normalList = interactiveJobWorkloadList.stream()
 			.filter(batch -> !userWorkloadPinList.contains(batch.getUid()))
 			.toList();
+		// 전체 JOB List 검색 조건 filter
 		normalList = applyInteractiveWorkloadListCondition(normalList, searchName, workloadStatus,
 			sortCondition);
-		int normalListPageSize = getNormalListPageSize(pageNum);
+		int normalListPageSize = getNormalListPageSize(pinList.size());
+
 		int totalPageSize = (int)Math.ceil(normalList.size() / (double)normalListPageSize);
 		List<ModuleInteractiveJobResDTO> normalPagingList = (List<ModuleInteractiveJobResDTO>)getPaginatedList(
 			normalList, pageNum, normalListPageSize);
@@ -122,7 +125,7 @@ public class WorkloadFacadeService {
 
 		totalJobList.addAll(pinList);
 		totalJobList.addAll(normalPagingList);
-		return new PageDTO(normalList.size() + pinList.size(), (int)Math.ceil(normalList.size() / 10), pageNum,
+		return new PageDTO(totalSize, (int)Math.ceil(normalList.size() / 10), pageNum,
 			totalJobList);
 	}
 

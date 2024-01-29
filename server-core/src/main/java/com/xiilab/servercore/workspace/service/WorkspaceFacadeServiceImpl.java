@@ -11,6 +11,7 @@ import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final GroupService groupService;
+	private final PinService pinService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -57,5 +59,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	public void deleteWorkspaceByName(String workspaceName) {
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
+	}
+
+	@Override
+	public List<WorkspaceDTO.ResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO) {
+		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
+		return workspaceModuleFacadeService.getWorkspaceList().stream()
+			.filter(workspace -> userWorkspacePinList.contains(workspace.getResourceName())).toList();
 	}
 }
