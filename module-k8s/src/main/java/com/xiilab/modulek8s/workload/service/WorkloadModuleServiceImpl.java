@@ -9,7 +9,6 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
@@ -31,6 +30,26 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(
 		ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		return workloadRepository.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toInteractiveJobVO());
+	}
+
+	@Override
+	public void createConnectTestDeployment(ConnectTestDTO connectTestDTO) {
+		workloadRepository.createConnectTestDeployment(connectTestDTO);
+	}
+
+	@Override
+	public boolean IsAvailableTestConnectPod(String connectTestLabelName, String namespace) {
+		return workloadRepository.testConnectPodIsAvailable(connectTestLabelName, namespace);
+	}
+
+	@Override
+	public void deleteConnectTestDeployment(String deploymentName, String namespace) {
+		workloadRepository.deleteConnectTestDeployment(deploymentName, namespace);
+	}
+
+	@Override
+	public void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment) {
+		workloadRepository.editAstragoDeployment(editAstragoDeployment);
 	}
 
 	@Override

@@ -2,14 +2,28 @@ package com.xiilab.modulek8s.workload.service;
 
 import java.util.List;
 
+import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
+
+import io.fabric8.kubernetes.client.dsl.ExecListenable;
 
 public interface WorkloadModuleService {
 	ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 
 	ModuleInteractiveJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
+
+	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
+
+	boolean IsAvailableTestConnectPod(String connectTestLabelName, String namespace);
+
+	void deleteConnectTestDeployment(String deploymentName, String namespace);
+
+	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
+
 
 	/**
 	 * batch job workload 조회
