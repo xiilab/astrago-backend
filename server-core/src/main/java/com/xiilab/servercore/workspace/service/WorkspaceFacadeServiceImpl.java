@@ -6,11 +6,13 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
+import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
+	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final PinService pinService;
 	private final GroupService groupService;
 
 	@Override
@@ -47,10 +51,29 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public List<WorkspaceDTO.ResponseDTO> getWorkspaceList(UserInfoDTO userInfoDTO) {
-		Set<String> groupList = userInfoDTO.getWorkspaceList();
+	public List<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition,
+		UserInfoDTO userInfoDTO) {
+		Set<String> groupList = userInfoDTO.getWorkspaceList(isMyWorkspace);
+		//전체 workspace 리스트 조회
 		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
-		return workspaceList.stream().filter(workspace -> groupList.contains(workspace.getResourceName())).toList();
+		//user의 pin 리스트 조회
+		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
+		//조건절 처리
+		workspaceList = workspaceList.stream()
+			.filter(workspace -> groupList.contains(workspace.getResourceName()))
+			.filter(workspace -> searchCondition == null || workspace.getName().contains(searchCondition))
+			.toList();
+		//pin YN 처리
+		return workspaceList.stream()
+			.map(workspace -> new WorkspaceDTO.TotalResponseDTO(
+				workspace.getId(),
+				workspace.getName(),
+				workspace.getResourceName(),
+				workspace.getDescription(),
+				userWorkspacePinList.contains(workspace.getId()),
+				workspace.getCreatedAt(),
+				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(), userInfoDTO.getUserName())))
+			.toList();
 	}
 
 	@Override

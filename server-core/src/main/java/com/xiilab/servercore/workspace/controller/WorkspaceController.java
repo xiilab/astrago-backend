@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
@@ -31,7 +32,8 @@ public class WorkspaceController {
 
 	@PostMapping("")
 	@Operation(summary = "워크스페이스 생성")
-	public ResponseEntity<HttpStatus> createWorkspace(@RequestBody WorkspaceApplicationForm workspaceApplicationForm, UserInfoDTO userInfoDTO) {
+	public ResponseEntity<HttpStatus> createWorkspace(@RequestBody WorkspaceApplicationForm workspaceApplicationForm,
+		UserInfoDTO userInfoDTO) {
 		workspaceService.createWorkspace(workspaceApplicationForm, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -44,8 +46,11 @@ public class WorkspaceController {
 
 	@GetMapping("")
 	@Operation(summary = "워크스페이스 리스트 조회")
-	public ResponseEntity<List<WorkspaceDTO.ResponseDTO>> getWorkspaceList(UserInfoDTO userInfoDTO) {
-		return ResponseEntity.ok(workspaceService.getWorkspaceList(userInfoDTO));
+	public ResponseEntity<List<WorkspaceDTO.TotalResponseDTO>> getWorkspaceList(
+		@RequestParam(value = "isMyWorkspace") boolean isMyWorkspace,
+		@RequestParam(value = "searchCondition", required = false) String searchCondition,
+		UserInfoDTO userInfoDTO) {
+		return ResponseEntity.ok(workspaceService.getWorkspaceList(isMyWorkspace, searchCondition, userInfoDTO));
 	}
 
 	@DeleteMapping("/{name}")

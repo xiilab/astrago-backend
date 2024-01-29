@@ -22,7 +22,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 			workSpace.getUid(),
 			workSpace.getName(),
 			workSpace.getResourceName(),
-			workSpace.getDescription());
+			workSpace.getDescription(),
+			workSpace.getCreatedAt());
 	}
 
 	@Override
@@ -32,7 +33,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 			workSpace.getUid(),
 			workSpace.getName(),
 			workSpace.getResourceName(),
-			workSpace.getDescription());
+			workSpace.getDescription(),
+			workSpace.getCreatedAt());
 	}
 
 	@Override
@@ -43,7 +45,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 			workspace.getUid(),
 			workspace.getName(),
 			workspace.getResourceName(),
-			workspace.getDescription()
+			workspace.getDescription(),
+			workspace.getCreatedAt()
 		)).toList();
 	}
 

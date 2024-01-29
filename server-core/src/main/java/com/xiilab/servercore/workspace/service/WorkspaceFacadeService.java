@@ -9,7 +9,7 @@ import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
 public interface WorkspaceFacadeService {
 	void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO);
 
-	List<WorkspaceDTO.ResponseDTO> getWorkspaceList(UserInfoDTO userInfoDTO);
+	List<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition, UserInfoDTO userInfoDTO);
 
 	void deleteWorkspaceByName(String workspaceName);
 }
