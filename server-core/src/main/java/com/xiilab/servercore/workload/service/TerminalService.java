@@ -25,7 +25,6 @@ import com.xiilab.servercore.common.utils.ThreadHelper;
 import com.xiilab.servercore.workload.dto.TerminalMessage;
 
 import io.fabric8.kubernetes.client.KubernetesClientException;
-import io.fabric8.kubernetes.client.dsl.ExecListener;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
