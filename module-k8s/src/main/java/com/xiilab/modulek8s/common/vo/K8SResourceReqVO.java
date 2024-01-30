@@ -32,11 +32,10 @@ public abstract class K8SResourceReqVO {
 	String creatorName;
 
 	//label
-	//사용자의 id
+	//사용자의 username
 	String creator;
 	//astra에서 생성되었는지 체크하는 값
 	String controlBy;
-
 	ResourceType type;
 
 	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,

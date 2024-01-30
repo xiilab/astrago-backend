@@ -10,6 +10,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 public interface WorkloadModuleFacadeService {
 	/**
 	 * 워크로드 - 배치잡 생성
+	 *
 	 * @param moduleCreateWorkloadReqDTO
 	 * @return
 	 */
@@ -26,4 +27,6 @@ public interface WorkloadModuleFacadeService {
 	void deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 
 	List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
+
+	ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username);
 }
