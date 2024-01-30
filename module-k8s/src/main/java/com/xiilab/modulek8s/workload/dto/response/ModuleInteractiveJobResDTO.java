@@ -15,10 +15,8 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
-	private WorkloadStatus status;
 	public ModuleInteractiveJobResDTO(Deployment deployment) {
 		super(deployment);
-
 		Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
 		name = getName();
 		Map<String, Quantity> resourceRequests = container.getResources().getLimits();
@@ -44,7 +42,7 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 
 	@Override
 	public WorkloadType getType() {
-		return WorkloadType.BATCH;
+		return WorkloadType.INTERACTIVE;
 	}
 
 	private WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {

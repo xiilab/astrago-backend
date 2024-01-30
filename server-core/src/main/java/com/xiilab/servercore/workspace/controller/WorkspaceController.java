@@ -1,7 +1,5 @@
 package com.xiilab.servercore.workspace.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,8 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -31,7 +31,8 @@ public class WorkspaceController {
 
 	@PostMapping("")
 	@Operation(summary = "워크스페이스 생성")
-	public ResponseEntity<HttpStatus> createWorkspace(@RequestBody WorkspaceApplicationForm workspaceApplicationForm, UserInfoDTO userInfoDTO) {
+	public ResponseEntity<HttpStatus> createWorkspace(@RequestBody WorkspaceApplicationForm workspaceApplicationForm,
+		UserInfoDTO userInfoDTO) {
 		workspaceService.createWorkspace(workspaceApplicationForm, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -44,8 +45,13 @@ public class WorkspaceController {
 
 	@GetMapping("")
 	@Operation(summary = "워크스페이스 리스트 조회")
-	public ResponseEntity<List<WorkspaceDTO.ResponseDTO>> getWorkspaceList(UserInfoDTO userInfoDTO) {
-		return ResponseEntity.ok(workspaceService.getWorkspaceList(userInfoDTO));
+	public ResponseEntity<PageDTO<WorkspaceDTO.TotalResponseDTO>> getWorkspaceList(
+		@RequestParam(value = "isMyWorkspace") boolean isMyWorkspace,
+		@RequestParam(value = "searchCondition", required = false) String searchCondition,
+		@RequestParam(value = "pageNum") int pageNum,
+		UserInfoDTO userInfoDTO) {
+		return ResponseEntity.ok(
+			workspaceService.getWorkspaceList(isMyWorkspace, searchCondition, pageNum, userInfoDTO));
 	}
 
 	@DeleteMapping("/{name}")

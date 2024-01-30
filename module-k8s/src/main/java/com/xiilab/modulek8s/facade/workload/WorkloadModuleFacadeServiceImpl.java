@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.facade.workload;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -101,6 +102,20 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return workloadList;
 	}
 
+	@Override
+	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
+		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
+		try {
+			return workloadList.stream()
+				.filter(workload -> workload.getCreator().equals(username))
+				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
+				.toList()
+				.get(0);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		List<ModuleVolumeReqDTO> volumes = moduleCreateWorkloadReqDTO.getVolumes();
 		for (ModuleVolumeReqDTO volume : volumes) {
@@ -123,6 +138,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	/**
 	 * TODO 스토리지 파사드 수정될때마다 같이 수정돼야함 (문제해결필요)
 	 * 워크스페이스(namespace)에 볼륨 생성
+	 *
 	 * @param createVolumeDTO
 	 */
 	private String createVolume(CreateVolumeDTO createVolumeDTO) {
