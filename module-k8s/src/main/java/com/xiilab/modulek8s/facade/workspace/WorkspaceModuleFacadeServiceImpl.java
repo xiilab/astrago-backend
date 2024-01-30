@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
+import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaReqDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 
@@ -17,9 +19,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeService{
+public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeService {
 	private final WorkspaceService workspaceService;
+	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final ResourceQuotaService resourceQuotaService;
+
 	@Override
 	public WorkspaceDTO.ResponseDTO createWorkspace(CreateWorkspaceDTO createWorkspaceDTO) {
 		//워크스페이스 생성
@@ -60,8 +64,10 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 
 	@Override
 	public WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceName) {
-		WorkspaceDTO.ResponseDTO workspaceByName = workspaceService.getWorkspaceByName(workspaceName);
+		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
+		List<ModuleWorkloadResDTO> workloadList = workloadModuleFacadeService.getWorkloadList(
+			workspace.getResourceName());
 		ResourceQuotaResDTO resourceQuotas = resourceQuotaService.getResourceQuotas(workspaceName);
-		return new WorkspaceTotalDTO(workspaceByName, resourceQuotas);
+		return new WorkspaceTotalDTO(workspace, resourceQuotas, workloadList);
 	}
 }
