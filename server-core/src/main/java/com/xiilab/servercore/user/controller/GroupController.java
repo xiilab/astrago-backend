@@ -74,6 +74,13 @@ public class GroupController {
 	public ResponseEntity<List<GroupUserDTO>> getGroupUsersByGroupName(@PathVariable(name = "groupName") String groupName) {
 		return ResponseEntity.ok(groupFacadeService.getGroupUsersByGroupName(groupName));
 	}
-
+	@DeleteMapping("/ws/{groupName}")
+	@Operation(summary = "워크스페이스 멤버 삭제")
+	public ResponseEntity<HttpStatus> deleteGroupUserByUserId(
+		@PathVariable(name = "groupName") String groupName,
+		@RequestBody String userId){
+		groupFacadeService.deleteGroupUserByUserId(groupName, userId);
+		return ResponseEntity.ok().build();
+	}
 
 }

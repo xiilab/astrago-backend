@@ -36,4 +36,6 @@ public interface GroupService {
 
 	//그룹 안의 유저 리스트 조회
 	List<GroupUserDTO> getGroupUsersByGroupName(String groupName);
+
+	void deleteGroupUserByUserId(String groupName, String userId);
 }

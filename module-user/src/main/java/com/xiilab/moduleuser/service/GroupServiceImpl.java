@@ -112,4 +112,7 @@ public class GroupServiceImpl implements GroupService {
 	public List<GroupUserDTO> getGroupUsersByGroupName(String groupName) {
 		return groupRepository.findUsersByGroupName(groupName);
 	}
+	public void deleteGroupUserByUserId(String groupName, String userId){
+		groupRepository.deleteGroupUserByUserId(groupName, userId);
+	}
 }

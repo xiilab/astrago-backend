@@ -34,4 +34,6 @@ public interface GroupRepository {
 
 	void joinMembersIntoGroup(String groupId, List<String> userIds);
 	List<GroupUserDTO> findUsersByGroupName(String groupName);
+
+	void deleteGroupUserByUserId(String groupName, String userId);
 }

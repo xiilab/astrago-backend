@@ -62,4 +62,9 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	public List<GroupUserDTO> getGroupUsersByGroupName(String groupName) {
 		return groupService.getGroupUsersByGroupName(groupName);
 	}
+
+	@Override
+	public void deleteGroupUserByUserId(String groupName, String userId){
+		groupService.deleteGroupUserByUserId(groupName, userId);
+	}
 }

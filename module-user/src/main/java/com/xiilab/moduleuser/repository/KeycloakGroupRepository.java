@@ -3,6 +3,7 @@ package com.xiilab.moduleuser.repository;
 import java.util.List;
 
 import org.keycloak.admin.client.resource.GroupResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.stereotype.Repository;
 
@@ -152,6 +153,26 @@ public class KeycloakGroupRepository implements GroupRepository {
 	@Override
 	public List<GroupUserDTO> findUsersByGroupName(String groupName) {
 
+		GroupRepresentation subGroup = getWsSubGroupByGroupName(groupName);
+
+		return findUsersByGroupId(subGroup.getId());
+	}
+	@Override
+	public void deleteGroupUserByUserId(String groupName, String userId){
+		// ws 그룹 조회 조회
+		GroupRepresentation swGroup = getWsSubGroupByGroupName(groupName);
+		try{
+			UserResource userResource = keycloakConfig.getRealmClient().users().get(userId);
+			userResource.toRepresentation();
+			// 회원 WS 삭제
+			userResource.leaveGroup(swGroup.getId());
+		}catch (NotFoundException e){
+			throw new IllegalArgumentException("해당 ID(" + userId + ")의 사용자가 없습니다.");
+		}
+	}
+
+	private GroupRepresentation getWsSubGroupByGroupName(String subGroupName){
+		// ws 그룹 조회
 		GroupRepresentation parentGroup = keycloakConfig.getRealmClient()
 			.groups()
 			.groups()
@@ -159,12 +180,12 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.filter(userRepository -> userRepository.getName().equals("ws"))
 			.findFirst()
 			.get();
-		GroupRepresentation subGroup = parentGroup.getSubGroups()
+		return parentGroup.getSubGroups()
 			.stream()
-			.filter(groupRepresentation -> groupRepresentation.getName().equals(groupName))
+			.filter(groupRepresentation -> groupRepresentation.getName().equals(subGroupName))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("해당 이름의 그룹(워크스페이스:" + groupName + ")이(가) 없습니다."));
+			.orElseThrow(() -> new IllegalArgumentException("해당 이름의 그룹(워크스페이스:" + subGroupName + ")이(가) 없습니다."));
 
-		return findUsersByGroupId(subGroup.getId());
+
 	}
 }
