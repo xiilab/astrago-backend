@@ -25,7 +25,6 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final PinService pinService;
 	private final GroupService groupService;
-	private final PinService pinService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
