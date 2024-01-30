@@ -149,4 +149,22 @@ public class KeycloakGroupRepository implements GroupRepository {
 		return search;
 	}
 
+	@Override
+	public List<GroupUserDTO> findUsersByGroupName(String groupName) {
+
+		GroupRepresentation parentGroup = keycloakConfig.getRealmClient()
+			.groups()
+			.groups()
+			.stream()
+			.filter(userRepository -> userRepository.getName().equals("ws"))
+			.findFirst()
+			.get();
+		GroupRepresentation subGroup = parentGroup.getSubGroups()
+			.stream()
+			.filter(groupRepresentation -> groupRepresentation.getName().equals(groupName))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("해당 이름의 그룹(워크스페이스:" + groupName + ")이(가) 없습니다."));
+
+		return findUsersByGroupId(subGroup.getId());
+	}
 }

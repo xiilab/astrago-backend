@@ -57,4 +57,9 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	public void deleteGroupById(String groupId) {
 		groupService.deleteGroupById(groupId);
 	}
+
+	@Override
+	public List<GroupUserDTO> getGroupUsersByGroupName(String groupName) {
+		return groupService.getGroupUsersByGroupName(groupName);
+	}
 }

@@ -107,4 +107,9 @@ public class GroupServiceImpl implements GroupService {
 		//생성한 user group에 유저 추가
 		groupRepository.joinMembersIntoGroup(userGroup.getId(), groupReqDTO.getUsers());
 	}
+
+	@Override
+	public List<GroupUserDTO> getGroupUsersByGroupName(String groupName) {
+		return groupRepository.findUsersByGroupName(groupName);
+	}
 }

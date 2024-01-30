@@ -69,4 +69,11 @@ public class GroupController {
 		return ResponseEntity.ok(groupFacadeService.getGroupUsers(groupId));
 	}
 
+	@GetMapping("/ws/{groupName}")
+	@Operation(summary = "워크스페이스 멤버 조회")
+	public ResponseEntity<List<GroupUserDTO>> getGroupUsersByGroupName(@PathVariable(name = "groupName") String groupName) {
+		return ResponseEntity.ok(groupFacadeService.getGroupUsersByGroupName(groupName));
+	}
+
+
 }
