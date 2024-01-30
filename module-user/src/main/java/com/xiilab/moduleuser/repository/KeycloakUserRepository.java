@@ -37,6 +37,9 @@ public class KeycloakUserRepository implements UserRepository {
 	@Override
 	public UserInfo joinUser(UserReqVO userReqVO) {
 		UserRepresentation userRepresentation = userReqVO.convertUserRep();
+		// User 중복 체크
+		checkUserDuplicate(userReqVO);
+
 		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
 		if (response.getStatus() != 200 && response.getStatus() != 201) {
 			throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
@@ -47,6 +50,21 @@ public class KeycloakUserRepository implements UserRepository {
 		userResource.resetPassword(userReqVO.createCredentialRep());
 		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
 		return new UserInfo(userResource.toRepresentation());
+	}
+	private void checkUserDuplicate(UserReqVO userReqVO) {
+		List<UserRepresentation> list = keycloakConfig.getRealmClient().users().list();
+		// 이름 중복 검사
+		boolean isUsernameExists = list.stream()
+			.anyMatch(userRepresentation -> userRepresentation.getUsername().equals(userReqVO.getUsername()));
+		if(isUsernameExists) {
+			throw new IllegalArgumentException("해당 UserName(" + userReqVO.getUsername() + ")이(가) 존재합니다.");
+		}
+		// 메일 중복검사
+		boolean isEmailExists = list.stream()
+			.anyMatch(userRepresentation -> userRepresentation.getEmail().equals(userReqVO.getEmail()));
+		if(isEmailExists) {
+			throw new IllegalArgumentException("해당 Email(" + userReqVO.getEmail() + ")이 존재합니다.");
+		}
 	}
 
 	@Override
