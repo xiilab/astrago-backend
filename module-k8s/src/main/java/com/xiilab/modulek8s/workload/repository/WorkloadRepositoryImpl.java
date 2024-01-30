@@ -193,6 +193,34 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.withTTY();
 	}
 
+	@Override
+	public Pod getBatchJobPod(String workspaceName, String workloadName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Job job = kubernetesClient.batch().v1().jobs().inNamespace(workspaceName).withName(workloadName).get();
+			String app = job.getMetadata().getLabels().get("app");
+			String namespace = job.getMetadata().getNamespace();
+			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
+		} catch (NullPointerException e) {
+			throw new RuntimeException("해당하는 배치 잡 로그를 조회할 수 없습니다.");
+		}
+	}
+
+	@Override
+	public Pod getInteractiveJobPod(String workspaceName, String workloadName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Deployment deployment = kubernetesClient.apps()
+				.deployments()
+				.inNamespace(workspaceName)
+				.withName(workloadName)
+				.get();
+			String app = deployment.getMetadata().getLabels().get("app");
+			String namespace = deployment.getMetadata().getNamespace();
+			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
+		} catch (NullPointerException e) {
+			throw new RuntimeException("해당하는 인터렉티브 잡 로그를 조회할 수 없습니다.");
+		}
+	}
+
 	private HasMetadata createResource(HasMetadata hasMetadata) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.resource(hasMetadata).create();

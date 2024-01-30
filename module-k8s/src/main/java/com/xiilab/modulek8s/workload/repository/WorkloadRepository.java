@@ -11,6 +11,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 
 @Repository
@@ -91,4 +92,9 @@ public interface WorkloadRepository {
 
 	ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName);
 	ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName);
+
+	Pod getBatchJobPod(String workspaceName, String workloadName);
+	Pod getInteractiveJobPod(String workspaceName, String workloadName);
+
+
 }
