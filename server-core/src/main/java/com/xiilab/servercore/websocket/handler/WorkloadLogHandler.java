@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
+import org.springframework.util.StringUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
@@ -16,7 +14,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class WorkloadLogHandler extends TextWebSocketHandler {
-	private ScheduledExecutorService executorService;
+	// private ScheduledExecutorService executorService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	// 특정 세션만 저장
 	private final Map<String, WebSocketSession> workloadLogWebSocketSessionMap;
@@ -39,42 +39,71 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 	// 클라이언트로부터 넘어온 메시지 처리
 	@Override
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
-		String[] splitMessage = message.getPayload().toString().split(",");
-		if (splitMessage.length != 2) {
+		String[] splitMessage = message.getPayload().toString()
+			.replaceAll(" ", "")
+			.split(",");
+		if (splitMessage.length != 3) {
 			log.error("Websocket Message: {}", message);
 			throw new RuntimeException("잘못된 메시지가 전달되었습니다.");
 		}
 
-		String workspaceId = splitMessage[0];
-		String workloadId = splitMessage[1];
+		// BATCH, INTERACTIVE
+		WorkloadType workloadType = WorkloadType.valueOf(splitMessage[0]);
+		String workspaceName = splitMessage[1];
+		String workloadName = splitMessage[2];
+		String podName = getPodNameByWorkloadType(workspaceName, workloadName, workloadType)
+			.map(pod -> pod.getMetadata().getName())
+			.orElseThrow(() -> new RuntimeException("파드를 조회할 수 없습니다."));
+		if (!StringUtils.hasText(podName)) {
+			throw new RuntimeException("해당하는 워크로드를 찾을 수 없습니다.");
+		}
 
-		executorService = Executors.newSingleThreadScheduledExecutor();
-		executorService.scheduleAtFixedRate(() -> {
-			try (LogWatch logWatch = workloadModuleFacadeService.watchLogByWorkload(workspaceId, workloadId);
-				 InputStream output = logWatch.getOutput();
-				 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(output))) {
-				String line;
-				while ((line = bufferedReader.readLine()) != null) {
-					if (session.isOpen()) {
-						workloadLogWebSocketSessionMap.get(session.getId()).sendMessage(new TextMessage(line));
-					}
+		sendLogMessage(session, workspaceName, podName);
+		// executorService = Executors.newSingleThreadScheduledExecutor();
+		// executorService.scheduleAtFixedRate(() -> {
+		// 	sendLogMessage(session, workspaceName, podName);
+		// }, 0, 1, TimeUnit.SECONDS);
+	}
+
+	private void sendLogMessage(WebSocketSession session, String workspaceName, String podName) {
+		try (
+			LogWatch logWatch = workloadModuleFacadeService.watchLogByWorkload(workspaceName, podName);
+			InputStream output = logWatch.getOutput();
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(output))) {
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				if (session.isOpen()) {
+					workloadLogWebSocketSessionMap.get(session.getId()).sendMessage(new TextMessage(line));
 				}
-			} catch (Exception e) {
-				log.error(e.getMessage());
 			}
-		}, 0, 1, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error(e.getMessage());
+		}
+	}
+
+	private Optional<Pod> getPodNameByWorkloadType(String workspaceName, String workloadName,
+		WorkloadType workloadType) {
+		try {
+			return Optional.of(workloadModuleFacadeService.getJobPod(workspaceName, workloadName, workloadType));
+		} catch (RuntimeException e) {
+			throw e;
+		}
 	}
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
 		try (session) {
 			workloadLogWebSocketSessionMap.remove(session.getId());
-		} finally {
-			stopSendingMessages();
 		}
+		// finally {
+		// 	stopSendingMessages();
+		// }
 	}
 
-	private void stopSendingMessages() {
-		executorService.shutdown();
-	}
+	/*private void stopSendingMessages() {
+		if (executorService != null) {
+			executorService.shutdown();
+		}
+	}*/
 }

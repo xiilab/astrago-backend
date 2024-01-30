@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSocket
 public class SocketConfig implements WebSocketConfigurer {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+
 	// 워크로드 로그 세션 Map
 	@Bean
 	public Map<String, WebSocketSession> workloadLogWebSocketSessionMap() {
@@ -42,13 +43,14 @@ public class SocketConfig implements WebSocketConfigurer {
 
 	// 워크로드 로그 세션 핸들러
 	@Bean
-	public WebSocketHandler workloadLogSocketHandler() { return new WorkloadLogHandler(workloadModuleFacadeService, workloadLogWebSocketSessionMap()); }
+	public WebSocketHandler workloadLogSocketHandler() {
+		return new WorkloadLogHandler(workloadModuleFacadeService, workloadLogWebSocketSessionMap());
+	}
 
 	@Bean
 	public WebSocketHandler terminalSocket() {
 		return new PerConnectionWebSocketHandler(TerminalWebSocketHandler.class);
 	}
-
 
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {

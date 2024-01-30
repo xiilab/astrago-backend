@@ -13,11 +13,14 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.service.SvcService;
 
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 import lombok.RequiredArgsConstructor;
 
@@ -105,8 +108,13 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public LogWatch watchLogByWorkload(String workspaceId, String workloadId) {
-		return logService.watchLogByWorkload(workspaceId, workloadId);
+	public LogWatch watchLogByWorkload(String workspaceName, String podName) {
+		return logService.watchLogByWorkload(workspaceName, podName);
+	}
+	@Override
+	public ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType) {
+		return workloadModuleService.connectWorkloadTerminal(workloadName, workspaceName, workloadType);
+
 	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -135,5 +143,10 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	 */
 	private String createVolume(CreateVolumeDTO createVolumeDTO) {
 		return volumeService.createVolume(createVolumeDTO);
+	}
+
+	@Override
+	public Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType) {
+		return workloadModuleService.getJobPod(workspaceName, workloadName, workloadType);
 	}
 }

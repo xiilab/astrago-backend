@@ -15,7 +15,7 @@ public class LogServiceImpl implements LogService{
 	private final LogRepository logRepository;
 
 	@Override
-	public LogWatch watchLogByWorkload(String workspaceId, String workloadId) {
-		return logRepository.watchLogByWorkload(workspaceId, workloadId);
+	public LogWatch watchLogByWorkload(String workspaceName, String podName) {
+		return logRepository.watchLogByWorkload(workspaceName, podName);
 	}
 }

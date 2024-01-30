@@ -6,7 +6,10 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 
 public interface WorkloadModuleFacadeService {
@@ -30,4 +33,7 @@ public interface WorkloadModuleFacadeService {
 	List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
 
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
+
+	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
+	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 }

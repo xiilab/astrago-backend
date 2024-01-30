@@ -16,11 +16,11 @@ public class LogRepositoryImpl implements LogRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public LogWatch watchLogByWorkload(String workspace, String workload) {
+	public LogWatch watchLogByWorkload(String workspaceName, String podName) {
 		KubernetesClient client = k8sAdapter.configServer();
 		return client.pods()
-			.inNamespace(workspace)
-			.withName(workload)
+			.inNamespace(workspaceName)
+			.withName(podName)
 			.withPrettyOutput()
 			.watchLog();
 	}
