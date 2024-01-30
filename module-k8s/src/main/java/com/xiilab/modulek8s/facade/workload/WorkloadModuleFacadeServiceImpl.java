@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.facade.workload;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,10 +14,14 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
+import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.service.SvcService;
 
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.LogWatch;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -25,6 +30,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final WorkloadModuleService workloadModuleService;
 	private final VolumeService volumeService;
 	private final SvcService svcService;
+	private final LogService logService;
 
 	@Override
 	public ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -88,8 +94,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	@Override
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
-		List<ModuleWorkloadResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
-		List<ModuleWorkloadResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
+		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
+		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
 
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);
@@ -99,6 +105,24 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		}
 
 		return workloadList;
+	}
+
+	@Override
+	public LogWatch watchLogByWorkload(String workspaceName, String podName) {
+		return logService.watchLogByWorkload(workspaceName, podName);
+	}
+
+	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
+		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
+		try {
+			return workloadList.stream()
+				.filter(workload -> workload.getCreator().equals(username))
+				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
+				.toList()
+				.get(0);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -123,9 +147,15 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	/**
 	 * TODO 스토리지 파사드 수정될때마다 같이 수정돼야함 (문제해결필요)
 	 * 워크스페이스(namespace)에 볼륨 생성
+	 *
 	 * @param createVolumeDTO
 	 */
 	private String createVolume(CreateVolumeDTO createVolumeDTO) {
 		return volumeService.createVolume(createVolumeDTO);
+	}
+
+	@Override
+	public Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType) {
+		return workloadModuleService.getJobPod(workspaceName, workloadName, workloadType);
 	}
 }

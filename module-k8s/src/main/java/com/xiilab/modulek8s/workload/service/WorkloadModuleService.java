@@ -7,9 +7,9 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 
 public interface WorkloadModuleService {
@@ -19,7 +19,7 @@ public interface WorkloadModuleService {
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
-	boolean IsAvailableTestConnectPod(String connectTestLabelName, String namespace);
+	boolean isAvailableTestConnectPod(String connectTestLabelName, String namespace);
 
 	void deleteConnectTestDeployment(String deploymentName, String namespace);
 
@@ -49,7 +49,7 @@ public interface WorkloadModuleService {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName);
+	List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName);
 
 	/**
 	 * interactive job workload list 조회
@@ -57,7 +57,7 @@ public interface WorkloadModuleService {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName);
+	List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName);
 
 	/**
 	 * batch job workload 삭제
@@ -76,4 +76,5 @@ public interface WorkloadModuleService {
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 
 	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
+	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 }

@@ -2,6 +2,9 @@ package com.xiilab.modulek8s.workspace.dto;
 
 import java.time.LocalDateTime;
 
+import com.xiilab.modulek8s.common.dto.AgeDTO;
+import com.xiilab.modulek8s.common.utils.DateUtils;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceReqVO;
 
 import lombok.AccessLevel;
@@ -39,6 +42,29 @@ public class WorkspaceDTO {
 		private String name;
 		private String resourceName;
 		private String description;
+		private LocalDateTime createdAt;
 	}
 
+	@Getter
+	public static class TotalResponseDTO {
+		private String id;
+		private String name;
+		private String resourceName;
+		private String description;
+		private boolean isPinYN;
+		private AgeDTO age;
+		private ModuleWorkloadResDTO recentlyWorkload;
+
+		public TotalResponseDTO(String id, String name, String resourceName, String description, boolean isPinYN,
+			LocalDateTime createdTime,
+			ModuleWorkloadResDTO recentlyWorkload) {
+			this.id = id;
+			this.name = name;
+			this.resourceName = resourceName;
+			this.description = description;
+			this.isPinYN = isPinYN;
+			this.age = DateUtils.getAge(createdTime);
+			this.recentlyWorkload = recentlyWorkload;
+		}
+	}
 }

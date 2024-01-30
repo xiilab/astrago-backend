@@ -1,7 +1,6 @@
 package com.xiilab.modulek8s.workload.repository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +9,6 @@ import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -134,19 +132,19 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName) {
 		JobList batchJobList = getBatchJobList(workSpaceName);
 		return batchJobList.getItems().stream()
 			.map(ModuleBatchJobResDTO::new)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
+	public List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
 		DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
 		return interactiveJobList.getItems().stream()
 			.map(ModuleInteractiveJobResDTO::new)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	@Override
@@ -193,6 +191,34 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.redirectingOutput()
 			.redirectingError()
 			.withTTY();
+	}
+
+	@Override
+	public Pod getBatchJobPod(String workspaceName, String workloadName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Job job = kubernetesClient.batch().v1().jobs().inNamespace(workspaceName).withName(workloadName).get();
+			String app = job.getMetadata().getLabels().get("app");
+			String namespace = job.getMetadata().getNamespace();
+			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
+		} catch (NullPointerException e) {
+			throw new RuntimeException("해당하는 배치 잡 로그를 조회할 수 없습니다.");
+		}
+	}
+
+	@Override
+	public Pod getInteractiveJobPod(String workspaceName, String workloadName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Deployment deployment = kubernetesClient.apps()
+				.deployments()
+				.inNamespace(workspaceName)
+				.withName(workloadName)
+				.get();
+			String app = deployment.getMetadata().getLabels().get("app");
+			String namespace = deployment.getMetadata().getNamespace();
+			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
+		} catch (NullPointerException e) {
+			throw new RuntimeException("해당하는 인터렉티브 잡 로그를 조회할 수 없습니다.");
+		}
 	}
 
 	private HasMetadata createResource(HasMetadata hasMetadata) {

@@ -30,6 +30,7 @@ public abstract class K8SResourceResVO {
 	//label
 	String creator;
 	ResourceType type;
+	String age;
 
 	protected K8SResourceResVO(HasMetadata hasMetadata) {
 		//astra로 생성한 리소스 정보 매핑

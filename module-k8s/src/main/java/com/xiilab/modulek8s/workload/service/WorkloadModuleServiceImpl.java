@@ -9,10 +9,10 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public boolean IsAvailableTestConnectPod(String connectTestLabelName, String namespace) {
+	public boolean isAvailableTestConnectPod(String connectTestLabelName, String namespace) {
 		return workloadRepository.testConnectPodIsAvailable(connectTestLabelName, namespace);
 	}
 
@@ -64,12 +64,12 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName) {
 		return workloadRepository.getBatchJobWorkloadList(workSpaceName);
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
+	public List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
 		return workloadRepository.getInteractiveJobWorkloadList(workSpaceName);
 	}
 
@@ -90,6 +90,17 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return workloadRepository.connectInteractiveJobTerminal(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.BATCH) {
 			return workloadRepository.connectBatchJobTerminal(workspaceName, workloadName);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType) {
+		if (workloadType == WorkloadType.INTERACTIVE) {
+			return workloadRepository.getInteractiveJobPod(workspaceName, workloadName);
+		} else if (workloadType == WorkloadType.BATCH) {
+			return workloadRepository.getBatchJobPod(workspaceName, workloadName);
 		} else {
 			return null;
 		}
