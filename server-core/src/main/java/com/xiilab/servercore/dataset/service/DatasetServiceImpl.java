@@ -7,11 +7,16 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
+import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.repository.DatasetRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -42,5 +47,15 @@ public class DatasetServiceImpl implements DatasetService{
 		} catch (IOException e) {
 			throw new RuntimeException("파일 업로드를 실패했습니다.");
 		}
+	}
+
+	@Override
+	public DatasetDTO.ResDatasets getDatasets(int pageNo, int pageSize, UserInfoDTO userInfoDTO) {
+		PageRequest pageRequest = PageRequest.of(pageNo, pageSize);
+		Page<Dataset> datasets = datasetRepository.findAll(pageRequest);
+		List<Dataset> entities = datasets.getContent();
+		long totalCount = datasets.getTotalElements();
+
+		return DatasetDTO.ResDatasets.entitiesToDtos(entities, totalCount);
 	}
 }
