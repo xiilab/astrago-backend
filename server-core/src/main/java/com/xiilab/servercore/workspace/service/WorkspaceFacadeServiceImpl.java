@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workspace.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -63,6 +64,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		workspaceList = workspaceList.stream()
 			.filter(workspace -> groupList.contains(workspace.getResourceName()))
 			.filter(workspace -> searchCondition == null || workspace.getName().contains(searchCondition))
+			.sorted(Comparator.comparing(WorkspaceDTO.ResponseDTO::getCreatedAt).reversed())
 			.toList();
 		//페이지네이션 진행
 		PageDTO<WorkspaceDTO.ResponseDTO> pageDTO = new PageDTO<>(workspaceList, pageNum, 9);
