@@ -67,7 +67,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//페이지네이션 진행
 		PageDTO<WorkspaceDTO.ResponseDTO> pageDTO = new PageDTO<>(workspaceList, pageNum, 9);
 		//pinYN 처리 및 최근 워크로드 불러오기 진행
-		//최적화를 위해 pageNation 후에 최근워크로드 조회 작ㅇ버을 진행
+		//최적화를 위해 pageNation 후에 최근워크로드 조회 작업을 진행
 		List<WorkspaceDTO.TotalResponseDTO> resultList = pageDTO.getContent()
 			.stream()
 			.map(workspace -> new WorkspaceDTO.TotalResponseDTO(

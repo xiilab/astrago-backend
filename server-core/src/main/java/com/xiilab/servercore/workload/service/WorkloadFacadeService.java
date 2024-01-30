@@ -83,7 +83,32 @@ public class WorkloadFacadeService {
 
 		totalJobList.addAll(pinList);
 		totalJobList.addAll(normalPagingList);
-		return new PageDTO(totalSize, totalPageSize, pageNum, totalJobList);
+
+		PageDTO<ModuleBatchJobResDTO> pageDTO = new PageDTO<>(totalJobList, pageNum, 10);
+
+		List<ModuleBatchJobResDTO> resultList = (List<ModuleBatchJobResDTO>)pageDTO.getContent().stream().map(workload ->
+			ModuleBatchJobResDTO.builder()
+				.uid(workload.getUid())
+				.name(workload.getName())
+				.description(workload.getDescription())
+				.creator(workload.getCreator())
+				.workspace(workload.getWorkspace())
+				.type(workload.getType())
+				.image(workload.getImage())
+				.gpuRequest(workload.getGpuRequest())
+				.cpuRequest(workload.getCpuRequest())
+				.memRequest(workload.getMemRequest())
+				.createdAt(workload.getCreatedAt())
+				.schedulingType(workload.getSchedulingType())
+				.envs(workload.getEnvs())
+				.ports(workload.getPorts())
+				.command(workload.getCommand())
+				.status(workload.getStatus())
+				.age(workload.getAge())
+				.isPinYN(userWorkloadPinList.contains(workload))
+				.build()).toList();
+		// return new PageDTO(totalSize, totalPageSize, pageNum, totalJobList);
+		return new PageDTO<>(resultList, pageNum, 10);
 	}
 
 	public PageDTO getInteractiveWorkloadByCondition(String workspaceName, String searchName,
@@ -125,8 +150,32 @@ public class WorkloadFacadeService {
 
 		totalJobList.addAll(pinList);
 		totalJobList.addAll(normalPagingList);
-		return new PageDTO(totalSize, (int)Math.ceil(normalList.size() / 10), pageNum,
-			totalJobList);
+
+		PageDTO<ModuleInteractiveJobResDTO> pageDTO = new PageDTO<>(totalJobList, pageNum, 10);
+
+		List<ModuleInteractiveJobResDTO> resultList = (List<ModuleInteractiveJobResDTO>)pageDTO.getContent().stream().map(workload ->
+			ModuleInteractiveJobResDTO.builder()
+				.uid(workload.getUid())
+				.name(workload.getName())
+				.description(workload.getDescription())
+				.creator(workload.getCreator())
+				.workspace(workload.getWorkspace())
+				.type(workload.getType())
+				.image(workload.getImage())
+				.gpuRequest(workload.getGpuRequest())
+				.cpuRequest(workload.getCpuRequest())
+				.memRequest(workload.getMemRequest())
+				.createdAt(workload.getCreatedAt())
+				.schedulingType(workload.getSchedulingType())
+				.envs(workload.getEnvs())
+				.ports(workload.getPorts())
+				.command(workload.getCommand())
+				.status(workload.getStatus())
+				.age(workload.getAge())
+				.isPinYN(userWorkloadPinList.contains(workload))
+				.build()).toList();
+		// return new PageDTO(totalSize, totalPageSize, pageNum, totalJobList);
+		return new PageDTO<>(resultList, pageNum, 10);
 	}
 
 	public List<ModuleBatchJobResDTO> applyBatchWorkloadListCondition(List<ModuleBatchJobResDTO> workloadList,

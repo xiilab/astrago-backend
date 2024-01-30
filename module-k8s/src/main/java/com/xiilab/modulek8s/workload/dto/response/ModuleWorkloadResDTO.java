@@ -32,6 +32,7 @@ public abstract class ModuleWorkloadResDTO {
 	String command;                      // 워크로드 명령
 	WorkloadStatus status;               // 워크로드 status
 	int age;							// 실행시간
+	private boolean isPinYN;            // PIN YN
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
 		name = hasMetadata.getMetadata().getName();
