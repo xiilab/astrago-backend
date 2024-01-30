@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
@@ -30,7 +31,12 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolume;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
+import io.fabric8.kubernetes.api.model.Volume;
+import io.fabric8.kubernetes.api.model.VolumeBuilder;
+import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -184,6 +190,33 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	public void deletePV(String pvName) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			client.persistentVolumes().withName(pvName).delete();
+		}
+	}
+
+	@Override
+	public void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			String pvcName = deleteStorageReqDTO.getPvcName();
+			String volName = deleteStorageReqDTO.getVolumeName();
+			String hostPath = deleteStorageReqDTO.getHostPath();
+			Volume vol = new VolumeBuilder()
+				.withName(volName)
+				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(pvcName, null))
+				.build();
+
+			client.apps().deployments().inNamespace(deleteStorageReqDTO.getNamespace()).withName(deleteStorageReqDTO.getAstragoDeploymentName())
+				.edit(d -> new DeploymentBuilder(d)
+					.editSpec()
+					.editOrNewTemplate()
+					.editSpec()
+					.removeFromVolumes(vol)
+					.editContainer(0)
+					.removeFromVolumeMounts(new VolumeMount(hostPath, null, volName, null, null, null))
+					.endContainer()
+					.endSpec()
+					.endTemplate()
+					.endSpec()
+					.build());
 		}
 	}
 

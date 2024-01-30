@@ -32,8 +32,9 @@ public interface WorkloadModuleFacadeService {
 
 	List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
 
+	ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username);
+
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 
-	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 }

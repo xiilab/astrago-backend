@@ -1,7 +1,6 @@
 package com.xiilab.modulek8s.workload.repository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +9,6 @@ import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -134,19 +132,19 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getBatchJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName) {
 		JobList batchJobList = getBatchJobList(workSpaceName);
 		return batchJobList.getItems().stream()
 			.map(ModuleBatchJobResDTO::new)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
+	public List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
 		DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
 		return interactiveJobList.getItems().stream()
 			.map(ModuleInteractiveJobResDTO::new)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	@Override
@@ -163,10 +161,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName) {
 		KubernetesClient kubernetesClient = k8sAdapter.configServer();
 		Job job = kubernetesClient.batch().v1().jobs().inNamespace(workspaceName).withName(workloadName).get();
-		String name = job.getSpec().getTemplate().getSpec().getContainers().get(0).getName();
+		String app = job.getMetadata().getLabels().get("app");
+		String namespace = job.getMetadata().getNamespace();
+		Pod pod = kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		return kubernetesClient.pods()
 			.inNamespace(workspaceName)
-			.withName(name)
+			.withName(pod.getMetadata().getName())
 			.redirectingInput()
 			.redirectingOutput()
 			.redirectingError()

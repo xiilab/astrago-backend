@@ -64,6 +64,7 @@
 // import io.fabric8.kubernetes.api.model.Quantity;
 // import io.fabric8.kubernetes.api.model.Volume;
 // import io.fabric8.kubernetes.api.model.VolumeBuilder;
+// import io.fabric8.kubernetes.api.model.VolumeMount;
 // import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinitionBuilder;
 // import io.fabric8.kubernetes.api.model.apps.Deployment;
 // import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
@@ -757,16 +758,46 @@
 // 	@DisplayName("스토리지 생성 테스트")
 // 	void createStorageTest(){
 // 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
-// 			.namespace("astrago")
-// 			.storagePath("/kube_storage/")
 // 			.storageName("storage1")
-// 			.astragoDeploymentName("astrago-backend-core")
-// 			.requestVolume(50)
+// 			.description("설명어어엉")
 // 			.storageType(StorageType.NFS)
 // 			.ip("10.61.3.2")
+// 			.storagePath("/kube_storage/")
+// 			.namespace("astrago")
+// 			.astragoDeploymentName("astrago-backend-core")
 // 			.hostPath(System.getProperty("user.home"))
-// 			.description("설명어어엉")
+// 			.requestVolume(50)
 // 			.build();
 // 		storageModuleServiceImpl.createStorage(createStorageReqDTO);
 // 	}
+//
+// 	@Test
+// 	@DisplayName("스토리지 삭제 테스트")
+// 	void deleteStorageTest(){
+// 		try (final KubernetesClient client = k8sAdapter.configServer()) {
+// 			String pvcName = "astrago-pvc-93-3b8f-4524-bd86-634ee18e9741";
+// 			String volName = "storage-volume-f3-ec9c-429d-bf88-7a08311a0b80";
+// 			String hostPath = "/Users/leeyoungchun";
+// 			Volume vol = new VolumeBuilder()
+// 				.withName(volName)
+// 				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(pvcName, null))
+// 				.build();
+//
+// 			client.apps().deployments().inNamespace("astrago").withName("astrago-backend-core")
+// 				.edit(d -> new DeploymentBuilder(d)
+// 					.editSpec()
+// 					.editOrNewTemplate()
+// 					.editSpec()
+// 					.removeFromVolumes(vol)
+// 					.editContainer(0)
+// 					.removeFromVolumeMounts(new VolumeMount(hostPath, null, volName, null, null, null))
+// 					.endContainer()
+// 					.endSpec()
+// 					.endTemplate()
+// 					.endSpec()
+// 					.build());
+//
+// 		}
+// 	}
+//
 // }
