@@ -1,5 +1,7 @@
 package com.xiilab.servercore.workspace.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,5 +61,10 @@ public class WorkspaceController {
 	public ResponseEntity<HttpStatus> deleteWorkspaceByName(@PathVariable(name = "name") String name) {
 		workspaceService.deleteWorkspaceByName(name);
 		return ResponseEntity.ok().build();
+	}
+	@GetMapping("/overview/pin")
+	@Operation(summary = "워크스페이스 OverView 조회")
+	public ResponseEntity<List<WorkspaceDTO.ResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO){
+		return ResponseEntity.ok(workspaceService.getWorkspaceOverView(userInfoDTO));
 	}
 }

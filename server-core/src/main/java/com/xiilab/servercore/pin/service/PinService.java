@@ -7,7 +7,7 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 public interface PinService {
 	Set<String> getUserWorkspacePinList(String userId);
 
-	Set<String> getUserWorkloadPinList(String userId);
+	Set<String> getUserWorkloadPinList(String userId, String workspaceName);
 
 	void createWorkspacePin(String resourceId, UserInfoDTO userInfoDTO);
 

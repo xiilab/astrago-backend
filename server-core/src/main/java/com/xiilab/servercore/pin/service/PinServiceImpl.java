@@ -26,7 +26,7 @@ public class PinServiceImpl implements PinService {
 	}
 
 	@Override
-	public Set<String> getUserWorkloadPinList(String userId) {
+	public Set<String> getUserWorkloadPinList(String userId, String workspaceName) {
 		List<PinEntity> workloadPins = pinRepository.findByTypeAndAndRegUser_RegUserId(PinType.WORKLOAD, userId);
 		return workloadPins.stream().map(PinEntity::getResourceId).collect(Collectors.toSet());
 	}

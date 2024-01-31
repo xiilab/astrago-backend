@@ -25,6 +25,7 @@ public interface WorkloadModuleService {
 
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
 
+
 	/**
 	 * batch job workload 조회
 	 *
