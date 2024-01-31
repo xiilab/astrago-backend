@@ -53,4 +53,6 @@ public interface WorkloadModuleFacadeService {
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
+
+	String getWorkloadLogByWorkloadName(String workspace, String workload, WorkloadType type);
 }

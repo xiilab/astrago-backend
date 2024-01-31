@@ -1,7 +1,6 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +89,8 @@ public class BatchJobVO extends WorkloadVO {
 			// .withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
 			.withTtlSecondsAfterFinished(1000)
 			.withNewTemplate()
-			.withNewMetadata().withLabels(Collections.singletonMap(LabelField.APP.getField(), jobName)).endMetadata()
+			.withNewMetadata()
+			.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
 			.withSpec(createPodSpec())
 			.endTemplate()
 			.build();

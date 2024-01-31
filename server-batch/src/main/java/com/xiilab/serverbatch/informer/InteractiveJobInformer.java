@@ -2,7 +2,9 @@ package com.xiilab.serverbatch.informer;
 
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
-import org.springframework.stereotype.Service;
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -11,7 +13,7 @@ import com.xiilab.modulek8sdb.entity.WorkloadType;
 import com.xiilab.modulek8sdb.repository.JobHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
@@ -20,10 +22,10 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Component
 @RequiredArgsConstructor
 @Slf4j
-public class JobInformer {
+public class InteractiveJobInformer {
 	private final K8sAdapter k8sAdapter;
 	private final JobHistoryRepo jobHistoryRepo;
 
@@ -35,25 +37,27 @@ public class JobInformer {
 	private void jobInformer() {
 		KubernetesClient kubernetesClient = k8sAdapter.configServer();
 		SharedInformerFactory informers = kubernetesClient.informers();
-		SharedIndexInformer<Job> jobSharedIndexInformer = informers.sharedIndexInformerFor(
-			Job.class, 30 * 60 * 1000L);
+		SharedIndexInformer<Deployment> jobSharedIndexInformer = informers.sharedIndexInformerFor(
+			Deployment.class, 30 * 60 * 1000L);
 		jobSharedIndexInformer.addEventHandler(new ResourceEventHandler<>() {
 			@Override
-			public void onAdd(Job job) {
-				log.info("{} job이 생성되었습니다.", job.getMetadata().getName());
+			public void onAdd(Deployment deployment) {
+				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 			}
 
 			@Override
-			public void onUpdate(Job job1, Job job2) {
-				log.info(job2.toString());
+			public void onUpdate(Deployment deployment1, Deployment deployment2) {
+				if (!Objects.equals(deployment1.getMetadata().getResourceVersion(),
+					deployment2.getMetadata().getResourceVersion())) {
+					log.info(deployment2.toString());
+				}
 			}
 
 			@Override
-			public void onDelete(Job job, boolean b) {
-				log.info("{}가 삭제되었습니다.", job.getMetadata().getName());
-
-				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
-				K8SResourceMetadataDTO metadataFromResource = getMetadataFromResource(job);
+			public void onDelete(Deployment deployment, boolean b) {
+				log.info("interactive job {}가 삭제되었습니다.", deployment.getMetadata().getName());
+				Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
+				K8SResourceMetadataDTO metadataFromResource = getMetadataFromResource(deployment);
 				if (metadataFromResource != null) {
 					jobHistoryRepo.save(JobEntity.jobBuilder()
 						.name(metadataFromResource.getName())
@@ -65,13 +69,13 @@ public class JobInformer {
 						.resourceName(metadataFromResource.getResourceName())
 						.createdAt(metadataFromResource.getCreatedAt())
 						.deletedAt(metadataFromResource.getDeletedAt())
-						.workloadType(WorkloadType.BATCH)
+						.workloadType(WorkloadType.INTERACTIVE)
 						.build());
 				}
 			}
 		});
 
-		log.info("Starting all registered informers");
+		log.info("Starting all registered interative job informers");
 		informers.startAllRegisteredInformers();
 	}
 }

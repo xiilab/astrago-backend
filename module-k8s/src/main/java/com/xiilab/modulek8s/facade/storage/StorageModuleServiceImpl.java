@@ -54,7 +54,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	/**
 	 * 해당 워크스페이스에 스토리지 타입으로 볼륨 리스트 조회
 	 * @param workspaceMetaName
-	 * @param storageType
+	 * @param storageMetaName
 	 * @return
 	 */
 	@Override
@@ -76,9 +76,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	/**
 	 * 볼륨의 이름 변경
-	 * @param workspaceMetaName
-	 * @param volumeMetaName
-	 * @param modityName
+	 * @param modifyVolumeDTO
 	 */
 	@Override
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO){

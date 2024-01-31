@@ -24,4 +24,11 @@ public class LogRepositoryImpl implements LogRepository {
 			.withPrettyOutput()
 			.watchLog();
 	}
+
+	@Override
+	public String getWorkloadLogByWorkloadName(String workspace, String podName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.pods().inNamespace(workspace).withName(podName).getLog();
+		}
+	}
 }
