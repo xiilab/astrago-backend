@@ -12,4 +12,6 @@ public interface DatasetService {
 	void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files);
 
 	DatasetDTO.ResDatasets getDatasets(int pageNo, int pageSize, UserInfoDTO userInfoDTO);
+
+	DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId);
 }

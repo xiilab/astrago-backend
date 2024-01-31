@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.common.enums.DatasetDivision;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetFacadeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -44,8 +46,12 @@ public class DatasetController {
 		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize,
 		UserInfoDTO userInfoDTO){
 		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageNo, pageSize, userInfoDTO);
-
 		return new ResponseEntity(datasets, HttpStatus.OK);
 	}
 
+	@GetMapping("/datasets/{datasetId}")
+	public ResponseEntity getDataset(@PathVariable(name = "datasetId") Long datasetId){
+		DatasetDTO.ResDatasetWithStorage datasetWithStorage = datasetFacadeService.getDataset(datasetId);
+		return new ResponseEntity(datasetWithStorage, HttpStatus.OK);
+	}
 }

@@ -52,10 +52,16 @@ public class DatasetServiceImpl implements DatasetService{
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(int pageNo, int pageSize, UserInfoDTO userInfoDTO) {
 		PageRequest pageRequest = PageRequest.of(pageNo, pageSize);
-		Page<Dataset> datasets = datasetRepository.findAll(pageRequest);
+		Page<Dataset> datasets = datasetRepository.findByAuthority(pageRequest, userInfoDTO);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 
 		return DatasetDTO.ResDatasets.entitiesToDtos(entities, totalCount);
+	}
+
+	@Override
+	public DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId) {
+		Dataset datasetWithStorage = datasetRepository.getDatasetWithStorage(datasetId);
+		return DatasetDTO.ResDatasetWithStorage.toDto(datasetWithStorage);
 	}
 }

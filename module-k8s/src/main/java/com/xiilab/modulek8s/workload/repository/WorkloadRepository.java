@@ -8,6 +8,7 @@ import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
@@ -97,4 +98,6 @@ public interface WorkloadRepository {
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
 
 
+
+	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 }

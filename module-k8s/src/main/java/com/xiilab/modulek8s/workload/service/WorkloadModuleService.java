@@ -7,6 +7,7 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -78,4 +79,6 @@ public interface WorkloadModuleService {
 
 	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
+
+	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 }
