@@ -1,6 +1,7 @@
 package com.xiilab.moduleuser.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -151,14 +152,14 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public List<GroupUserDTO> findUsersByGroupName(String groupName) {
+	public List<GroupUserDTO> getWorkspaceMember(String groupName) {
 
 		GroupRepresentation subGroup = getWsSubGroupByGroupName(groupName);
 
 		return findUsersByGroupId(subGroup.getId());
 	}
 	@Override
-	public void deleteGroupUserByUserId(String groupName, String userId){
+	public void deleteWorkspaceMemberByUserId(String groupName, String userId){
 		// ws 그룹 조회 조회
 		GroupRepresentation swGroup = getWsSubGroupByGroupName(groupName);
 		try{
@@ -169,6 +170,22 @@ public class KeycloakGroupRepository implements GroupRepository {
 		}catch (NotFoundException e){
 			throw new IllegalArgumentException("해당 ID(" + userId + ")의 사용자가 없습니다.");
 		}
+	}
+	@Override
+	public void addWorkspaceMemberByUserId(String groupName, String userId){
+
+		GroupRepresentation subgroup = getWsSubGroupByGroupName(groupName);
+
+		keycloakConfig.getRealmClient().users().get(userId).joinGroup(subgroup.getId());
+		// 워크스페이스 회원 추가 검사를 위한 GroupUser 조회
+		Optional<GroupUserDTO> group = findUsersByGroupId(subgroup.getId()).stream()
+			.filter(groupUserDTO -> groupUserDTO.getId().equals(userId))
+			.findFirst();
+
+		if(group.isPresent()){
+			throw new IllegalArgumentException("해당 워크스페이스(" + subgroup.getName() + ")에 회원 추가 실패하였습니다.");
+		}
+
 	}
 
 	private GroupRepresentation getWsSubGroupByGroupName(String subGroupName){
@@ -185,7 +202,5 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.filter(groupRepresentation -> groupRepresentation.getName().equals(subGroupName))
 			.findFirst()
 			.orElseThrow(() -> new IllegalArgumentException("해당 이름의 그룹(워크스페이스:" + subGroupName + ")이(가) 없습니다."));
-
-
 	}
 }

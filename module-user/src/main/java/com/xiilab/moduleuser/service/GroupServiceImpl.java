@@ -109,10 +109,15 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<GroupUserDTO> getGroupUsersByGroupName(String groupName) {
-		return groupRepository.findUsersByGroupName(groupName);
+	public List<GroupUserDTO> getWorkspaceMember(String groupName) {
+		return groupRepository.getWorkspaceMember(groupName);
 	}
-	public void deleteGroupUserByUserId(String groupName, String userId){
-		groupRepository.deleteGroupUserByUserId(groupName, userId);
+	@Override
+	public void deleteWorkspaceMemberByUserId(String groupName, String userId){
+		groupRepository.deleteWorkspaceMemberByUserId(groupName, userId);
+	}
+	@Override
+	public void addWorkspaceMemberByUserId(String groupName, String userId){
+		groupRepository.addWorkspaceMemberByUserId(groupName, userId);
 	}
 }

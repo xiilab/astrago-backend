@@ -59,12 +59,16 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<GroupUserDTO> getGroupUsersByGroupName(String groupName) {
-		return groupService.getGroupUsersByGroupName(groupName);
+	public List<GroupUserDTO> getWorkspaceMember(String groupName) {
+		return groupService.getWorkspaceMember(groupName);
 	}
 
 	@Override
-	public void deleteGroupUserByUserId(String groupName, String userId){
-		groupService.deleteGroupUserByUserId(groupName, userId);
+	public void deleteWorkspaceMemberByUserId(String groupName, String userId){
+		groupService.deleteWorkspaceMemberByUserId(groupName, userId);
+	}
+	@Override
+	public void addWorkspaceMemberByUserId(String groupName, String userId){
+		groupService.addWorkspaceMemberByUserId(groupName, userId);
 	}
 }

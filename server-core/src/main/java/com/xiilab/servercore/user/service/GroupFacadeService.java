@@ -31,6 +31,7 @@ public interface GroupFacadeService {
 	void deleteGroupById(String groupId);
 
 	// 워크스페이스 그룹 사용자 조회
-	List<GroupUserDTO> getGroupUsersByGroupName(String groupName);
-	void deleteGroupUserByUserId(String groupName, String userId);
+	List<GroupUserDTO> getWorkspaceMember(String groupName);
+	void deleteWorkspaceMemberByUserId(String groupName, String userId);
+	void addWorkspaceMemberByUserId(String groupName, String userid);
 }
