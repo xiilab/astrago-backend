@@ -187,9 +187,10 @@ public class WorkloadFacadeService {
 
 		if (sortCondition != null) {
 			return switch (sortCondition) {
-				case AGE_ASC -> workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getAge)).toList();
+
+				case AGE_ASC -> workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getCreatedAt)).toList();
 				case AGE_DESC ->
-					workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getAge).reversed()).toList();
+					workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getCreatedAt).reversed()).toList();
 				case REMAIN_TIME_ASC ->
 					workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getRemainTime)).toList();
 				case REMAIN_TIME_DESC ->
@@ -212,9 +213,9 @@ public class WorkloadFacadeService {
 		if (sortCondition != null) {
 			return switch (sortCondition) {
 				case AGE_ASC ->
-					workloadStream.sorted(Comparator.comparing(ModuleInteractiveJobResDTO::getAge)).toList();
+					workloadStream.sorted(Comparator.comparing(ModuleInteractiveJobResDTO::getCreatedAt)).toList();
 				case AGE_DESC ->
-					workloadStream.sorted(Comparator.comparing(ModuleInteractiveJobResDTO::getAge).reversed()).toList();
+					workloadStream.sorted(Comparator.comparing(ModuleInteractiveJobResDTO::getCreatedAt).reversed()).toList();
 				case REMAIN_TIME_ASC, REMAIN_TIME_DESC ->
 					throw new IllegalArgumentException("interactive job은 remainTime을 계산할 수 없습니다.");
 			};
