@@ -70,14 +70,16 @@ public class KeycloakUserRepository implements UserRepository {
 	@Override
 	public List<UserSummary> getUserList(FindDTO findDTO) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
-		List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
-				-> user.getAttributes() != null
-				&& user.getAttributes().containsKey("approvalYN")
-				&& user.getAttributes().containsValue(List.of("true"))
-				&& searchInfo(findDTO, user)
-			)
-			.toList();
-		return userList.stream().map(UserSummary::new).toList();
+
+		return realmClient.users().list().stream().filter(user
+			-> user.getAttributes() != null
+			&& user.getAttributes().containsKey("approvalYN")
+			&& user.getAttributes().containsValue(List.of("true"))
+			&& searchInfo(findDTO, user)
+		).map(userRepresentation -> {
+			List<GroupRepresentation> groups = realmClient.users().get(userRepresentation.getId()).groups(0, 100);
+			return new UserSummary(userRepresentation, groups);
+		}).toList();
 	}
 
 	@Override
@@ -106,12 +108,15 @@ public class KeycloakUserRepository implements UserRepository {
 	@Override
 	public List<UserSummary> getUserListSearchByAttribute(String attribute) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
-		List<UserRepresentation> userList = realmClient.users().list().stream().filter(user
+		return realmClient.users().list().stream().filter(user
 				-> user.getAttributes() != null
 				&& user.getAttributes().containsKey(attribute)
 				&& user.getAttributes().containsValue(List.of("false")))
-			.toList();
-		return userList.stream().map(UserSummary::new).toList();
+			.map(userRepresentation -> {
+				List<GroupRepresentation> groups = realmClient.users().get(userRepresentation.getId()).groups(0, 100);
+				return new UserSummary(userRepresentation, groups);
+			}).toList();
+		// return userList.stream().map(UserSummary::new).toList();
 	}
 
 	@Override
