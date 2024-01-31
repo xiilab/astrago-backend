@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
@@ -31,8 +32,9 @@ public abstract class ModuleWorkloadResDTO {
 	List<ModulePortResDTO> ports;        // port 정의
 	String command;                      // 워크로드 명령
 	WorkloadStatus status;               // 워크로드 status
-	AgeDTO age;							 // 워크로드 경과시간
 	private boolean isPinYN;            // PIN YN
+	AgeDTO age;							 // 워크로드 경과시간
+
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
 		name = hasMetadata.getMetadata().getName();
