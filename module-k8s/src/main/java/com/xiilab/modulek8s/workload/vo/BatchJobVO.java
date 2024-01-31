@@ -37,6 +37,7 @@ public class BatchJobVO extends WorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
 	private String command;        // 워크로드 명령
+	private String jobName;
 
 	@Override
 	public Job createResource() {
@@ -49,8 +50,9 @@ public class BatchJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
+		jobName = getUniqueResourceName();
 		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName())
+			.withName(jobName)
 			.withNamespace(workspace)
 			.withAnnotations(
 				Map.of(
@@ -73,7 +75,8 @@ public class BatchJobVO extends WorkloadVO {
 
 		map.put(LabelField.CREATOR.getField(), getCreator());
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
-		map.put(LabelField.APP.getField(), getUniqueResourceName());
+		map.put(LabelField.APP.getField(), jobName);
+		map.put(LabelField.JOB_NAME.getField(), jobName);
 		this.volumes.forEach(volume -> map.put(volume.name(), "true"));
 
 		return map;
@@ -83,10 +86,11 @@ public class BatchJobVO extends WorkloadVO {
 	@Override
 	public JobSpec createSpec() {
 		return new JobSpecBuilder()
+			// .withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
 			.withTtlSecondsAfterFinished(1000)
 			.withNewTemplate()
 			.withNewMetadata()
-			.withLabels(Map.of(LabelField.APP.getField(), getUniqueResourceName())).endMetadata()
+			.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
 			.withSpec(createPodSpec())
 			.endTemplate()
 			.build();
