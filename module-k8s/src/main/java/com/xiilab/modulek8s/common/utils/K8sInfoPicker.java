@@ -187,18 +187,15 @@ public class K8sInfoPicker {
 				Quantity cpu = requests.get("cpu");
 				Quantity mem = requests.get("memory");
 				Quantity gpu = requests.get("nvidia.com/gpu");
-				Quantity disk = requests.get("disk");
 
 				Integer cpuReq = cpu != null ? Integer.valueOf(cpu.getAmount()) : null;
 				Integer memReq = mem != null ? Integer.valueOf(mem.getAmount()) : null;
 				Integer gpuReq = gpu != null ? Integer.valueOf(gpu.getAmount()) : null;
-				Integer diskReq = disk != null ? Integer.valueOf(disk.getAmount()) : null;
 
 				return ResourceDTO.builder()
 					.cpuReq(cpuReq)
 					.memReq(memReq)
 					.gpuReq(gpuReq)
-					.diskReq(diskReq)
 					.build();
 			}
 		}

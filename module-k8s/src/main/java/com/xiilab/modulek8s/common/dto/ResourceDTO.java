@@ -9,5 +9,4 @@ public class ResourceDTO {
 	private Integer cpuReq;
 	private Integer memReq;
 	private Integer gpuReq;
-	private Integer diskReq;
 }
