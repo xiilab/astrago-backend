@@ -32,6 +32,7 @@ public abstract class ModuleWorkloadResDTO {
 	List<ModulePortResDTO> ports;        // port 정의
 	String command;                      // 워크로드 명령
 	WorkloadStatus status;               // 워크로드 status
+	private boolean isPinYN;            // PIN YN
 	AgeDTO age;							 // 워크로드 경과시간
 
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {

@@ -10,11 +10,13 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
+@Getter
 public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
-	private WorkloadStatus status;
+	private int remainTime;
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
 
