@@ -9,7 +9,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 
 public interface WorkloadModuleFacadeService {
@@ -20,10 +19,27 @@ public interface WorkloadModuleFacadeService {
 	 */
 	ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 
+	/**
+	 * 워크로드 - 인터렉티브잡 생성
+	 * @param moduleCreateWorkloadReqDTO
+	 * @return
+	 */
 	ModuleInteractiveJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 
+	/**
+	 * 배치 워크로드 조회
+	 * @param workSpaceName
+	 * @param workloadName
+	 * @return
+	 */
 	ModuleBatchJobResDTO getBatchWorkload(String workSpaceName, String workloadName);
 
+	/**
+	 * 인터렉티브 워크로드 조회
+	 * @param workSpaceName
+	 * @param workloadName
+	 * @return
+	 */
 	ModuleInteractiveJobResDTO getInteractiveWorkload(String workSpaceName, String workloadName);
 
 	void deleteBatchHobWorkload(String workSpaceName, String workloadName);

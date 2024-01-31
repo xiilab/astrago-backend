@@ -31,7 +31,7 @@ public abstract class ModuleWorkloadResDTO {
 	List<ModulePortResDTO> ports;        // port 정의
 	String command;                      // 워크로드 명령
 	WorkloadStatus status;               // 워크로드 status
-	int age;							// 실행시간
+	AgeDTO age;							 // 워크로드 경과시간
 	private boolean isPinYN;            // PIN YN
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
@@ -40,6 +40,7 @@ public abstract class ModuleWorkloadResDTO {
 		creator = hasMetadata.getMetadata().getLabels().get("creator");
 		workspace = hasMetadata.getMetadata().getNamespace();
 		createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
+		age = DateUtils.getAge(createdAt);
 		type = getType();
 	}
 

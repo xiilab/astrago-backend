@@ -24,28 +24,16 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private List<ModuleCodeReqDTO> codes;    // import할 코드 목록
 	private List<ModuleVolumeReqDTO> volumes;    // 마운트할 볼륨 목록 (볼륨명, 마운트할 경로)
 	private List<ModulePortReqDTO> ports;    // 노드 포토 목록 (포트명, 포트번호)
-	private List<ModuleEnvReqDTO> envs;	// 환경변수 목록 (변수명, 값)
-	private String command;	// 실행할 명령어
-	private WorkloadType workloadType;	// 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
+	private List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
+	private String command;    // 실행할 명령어
+	private WorkloadType workloadType;    // 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
 	private VolumeSelectionType volumeSelectionType;
 	private int gpuRequest;
 	private float cpuRequest;
 	private float memRequest;
 
-
 	public BatchJobVO toBatchJobVO() {
-		if (CollectionUtils.isEmpty(this.codes)) {
-			this.codes = new ArrayList<>();
-		}
-		if (CollectionUtils.isEmpty(this.volumes)) {
-			this.volumes = new ArrayList<>();
-		}
-		if (CollectionUtils.isEmpty(this.ports)) {
-			this.ports = new ArrayList<>();
-		}
-		if (CollectionUtils.isEmpty(this.envs)) {
-			this.envs = new ArrayList<>();
-		}
+		initializeCollection();
 
 		return BatchJobVO.builder()
 			.workspace(this.workspace)
@@ -67,18 +55,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	}
 
 	public InteractiveJobVO toInteractiveJobVO() {
-		if (CollectionUtils.isEmpty(this.codes)) {
-			this.codes = new ArrayList<>();
-		}
-		if (CollectionUtils.isEmpty(this.volumes)) {
-			this.volumes = new ArrayList<>();
-		}
-		if (CollectionUtils.isEmpty(this.ports)) {
-			this.ports = new ArrayList<>();
-		}
-		if (CollectionUtils.isEmpty(this.envs)) {
-			this.envs = new ArrayList<>();
-		}
+		initializeCollection();
 
 		return InteractiveJobVO.builder()
 			.workspace(this.workspace)
@@ -97,5 +74,16 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.gpuRequest(this.gpuRequest)
 			.memRequest(this.memRequest)
 			.build();
+	}
+
+	private void initializeCollection() {
+		this.codes = getListIfNotEmpty(this.codes);
+		this.volumes = getListIfNotEmpty(this.volumes);
+		this.ports = getListIfNotEmpty(this.ports);
+		this.envs = getListIfNotEmpty(this.envs);
+	}
+
+	private <T> List<T> getListIfNotEmpty(List<T> list) {
+		return CollectionUtils.isEmpty(list) ? new ArrayList<>() : list;
 	}
 }
