@@ -9,7 +9,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 
 public interface WorkloadModuleFacadeService {
@@ -37,4 +36,6 @@ public interface WorkloadModuleFacadeService {
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
+
+	String getWorkloadLogByWorkloadName(String workspace, String workload, WorkloadType type);
 }

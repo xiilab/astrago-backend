@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkloadController {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
-
+	private final WorkloadFacadeService workloadFacadeService;
 	/**
 	 * 워크로드 생성 - 배치 잡
 	 * @param createWorkloadJobReqDTO
@@ -84,16 +86,18 @@ public class WorkloadController {
 	@DeleteMapping("/batch")
 	@Operation(summary = "워크로드 삭제 - Batch Job 타입")
 	public ResponseEntity<HttpStatus> deleteBatchJob(@RequestParam("workSpaceName") String workSpaceName,
-		@RequestParam("workloadName") String workloadName) {
-		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
+		@RequestParam("workloadName") String workloadName,
+		UserInfoDTO userInfoDTO) throws IOException {
+		workloadFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/interactive")
 	@Operation(summary = "워크로드 삭제 - Interactive Job 타입")
 	public ResponseEntity<HttpStatus> deleteInteractiveJob(@RequestParam("workSpaceName") String workSpaceName,
-		@RequestParam("workloadName") String workloadName) {
-		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+		@RequestParam("workloadName") String workloadName,
+		UserInfoDTO userInfoDTO) throws IOException {
+		workloadFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

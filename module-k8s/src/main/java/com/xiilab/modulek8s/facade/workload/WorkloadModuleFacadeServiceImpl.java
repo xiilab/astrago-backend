@@ -95,7 +95,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
 		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
-		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
+		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(
+			workSpaceName);
 
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);
@@ -112,6 +113,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return logService.watchLogByWorkload(workspaceName, podName);
 	}
 
+	@Override
 	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
 		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
@@ -123,6 +125,14 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		} catch (Exception e) {
 			return null;
 		}
+	}
+
+	@Override
+	public String getWorkloadLogByWorkloadName(String workspace, String workload, WorkloadType type) {
+		Pod pod = getJobPod(workspace, workload, type);
+		String namespace = pod.getMetadata().getNamespace();
+		String podName = pod.getMetadata().getName();
+		return logService.getWorkloadLogByWorkloadName(namespace, podName);
 	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
