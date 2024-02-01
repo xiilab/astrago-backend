@@ -23,6 +23,8 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
@@ -35,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final WorkspaceService workspaceService;
 	private final PinService pinService;
 	private final AlertService alertService;
 
@@ -53,6 +56,7 @@ public class WorkloadFacadeService {
 
 	public PageDTO<ModuleBatchJobResDTO> getBatchWorkloadByCondition(String workspaceName, String searchName,
 		WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition, int pageNum, UserInfoDTO userInfoDTO) {
+		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		//통합용 리스트 선언
 		List<ModuleBatchJobResDTO> totalJobList = new ArrayList<>();
 		//DB에 저장되어있는 유저가 추가한 PIN 목록
@@ -62,7 +66,7 @@ public class WorkloadFacadeService {
 
 		// pin list filtering
 		List<ModuleBatchJobResDTO> pinList = batchJobWorkloadList.stream()
-			.filter(batch -> userWorkloadPinList.contains(batch.getUid())).toList();
+			.filter(batch -> userWorkloadPinList.contains(batch.getResourceName())).toList();
 		//pin list에 대한 filtering sorting 검색
 		pinList = applyBatchWorkloadListCondition(pinList, searchName,
 			workloadStatus, sortCondition);
@@ -101,9 +105,11 @@ public class WorkloadFacadeService {
 				ModuleBatchJobResDTO.builder()
 					.uid(workload.getUid())
 					.name(workload.getName())
+					.resourceName(workload.getResourceName())
 					.description(workload.getDescription())
 					.creator(workload.getCreator())
-					.workspace(workload.getWorkspace())
+					.workspaceName(workspace.getName())
+					.workspaceResourceName(workspace.getResourceName())
 					.type(workload.getType())
 					.image(workload.getImage())
 					.gpuRequest(workload.getGpuRequest())
@@ -126,6 +132,7 @@ public class WorkloadFacadeService {
 		String searchName,
 		WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition, int pageNum, UserInfoDTO userInfoDTO) {
 		List<ModuleInteractiveJobResDTO> totalJobList = new ArrayList<>();
+		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		Set<String> userWorkloadPinList = pinService.getUserWorkloadPinList(userInfoDTO.getId(), workspaceName);
 		List<ModuleInteractiveJobResDTO> interactiveJobWorkloadList = workloadModuleService.getInteractiveJobWorkloadList(
 			workspaceName);
@@ -169,9 +176,11 @@ public class WorkloadFacadeService {
 				ModuleInteractiveJobResDTO.builder()
 					.uid(workload.getUid())
 					.name(workload.getName())
+					.resourceName(workload.getResourceName())
 					.description(workload.getDescription())
 					.creator(workload.getCreator())
-					.workspace(workload.getWorkspace())
+					.workspaceName(workspace.getName())
+					.workspaceResourceName(workspace.getResourceName())
 					.type(workload.getType())
 					.image(workload.getImage())
 					.gpuRequest(workload.getGpuRequest())
@@ -194,7 +203,7 @@ public class WorkloadFacadeService {
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
 
 		Stream<ModuleBatchJobResDTO> workloadStream = workloadList.stream()
-			.filter(batch -> searchName == null || batch.getName().contains(searchName))
+			.filter(batch -> searchName == null || batch.getResourceName().contains(searchName))
 			.filter(batch -> workloadStatus == null || batch.getStatus() == workloadStatus);
 
 		if (sortCondition != null) {
@@ -220,7 +229,7 @@ public class WorkloadFacadeService {
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
 
 		Stream<ModuleInteractiveJobResDTO> workloadStream = workloadList.stream()
-			.filter(batch -> searchName == null || batch.getName().contains(searchName))
+			.filter(batch -> searchName == null || batch.getResourceName().contains(searchName))
 			.filter(batch -> workloadStatus == null || batch.getStatus() == workloadStatus);
 
 		if (sortCondition != null) {

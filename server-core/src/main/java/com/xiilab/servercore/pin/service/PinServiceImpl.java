@@ -32,7 +32,25 @@ public class PinServiceImpl implements PinService {
 	}
 
 	@Override
-	public void createWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
+	public void createPin(String resourceName, PinType pinType, UserInfoDTO userInfoDTO) {
+		if (pinType == PinType.WORKLOAD) {
+			createWorkloadPin(resourceName, userInfoDTO);
+		} else {
+			createWorkspacePin(resourceName, userInfoDTO);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void deletePin(String resourceName, PinType pinType, UserInfoDTO userInfoDTO) {
+		if (pinType == PinType.WORKLOAD) {
+			deleteWorkloadPin(resourceName, userInfoDTO);
+		} else {
+			deleteWorkspacePin(resourceName, userInfoDTO);
+		}
+	}
+
+	private void createWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
 		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKSPACE,
 			resourceId, userInfoDTO.getId());
 
@@ -48,8 +66,7 @@ public class PinServiceImpl implements PinService {
 		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceId));
 	}
 
-	@Override
-	public void createWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
+	private void createWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
 		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKLOAD,
 			resourceId, userInfoDTO.getId());
 
@@ -60,15 +77,11 @@ public class PinServiceImpl implements PinService {
 		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceId));
 	}
 
-	@Override
-	@Transactional
-	public void deleteWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
+	private void deleteWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
 		pinRepository.deleteByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKSPACE, resourceId, userInfoDTO.getId());
 	}
 
-	@Override
-	@Transactional
-	public void deleteWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
+	private void deleteWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
 		pinRepository.deleteByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKLOAD, resourceId, userInfoDTO.getId());
 	}
 }

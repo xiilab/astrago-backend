@@ -5,10 +5,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
@@ -104,5 +106,15 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
+		return workloadRepository.workloadsUsingDataset(id);
+	}
+
+	@Override
+	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
+		workloadRepository.createDatasetDeployment(createDeployment);
 	}
 }
