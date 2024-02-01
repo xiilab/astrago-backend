@@ -223,7 +223,12 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
 
-		//deployment 상태 조회
+		//deployment 상태 조회 - 컨테이너 실행 시간 대기
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
 
 		//connection 실패

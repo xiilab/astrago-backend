@@ -59,7 +59,7 @@ public class DatasetDTO {
 					.storagePath(((AstragoDatasetEntity)dataset).getStorageEntity().getStoragePath())
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
 					.build();
-			}else if (dataset instanceof AstragoDatasetEntity) {
+			}else if (dataset instanceof LocalDatasetEntity) {
 				return ResDatasetWithStorage.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((LocalDatasetEntity)dataset).getStorageType())
