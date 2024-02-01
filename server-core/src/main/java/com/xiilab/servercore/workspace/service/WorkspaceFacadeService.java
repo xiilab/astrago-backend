@@ -12,7 +12,7 @@ public interface WorkspaceFacadeService {
 
 	PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition, int pageNum, UserInfoDTO userInfoDTO);
 
-	void deleteWorkspaceByName(String workspaceName);
+	void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO);
 
 	List<WorkspaceDTO.ResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO);
 }
