@@ -23,6 +23,7 @@ import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,36 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WorkspaceService workspaceService;
 	private final PinService pinService;
+
+	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, WorkloadType workloadType,
+		UserInfoDTO userInfoDTO) {
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
+		if (workloadType == WorkloadType.BATCH) {
+			workloadModuleFacadeService.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		}
+	}
+
+	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
+		WorkloadType workloadType) {
+		if (workloadType == WorkloadType.BATCH) {
+			return workloadModuleFacadeService.getBatchWorkload(workspaceName, resourceName);
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			return workloadModuleFacadeService.getInteractiveWorkload(workspaceName, resourceName);
+		} else {
+			return null;
+		}
+	}
+
+	public void deleteWorkload(String workspaceName, String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO
+	) throws IOException {
+		if (workloadType == WorkloadType.BATCH) {
+			deleteBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			deleteInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
+		}
+	}
 
 	public PageDTO getWorkloadListByCondition(WorkloadType workloadType,
 		String workspaceName,
@@ -48,12 +79,12 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public PageDTO<ModuleBatchJobResDTO> getBatchWorkloadByCondition(String workspaceName, String searchName,
+	private PageDTO<ModuleBatchJobResDTO> getBatchWorkloadByCondition(String workspaceName, String searchName,
 		WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition, int pageNum, UserInfoDTO userInfoDTO) {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		//통합용 리스트 선언
 		List<ModuleBatchJobResDTO> totalJobList = new ArrayList<>();
-		//DB에 저장되어있는 유저가 추가한 PIN 목록
+		//DB에 저장되어있는 유저가 추가한 PIN 목록(k8s resource의 name)
 		Set<String> userWorkloadPinList = pinService.getUserWorkloadPinList(userInfoDTO.getId(), workspaceName);
 		//특정 워크스페이스의 워크로드
 		List<ModuleBatchJobResDTO> batchJobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workspaceName);
@@ -116,13 +147,13 @@ public class WorkloadFacadeService {
 					.command(workload.getCommand())
 					.status(workload.getStatus())
 					.age(workload.getAge())
-					.isPinYN(userWorkloadPinList.contains(workload))
+					.isPinYN(userWorkloadPinList.contains(workload.getResourceName()))
 					.build())
 			.collect(Collectors.toList());
 		return new PageDTO<>(resultList, pageNum, 10);
 	}
 
-	public PageDTO<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCondition(String workspaceName,
+	private PageDTO<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCondition(String workspaceName,
 		String searchName,
 		WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition, int pageNum, UserInfoDTO userInfoDTO) {
 		List<ModuleInteractiveJobResDTO> totalJobList = new ArrayList<>();
@@ -187,17 +218,17 @@ public class WorkloadFacadeService {
 					.command(workload.getCommand())
 					.status(workload.getStatus())
 					.age(workload.getAge())
-					.isPinYN(userWorkloadPinList.contains(workload))
+					.isPinYN(userWorkloadPinList.contains(workload.getResourceName()))
 					.build())
 			.collect(Collectors.toList());
 		return new PageDTO<>(resultList, pageNum, 10);
 	}
 
-	public List<ModuleBatchJobResDTO> applyBatchWorkloadListCondition(List<ModuleBatchJobResDTO> workloadList,
+	private List<ModuleBatchJobResDTO> applyBatchWorkloadListCondition(List<ModuleBatchJobResDTO> workloadList,
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
 
 		Stream<ModuleBatchJobResDTO> workloadStream = workloadList.stream()
-			.filter(batch -> searchName == null || batch.getResourceName().contains(searchName))
+			.filter(batch -> searchName == null || batch.getName().contains(searchName))
 			.filter(batch -> workloadStatus == null || batch.getStatus() == workloadStatus);
 
 		if (sortCondition != null) {
@@ -218,7 +249,7 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public List<ModuleInteractiveJobResDTO> applyInteractiveWorkloadListCondition(
+	private List<ModuleInteractiveJobResDTO> applyInteractiveWorkloadListCondition(
 		List<ModuleInteractiveJobResDTO> workloadList,
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
 
@@ -241,7 +272,7 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public void deleteBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void deleteBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
 		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 			WorkloadType.BATCH);
@@ -249,7 +280,7 @@ public class WorkloadFacadeService {
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 	}
 
-	public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void deleteInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
 		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 			WorkloadType.INTERACTIVE);
