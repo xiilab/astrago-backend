@@ -32,7 +32,7 @@ public class DatasetController {
 	private final DatasetService datasetService;
 	private final DatasetFacadeService datasetFacadeService;
 
-	@PostMapping("/astrago/datasets")
+	@PostMapping("/datasets/astrago")
 	public ResponseEntity insertAstragoDataset(
 		@RequestPart(name = "createDataset") DatasetDTO.CreateAstragoDataset createDatasetDTO,
 		@RequestPart(name = "files") List<MultipartFile> files){
@@ -41,7 +41,7 @@ public class DatasetController {
 
 		return new ResponseEntity(HttpStatus.OK);
 	}
-	@PostMapping("/local/datasets")
+	@PostMapping("/datasets/local")
 	public ResponseEntity insertLocalDataset(
 		@RequestBody DatasetDTO.CreateLocalDataset createDatasetDTO){
 
