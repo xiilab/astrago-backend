@@ -3,21 +3,30 @@ package com.xiilab.modulek8s.facade.workload;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
+import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
+import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 import com.xiilab.modulek8s.workload.svc.service.SvcService;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -133,6 +142,70 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		String namespace = pod.getMetadata().getNamespace();
 		String podName = pod.getMetadata().getName();
 		return logService.getWorkloadLogByWorkloadName(namespace, podName);
+	}
+
+	@Override
+	public String createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO) {
+		String datasetName = createLocalDatasetDTO.getDatasetName().replace(" ", "");
+		String ip = createLocalDatasetDTO.getIp();
+		String storagePath = createLocalDatasetDTO.getStoragePath();
+		String namespace = createLocalDatasetDTO.getNamespace();
+		String pvcName = "astrago-dataset-pvc-" + UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-dataset-pv-"+ UUID.randomUUID().toString().substring(6);
+		String svcName = "astrago-dataset-svc-"+ UUID.randomUUID().toString().substring(6);
+		String datasetDeploymentName = "astrago-dataset-" + datasetName +"-"+ UUID.randomUUID().toString().substring(6);
+		String volumeLabelSelectorName = "dataset-storage-volume-"+ UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "dataset-connect-test-"+ UUID.randomUUID().toString().substring(6);
+
+		//pv 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvName(pvName)
+			.pvcName(pvcName)
+			.ip(ip)
+			.storagePath(storagePath)
+			.storageType(StorageType.NFS)
+			.requestVolume(50)
+			.namespace(namespace)
+			.build();
+		volumeService.createPV(createPV);
+		//pvc 생성
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(namespace)
+			.requestVolume(50)
+			.build();
+		volumeService.createPVC(createPVC);
+		//deployment 생성
+		CreateDatasetDeployment createDeployment = CreateDatasetDeployment.builder()
+			.deploymentName(datasetDeploymentName)
+			.volumeLabelSelectorName(volumeLabelSelectorName)
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.namespace(namespace)
+			.connectTestLabelName(connectTestLabelName)
+			.hostPath(createLocalDatasetDTO.getHostPath())
+			.dockerImage(createLocalDatasetDTO.getDockerImage())
+			.build();
+		workloadModuleService.createDatasetDeployment(createDeployment);
+		//svc 생성
+		//svc -> labels -> app: connectTestLabelName
+		//connectTestLabelName, namespace, svcName, ClusterIP
+		CreateClusterIPSvcReqDTO createClusterIPSvcReqDTO = CreateClusterIPSvcReqDTO.builder()
+			.svcType(SvcType.CLUSTER_IP)
+			.deploymentName(connectTestLabelName)
+			.svcName(svcName)
+			.namespace(namespace)
+			.build();
+		svcService.createClusterIPService(createClusterIPSvcReqDTO);
+
+		//<service-name>.<namespace>.svc.cluster.local
+		String svcDNS = svcName + "." + namespace + ".svc.cluster.local";
+		return svcDNS;
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
+		return workloadModuleService.workloadsUsingDataset(id);
 	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {

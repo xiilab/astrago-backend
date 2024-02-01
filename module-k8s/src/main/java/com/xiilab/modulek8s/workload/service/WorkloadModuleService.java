@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.service;
 import java.util.List;
 
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
@@ -81,4 +82,6 @@ public interface WorkloadModuleService {
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+
+	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 }

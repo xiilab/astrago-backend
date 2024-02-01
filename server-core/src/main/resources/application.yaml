@@ -61,6 +61,10 @@ astrago:
   namespace: astrago
   deployment-name: astrago-backend-core
   storage-default-path: "/kube-storage/"
+  dataset:
+    dockerImage:
+      name: xiilab/astrago-dataset-nginx
+      hostPath: /usr/share/nginx/html/directory
 
 mig-profile-path: src/main/resources/MigProfile.json
 

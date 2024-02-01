@@ -22,6 +22,12 @@ public class DatasetDTO {
 		private String datasetName;
 		private Long storageId;
 	}
+	@Getter
+	public static class CreateLocalDataset {
+		private String datasetName;
+		private String ip;
+		private String storagePath;
+	}
 
 
 	@Getter

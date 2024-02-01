@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -33,6 +34,7 @@ public class DeploymentVO extends WorkloadVO {
 	private String connectTestLabelName;
 	private String namespace;
 	private String hostPath;
+	private String dockerImage;
 
 	public static DeploymentVO dtoToEntity(ConnectTestDTO connectTestDTO) {
 		return DeploymentVO.builder()
@@ -44,6 +46,20 @@ public class DeploymentVO extends WorkloadVO {
 			.connectTestLabelName(connectTestDTO.getConnectTestLabelName())
 			.namespace(connectTestDTO.getNamespace())
 			.hostPath(connectTestDTO.getHostPath())
+			.dockerImage(connectTestDTO.getDockerImage())
+			.build();
+	}
+	public static DeploymentVO dtoToEntity(CreateDatasetDeployment createDatasetDTO) {
+		return DeploymentVO.builder()
+			.deploymentName(createDatasetDTO.getDeploymentName())
+			.volumeLabelSelectorName(createDatasetDTO.getVolumeLabelSelectorName())
+			.pvName(createDatasetDTO.getPvName())
+			.pvcName(createDatasetDTO.getPvcName())
+			.description(createDatasetDTO.getDeploymentName())
+			.connectTestLabelName(createDatasetDTO.getConnectTestLabelName())
+			.namespace(createDatasetDTO.getNamespace())
+			.hostPath(createDatasetDTO.getHostPath())
+			.dockerImage(createDatasetDTO.getDockerImage())
 			.build();
 	}
 
@@ -88,14 +104,12 @@ public class DeploymentVO extends WorkloadVO {
 	@Override
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
-		// 스케줄러 지정
-
 		addVolumes(podSpecBuilder, List.of(new JobVolumeVO(volumeLabelSelectorName, pvcName)));
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.addNewContainer()
 			.withName("nginx")
-			.withImage("nginx:1.14.2");
+			.withImage(this.dockerImage);
 
 		addVolumeMount(podSpecContainer);
 

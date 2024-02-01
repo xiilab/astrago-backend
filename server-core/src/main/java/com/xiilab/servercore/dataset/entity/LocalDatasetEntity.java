@@ -30,10 +30,15 @@ public class LocalDatasetEntity extends Dataset {
 	@Column(name = "STORAGE_PATH")
 	private String storagePath;
 
+	@Column(name = "DNS")
+	private String dns;
+
 	@Builder
-	public LocalDatasetEntity(String ip, StorageType storageType, String storagePath) {
+	public LocalDatasetEntity(Long datasetId, String datasetName,String ip, StorageType storageType, String storagePath, String dns) {
+		super(datasetId, datasetName);
 		this.ip = ip;
 		this.storageType = storageType;
 		this.storagePath = storagePath;
+		this.dns = dns;
 	}
 }

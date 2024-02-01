@@ -17,6 +17,7 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
+import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 import com.xiilab.servercore.dataset.repository.DatasetRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class DatasetServiceImpl implements DatasetService{
 	private final DatasetRepository datasetRepository;
 
 	@Override
+	@Transactional
 	public void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files) {
 		//dataset 저장
 		datasetRepository.save(astragoDatasetEntity);
@@ -63,5 +65,11 @@ public class DatasetServiceImpl implements DatasetService{
 	public DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId) {
 		Dataset datasetWithStorage = datasetRepository.getDatasetWithStorage(datasetId);
 		return DatasetDTO.ResDatasetWithStorage.toDto(datasetWithStorage);
+	}
+
+	@Override
+	@Transactional
+	public void insertLocalDataset(LocalDatasetEntity localDatasetEntity) {
+		datasetRepository.save(localDatasetEntity);
 	}
 }

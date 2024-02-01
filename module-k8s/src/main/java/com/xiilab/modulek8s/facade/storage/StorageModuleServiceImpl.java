@@ -218,6 +218,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.namespace(namespace)
 			.connectTestLabelName(connectTestLabelName)
 			.hostPath(hostPath)
+			.dockerImage("nginx")
 			.build();
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);

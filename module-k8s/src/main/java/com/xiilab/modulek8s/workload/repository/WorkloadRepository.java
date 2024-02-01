@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -100,4 +101,6 @@ public interface WorkloadRepository {
 
 
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+
+	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 }

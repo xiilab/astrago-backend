@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ConnectTestDTO {
+public class CreateDatasetDeployment {
 	private String pvName;
 	private String pvcName;
 	private String deploymentName;

@@ -10,4 +10,6 @@ public interface DatasetFacadeService {
 	void insertAstragoDataset(DatasetDTO.CreateAstragoDataset createDatasetDTO, List<MultipartFile> files);
 
 	DatasetDTO.ResDatasetWithStorage getDataset(Long datasetId);
+
+	void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO);
 }

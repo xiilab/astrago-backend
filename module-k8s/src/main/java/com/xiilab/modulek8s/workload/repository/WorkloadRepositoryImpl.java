@@ -2,12 +2,16 @@ package com.xiilab.modulek8s.workload.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -62,15 +66,10 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
 			//테스트용 pod 조회
 			Pod connectPod = kubernetesClient.pods()
 				.inNamespace(namespace)
-				.withLabel("app", connectTestLabelName)
+				.withLabel(LabelField.APP.getField(), connectTestLabelName)
 				.list()
 				.getItems()
 				.get(0);
@@ -246,6 +245,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				getWorkloadInfoUsingDataset(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
 			}
 			return workloads;
+		}
+	}
+
+	@Override
+	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
+		DeploymentVO deployment = DeploymentVO.dtoToEntity(createDeployment);
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resource(deployment.createResource()).create();
 		}
 	}
 
