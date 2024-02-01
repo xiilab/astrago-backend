@@ -17,19 +17,23 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 	private int remainTime;
+
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
 
 		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
-		name = getName();
 		Map<String, Quantity> resourceRequests = container.getResources().getLimits();
-		image = container.getImage();
 		Quantity getGpuRequest = resourceRequests.get("nvidia.com/gpu");
 		Quantity getCpuRequest = resourceRequests.get("cpu");
 		Quantity getMemory = resourceRequests.get("memory");
-		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() + ResourcesUnit.GPU_UNIT.getUnit() : "0" + ResourcesUnit.GPU_UNIT.getUnit();
-		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() : "0" + ResourcesUnit.CPU_UNIT.getUnit();
-		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() : "0" + ResourcesUnit.MEM_UNIT.getUnit();
+		resourceName = getResourceName();
+		image = container.getImage();
+		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() + ResourcesUnit.GPU_UNIT.getUnit() :
+			"0" + ResourcesUnit.GPU_UNIT.getUnit();
+		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() :
+			"0" + ResourcesUnit.CPU_UNIT.getUnit();
+		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() :
+			"0" + ResourcesUnit.MEM_UNIT.getUnit();
 		envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.service.PinService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,35 +21,23 @@ import lombok.RequiredArgsConstructor;
 public class PinController {
 	private final PinService pinService;
 
-	@PostMapping("/workspace")
-	@Operation(summary = "workspace pin 등록")
-	public ResponseEntity<HttpStatus> createWorkspacePin(@RequestParam(value = "resourceId") String resourceId,
+	@PostMapping("")
+	@Operation(summary = "workspace, workload pin 등록")
+	public ResponseEntity<HttpStatus> createWorkspacePin(
+		@RequestParam(value = "resourceName") String resourceName,
+		@RequestParam(value = "pinType") PinType pinType,
 		UserInfoDTO userInfoDTO) {
-		pinService.createWorkspacePin(resourceId, userInfoDTO);
+		pinService.createPin(resourceName, pinType, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PostMapping("/workload")
-	@Operation(summary = "workload pin 등록")
-	public ResponseEntity<HttpStatus> createWorkloadPin(@RequestParam(value = "resourceId") String resourceId,
+	@DeleteMapping("")
+	@Operation(summary = "workspace, workload pin 삭제")
+	public ResponseEntity<HttpStatus> deleteWorkspace(
+		@RequestParam(value = "resourceName") String resourceName,
+		@RequestParam(value = "pinType") PinType pinType,
 		UserInfoDTO userInfoDTO) {
-		pinService.createWorkloadPin(resourceId, userInfoDTO);
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@DeleteMapping("/workspace")
-	@Operation(summary = "workspace pin 삭제")
-	public ResponseEntity<HttpStatus> deleteWorkspace(@RequestParam(value = "resourceId") String resourceId,
-		UserInfoDTO userInfoDTO) {
-		pinService.deleteWorkspacePin(resourceId, userInfoDTO);
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@DeleteMapping("/workload")
-	@Operation(summary = "workload pin 삭제")
-	public ResponseEntity<HttpStatus> deleteWorkload(@RequestParam(value = "resourceId") String resourceId,
-		UserInfoDTO userInfoDTO) {
-		pinService.deleteWorkloadPin(resourceId, userInfoDTO);
+		pinService.deletePin(resourceName, pinType, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

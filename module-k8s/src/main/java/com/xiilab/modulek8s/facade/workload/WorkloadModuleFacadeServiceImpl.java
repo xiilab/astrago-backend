@@ -51,7 +51,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			moduleCreateWorkloadReqDTO);
 
 		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-			moduleCreateWorkloadReqDTO, moduleBatchJobResDTO.getName());
+			moduleCreateWorkloadReqDTO, moduleBatchJobResDTO.getResourceName());
 
 		// 노드포트 연결
 		svcService.createNodePortService(createSvcReqDTO);
@@ -70,7 +70,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			moduleCreateWorkloadReqDTO);
 
 		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-			moduleCreateWorkloadReqDTO, moduleInteractiveJobResDTO.getName());
+			moduleCreateWorkloadReqDTO, moduleInteractiveJobResDTO.getResourceName());
 
 		// 노드포트 연결
 		svcService.createNodePortService(createSvcReqDTO);
