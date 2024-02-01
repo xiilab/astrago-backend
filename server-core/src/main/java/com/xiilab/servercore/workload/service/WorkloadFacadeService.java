@@ -10,6 +10,10 @@ import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.enumeration.AlertMessage;
+import com.xiilab.modulealert.enumeration.AlertType;
+import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -21,6 +25,7 @@ import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
@@ -31,6 +36,7 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final PinService pinService;
+	private final AlertService alertService;
 
 	public PageDTO getWorkloadListByCondition(WorkloadType workloadType,
 		String workspaceName,
@@ -238,6 +244,13 @@ public class WorkloadFacadeService {
 			WorkloadType.BATCH);
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getUserName());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
+		// 워크로드 삭제 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.DELETE_WORKLOAD.getMessage(), workloadName))
+			.build());
 	}
 
 	public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
@@ -246,6 +259,13 @@ public class WorkloadFacadeService {
 			WorkloadType.INTERACTIVE);
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getUserName());
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+		// 워크로드 삭제 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.DELETE_WORKLOAD.getMessage(), workloadName))
+			.build());
 	}
 
 	private <T extends ModuleWorkloadResDTO> List<T> getPaginatedList(List<T> workloadList,
@@ -257,6 +277,41 @@ public class WorkloadFacadeService {
 
 	private int getNormalListPageSize(int pinListSize) {
 		return 10 - pinListSize;
+	}
+
+	public void createBatchJobWorkload(CreateWorkloadJobReqDTO createWorkloadJobReqDTO, UserInfoDTO userInfoDTO){
+		workloadModuleFacadeService.createBatchJobWorkload(createWorkloadJobReqDTO.toModuleDTO());
+		// 워크로드 생성 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), createWorkloadJobReqDTO.getName()))
+			.build());
+	}
+
+	public void createInteractiveJobWorkload(CreateWorkloadJobReqDTO createWorkloadJobReqDTO, UserInfoDTO userInfoDTO){
+		workloadModuleFacadeService.createInteractiveJobWorkload(createWorkloadJobReqDTO.toModuleDTO());
+		// 워크로드 생성 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), createWorkloadJobReqDTO.getName()))
+			.build());
+	}
+
+	public ModuleBatchJobResDTO getBatchWorkload(String workSpaceName, String workloadName){
+		ModuleBatchJobResDTO batchWorkload = workloadModuleFacadeService.getBatchWorkload(workSpaceName, workloadName);
+
+		return batchWorkload;
+	}
+
+	public ModuleInteractiveJobResDTO getInteractiveWorkload(String workSpaceName, String workloadName){
+		ModuleInteractiveJobResDTO interactiveWorkload = workloadModuleFacadeService.getInteractiveWorkload(
+			workSpaceName, workloadName);
+
+		return interactiveWorkload;
 	}
 
 }

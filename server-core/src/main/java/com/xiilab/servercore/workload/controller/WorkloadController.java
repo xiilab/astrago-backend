@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.common.dto.PageDTO;
-import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
@@ -31,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/workloads")
 @RequiredArgsConstructor
 public class WorkloadController {
-	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WorkloadFacadeService workloadFacadeService;
 
 	/**
@@ -45,7 +43,7 @@ public class WorkloadController {
 	public ResponseEntity<Void> createBatchJobWorkload(@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
 		UserInfoDTO userInfoDTO) {
 		createWorkloadJobReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
-		workloadModuleFacadeService.createBatchJobWorkload(createWorkloadJobReqDTO.toModuleDTO());
+		workloadFacadeService.createBatchJobWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -62,7 +60,7 @@ public class WorkloadController {
 		@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
 		UserInfoDTO userInfoDTO) {
 		createWorkloadJobReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
-		workloadModuleFacadeService.createInteractiveJobWorkload(createWorkloadJobReqDTO.toModuleDTO());
+		workloadFacadeService.createInteractiveJobWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -70,7 +68,7 @@ public class WorkloadController {
 	@Operation(summary = "워크로드 상세 조회 - Batch Job 타입")
 	public ResponseEntity<ModuleBatchJobResDTO> getBatchJob(@RequestParam("workSpaceName") String workSpaceName,
 		@RequestParam("workloadName") String workloadName) {
-		return new ResponseEntity<>(workloadModuleFacadeService.getBatchWorkload(workSpaceName, workloadName),
+		return new ResponseEntity<>(workloadFacadeService.getBatchWorkload(workSpaceName, workloadName),
 			HttpStatus.OK);
 	}
 
@@ -79,7 +77,7 @@ public class WorkloadController {
 	public ResponseEntity<ModuleInteractiveJobResDTO> getInteractiveJob(
 		@RequestParam("workSpaceName") String workSpaceName,
 		@RequestParam("workloadName") String workloadName) {
-		return new ResponseEntity<>(workloadModuleFacadeService.getInteractiveWorkload(workSpaceName, workloadName),
+		return new ResponseEntity<>(workloadFacadeService.getInteractiveWorkload(workSpaceName, workloadName),
 			HttpStatus.OK);
 	}
 
