@@ -55,7 +55,6 @@ public class WorkloadController {
 	 * @param createWorkloadJobReqDTO
 	 * @return
 	 */
-
 	@PostMapping("/interactive")
 	@Operation(summary = "인터렉티브 잡 생성")
 	public ResponseEntity<Void> createInteractiveJobWorkload(

@@ -15,7 +15,11 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
+import com.xiilab.servercore.workspace.entity.ResourceQuotaEntity;
+import com.xiilab.servercore.workspace.repository.ResourceQuotaRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final ResourceQuotaRepository resourceQuotaRepository;
 	private final PinService pinService;
 	private final GroupService groupService;
 
@@ -96,5 +101,33 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
 		return workspaceModuleFacadeService.getWorkspaceList().stream()
 			.filter(workspace -> userWorkspacePinList.contains(workspace.getResourceName())).toList();
+	}
+
+	@Override
+	public void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO) {
+		resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
+	}
+
+	@Override
+	public List<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, UserInfoDTO userInfoDTO) {
+		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
+		return resourceQuotaReqList.stream()
+			.map(resourceQuotaEntity ->
+				ResourceQuotaFormDTO.builder()
+					.id(resourceQuotaEntity.getId())
+					.workspace(resourceQuotaEntity.getWorkspace())
+					.requestReason(resourceQuotaEntity.getRequestReason())
+					.rejectReason(resourceQuotaEntity.getRejectReason())
+					.status(resourceQuotaEntity.getStatus())
+					.cpuReq(resourceQuotaEntity.getCpuReq())
+					.gpuReq(resourceQuotaEntity.getGpuReq())
+					.memReq(resourceQuotaEntity.getMemReq())
+					.build())
+			.toList();
+	}
+
+	@Override
+	public void updateResourceQuota(String workspace, boolean approveYN) {
+
 	}
 }
