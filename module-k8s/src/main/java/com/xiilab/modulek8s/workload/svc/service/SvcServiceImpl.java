@@ -2,8 +2,10 @@ package com.xiilab.modulek8s.workload.svc.service;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
+import com.xiilab.modulek8s.workload.svc.vo.ClusterIPSvcVO;
 import com.xiilab.modulek8s.workload.svc.vo.NodeSvcVO;
 
 import lombok.RequiredArgsConstructor;
@@ -23,5 +25,10 @@ public class SvcServiceImpl implements SvcService {
 	@Override
 	public void deleteService(String workSpaceName, String workloadName) {
 		svcRepository.deleteService(workSpaceName, workloadName);
+	}
+
+	@Override
+	public void createClusterIPService(CreateClusterIPSvcReqDTO createClusterIPSvcReqDTO) {
+		svcRepository.createClusterIPService(ClusterIPSvcVO.createServiceDtoToServiceVO(createClusterIPSvcReqDTO));
 	}
 }

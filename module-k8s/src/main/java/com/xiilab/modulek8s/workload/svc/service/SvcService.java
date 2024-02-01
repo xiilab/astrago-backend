@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.svc.service;
 
+import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 
 public interface SvcService {
@@ -11,4 +12,6 @@ public interface SvcService {
 	void createNodePortService(CreateSvcReqDTO createSvcReqDTO);
 
 	void deleteService(String workSpaceName, String workloadName);
+
+	void createClusterIPService(CreateClusterIPSvcReqDTO createClusterIPSvcReqDTO);
 }

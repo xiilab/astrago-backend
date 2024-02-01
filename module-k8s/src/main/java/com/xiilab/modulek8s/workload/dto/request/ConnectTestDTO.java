@@ -13,4 +13,5 @@ public class ConnectTestDTO {
 	private String connectTestLabelName;
 	private String namespace;
 	private String hostPath;
+	private String dockerImage;
 }

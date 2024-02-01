@@ -1,14 +1,22 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -22,6 +30,7 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
+import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -57,15 +66,10 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
 			//테스트용 pod 조회
 			Pod connectPod = kubernetesClient.pods()
 				.inNamespace(namespace)
-				.withLabel("app", connectTestLabelName)
+				.withLabel(LabelField.APP.getField(), connectTestLabelName)
 				.list()
 				.getItems()
 				.get(0);
@@ -219,6 +223,67 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		} catch (NullPointerException e) {
 			throw new RuntimeException("해당하는 인터렉티브 잡 로그를 조회할 수 없습니다.");
 		}
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String datasetId = "ds_" + id;
+			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
+			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
+			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
+
+			List<WorkloadResDTO.UsingDatasetDTO> workloads = new ArrayList<>();
+			//워크로드 이름(사용자가 지정한 이름), 상태, job Type, 생성자 이름, 생성일자
+			for (Job job : jobsInUseDataset) {
+				getWorkloadInfoUsingDataset(workloads, job, WorkloadResourceType.JOB);
+			}
+			for (StatefulSet statefulSet : statefulSetsInUseDataset) {
+				getWorkloadInfoUsingDataset(workloads, statefulSet, WorkloadResourceType.STATEFULSET);
+			}
+			for (Deployment deployment : deploymentsInUseDataset) {
+				getWorkloadInfoUsingDataset(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
+			}
+			return workloads;
+		}
+	}
+
+	@Override
+	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
+		DeploymentVO deployment = DeploymentVO.dtoToEntity(createDeployment);
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resource(deployment.createResource()).create();
+		}
+	}
+
+	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads, HasMetadata hasMetadata,
+		WorkloadResourceType resourceType) {
+		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
+			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
+			.resourceType(resourceType)
+			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_FULL_NAME.getField()))
+			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
+			.build();
+		workloads.add(usingDatasetDTO);
+	}
+
+	private static List<Job> getJobsInUseDataset(String id, KubernetesClient client) {
+		return client.batch().v1().jobs().withLabelIn(id, "true")
+			.list()
+			.getItems();
+	}
+	private static List<Deployment> getDeploymentsInUseDataset(String id, KubernetesClient client) {
+		return client.apps().deployments().withLabelIn(id, "true")
+			.list()
+			.getItems();
+	}
+	private static List<StatefulSet> getStatefulSetsInUseDataset(String id, KubernetesClient client) {
+		return client
+			.apps()
+			.statefulSets()
+			.withLabelIn(id, "true")
+			.list()
+			.getItems();
 	}
 
 	private HasMetadata createResource(HasMetadata hasMetadata) {

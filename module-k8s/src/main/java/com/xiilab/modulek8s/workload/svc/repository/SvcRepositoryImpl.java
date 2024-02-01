@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.workload.svc.repository;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulek8s.workload.svc.vo.ClusterIPSvcVO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.workload.svc.vo.NodeSvcVO;
 
@@ -26,6 +27,13 @@ public class SvcRepositoryImpl implements SvcRepository {
 	public void deleteService(String workSpaceName, String workloadName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			client.services().inNamespace(workloadName).withLabelSelector(workloadName).delete();
+		}
+	}
+
+	@Override
+	public void createClusterIPService(ClusterIPSvcVO serviceDtoToServiceVO) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			client.resource(serviceDtoToServiceVO.createResource()).create();
 		}
 	}
 }

@@ -31,9 +31,12 @@
 // import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 // import com.xiilab.modulek8s.common.enumeration.StorageType;
 // import com.xiilab.modulek8s.config.K8sAdapter;
+// import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 // import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 // import com.xiilab.modulek8s.facade.storage.StorageModuleServiceImpl;
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+// import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
+// import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeServiceImpl;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Chart;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.HelmReleaseSpec;
@@ -91,6 +94,8 @@
 // 	private K8sAdapter k8sAdapter;
 // 	@Autowired
 // 	private StorageModuleServiceImpl storageModuleServiceImpl;
+// 	@Autowired
+// 	private WorkloadModuleFacadeServiceImpl workloadModuleFacadeService;
 // 	@MockBean
 // 	private ObjectMapper objectMapper;
 //
@@ -800,4 +805,15 @@
 // 		}
 // 	}
 //
+// 	@Test
+// 	@DisplayName("데이터 셋 deployment 생성")
+// 	void createDatasetDeployment(){
+// 		CreateLocalDatasetDTO createLocalDatasetDTO = CreateLocalDatasetDTO.builder()
+// 			.datasetName("dataname123")
+// 			.namespace("astrago")
+// 			.ip("10.61.3.2")
+// 			.storagePath("/kube_storage/")
+// 			.build();
+// 		workloadModuleFacadeService.createLocalDataset(createLocalDatasetDTO);
+// 	}
 // }
