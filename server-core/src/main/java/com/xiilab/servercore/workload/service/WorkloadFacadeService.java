@@ -57,7 +57,8 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public void deleteWorkload(String workspaceName, String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO
+	public void deleteWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
+		UserInfoDTO userInfoDTO
 	) throws IOException {
 		if (workloadType == WorkloadType.BATCH) {
 			deleteBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
@@ -91,14 +92,14 @@ public class WorkloadFacadeService {
 
 		// pin list filtering
 		List<ModuleBatchJobResDTO> pinList = batchJobWorkloadList.stream()
-			.filter(batch -> userWorkloadPinList.contains(batch.getResourceName())).toList();
+			.filter(job -> userWorkloadPinList.contains(job.getResourceName())).toList();
 		//pin list에 대한 filtering sorting 검색
 		pinList = applyBatchWorkloadListCondition(pinList, searchName,
 			workloadStatus, sortCondition);
 
 		// 워크로드 일반 리스트를 가져옴
 		List<ModuleBatchJobResDTO> normalList = batchJobWorkloadList.stream()
-			.filter(batch -> !userWorkloadPinList.contains(batch.getUid()))
+			.filter(job -> !userWorkloadPinList.contains(job.getResourceName()))
 			.toList();
 		//일반 리스트 대한 filtering sorting 검색
 		normalList = applyBatchWorkloadListCondition(normalList, searchName, workloadStatus, sortCondition);
@@ -164,14 +165,14 @@ public class WorkloadFacadeService {
 
 		// pin list filtering
 		List<ModuleInteractiveJobResDTO> pinList = interactiveJobWorkloadList.stream()
-			.filter(batch -> userWorkloadPinList.contains(batch.getUid())).toList();
+			.filter(job -> userWorkloadPinList.contains(job.getResourceName())).toList();
 
 		pinList = applyInteractiveWorkloadListCondition(pinList, searchName,
 			workloadStatus, sortCondition);
 
 		// PIN 등록하지 않은 전체 Job List
 		List<ModuleInteractiveJobResDTO> normalList = interactiveJobWorkloadList.stream()
-			.filter(batch -> !userWorkloadPinList.contains(batch.getUid()))
+			.filter(job -> !userWorkloadPinList.contains(job.getResourceName()))
 			.toList();
 		// 전체 JOB List 검색 조건 filter
 		normalList = applyInteractiveWorkloadListCondition(normalList, searchName, workloadStatus,
