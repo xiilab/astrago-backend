@@ -18,7 +18,7 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 	public ModuleInteractiveJobResDTO(Deployment deployment) {
 		super(deployment);
 		Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
-		name = getName();
+		resourceName = getResourceName();
 		Map<String, Quantity> resourceRequests = container.getResources().getLimits();
 		image = container.getImage();
 		Quantity getGpuRequest = resourceRequests.get("nvidia.com/gpu");

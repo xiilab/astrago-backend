@@ -17,10 +17,12 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public abstract class ModuleWorkloadResDTO {
 	String uid;                          // 워크로드 고유 ID
-	String name;                         // 워크로드 이름
+	String name;						 // 사용자가 입력한 워크로드의 이름
+	String resourceName;                 // 워크로드 실제 이름
 	String description;                  // 워크로드 설명
 	String creator;                      // 생성자 ID
-	String workspace;                    // 워크스페이스
+	String workspaceResourceName;        // 워크스페이스 리소스 이름
+	String workspaceName;                // 워크스페이스 이름
 	WorkloadType type;                   // 워크로드 타입
 	String image;                        // 사용할 image
 	String gpuRequest;                   // 워크로드 gpu 요청량
@@ -37,10 +39,12 @@ public abstract class ModuleWorkloadResDTO {
 
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
-		name = hasMetadata.getMetadata().getName();
+		name = hasMetadata.getMetadata().getAnnotations().get("name");
+		resourceName = hasMetadata.getMetadata().getName();
 		description = hasMetadata.getMetadata().getAnnotations().get("description");
 		creator = hasMetadata.getMetadata().getLabels().get("creator");
-		workspace = hasMetadata.getMetadata().getNamespace();
+		workspaceResourceName = hasMetadata.getMetadata().getNamespace();
+		workspaceName = hasMetadata.getMetadata().getAnnotations().get("name");
 		createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 		age = DateUtils.getAge(createdAt);
 		type = getType();

@@ -2,10 +2,12 @@ package com.xiilab.modulek8s.facade.workload;
 
 import java.util.List;
 
+import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -53,4 +55,10 @@ public interface WorkloadModuleFacadeService {
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
+
+	String getWorkloadLogByWorkloadName(String workspace, String workload, WorkloadType type);
+
+	String createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO);
+
+	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 }

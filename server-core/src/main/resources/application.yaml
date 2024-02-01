@@ -28,8 +28,8 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 100
-        show_sql: true
         format_sql: true
+    show_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
   messages:
@@ -37,7 +37,6 @@ spring:
     encoding: utf-8
     fallback-to-system-locale: false
     always-use-message-format: true
-
 # 연결할 keycloak server 정보
 keycloak:
   realm: myrealm
@@ -62,5 +61,10 @@ astrago:
   namespace: astrago
   deployment-name: astrago-backend-core
   storage-default-path: "/kube-storage/"
+  dataset:
+    dockerImage:
+      name: xiilab/astrago-dataset-nginx
+      hostPath: /usr/share/nginx/html/directory
 
 mig-profile-path: src/main/resources/MigProfile.json
+

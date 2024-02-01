@@ -54,7 +54,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	/**
 	 * 해당 워크스페이스에 스토리지 타입으로 볼륨 리스트 조회
 	 * @param workspaceMetaName
-	 * @param storageType
+	 * @param storageMetaName
 	 * @return
 	 */
 	@Override
@@ -76,9 +76,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	/**
 	 * 볼륨의 이름 변경
-	 * @param workspaceMetaName
-	 * @param volumeMetaName
-	 * @param modityName
+	 * @param modifyVolumeDTO
 	 */
 	@Override
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO){
@@ -220,11 +218,17 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.namespace(namespace)
 			.connectTestLabelName(connectTestLabelName)
 			.hostPath(hostPath)
+			.dockerImage("nginx")
 			.build();
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
 
-		//deployment 상태 조회
+		//deployment 상태 조회 - 컨테이너 실행 시간 대기
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
 
 		//connection 실패

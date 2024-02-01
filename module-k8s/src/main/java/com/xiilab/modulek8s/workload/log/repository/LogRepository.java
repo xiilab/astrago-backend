@@ -4,4 +4,5 @@ import io.fabric8.kubernetes.client.dsl.LogWatch;
 
 public interface LogRepository {
 	LogWatch watchLogByWorkload(String workspaceName, String podName);
+	String getWorkloadLogByWorkloadName(String workspace, String podName);
 }
