@@ -41,4 +41,14 @@ public class LocalDatasetEntity extends Dataset {
 		this.storagePath = storagePath;
 		this.dns = dns;
 	}
+
+	@Override
+	public boolean isAstargoDataset() {
+		return false;
+	}
+
+	@Override
+	public boolean isLocalDataset() {
+		return true;
+	}
 }

@@ -30,4 +30,14 @@ public class AstragoDatasetEntity extends Dataset {
 		super(datasetId, datasetName);
 		this.storageEntity = storageEntity;
 	}
+
+	@Override
+	public boolean isAstargoDataset() {
+		return true;
+	}
+
+	@Override
+	public boolean isLocalDataset() {
+		return false;
+	}
 }

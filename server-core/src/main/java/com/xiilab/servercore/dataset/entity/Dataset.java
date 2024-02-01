@@ -56,4 +56,7 @@ public abstract class Dataset extends BaseEntity {
 	public boolean isAvailable() {
 		 return !this.getMappingEntities().isEmpty();
 	}
+
+	public abstract boolean isAstargoDataset();
+	public abstract boolean isLocalDataset();
 }

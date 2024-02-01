@@ -46,7 +46,7 @@ public class DatasetDTO {
 		private List<WorkloadResDTO.UsingDatasetDTO> usingDatasets;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
-			if (dataset instanceof AstragoDatasetEntity) {
+			if (dataset.isAstargoDataset()) {
 				return ResDatasetWithStorage.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageType())
@@ -59,7 +59,7 @@ public class DatasetDTO {
 					.storagePath(((AstragoDatasetEntity)dataset).getStorageEntity().getStoragePath())
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
 					.build();
-			}else if (dataset instanceof LocalDatasetEntity) {
+			}else if (dataset.isLocalDataset()) {
 				return ResDatasetWithStorage.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((LocalDatasetEntity)dataset).getStorageType())
