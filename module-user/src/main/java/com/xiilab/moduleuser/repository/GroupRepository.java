@@ -33,4 +33,8 @@ public interface GroupRepository {
 	List<GroupUserDTO> findUsersByGroupId(String groupId);
 
 	void joinMembersIntoGroup(String groupId, List<String> userIds);
+	List<GroupUserDTO> getWorkspaceMember(String groupName);
+
+	void deleteWorkspaceMemberByUserId(String groupName, String userId);
+	void addWorkspaceMemberByUserId(String groupName, String userId);
 }

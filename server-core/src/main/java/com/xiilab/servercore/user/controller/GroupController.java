@@ -69,4 +69,26 @@ public class GroupController {
 		return ResponseEntity.ok(groupFacadeService.getGroupUsers(groupId));
 	}
 
+	@GetMapping("/ws/{groupName}")
+	@Operation(summary = "워크스페이스 멤버 조회")
+	public ResponseEntity<List<GroupUserDTO>> getWorkspaceMember(@PathVariable(name = "groupName") String groupName) {
+		return ResponseEntity.ok(groupFacadeService.getWorkspaceMember(groupName));
+	}
+	@DeleteMapping("/ws/{groupName}")
+	@Operation(summary = "워크스페이스 멤버 삭제")
+	public ResponseEntity<HttpStatus> deleteWorkspaceMemberByUserId(
+		@PathVariable(name = "groupName") String groupName,
+		@RequestBody String userId){
+		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userId);
+		return ResponseEntity.ok().build();
+	}
+	@PostMapping("/ws/{groupName}")
+	@Operation(summary = "워크스페이스 멤버 추가")
+	public ResponseEntity<HttpStatus> addWorkspaceMemberByUserId(
+		@PathVariable(name = "groupName") String groupName,
+		@RequestBody String userId){
+		groupFacadeService.addWorkspaceMemberByUserId(groupName, userId);
+		return ResponseEntity.ok().build();
+	}
+
 }

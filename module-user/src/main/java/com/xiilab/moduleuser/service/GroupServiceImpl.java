@@ -107,4 +107,17 @@ public class GroupServiceImpl implements GroupService {
 		//생성한 user group에 유저 추가
 		groupRepository.joinMembersIntoGroup(userGroup.getId(), groupReqDTO.getUsers());
 	}
+
+	@Override
+	public List<GroupUserDTO> getWorkspaceMember(String groupName) {
+		return groupRepository.getWorkspaceMember(groupName);
+	}
+	@Override
+	public void deleteWorkspaceMemberByUserId(String groupName, String userId){
+		groupRepository.deleteWorkspaceMemberByUserId(groupName, userId);
+	}
+	@Override
+	public void addWorkspaceMemberByUserId(String groupName, String userId){
+		groupRepository.addWorkspaceMemberByUserId(groupName, userId);
+	}
 }
