@@ -22,7 +22,7 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
-	public List<AlertDTO.ResponseDTO> getAlertList(String recipientId) {
+	public List<AlertDTO.ResponseDTO> getAlertListByUserId(String recipientId) {
 		List<AlertEntity> alertEntityList = alertRepository.getAlertEntitiesByRecipientId(recipientId);
 		return alertEntityList.stream().map(AlertDTO.ResponseDTO::convertResponseDTO).toList();
 	}
@@ -34,11 +34,19 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
-	public void deleteAlert(long id){
+	public void deleteAlertById(long id){
 		// 해당 ID의 Alert 존재 확인
 		AlertEntity alertEntity = getAlertEntity(id);
 		// 해당 ID의 Alert 삭제
 		alertRepository.deleteById(alertEntity.getId());
+	}
+	@Override
+	public AlertDTO.ResponseDTO getAlertById(long id){
+		AlertEntity alertEntity = getAlertEntity(id);
+		if(!alertEntity.getReadYN()){
+			alertEntity.readAlert();
+		}
+		return AlertDTO.ResponseDTO.convertResponseDTO(alertEntity);
 	}
 
 	private AlertEntity getAlertEntity(long id){
