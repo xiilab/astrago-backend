@@ -72,4 +72,19 @@ public class DatasetServiceImpl implements DatasetService{
 	public void insertLocalDataset(LocalDatasetEntity localDatasetEntity) {
 		datasetRepository.save(localDatasetEntity);
 	}
+
+	@Override
+	public Dataset findById(Long datasetId) {
+		Dataset dataset = datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+		return dataset;
+	}
+
+	@Override
+	@Transactional
+	public void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId) {
+		Dataset dataset = datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+		dataset.modifyDatasetName(modifyDataset.getDatasetName());
+	}
 }

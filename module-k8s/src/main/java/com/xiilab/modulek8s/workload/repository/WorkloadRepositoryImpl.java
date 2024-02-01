@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
@@ -253,6 +254,21 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		DeploymentVO deployment = DeploymentVO.dtoToEntity(createDeployment);
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			kubernetesClient.resource(deployment.createResource()).create();
+		}
+	}
+
+	@Override
+	public void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.apps()
+				.deployments()
+				.inNamespace(modifyLocalDatasetDeploymentDTO.getNamespace())
+				.withName(modifyLocalDatasetDeploymentDTO.getDeploymentName())
+				.edit(d -> new DeploymentBuilder(d)
+					.editMetadata()
+					.addToAnnotations(AnnotationField.DATASET_NAME.getField(), modifyLocalDatasetDeploymentDTO.getModifyDatasetName())
+					.endMetadata()
+					.build());
 		}
 	}
 

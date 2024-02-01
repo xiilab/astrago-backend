@@ -29,6 +29,11 @@ public class DatasetDTO {
 		private String storagePath;
 	}
 
+	@Getter
+	public static class ModifyDatset{
+		private String datasetName;
+	}
+
 
 	@Getter
 	@Builder
@@ -91,7 +96,7 @@ public class DatasetDTO {
 		private boolean isAvailable;
 
 		public static ResDataset toDto(Dataset dataset) {
-			if (dataset instanceof AstragoDatasetEntity) {
+			if (dataset.isAstargoDataset()) {
 				return ResDataset.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageType())
@@ -102,7 +107,7 @@ public class DatasetDTO {
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
 					.build();
-			} else if (dataset instanceof LocalDatasetEntity) {
+			} else if (dataset.isLocalDataset()) {
 				return ResDataset.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((LocalDatasetEntity)dataset).getStorageType())

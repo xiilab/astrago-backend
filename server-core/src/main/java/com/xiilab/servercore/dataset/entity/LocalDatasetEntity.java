@@ -22,7 +22,6 @@ import lombok.NoArgsConstructor;
 public class LocalDatasetEntity extends Dataset {
 	@Column(name = "STORAGE_IP")
 	private String ip;
-
 	@Column(name = "STORAGE_TYPE")
 	@Enumerated(EnumType.STRING)
 	private StorageType storageType;
@@ -32,14 +31,17 @@ public class LocalDatasetEntity extends Dataset {
 
 	@Column(name = "DNS")
 	private String dns;
+	@Column(name = "DEPLOYMENT_NAME")
+	private String deploymentName;
 
 	@Builder
-	public LocalDatasetEntity(Long datasetId, String datasetName,String ip, StorageType storageType, String storagePath, String dns) {
+	public LocalDatasetEntity(Long datasetId, String datasetName,String ip, StorageType storageType, String storagePath, String dns, String deploymentName) {
 		super(datasetId, datasetName);
 		this.ip = ip;
 		this.storageType = storageType;
 		this.storagePath = storagePath;
 		this.dns = dns;
+		this.deploymentName = deploymentName;
 	}
 
 	@Override

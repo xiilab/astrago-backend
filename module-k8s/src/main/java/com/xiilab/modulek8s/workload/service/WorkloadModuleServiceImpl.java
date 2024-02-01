@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
@@ -116,5 +117,10 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
 		workloadRepository.createDatasetDeployment(createDeployment);
+	}
+
+	@Override
+	public void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO) {
+		workloadRepository.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
 	}
 }

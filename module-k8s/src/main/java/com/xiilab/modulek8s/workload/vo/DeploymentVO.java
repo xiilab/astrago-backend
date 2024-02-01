@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
@@ -78,9 +79,9 @@ public class DeploymentVO extends WorkloadVO {
 		return new ObjectMetaBuilder()
 			.withName(deploymentName)
 			.withNamespace(namespace)
-			.withLabels(
+			.withAnnotations(
 				Map.of(
-					LabelField.DATASET_NAME.getField(), this.datasetName
+					AnnotationField.DATASET_NAME.getField(), this.datasetName
 				))
 			.build();
 	}

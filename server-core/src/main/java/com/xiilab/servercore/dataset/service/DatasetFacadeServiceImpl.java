@@ -1,7 +1,5 @@
 package com.xiilab.servercore.dataset.service;
 
-import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,10 +9,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
+import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 import com.xiilab.servercore.storage.entity.StorageEntity;
 import com.xiilab.servercore.storage.service.StorageService;
@@ -70,15 +73,41 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 			.hostPath(hostPath)
 			.build();
 		//1. nginx deployment, pvc, pv, svc 생성
-		String svcDNS = workloadModuleFacadeService.createLocalDataset(createDto);
+		CreateLocalDatasetResDTO createLocalDatasetResDTO = workloadModuleFacadeService.createLocalDataset(createDto);
 		//2. 디비 인서트
 		LocalDatasetEntity localDatasetEntity = LocalDatasetEntity.builder()
 			.datasetName(createDatasetDTO.getDatasetName())
 			.ip(createDatasetDTO.getIp())
 			.storageType(StorageType.NFS)
 			.storagePath(createDatasetDTO.getStoragePath())
-			.dns(svcDNS)
+			.dns(createLocalDatasetResDTO.getDns())
+			.deploymentName(createLocalDatasetResDTO.getDeploymentName())
 			.build();
 		datasetService.insertLocalDataset(localDatasetEntity);
+	}
+
+	@Override
+	@Transactional
+	public void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId, UserInfoDTO userInfoDTO) {
+		//division 확인 후 astrago 데이터 셋이면 디비만 변경
+		Dataset dataset = datasetService.findById(datasetId);
+		if(userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
+			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId().equals(dataset.getRegUser().getRegUserId()))
+		){
+			//local 데이터 셋이면 디비 + deployment label 변경
+			if(dataset.isLocalDataset()){
+				LocalDatasetEntity localDatasetEntity = (LocalDatasetEntity)dataset;
+				ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO = ModifyLocalDatasetDeploymentDTO
+					.builder()
+					.deploymentName(localDatasetEntity.getDeploymentName())
+					.modifyDatasetName(modifyDataset.getDatasetName())
+					.namespace(namespace)
+					.build();
+				workloadModuleFacadeService.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
+			}
+			datasetService.modifyDataset(modifyDataset, datasetId);
+		}else{
+			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
+		}
 	}
 }

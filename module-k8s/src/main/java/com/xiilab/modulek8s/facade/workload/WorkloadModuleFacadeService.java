@@ -3,6 +3,8 @@ package com.xiilab.modulek8s.facade.workload;
 import java.util.List;
 
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -58,7 +60,9 @@ public interface WorkloadModuleFacadeService {
 
 	String getWorkloadLogByWorkloadName(String workspace, String workload, WorkloadType type);
 
-	String createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO);
+	CreateLocalDatasetResDTO createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO);
 
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+
+	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,5 +63,13 @@ public class DatasetController {
 	public ResponseEntity getDataset(@PathVariable(name = "datasetId") Long datasetId){
 		DatasetDTO.ResDatasetWithStorage datasetWithStorage = datasetFacadeService.getDataset(datasetId);
 		return new ResponseEntity(datasetWithStorage, HttpStatus.OK);
+	}
+
+	@PutMapping("/datasets/{datasetId}")
+	public ResponseEntity modifyDataset(@PathVariable(name = "datasetId") Long datasetId,
+		@RequestBody DatasetDTO.ModifyDatset modifyDataset,
+		UserInfoDTO userInfoDTO){
+		datasetFacadeService.modifyDataset(modifyDataset, datasetId, userInfoDTO);
+		return new ResponseEntity(HttpStatus.OK);
 	}
 }
