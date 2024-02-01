@@ -32,11 +32,12 @@ public class DatasetServiceImpl implements DatasetService{
 	@Override
 	@Transactional
 	public void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files) {
-		//dataset 저장
-		datasetRepository.save(astragoDatasetEntity);
 		//파일 업로드
-		String hostStorageRootPath = astragoDatasetEntity.getStorageEntity().getHostPath();
-		String datasetPath = hostStorageRootPath + "/" + astragoDatasetEntity.getDatasetName();
+		String storageRootPath = astragoDatasetEntity.getStorageEntity().getHostPath();
+		String datasetPath = storageRootPath + "/" + astragoDatasetEntity.getDatasetName();
+		//dataset 저장
+		astragoDatasetEntity.setDatasetPath(datasetPath.replace(" ", ""));
+		datasetRepository.save(astragoDatasetEntity);
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(datasetPath);
 		try {
