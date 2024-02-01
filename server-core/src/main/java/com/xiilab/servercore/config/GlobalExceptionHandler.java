@@ -29,6 +29,6 @@ public class GlobalExceptionHandler {
 				errorCode.getCode(),
 				LocalDateTime.now(),
 				commonMessageUtils.getMessage(errorCode.getMessage()),
-				null));
+				e.getMessage()));
 	}
 }
