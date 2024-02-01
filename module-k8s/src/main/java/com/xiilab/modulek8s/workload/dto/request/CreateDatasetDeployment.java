@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class CreateDatasetDeployment {
+	private String datasetName;
 	private String pvName;
 	private String pvcName;
 	private String deploymentName;

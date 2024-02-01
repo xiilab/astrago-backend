@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
@@ -35,6 +36,7 @@ public class DeploymentVO extends WorkloadVO {
 	private String namespace;
 	private String hostPath;
 	private String dockerImage;
+	private String datasetName;
 
 	public static DeploymentVO dtoToEntity(ConnectTestDTO connectTestDTO) {
 		return DeploymentVO.builder()
@@ -42,11 +44,11 @@ public class DeploymentVO extends WorkloadVO {
 			.volumeLabelSelectorName(connectTestDTO.getVolumeLabelSelectorName())
 			.pvName(connectTestDTO.getPvName())
 			.pvcName(connectTestDTO.getPvcName())
-			.description(connectTestDTO.getDeploymentName())
 			.connectTestLabelName(connectTestDTO.getConnectTestLabelName())
 			.namespace(connectTestDTO.getNamespace())
 			.hostPath(connectTestDTO.getHostPath())
 			.dockerImage(connectTestDTO.getDockerImage())
+			.datasetName("connection-test")
 			.build();
 	}
 	public static DeploymentVO dtoToEntity(CreateDatasetDeployment createDatasetDTO) {
@@ -55,11 +57,11 @@ public class DeploymentVO extends WorkloadVO {
 			.volumeLabelSelectorName(createDatasetDTO.getVolumeLabelSelectorName())
 			.pvName(createDatasetDTO.getPvName())
 			.pvcName(createDatasetDTO.getPvcName())
-			.description(createDatasetDTO.getDeploymentName())
 			.connectTestLabelName(createDatasetDTO.getConnectTestLabelName())
 			.namespace(createDatasetDTO.getNamespace())
 			.hostPath(createDatasetDTO.getHostPath())
 			.dockerImage(createDatasetDTO.getDockerImage())
+			.datasetName(createDatasetDTO.getDatasetName())
 			.build();
 	}
 
@@ -76,12 +78,16 @@ public class DeploymentVO extends WorkloadVO {
 		return new ObjectMetaBuilder()
 			.withName(deploymentName)
 			.withNamespace(namespace)
+			.withLabels(
+				Map.of(
+					LabelField.DATASET_NAME.getField(), this.datasetName
+				))
 			.build();
 	}
 
 	@Override
 	protected ResourceType getType() {
-		return null;
+		return ResourceType.WORKLOAD;
 	}
 
 	@Override

@@ -153,7 +153,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		String pvcName = "astrago-dataset-pvc-" + UUID.randomUUID().toString().substring(6);
 		String pvName = "astrago-dataset-pv-"+ UUID.randomUUID().toString().substring(6);
 		String svcName = "astrago-dataset-svc-"+ UUID.randomUUID().toString().substring(6);
-		String datasetDeploymentName = "astrago-dataset-" + datasetName +"-"+ UUID.randomUUID().toString().substring(6);
+		String datasetDeploymentName = "astrago-dataset-" + UUID.randomUUID().toString().substring(6);
 		String volumeLabelSelectorName = "dataset-storage-volume-"+ UUID.randomUUID().toString().substring(6);
 		String connectTestLabelName = "dataset-connect-test-"+ UUID.randomUUID().toString().substring(6);
 
@@ -177,6 +177,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		volumeService.createPVC(createPVC);
 		//deployment 생성
 		CreateDatasetDeployment createDeployment = CreateDatasetDeployment.builder()
+			.datasetName(datasetName)
 			.deploymentName(datasetDeploymentName)
 			.volumeLabelSelectorName(volumeLabelSelectorName)
 			.pvcName(pvcName)
