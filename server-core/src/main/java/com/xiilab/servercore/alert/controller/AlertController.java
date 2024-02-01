@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/api/v1/alert")
+@RequestMapping("/api/v1/core/alert")
 @RequiredArgsConstructor
 public class AlertController {
 	private final AlertService alertService;
