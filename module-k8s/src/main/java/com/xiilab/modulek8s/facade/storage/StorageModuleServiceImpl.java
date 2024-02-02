@@ -181,9 +181,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	@Override
 	public StorageResDTO createStorage(CreateStorageReqDTO createStorageReqDTO) {
-		String pvcName = "astrago-pvc-"+ UUID.randomUUID().toString().substring(6);
-		String pvName = "astrago-pv-"+ UUID.randomUUID().toString().substring(6);
-		String connectTestDeploymentName = "astrago-deployment-"+ UUID.randomUUID().toString().substring(6);
+		String pvcName = "astrago-storage-pvc-"+ UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-storage-pv-"+ UUID.randomUUID().toString().substring(6);
+		String connectTestDeploymentName = "astrago-storage-deployment-"+ UUID.randomUUID().toString().substring(6);
 		String volumeLabelSelectorName = "storage-volume-"+ UUID.randomUUID().toString().substring(6);
 		String connectTestLabelName = "connect-test-"+ UUID.randomUUID().toString().substring(6);
 		String hostPath = createStorageReqDTO.getHostPath();
@@ -225,7 +225,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 		//deployment 상태 조회 - 컨테이너 실행 시간 대기
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}

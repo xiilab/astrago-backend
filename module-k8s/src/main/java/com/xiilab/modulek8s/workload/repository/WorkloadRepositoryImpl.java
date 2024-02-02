@@ -2,14 +2,13 @@ package com.xiilab.modulek8s.workload.repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
@@ -228,7 +227,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			String datasetId = "ds_" + id;
+			String datasetId = "ds-" + id;
 			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
 			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
 			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
@@ -256,6 +255,41 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	@Override
+	public void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.apps()
+				.deployments()
+				.inNamespace(modifyLocalDatasetDeploymentDTO.getNamespace())
+				.withName(modifyLocalDatasetDeploymentDTO.getDeploymentName())
+				.edit(d -> new DeploymentBuilder(d)
+					.editMetadata()
+					.addToAnnotations(AnnotationField.DATASET_NAME.getField(), modifyLocalDatasetDeploymentDTO.getModifyDatasetName())
+					.endMetadata()
+					.build());
+		}
+	}
+
+	@Override
+	public boolean isUsedDataset(Long datasetId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "ds-" + datasetId;
+			if(getJobsInUseDataset(label, client).size() == 0 &&
+				getStatefulSetsInUseDataset(label, client).size() == 0 &&
+				getDeploymentsInUseDataset(label, client).size() == 0){
+				return false;
+			}
+			return true;
+		}
+	}
+
+	@Override
+	public void deleteDeploymentByResourceName(String deploymentName, String namespace) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			client.apps().deployments().inNamespace(namespace).withName(deploymentName).delete();
+		}
+	}
+
 	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads, HasMetadata hasMetadata,
 		WorkloadResourceType resourceType) {
 		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
@@ -267,21 +301,21 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		workloads.add(usingDatasetDTO);
 	}
 
-	private static List<Job> getJobsInUseDataset(String id, KubernetesClient client) {
-		return client.batch().v1().jobs().withLabelIn(id, "true")
+	private static List<Job> getJobsInUseDataset(String key, KubernetesClient client) {
+		return client.batch().v1().jobs().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
-	private static List<Deployment> getDeploymentsInUseDataset(String id, KubernetesClient client) {
-		return client.apps().deployments().withLabelIn(id, "true")
+	private static List<Deployment> getDeploymentsInUseDataset(String key, KubernetesClient client) {
+		return client.apps().deployments().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
-	private static List<StatefulSet> getStatefulSetsInUseDataset(String id, KubernetesClient client) {
+	private static List<StatefulSet> getStatefulSetsInUseDataset(String key, KubernetesClient client) {
 		return client
 			.apps()
 			.statefulSets()
-			.withLabelIn(id, "true")
+			.withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}

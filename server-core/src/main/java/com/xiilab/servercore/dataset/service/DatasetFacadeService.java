@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 
 public interface DatasetFacadeService {
@@ -12,4 +13,8 @@ public interface DatasetFacadeService {
 	DatasetDTO.ResDatasetWithStorage getDataset(Long datasetId);
 
 	void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO);
+
+	void modifyDataset(DatasetDTO.ModifyDatset modifyDatset, Long datasetId, UserInfoDTO userInfoDTO);
+
+	void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO);
 }

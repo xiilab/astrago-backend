@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
@@ -145,7 +148,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public String createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO) {
+	public CreateLocalDatasetResDTO createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO) {
 		String datasetName = createLocalDatasetDTO.getDatasetName().replace(" ", "");
 		String ip = createLocalDatasetDTO.getIp();
 		String storagePath = createLocalDatasetDTO.getStoragePath();
@@ -201,12 +204,45 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 		//<service-name>.<namespace>.svc.cluster.local
 		String svcDNS = svcName + "." + namespace + ".svc.cluster.local";
-		return svcDNS;
+		return CreateLocalDatasetResDTO.builder()
+			.dns(svcDNS)
+			.deploymentName(datasetDeploymentName)
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.svcName(svcName)
+			.build();
 	}
 
 	@Override
 	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
 		return workloadModuleService.workloadsUsingDataset(id);
+	}
+
+	@Override
+	public void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO) {
+		workloadModuleService.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
+	}
+
+	@Override
+	public boolean isUsedDataset(Long datasetId) {
+		return workloadModuleService.isUsedDataset(datasetId);
+	}
+
+	@Override
+	public void deleteLocalDataset(DeleteLocalDatasetDTO deleteLocalDatasetDTO) {
+		String deploymentName = deleteLocalDatasetDTO.getDeploymentName();
+		String svcName = deleteLocalDatasetDTO.getSvcName();
+		String pvcName = deleteLocalDatasetDTO.getPvcName();
+		String pvName = deleteLocalDatasetDTO.getPvName();
+		String namespace = deleteLocalDatasetDTO.getNamespace();
+		//svc 삭제
+		svcService.deleteServiceByResourceName(svcName, namespace);
+		//deployment 삭제
+		workloadModuleService.deleteDeploymentByResourceName(deploymentName, namespace);
+		//pvc 삭제
+		volumeService.deletePVC(pvcName, namespace);
+		//pv 삭제
+		volumeService.deletePV(pvName);
 	}
 
 	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {

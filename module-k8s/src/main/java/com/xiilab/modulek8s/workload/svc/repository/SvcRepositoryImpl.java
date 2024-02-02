@@ -36,4 +36,11 @@ public class SvcRepositoryImpl implements SvcRepository {
 			client.resource(serviceDtoToServiceVO.createResource()).create();
 		}
 	}
+
+	@Override
+	public void deleteServiceByResourceName(String svcName, String namespace) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			client.services().inNamespace(namespace).withName(svcName).delete();
+		}
+	}
 }

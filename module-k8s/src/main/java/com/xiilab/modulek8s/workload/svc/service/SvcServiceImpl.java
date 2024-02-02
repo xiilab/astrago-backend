@@ -31,4 +31,9 @@ public class SvcServiceImpl implements SvcService {
 	public void createClusterIPService(CreateClusterIPSvcReqDTO createClusterIPSvcReqDTO) {
 		svcRepository.createClusterIPService(ClusterIPSvcVO.createServiceDtoToServiceVO(createClusterIPSvcReqDTO));
 	}
+
+	@Override
+	public void deleteServiceByResourceName(String svcName, String namespace) {
+		svcRepository.deleteServiceByResourceName(svcName, namespace);
+	}
 }
