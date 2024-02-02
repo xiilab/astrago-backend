@@ -14,4 +14,6 @@ public interface SvcService {
 	void deleteService(String workSpaceName, String workloadName);
 
 	void createClusterIPService(CreateClusterIPSvcReqDTO createClusterIPSvcReqDTO);
+
+	void deleteServiceByResourceName(String svcName, String namespace);
 }

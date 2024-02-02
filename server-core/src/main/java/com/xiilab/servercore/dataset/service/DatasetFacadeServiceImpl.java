@@ -1,7 +1,5 @@
 package com.xiilab.servercore.dataset.service;
 
-import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,10 +9,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
+import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 import com.xiilab.servercore.storage.entity.StorageEntity;
 import com.xiilab.servercore.storage.service.StorageService;
@@ -70,15 +74,85 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 			.hostPath(hostPath)
 			.build();
 		//1. nginx deployment, pvc, pv, svc 생성
-		String svcDNS = workloadModuleFacadeService.createLocalDataset(createDto);
+		CreateLocalDatasetResDTO createLocalDatasetResDTO = workloadModuleFacadeService.createLocalDataset(createDto);
 		//2. 디비 인서트
 		LocalDatasetEntity localDatasetEntity = LocalDatasetEntity.builder()
 			.datasetName(createDatasetDTO.getDatasetName())
 			.ip(createDatasetDTO.getIp())
 			.storageType(StorageType.NFS)
 			.storagePath(createDatasetDTO.getStoragePath())
-			.dns(svcDNS)
+			.dns(createLocalDatasetResDTO.getDns())
+			.deploymentName(createLocalDatasetResDTO.getDeploymentName())
+			.pvcName(createLocalDatasetResDTO.getPvcName())
+			.pvName(createLocalDatasetResDTO.getPvName())
+			.svcName(createLocalDatasetResDTO.getSvcName())
 			.build();
 		datasetService.insertLocalDataset(localDatasetEntity);
 	}
+
+	@Override
+	@Transactional
+	public void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId, UserInfoDTO userInfoDTO) {
+		//division 확인 후 astrago 데이터 셋이면 디비만 변경
+		Dataset dataset = datasetService.findById(datasetId);
+
+		if(checkAccessDataset(userInfoDTO, dataset)){
+			//local 데이터 셋이면 디비 + deployment label 변경
+			if(dataset.isLocalDataset()){
+				LocalDatasetEntity localDatasetEntity = (LocalDatasetEntity)dataset;
+				ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO = ModifyLocalDatasetDeploymentDTO
+					.builder()
+					.deploymentName(localDatasetEntity.getDeploymentName())
+					.modifyDatasetName(modifyDataset.getDatasetName())
+					.namespace(namespace)
+					.build();
+				workloadModuleFacadeService.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
+			}
+			datasetService.modifyDataset(modifyDataset, datasetId);
+		}else{
+			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
+		}
+	}
+	@Override
+	@Transactional
+	public void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO) {
+		Dataset dataset = datasetService.findById(datasetId);
+		if(checkAccessDataset(userInfoDTO, dataset)){
+			boolean isUse = workloadModuleFacadeService.isUsedDataset(datasetId);
+			//true = 사용중인 데이터 셋
+			if(isUse){
+				throw new RuntimeException("사용중인 데이터 셋은 삭제할 수 없습니다.");
+			}
+			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
+			if(dataset.isAstargoDataset()){
+				//workspace mapping 삭제
+				datasetService.deleteDatasetWorkspaceMappingById(datasetId);
+				//dataset 삭제
+				datasetService.deleteDatasetById(datasetId);
+			}else if(dataset.isLocalDataset()){
+				//pv, pvc, deployment, svc 삭제
+				LocalDatasetEntity localDatasetEntity = (LocalDatasetEntity)dataset;
+				DeleteLocalDatasetDTO deleteLocalDatasetDTO = DeleteLocalDatasetDTO.builder()
+					.deploymentName(localDatasetEntity.getDeploymentName())
+					.svcName(localDatasetEntity.getSvcName())
+					.pvcName(localDatasetEntity.getPvcName())
+					.pvName(localDatasetEntity.getPvName())
+					.namespace(namespace)
+					.build();
+				workloadModuleFacadeService.deleteLocalDataset(deleteLocalDatasetDTO);
+				//workspace mapping 삭제
+				datasetService.deleteDatasetWorkspaceMappingById(datasetId);
+				//db 삭제 - TB_localDataset
+				datasetService.deleteDatasetById(datasetId);
+			}
+		}else{
+			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
+		}
+	}
+
+	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Dataset dataset) {
+		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
+			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId().equals(dataset.getRegUser().getRegUserId()));
+	}
+
 }

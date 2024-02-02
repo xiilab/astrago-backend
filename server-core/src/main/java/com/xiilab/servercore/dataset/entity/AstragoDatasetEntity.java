@@ -3,6 +3,7 @@ package com.xiilab.servercore.dataset.entity;
 
 import com.xiilab.servercore.storage.entity.StorageEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,12 +26,17 @@ public class AstragoDatasetEntity extends Dataset {
 	@JoinColumn(name = "STORAGE_ID")
 	private StorageEntity storageEntity;
 
+	@Column(name = "DATASET_PATH")
+	private String datasetPath;
+
 	@Builder
 	public AstragoDatasetEntity(Long datasetId, String datasetName, StorageEntity storageEntity) {
 		super(datasetId, datasetName);
 		this.storageEntity = storageEntity;
 	}
-
+	public void setDatasetPath(String datasetPath){
+		this.datasetPath = datasetPath;
+	}
 	@Override
 	public boolean isAstargoDataset() {
 		return true;
