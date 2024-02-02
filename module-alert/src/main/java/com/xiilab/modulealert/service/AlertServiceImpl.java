@@ -8,6 +8,7 @@ import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.entity.AlertEntity;
 import com.xiilab.modulealert.repository.AlertRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -16,9 +17,9 @@ public class AlertServiceImpl implements AlertService {
 	private AlertRepository alertRepository;
 
 	@Override
-	public AlertDTO.ResponseDTO sendAlert(AlertDTO alertDTO){
+	public void sendAlert(AlertDTO alertDTO){
 		AlertEntity alertEntity = alertRepository.save(AlertDTO.convertEntity(alertDTO));
-		return AlertDTO.ResponseDTO.convertResponseDTO(alertEntity);
+		AlertDTO.ResponseDTO.convertResponseDTO(alertEntity);
 	}
 
 	@Override
@@ -28,12 +29,14 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
+	@Transactional
 	public void readAlert(long id) {
 		AlertEntity alertEntity = getAlertEntity(id);
 		alertEntity.readAlert();
 	}
 
 	@Override
+	@Transactional
 	public void deleteAlertById(long id){
 		// 해당 ID의 Alert 존재 확인
 		AlertEntity alertEntity = getAlertEntity(id);
@@ -43,7 +46,7 @@ public class AlertServiceImpl implements AlertService {
 	@Override
 	public AlertDTO.ResponseDTO getAlertById(long id){
 		AlertEntity alertEntity = getAlertEntity(id);
-		if(!alertEntity.getReadYN()){
+		if(!alertEntity.isReadYN()){
 			alertEntity.readAlert();
 		}
 		return AlertDTO.ResponseDTO.convertResponseDTO(alertEntity);

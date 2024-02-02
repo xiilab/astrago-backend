@@ -37,7 +37,7 @@ public class AlertDTO {
 				.alertType(alertEntity.getAlertType())
 				.message(alertEntity.getMessage())
 				.alertDate(alertEntity.getAlertDate())
-				.readYN(alertEntity.getReadYN())
+				.readYN(alertEntity.isReadYN())
 				.build();
 		}
 	}
