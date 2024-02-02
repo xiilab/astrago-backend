@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
@@ -19,15 +20,23 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
+import com.xiilab.servercore.workspace.entity.ResourceQuotaEntity;
+import com.xiilab.servercore.workspace.repository.ResourceQuotaRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final ResourceQuotaRepository resourceQuotaRepository;
 	private final PinService pinService;
 	private final GroupService groupService;
 	private final AlertService alertService;
@@ -116,4 +125,47 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		return workspaceModuleFacadeService.getWorkspaceList().stream()
 			.filter(workspace -> userWorkspacePinList.contains(workspace.getResourceName())).toList();
 	}
+
+	@Override
+	@Transactional
+	public void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO) {
+		resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, UserInfoDTO userInfoDTO) {
+		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
+		return resourceQuotaReqList.stream()
+			.map(resourceQuotaEntity ->
+				ResourceQuotaFormDTO.builder()
+					.id(resourceQuotaEntity.getId())
+					.workspace(resourceQuotaEntity.getWorkspace())
+					.requestReason(resourceQuotaEntity.getRequestReason())
+					.rejectReason(resourceQuotaEntity.getRejectReason())
+					.status(resourceQuotaEntity.getStatus())
+					.cpuReq(resourceQuotaEntity.getCpuReq())
+					.gpuReq(resourceQuotaEntity.getGpuReq())
+					.memReq(resourceQuotaEntity.getMemReq())
+					.build())
+			.toList();
+	}
+
+	@Override
+	@Transactional
+	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO) {
+		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaRepository.findById(id).orElseThrow();
+		if (resourceQuotaApproveDTO.isApprovalYN()) {
+			resourceQuotaEntity.approval();
+			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
+				resourceQuotaEntity.getWorkspace(),
+				resourceQuotaEntity.getCpuReq(),
+				resourceQuotaEntity.getMemReq(),
+				resourceQuotaEntity.getGpuReq()
+			);
+		} else {
+			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
+		}
+	}
+
 }

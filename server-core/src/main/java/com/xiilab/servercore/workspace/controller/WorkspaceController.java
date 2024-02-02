@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +19,10 @@ import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,9 +67,37 @@ public class WorkspaceController {
 		workspaceService.deleteWorkspaceByName(name, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
+
 	@GetMapping("/overview/pin")
 	@Operation(summary = "워크스페이스 OverView 조회")
-	public ResponseEntity<List<WorkspaceDTO.ResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO){
+	public ResponseEntity<List<WorkspaceDTO.ResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceOverView(userInfoDTO));
+	}
+
+	@PostMapping("/resource")
+	@Operation(summary = "워크스페이스 resource 요청")
+	public ResponseEntity<HttpStatus> requestWorkspaceResource(
+		@RequestBody WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO) {
+		workspaceService.requestWorkspaceResource(workspaceResourceReqDTO, userInfoDTO);
+		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("/resource")
+	@Operation(summary = "워크스페이스 resource 리스트 조회")
+	public ResponseEntity<List<ResourceQuotaFormDTO>> getResourceQuotaList(
+		@RequestParam(value = "workspace") String workspace,
+		UserInfoDTO userInfoDTO
+	) {
+		return ResponseEntity.ok(workspaceService.getResourceQuotaRequests(workspace, userInfoDTO));
+	}
+
+	@PatchMapping("/resource/{id}")
+	@Operation(summary = "워크스페이스 resource 요청 승인/반려")
+	public ResponseEntity<HttpStatus> updateResourceQuota(
+		@PathVariable(value = "id") long id,
+		@RequestBody ResourceQuotaApproveDTO resourceQuotaApproveDTO
+	) {
+		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO);
+		return ResponseEntity.ok().build();
 	}
 }
