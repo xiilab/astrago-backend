@@ -5,6 +5,7 @@ import java.util.List;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
@@ -23,5 +24,5 @@ public interface WorkspaceFacadeService {
 
 	List<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, UserInfoDTO userInfoDTO);
 
-	void updateResourceQuota(String workspace, boolean approveYN);
+	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO);
 }

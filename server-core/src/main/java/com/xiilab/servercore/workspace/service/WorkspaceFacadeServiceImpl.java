@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
@@ -15,6 +16,7 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
@@ -22,8 +24,10 @@ import com.xiilab.servercore.workspace.entity.ResourceQuotaEntity;
 import com.xiilab.servercore.workspace.repository.ResourceQuotaRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
@@ -104,11 +108,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
+	@Transactional
 	public void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO) {
 		resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, UserInfoDTO userInfoDTO) {
 		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
 		return resourceQuotaReqList.stream()
@@ -127,7 +133,20 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public void updateResourceQuota(String workspace, boolean approveYN) {
-
+	@Transactional
+	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO) {
+		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaRepository.findById(id).orElseThrow();
+		if (resourceQuotaApproveDTO.isApprovalYN()) {
+			resourceQuotaEntity.approval();
+			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
+				resourceQuotaEntity.getWorkspace(),
+				resourceQuotaEntity.getCpuReq(),
+				resourceQuotaEntity.getMemReq(),
+				resourceQuotaEntity.getGpuReq()
+			);
+		} else {
+			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
+		}
 	}
+
 }

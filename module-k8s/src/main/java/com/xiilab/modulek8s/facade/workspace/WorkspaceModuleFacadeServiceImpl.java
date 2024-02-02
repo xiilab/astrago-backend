@@ -63,6 +63,11 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 	}
 
 	@Override
+	public void updateWorkspaceResourceQuota(String workspace, int cpuReq, int memReq, int gpuReq) {
+		resourceQuotaService.updateResourceQuota(workspace, cpuReq, memReq, gpuReq);
+	}
+
+	@Override
 	public WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceName) {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		List<ModuleWorkloadResDTO> workloadList = workloadModuleFacadeService.getWorkloadList(
