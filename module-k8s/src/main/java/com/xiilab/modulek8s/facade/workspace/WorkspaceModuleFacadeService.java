@@ -10,5 +10,6 @@ public interface WorkspaceModuleFacadeService {
 	WorkspaceDTO.ResponseDTO createWorkspace(CreateWorkspaceDTO applicationForm);
 	List<WorkspaceDTO.ResponseDTO> getWorkspaceList();
 	void deleteWorkspaceByName(String workspaceName);
+	void updateWorkspaceResourceQuota(String workspace, int cpuReq, int memReq, int gpuReq);
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceName);
 }
