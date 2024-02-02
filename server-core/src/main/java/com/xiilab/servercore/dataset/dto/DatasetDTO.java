@@ -1,7 +1,6 @@
 package com.xiilab.servercore.dataset.dto;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
@@ -17,6 +16,10 @@ import lombok.Getter;
 @Getter
 public class DatasetDTO {
 
+	@Getter
+	public static class ReqFilePathDTO {
+		private String path;
+	}
 	@Getter
 	public static class CreateAstragoDataset {
 		private String datasetName;

@@ -16,10 +16,14 @@ import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.PodSecurityContext;
+import io.fabric8.kubernetes.api.model.PodSecurityContextBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.PodSpecFluent;
 import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+import io.fabric8.kubernetes.api.model.SecurityContext;
+import io.fabric8.kubernetes.api.model.SecurityContextBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpecBuilder;
@@ -111,6 +115,11 @@ public class DeploymentVO extends WorkloadVO {
 	@Override
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
+		// PodSecurityContext securityContext = podSpecBuilder.buildSecurityContext().toBuilder().withFsGroup(101L).build();
+		PodSecurityContext securityContext = new PodSecurityContext();
+		securityContext.setFsGroup(101L);
+		podSpecBuilder.withSecurityContext(securityContext);
+
 		addVolumes(podSpecBuilder, List.of(new JobVolumeVO(volumeLabelSelectorName, pvcName)));
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
