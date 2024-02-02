@@ -19,6 +19,7 @@ import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
@@ -89,12 +90,13 @@ public class WorkspaceController {
 		return ResponseEntity.ok(workspaceService.getResourceQuotaRequests(workspace, userInfoDTO));
 	}
 
-	@PatchMapping("/resource")
+	@PatchMapping("/resource/{id}")
 	@Operation(summary = "워크스페이스 resource 요청 승인/반려")
 	public ResponseEntity<HttpStatus> updateResourceQuota(
-		@RequestParam(value = "workspace") String workspace,
-		@RequestParam(value = "approveYN") boolean approveYn
+		@PathVariable(value = "id") long id,
+		@RequestBody ResourceQuotaApproveDTO resourceQuotaApproveDTO
 	) {
-		return
+		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO);
+		return ResponseEntity.ok().build();
 	}
 }
