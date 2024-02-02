@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AlertServiceImpl implements AlertService {
-	private final AlertRepository alertRepository;
+	private AlertRepository alertRepository;
 
 	@Override
 	public AlertDTO.ResponseDTO sendAlert(AlertDTO alertDTO){
