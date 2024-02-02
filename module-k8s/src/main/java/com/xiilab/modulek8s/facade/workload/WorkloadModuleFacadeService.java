@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
@@ -65,4 +66,8 @@ public interface WorkloadModuleFacadeService {
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
+
+	boolean isUsedDataset(Long datasetId);
+
+	void deleteLocalDataset(DeleteLocalDatasetDTO deleteLocalDatasetDTO);
 }

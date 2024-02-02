@@ -33,15 +33,25 @@ public class LocalDatasetEntity extends Dataset {
 	private String dns;
 	@Column(name = "DEPLOYMENT_NAME")
 	private String deploymentName;
+	@Column(name = "SVC_NAME")
+	private String svcName;
+	@Column(name = "PV_NAME")
+	private String pvName;
+	@Column(name = "PVC_NAME")
+	private String pvcName;
 
 	@Builder
-	public LocalDatasetEntity(Long datasetId, String datasetName,String ip, StorageType storageType, String storagePath, String dns, String deploymentName) {
+	public LocalDatasetEntity(Long datasetId, String datasetName,String ip, StorageType storageType, String storagePath, String dns, String deploymentName
+		, String svcName, String pvName, String pvcName) {
 		super(datasetId, datasetName);
 		this.ip = ip;
 		this.storageType = storageType;
 		this.storagePath = storagePath;
 		this.dns = dns;
 		this.deploymentName = deploymentName;
+		this.svcName = svcName;
+		this.pvcName = pvcName;
+		this.pvName = pvName;
 	}
 
 	@Override

@@ -22,4 +22,8 @@ public interface DatasetService {
 	Dataset findById(Long datasetId);
 
 	void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId);
+
+	void deleteDatasetById(Long datasetId);
+
+	void deleteDatasetWorkspaceMappingById(Long datasetId);
 }

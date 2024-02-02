@@ -15,4 +15,6 @@ public interface DatasetFacadeService {
 	void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO);
 
 	void modifyDataset(DatasetDTO.ModifyDatset modifyDatset, Long datasetId, UserInfoDTO userInfoDTO);
+
+	void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO);
 }

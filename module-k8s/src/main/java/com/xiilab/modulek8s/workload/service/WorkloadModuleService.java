@@ -87,4 +87,8 @@ public interface WorkloadModuleService {
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
+
+	boolean isUsedDataset(Long datasetId);
+
+	void deleteDeploymentByResourceName(String deploymentName, String namespace);
 }

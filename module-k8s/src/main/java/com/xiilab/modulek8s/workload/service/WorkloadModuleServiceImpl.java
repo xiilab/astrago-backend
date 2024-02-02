@@ -123,4 +123,14 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO) {
 		workloadRepository.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
 	}
+
+	@Override
+	public boolean isUsedDataset(Long datasetId) {
+		return workloadRepository.isUsedDataset(datasetId);
+	}
+
+	@Override
+	public void deleteDeploymentByResourceName(String deploymentName, String namespace) {
+		workloadRepository.deleteDeploymentByResourceName(deploymentName, namespace);
+	}
 }

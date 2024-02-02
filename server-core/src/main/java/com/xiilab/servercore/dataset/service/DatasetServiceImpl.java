@@ -19,6 +19,7 @@ import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 import com.xiilab.servercore.dataset.repository.DatasetRepository;
+import com.xiilab.servercore.dataset.repository.DatasetWorkspaceRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class DatasetServiceImpl implements DatasetService{
 
 	private final DatasetRepository datasetRepository;
+	private final DatasetWorkspaceRepository datasetWorkspaceRepository;
 
 	@Override
 	@Transactional
@@ -87,5 +89,17 @@ public class DatasetServiceImpl implements DatasetService{
 		Dataset dataset = datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
 		dataset.modifyDatasetName(modifyDataset.getDatasetName());
+	}
+
+	@Override
+	@Transactional
+	public void deleteDatasetById(Long datasetId) {
+		datasetRepository.deleteById(datasetId);
+	}
+
+	@Override
+	@Transactional
+	public void deleteDatasetWorkspaceMappingById(Long datasetId) {
+		datasetWorkspaceRepository.deleteByDatasetId(datasetId);
 	}
 }

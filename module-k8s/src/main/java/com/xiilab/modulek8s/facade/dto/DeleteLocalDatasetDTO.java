@@ -5,10 +5,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CreateLocalDatasetResDTO {
-	private String dns;
+public class DeleteLocalDatasetDTO {
 	private String deploymentName;
-	private String pvcName;
-	private String pvName;
 	private String svcName;
+	private String pvName;
+	private String pvcName;
+	private String namespace;
+
 }
