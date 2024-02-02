@@ -46,7 +46,7 @@ public class AlertServiceImpl implements AlertService {
 	@Override
 	public AlertDTO.ResponseDTO getAlertById(long id){
 		AlertEntity alertEntity = getAlertEntity(id);
-		if(!alertEntity.getReadYN()){
+		if(!alertEntity.isReadYN()){
 			alertEntity.readAlert();
 		}
 		return AlertDTO.ResponseDTO.convertResponseDTO(alertEntity);

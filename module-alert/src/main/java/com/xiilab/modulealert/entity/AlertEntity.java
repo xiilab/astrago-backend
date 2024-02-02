@@ -36,7 +36,7 @@ public class AlertEntity{
 	@Column(name = "ALERT_DATE")
 	private LocalDateTime alertDate;
 	@Column(name = "READ_YN")
-	private Boolean readYN;
+	private boolean readYN;
 
 	public void readAlert(){
 		this.readYN = true;
