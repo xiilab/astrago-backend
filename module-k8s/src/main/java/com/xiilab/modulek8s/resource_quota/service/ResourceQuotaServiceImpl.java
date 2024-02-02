@@ -39,4 +39,9 @@ public class ResourceQuotaServiceImpl implements ResourceQuotaService {
 			.limitGPU(resourceQuotas.getLimitGPU())
 			.build();
 	}
+
+	@Override
+	public void updateResourceQuota(String workspace, int cpuReq, int memReq, int gpuReq) {
+		resourceQuotaRepo.updateResourceQuota(workspace, cpuReq, memReq, gpuReq);
+	}
 }

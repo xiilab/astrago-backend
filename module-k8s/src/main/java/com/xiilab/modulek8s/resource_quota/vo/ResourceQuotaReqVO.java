@@ -64,7 +64,7 @@ public class ResourceQuotaReqVO extends K8SResourceReqVO {
 		return ResourceType.RESOURCE_QUOTA;
 	}
 
-	private ResourceQuotaSpec createSpec() {
+	public ResourceQuotaSpec createSpec() {
 		return new ResourceQuotaSpecBuilder()
 			.addToHard(Map.of(
 				REQUEST_CPU_KEY.getKey(), new Quantity(String.valueOf(this.reqCpu)),

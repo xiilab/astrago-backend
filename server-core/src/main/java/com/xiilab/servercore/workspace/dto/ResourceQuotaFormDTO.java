@@ -1,0 +1,23 @@
+package com.xiilab.servercore.workspace.dto;
+
+import com.xiilab.servercore.workspace.enumeration.ResourceQuotaStatus;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ResourceQuotaFormDTO {
+	private Long id;
+	private String workspace;
+	private String requestReason;
+	private String rejectReason;
+	private ResourceQuotaStatus status;
+	private int cpuReq;
+	private int gpuReq;
+	private int memReq;
+}

@@ -47,7 +47,9 @@ public class WorkloadController {
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
 		@RequestParam("resourceName") String resourceName,
 		@PathVariable(value = "type") WorkloadType workloadType) {
-		return new ResponseEntity<>(workloadFacadeService.getWorkloadInfoByResourceName(workspaceResourceName, resourceName, workloadType), HttpStatus.OK);
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadInfoByResourceName(workspaceResourceName, resourceName, workloadType),
+			HttpStatus.OK);
 	}
 
 	@GetMapping("/jobList")
