@@ -49,6 +49,13 @@ public class WorkloadFacadeService {
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
 			workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 		}
+		// 워크로드 생성 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
+			.build());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
@@ -319,39 +326,5 @@ public class WorkloadFacadeService {
 		return 10 - pinListSize;
 	}
 
-	public void createBatchJobWorkload(CreateWorkloadJobReqDTO createWorkloadJobReqDTO, UserInfoDTO userInfoDTO){
-		workloadModuleFacadeService.createBatchJobWorkload(createWorkloadJobReqDTO.toModuleDTO());
-		// 워크로드 생성 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), createWorkloadJobReqDTO.getName()))
-			.build());
-	}
-
-	public void createInteractiveJobWorkload(CreateWorkloadJobReqDTO createWorkloadJobReqDTO, UserInfoDTO userInfoDTO){
-		workloadModuleFacadeService.createInteractiveJobWorkload(createWorkloadJobReqDTO.toModuleDTO());
-		// 워크로드 생성 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), createWorkloadJobReqDTO.getName()))
-			.build());
-	}
-
-	public ModuleBatchJobResDTO getBatchWorkload(String workSpaceName, String workloadName){
-		ModuleBatchJobResDTO batchWorkload = workloadModuleFacadeService.getBatchWorkload(workSpaceName, workloadName);
-
-		return batchWorkload;
-	}
-
-	public ModuleInteractiveJobResDTO getInteractiveWorkload(String workSpaceName, String workloadName){
-		ModuleInteractiveJobResDTO interactiveWorkload = workloadModuleFacadeService.getInteractiveWorkload(
-			workSpaceName, workloadName);
-
-		return interactiveWorkload;
-	}
 
 }
