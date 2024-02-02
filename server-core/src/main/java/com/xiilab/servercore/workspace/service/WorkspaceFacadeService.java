@@ -14,5 +14,5 @@ public interface WorkspaceFacadeService {
 
 	void deleteWorkspaceByName(String workspaceName);
 
-	List<WorkspaceDTO.ResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO);
+	List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO);
 }

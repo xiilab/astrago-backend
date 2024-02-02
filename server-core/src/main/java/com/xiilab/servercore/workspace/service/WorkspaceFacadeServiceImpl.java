@@ -92,9 +92,24 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public List<WorkspaceDTO.ResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO) {
+	public List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO) {
+		//전체 workspace 리스트 조회
+		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
+		//user의 pin 리스트 조회
 		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
-		return workspaceModuleFacadeService.getWorkspaceList().stream()
-			.filter(workspace -> userWorkspacePinList.contains(workspace.getResourceName())).toList();
+
+		return workspaceList.stream()
+			.filter(workspace -> userWorkspacePinList.contains(workspace.getResourceName()))
+			.map(workspace ->
+			new WorkspaceDTO.TotalResponseDTO(
+				workspace.getId(),
+				workspace.getName(),
+				workspace.getResourceName(),
+				workspace.getDescription(),
+				userWorkspacePinList.contains(workspace.getResourceName()),
+				workspace.getCreatedAt(),
+				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
+					userInfoDTO.getUserName()))).toList();
+
 	}
 }

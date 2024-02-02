@@ -64,7 +64,7 @@ public class WorkspaceController {
 	}
 	@GetMapping("/overview/pin")
 	@Operation(summary = "워크스페이스 OverView 조회")
-	public ResponseEntity<List<WorkspaceDTO.ResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO){
+	public ResponseEntity<List<WorkspaceDTO.TotalResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO){
 		return ResponseEntity.ok(workspaceService.getWorkspaceOverView(userInfoDTO));
 	}
 }
