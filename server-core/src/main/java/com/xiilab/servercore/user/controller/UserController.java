@@ -98,4 +98,10 @@ public class UserController {
 		userFacadeService.deleteUserById(idList);
 		return ResponseEntity.ok().build();
 	}
+	@GetMapping("/search/{search}")
+	@Operation(summary = "전체 검색")
+	public ResponseEntity<String> getUserAndGroupBySearch(@PathVariable(name = "search") String search){
+		return new ResponseEntity<>(userFacadeService.getUserAndGroupBySearch(search), HttpStatus.OK);
+	}
+
 }

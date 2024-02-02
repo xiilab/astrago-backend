@@ -32,4 +32,5 @@ public interface UserFacadeService {
 	void updateUserRole(String userId, AuthType authType);
 
 	void deleteUserById(List<String> userIdList);
+	String getUserAndGroupBySearch(String search);
 }

@@ -109,6 +109,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			List<Event> events = kubernetesClient.v1().events().inNamespace(namespace).list().getItems().stream()
+				.filter(event -> event.getKind().equalsIgnoreCase("pod"))
 				.filter(event ->
 					event.getInvolvedObject().getName().equals(podName)
 				).toList();

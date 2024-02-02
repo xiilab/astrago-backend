@@ -72,9 +72,17 @@ public class UserServiceImpl implements UserService {
 	public void joinGroup(String groupId, String userId) {
 		userRepository.joinGroup(groupId, userId);
 	}
+	@Override
+	public void joinDefaultGroup(String userId) {
+		userRepository.joinDefaultGroup(userId);
+	}
 
 	@Override
 	public void deleteUserById(List<String> userId) {
 		userRepository.deleteUserById(userId);
+	}
+	@Override
+	public String getUserAndGroupBySearch(String search){
+		userRepository.getUserAndGroupBySearch(search);
 	}
 }

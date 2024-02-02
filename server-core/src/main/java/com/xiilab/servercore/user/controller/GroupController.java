@@ -78,16 +78,16 @@ public class GroupController {
 	@Operation(summary = "워크스페이스 멤버 삭제")
 	public ResponseEntity<HttpStatus> deleteWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
-		@RequestBody String userId){
-		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userId);
+		@RequestBody List<String> userIdList){
+		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userIdList);
 		return ResponseEntity.ok().build();
 	}
 	@PostMapping("/ws/{groupName}")
 	@Operation(summary = "워크스페이스 멤버 추가")
 	public ResponseEntity<HttpStatus> addWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
-		@RequestBody String userId){
-		groupFacadeService.addWorkspaceMemberByUserId(groupName, userId);
+		@RequestBody List<String> userIdList){
+		groupFacadeService.addWorkspaceMemberByUserId(groupName, userIdList);
 		return ResponseEntity.ok().build();
 	}
 

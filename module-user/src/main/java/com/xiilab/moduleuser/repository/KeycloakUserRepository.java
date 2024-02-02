@@ -51,18 +51,19 @@ public class KeycloakUserRepository implements UserRepository {
 		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
 		return new UserInfo(userResource.toRepresentation());
 	}
+
 	private void checkUserDuplicate(UserReqVO userReqVO) {
 		List<UserRepresentation> list = keycloakConfig.getRealmClient().users().list();
 		// 이름 중복 검사
 		boolean isUsernameExists = list.stream()
 			.anyMatch(userRepresentation -> userRepresentation.getUsername().equals(userReqVO.getUsername()));
-		if(isUsernameExists) {
+		if (isUsernameExists) {
 			throw new IllegalArgumentException("해당 UserName(" + userReqVO.getUsername() + ")이(가) 존재합니다.");
 		}
 		// 메일 중복검사
 		boolean isEmailExists = list.stream()
 			.anyMatch(userRepresentation -> userRepresentation.getEmail().equals(userReqVO.getEmail()));
-		if(isEmailExists) {
+		if (isEmailExists) {
 			throw new IllegalArgumentException("해당 Email(" + userReqVO.getEmail() + ")이 존재합니다.");
 		}
 	}
@@ -77,7 +78,15 @@ public class KeycloakUserRepository implements UserRepository {
 			&& user.getAttributes().containsValue(List.of("true"))
 			&& searchInfo(findDTO, user)
 		).map(userRepresentation -> {
-			List<GroupRepresentation> groups = realmClient.users().get(userRepresentation.getId()).groups(0, 100);
+			// 워크스페이스 관련 그룹 제외
+			List<GroupRepresentation> groups = realmClient.users()
+				.get(userRepresentation.getId())
+				.groups(0, 100)
+				.stream()
+				.filter(
+					groupRepresentation -> !groupRepresentation.getName().equals("ws") && !groupRepresentation.getName()
+						.equals("owner") && !groupRepresentation.getName().equals("user"))
+				.toList();
 			return new UserSummary(userRepresentation, groups);
 		}).toList();
 	}
@@ -176,6 +185,20 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
+	public void joinDefaultGroup(String userId) {
+		UserResource userResource = getUserResourceById(userId);
+
+		GroupRepresentation defaultGroup = keycloakConfig.getRealmClient()
+			.groups()
+			.groups("default", 0, 1)
+			.stream()
+			.findFirst()
+			.get().getSubGroups().stream().filter(subGroup -> subGroup.getName().equals("default")).findFirst().get();
+
+		userResource.joinGroup(defaultGroup.getId());
+	}
+
+	@Override
 	public void resetUserPassWord(String userId) {
 		try {
 			UserResource userResource = getUserResourceById(userId);
@@ -239,5 +262,19 @@ public class KeycloakUserRepository implements UserRepository {
 				|| user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
 		}
 		return search;
+	}
+
+	@Override
+	public String getUserAndGroupBySearch(String search) {
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+		// 사용자
+		List<UserRepresentation> list = realmClient.users()
+			.list()
+			.stream()
+			.filter(userRepresentation -> userRepresentation.getFirstName().contains(search) && userRepresentation.getLastName().contains(search))
+			.toList();
+		// 그룹
+
+		return "";
 	}
 }

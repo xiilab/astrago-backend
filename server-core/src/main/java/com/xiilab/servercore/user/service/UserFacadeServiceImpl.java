@@ -25,6 +25,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		UserInfo userInfo = userService.joinUser(userReqVO);
 		if (StringUtils.isNotBlank(groupId)) {
 			userService.joinGroup(groupId, userInfo.getId());
+		}else {
+			userService.joinDefaultGroup(userInfo.getId());
 		}
 		return userService.getUserInfoById(userInfo.getId());
 	}
@@ -72,4 +74,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	public void deleteUserById(List<String> userIdList) {
 		userService.deleteUserById(userIdList);
 	}
+	@Override
+	public String getUserAndGroupBySearch(String search){
+		return userService.getUserAndGroupBySearch(search);
+	};
 }

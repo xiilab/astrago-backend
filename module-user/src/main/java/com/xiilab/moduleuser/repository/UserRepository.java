@@ -30,6 +30,8 @@ public interface UserRepository {
 	void updateUserRole(String userId, AuthType authType);
 
 	void joinGroup(String groupId, String userId);
+	void joinDefaultGroup(String userId);
 
 	void resetUserPassWord(String userId);
+	String getUserAndGroupBySearch(String search);
 }
