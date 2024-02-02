@@ -42,8 +42,18 @@ public class ResourceQuotaEntity extends BaseEntity {
 	public ResourceQuotaEntity(WorkspaceResourceReqDTO workspaceResourceReqDTO) {
 		this.workspace = workspaceResourceReqDTO.getWorkspace();
 		this.requestReason = workspaceResourceReqDTO.getRequestReason();
+		this.status = ResourceQuotaStatus.WAITING;
 		this.cpuReq = workspaceResourceReqDTO.getCpuReq();
 		this.memReq = workspaceResourceReqDTO.getMemReq();
 		this.gpuReq = workspaceResourceReqDTO.getGpuReq();
+	}
+
+	public void approval() {
+		this.status = ResourceQuotaStatus.APPROVE;
+	}
+
+	public void denied(String rejectReason) {
+		this.status = ResourceQuotaStatus.REJECT;
+		this.rejectReason = rejectReason;
 	}
 }

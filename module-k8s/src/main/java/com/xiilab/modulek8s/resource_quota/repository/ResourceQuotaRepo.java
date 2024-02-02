@@ -12,4 +12,6 @@ public interface ResourceQuotaRepo {
 	void deleteResourceQuotas(String name, String namespace);
 
 	ResourceQuotaResVO getResourceQuotas(String namespace);
+
+	void updateResourceQuota(String workspace, int cpuReq, int memReq, int gpuReq);
 }
