@@ -7,6 +7,10 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.enumeration.AlertMessage;
+import com.xiilab.modulealert.enumeration.AlertType;
+import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -35,6 +39,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final ResourceQuotaRepository resourceQuotaRepository;
 	private final PinService pinService;
 	private final GroupService groupService;
+	private final AlertService alertService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -59,6 +64,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.users(applicationForm.getUserIds())
 				.build()
 		);
+		// 워크스페이스 생성 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.CREATE_WORKSPACE.getMessage(), applicationForm.getName()))
+			.build());
 	}
 
 	@Override
@@ -95,9 +107,16 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public void deleteWorkspaceByName(String workspaceName) {
+	public void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO) {
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
+		// 워크스페이스 삭제 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.DELETE_WORKSPACE.getMessage(), workspaceName))
+			.build());
 	}
 
 	@Override
