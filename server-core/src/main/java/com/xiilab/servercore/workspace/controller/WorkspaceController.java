@@ -62,8 +62,9 @@ public class WorkspaceController {
 
 	@DeleteMapping("/{name}")
 	@Operation(summary = "워크스페이스 삭제")
-	public ResponseEntity<HttpStatus> deleteWorkspaceByName(@PathVariable(name = "name") String name) {
-		workspaceService.deleteWorkspaceByName(name);
+	public ResponseEntity<HttpStatus> deleteWorkspaceByName(@PathVariable(name = "name") String name,
+		UserInfoDTO userInfoDTO) {
+		workspaceService.deleteWorkspaceByName(name, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 

@@ -10,6 +10,10 @@ import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.enumeration.AlertMessage;
+import com.xiilab.modulealert.enumeration.AlertType;
+import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -35,6 +39,7 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WorkspaceService workspaceService;
 	private final PinService pinService;
+	private final AlertService alertService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO) {
@@ -44,6 +49,13 @@ public class WorkloadFacadeService {
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
 			workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 		}
+		// 워크로드 생성 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
+			.build());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
@@ -279,6 +291,13 @@ public class WorkloadFacadeService {
 			WorkloadType.BATCH);
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getUserName());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
+		// 워크로드 삭제 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.DELETE_WORKLOAD.getMessage(), workloadName))
+			.build());
 	}
 
 	private void deleteInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
@@ -287,6 +306,13 @@ public class WorkloadFacadeService {
 			WorkloadType.INTERACTIVE);
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getUserName());
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+		// 워크로드 삭제 알림
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.DELETE_WORKLOAD.getMessage(), workloadName))
+			.build());
 	}
 
 	private <T extends ModuleWorkloadResDTO> List<T> getPaginatedList(List<T> workloadList,
@@ -299,5 +325,6 @@ public class WorkloadFacadeService {
 	private int getNormalListPageSize(int pinListSize) {
 		return 10 - pinListSize;
 	}
+
 
 }
