@@ -1,7 +1,6 @@
 package com.xiilab.servercore.dataset.dto;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
@@ -18,6 +17,10 @@ import lombok.Getter;
 public class DatasetDTO {
 
 	@Getter
+	public static class ReqFilePathDTO {
+		private String path;
+	}
+	@Getter
 	public static class CreateAstragoDataset {
 		private String datasetName;
 		private Long storageId;
@@ -27,6 +30,11 @@ public class DatasetDTO {
 		private String datasetName;
 		private String ip;
 		private String storagePath;
+	}
+
+	@Getter
+	public static class ModifyDatset{
+		private String datasetName;
 	}
 
 
@@ -91,7 +99,7 @@ public class DatasetDTO {
 		private boolean isAvailable;
 
 		public static ResDataset toDto(Dataset dataset) {
-			if (dataset instanceof AstragoDatasetEntity) {
+			if (dataset.isAstargoDataset()) {
 				return ResDataset.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageType())
@@ -102,7 +110,7 @@ public class DatasetDTO {
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
 					.build();
-			} else if (dataset instanceof LocalDatasetEntity) {
+			} else if (dataset.isLocalDataset()) {
 				return ResDataset.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((LocalDatasetEntity)dataset).getStorageType())

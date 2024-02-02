@@ -5,7 +5,7 @@ import java.util.List;
 import com.xiilab.modulealert.dto.AlertDTO;
 
 public interface AlertService {
-	AlertDTO.ResponseDTO sendAlert(AlertDTO alertDTO);
+	void sendAlert(AlertDTO alertDTO);
 	List<AlertDTO.ResponseDTO> getAlertListByUserId(String recipientId);
 	void readAlert(long id);
 	void deleteAlertById(long id);

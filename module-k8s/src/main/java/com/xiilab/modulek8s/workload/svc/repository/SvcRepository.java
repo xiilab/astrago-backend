@@ -10,4 +10,6 @@ public interface SvcRepository {
 
 
 	void createClusterIPService(ClusterIPSvcVO serviceDtoToServiceVO);
+
+	void deleteServiceByResourceName(String svcName, String namespace);
 }
