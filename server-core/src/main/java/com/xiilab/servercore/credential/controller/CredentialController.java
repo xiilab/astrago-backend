@@ -20,7 +20,7 @@ import com.xiilab.servercore.credential.service.CredentialService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/credential")
+@RequestMapping("/api/v1/core/credential")
 @RequiredArgsConstructor
 public class CredentialController {
 	private final CredentialService credentialService;
