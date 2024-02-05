@@ -11,7 +11,8 @@ import lombok.Getter;
 @Builder
 public class DirectoryDTO {
     private List<ChildrenDTO> children;
-
+    private int directoryCnt;
+    private int fileCnt;
 
     @Getter
     @Builder

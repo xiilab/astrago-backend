@@ -22,9 +22,13 @@ public interface DatasetFacadeService {
 
 	DirectoryDTO getLocalDatasetFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
 
-	DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, String filePath);
 
 	DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
 
 	DownloadFileResDTO getLocalDatasetFile(Long datasetId, String filePath);
+
+	DatasetDTO.FileInfo getAstragoDatasetFileInfo(DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+
+	DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath);
 }
