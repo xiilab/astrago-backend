@@ -20,7 +20,7 @@ GET http://localhost:8080/api/v1/core/workspace?isMyWorkspace=FALSE&pageNum=1
 Authorization: Bearer {{access_token}}
 Content-Type: application/x-www-form-urlencoded
 
-### workspace list 조회
+### workspace 상세 조회
 GET http://localhost:8080/api/v1/core/workspace/ws-d079d8f9-795f-4e6f-8c74-afebc742722f
 Authorization: Bearer {{access_token}}
 Content-Type: application/x-www-form-urlencoded

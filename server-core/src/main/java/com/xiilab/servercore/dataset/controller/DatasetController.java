@@ -2,14 +2,12 @@ package com.xiilab.servercore.dataset.controller;
 
 import java.util.List;
 
-import org.keycloak.authorization.client.util.Http;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,6 +22,7 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
+import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.dataset.service.DatasetFacadeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
 
@@ -61,7 +60,7 @@ public class DatasetController {
 
 	@GetMapping("/datasets")
 	@Operation(summary = "데이터 셋 전체 조회")
-	public ResponseEntity getDatasets(@RequestParam(required = false, defaultValue = "0", value = "page") int pageNo,
+	public ResponseEntity getDatasets(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
 		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize,
 		UserInfoDTO userInfoDTO){
 		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageNo, pageSize, userInfoDTO);
@@ -91,9 +90,9 @@ public class DatasetController {
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
-	@PostMapping("/datasets/astrago/{datasetId}/list")
+	@PostMapping("/datasets/astrago/{datasetId}/files")
 	@Operation(summary = "astrago 데이터 셋 파일 조회")
-	public ResponseEntity getDatasetFiles(@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
+	public ResponseEntity getAstragoDatasetFiles(@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
 		DirectoryDTO datasetFiles = datasetService.getDatasetFiles(reqFilePathDTO);
 		return new ResponseEntity(datasetFiles, HttpStatus.OK);
 	}
@@ -115,12 +114,29 @@ public class DatasetController {
 	}
 
 	@PostMapping("/datasets/astrago/{datasetId}/files/download")
-	public ResponseEntity astragoDatasetDownloadFile(@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
+	@Operation(summary = "astrago 데이터 셋 파일 다운로드")
+	public ResponseEntity downloadAstragoDatasetFile(@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
 		DownloadFileResDTO downloadFileResDTO = datasetService.astragoDatasetDownloadFile(reqFilePathDTO);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(downloadFileResDTO.getMediaType());
 		return new ResponseEntity(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
+	}
+
+	@PostMapping("/datasets/local/{datasetId}/files")
+	@Operation(summary = "local 데이터 셋 파일, 디렉토리 리스트 조회")
+	public ResponseEntity getLocalDatasetFiles(@PathVariable(name = "datasetId") Long datasetId,
+		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
+		DirectoryDTO files = datasetFacadeService.getLocalDatasetFiles(datasetId,
+			reqFilePathDTO);
+		return new ResponseEntity(files, HttpStatus.OK);
+	}
+	@PostMapping("/datasets/local/{datasetId}/files/download")
+	@Operation(summary = "local 데이터 셋 파일 다운로드")
+	public ResponseEntity DownloadLocalDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
+		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
+
+		return new ResponseEntity(HttpStatus.OK);
 	}
 
 }
