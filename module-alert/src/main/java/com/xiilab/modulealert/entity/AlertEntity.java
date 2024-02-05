@@ -6,8 +6,6 @@ import com.xiilab.modulealert.enumeration.AlertType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,8 +36,7 @@ public class AlertEntity{
 	@Column(name = "ALERT_DATE")
 	private LocalDateTime alertDate;
 	@Column(name = "READ_YN")
-	@Enumerated(EnumType.STRING)
-	private Boolean readYN;
+	private boolean readYN;
 
 	public void readAlert(){
 		this.readYN = true;
