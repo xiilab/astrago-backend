@@ -42,6 +42,7 @@ public class WorkspaceDTO {
 		private String name;
 		private String resourceName;
 		private String description;
+		private String creator;
 		private LocalDateTime createdAt;
 	}
 

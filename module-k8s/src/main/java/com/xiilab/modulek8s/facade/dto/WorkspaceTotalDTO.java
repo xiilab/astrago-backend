@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.facade.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
@@ -29,6 +30,8 @@ public class WorkspaceTotalDTO {
 	private int endCnt;
 	private int pendingCnt;
 	private int errCnt;
+	private String creator;
+	private LocalDateTime createAt;
 
 	public WorkspaceTotalDTO(WorkspaceDTO.ResponseDTO workspaceDTO, ResourceQuotaResDTO resourceQuotaResDTO) {
 		this.uid = workspaceDTO.getId();
@@ -53,6 +56,8 @@ public class WorkspaceTotalDTO {
 		this.errCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.ERROR);
 		this.pendingCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.PENDING);
 		this.endCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.END);
+		this.creator = workspaceDTO.getCreator();
+		this.createAt = workspaceDTO.getCreatedAt();
 	}
 
 	private int getWorkloadCountByStatus(List<ModuleWorkloadResDTO> workloadList, WorkloadStatus status) {
