@@ -36,7 +36,7 @@ public class StorageController {
 
 	@GetMapping("")
 	@Operation(summary = "스토리지 목록 조회")
-	public ResponseEntity<StorageDTO.ResStorages> getStorages(@RequestParam(required = false, defaultValue = "0", value = "page") int pageNo,
+	public ResponseEntity<StorageDTO.ResStorages> getStorages(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
 		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize){
 		StorageDTO.ResStorages storages = storageService.getStorages(pageNo, pageSize);
 		return new ResponseEntity<>(storages, HttpStatus.OK);
