@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,7 +21,6 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
-import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.dataset.service.DatasetFacadeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
 
@@ -42,7 +40,7 @@ public class DatasetController {
 	@Operation(summary = "아스트라고 데이터 셋 생성")
 	public ResponseEntity insertAstragoDataset(
 		@RequestPart(name = "createDataset") DatasetDTO.CreateAstragoDataset createDatasetDTO,
-		@RequestPart(name = "files") List<MultipartFile> files){
+		@RequestPart(name = "files", required = false) List<MultipartFile> files){
 
 		datasetFacadeService.insertAstragoDataset(createDatasetDTO, files);
 
@@ -135,8 +133,31 @@ public class DatasetController {
 	@Operation(summary = "local 데이터 셋 파일 다운로드")
 	public ResponseEntity DownloadLocalDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
-
-		return new ResponseEntity(HttpStatus.OK);
+		DownloadFileResDTO file = datasetFacadeService.DownloadLocalDatasetFile(datasetId,
+			reqFilePathDTO);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(file.getMediaType());
+		return new ResponseEntity(file.getByteArrayResource(), headers, HttpStatus.OK);
 	}
+
+	@PostMapping("/datasets/local/{datasetId}/file")
+	@Operation(summary = "local 데이터 셋 파일 상세 조회")
+	public ResponseEntity getLocalDatasetFileInfo(@PathVariable(name = "datasetId") Long datasetId,
+		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
+		DatasetDTO.FileInfo fileInfo = datasetFacadeService.getLocalDatasetFileInfo(datasetId,
+			reqFilePathDTO);
+		return new ResponseEntity(fileInfo, HttpStatus.OK);
+	}
+
+	@GetMapping("/datasets/local/{datasetId}/file")
+	@Operation(summary = "local 데이터 셋 파일 미리 보기")
+	public ResponseEntity getLocalDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
+		@RequestParam(value = "filePath") String filePath){
+		DownloadFileResDTO file = datasetFacadeService.getLocalDatasetFile(datasetId, filePath);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(file.getMediaType());
+		return new ResponseEntity(file.getByteArrayResource(), headers, HttpStatus.OK);
+	}
+
 
 }

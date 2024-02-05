@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
@@ -23,6 +24,7 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.FileType;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
@@ -178,6 +180,66 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 			fileList.add(children);
 		}
 		return DirectoryDTO.builder().children(fileList).build();
+	}
+
+	@Override
+	public DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+		LocalDatasetEntity dataset = (LocalDatasetEntity) datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + reqFilePathDTO.getPath();
+		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
+		MediaType contentType = fileInfo.getContentType();
+		byte[] fileContent = webClientService.downloadFile(httpUrl, contentType);
+		ByteArrayResource resource = new ByteArrayResource(fileContent);
+		String fileName = webClientService.retrieveFileName(httpUrl);
+
+		return DownloadFileResDTO.builder()
+			.byteArrayResource(resource)
+			.fileName(fileName)
+			.mediaType(contentType)
+			.build();
+	}
+
+	@Override
+	public DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+		LocalDatasetEntity dataset = (LocalDatasetEntity) datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + reqFilePathDTO.getPath();
+		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
+		String fileName = webClientService.retrieveFileName(httpUrl);
+		String size = webClientService.formatFileSize(fileInfo.getContentLength());
+		String lastModifiedTime = webClientService.formatLastModifiedTime(fileInfo.getLastModified());
+		String contentPath = reqFilePathDTO.getPath();
+
+		return DatasetDTO.FileInfo.builder()
+			.fileName(fileName)
+			.size(size)
+			.lastModifiedTime(lastModifiedTime)
+			.contentPath(contentPath)
+			.build();
+	}
+
+	@Override
+	public DownloadFileResDTO getLocalDatasetFile(Long datasetId, String filePath) {
+		LocalDatasetEntity dataset = (LocalDatasetEntity) datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + filePath;
+		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
+		MediaType contentType = fileInfo.getContentType();
+		byte[] fileContent = webClientService.downloadFile(httpUrl, contentType);
+		ByteArrayResource resource = new ByteArrayResource(fileContent);
+		String fileName = webClientService.retrieveFileName(httpUrl);
+		String type = fileInfo.getFirst(HttpHeaders.CONTENT_TYPE);
+		if (type != null) {
+			if (type.startsWith("image/") || type.startsWith("text/")) {
+				return DownloadFileResDTO.builder()
+					.byteArrayResource(resource)
+					.fileName(fileName)
+					.mediaType(contentType)
+					.build();
+			}else {
+				throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+			}
+		}else{
+			throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+		}
 	}
 
 	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Dataset dataset) {

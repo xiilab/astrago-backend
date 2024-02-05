@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 
 public interface DatasetFacadeService {
 	void insertAstragoDataset(DatasetDTO.CreateAstragoDataset createDatasetDTO, List<MultipartFile> files);
@@ -20,4 +21,10 @@ public interface DatasetFacadeService {
 	void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO);
 
 	DirectoryDTO getLocalDatasetFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+
+	DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+
+	DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+
+	DownloadFileResDTO getLocalDatasetFile(Long datasetId, String filePath);
 }
