@@ -56,7 +56,7 @@ public class WorkloadController {
 	@Operation(summary = "워크로드 리스트 조회")
 	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getWorkloadList(
 		@RequestParam(value = "workloadType") WorkloadType workloadType,
-		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		@RequestParam(value = "searchName", required = false) String searchName,
 		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
 		@RequestParam(value = "workloadSortCondition", required = false) WorkloadSortCondition workloadSortCondition,
