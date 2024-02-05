@@ -30,7 +30,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 	public Page<Dataset> findByAuthority(PageRequest pageRequest, UserInfoDTO userInfoDTO) {
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
 			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
-			.offset(pageRequest.getPageNumber())
+			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
 			.fetch();
 
