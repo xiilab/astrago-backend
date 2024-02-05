@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -33,5 +34,5 @@ public interface UserRepository {
 	void joinDefaultGroup(String userId);
 
 	void resetUserPassWord(String userId);
-	String getUserAndGroupBySearch(String search);
+	List<SearchDTO> getUserAndGroupBySearch(String search);
 }

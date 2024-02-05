@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -100,7 +101,7 @@ public class UserController {
 	}
 	@GetMapping("/search/{search}")
 	@Operation(summary = "전체 검색")
-	public ResponseEntity<String> getUserAndGroupBySearch(@PathVariable(name = "search") String search){
+	public ResponseEntity<List<SearchDTO>> getUserAndGroupBySearch(@PathVariable(name = "search") String search){
 		return new ResponseEntity<>(userFacadeService.getUserAndGroupBySearch(search), HttpStatus.OK);
 	}
 

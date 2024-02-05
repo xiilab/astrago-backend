@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.repository.UserRepository;
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService {
 		userRepository.deleteUserById(userId);
 	}
 	@Override
-	public String getUserAndGroupBySearch(String search){
-		userRepository.getUserAndGroupBySearch(search);
+	public List<SearchDTO> getUserAndGroupBySearch(String search){
+		return userRepository.getUserAndGroupBySearch(search);
 	}
 }

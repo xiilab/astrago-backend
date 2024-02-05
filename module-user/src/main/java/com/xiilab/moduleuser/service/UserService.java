@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -35,5 +36,5 @@ public interface UserService {
 	void joinDefaultGroup(String userId);
 
 	void deleteUserById(List<String> userId);
-	String getUserAndGroupBySearch(String string);
+	List<SearchDTO> getUserAndGroupBySearch(String string);
 }

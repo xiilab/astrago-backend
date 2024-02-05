@@ -1,5 +1,6 @@
 package com.xiilab.moduleuser.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -265,16 +268,64 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
-	public String getUserAndGroupBySearch(String search) {
+	public List<SearchDTO> getUserAndGroupBySearch(String search) {
+
+		List<SearchDTO> result = new ArrayList<>();
+
 		RealmResource realmClient = keycloakConfig.getRealmClient();
-		// 사용자
-		List<UserRepresentation> list = realmClient.users()
+
+		List<UserRepresentation> userList = realmClient.users()
 			.list()
 			.stream()
-			.filter(userRepresentation -> userRepresentation.getFirstName().contains(search) && userRepresentation.getLastName().contains(search))
+			.filter(userRepresentation -> userRepresentation.getFirstName().contains(search)  || userRepresentation.getLastName().contains(search))
 			.toList();
-		// 그룹
 
-		return "";
+		// 검색 조회된 사용자 정보 리스트
+		List<SearchDTO> searchUserList = userList.stream().map(user ->
+				SearchDTO.builder().id(user.getId())
+					.name(user.getUsername())
+					.firstName(user.getFirstName())
+					.lastName(user.getLastName())
+					.email(user.getEmail())
+					.groupYN(false)
+					.userGroupDTOS(
+						realmClient.users().get(user.getId())
+							.groups(0, 100)
+							.stream()
+							.filter(groupRepresentation -> !groupRepresentation.getName().equals("owner") && !groupRepresentation.getName().equals("ws") &&
+								!groupRepresentation.getName().equals("user"))
+							.map(groupRepresentation ->
+								UserSummary.UserGroupDTO.builder()
+									.groupId(groupRepresentation.getId())
+									.groupName(groupRepresentation.getName())
+									.build()).toList())
+					.build()).toList();
+
+		// account Group
+		GroupRepresentation accountGroup = realmClient.groups()
+			.groups()
+			.stream()
+			.filter(groupRepresentation -> groupRepresentation.getName().equals("account"))
+			.findFirst()
+			.get();
+
+		// account Group의 SubGroup search
+		List<SearchDTO> searchGroupList = accountGroup.getSubGroups().stream().filter(groupRepresentation ->
+				groupRepresentation.getName().contains(search))
+			.map(groupRepresentation ->
+				SearchDTO.builder()
+				.id(groupRepresentation.getId())
+				.name(groupRepresentation.getName())
+				.groupYN(true)
+				.groupUserDTOS(
+					realmClient.groups().group(groupRepresentation.getId())
+						.members().stream().map(GroupUserDTO::new).toList())
+				.build()).toList();
+		// 조회된 group, user List에 추가
+		result.addAll(searchGroupList);
+		result.addAll(searchUserList);
+
+
+		return result;
 	}
 }
