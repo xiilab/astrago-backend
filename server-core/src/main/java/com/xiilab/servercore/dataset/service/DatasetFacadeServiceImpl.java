@@ -1,11 +1,15 @@
 package com.xiilab.servercore.dataset.service;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
@@ -16,7 +20,10 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.common.enums.FileType;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
@@ -38,6 +45,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 	private final DatasetService datasetService;
 	private final StorageService storageService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final WebClientService webClientService;
+
 	@Override
 	@Transactional
 	public void insertAstragoDataset(DatasetDTO.CreateAstragoDataset createDatasetDTO, List<MultipartFile> files) {
@@ -148,6 +157,27 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 		}else{
 			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
 		}
+	}
+
+	@Override
+	public DirectoryDTO getLocalDatasetFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+		//local dataset 조회
+		List<DirectoryDTO.ChildrenDTO> fileList = new ArrayList<>();
+		LocalDatasetEntity dataset = (LocalDatasetEntity) datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + reqFilePathDTO.getPath();
+		List<NginxFilesDTO> files = webClientService.getObjectsFromUrl(httpUrl, NginxFilesDTO.class);
+
+		for (NginxFilesDTO file : files) {
+			DirectoryDTO.ChildrenDTO children = DirectoryDTO.ChildrenDTO
+				.builder()
+				.name(file.getName())
+				.type(file.getFileType())
+				.path(FileType.D == file.getFileType() ? reqFilePathDTO.getPath() + file.getName() + File.separator :
+					reqFilePathDTO.getPath() + file.getName())
+				.build();
+			fileList.add(children);
+		}
+		return DirectoryDTO.builder().children(fileList).build();
 	}
 
 	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Dataset dataset) {

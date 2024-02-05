@@ -203,7 +203,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		svcService.createClusterIPService(createClusterIPSvcReqDTO);
 
 		//<service-name>.<namespace>.svc.cluster.local
-		String svcDNS = svcName + "." + namespace + ".svc.cluster.local";
+		String svcDNS = svcName + "." + namespace + ".svc.cluster.local/directory";
 		return CreateLocalDatasetResDTO.builder()
 			.dns(svcDNS)
 			.deploymentName(datasetDeploymentName)
