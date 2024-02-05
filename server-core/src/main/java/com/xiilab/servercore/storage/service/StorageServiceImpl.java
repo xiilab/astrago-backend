@@ -32,7 +32,7 @@ public class StorageServiceImpl implements StorageService {
 
 	@Override
 	public StorageDTO.ResStorages getStorages(int pageNo, int pageSize) {
-		PageRequest pageRequest = PageRequest.of(pageNo, pageSize);
+		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
 		Page<StorageEntity> storages = storageRepository.findAll(pageRequest);
 		List<StorageEntity> entities = storages.getContent();
 		long totalCount = storages.getTotalElements();

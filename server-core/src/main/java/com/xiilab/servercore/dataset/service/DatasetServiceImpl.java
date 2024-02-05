@@ -65,7 +65,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(int pageNo, int pageSize, UserInfoDTO userInfoDTO) {
-		PageRequest pageRequest = PageRequest.of(pageNo, pageSize);
+		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
 		Page<Dataset> datasets = datasetRepository.findByAuthority(pageRequest, userInfoDTO);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
