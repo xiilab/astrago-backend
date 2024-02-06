@@ -28,6 +28,8 @@ public class AstragoDatasetEntity extends Dataset {
 
 	@Column(name = "DATASET_PATH")
 	private String datasetPath;
+	@Column(name = "DATASET_SIZE")
+	private Long datasetSize;
 
 	@Builder
 	public AstragoDatasetEntity(Long datasetId, String datasetName, StorageEntity storageEntity) {
@@ -36,6 +38,9 @@ public class AstragoDatasetEntity extends Dataset {
 	}
 	public void setDatasetPath(String datasetPath){
 		this.datasetPath = datasetPath;
+	}
+	public void setDatasetSize(long size){
+		this.datasetSize = size;
 	}
 	@Override
 	public boolean isAstargoDataset() {

@@ -1,6 +1,7 @@
 package com.xiilab.servercore.workload.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,9 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.common.enums.RepositoryType;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
+import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
@@ -30,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkloadController {
 	private final WorkloadFacadeService workloadFacadeService;
-
+	private final DatasetService datasetService;
 	@PostMapping("/{type}")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
@@ -79,4 +83,17 @@ public class WorkloadController {
 		workloadFacadeService.deleteWorkload(workspaceResourceName, resourceName, workloadType, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
+
+	@GetMapping("{workspaceResourceName}/datasets")
+	@Operation(summary = "워크로드 생성 시 데이터 셋 전체 조회")
+	public ResponseEntity getDatasets(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
+		UserInfoDTO userInfoDTO){
+		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByRepositoryType(
+			workspaceResourceName, repositoryType, userInfoDTO);
+
+		return new ResponseEntity(datasetsByRepositoryType, HttpStatus.OK);
+	}
+
 }
