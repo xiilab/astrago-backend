@@ -205,7 +205,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equals(subGroupName))
 			.findFirst()
-			.orElseThrow(() -> .orElseThrow(() -> new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND);
+			.orElseThrow(() -> new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 		return subGroup.getSubGroups().stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("user")).findFirst().get();
 
