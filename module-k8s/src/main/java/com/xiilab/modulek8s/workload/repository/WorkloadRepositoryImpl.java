@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.workload.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
+import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -29,9 +31,12 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
+import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import lombok.RequiredArgsConstructor;
@@ -294,11 +299,67 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		WorkloadResourceType resourceType) {
 		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
-			.resourceType(resourceType)
 			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_FULL_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
 			.build();
+
+		switch (resourceType) {
+			case JOB:
+				Job job = (Job) hasMetadata;
+				usingDatasetDTO.setStatus(getJobStatus(job.getStatus()));
+				break;
+			case DEPLOYMENT:
+				Deployment deployment = (Deployment) hasMetadata;
+				usingDatasetDTO.setStatus(getDeploymentStatus(deployment.getStatus()));
+				break;
+			case STATEFULSET:
+				StatefulSet statefulSet = (StatefulSet) hasMetadata;
+				usingDatasetDTO.setStatus(getStatefulsetStatus(statefulSet.getStatus()));
+				break;
+			default:
+				usingDatasetDTO.setStatus(null);
+		}
+		usingDatasetDTO.setResourceType(resourceType);
 		workloads.add(usingDatasetDTO);
+	}
+	private static WorkloadStatus getJobStatus(JobStatus jobStatus) {
+		Integer active = jobStatus.getActive();
+		Integer failed = jobStatus.getFailed();
+		Integer ready = jobStatus.getReady();
+		if (failed != null && failed > 0) {
+			return WorkloadStatus.ERROR;
+		} else if (ready != null && ready > 0) {
+			return WorkloadStatus.RUNNING;
+		} else if (active != null && active > 0) {
+			return WorkloadStatus.PENDING;
+		} else {
+			return WorkloadStatus.END;
+		}
+	}
+
+	private static WorkloadStatus getDeploymentStatus(DeploymentStatus deploymentStatus) {
+		Integer replicas = deploymentStatus.getReplicas();
+		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
+		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
+		if (unavailableReplicas != null && unavailableReplicas > 0) {
+			return WorkloadStatus.ERROR;
+		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+			return WorkloadStatus.RUNNING;
+		} else {
+			return WorkloadStatus.PENDING;
+		}
+	}
+	private static WorkloadStatus getStatefulsetStatus(StatefulSetStatus statefulSetStatus) {
+		Integer replicas = statefulSetStatus.getReplicas();
+		Integer availableReplicas = statefulSetStatus.getAvailableReplicas();
+		Integer readyReplicas = statefulSetStatus.getReadyReplicas();
+		if (readyReplicas != null || readyReplicas == 0) {
+			return WorkloadStatus.ERROR;
+		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+			return WorkloadStatus.RUNNING;
+		} else {
+			return WorkloadStatus.PENDING;
+		}
 	}
 
 	private static List<Job> getJobsInUseDataset(String key, KubernetesClient client) {

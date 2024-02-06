@@ -29,7 +29,7 @@ public interface DatasetService {
 
 	void deleteDatasetWorkspaceMappingById(Long datasetId);
 
-	DirectoryDTO getAstragoDatasetFiles(DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	DirectoryDTO getAstragoDatasetFiles(String filePath);
 
 	void astragoDatasetUploadFile(String path, List<MultipartFile> files);
 

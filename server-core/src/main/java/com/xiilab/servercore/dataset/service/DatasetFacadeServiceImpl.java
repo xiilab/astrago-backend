@@ -167,11 +167,11 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public DirectoryDTO getLocalDatasetFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public DirectoryDTO getLocalDatasetFiles(Long datasetId, String filePath) {
 		//local dataset 조회
 		List<DirectoryDTO.ChildrenDTO> fileList = new ArrayList<>();
 		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
-		String httpUrl = dataset.getDns() + reqFilePathDTO.getPath();
+		String httpUrl = dataset.getDns() + filePath;
 		List<NginxFilesDTO> files = webClientService.getObjectsFromUrl(httpUrl, NginxFilesDTO.class);
 		int directoryCnt = 0;
 		int fileCnt = 0;
@@ -180,8 +180,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.builder()
 				.name(file.getName())
 				.type(file.getFileType())
-				.path(FileType.D == file.getFileType() ? reqFilePathDTO.getPath() + file.getName() + File.separator :
-					reqFilePathDTO.getPath() + file.getName())
+				.path(FileType.D == file.getFileType() ? filePath + file.getName() + File.separator :
+					filePath + file.getName())
 				.build();
 			if(file.getFileType() == FileType.D){
 				directoryCnt += 1;
@@ -211,14 +211,14 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, String filePath) {
 		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
-		String httpUrl = dataset.getDns() + reqFilePathDTO.getPath();
+		String httpUrl = dataset.getDns() + filePath;
 		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
 		String fileName = webClientService.retrieveFileName(httpUrl);
 		String size = webClientService.formatFileSize(fileInfo.getContentLength());
 		String lastModifiedTime = webClientService.formatLastModifiedTime(fileInfo.getLastModified());
-		String contentPath = reqFilePathDTO.getPath();
+		String contentPath = filePath;
 
 		return DatasetDTO.FileInfo.builder()
 			.fileName(fileName)
@@ -254,12 +254,12 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public DatasetDTO.FileInfo getAstragoDatasetFileInfo(DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
-		File file = new File(reqFilePathDTO.getPath());
+	public DatasetDTO.FileInfo getAstragoDatasetFileInfo(String filePath) {
+		File file = new File(filePath);
 		if (file.exists()) {
 			String size = webClientService.formatFileSize(file.length());
 			String lastModifiedTime = webClientService.formatLastModifiedTime(file.lastModified());
-			String contentPath = reqFilePathDTO.getPath();
+			String contentPath = filePath;
 			return DatasetDTO.FileInfo.builder()
 				.fileName(file.getName())
 				.size(size)

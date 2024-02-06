@@ -72,6 +72,9 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId) {
 		Dataset datasetWithStorage = datasetRepository.getDatasetWithStorage(datasetId);
+		if(datasetWithStorage == null){
+			throw new RuntimeException("존재하지 않는 데이터 셋입니다.");
+		}
 		return DatasetDTO.ResDatasetWithStorage.toDto(datasetWithStorage);
 	}
 
@@ -109,9 +112,8 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public DirectoryDTO getAstragoDatasetFiles(DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
-		String targetPath = reqFilePathDTO.getPath();
-		return CoreFileUtils.getAstragoDatasetFiles(targetPath);
+	public DirectoryDTO getAstragoDatasetFiles(String filePath) {
+		return CoreFileUtils.getAstragoDatasetFiles(filePath);
 	}
 
 	@Override

@@ -20,15 +20,15 @@ public interface DatasetFacadeService {
 
 	void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO);
 
-	DirectoryDTO getLocalDatasetFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	DirectoryDTO getLocalDatasetFiles(Long datasetId, String filePath);
 
 	DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, String filePath);
 
-	DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, String filePath);
 
 	DownloadFileResDTO getLocalDatasetFile(Long datasetId, String filePath);
 
-	DatasetDTO.FileInfo getAstragoDatasetFileInfo(DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	DatasetDTO.FileInfo getAstragoDatasetFileInfo(String filePath);
 
 	DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath);
 }
