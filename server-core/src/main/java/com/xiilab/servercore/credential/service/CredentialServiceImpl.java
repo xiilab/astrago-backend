@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
@@ -21,6 +22,7 @@ public class CredentialServiceImpl implements CredentialService {
 	private final CredentialRepository credentialRepository;
 
 	@Override
+	@Transactional
 	public CredentialResDTO createCredential(CredentialReqDTO credentialReqDTO, UserInfoDTO userInfoDTO) {
 		CredentialEntity credentialEntity = credentialRepository.save(CredentialEntity
 			.dtoConverter()
@@ -48,7 +50,7 @@ public class CredentialServiceImpl implements CredentialService {
 		if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN) {
 			credentialEntities = credentialRepository.findAll(pageable);
 		} else {
-			credentialEntities = credentialRepository.findByRegUser_RegUserId(userInfoDTO.getUserName(), pageable);
+			credentialEntities = credentialRepository.findByRegUser_RegUserId(userInfoDTO.getId(), pageable);
 		}
 		return Objects.requireNonNull(credentialEntities).map(CredentialResDTO::new);
 	}
@@ -56,5 +58,17 @@ public class CredentialServiceImpl implements CredentialService {
 	@Override
 	public void deleteCredentialById(long id, UserInfoDTO userInfoDTO) {
 		credentialRepository.deleteById(id);
+	}
+
+	@Override
+	@Transactional
+	public void updateCredentialById(long id, CredentialReqDTO.UpdateDTO updateDTO, UserInfoDTO userInfoDTO) {
+		CredentialEntity credentialEntity = credentialRepository.findById(id).orElseThrow();
+
+		if (!userInfoDTO.getId().equals(credentialEntity.getRegUser().getRegUserId())) {
+			throw new IllegalArgumentException("해당 크리덴셜을 추가한 유저가 아닙니다.");
+		}
+
+		credentialEntity.updateInfo(updateDTO);
 	}
 }

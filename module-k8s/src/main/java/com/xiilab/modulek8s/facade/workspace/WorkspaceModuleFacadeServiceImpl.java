@@ -58,6 +58,11 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 	}
 
 	@Override
+	public void updateWorkspaceInfoByName(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
+		workspaceService.updateWorkspace(workspaceName, updateDTO);
+	}
+
+	@Override
 	public void deleteWorkspaceByName(String workspaceName) {
 		workspaceService.deleteWorkspaceByName(workspaceName);
 	}
@@ -74,5 +79,10 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 			workspace.getResourceName());
 		ResourceQuotaResDTO resourceQuotas = resourceQuotaService.getResourceQuotas(workspaceName);
 		return new WorkspaceTotalDTO(workspace, resourceQuotas, workloadList);
+	}
+
+	@Override
+	public ResourceQuotaResDTO getWorkspaceResourceQuota(String workspaceResourceName) {
+		return resourceQuotaService.getResourceQuotas(workspaceResourceName);
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceReqVO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceResVO;
 
@@ -16,5 +17,6 @@ public interface WorkspaceRepo {
 	List<WorkspaceResVO> getWorkspaceList();
 
 	void deleteWorkspaceByName(String name);
+	void updateWorkspaceInfo(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
 }
 

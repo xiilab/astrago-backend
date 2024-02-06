@@ -36,6 +36,14 @@ public class WorkspaceDTO {
 	}
 
 	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class UpdateDTO {
+		private String name;
+		private String description;
+	}
+
+	@Getter
 	@AllArgsConstructor
 	public static class ResponseDTO {
 		private String id;

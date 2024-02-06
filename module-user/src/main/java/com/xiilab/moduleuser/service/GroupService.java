@@ -37,6 +37,6 @@ public interface GroupService {
 	//그룹 안의 유저 리스트 조회
 	List<GroupUserDTO> getWorkspaceMember(String groupName);
 
-	void deleteWorkspaceMemberByUserId(String groupName, String userId);
-	void addWorkspaceMemberByUserId(String groupName, String userId);
+	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
+	void addWorkspaceMemberByUserId(String groupName, List<String> userIdList);
 }

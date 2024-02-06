@@ -18,7 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity(name = "TB_CREDENTIAL")
 @Getter
@@ -52,5 +51,12 @@ public class CredentialEntity extends BaseEntity {
 		this.loginPw = credentialReqDTO.getPw();
 		this.type = credentialReqDTO.getType();
 		this.createdAt = LocalDateTime.now();
+	}
+
+	public void updateInfo(CredentialReqDTO.UpdateDTO updateDTO) {
+		this.name = updateDTO.getName();
+		this.description = updateDTO.getDescription();
+		this.loginId = updateDTO.getId();
+		this.loginPw = updateDTO.getPw();
 	}
 }

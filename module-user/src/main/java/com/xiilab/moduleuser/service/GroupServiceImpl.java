@@ -3,6 +3,7 @@ package com.xiilab.moduleuser.service;
 import static com.xiilab.moduleuser.dto.GroupCategory.*;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
@@ -31,8 +32,11 @@ public class GroupServiceImpl implements GroupService {
 				.groupCategory(ACCOUNT)
 				.createdBy(groupReqDTO.getCreatedBy())
 				.build());
-		//group에 member join
-		groupRepository.joinMembersIntoGroup(groupInfo.getId(), groupReqDTO.getUsers());
+
+		if(Objects.nonNull(groupReqDTO.getUsers())){
+			//group에 member join
+			groupRepository.joinMembersIntoGroup(groupInfo.getId(), groupReqDTO.getUsers());
+		}
 	}
 
 	@Override
@@ -113,11 +117,11 @@ public class GroupServiceImpl implements GroupService {
 		return groupRepository.getWorkspaceMember(groupName);
 	}
 	@Override
-	public void deleteWorkspaceMemberByUserId(String groupName, String userId){
-		groupRepository.deleteWorkspaceMemberByUserId(groupName, userId);
+	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList){
+		groupRepository.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, String userId){
-		groupRepository.addWorkspaceMemberByUserId(groupName, userId);
+	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
+		groupRepository.addWorkspaceMemberByUserId(groupName, userIdList);
 	}
 }

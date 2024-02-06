@@ -162,31 +162,32 @@ public class KeycloakGroupRepository implements GroupRepository {
 		return findUsersByGroupId(subGroup.getId());
 	}
 	@Override
-	public void deleteWorkspaceMemberByUserId(String groupName, String userId){
+	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList){
 		// ws 그룹 조회 조회
 		GroupRepresentation swGroup = getWsSubGroupByGroupName(groupName);
-		try{
+
+		for(String userId : userIdList){
 			UserResource userResource = keycloakConfig.getRealmClient().users().get(userId);
 			userResource.toRepresentation();
 			// 회원 WS 삭제
 			userResource.leaveGroup(swGroup.getId());
-		}catch (NotFoundException e){
-			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND);
 		}
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, String userId){
+	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
 
 		GroupRepresentation subgroup = getWsSubGroupByGroupName(groupName);
 
-		keycloakConfig.getRealmClient().users().get(userId).joinGroup(subgroup.getId());
-		// 워크스페이스 회원 추가 검사를 위한 GroupUser 조회
-		Optional<GroupUserDTO> group = findUsersByGroupId(subgroup.getId()).stream()
-			.filter(groupUserDTO -> groupUserDTO.getId().equals(userId))
-			.findFirst();
+		for(String userId : userIdList){
+			keycloakConfig.getRealmClient().users().get(userId).joinGroup(subgroup.getId());
+			// 워크스페이스 회원 추가 검사를 위한 GroupUser 조회
+			Optional<GroupUserDTO> group = findUsersByGroupId(subgroup.getId()).stream()
+				.filter(groupUserDTO -> groupUserDTO.getId().equals(userId))
+				.findFirst();
 
-		if(group.isPresent()){
-			throw new RestApiException(UserErrorCode.USER_ADD_WORKSPACE_FAIL);
+			if(group.isEmpty()){
+				throw new RestApiException(UserErrorCode.USER_ADD_WORKSPACE_FAIL);
+			}
 		}
 
 	}
@@ -200,10 +201,13 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.filter(userRepository -> userRepository.getName().equals("ws"))
 			.findFirst()
 			.get();
-		return parentGroup.getSubGroups()
+		GroupRepresentation subGroup = parentGroup.getSubGroups()
 			.stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equals(subGroupName))
 			.findFirst()
-			.orElseThrow(() -> new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+			.orElseThrow(() -> .orElseThrow(() -> new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND);
+		return subGroup.getSubGroups().stream()
+			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("user")).findFirst().get();
+
 	}
 }

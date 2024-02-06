@@ -1,19 +1,20 @@
-package com.xiilab.modulek8s.cluster;
+package com.xiilab.modulek8s.cluster.repository;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
 
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NodeList;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import lombok.RequiredArgsConstructor;
 
-@Service
-public class ClusterService {
-	@Autowired
-	private K8sAdapter k8sAdapter;
+@Repository
+@RequiredArgsConstructor
+public class ClusterRepositoryImpl implements ClusterRepository{
+	private final K8sAdapter k8sAdapter;
 
 	public List<Namespace> getClusterList() {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
@@ -27,4 +28,10 @@ public class ClusterService {
 		}
 	}
 
+	@Override
+	public NodeList getNodeList() {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.nodes().list();
+		}
+	}
 }
