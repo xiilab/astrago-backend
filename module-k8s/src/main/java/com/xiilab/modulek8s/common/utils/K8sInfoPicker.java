@@ -8,15 +8,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -32,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class K8sInfoPicker {
 	/**
 	 * k8s container에서 환경변수를 조회하는 메소드
+	 *
 	 * @param container
 	 * @return
 	 */
@@ -68,6 +73,7 @@ public class K8sInfoPicker {
 
 	/**
 	 * Astra에서 생성되었는지 여부를 판별하는 메소드
+	 *
 	 * @param hasMetadata k8s resource 객체
 	 * @return
 	 */
@@ -167,6 +173,7 @@ public class K8sInfoPicker {
 		}
 		return null;
 	}
+
 	public static LocalDateTime convertUnixTimestampToLocalDateTime(long unixTimestamp) {
 		Instant instant = Instant.ofEpochSecond(unixTimestamp);
 		return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
@@ -176,6 +183,7 @@ public class K8sInfoPicker {
 	/**
 	 * 컨테이너에 할당된 자원을 조회하는 메소드
 	 * req가 설정되어있지 않다면 Null을 리턴함.
+	 *
 	 * @param container k8s container 객체
 	 * @return
 	 */
@@ -200,5 +208,39 @@ public class K8sInfoPicker {
 			}
 		}
 		return ResourceDTO.builder().build();
+	}
+
+	public static ClusterResourceDTO getClusterResource(NodeList nodeList) {
+		List<Node> items = nodeList.getItems();
+		if (CollectionUtils.isEmpty(items)) {
+			throw new IllegalStateException("해당 클러스터에 등록된 node가 존재하지 않습니다.");
+		}
+		int cpu = items.stream()
+			.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("cpu").getAmount()))
+			.sum();
+
+		int mem = (int)items.stream()
+			.mapToDouble(node -> convertQuantity(node.getStatus().getCapacity().get("memory")))
+			.sum();
+
+		int gpu = items.stream()
+			.map(node -> node.getStatus().getCapacity().get("nvidia.com/gpu"))
+			.flatMapToInt(
+				capacity -> capacity != null ? IntStream.of(Integer.parseInt(capacity.getAmount())) : IntStream.empty())
+			.sum();
+
+		return new ClusterResourceDTO(cpu, mem, gpu);
+	}
+
+	private static double convertQuantity(Quantity quantity) {
+		String format = quantity.getFormat();
+		double amount = Double.parseDouble(quantity.getAmount());
+		if (format.equals("Ki")) {
+			return (amount / (1024 * 1024));
+		} else if (format.equals("Mi")) {
+			return (amount / 1024);
+		} else {
+			throw new IllegalArgumentException(format + " format은 확인되지 않은 format입니다.");
+		}
 	}
 }

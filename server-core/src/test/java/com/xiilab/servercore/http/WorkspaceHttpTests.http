@@ -25,6 +25,15 @@ GET http://localhost:8080/api/v1/core/workspace/ws-d079d8f9-795f-4e6f-8c74-afebc
 Authorization: Bearer {{access_token}}
 Content-Type: application/x-www-form-urlencoded
 
+### workspace resource 현황 조회
+GET http://localhost:8080/api/v1/core/workspace/resource/state?workspaceName=ws-f4992891-72b9-4c99-bfef-229bdd53d48d
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+### workspace resource 삭제 요청
+DELETE http://localhost:8080/api/v1/core/workspace/resource/1
+Authorization: Bearer {{access_token}}
+
 ### workspace resource quota 신청
 POST http://localhost:8080/api/v1/core/workspace/resource
 Authorization: Bearer {{access_token}}
