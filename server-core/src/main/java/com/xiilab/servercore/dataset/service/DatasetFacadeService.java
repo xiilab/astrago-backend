@@ -28,7 +28,7 @@ public interface DatasetFacadeService {
 
 	DownloadFileResDTO getLocalDatasetFile(Long datasetId, String filePath);
 
-	DatasetDTO.FileInfo getAstragoDatasetFileInfo(String filePath);
+	DatasetDTO.FileInfo getAstragoDatasetFileInfo(Long datasetId, String filePath);
 
 	DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath);
 }

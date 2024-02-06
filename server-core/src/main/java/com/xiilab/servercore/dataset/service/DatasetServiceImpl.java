@@ -112,23 +112,30 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public DirectoryDTO getAstragoDatasetFiles(String filePath) {
+	public DirectoryDTO getAstragoDatasetFiles(Long datasetId, String filePath) {
+		datasetRepository.findById(datasetId).orElseThrow(()-> new RuntimeException("데이터 셋이 존재하지않습니다."));
 		return CoreFileUtils.getAstragoDatasetFiles(filePath);
 	}
 
 	@Override
-	public void astragoDatasetUploadFile(String path, List<MultipartFile> files) {
+	public void astragoDatasetUploadFile(Long datasetId, String path, List<MultipartFile> files) {
+		datasetRepository.findById(datasetId)
+				.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
 		CoreFileUtils.datasetUploadFiles(path, files);
 	}
 
 	@Override
-	public void astragoDatasetDeleteFiles(DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+		datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
 		String targetPath = reqFilePathDTO.getPath();
 		CoreFileUtils.deleteFileOrDirectory(targetPath);
 	}
 
 	@Override
-	public DownloadFileResDTO DownloadAstragoDatasetFile(String filePath) {
+	public DownloadFileResDTO DownloadAstragoDatasetFile(Long datasetId, String filePath) {
+		datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
 		Path targetPath = Path.of(filePath);
 		// 파일이 존재하는지 확인
 		if (Files.exists(targetPath)) {
@@ -169,7 +176,8 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public void astragoDatasetCreateDirectory(DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public void astragoDatasetCreateDirectory(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+		datasetRepository.findById(datasetId).orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
 		Path dirPath = Path.of(reqFilePathDTO.getPath());
 		// 디렉토리가 존재하지 않으면 생성
 		if (!Files.exists(dirPath)) {

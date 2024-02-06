@@ -254,7 +254,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public DatasetDTO.FileInfo getAstragoDatasetFileInfo(String filePath) {
+	public DatasetDTO.FileInfo getAstragoDatasetFileInfo(Long datasetId, String filePath) {
+		datasetService.findById(datasetId);
 		File file = new File(filePath);
 		if (file.exists()) {
 			String size = webClientService.formatFileSize(file.length());
@@ -273,6 +274,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 
 	@Override
 	public DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath) {
+		datasetService.findById(datasetId);
 		Path targetPath = Path.of(filePath);
 		// 파일이 존재하는지 확인
 		if (Files.exists(targetPath)) {

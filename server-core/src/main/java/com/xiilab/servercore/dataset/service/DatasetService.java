@@ -29,13 +29,13 @@ public interface DatasetService {
 
 	void deleteDatasetWorkspaceMappingById(Long datasetId);
 
-	DirectoryDTO getAstragoDatasetFiles(String filePath);
+	DirectoryDTO getAstragoDatasetFiles(Long datasetId, String filePath);
 
-	void astragoDatasetUploadFile(String path, List<MultipartFile> files);
+	void astragoDatasetUploadFile(Long datasetId, String path, List<MultipartFile> files);
 
-	void astragoDatasetDeleteFiles(DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
 
-	DownloadFileResDTO DownloadAstragoDatasetFile(String reqFilePathDTO);
+	DownloadFileResDTO DownloadAstragoDatasetFile(Long datasetId, String reqFilePathDTO);
 
-	void astragoDatasetCreateDirectory(DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	void astragoDatasetCreateDirectory(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
 }
