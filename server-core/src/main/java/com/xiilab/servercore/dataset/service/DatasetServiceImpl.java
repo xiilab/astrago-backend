@@ -75,6 +75,9 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId) {
 		Dataset datasetWithStorage = datasetRepository.getDatasetWithStorage(datasetId);
+		if(datasetWithStorage == null){
+			throw new RuntimeException("존재하지 않는 데이터 셋입니다.");
+		}
 		return DatasetDTO.ResDatasetWithStorage.toDto(datasetWithStorage);
 	}
 
@@ -112,45 +115,83 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public DirectoryDTO getDatasetFiles(DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
-		String targetPath = reqFilePathDTO.getPath();
-		return CoreFileUtils.getFileList(targetPath);
+	public DirectoryDTO getAstragoDatasetFiles(Long datasetId, String filePath) {
+		datasetRepository.findById(datasetId).orElseThrow(()-> new RuntimeException("데이터 셋이 존재하지않습니다."));
+		return CoreFileUtils.getAstragoDatasetFiles(filePath);
 	}
 
 	@Override
-	public void astragoDatasetUploadFile(String path, List<MultipartFile> files) {
+	public void astragoDatasetUploadFile(Long datasetId, String path, List<MultipartFile> files) {
+		datasetRepository.findById(datasetId)
+				.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
 		CoreFileUtils.datasetUploadFiles(path, files);
 	}
 
 	@Override
-	public void astragoDatasetDeleteFiles(DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+		datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
 		String targetPath = reqFilePathDTO.getPath();
 		CoreFileUtils.deleteFileOrDirectory(targetPath);
 	}
 
 	@Override
-	public DownloadFileResDTO astragoDatasetDownloadFile(DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
-		Path targetPath = Path.of(reqFilePathDTO.getPath());
+	public DownloadFileResDTO DownloadAstragoDatasetFile(Long datasetId, String filePath) {
+		datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
+		Path targetPath = Path.of(filePath);
 		// 파일이 존재하는지 확인
 		if (Files.exists(targetPath)) {
-			String fileName = CoreFileUtils.getFileName(reqFilePathDTO.getPath());
-			// 파일을 ByteArrayResource로 읽어와 ResponseEntity로 감싸서 반환
-			byte[] fileContent;
-			try {
-				fileContent = Files.readAllBytes(targetPath);
-			} catch (IOException e) {
-				throw new RestApiException(CommonErrorCode.FILE_DOWNLOAD_FAIL);
+			if (Files.isDirectory(targetPath)) {
+				// 디렉토리일 경우, 디렉토리와 하위 파일들을 압축하여 다운로드
+				try {
+					byte[] zipFileContent = CoreFileUtils.zipDirectory(targetPath);
+					ByteArrayResource resource = new ByteArrayResource(zipFileContent);
+					String zipFileName = targetPath.getFileName() + ".zip";
+					return DownloadFileResDTO.builder()
+						.byteArrayResource(resource)
+						.fileName(zipFileName)
+						.mediaType(MediaType.parseMediaType("application/zip"))
+						.build();
+				} catch (IOException e) {
+					throw new RuntimeException("디렉토리 압축 및 다운로드 실패: " + e.getMessage());
+				}
+			}else{
+				String fileName = CoreFileUtils.getFileName(filePath);
+				// 파일을 ByteArrayResource로 읽어와 ResponseEntity로 감싸서 반환
+				byte[] fileContent;
+				try {
+					fileContent = Files.readAllBytes(targetPath);
+				} catch (IOException e) {
+					throw new RuntimeException("파일 다운로드를 실패했습니다.");
+				}
+				ByteArrayResource resource = new ByteArrayResource(fileContent);
+				MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
+				return DownloadFileResDTO.builder()
+					.byteArrayResource(resource)
+					.fileName(fileName)
+					.mediaType(mediaType)
+					.build();
 			}
-			ByteArrayResource resource = new ByteArrayResource(fileContent);
-			MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
-
-			return DownloadFileResDTO.builder()
-				.byteArrayResource(resource)
-				.fileName(fileName)
-				.mediaType(mediaType)
-				.build();
 		}else{
 			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}
+
+	@Override
+	public void astragoDatasetCreateDirectory(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+		datasetRepository.findById(datasetId).orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
+		Path dirPath = Path.of(reqFilePathDTO.getPath());
+		// 디렉토리가 존재하지 않으면 생성
+		if (!Files.exists(dirPath)) {
+			try {
+				Files.createDirectories(dirPath);
+			} catch (IOException e) {
+				throw new RuntimeException("폴더 생성에 실패했습니다.");
+			}
+		} else {
+			throw new RuntimeException("이미 생성된 폴더입니다.");
+		}
+	}
+
 }

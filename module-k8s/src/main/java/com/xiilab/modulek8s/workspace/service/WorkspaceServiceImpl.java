@@ -24,6 +24,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 			workSpace.getResourceName(),
 			workSpace.getDescription(),
 			workSpace.getCreator(),
+			workSpace.getCreatorName(),
 			workSpace.getCreatedAt());
 	}
 
@@ -36,6 +37,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 			workSpace.getResourceName(),
 			workSpace.getDescription(),
 			workSpace.getCreator(),
+			workSpace.getCreatorName(),
 			workSpace.getCreatedAt());
 	}
 
@@ -49,6 +51,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 			workspace.getResourceName(),
 			workspace.getDescription(),
 			workspace.getCreator(),
+			workspace.getCreatorName(),
 			workspace.getCreatedAt()
 		)).toList();
 	}

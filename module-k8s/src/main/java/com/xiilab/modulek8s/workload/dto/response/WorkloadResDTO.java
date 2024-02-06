@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
+import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -15,5 +16,13 @@ public class WorkloadResDTO {
 		private WorkloadResourceType resourceType;
 		private String creator;
 		private String createdAt;
+		WorkloadStatus status;
+
+		public void setStatus(WorkloadStatus workloadStatus){
+			this.status = workloadStatus;
+		}
+		public void setResourceType(WorkloadResourceType resourceType){
+			this.resourceType = resourceType;
+		}
 	}
 }

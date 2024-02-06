@@ -140,4 +140,12 @@ public class DatasetDTO {
 				.build();
 		}
 	}
+	@Getter
+	@Builder
+	public static class FileInfo{
+		private String fileName;
+		private String size;
+		private String lastModifiedTime;
+		private String contentPath;
+	}
 }

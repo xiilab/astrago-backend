@@ -15,7 +15,7 @@ public abstract class K8SResourceReqDTO {
 	String creatorName;
 	String creator;
 
-	public K8SResourceReqDTO(String name, String description, String creatorName, String creator) {
+	protected K8SResourceReqDTO(String name, String description, String creatorName, String creator) {
 		this.name = name;
 		this.description = description;
 		this.creatorName = creatorName;
