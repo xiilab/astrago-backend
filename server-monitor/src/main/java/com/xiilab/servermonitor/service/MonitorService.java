@@ -67,7 +67,7 @@ public class MonitorService {
 			// Promql 생성
 			return createPromql(Promql.valueOf(requestDTO.metricName()), requestDTO);
 		} catch (IllegalArgumentException e) {
-			throw new RestApiException(CommonErrorCode.MONITOR_METRIC_ERROR);
+			throw new RestApiException(CommonErrorCode.MONITOR_METRIC_NOT_FOUND);
 		}
 	}
 
