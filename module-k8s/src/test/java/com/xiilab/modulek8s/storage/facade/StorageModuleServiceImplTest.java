@@ -72,6 +72,7 @@
 // import io.fabric8.kubernetes.api.model.apps.Deployment;
 // import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 // import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
+// import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 // import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 // import io.fabric8.kubernetes.api.model.batch.v1.Job;
 // import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
@@ -815,5 +816,28 @@
 // 			.storagePath("/kube_storage/")
 // 			.build();
 // 		workloadModuleFacadeService.createLocalDataset(createLocalDatasetDTO);
+// 	}
+// 	@Test
+// 	@DisplayName("데이터 셋 deployment 조회")
+// 	void getDeployment(){
+// 		try (final KubernetesClient client = k8sAdapter.configServer()) {
+// 			Deployment deployment = client.apps()
+// 				.deployments()
+// 				.inNamespace("astrago")
+// 				.withName("nginx-deployment")
+// 				.get();
+//
+// 			List<ReplicaSet> replicaSets = client.apps().replicaSets().inNamespace("astrago").list().getItems();
+//
+// 			ReplicaSet replicaSet = replicaSets.stream()
+// 				.parallel()
+// 				.filter(replicaSet1 -> replicaSet1.getMetadata().getAnnotations().get("name") != null &&
+// 					replicaSet1.getMetadata().getAnnotations().get("name").equalsIgnoreCase("dataset_test1"))
+// 				.findAny()
+// 				.orElseThrow(() -> new RuntimeException(""));
+//
+// 			// replicaSet.getMetadata().getOwnerReferences().get(0).getName()
+// 			System.out.println(deployment);
+// 		}
 // 	}
 // }

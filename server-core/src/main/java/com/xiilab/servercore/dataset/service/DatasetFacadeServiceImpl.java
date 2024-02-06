@@ -1,15 +1,19 @@
 package com.xiilab.servercore.dataset.service;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
@@ -21,8 +25,10 @@ import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.FileType;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
@@ -35,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class DatasetFacadeServiceImpl implements DatasetFacadeService{
+public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	@Value("${astrago.namespace}")
 	private String namespace;
 	@Value("${astrago.dataset.dockerImage.name}")
@@ -105,9 +111,9 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 		//division 확인 후 astrago 데이터 셋이면 디비만 변경
 		Dataset dataset = datasetService.findById(datasetId);
 
-		if(checkAccessDataset(userInfoDTO, dataset)){
+		if (checkAccessDataset(userInfoDTO, dataset)) {
 			//local 데이터 셋이면 디비 + deployment label 변경
-			if(dataset.isLocalDataset()){
+			if (dataset.isLocalDataset()) {
 				LocalDatasetEntity localDatasetEntity = (LocalDatasetEntity)dataset;
 				ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO = ModifyLocalDatasetDeploymentDTO
 					.builder()
@@ -118,27 +124,28 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 				workloadModuleFacadeService.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
 			}
 			datasetService.modifyDataset(modifyDataset, datasetId);
-		}else{
+		} else {
 			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
 		}
 	}
+
 	@Override
 	@Transactional
 	public void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO) {
 		Dataset dataset = datasetService.findById(datasetId);
-		if(checkAccessDataset(userInfoDTO, dataset)){
+		if (checkAccessDataset(userInfoDTO, dataset)) {
 			boolean isUse = workloadModuleFacadeService.isUsedDataset(datasetId);
 			//true = 사용중인 데이터 셋
-			if(isUse){
+			if (isUse) {
 				throw new RuntimeException("사용중인 데이터 셋은 삭제할 수 없습니다.");
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
-			if(dataset.isAstargoDataset()){
+			if (dataset.isAstargoDataset()) {
 				//workspace mapping 삭제
 				datasetService.deleteDatasetWorkspaceMappingById(datasetId);
 				//dataset 삭제
 				datasetService.deleteDatasetById(datasetId);
-			}else if(dataset.isLocalDataset()){
+			} else if (dataset.isLocalDataset()) {
 				//pv, pvc, deployment, svc 삭제
 				LocalDatasetEntity localDatasetEntity = (LocalDatasetEntity)dataset;
 				DeleteLocalDatasetDTO deleteLocalDatasetDTO = DeleteLocalDatasetDTO.builder()
@@ -154,35 +161,163 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 				//db 삭제 - TB_localDataset
 				datasetService.deleteDatasetById(datasetId);
 			}
-		}else{
+		} else {
 			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
 		}
 	}
 
 	@Override
-	public DirectoryDTO getLocalDatasetFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public DirectoryDTO getLocalDatasetFiles(Long datasetId, String filePath) {
 		//local dataset 조회
 		List<DirectoryDTO.ChildrenDTO> fileList = new ArrayList<>();
-		LocalDatasetEntity dataset = (LocalDatasetEntity) datasetService.findById(datasetId);
-		String httpUrl = dataset.getDns() + reqFilePathDTO.getPath();
+		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + filePath;
 		List<NginxFilesDTO> files = webClientService.getObjectsFromUrl(httpUrl, NginxFilesDTO.class);
-
+		int directoryCnt = 0;
+		int fileCnt = 0;
 		for (NginxFilesDTO file : files) {
 			DirectoryDTO.ChildrenDTO children = DirectoryDTO.ChildrenDTO
 				.builder()
 				.name(file.getName())
 				.type(file.getFileType())
-				.path(FileType.D == file.getFileType() ? reqFilePathDTO.getPath() + file.getName() + File.separator :
-					reqFilePathDTO.getPath() + file.getName())
+				.path(FileType.D == file.getFileType() ? filePath + file.getName() + File.separator :
+					filePath + file.getName())
 				.build();
+			if(file.getFileType() == FileType.D){
+				directoryCnt += 1;
+			}else{
+				fileCnt += 1;
+			}
 			fileList.add(children);
 		}
-		return DirectoryDTO.builder().children(fileList).build();
+		return DirectoryDTO.builder().children(fileList).directoryCnt(directoryCnt).fileCnt(fileCnt).build();
+	}
+
+	@Override
+	public DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, String filePath) {
+		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + filePath;
+		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
+		MediaType contentType = fileInfo.getContentType();
+		byte[] fileContent = webClientService.downloadFile(httpUrl, contentType);
+		ByteArrayResource resource = new ByteArrayResource(fileContent);
+		String fileName = webClientService.retrieveFileName(httpUrl);
+
+		return DownloadFileResDTO.builder()
+			.byteArrayResource(resource)
+			.fileName(fileName)
+			.mediaType(contentType)
+			.build();
+	}
+
+	@Override
+	public DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, String filePath) {
+		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + filePath;
+		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
+		String fileName = webClientService.retrieveFileName(httpUrl);
+		String size = webClientService.formatFileSize(fileInfo.getContentLength());
+		String lastModifiedTime = webClientService.formatLastModifiedTime(fileInfo.getLastModified());
+		String contentPath = filePath;
+
+		return DatasetDTO.FileInfo.builder()
+			.fileName(fileName)
+			.size(size)
+			.lastModifiedTime(lastModifiedTime)
+			.contentPath(contentPath)
+			.build();
+	}
+
+	@Override
+	public DownloadFileResDTO getLocalDatasetFile(Long datasetId, String filePath) {
+		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
+		String httpUrl = dataset.getDns() + filePath;
+		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
+		MediaType contentType = fileInfo.getContentType();
+		byte[] fileContent = webClientService.downloadFile(httpUrl, contentType);
+		ByteArrayResource resource = new ByteArrayResource(fileContent);
+		String fileName = webClientService.retrieveFileName(httpUrl);
+		String type = fileInfo.getFirst(HttpHeaders.CONTENT_TYPE);
+		if (type != null) {
+			if (type.startsWith("image/") || type.startsWith("text/")) {
+				return DownloadFileResDTO.builder()
+					.byteArrayResource(resource)
+					.fileName(fileName)
+					.mediaType(contentType)
+					.build();
+			} else {
+				throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+			}
+		} else {
+			throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+		}
+	}
+
+	@Override
+	public DatasetDTO.FileInfo getAstragoDatasetFileInfo(Long datasetId, String filePath) {
+		datasetService.findById(datasetId);
+		File file = new File(filePath);
+		if (file.exists()) {
+			String size = webClientService.formatFileSize(file.length());
+			String lastModifiedTime = webClientService.formatLastModifiedTime(file.lastModified());
+			String contentPath = filePath;
+			return DatasetDTO.FileInfo.builder()
+				.fileName(file.getName())
+				.size(size)
+				.lastModifiedTime(lastModifiedTime)
+				.contentPath(contentPath)
+				.build();
+		} else {
+			throw new RuntimeException("파일을 찾을 수 없습니다.");
+		}
+	}
+
+	@Override
+	public DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath) {
+		datasetService.findById(datasetId);
+		Path targetPath = Path.of(filePath);
+		// 파일이 존재하는지 확인
+		if (Files.exists(targetPath)) {
+			String fileName = CoreFileUtils.getFileName(filePath);
+			// 파일을 ByteArrayResource로 읽어와 ResponseEntity로 감싸서 반환
+			byte[] fileContent;
+			try {
+				fileContent = Files.readAllBytes(targetPath);
+			} catch (IOException e) {
+				throw new RuntimeException("파일 미리보기를 실패했습니다.");
+			}
+			String fileExtension = CoreFileUtils.getFileExtension(targetPath);
+			if (fileExtension != null) {
+				switch (fileExtension.toLowerCase()) {
+					case "txt":
+						break;
+					case "jpg":
+					case "jpeg":
+					case "png":
+						break;
+					default:
+						throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+				}
+			} else {
+				throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+			}
+			ByteArrayResource resource = new ByteArrayResource(fileContent);
+			MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
+
+			return DownloadFileResDTO.builder()
+				.byteArrayResource(resource)
+				.fileName(fileName)
+				.mediaType(mediaType)
+				.build();
+		}else{
+			throw new RuntimeException("파일이 존재하지 않습니다.");
+		}
 	}
 
 	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Dataset dataset) {
 		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
-			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId().equals(dataset.getRegUser().getRegUserId()));
+			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId()
+				.equals(dataset.getRegUser().getRegUserId()));
 	}
 
 }

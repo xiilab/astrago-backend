@@ -1,9 +1,14 @@
 package com.xiilab.servercore.common.utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,10 +80,11 @@ public class CoreFileUtils {
 			}
 		}
 	}
-	public static DirectoryDTO getFileList(String path) {
+	public static DirectoryDTO getAstragoDatasetFiles(String path) {
 		List<DirectoryDTO.ChildrenDTO> children = new ArrayList<>();
 		File directory = new File(path);
-
+		int directoryCnt = 0;
+		int fileCnt = 0;
 		// 디렉토리 또는 파일이 존재하는지 확인
 		if (directory.exists()) {
 			// 디렉토리 내의 파일 및 디렉토리 목록 조회
@@ -92,6 +98,7 @@ public class CoreFileUtils {
 							.type(FileType.D)
 							.path(fullPath)
 							.build();
+						directoryCnt += 1;
 						children.add(dirChild);
 					} else if (file.isFile()) {
 						DirectoryDTO.ChildrenDTO fileChild = DirectoryDTO.ChildrenDTO.builder()
@@ -99,11 +106,43 @@ public class CoreFileUtils {
 							.type(FileType.F)
 							.path(fullPath)
 							.build();
+						fileCnt += 1;
 						children.add(fileChild);
 					}
 				}
 			}
 		}
-		return DirectoryDTO.builder().children(children).build();
+		return DirectoryDTO.builder().children(children).directoryCnt(directoryCnt).fileCnt(fileCnt).build();
+	}
+
+	public static String getFileExtension(Path filePath) {
+		String fileName = filePath.getFileName().toString();
+		int dotIndex = fileName.lastIndexOf('.');
+
+		if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+			return fileName.substring(dotIndex + 1);
+		} else {
+			return null; // 확장자가 없는 경우
+		}
+	}
+
+	public static byte[] zipDirectory(Path directoryPath) throws IOException {
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
+			Files.walk(directoryPath)
+				.filter(path -> !Files.isDirectory(path))
+				.forEach(path -> {
+					try {
+						String entryName = directoryPath.relativize(path).toString();
+						ZipEntry zipEntry = new ZipEntry(entryName);
+						zipOutputStream.putNextEntry(zipEntry);
+						Files.copy(path, zipOutputStream);
+						zipOutputStream.closeEntry();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				});
+		}
+		return byteArrayOutputStream.toByteArray();
 	}
 }
