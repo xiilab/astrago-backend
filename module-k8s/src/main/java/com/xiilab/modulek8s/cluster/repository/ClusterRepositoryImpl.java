@@ -2,7 +2,7 @@ package com.xiilab.modulek8s.cluster.repository;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
 
@@ -11,7 +11,7 @@ import io.fabric8.kubernetes.api.model.NodeList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Repository
 @RequiredArgsConstructor
 public class ClusterRepositoryImpl implements ClusterRepository{
 	private final K8sAdapter k8sAdapter;
