@@ -19,6 +19,8 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.servercore.common.utils.ThreadHelper;
@@ -181,7 +183,7 @@ public class TerminalService {
 				if (bufferedReader != null)
 					bufferedReader.close();
 			} catch (IOException e) {
-				throw new RuntimeException("web terminal close error");
+				throw new RestApiException(CommonErrorCode.TERMINAL_CLOSE_ERROR);
 			}
 		}
 	}

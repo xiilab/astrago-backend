@@ -11,6 +11,8 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
@@ -65,7 +67,7 @@ public class MonitorService {
 			// Promql 생성
 			return createPromql(Promql.valueOf(requestDTO.metricName()), requestDTO);
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("해당 이름의 Metric(" + requestDTO.metricName() + ")이 없습니다.");
+			throw new RestApiException(CommonErrorCode.MONITOR_METRIC_ERROR);
 		}
 	}
 

@@ -8,6 +8,9 @@ import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.GroupCategory;
@@ -65,7 +68,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.toList();
 			return new GroupInfoDTO(group, groupUsers);
 		} catch (NotFoundException e) {
-			throw new NotFoundException("일치하는 그룹이 없습니다.");
+			throw new RestApiException(UserErrorCode.GROUP_NOT_FOUND);
 		}
 	}
 
@@ -168,7 +171,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 			// 회원 WS 삭제
 			userResource.leaveGroup(swGroup.getId());
 		}catch (NotFoundException e){
-			throw new IllegalArgumentException("해당 ID(" + userId + ")의 사용자가 없습니다.");
+			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND);
 		}
 	}
 	@Override
@@ -183,7 +186,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.findFirst();
 
 		if(group.isPresent()){
-			throw new IllegalArgumentException("해당 워크스페이스(" + subgroup.getName() + ")에 회원 추가 실패하였습니다.");
+			throw new RestApiException(UserErrorCode.USER_ADD_WORKSPACE_FAIL);
 		}
 
 	}
@@ -201,6 +204,6 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equals(subGroupName))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("해당 이름의 그룹(워크스페이스:" + subGroupName + ")이(가) 없습니다."));
+			.orElseThrow(() -> new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 	}
 }

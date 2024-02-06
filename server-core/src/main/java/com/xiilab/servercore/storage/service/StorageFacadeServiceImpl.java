@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
@@ -45,7 +47,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		try {
 			Files.createDirectories(hostPath);
 		} catch (IOException e) {
-			throw new RuntimeException("스토리지 전용 디렉토리 생성을 실패했습니다.");
+			throw new RestApiException(StorageErrorCode.STORAGE_DIRECTORY_CREATION_FAILED);
 		}
 
 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()

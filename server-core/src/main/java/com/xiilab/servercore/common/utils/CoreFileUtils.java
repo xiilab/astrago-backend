@@ -8,6 +8,8 @@ import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.servercore.common.enums.FileType;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 
@@ -22,7 +24,7 @@ public class CoreFileUtils {
 		if (file.isFile()) {
 			return file.getName();
 		} else {
-			throw new RuntimeException("파일이 존재하지 않습니다.");
+			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}
 
@@ -71,7 +73,7 @@ public class CoreFileUtils {
 			try {
 				file.transferTo(saveFile);
 			} catch (IOException e) {
-				throw new RuntimeException("파일 저장에 실패했습니다.");
+				throw new RestApiException(CommonErrorCode.FILE_SAVE_FAIL);
 			}
 		}
 	}

@@ -1,12 +1,10 @@
 package com.xiilab.servercore.dataset.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.io.ByteArrayResource;
@@ -17,9 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.xiilab.modulecommon.util.FileUtils;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.common.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
@@ -59,7 +58,7 @@ public class DatasetServiceImpl implements DatasetService {
 				Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (IOException e) {
-			throw new RuntimeException("파일 업로드를 실패했습니다.");
+			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
 		}
 	}
 
@@ -88,7 +87,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public Dataset findById(Long datasetId) {
 		Dataset dataset = datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		return dataset;
 	}
 
@@ -96,7 +95,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Transactional
 	public void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId) {
 		Dataset dataset = datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		dataset.modifyDatasetName(modifyDataset.getDatasetName());
 	}
 
@@ -140,7 +139,7 @@ public class DatasetServiceImpl implements DatasetService {
 			try {
 				fileContent = Files.readAllBytes(targetPath);
 			} catch (IOException e) {
-				throw new RuntimeException("파일 다운로드를 실패했습니다.");
+				throw new RestApiException(CommonErrorCode.FILE_DOWNLOAD_FAIL);
 			}
 			ByteArrayResource resource = new ByteArrayResource(fileContent);
 			MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
@@ -151,7 +150,7 @@ public class DatasetServiceImpl implements DatasetService {
 				.mediaType(mediaType)
 				.build();
 		}else{
-			throw new RuntimeException("파일이 존재하지 않습니다.");
+			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}
 }

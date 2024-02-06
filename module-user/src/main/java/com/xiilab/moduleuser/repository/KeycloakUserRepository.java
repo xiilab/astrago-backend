@@ -12,6 +12,8 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.AuthType;
@@ -57,13 +59,13 @@ public class KeycloakUserRepository implements UserRepository {
 		boolean isUsernameExists = list.stream()
 			.anyMatch(userRepresentation -> userRepresentation.getUsername().equals(userReqVO.getUsername()));
 		if(isUsernameExists) {
-			throw new IllegalArgumentException("해당 UserName(" + userReqVO.getUsername() + ")이(가) 존재합니다.");
+			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL_SAME_NAME);
 		}
 		// 메일 중복검사
 		boolean isEmailExists = list.stream()
 			.anyMatch(userRepresentation -> userRepresentation.getEmail().equals(userReqVO.getEmail()));
 		if(isEmailExists) {
-			throw new IllegalArgumentException("해당 Email(" + userReqVO.getEmail() + ")이 존재합니다.");
+			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL_SAME_EMAIL);
 		}
 	}
 
@@ -94,7 +96,7 @@ public class KeycloakUserRepository implements UserRepository {
 				.get(0);
 			userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
 		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new ArrayIndexOutOfBoundsException("일치하는 정보가 없습니다.");
+			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_INFO);
 		}
 		List<GroupRepresentation> groupList;
 		try {
@@ -186,7 +188,7 @@ public class KeycloakUserRepository implements UserRepository {
 			//비밀번호 리셋
 			userResource.resetPassword(authenticationSettings);
 		} catch (NotFoundException e) {
-			throw new NotFoundException("일치하는 사용자가 없습니다.");
+			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_INFO);
 		}
 
 	}

@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -204,7 +206,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new RuntimeException("해당하는 배치 잡 로그를 조회할 수 없습니다.");
+			throw new RestApiException(WorkloadErrorCode.NOT_FOUND_BATCH_JOB);
 		}
 	}
 
@@ -220,7 +222,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new RuntimeException("해당하는 인터렉티브 잡 로그를 조회할 수 없습니다.");
+			throw new RestApiException(WorkloadErrorCode.NOT_FOUND_INTERACTIVE_JOB);
 		}
 	}
 

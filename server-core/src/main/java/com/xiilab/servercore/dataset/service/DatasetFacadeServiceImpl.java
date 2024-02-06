@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
@@ -119,7 +119,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 			}
 			datasetService.modifyDataset(modifyDataset, datasetId);
 		}else{
-			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
 	@Override
@@ -130,7 +130,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 			boolean isUse = workloadModuleFacadeService.isUsedDataset(datasetId);
 			//true = 사용중인 데이터 셋
 			if(isUse){
-				throw new RuntimeException("사용중인 데이터 셋은 삭제할 수 없습니다.");
+				throw new RestApiException(DatasetErrorCode.DATASET_NOT_DELETE);
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
 			if(dataset.isAstargoDataset()){
@@ -155,7 +155,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService{
 				datasetService.deleteDatasetById(datasetId);
 			}
 		}else{
-			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
 
