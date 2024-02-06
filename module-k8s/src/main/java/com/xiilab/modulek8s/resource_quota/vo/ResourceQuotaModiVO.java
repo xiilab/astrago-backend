@@ -47,11 +47,12 @@ public class ResourceQuotaModiVO extends K8SResourceReqVO {
 					AnnotationField.NAME.getField(), getName(),
 					AnnotationField.DESCRIPTION.getField(), getDescription(),
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
-					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName()
+					AnnotationField.CREATOR_NAME.getField(), getCreatorName(),
+					AnnotationField.CREATOR_ID.getField(), getCreatorId()
 				))
 			.withAnnotations(
 				Map.of(
-					LabelField.CREATOR.getField(), getCreator()
+					LabelField.CREATOR.getField(), getCreatorName()
 				))
 			.build();
 	}

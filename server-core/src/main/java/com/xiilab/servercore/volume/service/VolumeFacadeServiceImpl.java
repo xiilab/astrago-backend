@@ -21,9 +21,9 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	private final StorageModuleService storageModuleService;
 
 	@Override
-	public void createVolume(CreateVolumeReqDTO requestDTO, UserInfoDTO userInfoDTO){
+	public void createVolume(CreateVolumeReqDTO requestDTO, UserInfoDTO userInfoDTO) {
 		//키클락 유저 정보 넣어줘야함
-		requestDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
+		requestDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName());
 		storageModuleService.createVolume(requestDTO.toModuleDto());
 	}
 
@@ -35,10 +35,10 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			.build();
 		return storageModuleService.findVolumes(findVolumeDTO);
 	}
+
 	@Override
 	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName) {
-		VolumeWithStorageResDTO volume = storageModuleService.findVolumeByMetaName(volumeMetaName);
-		return volume;
+		return storageModuleService.findVolumeByMetaName(volumeMetaName);
 	}
 
 	@Override

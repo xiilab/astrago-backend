@@ -43,7 +43,7 @@ public class WorkloadFacadeService {
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName());
 		if (workloadType == WorkloadType.BATCH) {
 			workloadModuleFacadeService.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
@@ -66,6 +66,14 @@ public class WorkloadFacadeService {
 			return workloadModuleFacadeService.getInteractiveWorkload(workspaceName, resourceName);
 		} else {
 			return null;
+		}
+	}
+
+	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {
+		if (workloadType == WorkloadType.BATCH) {
+
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+
 		}
 	}
 
@@ -124,7 +132,7 @@ public class WorkloadFacadeService {
 		//TODO 종료된 workload list 조회 및 추가
 
 		if (totalPageSize == 0) {
-			return new PageDTO(0, 0, 0, null);
+			return new PageDTO<>(0, 0, 0, null);
 		}
 
 		if (totalPageSize < pageNum) {
@@ -145,7 +153,7 @@ public class WorkloadFacadeService {
 					.name(workload.getName())
 					.resourceName(workload.getResourceName())
 					.description(workload.getDescription())
-					.creator(workload.getCreator())
+					.creatorId(workload.getCreatorId())
 					.workspaceName(workspace.getName())
 					.workspaceResourceName(workspace.getResourceName())
 					.type(workload.getType())
@@ -216,7 +224,7 @@ public class WorkloadFacadeService {
 					.name(workload.getName())
 					.resourceName(workload.getResourceName())
 					.description(workload.getDescription())
-					.creator(workload.getCreator())
+					.creatorId(workload.getCreatorId())
 					.workspaceName(workspace.getName())
 					.workspaceResourceName(workspace.getResourceName())
 					.type(workload.getType())
@@ -325,6 +333,5 @@ public class WorkloadFacadeService {
 	private int getNormalListPageSize(int pinListSize) {
 		return 10 - pinListSize;
 	}
-
 
 }

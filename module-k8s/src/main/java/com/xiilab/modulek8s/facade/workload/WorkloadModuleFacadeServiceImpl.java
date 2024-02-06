@@ -130,7 +130,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
 			return workloadList.stream()
-				.filter(workload -> workload.getCreator().equals(username))
+				.filter(workload -> workload.getCreatorId().equals(username))
 				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
 				.toList()
 				.get(0);
@@ -253,7 +253,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					.name(volume.getName())
 					.workspaceMetaDataName(moduleCreateWorkloadReqDTO.getWorkspace())
 					.storageType(volume.getStorageType())
-					.creator(moduleCreateWorkloadReqDTO.getCreator())
+					.creatorId(moduleCreateWorkloadReqDTO.getCreatorId())
 					.creatorName(moduleCreateWorkloadReqDTO.getCreatorName())
 					.requestVolume(volume.getRequestVolume())
 					.storageClassMetaName(volume.getStorageClassMetaName())

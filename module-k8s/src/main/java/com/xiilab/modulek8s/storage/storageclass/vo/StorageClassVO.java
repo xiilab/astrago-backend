@@ -37,7 +37,7 @@ public class StorageClassVO extends K8SResourceReqVO {
 			.reclaimPolicy(ReclaimPolicyType.RETAIN)
 			.createdAt(LocalDateTime.now())
 			.creatorName(createStorageClassDTO.getCreatorName())
-			.creator(createStorageClassDTO.getCreator())
+			.creatorId(createStorageClassDTO.getCreatorId())
 			.build();
 	}
 
@@ -71,7 +71,7 @@ public class StorageClassVO extends K8SResourceReqVO {
 
 	private HashMap<String, String> createLabels() {
 		HashMap<String, String> labels = new HashMap<>();
-		labels.put(LabelField.CREATOR.getField(), getCreator());
+		labels.put(LabelField.CREATOR.getField(), getCreatorName());
 		labels.put(LabelField.STORAGE_TYPE.getField(), storageType.name());
 		labels.put(LabelField.CONTROL_BY.getField(), "astra");
 		return labels;
@@ -82,7 +82,8 @@ public class StorageClassVO extends K8SResourceReqVO {
 		annotation.put(AnnotationField.NAME.getField(), getName());
 		annotation.put(AnnotationField.DESCRIPTION.getField(), getDescription());
 		annotation.put(AnnotationField.CREATED_AT.getField(), String.valueOf(getCreatedAt()));
-		annotation.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName());
+		annotation.put(AnnotationField.CREATOR_NAME.getField(), getCreatorName());
+		annotation.put(AnnotationField.CREATOR_ID.getField(), getCreatorId());
 		return annotation;
 	}
 }

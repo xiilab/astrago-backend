@@ -28,24 +28,24 @@ public abstract class K8SResourceReqVO {
 	String description;
 	//생성 요청 시간
 	LocalDateTime createdAt;
-	//사용자의 실명
+	//사용자의 id
 	String creatorName;
 
 	//label
-	//사용자의 username
-	String creator;
+	//사용자의 uuid
+	String creatorId;
 	//astra에서 생성되었는지 체크하는 값
 	String controlBy;
 	ResourceType type;
 
 	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
-		String creatorName, String creator) {
+		String creatorName, String creatorId) {
 		this.resourceName = resourceName;
 		this.name = name;
 		this.description = description;
 		this.createdAt = createdAt;
 		this.creatorName = creatorName;
-		this.creator = creator;
+		this.creatorId = creatorId;
 	}
 
 	/**
