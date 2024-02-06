@@ -1,4 +1,4 @@
-package com.xiilab.modulecommon.config;
+package com.xiilab.modulecommon.exception;
 
 public interface ErrorCode {
 	String getMessage();
