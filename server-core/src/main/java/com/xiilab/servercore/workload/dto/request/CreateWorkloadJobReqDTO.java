@@ -11,11 +11,13 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private String workspace;    // 워크스페이스명
 	private WorkloadType workloadType;	//
@@ -28,7 +30,7 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private int cpuRequest;
 	private int gpuRequest;
 	private int memRequest;
-	private String creator;
+	private String creatorId;
 	private String creatorName;
 	// SchedulingType schedulingType;        // 스케줄링 방식
 
@@ -48,14 +50,14 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.cpuRequest(cpuRequest)
 			.gpuRequest(gpuRequest)
 			.memRequest(memRequest)
-			.creator(creator)
+			.creatorId(creatorId)
 			.creatorName(creatorName)
 			.build();
 
 	}
 
-	public void setUserInfo(String creator, String creatorName) {
-		this.creator = creator;
+	public void setUserInfo(String creatorId, String creatorName) {
+		this.creatorId = creatorId;
 		this.creatorName = creatorName;
 	}
 

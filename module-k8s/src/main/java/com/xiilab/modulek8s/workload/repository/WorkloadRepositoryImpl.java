@@ -299,7 +299,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		WorkloadResourceType resourceType) {
 		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
-			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_FULL_NAME.getField()))
+			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
 			.build();
 

@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
-import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -27,8 +26,8 @@ public abstract class K8SResourceResVO {
 	String description;
 	LocalDateTime createdAt;
 	String creatorName;
+	String creatorId;
 	//label
-	String creator;
 	ResourceType type;
 	String age;
 
@@ -43,8 +42,8 @@ public abstract class K8SResourceResVO {
 				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()));
 			this.creatorName = hasMetadata.getMetadata()
 				.getAnnotations()
-				.get(AnnotationField.CREATOR_FULL_NAME.getField());
-			this.creator = hasMetadata.getMetadata().getLabels().get(LabelField.CREATOR.getField());
+				.get(AnnotationField.CREATOR_NAME.getField());
+			this.creatorId = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_ID.getField());
 			this.type = getType();
 		} else {
 			this.uid = hasMetadata.getMetadata().getUid();
