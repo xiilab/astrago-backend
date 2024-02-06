@@ -11,10 +11,14 @@ import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulek8s.cluster.service.ClusterService;
+import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
+import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
+import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
@@ -23,6 +27,7 @@ import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.servercore.workspace.entity.ResourceQuotaEntity;
 import com.xiilab.servercore.workspace.repository.ResourceQuotaRepository;
@@ -40,6 +45,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final PinService pinService;
 	private final GroupService groupService;
 	private final AlertService alertService;
+	private final ClusterService clusterService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -142,6 +148,19 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
+	public WorkspaceResourceQuotaState getWorkspaceResourceQuotaState(String workspaceResourceName) {
+		ClusterResourceDTO clusterResource = clusterService.getClusterResource();
+		ResourceQuotaResDTO workspaceResourceQuota = workspaceModuleFacadeService.getWorkspaceResourceQuota(
+			workspaceResourceName);
+		return new WorkspaceResourceQuotaState(clusterResource, workspaceResourceQuota);
+	}
+
+	@Override
+	public WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName) {
+		return workspaceModuleFacadeService.getWorkspaceInfoByName(workspaceResourceName);
+	}
+
+	@Override
 	@Transactional
 	public void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO) {
 		resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
@@ -181,6 +200,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
 		}
+	}
+
+	@Override
+	public void deleteResourceQuota(long id) {
+		resourceQuotaRepository.deleteById(id);
 	}
 
 }

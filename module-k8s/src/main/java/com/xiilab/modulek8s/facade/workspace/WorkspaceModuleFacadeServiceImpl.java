@@ -80,4 +80,9 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 		ResourceQuotaResDTO resourceQuotas = resourceQuotaService.getResourceQuotas(workspaceName);
 		return new WorkspaceTotalDTO(workspace, resourceQuotas, workloadList);
 	}
+
+	@Override
+	public ResourceQuotaResDTO getWorkspaceResourceQuota(String workspaceResourceName) {
+		return resourceQuotaService.getResourceQuotas(workspaceResourceName);
+	}
 }

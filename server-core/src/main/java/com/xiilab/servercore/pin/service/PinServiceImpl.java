@@ -21,14 +21,14 @@ public class PinServiceImpl implements PinService {
 
 	@Override
 	public Set<String> getUserWorkspacePinList(String userId) {
-		List<PinEntity> workspacePins = pinRepository.findByTypeAndAndRegUser_RegUserId(PinType.WORKSPACE, userId);
-		return workspacePins.stream().map(PinEntity::getResourceId).collect(Collectors.toSet());
+		List<PinEntity> workspacePins = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKSPACE, userId);
+		return workspacePins.stream().map(PinEntity::getResourceName).collect(Collectors.toSet());
 	}
 
 	@Override
 	public Set<String> getUserWorkloadPinList(String userId, String workspaceName) {
-		List<PinEntity> workloadPins = pinRepository.findByTypeAndAndRegUser_RegUserId(PinType.WORKLOAD, userId);
-		return workloadPins.stream().map(PinEntity::getResourceId).collect(Collectors.toSet());
+		List<PinEntity> workloadPins = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKLOAD, userId);
+		return workloadPins.stream().map(PinEntity::getResourceName).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -50,38 +50,38 @@ public class PinServiceImpl implements PinService {
 		}
 	}
 
-	private void createWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
-		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKSPACE,
-			resourceId, userInfoDTO.getId());
+	private void createWorkspacePin(String resourceName, UserInfoDTO userInfoDTO) {
+		PinEntity pinEntity = pinRepository.findByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKSPACE,
+			resourceName, userInfoDTO.getId());
 
 		if (pinEntity != null) {
 			throw new IllegalArgumentException("이미 pin이 추가되었습니다.");
 		}
 
 		//해당 유저가 pin을 6개 이상 생성했는지 검사
-		List<PinEntity> workspaceList = pinRepository.findByTypeAndAndRegUser_RegUserId(PinType.WORKSPACE, userInfoDTO.getId());
+		List<PinEntity> workspaceList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKSPACE, userInfoDTO.getId());
 		if (workspaceList.size() >= 6) {
 			throw new IllegalArgumentException("");
 		}
-		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceId));
+		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
 	}
 
-	private void createWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
-		PinEntity pinEntity = pinRepository.findByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKLOAD,
-			resourceId, userInfoDTO.getId());
+	private void createWorkloadPin(String resourceName, UserInfoDTO userInfoDTO) {
+		PinEntity pinEntity = pinRepository.findByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKLOAD,
+			resourceName, userInfoDTO.getId());
 
 		if (pinEntity != null) {
 			throw new IllegalArgumentException("이미 pin이 추가되었습니다.");
 		}
 
-		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceId));
+		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
 	}
 
-	private void deleteWorkspacePin(String resourceId, UserInfoDTO userInfoDTO) {
-		pinRepository.deleteByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKSPACE, resourceId, userInfoDTO.getId());
+	private void deleteWorkspacePin(String resourceName, UserInfoDTO userInfoDTO) {
+		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKSPACE, resourceName, userInfoDTO.getId());
 	}
 
 	private void deleteWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
-		pinRepository.deleteByTypeAndResourceIdAndRegUser_RegUserId(PinType.WORKLOAD, resourceId, userInfoDTO.getId());
+		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKLOAD, resourceId, userInfoDTO.getId());
 	}
 }

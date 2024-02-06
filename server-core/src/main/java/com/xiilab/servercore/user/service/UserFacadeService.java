@@ -3,6 +3,7 @@ package com.xiilab.servercore.user.service;
 import java.util.List;
 
 import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -32,4 +33,5 @@ public interface UserFacadeService {
 	void updateUserRole(String userId, AuthType authType);
 
 	void deleteUserById(List<String> userIdList);
+	List<SearchDTO> getUserAndGroupBySearch(String search);
 }

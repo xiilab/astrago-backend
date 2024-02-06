@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
-import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
@@ -33,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
-	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 
 	@PostMapping("")
 	@Operation(summary = "워크스페이스 생성")
@@ -46,7 +45,7 @@ public class WorkspaceController {
 	@GetMapping("/{name}")
 	@Operation(summary = "워크스페이스 정보 조회")
 	public ResponseEntity<WorkspaceTotalDTO> getWorkspaceInfo(@PathVariable(name = "name") String name) {
-		return ResponseEntity.ok(workspaceModuleFacadeService.getWorkspaceInfoByName(name));
+		return ResponseEntity.ok(workspaceService.getWorkspaceInfoByName(name));
 	}
 
 	@GetMapping("")
@@ -82,6 +81,21 @@ public class WorkspaceController {
 	@Operation(summary = "워크스페이스 OverView 조회")
 	public ResponseEntity<List<WorkspaceDTO.TotalResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceOverView(userInfoDTO));
+	}
+
+	@GetMapping("/resource/state")
+	@Operation(summary = "워크스페이스 resource 현황 조회")
+	public ResponseEntity<WorkspaceResourceQuotaState> getWorkspaceResourceState(
+		@RequestParam("workspaceName") String workspaceName) {
+		return ResponseEntity.ok(workspaceService.getWorkspaceResourceQuotaState(workspaceName));
+	}
+
+	@DeleteMapping("/resource/{id}")
+	@Operation(summary = "워크스페이스 resource 요청 취소")
+	public ResponseEntity<HttpStatus> deleteWorkspaceResource(
+		@PathVariable("id") long id) {
+		workspaceService.deleteResourceQuota(id);
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/resource")

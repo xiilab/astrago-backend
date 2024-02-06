@@ -14,4 +14,5 @@ public interface CredentialService {
 	CredentialResDTO.CredentialInfo findCredentialById(long id, UserInfoDTO userInfoDTO);
 	Page<CredentialResDTO> getCredentialList(Pageable pageable, UserInfoDTO userInfoDTO);
 	void deleteCredentialById(long id, UserInfoDTO userInfoDTO);
+	void updateCredentialById(long id, CredentialReqDTO.UpdateDTO updateDTO, UserInfoDTO userInfoDTO);
 }

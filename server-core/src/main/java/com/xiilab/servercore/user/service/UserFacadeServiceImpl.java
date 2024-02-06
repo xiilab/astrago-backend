@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.service.UserService;
@@ -25,6 +26,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		UserInfo userInfo = userService.joinUser(userReqVO);
 		if (StringUtils.isNotBlank(groupId)) {
 			userService.joinGroup(groupId, userInfo.getId());
+		}else {
+			userService.joinDefaultGroup(userInfo.getId());
 		}
 		return userService.getUserInfoById(userInfo.getId());
 	}
@@ -71,5 +74,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void deleteUserById(List<String> userIdList) {
 		userService.deleteUserById(userIdList);
+	}
+	@Override
+	public List<SearchDTO> getUserAndGroupBySearch(String search){
+		return userService.getUserAndGroupBySearch(search);
 	}
 }

@@ -24,6 +24,10 @@ public class GroupInfoDTO {
 			this.description = attributes.get("description") != null ? attributes.get("description").get(0) : null;
 		}
 		this.users = groupUsers.stream().map(user
-			-> new GroupUserDTO(user.getId(), user.getUserName(), user.getEmail())).toList();
+			-> GroupUserDTO.builder()
+			.id(user.getId())
+			.name(user.getUserName())
+			.email(user.getEmail())
+			.build()).toList();
 	}
 }

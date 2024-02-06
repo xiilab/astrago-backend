@@ -35,6 +35,6 @@ public interface GroupRepository {
 	void joinMembersIntoGroup(String groupId, List<String> userIds);
 	List<GroupUserDTO> getWorkspaceMember(String groupName);
 
-	void deleteWorkspaceMemberByUserId(String groupName, String userId);
-	void addWorkspaceMemberByUserId(String groupName, String userId);
+	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
+	void addWorkspaceMemberByUserId(String groupName, List<String> userIdList);
 }

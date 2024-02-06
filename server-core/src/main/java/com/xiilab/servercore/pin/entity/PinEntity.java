@@ -27,13 +27,11 @@ public class PinEntity extends BaseEntity {
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "PIN_TYPE")
 	private PinType type;
-	@Column(name = "PIN_RESOURCE_ID")
-	private String resourceId;
-	@Column(name = "PIN_WORKSPACE_NAME")
-	private String workspaceName;
+	@Column(name = "PIN_RESOURCE_NAME")
+	private String resourceName;
 
-	public PinEntity(PinType type, String resourceId) {
+	public PinEntity(PinType type, String resourceName) {
 		this.type = type;
-		this.resourceId = resourceId;
+		this.resourceName = resourceName;
 	}
 }
