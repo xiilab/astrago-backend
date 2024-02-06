@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -50,7 +51,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.list()
 				.getItems();
 			if (storageClasses.size() == 0) {
-				throw new RestApiException(StorageErrorCode.STORAGE_NOT_FOUND);
+				throw new K8sException(StorageErrorCode.STORAGE_NOT_FOUND);
 			}
 			return storageClasses;
 		}
@@ -94,7 +95,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.storageClasses()
 				.withName(storageClassMetaName).get();
 			if (storageClass == null || !isControlledByAstra(storageClass.getMetadata().getLabels())) {
-				throw new RestApiException(StorageErrorCode.STORAGE_NOT_FOUND);
+				throw new K8sException(StorageErrorCode.STORAGE_NOT_FOUND);
 			}
 			return StorageClassResDTO.toDTO(storageClass);
 		}
@@ -110,7 +111,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 
 			if (storageClassResource.get() == null || !isControlledByAstra(
 				storageClassResource.get().getMetadata().getLabels())) {
-				throw new RestApiException(StorageErrorCode.STORAGE_NOT_FOUND);
+				throw new K8sException(StorageErrorCode.STORAGE_NOT_FOUND);
 			}
 			storageClassResource.edit(
 				s -> new StorageClassBuilder(s).editMetadata()

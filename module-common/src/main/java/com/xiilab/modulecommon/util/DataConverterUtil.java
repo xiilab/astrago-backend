@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
 @Service
@@ -67,7 +67,7 @@ public class DataConverterUtil {
 			// 소수점 두 번째 자리까지 반올림
 			return Math.round(inputValue * 100.0) / 100.0;
 		} catch (NumberFormatException e) {
-			throw new RestApiException(CommonErrorCode.NUMBER_ROUND_FAIL);
+			throw new CommonException(CommonErrorCode.NUMBER_ROUND_FAIL);
 		}
 	}
 	public static JsonNode jsonparser(String jsonResponse) throws JsonProcessingException {
@@ -82,7 +82,7 @@ public class DataConverterUtil {
 		try{
 			return objectMapper.readTree(metric).get("data").get("result").elements().next().get("value").get(1).asText();
 		} catch (JsonProcessingException e) {
-			throw new RestApiException(CommonErrorCode.DATA_FORMAT_FAIL);
+			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
 		}
 	}
 	/**
@@ -94,7 +94,7 @@ public class DataConverterUtil {
 		try{
 			return objectMapper.readTree(metric).get("data").get("result").elements();
 		} catch (JsonProcessingException e) {
-			throw new RestApiException(CommonErrorCode.DATA_FORMAT_FAIL);
+			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
 		}
 	}
 }

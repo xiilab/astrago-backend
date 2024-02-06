@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -102,7 +103,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		return pvcs.stream()
 			.filter(pvc -> pvc.getMetadata().getName().equals(volumeMetaName))
 			.findFirst()
-			.orElseThrow(() -> new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND));
+			.orElseThrow(() -> new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND));
 	}
 
 	private static String getStorageSavePath(KubernetesClient client, String storageName) {
@@ -144,7 +145,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.stream()
 				.filter(persistentVolumeClaim -> persistentVolumeClaim.getMetadata().getName().equals(volumeMetaName))
 				.findFirst()
-				.orElseThrow(() -> new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND));
+				.orElseThrow(() -> new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND));
 
 			client.persistentVolumeClaims().resource(pvc).delete();
 		}
@@ -159,7 +160,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.resources()
 				.filter(pvcr -> pvcr.get().getMetadata().getName().equals(modifyVolumeDTO.getVolumeMetaName()))
 				.findFirst()
-				.orElseThrow(() -> new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND));
+				.orElseThrow(() -> new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND));
 
 			persistentVolumeClaimResource.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
 				.addToAnnotations(AnnotationField.NAME.getField(), modifyVolumeDTO.getName())
@@ -329,7 +330,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			.inNamespace(workspaceMetaName)
 			.withName(volumeMetaName).get();
 		if (persistentVolumeClaim == null) {
-			throw new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND);
+			throw new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND);
 		}
 		String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR.getField());
 
@@ -344,7 +345,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			boolean chk = volumeCreatorCheck(modifyVolumeDTO.getWorkspaceMetaName(),
 				modifyVolumeDTO.getVolumeMetaName(), client, creator);
 			if (!chk) {
-				throw new RestApiException(VolumeErrorCode.VOLUME_FORBIDDEN_MODIFY);
+				throw new K8sException(VolumeErrorCode.VOLUME_FORBIDDEN_MODIFY);
 			}
 			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
@@ -352,7 +353,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 
 			if (persistentVolumeClaimResource.get() == null || !isControlledByAstra(
 				persistentVolumeClaimResource.get().getMetadata().getLabels())) {
-				throw new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND);
+				throw new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND);
 			}
 			persistentVolumeClaimResource
 				.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
@@ -370,7 +371,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			boolean chk = volumeCreatorCheck(deleteVolumeDTO.getWorkspaceMetaName(),
 				deleteVolumeDTO.getVolumeMetaName(), client, creator);
 			if (!chk)
-				throw new RestApiException(VolumeErrorCode.VOLUME_FORBIDDEN_DELETE);
+				throw new K8sException(VolumeErrorCode.VOLUME_FORBIDDEN_DELETE);
 
 			//삭제 전 사용중인지 확인해야함
 			String volumeMetaName = deleteVolumeDTO.getVolumeMetaName();
@@ -384,7 +385,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.withName(deleteVolumeDTO.getVolumeMetaName());
 			if (persistentVolumeClaimResource.get() == null || !isControlledByAstra(
 				persistentVolumeClaimResource.get().getMetadata().getLabels())) {
-				throw new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND);
+				throw new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND);
 			}
 			persistentVolumeClaimResource.delete();
 		}
@@ -426,7 +427,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.withName(volumeMetaName)
 				.get();
 			if (pvc == null || !isControlledByAstra(pvc.getMetadata().getLabels())) {
-				throw new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND);
+				throw new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND);
 			}
 			String requestVolume = getRequestVolume(pvc);
 			StorageType storageType = getStorageType(pvc);
@@ -508,7 +509,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	private <T> void checkAndThrowIfInUse(Supplier<List<T>> resourceFetcher) {
 		List<T> resourcesInUse = resourceFetcher.get();
 		if (resourcesInUse != null && !resourcesInUse.isEmpty()) {
-			throw new RestApiException(VolumeErrorCode.VOLUME_DELETE_NOT_ALLOWED);
+			throw new K8sException(VolumeErrorCode.VOLUME_DELETE_NOT_ALLOWED);
 		}
 	}
 

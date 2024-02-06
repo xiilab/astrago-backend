@@ -8,7 +8,7 @@ import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.stereotype.Repository;
 
-import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
@@ -68,7 +68,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.toList();
 			return new GroupInfoDTO(group, groupUsers);
 		} catch (NotFoundException e) {
-			throw new RestApiException(UserErrorCode.GROUP_NOT_FOUND);
+			throw new K8sException(UserErrorCode.GROUP_NOT_FOUND);
 		}
 	}
 
@@ -186,7 +186,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.findFirst();
 
 			if(group.isEmpty()){
-				throw new RestApiException(UserErrorCode.USER_ADD_WORKSPACE_FAIL);
+				throw new K8sException(UserErrorCode.USER_ADD_WORKSPACE_FAIL);
 			}
 		}
 
@@ -205,7 +205,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equals(subGroupName))
 			.findFirst()
-			.orElseThrow(() -> new RestApiException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+			.orElseThrow(() -> new K8sException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 		return subGroup.getSubGroups().stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("user")).findFirst().get();
 

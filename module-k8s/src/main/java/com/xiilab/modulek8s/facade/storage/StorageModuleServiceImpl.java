@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
@@ -240,7 +240,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			volumeService.deletePVC(pvcName, namespace);
 			volumeService.deletePV(pvName);
 			//연결 실패 응답
-			throw new RestApiException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
 		}
 		//connection 성공
 		//connect deployment 삭제, astrago deployment mount edit

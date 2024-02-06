@@ -13,6 +13,7 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -46,7 +47,7 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 			.split(",");
 		if (splitMessage.length != 3) {
 			log.error("Websocket Message: {}", message);
-			throw new RestApiException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
+			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}
 
 		// BATCH, INTERACTIVE
@@ -55,9 +56,9 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 		String workloadName = splitMessage[2];
 		String podName = getPodNameByWorkloadType(workspaceName, workloadName, workloadType)
 			.map(pod -> pod.getMetadata().getName())
-			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.NOT_FOUND_POD));
+			.orElseThrow(() -> new K8sException(WorkloadErrorCode.NOT_FOUND_POD));
 		if (!StringUtils.hasText(podName)) {
-			throw new RestApiException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
+			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}
 
 		sendLogMessage(session, workspaceName, podName);

@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.servercore.storage.dto.StorageDTO;
@@ -45,13 +46,13 @@ public class StorageServiceImpl implements StorageService {
 	@Override
 	public StorageDTO.ResStorage getStorage(Long storageId) {
 		StorageEntity storageEntity = storageRepository.findById(storageId)
-			.orElseThrow(() -> new RestApiException(StorageErrorCode.STORAGE_NOT_FOUND));
+			.orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
 		return StorageDTO.ResStorage.toDto(storageEntity);
 	}
 
 	@Override
 	public StorageEntity findById(Long storageId) {
-		return storageRepository.findById(storageId).orElseThrow(() -> new RestApiException(StorageErrorCode.STORAGE_NOT_FOUND));
+		return storageRepository.findById(storageId).orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
 	}
 
 	@Override

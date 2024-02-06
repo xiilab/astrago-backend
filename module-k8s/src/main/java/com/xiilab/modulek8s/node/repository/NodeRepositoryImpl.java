@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -54,7 +55,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	public ResponseDTO.MIGProfile getNodeMIGProfiles(String nodeName) {
 		Node node = getNode(nodeName);
 		if (!getMigCapable(node)) {
-			throw new RestApiException(NodeErrorCode.NOT_SUPPORTED_GPU);
+			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
 		//node의 gpu productName을 조회한다.
 		String gpuProductName = getGPUProductName(node);
@@ -67,11 +68,11 @@ public class NodeRepositoryImpl implements NodeRepository {
 		Node node = getNode(nodeName);
 		//해당 node가 mig를 지원하는지 체크
 		if (!getMigCapable(node)) {
-			throw new RestApiException(NodeErrorCode.NOT_SUPPORTED_GPU);
+			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
 		//할당된 프로젝트가 존재하는지 체크한다.
 		if (nodeAssignWorkloadCount(nodeName) > 0) {
-			throw new RestApiException(NodeErrorCode.NODE_IN_USE_NOT_MIG);
+			throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MIG);
 		}
 		updateMIGConfig(nodeName, "all-" + option);
 
@@ -146,7 +147,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			File file = new File(migProfilePath);
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
-				throw new RestApiException(NodeErrorCode.MIG_PROFILE_NOT_FOUND);
+				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_FOUND);
 			}
 			//json 파일을 읽어옴
 			ResponseDTO.MIGProfileList migProfileList = objectMapper.readValue(file, ResponseDTO.MIGProfileList.class);
@@ -154,9 +155,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return migProfileList.migProfiles().stream().filter(mig ->
 					mig.migProduct().equals(MIGProduct.getGpuProduct(productName)))
 				.findFirst()
-				.orElseThrow(() -> new RestApiException(NodeErrorCode.NOT_SUPPORTED_GPU));
+				.orElseThrow(() -> new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU));
 		} catch (IOException e) {
-			throw new RestApiException(NodeErrorCode.NOT_SUPPORTED_GPU);
+			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
 	}
 
