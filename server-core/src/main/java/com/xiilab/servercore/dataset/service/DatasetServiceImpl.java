@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.io.ByteArrayResource;
@@ -16,12 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
+import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 import com.xiilab.servercore.dataset.repository.DatasetRepository;
 import com.xiilab.servercore.dataset.repository.DatasetWorkspaceRepository;
@@ -62,7 +65,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(int pageNo, int pageSize, UserInfoDTO userInfoDTO) {
 		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
-		Page<Dataset> datasets = datasetRepository.findByAuthority(pageRequest, userInfoDTO);
+		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 
@@ -189,6 +192,23 @@ public class DatasetServiceImpl implements DatasetService {
 		} else {
 			throw new RuntimeException("이미 생성된 폴더입니다.");
 		}
+	}
+
+	@Override
+	public DatasetDTO.DatasetsInWorkspace getDatasetsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType,
+		UserInfoDTO userInfoDTO) {
+
+		if(repositoryType == RepositoryType.WORKSPACE){
+			List<DatasetWorkSpaceMappingEntity> datasets = datasetWorkspaceRepository.findByWorkspaceResourceName(
+				workspaceResourceName);
+			if(datasets != null || datasets.size() != 0){
+				return DatasetDTO.DatasetsInWorkspace.mappingEntitiesToDtos(datasets);
+			}
+		}else{
+			List<Dataset> datasetsByAuthority = datasetRepository.findByAuthority(userInfoDTO);
+			return DatasetDTO.DatasetsInWorkspace.entitiesToDtos(datasetsByAuthority);
+		}
+		return null;
 	}
 
 }

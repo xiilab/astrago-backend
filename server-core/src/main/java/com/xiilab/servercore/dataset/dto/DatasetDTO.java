@@ -8,6 +8,7 @@ import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.servercore.common.enums.DatasetDivision;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
+import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 
 import lombok.Builder;
@@ -147,5 +148,49 @@ public class DatasetDTO {
 		private String size;
 		private String lastModifiedTime;
 		private String contentPath;
+	}
+
+	@Getter
+	@Builder
+	public static class DatasetInWorkspace{
+		private Long datasetId;
+		private String datasetName;
+
+		public static DatasetInWorkspace entityToDto(Dataset dataset) {
+			if (dataset.isAstargoDataset()) {
+				return DatasetInWorkspace.builder()
+					.datasetId(dataset.getDatasetId())
+					.datasetName(dataset.getDatasetName())
+					.build();
+			} else if (dataset.isLocalDataset()) {
+				return DatasetInWorkspace.builder()
+					.datasetId(dataset.getDatasetId())
+					.datasetName(dataset.getDatasetName())
+					.build();
+			}
+			return null;
+		}
+		public static DatasetInWorkspace mappingEntityToDto(DatasetWorkSpaceMappingEntity dataset){
+			return DatasetInWorkspace.builder()
+				.datasetId(dataset.getDataset().getDatasetId())
+				.datasetName(dataset.getDataset().getDatasetName())
+				.build();
+		}
+	}
+	@Getter
+	@Builder
+	public static class DatasetsInWorkspace {
+		private List<DatasetInWorkspace> datasets;
+
+		public static DatasetsInWorkspace entitiesToDtos(List<Dataset> datasets) {
+			return DatasetsInWorkspace.builder()
+				.datasets(datasets.stream().map(DatasetInWorkspace::entityToDto).toList())
+				.build();
+		}
+		public static DatasetsInWorkspace mappingEntitiesToDtos(List<DatasetWorkSpaceMappingEntity> datasets) {
+			return DatasetsInWorkspace.builder()
+				.datasets(datasets.stream().map(DatasetInWorkspace::mappingEntityToDto).toList())
+				.build();
+		}
 	}
 }

@@ -1,5 +1,7 @@
 package com.xiilab.servercore.dataset.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,4 +14,9 @@ public interface DatasetWorkspaceRepository extends JpaRepository<DatasetWorkSpa
 	@Modifying
 	@Query("delete from DatasetWorkSpaceMappingEntity dwm where dwm.dataset.datasetId = :datasetId")
 	void deleteByDatasetId(@Param("datasetId") Long datasetId);
+
+
+	@Query("select dwm  from DatasetWorkSpaceMappingEntity dwm "
+		+ " join fetch dwm.dataset d where dwm.workspaceResourceName = :workspaceResourceName")
+	List<DatasetWorkSpaceMappingEntity> findByWorkspaceResourceName(@Param("workspaceResourceName") String workspaceResourceName);
 }
