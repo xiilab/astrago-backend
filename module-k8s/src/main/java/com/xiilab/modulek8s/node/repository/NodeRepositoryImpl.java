@@ -23,11 +23,11 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Repository
+@RequiredArgsConstructor
 public class NodeRepositoryImpl implements NodeRepository {
 	private final K8sAdapter k8sAdapter;
-	private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final String GPU_NAME = "nvidia.com/gpu.product";
 	private final String GPU_COUNT = "nvidia.com/gpu.count";
 	@Value("${mig-profile-path}")
@@ -39,7 +39,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			List<Node> nodes = client.nodes().list().getItems();
 
 			return nodes.stream().filter(node ->
-				node.getMetadata().getLabels().get(GPU_NAME) != null)
+					node.getMetadata().getLabels().get(GPU_NAME) != null)
 				.map(node ->
 					ResponseDTO.NodeDTO.builder()
 						.nodeName(node.getMetadata().getName())
@@ -225,3 +225,4 @@ public class NodeRepositoryImpl implements NodeRepository {
 			.toList();
 	}
 }
+

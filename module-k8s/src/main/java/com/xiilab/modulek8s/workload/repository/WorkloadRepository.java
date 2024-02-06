@@ -94,12 +94,12 @@ public interface WorkloadRepository {
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 
 	ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName);
+
 	ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName);
 
 	Pod getBatchJobPod(String workspaceName, String workloadName);
+
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
-
-
 
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 
