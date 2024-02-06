@@ -17,6 +17,7 @@ import lombok.experimental.SuperBuilder;
 public class CredentialResDTO {
 	private long id;
 	private String name;
+	private String description;
 	private CredentialType type;
 	private String creator;
 	private LocalDateTime createdAt;
@@ -24,6 +25,7 @@ public class CredentialResDTO {
 	public CredentialResDTO(CredentialEntity credential) {
 		this.id = credential.getId();
 		this.name = credential.getName();
+		this.description = credential.getDescription();
 		this.type = credential.getType();
 		this.creator = credential.getRegUser().getRegUserName();
 		this.createdAt = credential.getCreatedAt();
@@ -38,7 +40,8 @@ public class CredentialResDTO {
 		private String loginPw;
 
 		public CredentialInfo(CredentialEntity credential) {
-			super(credential.getId(), credential.getName(), credential.getType(), credential.getRegUser().getRegUserName(), credential.getCreatedAt());
+			super(credential.getId(), credential.getName(), credential.getDescription(), credential.getType(),
+				credential.getRegUser().getRegUserName(), credential.getCreatedAt());
 			this.loginId = credential.getLoginId();
 			this.loginPw = credential.getLoginPw();
 		}

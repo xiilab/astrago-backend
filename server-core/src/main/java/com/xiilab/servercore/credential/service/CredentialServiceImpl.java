@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
@@ -21,6 +22,7 @@ public class CredentialServiceImpl implements CredentialService {
 	private final CredentialRepository credentialRepository;
 
 	@Override
+	@Transactional
 	public CredentialResDTO createCredential(CredentialReqDTO credentialReqDTO, UserInfoDTO userInfoDTO) {
 		CredentialEntity credentialEntity = credentialRepository.save(CredentialEntity
 			.dtoConverter()
@@ -48,7 +50,7 @@ public class CredentialServiceImpl implements CredentialService {
 		if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN) {
 			credentialEntities = credentialRepository.findAll(pageable);
 		} else {
-			credentialEntities = credentialRepository.findByRegUser_RegUserId(userInfoDTO.getUserName(), pageable);
+			credentialEntities = credentialRepository.findByRegUser_RegUserId(userInfoDTO.getId(), pageable);
 		}
 		return Objects.requireNonNull(credentialEntities).map(CredentialResDTO::new);
 	}
