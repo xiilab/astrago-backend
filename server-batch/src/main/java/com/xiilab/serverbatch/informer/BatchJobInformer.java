@@ -52,8 +52,8 @@ public class BatchJobInformer {
 			@Override
 			public void onUpdate(Job job1, Job job2) {
 				if (!Objects.equals(job1.getMetadata().getResourceVersion(), job2.getMetadata().getResourceVersion())) {
-					log.info(job2.toString());
 					if (job2.getStatus().getSucceeded() != null && job2.getStatus().getSucceeded() > 0) {
+						log.info("{} job이 완료 되었습니다.", job2.getMetadata().getName());
 						String namespace = job2.getMetadata().getNamespace();
 						K8SResourceMetadataDTO metadataFromResource = getMetadataFromResource(job2);
 						Pod pod = kubernetesClient.pods()

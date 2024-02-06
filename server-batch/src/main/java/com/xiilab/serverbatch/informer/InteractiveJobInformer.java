@@ -2,8 +2,6 @@ package com.xiilab.serverbatch.informer;
 
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
-import java.util.Objects;
-
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
@@ -47,10 +45,6 @@ public class InteractiveJobInformer {
 
 			@Override
 			public void onUpdate(Deployment deployment1, Deployment deployment2) {
-				if (!Objects.equals(deployment1.getMetadata().getResourceVersion(),
-					deployment2.getMetadata().getResourceVersion())) {
-					log.info(deployment2.toString());
-				}
 			}
 
 			@Override
