@@ -28,7 +28,6 @@ public interface WorkloadModuleService {
 
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
 
-
 	/**
 	 * batch job workload 조회
 	 *
@@ -80,6 +79,7 @@ public interface WorkloadModuleService {
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 
 	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
+
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);

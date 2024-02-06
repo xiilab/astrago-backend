@@ -65,7 +65,7 @@ public class WorkspaceController {
 		@PathVariable("workspaceName") String workspaceName,
 		@RequestBody WorkspaceDTO.UpdateDTO updateDTO
 	) {
-		workspaceModuleFacadeService.updateWorkspaceInfoByName(workspaceName, updateDTO);
+		workspaceService.updateWorkspace(workspaceName, updateDTO);
 		return ResponseEntity.ok().build();
 	}
 

@@ -18,11 +18,14 @@ public interface WorkspaceFacadeService {
 	PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition, int pageNum,
 		UserInfoDTO userInfoDTO);
 
+	void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
+
 	void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO);
 
 	List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO);
 
 	WorkspaceResourceQuotaState getWorkspaceResourceQuotaState(String workspaceResourceName);
+
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName);
 
 	void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO);
@@ -30,5 +33,6 @@ public interface WorkspaceFacadeService {
 	List<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, UserInfoDTO userInfoDTO);
 
 	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO);
+
 	void deleteResourceQuota(long id);
 }
