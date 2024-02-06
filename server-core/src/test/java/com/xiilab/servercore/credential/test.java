@@ -40,7 +40,7 @@
 // 		for (int i = 0; i < 98; i++) {
 // 			testResult.add(ModuleBatchJobResDTO.builder()
 // 				.uid(String.valueOf(i))
-// 				.name("김연훈" + i)
+// 				.varName("김연훈" + i)
 // 				.age(i)
 // 				.status(WorkloadStatus.RUNNING)
 // 				.build());

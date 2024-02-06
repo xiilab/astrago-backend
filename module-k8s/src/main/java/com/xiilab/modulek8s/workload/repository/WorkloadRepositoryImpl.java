@@ -15,6 +15,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
@@ -47,15 +48,15 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public ModuleBatchJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
+	public ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 		Job resource = (Job)createResource(batchJobVO.createResource());
-		return new ModuleBatchJobResDTO(resource);
+		return new ModuleJobResDTO(resource);
 	}
 
 	@Override
-	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
+	public ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
 		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
-		return new ModuleInteractiveJobResDTO(resource);
+		return new ModuleJobResDTO(resource);
 	}
 
 	@Override
@@ -380,6 +381,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.list()
 			.getItems();
 	}
+
+
 
 	private HasMetadata createResource(HasMetadata hasMetadata) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {

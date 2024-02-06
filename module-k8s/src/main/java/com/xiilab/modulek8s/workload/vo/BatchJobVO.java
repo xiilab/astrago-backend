@@ -62,7 +62,8 @@ public class BatchJobVO extends WorkloadVO {
 					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName(),
 					AnnotationField.TYPE.getField(), getWorkloadType().getType(),
 					AnnotationField.IMAGE_NAME.getField(), getImage().name(),
-					AnnotationField.IMAGE_TAG.getField(), getImage().tag()
+					AnnotationField.IMAGE_TAG.getField(), getImage().tag(),
+					AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType()
 				))
 			.withLabels(
 				getLabelMap()
@@ -102,6 +103,9 @@ public class BatchJobVO extends WorkloadVO {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
+		if (this.secretName != null && this.secretName.length() > 0) {
+			podSpecBuilder.addNewImagePullSecret(secretName);
+		}
 		cloneGitRepo(podSpecBuilder, codes);
 		addVolumes(podSpecBuilder, volumes);
 
@@ -187,7 +191,7 @@ public class BatchJobVO extends WorkloadVO {
 	public List<EnvVar> convertEnv() {
 		return envs.stream()
 			.map(env -> new EnvVarBuilder()
-				.withName(env.variable())
+				.withName(env.varName())
 				.withValue(env.value())
 				.build()
 			).toList();

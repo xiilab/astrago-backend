@@ -37,7 +37,7 @@ class WorkloadModuleFacadeServiceImplTest {
 	// 		"master", "/mnt"));
 	//
 	// 	CreateWorkloadReqDTO createWorkloadReqDTO = CreateWorkloadReqDTO.builder()
-	// 		.name("사용자 지정 이름")
+	// 		.varName("사용자 지정 이름")
 	// 		.description("Hello world!")
 	// 		.workloadType(WorkloadType.BATCH)
 	// 		.creatorName("SJO")
@@ -81,7 +81,7 @@ class WorkloadModuleFacadeServiceImplTest {
 	// 		"master", "/mnt"));
 	//
 	// 	CreateWorkloadReqDTO createWorkloadReqDTO = CreateWorkloadReqDTO.builder()
-	// 		.name("사용자 지정 이름")
+	// 		.varName("사용자 지정 이름")
 	// 		.description("Hello world!")
 	// 		.workloadType(WorkloadType.INTERACTIVE)
 	// 		.creatorName("SJO")

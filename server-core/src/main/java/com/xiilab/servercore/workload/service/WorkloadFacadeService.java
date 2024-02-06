@@ -44,18 +44,19 @@ public class WorkloadFacadeService {
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO) {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
-		if (workloadType == WorkloadType.BATCH) {
-			workloadModuleFacadeService.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		}
+		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		// if (workloadType == WorkloadType.BATCH) {
+		// 	workloadModuleFacadeService.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		// } else if (workloadType == WorkloadType.INTERACTIVE) {
+		// 	workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		// }
 		// 워크로드 생성 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
-			.build());
+		// alertService.sendAlert(AlertDTO.builder()
+		// 	.recipientId(userInfoDTO.getId())
+		// 	.senderId("SYSTEM")
+		// 	.alertType(AlertType.WORKLOAD)
+		// 	.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
+		// 	.build());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
@@ -97,7 +98,7 @@ public class WorkloadFacadeService {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		//통합용 리스트 선언
 		List<ModuleBatchJobResDTO> totalJobList = new ArrayList<>();
-		//DB에 저장되어있는 유저가 추가한 PIN 목록(k8s resource의 name)
+		//DB에 저장되어있는 유저가 추가한 PIN 목록(k8s resource의 varName)
 		Set<String> userWorkloadPinList = pinService.getUserWorkloadPinList(userInfoDTO.getId(), workspaceName);
 		//특정 워크스페이스의 워크로드
 		List<ModuleBatchJobResDTO> batchJobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workspaceName);

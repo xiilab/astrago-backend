@@ -62,7 +62,7 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
 				HelmRelease.class);
 			for (Map<String, String> provisioner : provisioners) {
-				String provisionerName = provisioner.get("name");
+				String provisionerName = provisioner.get("varName");
 				String storageType = provisioner.get("type");
 				//설치된 리스트 조회
 				List<HelmRelease> helmReleases = nfsClient.inAnyNamespace()

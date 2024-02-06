@@ -41,19 +41,6 @@ public class NodeSvcVO extends K8SResourceReqVO {
 			.build();
 	}
 
-	public static NodeSvcVO createServiceDtoToServiceVO(CreateSvcReqDTO createSvcReqDTO) {
-		return NodeSvcVO.builder()
-			.name(createSvcReqDTO.getName())
-			.description(createSvcReqDTO.getDescription())
-			.creatorName(createSvcReqDTO.getCreatorName())
-			.creator(createSvcReqDTO.getCreator())
-			.workspace(createSvcReqDTO.getWorkspace())
-			.svcType(createSvcReqDTO.getSvcType())
-			.jobName(createSvcReqDTO.getJobName())
-			.ports(createSvcReqDTO.getPorts().stream().map(port -> new SvcPortVO(port.name(), port.port())).toList())
-			.build();
-	}
-
 	protected ResourceType getType() {
 		return ResourceType.SERVICE;
 	}
@@ -100,5 +87,18 @@ public class NodeSvcVO extends K8SResourceReqVO {
 				.withTargetPort(new IntOrString(port.port()))
 				.build()
 			).toList();
+	}
+
+	public static NodeSvcVO createServiceDtoToServiceVO(CreateSvcReqDTO createSvcReqDTO) {
+		return NodeSvcVO.builder()
+			.name(createSvcReqDTO.getName())
+			.description(createSvcReqDTO.getDescription())
+			.creatorName(createSvcReqDTO.getCreatorName())
+			.creator(createSvcReqDTO.getCreator())
+			.workspace(createSvcReqDTO.getWorkspace())
+			.svcType(createSvcReqDTO.getSvcType())
+			.jobName(createSvcReqDTO.getJobName())
+			.ports(createSvcReqDTO.getPorts().stream().map(port -> new SvcPortVO(port.name(), port.port())).toList())
+			.build();
 	}
 }

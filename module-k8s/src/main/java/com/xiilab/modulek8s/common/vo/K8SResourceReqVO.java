@@ -18,10 +18,10 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public abstract class K8SResourceReqVO {
-	//metadata.name
+	//metadata.varName
 	String resourceName;
 	//annotation
-	//사용자가 실제 입력한 name
+	//사용자가 실제 입력한 varName
 	@Pattern(regexp = "^[^-_]*$")
 	String name;
 	//resource에 대한 설명

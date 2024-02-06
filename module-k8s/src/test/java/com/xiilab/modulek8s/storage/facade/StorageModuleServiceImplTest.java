@@ -111,7 +111,7 @@
 // 	@Test
 // 	void getStorageClasseByLabel() {
 // 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-// 			client.storage().v1().storageClasses().withLabel("storage-type", "NFS3").list().getItems().get(0);
+// 			client.storage().v1().storageClasses().withLabel("storage-repositoryType", "NFS3").list().getItems().get(0);
 // 		}
 // 	}
 //
@@ -136,7 +136,7 @@
 // 	void getNSByWorkspaceName() {
 // 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 // 			String namespaceName = client.namespaces()
-// 				.withLabel("workspace-name", "ws1")
+// 				.withLabel("workspace-varName", "ws1")
 // 				.list()
 // 				.getItems()
 // 				.get(0)
@@ -161,7 +161,7 @@
 // 				.withNewMetadata()
 // 				.withName("testpvc1")
 // 				.withNamespace("yc-test-ns")
-// 				.addToAnnotations("volume-name", "한글 띄어쓰기asdfasd#$@#$")
+// 				.addToAnnotations("volume-varName", "한글 띄어쓰기asdfasd#$@#$")
 // 				.addToAnnotations("volume-created", "이용춘")
 // 				.endMetadata()
 // 				.withNewSpec()
@@ -218,7 +218,7 @@
 // 				.get(0)
 // 				.getMetadata()
 // 				.getAnnotations()
-// 				.get("name");
+// 				.get("varName");
 // 			client.apps()
 // 				.deployments()
 // 				.withLabelIn("vo-422e4d40-3500-47df-ba74-b5851ab33eff", "true")
@@ -227,7 +227,7 @@
 // 				.get(0)
 // 				.getMetadata()
 // 				.getAnnotations()
-// 				.get("name");
+// 				.get("varName");
 // 			client.batch()
 // 				.v1()
 // 				.jobs()
@@ -237,7 +237,7 @@
 // 				.get(0)
 // 				.getMetadata()
 // 				.getAnnotations()
-// 				.get("name");
+// 				.get("varName");
 //
 // 		}
 // 	}
@@ -254,7 +254,7 @@
 // 		CreateVolumeDTO request = CreateVolumeDTO.builder()
 // 			.storageType(StorageType.NFS)
 // 			.requestVolume(5)
-// 			.name("vo1user123")
+// 			.varName("vo1user123")
 // 			.workspaceMetaDataName("yc-test-ns")
 // 			.build();
 //
@@ -275,7 +275,7 @@
 // 				.inNamespace("yc-test-ns")
 // 				.withName("vo-422e4d40-3500-47df-ba74-b5851ab33eff")
 // 				.edit(pvc -> new PersistentVolumeClaimBuilder(pvc).editMetadata()
-// 					.addToAnnotations("name", "수정된 이름입니당")
+// 					.addToAnnotations("varName", "수정된 이름입니당")
 // 					.endMetadata()
 // 					.editSpec()
 // 					.editResources()
@@ -312,7 +312,7 @@
 //
 // 	@Test
 // 	void 볼륨조회페이징검색포함() {
-// 		String option = "creator-name";
+// 		String option = "creator-varName";
 // 		String workspaceMetaName = "yc-test-ns";
 // 		String keyword = "서준오";
 // 		String searchOption = "";
@@ -447,7 +447,7 @@
 // 	@Test
 // 	void 스토리지클래스생성() {
 // 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-// 			String name = "내가생성한 스토리지 클래스 이름";
+// 			String varName = "내가생성한 스토리지 클래스 이름";
 // 			String description = "설명이지요";
 // 			ProvisionerType provisioner = ProvisionerType.NFS;
 // 			HashMap<String, String> parameters = new HashMap<>();
@@ -458,7 +458,7 @@
 // 			String creator = "test1";
 //
 // 			StorageClassVO storageClassVO = StorageClassVO.builder()
-// 				.name(name)
+// 				.varName(varName)
 // 				.description(description)
 // 				.storageType(StorageType.NFS)
 // 				.provisioner(provisioner)
@@ -494,7 +494,7 @@
 //
 // 	@Test
 // 	void NFS설치유무_확인() {
-// 		//app.kubernetes.io/name=csi-driver-nfs
+// 		//app.kubernetes.io/varName=csi-driver-nfs
 // 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 // 			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
 // 				HelmRelease.class);
@@ -519,7 +519,7 @@
 //
 // 			SourceRef sourceRef = SourceRef.builder()
 // 				.kind("HelmRepository")
-// 				.name("nfs-helmrepository")
+// 				.varName("nfs-helmrepository")
 // 				.build();
 //
 // 			Spec spec = Spec.builder()
@@ -613,9 +613,9 @@
 // 			Map<String, String> annotations =
 // 				resource.getMetadata().getAnnotations() == null ? null : resource.getMetadata().getAnnotations();
 // 			if (annotations != null) {
-// 				String name = annotations.get(AnnotationField.NAME.getField());
-// 				if (name != null) {
-// 					workloadNames.add(name);
+// 				String varName = annotations.get(AnnotationField.NAME.getField());
+// 				if (varName != null) {
+// 					workloadNames.add(varName);
 // 				}
 // 			}
 // 		}
@@ -831,8 +831,8 @@
 //
 // 			ReplicaSet replicaSet = replicaSets.stream()
 // 				.parallel()
-// 				.filter(replicaSet1 -> replicaSet1.getMetadata().getAnnotations().get("name") != null &&
-// 					replicaSet1.getMetadata().getAnnotations().get("name").equalsIgnoreCase("dataset_test1"))
+// 				.filter(replicaSet1 -> replicaSet1.getMetadata().getAnnotations().get("varName") != null &&
+// 					replicaSet1.getMetadata().getAnnotations().get("varName").equalsIgnoreCase("dataset_test1"))
 // 				.findAny()
 // 				.orElseThrow(() -> new RuntimeException(""));
 //

@@ -188,7 +188,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	public List<EnvVar> convertEnv() {
 		return envs.stream()
 			.map(env -> new EnvVarBuilder()
-				.withName(env.variable())
+				.withName(env.varName())
 				.withValue(env.value())
 				.build()
 			).toList();

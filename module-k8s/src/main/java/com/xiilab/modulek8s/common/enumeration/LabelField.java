@@ -10,11 +10,11 @@ public enum LabelField {
 	IMAGE("image"),
 	VOLUMES("volumes"),
 	CODES("codes"),
-	STORAGE_TYPE("storage-type"),
-	RESOURCE_NAME("resource-name"),
-	STORAGE_NAME("storage-name"),
+	STORAGE_TYPE("storage-repositoryType"),
+	RESOURCE_NAME("resource-varName"),
+	STORAGE_NAME("storage-varName"),
 	CONTROL_BY("control-by"),
-	JOB_NAME("job-name"),
+	JOB_NAME("job-varName"),
 	APP("app");
 
 	private final String field;

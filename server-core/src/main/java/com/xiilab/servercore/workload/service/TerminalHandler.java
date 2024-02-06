@@ -25,7 +25,7 @@ public class TerminalHandler {
 	public void handler(String message, TerminalService terminalService) throws IOException, InterruptedException, SecurityException {
 		TerminalMessage messageMap;
 		try {
-			// 메세지 형식 {type: "TERMINAL_COMMAND", command: ""} (json) 을  Map 으로 변경
+			// 메세지 형식 {repositoryType: "TERMINAL_COMMAND", command: ""} (json) 을  Map 으로 변경
 			messageMap = getMessageMap(message);
 		} catch (JsonProcessingException e) {
 			// json 에러일때 웝소켓으로 수신

@@ -108,7 +108,7 @@ public class MonitorController {
 
 	/**
 	 * 해당 WS의 Resource Info 조회 API
-	 * @param namespace 조회될 WS name
+	 * @param namespace 조회될 WS varName
 	 * @return CPU,GPU,MEM등의 ResourceQuota, 상태별 워크로드 리스트
 	 */
 	@GetMapping("/ws/{namespace}")

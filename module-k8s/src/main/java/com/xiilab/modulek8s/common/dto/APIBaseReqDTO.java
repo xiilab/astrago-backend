@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class APIBaseReqDTO {
-	//사용자가 실제 입력한 name
+	//사용자가 실제 입력한 varName
 	@Pattern(regexp = "^[^-_]*$")
 	String name;
 	//resource에 대한 설명

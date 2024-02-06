@@ -38,15 +38,15 @@ public class TerminalMessage {
 	 */
 	private String height;
 	/**
-	 * workspace name
+	 * workspace varName
 	 */
 	private String workspace;
 	/**
-	 * worklaod name
+	 * worklaod varName
 	 */
 	private String workload;
 	/**
-	 * workload type(BATCH, INTERACTIVE)
+	 * workload repositoryType(BATCH, INTERACTIVE)
 	 */
 	private WorkloadType workloadType;
 }
