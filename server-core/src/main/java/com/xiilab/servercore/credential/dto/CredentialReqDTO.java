@@ -15,4 +15,13 @@ public class CredentialReqDTO {
 	private String id;
 	private String pw;
 	private CredentialType type;
+	@Getter
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class UpdateDTO {
+		private String name;
+		private String description;
+		private String id;
+		private String pw;
+	}
 }

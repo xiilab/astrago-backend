@@ -59,4 +59,16 @@ public class CredentialServiceImpl implements CredentialService {
 	public void deleteCredentialById(long id, UserInfoDTO userInfoDTO) {
 		credentialRepository.deleteById(id);
 	}
+
+	@Override
+	@Transactional
+	public void updateCredentialById(long id, CredentialReqDTO.UpdateDTO updateDTO, UserInfoDTO userInfoDTO) {
+		CredentialEntity credentialEntity = credentialRepository.findById(id).orElseThrow();
+
+		if (!userInfoDTO.getId().equals(credentialEntity.getRegUser().getRegUserId())) {
+			throw new IllegalArgumentException("해당 크리덴셜을 추가한 유저가 아닙니다.");
+		}
+
+		credentialEntity.updateInfo(updateDTO);
+	}
 }
