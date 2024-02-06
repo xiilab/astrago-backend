@@ -7,7 +7,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.exception.K8sException;
-import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -212,7 +211,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_BATCH_JOB);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_BATCH_JOB_LOG);
 		}
 	}
 
@@ -228,7 +227,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_INTERACTIVE_JOB);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_INTERACTIVE_JOB_LOG);
 		}
 	}
 

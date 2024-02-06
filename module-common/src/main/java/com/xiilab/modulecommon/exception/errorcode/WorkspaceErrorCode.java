@@ -13,8 +13,8 @@ public enum WorkspaceErrorCode implements ErrorCode {
 
 	WORKSPACE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 이름의 워크스페이스가 없습니다."),
 	WORKSPACE_PIN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "이미 pin이 추가되었습니다."),
-
-
+	WORKSPACE_USER_ADD_FAIL(HttpStatus.NOT_FOUND.value(), "워크스페이스에 회원 추가 실패하였습니다."),
+	NOT_FOUND_WORKSPACE(HttpStatus.NOT_FOUND.value(), "해당 이름의 워크스페이스가 없습니다."),
 
 	;
 

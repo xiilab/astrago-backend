@@ -46,7 +46,7 @@ public enum MIGProduct {
 				migProduct = MIGProduct.H100;
 				break;
 			case "A100":
-				String gb = Arrays.stream(split).filter(s -> s.contains("GB")).findFirst().orElseThrow(() -> new RestApiException(NodeErrorCode.GPU_MEMORY_NOT_FOUND));
+				String gb = Arrays.stream(split).filter(s -> s.contains("GB")).findFirst().orElseThrow(() -> new RestApiException(NodeErrorCode.GPU_PRODUCT_MEMORY_NOT_EXIST));
 				if (gb.equals("40GB")) {
 					migProduct = MIGProduct.A100_40GB;
 				} else if (gb.equals("80GB")) {

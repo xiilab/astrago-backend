@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.exception.K8sException;
-import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -509,7 +508,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	private <T> void checkAndThrowIfInUse(Supplier<List<T>> resourceFetcher) {
 		List<T> resourcesInUse = resourceFetcher.get();
 		if (resourcesInUse != null && !resourcesInUse.isEmpty()) {
-			throw new K8sException(VolumeErrorCode.VOLUME_DELETE_NOT_ALLOWED);
+			throw new K8sException(VolumeErrorCode.VOLUME_NOT_DELETE_IN_USE);
 		}
 	}
 

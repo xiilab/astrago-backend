@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.K8sException;
-import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
@@ -147,7 +146,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			File file = new File(migProfilePath);
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
-				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_FOUND);
+				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
 			}
 			//json 파일을 읽어옴
 			ResponseDTO.MIGProfileList migProfileList = objectMapper.readValue(file, ResponseDTO.MIGProfileList.class);

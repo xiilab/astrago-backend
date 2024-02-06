@@ -21,16 +21,16 @@ public enum CommonErrorCode implements ErrorCode {
 	PLUGIN_ALREADY_INSTALLED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "이미 설치된 플러그인입니다."),
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "파일이 존재하지 않습니다."),
 	FILE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
-	FILE_DOWNLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
+	FILE_DOWNLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 다운로드에 실패했습니다."),
 	FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 업로드를 실패했습니다."),
 	// alert
-	ALERT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 ID의 알림이 없습니다."),
+	ALERT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 알림이 존재하지 않습니다."),
 	// HUB
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "허브 상세정보가 존재하지 않습니다."),
 	// terminal
 	TERMINAL_CLOSE_ERROR(HttpStatus.INSUFFICIENT_STORAGE.value(), "web terminal close error"),
 	// monitor
-	MONITOR_METRIC_ERROR(HttpStatus.NOT_FOUND.value(), "해당 메트릭이 없습니다."),
+	MONITOR_METRIC_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 메트릭이 존재하지 않습니다."),
 
 	;
 	private final int code;

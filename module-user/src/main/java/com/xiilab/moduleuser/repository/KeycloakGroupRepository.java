@@ -9,7 +9,6 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.exception.K8sException;
-import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
@@ -68,7 +67,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.toList();
 			return new GroupInfoDTO(group, groupUsers);
 		} catch (NotFoundException e) {
-			throw new K8sException(UserErrorCode.GROUP_NOT_FOUND);
+			throw new K8sException(WorkspaceErrorCode.NOT_FOUND_WORKSPACE);
 		}
 	}
 
@@ -186,7 +185,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.findFirst();
 
 			if(group.isEmpty()){
-				throw new K8sException(UserErrorCode.USER_ADD_WORKSPACE_FAIL);
+				throw new K8sException(WorkspaceErrorCode.WORKSPACE_USER_ADD_FAIL);
 			}
 		}
 
