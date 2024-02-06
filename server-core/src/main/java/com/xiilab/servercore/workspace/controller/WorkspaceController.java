@@ -60,6 +60,16 @@ public class WorkspaceController {
 			workspaceService.getWorkspaceList(isMyWorkspace, searchCondition, pageNum, userInfoDTO));
 	}
 
+	@PatchMapping("/{workspaceName}")
+	@Operation(summary = "워크스페이스 수정")
+	public ResponseEntity<HttpStatus> updateWorkspaceInfo(
+		@PathVariable("workspaceName") String workspaceName,
+		@RequestBody WorkspaceDTO.UpdateDTO updateDTO
+	) {
+		workspaceModuleFacadeService.updateWorkspaceInfoByName(workspaceName, updateDTO);
+		return ResponseEntity.ok().build();
+	}
+
 	@DeleteMapping("/{name}")
 	@Operation(summary = "워크스페이스 삭제")
 	public ResponseEntity<HttpStatus> deleteWorkspaceByName(@PathVariable(name = "name") String name,
@@ -70,7 +80,7 @@ public class WorkspaceController {
 
 	@GetMapping("/overview/pin")
 	@Operation(summary = "워크스페이스 OverView 조회")
-	public ResponseEntity<List<WorkspaceDTO.TotalResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO){
+	public ResponseEntity<List<WorkspaceDTO.TotalResponseDTO>> getWorkspaceOverView(UserInfoDTO userInfoDTO) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceOverView(userInfoDTO));
 	}
 
