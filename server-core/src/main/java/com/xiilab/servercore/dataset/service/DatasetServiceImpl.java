@@ -45,9 +45,7 @@ public class DatasetServiceImpl implements DatasetService {
 		//파일 업로드
 		String storageRootPath = astragoDatasetEntity.getStorageEntity().getHostPath();
 		String datasetPath = storageRootPath + "/" + astragoDatasetEntity.getDatasetName().replace(" ", "");
-		//dataset 저장
-		astragoDatasetEntity.setDatasetPath(datasetPath);
-		datasetRepository.save(astragoDatasetEntity);
+		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(datasetPath);
 		try {
@@ -56,7 +54,12 @@ public class DatasetServiceImpl implements DatasetService {
 			for (MultipartFile file : files) {
 				Path targetPath = uploadPath.resolve(file.getOriginalFilename());
 				Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+				size += file.getSize();
 			}
+			//dataset 저장
+			astragoDatasetEntity.setDatasetSize(size);
+			astragoDatasetEntity.setDatasetPath(datasetPath);
+			datasetRepository.save(astragoDatasetEntity);
 		} catch (IOException e) {
 			throw new RuntimeException("파일 업로드를 실패했습니다.");
 		}
@@ -121,10 +124,12 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
+	@Transactional
 	public void astragoDatasetUploadFile(Long datasetId, String path, List<MultipartFile> files) {
-		datasetRepository.findById(datasetId)
-				.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
-		CoreFileUtils.datasetUploadFiles(path, files);
+		AstragoDatasetEntity dataset = (AstragoDatasetEntity) datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
+		long size = CoreFileUtils.datasetUploadFiles(path, files);
+		dataset.setDatasetSize(size);
 	}
 
 	@Override

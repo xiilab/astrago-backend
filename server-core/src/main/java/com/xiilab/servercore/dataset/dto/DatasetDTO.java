@@ -6,6 +6,7 @@ import java.util.List;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.servercore.common.enums.DatasetDivision;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
@@ -52,6 +53,7 @@ public class DatasetDTO {
 		private String creator;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
+		private String size;
 		private List<WorkloadResDTO.UsingDatasetDTO> usingDatasets;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
@@ -67,6 +69,7 @@ public class DatasetDTO {
 					.ip(((AstragoDatasetEntity)dataset).getStorageEntity().getIp())
 					.storagePath(((AstragoDatasetEntity)dataset).getStorageEntity().getStoragePath())
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
+					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
 					.build();
 			}else if (dataset.isLocalDataset()) {
 				return ResDatasetWithStorage.builder()
@@ -97,6 +100,7 @@ public class DatasetDTO {
 		private String creator;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
+		private String size;
 		private boolean isAvailable;
 
 		public static ResDataset toDto(Dataset dataset) {
@@ -110,6 +114,7 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
+					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return ResDataset.builder()
