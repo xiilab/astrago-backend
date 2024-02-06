@@ -54,8 +54,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	}
 
 	@Override
-	public void updateWorkspace(String workspaceId, WorkspaceDTO.RequestDTO workspaceReqDTO) {
-
+	public void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
+		workspaceRepo.updateWorkspaceInfo(workspaceName, updateDTO);
 	}
 
 	@Override

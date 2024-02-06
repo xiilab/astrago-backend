@@ -58,6 +58,11 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 	}
 
 	@Override
+	public void updateWorkspaceInfoByName(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
+		workspaceService.updateWorkspace(workspaceName, updateDTO);
+	}
+
+	@Override
 	public void deleteWorkspaceByName(String workspaceName) {
 		workspaceService.deleteWorkspaceByName(workspaceName);
 	}
