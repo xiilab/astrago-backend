@@ -64,11 +64,11 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public void deleteWorkspaceMemberByUserId(String groupName, String userId){
-		groupService.deleteWorkspaceMemberByUserId(groupName, userId);
+	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList){
+		groupService.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, String userId){
-		groupService.addWorkspaceMemberByUserId(groupName, userId);
+	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
+		groupService.addWorkspaceMemberByUserId(groupName, userIdList);
 	}
 }
