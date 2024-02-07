@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.io.ByteArrayResource;
@@ -28,6 +27,7 @@ import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 import com.xiilab.servercore.dataset.repository.DatasetRepository;
 import com.xiilab.servercore.dataset.repository.DatasetWorkspaceRepository;
+import com.xiilab.servercore.workspace.dto.InsertWorkspaceDatasetDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,10 +51,12 @@ public class DatasetServiceImpl implements DatasetService {
 		try {
 			Files.createDirectories(uploadPath);
 			// 업로드된 각 파일에 대해 작업 수행
-			for (MultipartFile file : files) {
-				Path targetPath = uploadPath.resolve(file.getOriginalFilename());
-				Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-				size += file.getSize();
+			if(files != null){
+				for (MultipartFile file : files) {
+					Path targetPath = uploadPath.resolve(file.getOriginalFilename());
+					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+					size += file.getSize();
+				}
 			}
 			//dataset 저장
 			astragoDatasetEntity.setDatasetSize(size);
@@ -202,7 +204,6 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DatasetDTO.DatasetsInWorkspace getDatasetsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType,
 		UserInfoDTO userInfoDTO) {
-
 		if(repositoryType == RepositoryType.WORKSPACE){
 			List<DatasetWorkSpaceMappingEntity> datasets = datasetWorkspaceRepository.findByWorkspaceResourceName(
 				workspaceResourceName);
@@ -214,6 +215,43 @@ public class DatasetServiceImpl implements DatasetService {
 			return DatasetDTO.DatasetsInWorkspace.entitiesToDtos(datasetsByAuthority);
 		}
 		return null;
+	}
+
+	@Override
+	public void insertWorkspaceDataset(InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO){
+		String workspaceResourceName = insertWorkspaceDatasetDTO.getWorkspaceResourceName();
+		Long datasetId = insertWorkspaceDatasetDTO.getDatasetId();
+
+		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
+			workspaceResourceName, datasetId);
+		if(workSpaceMappingEntity != null){
+			throw new RuntimeException("해당 워크스페이스에 이미 추가된 데이터 셋입니다.");
+		}
+
+		//dataset entity 조회
+		Dataset dataset = datasetRepository.findById(datasetId)
+			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+		//datasetWorkspaceMappingEntity 생성 및 dataset entity 추가
+		DatasetWorkSpaceMappingEntity datasetWorkSpaceMappingEntity = DatasetWorkSpaceMappingEntity.builder()
+			.workspaceResourceName(workspaceResourceName)
+			.dataset(dataset)
+			.build();
+
+		datasetWorkspaceRepository.save(datasetWorkSpaceMappingEntity);
+	}
+
+	@Override
+	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO) {
+		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
+			workspaceResourceName, datasetId);
+		if(workSpaceMappingEntity == null){
+			throw new RuntimeException("데이터 셋이 존재하지 않습니다.");
+		}
+		//owner or 본인 체크
+		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
+			throw new RuntimeException("삭제 권한이 없는 데이터 셋입니다.");
+		}
+		datasetWorkspaceRepository.deleteByDatasetIdAndWorkspaceResourceName(datasetId, workspaceResourceName);
 	}
 
 }

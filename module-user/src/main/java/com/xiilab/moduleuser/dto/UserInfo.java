@@ -17,6 +17,7 @@ import lombok.Getter;
 public class UserInfo {
 	private String id;
 	private String userName;
+	private String userRealName;
 	private String email;
 	private LocalDateTime joinDate;
 	private SignUpMethod signUpMethod;
@@ -27,6 +28,7 @@ public class UserInfo {
 	public UserInfo(UserRepresentation userRep, List<GroupRepresentation> groupReps) {
 		this.id = userRep.getId();
 		this.userName = userRep.getUsername();
+		this.userRealName = userRep.getLastName() + userRep.getFirstName();
 		this.email = userRep.getEmail();
 		this.joinDate = convertUnixToLocalDateTime(userRep.getCreatedTimestamp());
 		this.signUpMethod = null;
