@@ -22,6 +22,7 @@ public class CreateSvcReqDTO extends K8SResourceReqDTO {
 		return CreateSvcReqDTO.builder()
 			.name(moduleCreateWorkloadReqDTO.getName())
 			.description(moduleCreateWorkloadReqDTO.getDescription())
+			.creatorId(moduleCreateWorkloadReqDTO.getCreatorId())
 			.creatorName(moduleCreateWorkloadReqDTO.getCreatorName())
 			.workspace(moduleCreateWorkloadReqDTO.getWorkspace())
 			.svcType(SvcType.NODE_PORT)

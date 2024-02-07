@@ -30,18 +30,9 @@ public class WorkspaceTotalDTO {
 	private int endCnt;
 	private int pendingCnt;
 	private int errCnt;
-	private String creator;
+	private String creatorId;
+	private String creatorName;
 	private LocalDateTime createAt;
-
-	public WorkspaceTotalDTO(WorkspaceDTO.ResponseDTO workspaceDTO, ResourceQuotaResDTO resourceQuotaResDTO) {
-		this.uid = workspaceDTO.getId();
-		this.name = workspaceDTO.getName();
-		this.resourceName = workspaceDTO.getResourceName();
-		this.description = workspaceDTO.getDescription();
-		this.limitCPU = resourceQuotaResDTO.getLimitCPU();
-		this.limitMEM = resourceQuotaResDTO.getLimitMEM();
-		this.limitGPU = resourceQuotaResDTO.getLimitGPU();
-	}
 
 	public WorkspaceTotalDTO(WorkspaceDTO.ResponseDTO workspaceDTO, ResourceQuotaResDTO resourceQuotaResDTO, List<ModuleWorkloadResDTO> workloadList) {
 		this.uid = workspaceDTO.getId();
@@ -56,7 +47,8 @@ public class WorkspaceTotalDTO {
 		this.errCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.ERROR);
 		this.pendingCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.PENDING);
 		this.endCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.END);
-		this.creator = workspaceDTO.getCreator();
+		this.creatorId = workspaceDTO.getCreatorId();
+		this.creatorName = workspaceDTO.getCreatorName();
 		this.createAt = workspaceDTO.getCreatedAt();
 	}
 

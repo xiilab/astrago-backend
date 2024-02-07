@@ -12,7 +12,7 @@ public class CreateVolumeReqDTO extends APIBaseReqDTO {
 	private String storageClassMetaName;
 	private int requestVolume;
 	private String workspaceMetaDataName;
-	private String creator;
+	private String creatorId;
 	private String creatorName;
 
 	public CreateVolumeReqDTO() {
@@ -22,7 +22,7 @@ public class CreateVolumeReqDTO extends APIBaseReqDTO {
 	public CreateVolumeDTO toModuleDto(){
 		return CreateVolumeDTO.builder()
 			.name(getName())
-			.creator(creator)
+			.creatorId(creatorId)
 			.storageClassMetaName(storageClassMetaName)
 			.creatorName(creatorName)
 			.storageType(storageType)
@@ -31,8 +31,8 @@ public class CreateVolumeReqDTO extends APIBaseReqDTO {
 			.build();
 	}
 
-	public void setUserInfo(String creator, String creatorName){
-		this.creator = creator;
+	public void setUserInfo(String creatorId, String creatorName){
+		this.creatorId = creatorId;
 		this.creatorName = creatorName;
 	}
 }

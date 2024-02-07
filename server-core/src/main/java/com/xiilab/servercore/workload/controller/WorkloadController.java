@@ -41,7 +41,7 @@ public class WorkloadController {
 		@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
 		@PathVariable(value = "type") WorkloadType workloadType,
 		UserInfoDTO userInfoDTO) {
-		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, workloadType, userInfoDTO);
+		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 

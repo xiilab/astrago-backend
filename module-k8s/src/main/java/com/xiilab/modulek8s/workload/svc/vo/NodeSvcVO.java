@@ -46,7 +46,7 @@ public class NodeSvcVO extends K8SResourceReqVO {
 			.name(createSvcReqDTO.getName())
 			.description(createSvcReqDTO.getDescription())
 			.creatorName(createSvcReqDTO.getCreatorName())
-			.creator(createSvcReqDTO.getCreator())
+			.creatorId(createSvcReqDTO.getCreatorId())
 			.workspace(createSvcReqDTO.getWorkspace())
 			.svcType(createSvcReqDTO.getSvcType())
 			.jobName(createSvcReqDTO.getJobName())
@@ -67,7 +67,8 @@ public class NodeSvcVO extends K8SResourceReqVO {
 				AnnotationField.NAME.getField(), getName(),
 				AnnotationField.DESCRIPTION.getField(), getDescription(),
 				AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
-				AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorName(),
+				AnnotationField.CREATOR_NAME.getField(), getCreatorName(),
+				AnnotationField.CREATOR_ID.getField(), getCreatorId(),
 				AnnotationField.TYPE.getField(), getSvcType().getType()
 			))
 			.withLabels(Map.of(

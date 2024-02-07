@@ -111,7 +111,7 @@
 // 	@Test
 // 	void getStorageClasseByLabel() {
 // 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-// 			client.storage().v1().storageClasses().withLabel("storage-type", "NFS3").list().getItems().get(0);
+// 			client.storage().v1().storageClasses().withLabel("storage-repositoryType", "NFS3").list().getItems().get(0);
 // 		}
 // 	}
 //

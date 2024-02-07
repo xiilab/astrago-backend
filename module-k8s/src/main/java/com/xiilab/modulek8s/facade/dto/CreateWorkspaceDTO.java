@@ -15,7 +15,7 @@ public class CreateWorkspaceDTO {
 	private String name;
 	private String description;
 	private String creatorName;
-	private String creator;
+	private String creatorId;
 	private List<String> userIds;
 	private int reqCPU;
 	private int reqMEM;
