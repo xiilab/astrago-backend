@@ -174,9 +174,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, UserInfoDTO userInfoDTO) {
+	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum, UserInfoDTO userInfoDTO) {
 		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
-		return resourceQuotaReqList.stream()
+
+		List<ResourceQuotaFormDTO> list = resourceQuotaReqList.stream()
 			.map(resourceQuotaEntity ->
 				ResourceQuotaFormDTO.builder()
 					.id(resourceQuotaEntity.getId())
@@ -184,11 +185,15 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					.requestReason(resourceQuotaEntity.getRequestReason())
 					.rejectReason(resourceQuotaEntity.getRejectReason())
 					.status(resourceQuotaEntity.getStatus())
+					.modDate(resourceQuotaEntity.getModDate())
+					.regDate(resourceQuotaEntity.getRegDate())
 					.cpuReq(resourceQuotaEntity.getCpuReq())
 					.gpuReq(resourceQuotaEntity.getGpuReq())
 					.memReq(resourceQuotaEntity.getMemReq())
 					.build())
 			.toList();
+
+		return new PageDTO<>(list, pageNum, 10);
 	}
 
 	@Override
