@@ -61,6 +61,8 @@ public abstract class WorkloadEntity {
 	@Column(name = "WORKLOAD_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	protected WorkloadType workloadType;
+	@Column(name = "WORKLOAD_CMD")
+	protected String workloadCMD;
 	@OneToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

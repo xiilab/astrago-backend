@@ -21,7 +21,7 @@ public class JobEntity extends WorkloadEntity {
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	JobEntity(String name, String description, String resourceName, String workspaceName, String workspaceResourceName, Integer cpuReq, Integer gpuReq, Integer memReq,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorName, String creatorId, Map<String, String> envs,
-		List<String> volumes, List<PortDTO> ports, WorkloadType workloadType) {
+		List<String> volumes, List<PortDTO> ports, WorkloadType workloadType, String cmd) {
 		this.name = name;
 		this.description = description;
 		this.resourceName = resourceName;
@@ -38,5 +38,6 @@ public class JobEntity extends WorkloadEntity {
 		this.volumeList = VolumeEntity.createVolumeList(volumes, this);
 		this.portList = PortEntity.createPortList(ports, this);
 		this.workloadType = workloadType;
+		this.workloadCMD = cmd;
 	}
 }
