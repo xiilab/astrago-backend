@@ -41,22 +41,17 @@ public class WorkloadFacadeService {
 	private final PinService pinService;
 	private final AlertService alertService;
 
-	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, WorkloadType workloadType,
-		UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getUserName(), userInfoDTO.getUserRealName());
+	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserRealName());
 		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		// if (workloadType == WorkloadType.BATCH) {
-		// 	workloadModuleFacadeService.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		// } else if (workloadType == WorkloadType.INTERACTIVE) {
-		// 	workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		// }
+
 		// 워크로드 생성 알림
-		// alertService.sendAlert(AlertDTO.builder()
-		// 	.recipientId(userInfoDTO.getId())
-		// 	.senderId("SYSTEM")
-		// 	.alertType(AlertType.WORKLOAD)
-		// 	.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
-		// 	.build());
+		alertService.sendAlert(AlertDTO.builder()
+			.recipientId(userInfoDTO.getId())
+			.senderId("SYSTEM")
+			.alertType(AlertType.WORKLOAD)
+			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
+			.build());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
@@ -67,6 +62,14 @@ public class WorkloadFacadeService {
 			return workloadModuleFacadeService.getInteractiveWorkload(workspaceName, resourceName);
 		} else {
 			return null;
+		}
+	}
+
+	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {
+		if (workloadType == WorkloadType.BATCH) {
+
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+
 		}
 	}
 
@@ -125,7 +128,7 @@ public class WorkloadFacadeService {
 		//TODO 종료된 workload list 조회 및 추가
 
 		if (totalPageSize == 0) {
-			return new PageDTO(0, 0, 0, null);
+			return new PageDTO<>(0, 0, 0, null);
 		}
 
 		if (totalPageSize < pageNum) {
@@ -146,7 +149,7 @@ public class WorkloadFacadeService {
 					.name(workload.getName())
 					.resourceName(workload.getResourceName())
 					.description(workload.getDescription())
-					.creator(workload.getCreator())
+					.creatorId(workload.getCreatorId())
 					.workspaceName(workspace.getName())
 					.workspaceResourceName(workspace.getResourceName())
 					.type(workload.getType())
@@ -217,7 +220,7 @@ public class WorkloadFacadeService {
 					.name(workload.getName())
 					.resourceName(workload.getResourceName())
 					.description(workload.getDescription())
-					.creator(workload.getCreator())
+					.creatorId(workload.getCreatorId())
 					.workspaceName(workspace.getName())
 					.workspaceResourceName(workspace.getResourceName())
 					.type(workload.getType())

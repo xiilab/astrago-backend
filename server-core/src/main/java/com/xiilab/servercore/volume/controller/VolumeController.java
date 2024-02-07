@@ -41,7 +41,7 @@ public class VolumeController {
 	 */
 	@PostMapping("")
 	@Operation(summary = "볼륨 생성")
-	public ResponseEntity<Object> createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
+	public ResponseEntity<HttpStatus> createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
 		UserInfoDTO userInfoDTO) {
 		volumeFacadeService.createVolume(requestDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -49,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class VolumeRepositoryImpl implements VolumeRepository {
 	private final K8sAdapter k8sAdapter;
-
+	private static final String ASTRA = "astra";
 	/**
 	 * 유저가 설정한 스토리지 이름 조회
 	 *
@@ -77,7 +76,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	private static List<PersistentVolumeClaim> getAllVolumes(KubernetesClient client) {
 		return client.persistentVolumeClaims()
 			.inAnyNamespace()
-			.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+			.withLabel(LabelField.CONTROL_BY.getField(), ASTRA)
 			.list()
 			.getItems();
 	}
@@ -136,7 +135,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			//삭제
 			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
 				.inAnyNamespace()
-				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.withLabel(LabelField.CONTROL_BY.getField(), ASTRA)
 				.list()
 				.getItems()
 				.stream()
@@ -153,7 +152,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
 				.inAnyNamespace()
-				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.withLabel(LabelField.CONTROL_BY.getField(), ASTRA)
 				.resources()
 				.filter(pvcr -> pvcr.get().getMetadata().getName().equals(modifyVolumeDTO.getVolumeMetaName()))
 				.findFirst()
@@ -338,7 +337,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			//본인이 생성한 볼륨인지 체크
-			String creator = modifyVolumeDTO.getCreator();
+			String creator = modifyVolumeDTO.getCreatorId();
 			boolean chk = volumeCreatorCheck(modifyVolumeDTO.getWorkspaceMetaName(),
 				modifyVolumeDTO.getVolumeMetaName(), client, creator);
 			if (!chk) {
@@ -364,7 +363,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			//본인이 생성한 볼륨인지 체크
-			String creator = deleteVolumeDTO.getCreator();
+			String creator = deleteVolumeDTO.getCreatorId();
 			boolean chk = volumeCreatorCheck(deleteVolumeDTO.getWorkspaceMetaName(),
 				deleteVolumeDTO.getVolumeMetaName(), client, creator);
 			if (!chk)
@@ -395,7 +394,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
 				.withLabel(LabelField.STORAGE_NAME.getField(), storageMetaName)
-				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.withLabel(LabelField.CONTROL_BY.getField(), ASTRA)
 				.list()
 				.getItems();
 			return pvcs.stream().map(VolumeResDTO::toDTO).toList();
@@ -462,7 +461,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<PersistentVolumeClaim> pvcs = client.persistentVolumeClaims()
 				.inNamespace(workspaceMetaName)
-				.withLabel(LabelField.CONTROL_BY.getField(), "astra")
+				.withLabel(LabelField.CONTROL_BY.getField(), ASTRA)
 				.list()
 				.getItems();
 
@@ -476,7 +475,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 					return pageVolumeResDTO;
 				})
 				// .sorted(Comparator.comparing(PageVolumeResDTO::getCreatedAt).reversed())
-				.collect(Collectors.toList());
+				.toList();
 		}
 	}
 
@@ -579,8 +578,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 		Map<String, String> annotations = pvc.getMetadata().getAnnotations();
 
-		if (option.equalsIgnoreCase(AnnotationField.CREATOR_FULL_NAME.getField())) {
-			return annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()).equalsIgnoreCase(keyword);
+		if (option.equalsIgnoreCase(AnnotationField.CREATOR_NAME.getField())) {
+			return annotations.get(AnnotationField.CREATOR_NAME.getField()).equalsIgnoreCase(keyword);
 		} else if (option.equalsIgnoreCase(AnnotationField.NAME.getField())) {
 			return annotations.get(AnnotationField.NAME.getField()).equalsIgnoreCase(keyword);
 		}
@@ -589,6 +588,6 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	private boolean isControlledByAstra(Map<String, String> map) {
-		return map != null && "astra".equals(map.get("control-by"));
+		return map != null && ASTRA.equals(map.get("control-by"));
 	}
 }

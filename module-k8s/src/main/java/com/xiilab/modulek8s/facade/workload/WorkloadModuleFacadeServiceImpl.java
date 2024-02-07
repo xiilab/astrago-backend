@@ -135,7 +135,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
 			return workloadList.stream()
-				.filter(workload -> workload.getCreator().equals(username))
+				.filter(workload -> workload.getCreatorId().equals(username))
 				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
 				.toList()
 				.get(0);
@@ -264,4 +264,5 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType) {
 		return workloadModuleService.getJobPod(workspaceName, workloadName, workloadType);
 	}
+
 }

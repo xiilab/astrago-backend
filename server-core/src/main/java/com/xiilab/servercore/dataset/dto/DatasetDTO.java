@@ -6,8 +6,10 @@ import java.util.List;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.servercore.common.enums.DatasetDivision;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
+import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 
 import lombok.Builder;
@@ -51,6 +53,7 @@ public class DatasetDTO {
 		private String creator;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
+		private String size;
 		private List<WorkloadResDTO.UsingDatasetDTO> usingDatasets;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
@@ -66,6 +69,7 @@ public class DatasetDTO {
 					.ip(((AstragoDatasetEntity)dataset).getStorageEntity().getIp())
 					.storagePath(((AstragoDatasetEntity)dataset).getStorageEntity().getStoragePath())
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
+					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
 					.build();
 			}else if (dataset.isLocalDataset()) {
 				return ResDatasetWithStorage.builder()
@@ -96,6 +100,7 @@ public class DatasetDTO {
 		private String creator;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
+		private String size;
 		private boolean isAvailable;
 
 		public static ResDataset toDto(Dataset dataset) {
@@ -109,6 +114,7 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
+					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return ResDataset.builder()
@@ -147,5 +153,49 @@ public class DatasetDTO {
 		private String size;
 		private String lastModifiedTime;
 		private String contentPath;
+	}
+
+	@Getter
+	@Builder
+	public static class DatasetInWorkspace{
+		private Long datasetId;
+		private String datasetName;
+
+		public static DatasetInWorkspace entityToDto(Dataset dataset) {
+			if (dataset.isAstargoDataset()) {
+				return DatasetInWorkspace.builder()
+					.datasetId(dataset.getDatasetId())
+					.datasetName(dataset.getDatasetName())
+					.build();
+			} else if (dataset.isLocalDataset()) {
+				return DatasetInWorkspace.builder()
+					.datasetId(dataset.getDatasetId())
+					.datasetName(dataset.getDatasetName())
+					.build();
+			}
+			return null;
+		}
+		public static DatasetInWorkspace mappingEntityToDto(DatasetWorkSpaceMappingEntity dataset){
+			return DatasetInWorkspace.builder()
+				.datasetId(dataset.getDataset().getDatasetId())
+				.datasetName(dataset.getDataset().getDatasetName())
+				.build();
+		}
+	}
+	@Getter
+	@Builder
+	public static class DatasetsInWorkspace {
+		private List<DatasetInWorkspace> datasets;
+
+		public static DatasetsInWorkspace entitiesToDtos(List<Dataset> datasets) {
+			return DatasetsInWorkspace.builder()
+				.datasets(datasets.stream().map(DatasetInWorkspace::entityToDto).toList())
+				.build();
+		}
+		public static DatasetsInWorkspace mappingEntitiesToDtos(List<DatasetWorkSpaceMappingEntity> datasets) {
+			return DatasetsInWorkspace.builder()
+				.datasets(datasets.stream().map(DatasetInWorkspace::mappingEntityToDto).toList())
+				.build();
+		}
 	}
 }

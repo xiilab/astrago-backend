@@ -7,9 +7,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AnnotationField {
 	NAME("name"),
+	WORKSPACE_NAME("ws-name"),
 	DESCRIPTION("description"),
 	CREATED_AT("created-at"),
-	CREATOR_FULL_NAME("creator-name"),
+	CREATOR_ID("creator-id"),
+	CREATOR_NAME("creator-name"),
 	TYPE("type"),
 	IMAGE_NAME("image-name"),
 	IMAGE_TAG("image-tag"),

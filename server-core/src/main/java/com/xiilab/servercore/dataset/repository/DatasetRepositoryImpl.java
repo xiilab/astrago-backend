@@ -2,7 +2,6 @@ package com.xiilab.servercore.dataset.repository;
 
 
 import static com.xiilab.servercore.dataset.entity.QDataset.*;
-import static com.xiilab.servercore.storage.entity.QStorageEntity.*;
 
 import java.util.List;
 
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
@@ -27,7 +25,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<Dataset> findByAuthority(PageRequest pageRequest, UserInfoDTO userInfoDTO) {
+	public Page<Dataset> findByAuthorityWithPaging(PageRequest pageRequest, UserInfoDTO userInfoDTO) {
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
 			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
 			.offset(pageRequest.getOffset())
@@ -39,6 +37,15 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
 			.fetchOne();
 		return new PageImpl<>(datasets, pageRequest, count);
+	}
+
+
+	@Override
+	public List<Dataset> findByAuthority(UserInfoDTO userInfoDTO) {
+		List<Dataset> datasets = queryFactory.selectFrom(dataset)
+			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
+			.fetch();
+		return datasets;
 	}
 
 	@Override
