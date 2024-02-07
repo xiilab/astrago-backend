@@ -51,10 +51,12 @@ public class DatasetServiceImpl implements DatasetService {
 		try {
 			Files.createDirectories(uploadPath);
 			// 업로드된 각 파일에 대해 작업 수행
-			for (MultipartFile file : files) {
-				Path targetPath = uploadPath.resolve(file.getOriginalFilename());
-				Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-				size += file.getSize();
+			if(files != null){
+				for (MultipartFile file : files) {
+					Path targetPath = uploadPath.resolve(file.getOriginalFilename());
+					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+					size += file.getSize();
+				}
 			}
 			//dataset 저장
 			astragoDatasetEntity.setDatasetSize(size);
