@@ -91,4 +91,13 @@ public class GroupController {
 		return ResponseEntity.ok().build();
 	}
 
+	@GetMapping("/ws/{groupName}/{search}")
+	@Operation(summary = "워크스페이스 멤버 검색")
+	public ResponseEntity<List<GroupUserDTO>> getWorkspaceMemberBySearch(
+		@PathVariable(name = "groupName") String groupName,
+		@PathVariable(name = "search") String search){
+		return new ResponseEntity<>(groupFacadeService.getWorkspaceMemberBySearch(groupName, search), HttpStatus.OK);
+	}
+
+
 }
