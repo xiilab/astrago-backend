@@ -30,7 +30,7 @@ public interface WorkspaceFacadeService {
 
 	void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO);
 
-	List<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, UserInfoDTO userInfoDTO);
+	PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum, UserInfoDTO userInfoDTO);
 
 	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO);
 

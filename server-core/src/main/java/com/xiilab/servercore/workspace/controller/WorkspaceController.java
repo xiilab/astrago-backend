@@ -114,11 +114,12 @@ public class WorkspaceController {
 
 	@GetMapping("/resource")
 	@Operation(summary = "워크스페이스 resource 리스트 조회")
-	public ResponseEntity<List<ResourceQuotaFormDTO>> getResourceQuotaList(
+	public ResponseEntity<PageDTO<ResourceQuotaFormDTO>> getResourceQuotaList(
 		@RequestParam(value = "workspace") String workspace,
+		@RequestParam(value = "pageNum") int pageNum,
 		UserInfoDTO userInfoDTO
 	) {
-		return ResponseEntity.ok(workspaceService.getResourceQuotaRequests(workspace, userInfoDTO));
+		return ResponseEntity.ok(workspaceService.getResourceQuotaRequests(workspace, pageNum, userInfoDTO));
 	}
 
 	@PatchMapping("/resource/{id}")
