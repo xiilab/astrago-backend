@@ -41,5 +41,7 @@ public class DatasetWorkSpaceMappingEntity extends BaseEntity {
 	public DatasetWorkSpaceMappingEntity(Dataset dataset, String workspaceResourceName) {
 		this.dataset = dataset;
 		this.workspaceResourceName = workspaceResourceName;
+		//연관관계 편의 메서드
+		dataset.getMappingEntities().add(this);
 	}
 }

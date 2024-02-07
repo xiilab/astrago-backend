@@ -20,6 +20,8 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.workspace.dto.InsertWorkspaceDatasetDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
@@ -36,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
+	private final DatasetService datasetService;
 
 	@PostMapping("")
 	@Operation(summary = "워크스페이스 생성")
@@ -132,5 +135,12 @@ public class WorkspaceController {
 	@Operation(summary = "워크스페이스 리소스쿼터 조회")
 	public ResponseEntity<ResourceQuotaResDTO> getWorkspaceResourceQuota(@PathVariable(name = "name") String name) {
 		return ResponseEntity.ok(workspaceModuleFacadeService.getWorkspaceResourceQuota(name));
+	}
+
+	@PostMapping("{workspaceResourceName}/datasets")
+	@Operation(summary = "워크스페이스 데이터 셋 추가")
+	public ResponseEntity insertWorkspaceDataset(@RequestBody InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO){
+		datasetService.insertWorkspaceDataset(insertWorkspaceDatasetDTO);
+		return new ResponseEntity(HttpStatus.OK);
 	}
 }

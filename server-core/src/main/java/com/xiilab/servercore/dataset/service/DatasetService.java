@@ -12,6 +12,7 @@ import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
+import com.xiilab.servercore.workspace.dto.InsertWorkspaceDatasetDTO;
 
 public interface DatasetService {
 	void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files);
@@ -41,4 +42,6 @@ public interface DatasetService {
 	void astragoDatasetCreateDirectory(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
 
 	DatasetDTO.DatasetsInWorkspace getDatasetsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType, UserInfoDTO userInfoDTO);
+
+	void insertWorkspaceDataset(InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO);
 }
