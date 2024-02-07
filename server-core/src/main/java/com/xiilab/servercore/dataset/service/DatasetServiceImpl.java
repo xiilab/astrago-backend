@@ -241,4 +241,9 @@ public class DatasetServiceImpl implements DatasetService {
 		datasetWorkspaceRepository.save(datasetWorkSpaceMappingEntity);
 	}
 
+	@Override
+	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId) {
+		datasetWorkspaceRepository.deleteByDatasetIdAndWorkspaceResourceName(datasetId, workspaceResourceName);
+	}
+
 }

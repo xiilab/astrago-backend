@@ -44,4 +44,6 @@ public interface DatasetService {
 	DatasetDTO.DatasetsInWorkspace getDatasetsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType, UserInfoDTO userInfoDTO);
 
 	void insertWorkspaceDataset(InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO);
+
+	void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId);
 }

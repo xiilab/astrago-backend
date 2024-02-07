@@ -11,7 +11,7 @@ import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
 
 public interface DatasetWorkspaceRepository extends JpaRepository<DatasetWorkSpaceMappingEntity, Long> {
-	@Modifying
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("delete from DatasetWorkSpaceMappingEntity dwm where dwm.dataset.datasetId = :datasetId")
 	void deleteByDatasetId(@Param("datasetId") Long datasetId);
 
@@ -25,4 +25,11 @@ public interface DatasetWorkspaceRepository extends JpaRepository<DatasetWorkSpa
 		+ "where dwm.dataset.datasetId = :datasetId "
 		+ "and dwm.workspaceResourceName like :workspaceResourceName")
 	DatasetWorkSpaceMappingEntity findByWorkspaceResourceNameAndDatasetId(@Param("workspaceResourceName") String workspaceResourceName, @Param("datasetId")Long datasetId);
+
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("delete "
+		+ "from DatasetWorkSpaceMappingEntity dwm "
+		+ "where dwm.dataset.datasetId = :datasetId "
+		+ "and dwm.workspaceResourceName like :workspaceResourceName")
+	void deleteByDatasetIdAndWorkspaceResourceName(@Param("datasetId")Long datasetId, @Param("workspaceResourceName") String workspaceResourceName);
 }

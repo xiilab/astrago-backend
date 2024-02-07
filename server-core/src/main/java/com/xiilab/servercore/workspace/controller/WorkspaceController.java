@@ -143,4 +143,11 @@ public class WorkspaceController {
 		datasetService.insertWorkspaceDataset(insertWorkspaceDatasetDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
+	@DeleteMapping("{workspaceResourceName}/datasets/{datasetId}")
+	@Operation(summary = "워크스페이스 데이터 셋 삭제")
+	public ResponseEntity deleteWorkspaceDataset(@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(value = "datasetId") Long datasetId){
+		datasetService.deleteWorkspaceDataset(workspaceResourceName, datasetId);
+		return new ResponseEntity(HttpStatus.OK);
+	}
 }
