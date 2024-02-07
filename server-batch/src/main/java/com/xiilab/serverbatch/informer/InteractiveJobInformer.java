@@ -51,7 +51,7 @@ public class InteractiveJobInformer {
 			public void onDelete(Deployment deployment, boolean b) {
 				log.info("interactive job {}가 삭제되었습니다.", deployment.getMetadata().getName());
 				Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
-				K8SResourceMetadataDTO metadataFromResource = getMetadataFromResource(deployment);
+				K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
 				if (metadataFromResource != null) {
 					jobHistoryRepo.save(JobEntity.jobBuilder()
 						.name(metadataFromResource.getName())
