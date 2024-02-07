@@ -16,7 +16,7 @@ public enum AnnotationField {
 	IMAGE_NAME("image-name"),
 	IMAGE_TAG("image-tag"),
 	DATASET_NAME("dataset-name"),
-	IMAGE_TYPE("image-repositoryType")
+	IMAGE_TYPE("image-type")
 	;
 
 	private final String field;

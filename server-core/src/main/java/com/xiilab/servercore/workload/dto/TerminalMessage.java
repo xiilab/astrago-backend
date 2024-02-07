@@ -46,7 +46,7 @@ public class TerminalMessage {
 	 */
 	private String workload;
 	/**
-	 * workload repositoryType(BATCH, INTERACTIVE)
+	 * workload type(BATCH, INTERACTIVE)
 	 */
 	private WorkloadType workloadType;
 }

@@ -6,14 +6,13 @@ import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 public record ModuleCredentialReqDTO(
 	Long credentialId,
 	String credentialLoginId,
-	String credentialLoginEmail,
 	String credentialLoginPw,
 	String credentialName,
 	CredentialType credentialType
 ) {
 
 	public CredentialVO toCredentialVO(String workspaceName) {
-		return new CredentialVO(workspaceName, credentialId, credentialLoginId, credentialLoginEmail, credentialLoginPw,
+		return new CredentialVO(workspaceName, credentialId, credentialLoginId, credentialLoginPw,
 			credentialName, credentialType);
 	}
 }

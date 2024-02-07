@@ -6,7 +6,6 @@ public record CredentialVO (
 	String workspaceName,
 	Long credentialId,
 	String credentialLoginId,
-	String credentialLoginEmail,
 	String credentialLoginPw,
 	String credentialName,
 	CredentialType credentialType
