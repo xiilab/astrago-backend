@@ -2,6 +2,7 @@ bootJar { enabled = false }
 jar { enabled = true }
 
 dependencies {
+    implementation project(':module-common')
     // K8s
     implementation 'io.fabric8:kubernetes-client:6.9.2'
     // lombok

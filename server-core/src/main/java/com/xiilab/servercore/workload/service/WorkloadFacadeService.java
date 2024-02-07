@@ -238,6 +238,7 @@ public class WorkloadFacadeService {
 					.isPinYN(userWorkloadPinList.contains(workload.getResourceName()))
 					.build())
 			.collect(Collectors.toList());
+
 		return new PageDTO<>(resultList, pageNum, 10);
 	}
 

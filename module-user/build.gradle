@@ -2,5 +2,6 @@ bootJar { enabled = false }
 jar { enabled = true }
 
 dependencies {
+    implementation project(':module-common')
     implementation 'org.keycloak:keycloak-admin-client:23.0.1'
 }
