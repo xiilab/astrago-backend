@@ -2,6 +2,9 @@ package com.xiilab.modulek8s.node.enumeration;
 
 import java.util.Arrays;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
+
 import lombok.Getter;
 
 @Getter
@@ -43,7 +46,7 @@ public enum MIGProduct {
 				migProduct = MIGProduct.H100;
 				break;
 			case "A100":
-				String gb = Arrays.stream(split).filter(s -> s.contains("GB")).findFirst().orElseThrow(() -> new IllegalArgumentException("gpu product에 메모리가 존재하지 않습니다. ex)A100-PCIE-80GB"));
+				String gb = Arrays.stream(split).filter(s -> s.contains("GB")).findFirst().orElseThrow(() -> new RestApiException(NodeErrorCode.GPU_PRODUCT_MEMORY_NOT_EXIST));
 				if (gb.equals("40GB")) {
 					migProduct = MIGProduct.A100_40GB;
 				} else if (gb.equals("80GB")) {

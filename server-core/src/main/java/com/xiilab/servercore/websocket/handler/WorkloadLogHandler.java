@@ -13,6 +13,9 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
@@ -44,7 +47,7 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 			.split(",");
 		if (splitMessage.length != 3) {
 			log.error("Websocket Message: {}", message);
-			throw new RuntimeException("잘못된 메시지가 전달되었습니다.");
+			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}
 
 		// BATCH, INTERACTIVE
@@ -53,9 +56,9 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 		String workloadName = splitMessage[2];
 		String podName = getPodNameByWorkloadType(workspaceName, workloadName, workloadType)
 			.map(pod -> pod.getMetadata().getName())
-			.orElseThrow(() -> new RuntimeException("파드를 조회할 수 없습니다."));
+			.orElseThrow(() -> new K8sException(WorkloadErrorCode.NOT_FOUND_POD));
 		if (!StringUtils.hasText(podName)) {
-			throw new RuntimeException("해당하는 워크로드를 찾을 수 없습니다.");
+			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}
 
 		sendLogMessage(session, workspaceName, podName);

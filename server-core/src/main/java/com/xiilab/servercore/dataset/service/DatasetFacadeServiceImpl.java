@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
@@ -124,8 +126,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				workloadModuleFacadeService.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
 			}
 			datasetService.modifyDataset(modifyDataset, datasetId);
-		} else {
-			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
+		} else{
+			throw new K8sException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
 
@@ -137,7 +139,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			boolean isUse = workloadModuleFacadeService.isUsedDataset(datasetId);
 			//true = 사용중인 데이터 셋
 			if (isUse) {
-				throw new RuntimeException("사용중인 데이터 셋은 삭제할 수 없습니다.");
+				throw new K8sException(DatasetErrorCode.DATASET_NOT_DELETE_IN_USE);
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
 			if (dataset.isAstargoDataset()) {
@@ -162,7 +164,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				datasetService.deleteDatasetById(datasetId);
 			}
 		} else {
-			throw new RuntimeException("데이터 셋 수정 권한이 없습니다.");
+			throw new K8sException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
 

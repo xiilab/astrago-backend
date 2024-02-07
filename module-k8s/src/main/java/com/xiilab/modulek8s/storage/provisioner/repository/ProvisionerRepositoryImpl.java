@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
@@ -38,7 +40,7 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 			.withLabel(LabelField.STORAGE_TYPE.getField(), type)
 			.list().getItems();
 		if (items != null && !items.isEmpty()) {
-			throw new RuntimeException("이미 설치된 플러그인입니다.");
+			throw new RestApiException(CommonErrorCode.PLUGIN_ALREADY_INSTALLED);
 		}
 	}
 

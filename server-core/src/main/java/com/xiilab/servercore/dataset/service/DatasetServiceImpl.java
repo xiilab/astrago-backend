@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -63,7 +66,7 @@ public class DatasetServiceImpl implements DatasetService {
 			astragoDatasetEntity.setDatasetPath(datasetPath);
 			datasetRepository.save(astragoDatasetEntity);
 		} catch (IOException e) {
-			throw new RuntimeException("파일 업로드를 실패했습니다.");
+			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
 		}
 	}
 
@@ -95,7 +98,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public Dataset findById(Long datasetId) {
 		Dataset dataset = datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		return dataset;
 	}
 
@@ -103,7 +106,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Transactional
 	public void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId) {
 		Dataset dataset = datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		dataset.modifyDatasetName(modifyDataset.getDatasetName());
 	}
 
@@ -181,7 +184,7 @@ public class DatasetServiceImpl implements DatasetService {
 					.build();
 			}
 		}else{
-			throw new RuntimeException("파일이 존재하지 않습니다.");
+			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}
 

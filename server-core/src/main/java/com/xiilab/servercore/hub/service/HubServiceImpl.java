@@ -13,6 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.servercore.hub.dto.HubDTO;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+
 import com.xiilab.servercore.hub.entity.HubCategoryMappingEntity;
 import com.xiilab.servercore.hub.entity.HubEntity;
 import com.xiilab.servercore.hub.repository.HubCategoryMappingRepository;
@@ -42,7 +45,7 @@ public class HubServiceImpl implements HubService {
 	@Override
 	public HubDTO.Response.HubDetailDto getHubByHubId(Long hubId) {
 		HubEntity hubEntity = hubRepository.findById(hubId)
-			.orElseThrow(() -> new RuntimeException("허브 상세정보가 존재하지 않습니다."));
+			.orElseThrow(() -> new RestApiException(CommonErrorCode.HUB_NOT_FOUND));
 
 		List<HubCategoryMappingEntity> hubCategoryMappingJoinFetchByHubId = hubCategoryMappingRepository.findHubCategoryMappingJoinFetchByHubId(
 			hubId);
