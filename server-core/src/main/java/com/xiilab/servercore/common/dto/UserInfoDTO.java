@@ -45,4 +45,12 @@ public class UserInfoDTO {
 			.map(group -> group.split("/")[0])
 			.collect(Collectors.toSet());
 	}
+
+	public boolean isMyWorkspace(String workspaceName){
+		List<String> workspaces = this.workspaces.stream()
+			.filter(ws -> ws.contains("/owner"))
+			.map(group -> group.split("/")[0])
+			.toList();
+		return workspaces.contains(workspaceName) ? true : false;
+	}
 }

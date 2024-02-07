@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.io.ByteArrayResource;
@@ -242,7 +241,16 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId) {
+	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO) {
+		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
+			workspaceResourceName, datasetId);
+		if(workSpaceMappingEntity == null){
+			throw new RuntimeException("데이터 셋이 존재하지 않습니다.");
+		}
+		//owner or 본인 체크
+		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
+			throw new RuntimeException("삭제 권한이 없는 데이터 셋입니다.");
+		}
 		datasetWorkspaceRepository.deleteByDatasetIdAndWorkspaceResourceName(datasetId, workspaceResourceName);
 	}
 
