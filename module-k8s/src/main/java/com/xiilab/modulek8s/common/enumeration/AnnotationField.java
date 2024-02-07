@@ -6,14 +6,14 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AnnotationField {
-	NAME("varName"),
+	NAME("name"),
 	DESCRIPTION("description"),
 	CREATED_AT("created-at"),
-	CREATOR_FULL_NAME("creator-varName"),
+	CREATOR_FULL_NAME("creator-name"),
 	TYPE("type"),
-	IMAGE_NAME("image-varName"),
+	IMAGE_NAME("image-name"),
 	IMAGE_TAG("image-tag"),
-	DATASET_NAME("dataset-varName"),
+	DATASET_NAME("dataset-name"),
 	IMAGE_TYPE("image-repositoryType")
 	;
 

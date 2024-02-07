@@ -39,12 +39,12 @@ public abstract class ModuleWorkloadResDTO {
 
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
-		name = hasMetadata.getMetadata().getAnnotations().get("varName");
+		name = hasMetadata.getMetadata().getAnnotations().get("name");
 		resourceName = hasMetadata.getMetadata().getName();
 		description = hasMetadata.getMetadata().getAnnotations().get("description");
 		creator = hasMetadata.getMetadata().getLabels().get("creator");
 		workspaceResourceName = hasMetadata.getMetadata().getNamespace();
-		workspaceName = hasMetadata.getMetadata().getAnnotations().get("varName");
+		workspaceName = hasMetadata.getMetadata().getAnnotations().get("name");
 		createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 		age = DateUtils.getAge(createdAt);
 		type = getType();

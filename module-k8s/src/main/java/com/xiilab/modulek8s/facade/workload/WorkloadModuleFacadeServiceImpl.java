@@ -207,7 +207,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			.build();
 		svcService.createClusterIPService(createClusterIPSvcReqDTO);
 
-		//<service-varName>.<namespace>.svc.cluster.local
+		//<service-name>.<namespace>.svc.cluster.local
 		String svcDNS = svcName + "." + namespace + ".svc.cluster.local/directory";
 		return CreateLocalDatasetResDTO.builder()
 			.dns(svcDNS)

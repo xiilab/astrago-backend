@@ -107,7 +107,7 @@
 // 				"master", "/mnt"));
 //
 // 		ModuleCreateWorkloadReqDTO createWorkloadReqDTO = ModuleCreateWorkloadReqDTO.builder()
-// 			.varName("사용자 지정 이름")
+// 			.name("사용자 지정 이름")
 // 			.description("Hello world!")
 // 			.workloadType(WorkloadType.BATCH)
 // 			.creatorName("SJO")

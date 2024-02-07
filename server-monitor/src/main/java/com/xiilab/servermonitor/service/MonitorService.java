@@ -378,7 +378,7 @@ public class MonitorService {
 
 	/**
 	 * 해당 WS의 Resource Info 조회 메소드
-	 * @param namespace 조회될 WS varName
+	 * @param namespace 조회될 WS name
 	 * @return CPU,GPU,MEM등의 ResourceQuota, 상태별 워크로드 리스트
 	 */
 	public ResponseDTO.WorkspaceResponseDTO getWorkspaceResourcesInfo(String namespace){

@@ -38,11 +38,11 @@ public class TerminalMessage {
 	 */
 	private String height;
 	/**
-	 * workspace varName
+	 * workspace name
 	 */
 	private String workspace;
 	/**
-	 * worklaod varName
+	 * worklaod name
 	 */
 	private String workload;
 	/**

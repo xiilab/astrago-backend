@@ -98,7 +98,7 @@ public class WorkloadFacadeService {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		//통합용 리스트 선언
 		List<ModuleBatchJobResDTO> totalJobList = new ArrayList<>();
-		//DB에 저장되어있는 유저가 추가한 PIN 목록(k8s resource의 varName)
+		//DB에 저장되어있는 유저가 추가한 PIN 목록(k8s resource의 name)
 		Set<String> userWorkloadPinList = pinService.getUserWorkloadPinList(userInfoDTO.getId(), workspaceName);
 		//특정 워크스페이스의 워크로드
 		List<ModuleBatchJobResDTO> batchJobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workspaceName);

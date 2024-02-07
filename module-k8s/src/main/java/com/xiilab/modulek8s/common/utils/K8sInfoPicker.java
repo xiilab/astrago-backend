@@ -99,12 +99,12 @@ public class K8sInfoPicker {
 			ObjectMeta metadata = hasMetadata.getMetadata();
 			Map<String, String> annotations = metadata.getAnnotations();
 			return K8SResourceMetadataDTO.builder()
-				.name(annotations.get("varName"))
+				.name(annotations.get("name"))
 				.description(annotations.get("description"))
 				.resourceName(metadata.getName())
 				.creator(annotations.get("creator"))
 				.createdAt(LocalDateTime.parse(annotations.get("created-at")))
-				.imgName(annotations.get("image-varName"))
+				.imgName(annotations.get("image-name"))
 				.imgTag(annotations.get("image-tag"))
 				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
 				.build();
