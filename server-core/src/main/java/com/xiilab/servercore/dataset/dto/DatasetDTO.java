@@ -51,6 +51,7 @@ public class DatasetDTO {
 		private String storagePath;
 		private Integer requestVolume;
 		private String creator;
+		private String creatorName;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
 		private String size;
@@ -64,6 +65,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDatasetName())
 					.requestVolume(((AstragoDatasetEntity)dataset).getStorageEntity().getRequestVolume())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.division(dataset.getDivision())
 					.ip(((AstragoDatasetEntity)dataset).getStorageEntity().getIp())
@@ -77,6 +79,7 @@ public class DatasetDTO {
 					.storageType(((LocalDatasetEntity)dataset).getStorageType())
 					.datasetName(dataset.getDatasetName())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.division(dataset.getDivision())
 					.ip(((LocalDatasetEntity)dataset).getIp())
@@ -98,6 +101,7 @@ public class DatasetDTO {
 		private String datasetName;
 		private Integer requestVolume;
 		private String creator;
+		private String creatorName;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
 		private String size;
@@ -111,6 +115,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDatasetName())
 					.requestVolume(((AstragoDatasetEntity)dataset).getStorageEntity().getRequestVolume())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
@@ -123,6 +128,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDatasetName())
 					.requestVolume(null)
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
