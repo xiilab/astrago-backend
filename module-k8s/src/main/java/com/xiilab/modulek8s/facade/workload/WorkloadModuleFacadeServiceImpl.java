@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.common.enumeration.VolumeSelectionType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
@@ -18,14 +21,16 @@ import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.log.service.LogService;
+import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
@@ -43,42 +48,44 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final VolumeService volumeService;
 	private final SvcService svcService;
 	private final LogService logService;
+	private final SecretService secretService;
 
 	@Override
-	public ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
-		// 볼륨 추가
-		addNewVolume(moduleCreateWorkloadReqDTO);
+	public ModuleJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+		WorkloadType workloadType = moduleCreateWorkloadReqDTO.getWorkloadType();
+		// Secret 생성
+		if (moduleCreateWorkloadReqDTO.getImage().repositoryAuthType() == RepositoryAuthType.PRIVATE) {
+			createAndSetImageSecret(moduleCreateWorkloadReqDTO);
+		}
 
-		// 잡 생성
-		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleService.createBatchJobWorkload(
-			moduleCreateWorkloadReqDTO);
+		ModuleJobResDTO moduleJobResDTO = null;
+		if (workloadType == WorkloadType.BATCH) {
+			moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO);
+		}
 
 		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-			moduleCreateWorkloadReqDTO, moduleBatchJobResDTO.getResourceName());
+			moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
 
 		// 노드포트 연결
 		svcService.createNodePortService(createSvcReqDTO);
 
-		return moduleBatchJobResDTO;
+		return moduleJobResDTO;
 	}
 
-	@Override
-	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(
-		ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
-		// 볼륨 추가
-		addNewVolume(moduleCreateWorkloadReqDTO);
-
-		// 디플로이먼트 생성
-		ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleService.createInteractiveJobWorkload(
-			moduleCreateWorkloadReqDTO);
-
-		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-			moduleCreateWorkloadReqDTO, moduleInteractiveJobResDTO.getResourceName());
-
-		// 노드포트 연결
-		svcService.createNodePortService(createSvcReqDTO);
-
-		return moduleInteractiveJobResDTO;
+	private void createAndSetImageSecret(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+		ModuleCredentialReqDTO credentialReqDTO = moduleCreateWorkloadReqDTO.getImage().credentialReqDTO();
+		String imageSecretName = null;
+		if (credentialReqDTO != null && credentialReqDTO.credentialId() != null
+			&& credentialReqDTO.credentialId() > 0) {
+			imageSecretName = secretService.createSecret(moduleCreateWorkloadReqDTO);
+			if (StringUtils.hasText(imageSecretName)) {
+				moduleCreateWorkloadReqDTO.setImageSecretName(imageSecretName);
+			}
+		} else {
+			throw new RuntimeException("이미지 Credential 정보가 올바르지 않습니다.");
+		}
 	}
 
 	@Override
@@ -107,8 +114,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
 		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
-		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(
-			workSpaceName);
+		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
 
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);
@@ -125,7 +131,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return logService.watchLogByWorkload(workspaceName, podName);
 	}
 
-	@Override
 	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
 		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
@@ -245,25 +250,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		volumeService.deletePV(pvName);
 	}
 
-	private void addNewVolume(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
-		List<ModuleVolumeReqDTO> volumes = moduleCreateWorkloadReqDTO.getVolumes();
-		for (ModuleVolumeReqDTO volume : volumes) {
-			if (volume.getVolumeSelectionType().equals(VolumeSelectionType.NEW)) {
-				CreateVolumeDTO createVolumeDTO = CreateVolumeDTO.builder()
-					.name(volume.getName())
-					.workspaceMetaDataName(moduleCreateWorkloadReqDTO.getWorkspace())
-					.storageType(volume.getStorageType())
-					.creatorId(moduleCreateWorkloadReqDTO.getCreatorId())
-					.creatorName(moduleCreateWorkloadReqDTO.getCreatorName())
-					.requestVolume(volume.getRequestVolume())
-					.storageClassMetaName(volume.getStorageClassMetaName())
-					.build();
-				String volume1 = createVolume(createVolumeDTO);
-				volume.setVolumeMetaDataName(volume1);
-			}
-		}
-	}
-
 	/**
 	 * TODO 스토리지 파사드 수정될때마다 같이 수정돼야함 (문제해결필요)
 	 * 워크스페이스(namespace)에 볼륨 생성
@@ -278,4 +264,5 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType) {
 		return workloadModuleService.getJobPod(workspaceName, workloadName, workloadType);
 	}
+
 }

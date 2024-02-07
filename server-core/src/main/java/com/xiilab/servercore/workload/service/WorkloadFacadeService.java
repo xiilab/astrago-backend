@@ -41,14 +41,10 @@ public class WorkloadFacadeService {
 	private final PinService pinService;
 	private final AlertService alertService;
 
-	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, WorkloadType workloadType,
-		UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName());
-		if (workloadType == WorkloadType.BATCH) {
-			workloadModuleFacadeService.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		}
+	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserRealName());
+		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+
 		// 워크로드 생성 알림
 		alertService.sendAlert(AlertDTO.builder()
 			.recipientId(userInfoDTO.getId())
@@ -333,5 +329,6 @@ public class WorkloadFacadeService {
 	private int getNormalListPageSize(int pinListSize) {
 		return 10 - pinListSize;
 	}
+
 
 }

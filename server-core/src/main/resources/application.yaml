@@ -23,7 +23,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
@@ -66,6 +66,10 @@ astrago:
     dockerImage:
       name: xiilab/astrago-dataset-nginx
       hostPath: /usr/share/nginx/html/directory
+
+github:
+  public:
+    token: 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
 
 mig-profile-path: src/main/resources/MigProfile.json
 

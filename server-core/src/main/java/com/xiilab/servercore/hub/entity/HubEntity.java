@@ -17,7 +17,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class HubEntity extends BaseEntity {
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "HUB_ID")
 	private Long hubId;
 
@@ -27,14 +28,20 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "DESCRIPTION")
 	private String description;
 
-	@Column(name = "SAVE_PATH")
-	private String savePath;
-
-	@Column(name = "SAVE_FILENAME")
-	private String saveFileName;
+	@Column(name = "THUMBNAIL_SAVE_FILENAME")
+	private String thumbnailSaveFileName;
+	
+	@Column(name = "THUMBNAIL_SAVE_PATH")
+	private String thumbnailSavePath;
 
 	@Column(name = "IMAGE")
 	private String image;
+
+	@Column(name = "ENVS", length = 1000)
+	private String envs;
+
+	@Column(name = "PORTS", length = 1000)
+	private String ports;
 
 	@Column(name = "SOURCE_CODE_URL")
 	private String sourceCodeUrl;
@@ -42,5 +49,15 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "SOURCE_CODE_BRANCH")
 	private String sourceCodeBranch;
 
+	@Column(name = "SOURCE_CODE_MOUNT_PATH")
+	private String sourceCodeMountPath;
 
+	@Column(name = "DATASET_MOUNT_PATH")
+	private String datasetMountPath;
+
+	@Column(name = "MODEL_MOUNT_PATH")
+	private String modelMountPath;
+
+	@Column(name = "COMMAND")
+	private String command;
 }

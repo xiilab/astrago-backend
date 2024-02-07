@@ -59,6 +59,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			.withAnnotations(
 				Map.of(
 					AnnotationField.NAME.getField(), getName(),
+					AnnotationField.WORKSPACE_NAME.getField(), getWorkspace(),
 					AnnotationField.DESCRIPTION.getField(), getDescription(),
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
 					AnnotationField.CREATOR_ID.getField(), getCreatorId(),
@@ -189,7 +190,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	public List<EnvVar> convertEnv() {
 		return envs.stream()
 			.map(env -> new EnvVarBuilder()
-				.withName(env.variable())
+				.withName(env.name())
 				.withValue(env.value())
 				.build()
 			).toList();
