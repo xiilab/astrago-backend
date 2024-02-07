@@ -40,6 +40,10 @@ public abstract class WorkloadEntity {
 	protected String description;
 	@Column(name = "WORKLOAD_RESOURCE_NAME")
 	protected String resourceName;
+	@Column(name = "WORKSPACE_NAME")
+	protected String workspaceName;
+	@Column(name = "WORKSPACE_RESOURCE_NAME")
+	protected String workspaceResourceName;
 	@Column(name = "WORKLOAD_REQ_GPU")
 	protected Integer gpuRequest;
 	@Column(name = "WORKLOAD_REQ_CPU")
@@ -47,7 +51,7 @@ public abstract class WorkloadEntity {
 	@Column(name = "WORKLOAD_REQ_MEM")
 	protected Integer memRequest;
 	@Column(name = "WORKLOAD_CREATOR")
-	protected String creator;
+	protected String creatorName;
 	@Column(name = "WORKLOAD_CREATOR_ID")
 	protected String creatorId;
 	@Column(name = "WORKLOAD_CREATED_AT")

@@ -19,19 +19,21 @@ import lombok.experimental.SuperBuilder;
 public class JobEntity extends WorkloadEntity {
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
-	JobEntity(String name, String description, String resourceName, Integer cpuReq, Integer gpuReq, Integer memReq,
-		LocalDateTime createdAt, LocalDateTime deletedAt, String creator, String creatorId, Map<String, String> envs,
+	JobEntity(String name, String description, String resourceName, String workspaceName, String workspaceResourceName, Integer cpuReq, Integer gpuReq, Integer memReq,
+		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorName, String creatorId, Map<String, String> envs,
 		List<String> volumes, List<PortDTO> ports, WorkloadType workloadType) {
 		this.name = name;
 		this.description = description;
 		this.resourceName = resourceName;
+		this.workspaceName = workspaceName;
+		this.workspaceResourceName = workspaceResourceName;
 		this.cpuRequest = cpuReq;
 		this.gpuRequest = gpuReq;
 		this.memRequest = memReq;
 		this.createdAt = createdAt;
 		this.deletedAt = deletedAt;
-		this.creator = creator;
 		this.creatorId = creatorId;
+		this.creatorName = creatorName;
 		this.envList = EnvEntity.createEnvList(envs, this);
 		this.volumeList = VolumeEntity.createVolumeList(volumes, this);
 		this.portList = PortEntity.createPortList(ports, this);
