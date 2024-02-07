@@ -7,10 +7,11 @@ import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.workload.enums.ImageType;
-import com.xiilab.modulek8s.workload.enums.VolumeSelectionType;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
+import com.xiilab.modulek8s.workload.vo.JobImageVO;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -27,10 +28,15 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
 	private String command;    // 실행할 명령어
 	private WorkloadType workloadType;    // 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
-	private VolumeSelectionType volumeSelectionType;
 	private int gpuRequest;
 	private float cpuRequest;
 	private float memRequest;
+	private String imageSecretName;
+
+	public CredentialVO toCredentialVO() {
+		JobImageVO jobImageVO = this.image.toJobImageVO(workspace);
+		return jobImageVO.credentialVO();
+	}
 
 	public BatchJobVO toBatchJobVO() {
 		initializeCollection();
@@ -40,9 +46,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.name(this.getName())
 			.description(this.getDescription())
 			.creatorName(this.getCreatorName())
-			.creator(this.getCreator())
-			.image(this.image.toJobImageVO())
-			.codes(this.codes.stream().map(ModuleCodeReqDTO::toJobCodeVO).toList())
+			.creatorId(this.getCreatorId())
+			.image(this.image.toJobImageVO(this.workspace))
+			.codes(this.codes.stream().map(codReqDTO -> codReqDTO.toJobCodeVO(workspace)).toList())
 			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
@@ -62,9 +68,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.name(this.getName())
 			.description(this.getDescription())
 			.creatorName(this.getCreatorName())
-			.creator(this.getCreator())
-			.image(this.image.toJobImageVO())
-			.codes(this.codes.stream().map(ModuleCodeReqDTO::toJobCodeVO).toList())
+			.creatorId(this.getCreatorId())
+			.image(this.image.toJobImageVO(this.workspace))
+			.codes(this.codes.stream().map(codReqDTO -> codReqDTO.toJobCodeVO(workspace)).toList())
 			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
@@ -85,5 +91,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 
 	private <T> List<T> getListIfNotEmpty(List<T> list) {
 		return CollectionUtils.isEmpty(list) ? new ArrayList<>() : list;
+	}
+
+	public void setImageSecretName(String imageSecretName) {
+		this.imageSecretName = imageSecretName;
 	}
 }

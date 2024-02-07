@@ -30,7 +30,9 @@
     - 사용한 이미지 : image
     - 사용한 codes : codes
     - 생성 플랫폼: control-by (astra)
-    - 잡 이름(pod에만 존재): job-name 
+    - 잡 이름(pod에만 존재): job-name
+  - ds-[DATASET_ID(DB PK)]: "true"
+  - md-[MDOEL_ID(DB PK)]: "true"
 ## Volume(PV,PVC)
 - meta name
     - vo-UUID

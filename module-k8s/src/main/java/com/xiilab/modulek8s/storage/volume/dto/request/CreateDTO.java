@@ -31,7 +31,7 @@ public class CreateDTO extends K8SResourceReqDTO {
 			.workspaceMetaDataName(createVolumeDTO.getWorkspaceMetaDataName())
 			.requestVolume(createVolumeDTO.getRequestVolume())
 			.storageType(createVolumeDTO.getStorageType())
-			.creator(createVolumeDTO.getCreator())
+			.creatorId(createVolumeDTO.getCreatorId())
 			.creatorName(createVolumeDTO.getCreatorName())
 			.build();
 	}

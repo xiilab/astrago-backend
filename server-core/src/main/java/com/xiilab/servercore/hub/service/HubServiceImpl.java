@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -13,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.xiilab.servercore.hub.dto.HubDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.servercore.hub.dto.HubResDTO;
@@ -32,29 +32,18 @@ public class HubServiceImpl implements HubService {
 	private final HubRepository hubRepository;
 
 	@Override
-	public Page<HubResDTO> getHubList(String[] categoryNames, Pageable pageable) {
-		Page<HubCategoryMappingEntity> result = null;
+	public HubDTO.Response.HubsDto getHubList(String[] categoryNames, Pageable pageable) {
 		if (ObjectUtils.isEmpty(categoryNames)) {
-			result = hubCategoryMappingRepository.findAll(pageable);
+			return getHubList(pageable);
 		} else {
-			result = hubCategoryMappingRepository.finByHubsByCategoryNames(
-				Arrays.stream(categoryNames).toList(), pageable);
+			// 카테고리 네임으로 조회한 허브 목록
+			return getHubListByCategoryNames(categoryNames, pageable);
 		}
 
-		List<Long> hubIds = result.getContent()
-			.stream()
-			.map(hubCategoryMappingEntity -> hubCategoryMappingEntity.getHubEntity().getHubId())
-			.toList();
-		List<HubCategoryMappingEntity> hubCategoryMappingEntityListList = hubCategoryMappingRepository.findHcmJoinFetchByHubIds(hubIds);
-		// 모델 타입 String으로 배열에 넣기(key: ID, value: [type, type])
-		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityListList);
-
-		return Objects.requireNonNull(result)
-			.map(hubCategoryMappingEntity -> new HubResDTO(hubCategoryMappingEntity.getHubEntity(), typesMap));
 	}
 
 	@Override
-	public HubResDTO getHubByHubId(Long hubId) {
+	public HubDTO.Response.HubDetailDto getHubByHubId(Long hubId) {
 		HubEntity hubEntity = hubRepository.findById(hubId)
 			.orElseThrow(() -> new RestApiException(CommonErrorCode.HUB_NOT_FOUND));
 
@@ -62,12 +51,53 @@ public class HubServiceImpl implements HubService {
 			hubId);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingJoinFetchByHubId);
 
-		return new HubResDTO(hubEntity, typesMap);
+		return HubDTO.Response.HubDetailDto.hubEntityToHubDetailDto(hubEntity, typesMap);
 	}
 
-	private Map<Long, Set<String>> getModelTypesMap(List<HubCategoryMappingEntity> hubCategoryMappingEntityListList) {
+	/* 검색 조건 없을 때, List 반환 */
+	private HubDTO.Response.HubsDto getHubList(Pageable pageable) {
+		Page<HubEntity> findAll = hubRepository.findAll(pageable);
+		List<HubEntity> hubEntities = findAll.getContent();
+		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
+
+		long totalElements = findAll.getTotalElements();
+		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
+		return HubDTO.Response.HubsDto.hubEntitiesToDto(hubEntities, totalElements, typesMap);
+	}
+
+	/* 카테고리 검색 List 반환 */
+	private HubDTO.Response.HubsDto getHubListByCategoryNames(String[] categoryNames, Pageable pageable) {
+		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.finByHubsByCategoryNames(
+				Arrays.stream(categoryNames).toList(), pageable);
+
+		List<HubCategoryMappingEntity> hubList = finByHubsByCategoryNames.getContent();
+
+		List<HubEntity> hubEntities = hubList.stream().map(HubCategoryMappingEntity::getHubEntity).toList();
+		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
+
+		long totalElements = finByHubsByCategoryNames.getTotalElements();
+		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
+		return HubDTO.Response.HubsDto.hubEntitiesToDto(hubEntities, totalElements, typesMap);
+	}
+
+	/* 허브 카테고리 매핑 테이블 전체 조회 */
+	private List<HubCategoryMappingEntity> getHubCategoryMappingEntityList(List<HubEntity> hubEntities) {
+		List<Long> hubIds = extractHubIds(hubEntities);
+		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = hubCategoryMappingRepository.findHcmJoinFetchByHubIds(hubIds);
+		return hubCategoryMappingEntityList;
+	}
+
+	/*HUB ID만 추출*/
+	private static List<Long> extractHubIds(List<HubEntity> hubList) {
+		return hubList.stream()
+			.map(HubEntity::getHubId)
+			.toList();
+	}
+
+	/* 모델 타입 String으로 배열에 넣기(key: ID, value: [repositoryType, repositoryType]) */
+	private Map<Long, Set<String>> getModelTypesMap(List<HubCategoryMappingEntity> hubCategoryMappingEntityList) {
 		Map<Long, Set<String>> typesMap = new HashMap<>();
-		for (HubCategoryMappingEntity hubCategoryMappingEntity : hubCategoryMappingEntityListList) {
+		for (HubCategoryMappingEntity hubCategoryMappingEntity : hubCategoryMappingEntityList) {
 			Long hubId = hubCategoryMappingEntity.getHubEntity().getHubId();
 			String typeName = hubCategoryMappingEntity.getHubCategoryEntity().getName();
 			typesMap.computeIfAbsent(hubId, k -> new HashSet<>()).add(typeName);
@@ -75,5 +105,4 @@ public class HubServiceImpl implements HubService {
 
 		return typesMap;
 	}
-
 }

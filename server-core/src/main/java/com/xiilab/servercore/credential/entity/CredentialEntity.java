@@ -35,8 +35,13 @@ public class CredentialEntity extends BaseEntity {
 	private String description;
 	@Column(name = "CREDENTIAL_LOGIN_ID")
 	private String loginId;
+
+	@Column(name = "CREDENTIAL_LOGIN_EMAIL")
+	private String loginEmail;
+
 	@Column(name = "CREDENTIAL_LOGIN_PW")
 	private String loginPw;
+
 	@Column(name = "CREDENTIAL_CREATED_AT")
 	private LocalDateTime createdAt;
 	@Column(name = "CREDENTIAL_TYPE")

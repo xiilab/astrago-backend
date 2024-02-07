@@ -23,7 +23,9 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreFileUtils {
-
+	static final long kilobyte = 1024;
+	static final long megabyte = kilobyte * 1024;
+	static final long gigabyte = megabyte * 1024;
 	public static String getFileName(String filePath) {
 		File file = new File(filePath);
 		if (file.isFile()) {
@@ -71,16 +73,19 @@ public class CoreFileUtils {
 			fileOrDirectory.delete();
 		}
 	}
-	public static void datasetUploadFiles(String path, List<MultipartFile> files) {
+	public static long datasetUploadFiles(String path, List<MultipartFile> files) {
+		long size = 0;
 		for (MultipartFile file : files) {
 			String filePath = path + File.separator + file.getOriginalFilename();
 			File saveFile = new File(filePath);
 			try {
 				file.transferTo(saveFile);
+				size += file.getSize();
 			} catch (IOException e) {
 				throw new RestApiException(CommonErrorCode.FILE_SAVE_FAIL);
 			}
 		}
+		return size;
 	}
 	public static DirectoryDTO getAstragoDatasetFiles(String path) {
 		List<DirectoryDTO.ChildrenDTO> children = new ArrayList<>();
@@ -146,5 +151,17 @@ public class CoreFileUtils {
 				});
 		}
 		return byteArrayOutputStream.toByteArray();
+	}
+
+	public static String formatFileSize(long bytes) {
+		if (bytes >= gigabyte) {
+			return String.format("%.2f GB", (double) bytes / gigabyte);
+		} else if (bytes >= megabyte) {
+			return String.format("%.2f MB", (double) bytes / megabyte);
+		} else if (bytes >= kilobyte) {
+			return String.format("%.2f KB", (double) bytes / kilobyte);
+		} else {
+			return bytes + " Bytes";
+		}
 	}
 }
