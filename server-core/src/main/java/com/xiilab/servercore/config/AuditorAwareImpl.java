@@ -32,6 +32,6 @@ public class AuditorAwareImpl implements AuditorAware<RegUser> {
 		Jwt principal = (Jwt)authentication.getPrincipal();
 		UserInfo userInfo = repository.getUserInfoById(principal.getSubject());
 
-		return Optional.of(new RegUser(userInfo.getId(), userInfo.getUserName()));
+		return Optional.of(new RegUser(userInfo.getId(), userInfo.getUserName(), userInfo.getUserRealName()));
 	}
 }
