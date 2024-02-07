@@ -279,7 +279,7 @@ public class KeycloakUserRepository implements UserRepository {
 		List<UserRepresentation> userList = realmClient.users()
 			.list()
 			.stream()
-			.filter(userRepresentation -> userRepresentation.getFirstName().contains(search)  || userRepresentation.getLastName().contains(search))
+			.filter(userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search))
 			.toList();
 
 		// 검색 조회된 사용자 정보 리스트

@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.keycloak.admin.client.resource.GroupResource;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.exception.K8sException;
@@ -190,6 +192,19 @@ public class KeycloakGroupRepository implements GroupRepository {
 		}
 
 	}
+	@Override
+	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){
+
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+
+		GroupRepresentation wsSubGroupByGroupName = getWsSubGroupByGroupName(groupName);
+
+		List<UserRepresentation> members = realmClient.groups().group(wsSubGroupByGroupName.getId()).members();
+
+		return members.stream().filter(
+			userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search))
+			.map(GroupUserDTO::new).toList();
+	}
 
 	private GroupRepresentation getWsSubGroupByGroupName(String subGroupName){
 		// ws 그룹 조회
@@ -207,6 +222,6 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.orElseThrow(() -> new K8sException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 		return subGroup.getSubGroups().stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("user")).findFirst().get();
-
 	}
+
 }
