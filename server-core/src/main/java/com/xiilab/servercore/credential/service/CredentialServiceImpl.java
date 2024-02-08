@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.credential.dto.CredentialReqDTO;
@@ -70,5 +72,10 @@ public class CredentialServiceImpl implements CredentialService {
 		}
 
 		credentialEntity.updateInfo(updateDTO);
+	}
+
+	@Override
+	public CredentialEntity getCredentialEntity(long id) {
+		return credentialRepository.findById(id).orElseThrow(() -> new RestApiException(CommonErrorCode.CREDENTIAL_NOT_FOUND));
 	}
 }
