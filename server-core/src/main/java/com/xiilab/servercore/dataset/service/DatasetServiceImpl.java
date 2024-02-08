@@ -125,7 +125,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DirectoryDTO getAstragoDatasetFiles(Long datasetId, String filePath) {
 		datasetRepository.findById(datasetId).orElseThrow(()-> new RuntimeException("데이터 셋이 존재하지않습니다."));
-		return CoreFileUtils.getAstragoDatasetFiles(filePath);
+		return CoreFileUtils.getAstragoFiles(filePath);
 	}
 
 	@Override

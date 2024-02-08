@@ -16,6 +16,7 @@ public enum AnnotationField {
 	IMAGE_NAME("image-name"),
 	IMAGE_TAG("image-tag"),
 	DATASET_NAME("dataset-name"),
+	MODEL_NAME("model-name"),
 	IMAGE_TYPE("image-type")
 	;
 

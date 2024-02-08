@@ -21,7 +21,9 @@ import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workspace.dto.InsertWorkspaceDatasetDTO;
+import com.xiilab.servercore.workspace.dto.InsertWorkspaceModelDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
@@ -39,6 +41,7 @@ public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final DatasetService datasetService;
+	private final ModelService modelService;
 
 	@PostMapping("")
 	@Operation(summary = "워크스페이스 생성")
@@ -149,6 +152,21 @@ public class WorkspaceController {
 	public ResponseEntity deleteWorkspaceDataset(@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
 		@PathVariable(value = "datasetId") Long datasetId, UserInfoDTO userInfoDTO){
 		datasetService.deleteWorkspaceDataset(workspaceResourceName, datasetId, userInfoDTO);
+		return new ResponseEntity(HttpStatus.OK);
+	}
+
+	@PostMapping("{workspaceResourceName}/models")
+	@Operation(summary = "워크스페이스 model 추가")
+	public ResponseEntity insertWorkspaceModel(@RequestBody InsertWorkspaceModelDTO insertWorkspaceModelDTO){
+		modelService.insertWorkspaceModel(insertWorkspaceModelDTO);
+		return new ResponseEntity(HttpStatus.OK);
+	}
+
+	@DeleteMapping("{workspaceResourceName}/models/{modelId}")
+	@Operation(summary = "워크스페이스 model 삭제")
+	public ResponseEntity deleteWorkspaceModel(@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(value = "modelId") Long modelId, UserInfoDTO userInfoDTO){
+		modelService.deleteWorkspaceModel(workspaceResourceName, modelId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 }

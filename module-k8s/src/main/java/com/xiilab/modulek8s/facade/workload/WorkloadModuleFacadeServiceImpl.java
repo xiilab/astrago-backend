@@ -10,19 +10,22 @@ import org.springframework.util.StringUtils;
 
 import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
-import com.xiilab.modulek8s.common.enumeration.VolumeSelectionType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalModelResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
-import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
@@ -240,6 +243,104 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		String pvcName = deleteLocalDatasetDTO.getPvcName();
 		String pvName = deleteLocalDatasetDTO.getPvName();
 		String namespace = deleteLocalDatasetDTO.getNamespace();
+		//svc 삭제
+		svcService.deleteServiceByResourceName(svcName, namespace);
+		//deployment 삭제
+		workloadModuleService.deleteDeploymentByResourceName(deploymentName, namespace);
+		//pvc 삭제
+		volumeService.deletePVC(pvcName, namespace);
+		//pv 삭제
+		volumeService.deletePV(pvName);
+	}
+
+	@Override
+	public CreateLocalModelResDTO createLocalModel(CreateLocalModelDTO createDto) {
+		String modelName = createDto.getModelName().replace(" ", "");
+		String ip = createDto.getIp();
+		String storagePath = createDto.getStoragePath();
+		String namespace = createDto.getNamespace();
+		String pvcName = "astrago-model-pvc-" + UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-model-pv-"+ UUID.randomUUID().toString().substring(6);
+		String svcName = "astrago-model-svc-"+ UUID.randomUUID().toString().substring(6);
+		String modelDeploymentName = "astrago-model-" + UUID.randomUUID().toString().substring(6);
+		String volumeLabelSelectorName = "model-storage-volume-"+ UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "model-connect-test-"+ UUID.randomUUID().toString().substring(6);
+
+		//pv 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvName(pvName)
+			.pvcName(pvcName)
+			.ip(ip)
+			.storagePath(storagePath)
+			.storageType(StorageType.NFS)
+			.requestVolume(50)
+			.namespace(namespace)
+			.build();
+		volumeService.createPV(createPV);
+		//pvc 생성
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(namespace)
+			.requestVolume(50)
+			.build();
+		volumeService.createPVC(createPVC);
+		//deployment 생성
+		CreateModelDeployment createDeployment = CreateModelDeployment.builder()
+			.modelName(modelName)
+			.deploymentName(modelDeploymentName)
+			.volumeLabelSelectorName(volumeLabelSelectorName)
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.namespace(namespace)
+			.connectTestLabelName(connectTestLabelName)
+			.hostPath(createDto.getHostPath())
+			.dockerImage(createDto.getDockerImage())
+			.build();
+		workloadModuleService.createModelDeployment(createDeployment);
+		//svc 생성
+		//svc -> labels -> app: connectTestLabelName
+		//connectTestLabelName, namespace, svcName, ClusterIP
+		CreateClusterIPSvcReqDTO createClusterIPSvcReqDTO = CreateClusterIPSvcReqDTO.builder()
+			.svcType(SvcType.CLUSTER_IP)
+			.deploymentName(connectTestLabelName)
+			.svcName(svcName)
+			.namespace(namespace)
+			.build();
+		svcService.createClusterIPService(createClusterIPSvcReqDTO);
+
+		//<service-name>.<namespace>.svc.cluster.local
+		String svcDNS = svcName + "." + namespace + ".svc.cluster.local/directory";
+		return CreateLocalModelResDTO.builder()
+			.dns(svcDNS)
+			.deploymentName(modelDeploymentName)
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.svcName(svcName)
+			.build();
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
+		return workloadModuleService.workloadsUsingModel(id);
+	}
+
+	@Override
+	public void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalDatasetDeploymentDTO) {
+		workloadModuleService.modifyLocalModelDeployment(modifyLocalDatasetDeploymentDTO);
+	}
+
+	@Override
+	public boolean isUsedModel(Long modelId) {
+		return workloadModuleService.isUsedModel(modelId);
+	}
+
+	@Override
+	public void deleteLocalModel(DeleteLocalModelDTO deleteLocalModelDTO) {
+		String deploymentName = deleteLocalModelDTO.getDeploymentName();
+		String svcName = deleteLocalModelDTO.getSvcName();
+		String pvcName = deleteLocalModelDTO.getPvcName();
+		String pvName = deleteLocalModelDTO.getPvName();
+		String namespace = deleteLocalModelDTO.getNamespace();
 		//svc 삭제
 		svcService.deleteServiceByResourceName(svcName, namespace);
 		//deployment 삭제
