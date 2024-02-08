@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
@@ -14,7 +15,11 @@ public class GithubApi {
 
 	public GithubApi(String token) {
 		try {
-			this.gitHub = new GitHubBuilder().withOAuthToken(token).build();
+			if(StringUtils.isNoneEmpty(token)){
+				this.gitHub = new GitHubBuilder().withOAuthToken(token).build();
+			}else{
+				this.gitHub = GitHub.connectAnonymously();
+			}
 			gitHub.checkApiUrlValidity();
 		} catch (IOException e) {
 			throw new RuntimeException("깃허브 API를 호출 할 수 없습니다.");
