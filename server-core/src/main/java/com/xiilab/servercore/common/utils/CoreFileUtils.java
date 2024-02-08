@@ -87,7 +87,7 @@ public class CoreFileUtils {
 		}
 		return size;
 	}
-	public static DirectoryDTO getAstragoDatasetFiles(String path) {
+	public static DirectoryDTO getAstragoFiles(String path) {
 		List<DirectoryDTO.ChildrenDTO> children = new ArrayList<>();
 		File directory = new File(path);
 		int directoryCnt = 0;

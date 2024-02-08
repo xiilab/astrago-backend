@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
@@ -118,6 +120,10 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
 		workloadRepository.createDatasetDeployment(createDeployment);
 	}
+	@Override
+	public void createModelDeployment(CreateModelDeployment createDeployment) {
+		workloadRepository.createModelDeployment(createDeployment);
+	}
 
 	@Override
 	public void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO) {
@@ -132,5 +138,20 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public void deleteDeploymentByResourceName(String deploymentName, String namespace) {
 		workloadRepository.deleteDeploymentByResourceName(deploymentName, namespace);
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
+		return workloadRepository.workloadsUsingModel(id);
+	}
+
+	@Override
+	public void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalModelDeploymentDTO) {
+		workloadRepository.modifyLocalModelDeployment(modifyLocalModelDeploymentDTO);
+	}
+
+	@Override
+	public boolean isUsedModel(Long modelId) {
+		return workloadRepository.isUsedModel(modelId);
 	}
 }
