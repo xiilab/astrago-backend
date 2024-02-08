@@ -72,4 +72,5 @@ github:
     token: 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
 
 mig-profile-path: src/main/resources/MigProfile.json
-
+server:
+  max-http-request-header-size: 40KB
