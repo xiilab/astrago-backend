@@ -97,4 +97,14 @@ public class DataConverterUtil {
 			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
 		}
 	}
+	public static String getRepoByUrl(String url){
+		// GitHub URL에서 마지막 슬래시 뒤의 문자열을 추출하여 리턴
+		String[] parts = url.split("com/");
+		String repoName = parts[parts.length - 1];
+		// ".git" 확장자가 있다면 제거
+		if (repoName.endsWith(".git")) {
+			repoName = repoName.substring(0, repoName.length() - 4);
+		}
+		return repoName;
+	}
 }
