@@ -12,8 +12,10 @@ import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -288,8 +290,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				.withName(modifyLocalDatasetDeploymentDTO.getDeploymentName())
 				.edit(d -> new DeploymentBuilder(d)
 					.editMetadata()
-					.addToAnnotations(AnnotationField.DATASET_NAME.getField(),
-						modifyLocalDatasetDeploymentDTO.getModifyDatasetName())
+					.addToAnnotations(AnnotationField.DATASET_NAME.getField(), modifyLocalDatasetDeploymentDTO.getModifyDatasetName())
 					.endMetadata()
 					.build());
 		}
@@ -299,9 +300,9 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public boolean isUsedDataset(Long datasetId) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String label = "ds-" + datasetId;
-			if (getJobsInUseDataset(label, client).size() == 0 &&
+			if(getJobsInUseDataset(label, client).size() == 0 &&
 				getStatefulSetsInUseDataset(label, client).size() == 0 &&
-				getDeploymentsInUseDataset(label, client).size() == 0) {
+				getDeploymentsInUseDataset(label, client).size() == 0){
 				return false;
 			}
 			return true;
@@ -315,8 +316,67 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads,
-		HasMetadata hasMetadata,
+	@Override
+	public void createModelDeployment(CreateModelDeployment createDeployment) {
+		DeploymentVO deployment = DeploymentVO.dtoToEntity(createDeployment);
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resource(deployment.createResource()).create();
+		}
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String datasetId = "md-" + id;
+			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
+			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
+			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
+
+			List<WorkloadResDTO.UsingModelDTO> workloads = new ArrayList<>();
+
+			//워크로드 이름(사용자가 지정한 이름), 상태, job Type, 생성자 이름, 생성일자
+			for (Job job : jobsInUseDataset) {
+				getWorkloadInfoUsingModel(workloads, job, WorkloadResourceType.JOB);
+			}
+			for (StatefulSet statefulSet : statefulSetsInUseDataset) {
+				getWorkloadInfoUsingModel(workloads, statefulSet, WorkloadResourceType.STATEFULSET);
+			}
+			for (Deployment deployment : deploymentsInUseDataset) {
+				getWorkloadInfoUsingModel(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
+			}
+			return workloads;
+		}
+	}
+
+	@Override
+	public void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalModelDeploymentDTO) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.apps()
+				.deployments()
+				.inNamespace(modifyLocalModelDeploymentDTO.getNamespace())
+				.withName(modifyLocalModelDeploymentDTO.getDeploymentName())
+				.edit(d -> new DeploymentBuilder(d)
+					.editMetadata()
+					.addToAnnotations(AnnotationField.DATASET_NAME.getField(), modifyLocalModelDeploymentDTO.getModifyModelName())
+					.endMetadata()
+					.build());
+		}
+	}
+
+	@Override
+	public boolean isUsedModel(Long modelId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "md-" + modelId;
+			if(getJobsInUseDataset(label, client).size() == 0 &&
+				getStatefulSetsInUseDataset(label, client).size() == 0 &&
+				getDeploymentsInUseDataset(label, client).size() == 0){
+				return false;
+			}
+			return true;
+		}
+	}
+
+	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads, HasMetadata hasMetadata,
 		WorkloadResourceType resourceType) {
 		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
@@ -326,15 +386,15 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 		switch (resourceType) {
 			case JOB:
-				Job job = (Job)hasMetadata;
+				Job job = (Job) hasMetadata;
 				usingDatasetDTO.setStatus(getJobStatus(job.getStatus()));
 				break;
 			case DEPLOYMENT:
-				Deployment deployment = (Deployment)hasMetadata;
+				Deployment deployment = (Deployment) hasMetadata;
 				usingDatasetDTO.setStatus(getDeploymentStatus(deployment.getStatus()));
 				break;
 			case STATEFULSET:
-				StatefulSet statefulSet = (StatefulSet)hasMetadata;
+				StatefulSet statefulSet = (StatefulSet) hasMetadata;
 				usingDatasetDTO.setStatus(getStatefulsetStatus(statefulSet.getStatus()));
 				break;
 			default:
@@ -343,7 +403,33 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		usingDatasetDTO.setResourceType(resourceType);
 		workloads.add(usingDatasetDTO);
 	}
+	private static void getWorkloadInfoUsingModel(List<WorkloadResDTO.UsingModelDTO> workloads, HasMetadata hasMetadata,
+		WorkloadResourceType resourceType) {
+		WorkloadResDTO.UsingModelDTO usingModelDTO = WorkloadResDTO.UsingModelDTO.builder()
+			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
+			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_NAME.getField()))
+			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
+			.build();
 
+		switch (resourceType) {
+			case JOB:
+				Job job = (Job) hasMetadata;
+				usingModelDTO.setStatus(getJobStatus(job.getStatus()));
+				break;
+			case DEPLOYMENT:
+				Deployment deployment = (Deployment) hasMetadata;
+				usingModelDTO.setStatus(getDeploymentStatus(deployment.getStatus()));
+				break;
+			case STATEFULSET:
+				StatefulSet statefulSet = (StatefulSet) hasMetadata;
+				usingModelDTO.setStatus(getStatefulsetStatus(statefulSet.getStatus()));
+				break;
+			default:
+				usingModelDTO.setStatus(null);
+		}
+		usingModelDTO.setResourceType(resourceType);
+		workloads.add(usingModelDTO);
+	}
 	private static WorkloadStatus getJobStatus(JobStatus jobStatus) {
 		Integer active = jobStatus.getActive();
 		Integer failed = jobStatus.getFailed();

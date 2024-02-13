@@ -30,6 +30,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
+			.orderBy(dataset.regDate.desc())
 			.fetch();
 
 		Long count = queryFactory.select(dataset.count())

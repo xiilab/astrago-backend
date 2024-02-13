@@ -21,6 +21,8 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.model.dto.ModelDTO;
+import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
@@ -34,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadController {
 	private final WorkloadFacadeService workloadFacadeService;
 	private final DatasetService datasetService;
+	private final ModelService modelService;
 
 	@PostMapping("/{type}")
 	@Operation(summary = "워크로드 생성")
@@ -58,7 +61,7 @@ public class WorkloadController {
 
 	@GetMapping("/jobList")
 	@Operation(summary = "워크로드 리스트 조회")
-	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getWorkloadOverviewList(
+	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getWorkloadList(
 		@RequestParam(value = "workloadType") WorkloadType workloadType,
 		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		@RequestParam(value = "searchName", required = false) String searchName,
@@ -89,8 +92,19 @@ public class WorkloadController {
 	public ResponseEntity getDatasets(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
-		UserInfoDTO userInfoDTO) {
+		UserInfoDTO userInfoDTO){
 		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByRepositoryType(
+			workspaceResourceName, repositoryType, userInfoDTO);
+
+		return new ResponseEntity(datasetsByRepositoryType, HttpStatus.OK);
+	}
+	@GetMapping("/models")
+	@Operation(summary = "워크로드 생성 시 model 전체 조회")
+	public ResponseEntity getModels(
+		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
+		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
+		UserInfoDTO userInfoDTO){
+		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByRepositoryType(
 			workspaceResourceName, repositoryType, userInfoDTO);
 
 		return new ResponseEntity(datasetsByRepositoryType, HttpStatus.OK);

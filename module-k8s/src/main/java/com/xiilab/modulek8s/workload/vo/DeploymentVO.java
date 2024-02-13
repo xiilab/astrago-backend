@@ -9,6 +9,7 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -42,6 +43,7 @@ public class DeploymentVO extends WorkloadVO {
 	private String hostPath;
 	private String dockerImage;
 	private String datasetName;
+	private String modelName;
 
 	public static DeploymentVO dtoToEntity(ConnectTestDTO connectTestDTO) {
 		return DeploymentVO.builder()
@@ -69,6 +71,19 @@ public class DeploymentVO extends WorkloadVO {
 			.datasetName(createDatasetDTO.getDatasetName())
 			.build();
 	}
+	public static DeploymentVO dtoToEntity(CreateModelDeployment createModelDTO) {
+		return DeploymentVO.builder()
+			.deploymentName(createModelDTO.getDeploymentName())
+			.volumeLabelSelectorName(createModelDTO.getVolumeLabelSelectorName())
+			.pvName(createModelDTO.getPvName())
+			.pvcName(createModelDTO.getPvcName())
+			.connectTestLabelName(createModelDTO.getConnectTestLabelName())
+			.namespace(createModelDTO.getNamespace())
+			.hostPath(createModelDTO.getHostPath())
+			.dockerImage(createModelDTO.getDockerImage())
+			.modelName(createModelDTO.getModelName())
+			.build();
+	}
 
 	@Override
 	public HasMetadata createResource() {
@@ -80,14 +95,25 @@ public class DeploymentVO extends WorkloadVO {
 
 	@Override
 	protected ObjectMeta createMeta() {
-		return new ObjectMetaBuilder()
-			.withName(deploymentName)
-			.withNamespace(namespace)
-			.withAnnotations(
-				Map.of(
-					AnnotationField.DATASET_NAME.getField(), this.datasetName
-				))
-			.build();
+		if(this.datasetName != null && !this.datasetName.isBlank()){
+			return new ObjectMetaBuilder()
+				.withName(deploymentName)
+				.withNamespace(namespace)
+				.withAnnotations(
+					Map.of(
+						AnnotationField.DATASET_NAME.getField(), this.datasetName
+					))
+				.build();
+		}else {
+			return new ObjectMetaBuilder()
+				.withName(deploymentName)
+				.withNamespace(namespace)
+				.withAnnotations(
+					Map.of(
+						AnnotationField.MODEL_NAME.getField(), this.modelName
+					))
+				.build();
+		}
 	}
 
 	@Override
