@@ -1,7 +1,6 @@
 package com.xiilab.servercore.workload.controller;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadController {
 	private final WorkloadFacadeService workloadFacadeService;
 	private final DatasetService datasetService;
+
 	@PostMapping("/{type}")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
@@ -58,7 +58,7 @@ public class WorkloadController {
 
 	@GetMapping("/jobList")
 	@Operation(summary = "워크로드 리스트 조회")
-	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getWorkloadList(
+	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getWorkloadOverviewList(
 		@RequestParam(value = "workloadType") WorkloadType workloadType,
 		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		@RequestParam(value = "searchName", required = false) String searchName,
@@ -68,7 +68,7 @@ public class WorkloadController {
 		UserInfoDTO userInfoDTO
 	) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadListByCondition(workloadType, workspaceName, searchName, workloadStatus,
+			workloadFacadeService.getOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
 				workloadSortCondition, pageNum, userInfoDTO), HttpStatus.OK);
 	}
 
@@ -89,7 +89,7 @@ public class WorkloadController {
 	public ResponseEntity getDatasets(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
-		UserInfoDTO userInfoDTO){
+		UserInfoDTO userInfoDTO) {
 		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByRepositoryType(
 			workspaceResourceName, repositoryType, userInfoDTO);
 
