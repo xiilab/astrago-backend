@@ -49,21 +49,9 @@ public interface WorkloadModuleService {
 	 */
 	ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
 
-	/**
-	 * batch job workload list 조회
-	 *
-	 * @param workSpaceName
-	 * @return
-	 */
-	List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName);
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId);
 
-	/**
-	 * interactive job workload list 조회
-	 *
-	 * @param workSpaceName
-	 * @return
-	 */
-	List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName);
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, String userId);
 
 	/**
 	 * batch job workload 삭제

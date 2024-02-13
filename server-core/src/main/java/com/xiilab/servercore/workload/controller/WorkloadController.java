@@ -71,7 +71,7 @@ public class WorkloadController {
 		UserInfoDTO userInfoDTO
 	) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadListByCondition(workloadType, workspaceName, searchName, workloadStatus,
+			workloadFacadeService.getOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
 				workloadSortCondition, pageNum, userInfoDTO), HttpStatus.OK);
 	}
 
