@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum LabelField {
-	CREATOR("creator"),
+	CREATOR_ID("creator-id"),
 	IMAGE("image"),
 	VOLUMES("volumes"),
 	CODES("codes"),

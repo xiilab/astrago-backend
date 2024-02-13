@@ -62,8 +62,8 @@ public class InteractiveJobVO extends WorkloadVO {
 					AnnotationField.WORKSPACE_NAME.getField(), getWorkspace(),
 					AnnotationField.DESCRIPTION.getField(), getDescription(),
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
-					AnnotationField.CREATOR_ID.getField(), getCreatorId(),
-					AnnotationField.CREATOR_NAME.getField(), getCreatorName(),
+					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName(),
+					AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName(),
 					AnnotationField.TYPE.getField(), getWorkloadType().getType(),
 					AnnotationField.IMAGE_NAME.getField(), getImage().name(),
 					AnnotationField.IMAGE_TAG.getField(), getImage().tag()
@@ -77,7 +77,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	private Map<String, String> getLabelMap() {
 		Map<String, String> map = new HashMap<>();
 
-		map.put(LabelField.CREATOR.getField(), getCreatorName());
+		map.put(LabelField.CREATOR_ID.getField(), getCreatorId());
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);

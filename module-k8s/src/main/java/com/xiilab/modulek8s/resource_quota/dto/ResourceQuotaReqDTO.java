@@ -21,7 +21,7 @@ public class ResourceQuotaReqDTO extends K8SResourceReqDTO {
 			.namespace(getNamespace())
 			.description(getDescription())
 			.creatorId(getCreatorId())
-			.creatorName(getCreatorName())
+			.creatorUserName(getCreatorUserName())
 			.reqCpu(reqCPU)
 			.reqMem(reqMEM)
 			.reqGpu(reqGPU)

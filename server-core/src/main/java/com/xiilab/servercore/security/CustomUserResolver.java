@@ -37,13 +37,13 @@ public class CustomUserResolver implements HandlerMethodArgumentResolver {
 		return UserInfoDTO.builder()
 			.id(userInfo.getId())
 			.userName(userInfo.getUserName())
+			.userFullName(userRealName)
 			.email(userInfo.getEmail())
 			.joinDate(userInfo.getJoinDate())
 			.signUpMethod(userInfo.getSignUpMethod())
 			.auth(userInfo.getAuth())
 			.groups(userInfo.getGroups())
 			.workspaces(userInfo.getWorkspaces())
-			.userRealName(userRealName)
 			.build();
 	}
 }

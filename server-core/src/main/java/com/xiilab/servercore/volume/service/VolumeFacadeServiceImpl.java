@@ -23,7 +23,7 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	@Override
 	public void createVolume(CreateVolumeReqDTO requestDTO, UserInfoDTO userInfoDTO) {
 		//키클락 유저 정보 넣어줘야함
-		requestDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName());
+		requestDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(), userInfoDTO.getUserFullName());
 		storageModuleService.createVolume(requestDTO.toModuleDto());
 	}
 

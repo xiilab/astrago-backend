@@ -1,7 +1,6 @@
 package com.xiilab.servercore.workload.controller;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +37,7 @@ public class WorkloadController {
 	private final WorkloadFacadeService workloadFacadeService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
+
 	@PostMapping("/{type}")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
@@ -89,25 +89,26 @@ public class WorkloadController {
 
 	@GetMapping("/datasets")
 	@Operation(summary = "워크로드 생성 시 데이터 셋 전체 조회")
-	public ResponseEntity getDatasets(
+	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
-		UserInfoDTO userInfoDTO){
+		UserInfoDTO userInfoDTO) {
 		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByRepositoryType(
 			workspaceResourceName, repositoryType, userInfoDTO);
 
-		return new ResponseEntity(datasetsByRepositoryType, HttpStatus.OK);
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
+
 	@GetMapping("/models")
 	@Operation(summary = "워크로드 생성 시 model 전체 조회")
-	public ResponseEntity getModels(
+	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
-		UserInfoDTO userInfoDTO){
+		UserInfoDTO userInfoDTO) {
 		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByRepositoryType(
 			workspaceResourceName, repositoryType, userInfoDTO);
 
-		return new ResponseEntity(datasetsByRepositoryType, HttpStatus.OK);
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
 }

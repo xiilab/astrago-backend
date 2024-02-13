@@ -12,13 +12,7 @@ public abstract class K8SResourceReqDTO {
 	String name;
 	//resource에 대한 설명
 	String description;
-	String creatorName;
 	String creatorId;
-
-	protected K8SResourceReqDTO(String name, String description, String creatorName, String creatorId) {
-		this.name = name;
-		this.description = description;
-		this.creatorName = creatorName;
-		this.creatorId = creatorId;
-	}
+	String creatorUserName;
+	String creatorFullName;
 }

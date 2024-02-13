@@ -14,16 +14,6 @@ public class CreateDTO extends K8SResourceReqDTO {
 	private String workspaceMetaDataName;
 	private String storageClassMetaName;
 
-	public CreateDTO(String name, String description, String creatorName, String creator, StorageType storageType,
-		int requestVolume,
-		String workspaceMetaDataName, String storageClassMetaName) {
-		super(name, description, creatorName, creator);
-		this.storageType = storageType;
-		this.requestVolume = requestVolume;
-		this.workspaceMetaDataName = workspaceMetaDataName;
-		this.storageClassMetaName = storageClassMetaName;
-	}
-
 	public static CreateDTO createVolumeDtoToCreateDto(
 		com.xiilab.modulek8s.facade.dto.CreateVolumeDTO createVolumeDTO) {
 		return CreateDTO.builder()
@@ -32,7 +22,7 @@ public class CreateDTO extends K8SResourceReqDTO {
 			.requestVolume(createVolumeDTO.getRequestVolume())
 			.storageType(createVolumeDTO.getStorageType())
 			.creatorId(createVolumeDTO.getCreatorId())
-			.creatorName(createVolumeDTO.getCreatorName())
+			.creatorUserName(createVolumeDTO.getCreatorUserName())
 			.build();
 	}
 
