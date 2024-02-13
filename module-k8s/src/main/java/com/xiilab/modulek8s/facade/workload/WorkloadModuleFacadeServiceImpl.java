@@ -1,11 +1,13 @@
 package com.xiilab.modulek8s.facade.workload;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -104,7 +106,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	private void createPVAndPVC(List<ModuleVolumeReqDTO> list) {
-		if (!ObjectUtils.isEmpty(list)) {
+		if (!CollectionUtils.isEmpty(list)) {
 			for (ModuleVolumeReqDTO reqDto : list) {
 				volumeService.createPV(reqDto.getCreatePV());
 				volumeService.createPVC(reqDto.getCreatePVC());
