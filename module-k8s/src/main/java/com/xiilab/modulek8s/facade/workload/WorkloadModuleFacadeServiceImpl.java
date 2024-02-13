@@ -1,15 +1,19 @@
 package com.xiilab.modulek8s.facade.workload;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulek8s.common.enumeration.VolumeSelectionType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
@@ -26,6 +30,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
@@ -62,19 +67,51 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		}
 
 		ModuleJobResDTO moduleJobResDTO = null;
-		if (workloadType == WorkloadType.BATCH) {
-			moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO);
+		try {
+			// Dataset PV 생성
+			createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
+			// Model PV 생성
+			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
+
+			if (workloadType == WorkloadType.BATCH) {
+				moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
+			} else if (workloadType == WorkloadType.INTERACTIVE) {
+				moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO);
+			}
+
+			CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+				moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
+
+			// 노드포트 연결
+			svcService.createNodePortService(createSvcReqDTO);
+		} catch (Exception e) {
+			// TODO ObjectUtils 유효성 검사 추가
+			// Dataset PV 삭제
+			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
+				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
+					volumeService.deletePVC(dataset.getCreatePV().getPvcName(), dataset.getCreatePV().getNamespace());
+					volumeService.deletePV(dataset.getCreatePV().getPvName());
+				}
+			}
+			// Model PV 삭제
+			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
+				for (ModuleVolumeReqDTO model : moduleCreateWorkloadReqDTO.getModels()) {
+					volumeService.deletePVC(model.getCreatePV().getPvcName(), model.getCreatePV().getNamespace());
+					volumeService.deletePV(model.getCreatePV().getPvName());
+				}
+			}
 		}
 
-		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-			moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
-
-		// 노드포트 연결
-		svcService.createNodePortService(createSvcReqDTO);
-
 		return moduleJobResDTO;
+	}
+
+	private void createPVAndPVC(List<ModuleVolumeReqDTO> list) {
+		if (!CollectionUtils.isEmpty(list)) {
+			for (ModuleVolumeReqDTO reqDto : list) {
+				volumeService.createPV(reqDto.getCreatePV());
+				volumeService.createPVC(reqDto.getCreatePVC());
+			}
+		}
 	}
 
 	private void createAndSetImageSecret(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -350,16 +387,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		volumeService.deletePVC(pvcName, namespace);
 		//pv 삭제
 		volumeService.deletePV(pvName);
-	}
-
-	/**
-	 * TODO 스토리지 파사드 수정될때마다 같이 수정돼야함 (문제해결필요)
-	 * 워크스페이스(namespace)에 볼륨 생성
-	 *
-	 * @param createVolumeDTO
-	 */
-	private String createVolume(CreateVolumeDTO createVolumeDTO) {
-		return volumeService.createVolume(createVolumeDTO);
 	}
 
 	@Override

@@ -19,12 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/core/builtInImage")
+@RequestMapping("/api/v1/core/builtInImages")
 public class BuiltInImageController {
 	private final BuiltInImageService builtInImageService;
 
 	@GetMapping("")
-	public ResponseEntity<List<BuiltInImageResDTO>> getBuiltInImageList(@RequestParam(name = "type") WorkloadType workloadType) {
+	public ResponseEntity<List<BuiltInImageResDTO>> getBuiltInImageList(@RequestParam(name = "type", required = false) WorkloadType workloadType) {
 		return ResponseEntity.ok(builtInImageService.getBuiltInImageList(workloadType));
 	}
 

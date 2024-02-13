@@ -3,6 +3,7 @@ package com.xiilab.servercore.hub.dto;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,7 +40,9 @@ public class HubDTO {
 				.description(hubEntity.getDescription())
 				.thumbnailSavePath(hubEntity.getThumbnailSavePath())
 				.image(hubEntity.getImage())
-				.types(typesMap.get(hubEntity.getHubId()).toArray(String[]::new))
+				.types(Optional.ofNullable(typesMap.get(hubEntity.getHubId()))
+					.map(list -> list.toArray(String[]::new))
+					.orElseGet(() -> new String[0]))
 				.regUserName(hubEntity.getRegUser().getRegUserName())
 				.regDate(hubEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 				.build();
@@ -72,8 +75,10 @@ public class HubDTO {
 						.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 						.datasetMountPath(hubEntity.getDatasetMountPath())
 						.modelMountPath(hubEntity.getModelMountPath())
-						.envs(objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {}))
-						.ports(objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {}))
+						.envs(objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
+						}))
+						.ports(objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
+						}))
 						.command(hubEntity.getCommand())
 						.regUserName(hubEntity.getRegUser().getRegUserName())
 						.regDate(hubEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
@@ -90,9 +95,11 @@ public class HubDTO {
 			private List<HubDTO.Response> hubsDto;
 			private long totalCount;
 
-			public static HubsDto hubEntitiesToDto(List<HubEntity> hubEntities, Long totalCount, Map<Long, Set<String>> typesMap) {
+			public static HubsDto hubEntitiesToDto(List<HubEntity> hubEntities, Long totalCount,
+				Map<Long, Set<String>> typesMap) {
 				return HubsDto.builder()
-					.hubsDto(hubEntities.stream().map(hubEntity -> hubEntityToResponseDto(hubEntity, typesMap)).toList())
+					.hubsDto(
+						hubEntities.stream().map(hubEntity -> hubEntityToResponseDto(hubEntity, typesMap)).toList())
 					.totalCount(totalCount)
 					.build();
 			}

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
-import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -133,12 +132,6 @@ public class WorkspaceController {
 	) {
 		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO);
 		return ResponseEntity.ok().build();
-	}
-
-	@GetMapping("/{name}/quota")
-	@Operation(summary = "워크스페이스 리소스쿼터 조회")
-	public ResponseEntity<ResourceQuotaResDTO> getWorkspaceResourceQuota(@PathVariable(name = "name") String name) {
-		return ResponseEntity.ok(workspaceModuleFacadeService.getWorkspaceResourceQuota(name));
 	}
 
 	@PostMapping("{workspaceResourceName}/datasets")
