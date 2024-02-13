@@ -25,7 +25,8 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private ModuleImageReqDTO image;
 	private List<ModulePortReqDTO> ports;
 	private List<ModuleEnvReqDTO> envs;
-	private List<ModuleVolumeReqDTO> volumes;
+	private List<ModuleVolumeReqDTO> datasets;
+	private List<ModuleVolumeReqDTO> models;
 	private List<ModuleCodeReqDTO> codes;
 	private String command;
 	private int cpuRequest;
@@ -44,9 +45,10 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.workspace(workspace)
 			.workloadType(workloadType)
 			.image(image)
+			.datasets(datasets)
+			.models(models)
 			.ports(ports)
 			.envs(envs)
-			.volumes(volumes)
 			.codes(codes)
 			.command(command)
 			.cpuRequest(cpuRequest)

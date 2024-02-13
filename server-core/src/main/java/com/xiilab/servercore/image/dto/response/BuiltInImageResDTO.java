@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class BuiltInImageResDTO {
 	private Long id;
-	private String name;
+	private String title;
 	private String description;
 	private String image;
 	private String thumbnailSavePath;
@@ -21,7 +21,7 @@ public class BuiltInImageResDTO {
 	public static BuiltInImageResDTO builtInImageEntityToDTO(BuiltInImageEntity builtInImageEntity) {
 		return BuiltInImageResDTO.builder()
 			.id(builtInImageEntity.getId())
-			.name(builtInImageEntity.getName())
+			.title(builtInImageEntity.getTitle())
 			.description(builtInImageEntity.getDescription())
 			.image(builtInImageEntity.getImage())
 			.thumbnailSavePath(builtInImageEntity.getThumbnailSavePath())

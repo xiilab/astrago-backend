@@ -23,7 +23,8 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private ImageType imageType;    // 이미지 타입(빌트인, Dockerhub)
 	private ModuleImageReqDTO image;    // 이미지명
 	private List<ModuleCodeReqDTO> codes;    // import할 코드 목록
-	private List<ModuleVolumeReqDTO> volumes;    // 마운트할 볼륨 목록 (볼륨명, 마운트할 경로)
+	private List<ModuleVolumeReqDTO> datasets;    // 마운트할 데이터셋 볼륨 목록 (볼륨명, 마운트할 경로)
+	private List<ModuleVolumeReqDTO> models;    // 마운트할 모델 볼륨 목록 (볼륨명, 마운트할 경로)
 	private List<ModulePortReqDTO> ports;    // 노드 포토 목록 (포트명, 포트번호)
 	private List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
 	private String command;    // 실행할 명령어
@@ -49,8 +50,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.creatorUserName(this.getCreatorUserName())
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
-			.codes(this.codes.stream().map(codReqDTO -> codReqDTO.toJobCodeVO(workspace)).toList())
-			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace)).toList())
+			.datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.command(this.command)
@@ -72,8 +74,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.creatorUserName(this.getCreatorUserName())
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
-			.codes(this.codes.stream().map(codReqDTO -> codReqDTO.toJobCodeVO(workspace)).toList())
-			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace)).toList())
+			.datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.command(this.command)
@@ -86,7 +89,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 
 	private void initializeCollection() {
 		this.codes = getListIfNotEmpty(this.codes);
-		this.volumes = getListIfNotEmpty(this.volumes);
+		this.datasets = getListIfNotEmpty(this.datasets);
 		this.ports = getListIfNotEmpty(this.ports);
 		this.envs = getListIfNotEmpty(this.envs);
 	}

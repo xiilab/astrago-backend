@@ -27,8 +27,8 @@ public class BuiltInImageEntity extends BaseEntity {
 	@Column(name = "IMAGE_ID")
 	private Long id;
 
-	@Column(name = "IMAGE_NAME")
-	private String name;
+	@Column(name = "TITLE")
+	private String title;
 
 	@Column(name = "DESCRIPTION")
 	private String description;

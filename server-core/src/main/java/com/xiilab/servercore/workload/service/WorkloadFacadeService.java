@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulealert.dto.AlertDTO;
@@ -15,14 +17,22 @@ import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
+import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
+import com.xiilab.servercore.dataset.entity.Dataset;
+import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
@@ -34,13 +44,21 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final WorkspaceService workspaceService;
 	private final PinService pinService;
 	private final AlertService alertService;
+	private final DatasetService datasetService;
 	private final WorkloadHistoryService workloadHistoryService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserFullName(), userInfoDTO.getUserFullName());
-		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		// 데이터셋 볼륨 추가
+		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
+		// 모델 볼륨 추가
+		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
+
+		workloadModuleFacadeService.createJobWorkload(
+			moduleCreateWorkloadReqDTO.toModuleDTO());
 
 		// 워크로드 생성 알림
 		alertService.sendAlert(AlertDTO.builder()
@@ -231,4 +249,43 @@ public class WorkloadFacadeService {
 			.message(String.format(AlertMessage.DELETE_WORKLOAD.getMessage(), workloadName))
 			.build());
 	}
+
+	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		if (!ObjectUtils.isEmpty(list)) {
+			for (ModuleVolumeReqDTO reqDto : list) {
+				setCreatePVAndPVC(workspaceName, reqDto);
+			}
+		}
+	}
+	private void setCreatePVAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO) {
+		Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
+		DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
+			findDataset);
+
+		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
+		String ip = resDatasetWithStorage.getIp();
+		String storagePath = resDatasetWithStorage.getStoragePath();
+		StorageType storageType = resDatasetWithStorage.getStorageType();
+		int requestVolume = 50;
+
+		// PV 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.ip(ip)
+			.storagePath(storagePath)
+			.namespace(workspaceName)
+			.storageType(storageType)
+			.requestVolume(requestVolume)
+			.build();
+		moduleVolumeReqDTO.setCreatePV(createPV);
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(workspaceName)
+			.requestVolume(requestVolume)
+			.build();
+		moduleVolumeReqDTO.setCreatePVC(createPVC);
+	}
+
 }

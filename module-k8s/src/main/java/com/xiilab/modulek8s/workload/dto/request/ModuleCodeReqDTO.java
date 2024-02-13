@@ -3,7 +3,6 @@ package com.xiilab.modulek8s.workload.dto.request;
 import java.io.File;
 
 import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
-import com.xiilab.modulek8s.workload.enums.RepositoryType;
 import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 
 public record ModuleCodeReqDTO(

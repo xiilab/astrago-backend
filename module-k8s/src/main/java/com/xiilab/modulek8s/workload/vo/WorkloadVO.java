@@ -18,15 +18,11 @@ import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.EnvVarSource;
-import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 import io.fabric8.kubernetes.api.model.KubernetesResource;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
-import io.fabric8.kubernetes.api.model.SecretKeySelector;
-import io.fabric8.kubernetes.api.model.SecretKeySelectorBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import lombok.Getter;
@@ -43,7 +39,9 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	float memRequest;        // 워크로드 mem 요청량
 	//SchedulingType schedulingType;        // 스케줄링 방식
 	List<JobCodeVO> codes;    // code 정의
-	List<JobVolumeVO> volumes;    // volume 정의
+	List<JobVolumeVO> datasets;
+	List<JobVolumeVO> models;
+	// List<JobVolumeVO> volumes;    // volume 정의
 	String secretName;
 
 	/**
@@ -89,12 +87,14 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	 *
 	 * @param podSpecBuilder
 	 * @param volumes 마운트 정의할 볼륨 목록
-	 */
+	 *
+	 **/
 	public void addVolumes(PodSpecBuilder podSpecBuilder, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
 			List<Volume> addVolumes = volumes.stream()
-				.map(volume -> new VolumeBuilder().withName(volume.name())
-					.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(volume.mountPath(), false))
+				.map(volume -> new VolumeBuilder()
+					.withName(volume.pvName())
+					.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(volume.pvcName(), false))
 					.build())
 				.toList();
 
