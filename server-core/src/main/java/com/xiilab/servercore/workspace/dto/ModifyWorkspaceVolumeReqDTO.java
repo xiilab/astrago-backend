@@ -21,8 +21,8 @@ public class ModifyWorkspaceVolumeReqDTO extends APIBaseReqDTO {
 			.name(getName())
 			.workspaceMetaName(workspaceMetaName)
 			.volumeMetaName(volumeMetaName)
-			.creator(creatorId)
-			.creatorName(creatorName)
+			.creatorId(creatorId)
+			.creatorUserName(creatorName)
 			.build();
 	}
 	public void setMetaNames(String workspaceMetaName, String volumeMetaName){

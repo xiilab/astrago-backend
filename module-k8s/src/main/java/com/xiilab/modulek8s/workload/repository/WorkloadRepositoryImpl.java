@@ -520,13 +520,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	private JobList getBatchJobListByCreator(String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.batch().v1().jobs().withLabel(LabelField.CREATOR.getField(), userId).list();
+			return kubernetesClient.batch().v1().jobs().withLabel(LabelField.CREATOR_ID.getField(), userId).list();
 		}
 	}
 
 	private DeploymentList getInteractiveJobListByCreator(String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.apps().deployments().withLabel(LabelField.CREATOR.getField(), userId).list();
+			return kubernetesClient.apps().deployments().withLabel(LabelField.CREATOR_ID.getField(), userId).list();
 		}
 	}
 
