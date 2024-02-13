@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
@@ -127,7 +128,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			}
 			datasetService.modifyDataset(modifyDataset, datasetId);
 		} else{
-			throw new K8sException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
+			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
 
@@ -139,7 +140,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			boolean isUse = workloadModuleFacadeService.isUsedDataset(datasetId);
 			//true = 사용중인 데이터 셋
 			if (isUse) {
-				throw new K8sException(DatasetErrorCode.DATASET_NOT_DELETE_IN_USE);
+				throw new RestApiException(DatasetErrorCode.DATASET_NOT_DELETE_IN_USE);
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
 			if (dataset.isAstargoDataset()) {
@@ -164,7 +165,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				datasetService.deleteDatasetById(datasetId);
 			}
 		} else {
-			throw new K8sException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
+			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
 
@@ -248,10 +249,10 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 					.mediaType(contentType)
 					.build();
 			} else {
-				throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+				throw new RestApiException(DatasetErrorCode.DATASET_NOT_SUPPORT_PREVIEW);
 			}
 		} else {
-			throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_NOT_SUPPORT_PREVIEW);
 		}
 	}
 
@@ -270,7 +271,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.contentPath(contentPath)
 				.build();
 		} else {
-			throw new RuntimeException("파일을 찾을 수 없습니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_FILE_NOT_FOUND);
 		}
 	}
 
@@ -286,7 +287,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			try {
 				fileContent = Files.readAllBytes(targetPath);
 			} catch (IOException e) {
-				throw new RuntimeException("파일 미리보기를 실패했습니다.");
+				throw new RestApiException(DatasetErrorCode.DATASET_PREVIEW_FAIL);
 			}
 			String fileExtension = CoreFileUtils.getFileExtension(targetPath);
 			if (fileExtension != null) {
@@ -298,10 +299,10 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 					case "png":
 						break;
 					default:
-						throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+						throw new RestApiException(DatasetErrorCode.DATASET_NOT_SUPPORT_PREVIEW);
 				}
 			} else {
-				throw new RuntimeException("미리보기를 지원하지 않는 포맷입니다.");
+				throw new RestApiException(DatasetErrorCode.DATASET_NOT_SUPPORT_PREVIEW);
 			}
 			ByteArrayResource resource = new ByteArrayResource(fileContent);
 			MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
@@ -312,7 +313,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.mediaType(mediaType)
 				.build();
 		}else{
-			throw new RuntimeException("파일이 존재하지 않습니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_FILE_NOT_FOUND);
 		}
 	}
 
