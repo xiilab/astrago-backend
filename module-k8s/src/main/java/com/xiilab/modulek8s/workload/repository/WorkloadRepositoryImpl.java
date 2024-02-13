@@ -145,7 +145,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceName(String workSpaceName) {
 		JobList batchJobList = getBatchJobList(workSpaceName);
 		return batchJobList.getItems().stream()
 			.map(ModuleBatchJobResDTO::new)
@@ -153,8 +153,24 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCreator(String userId) {
+		JobList batchJobList = getBatchJobListByCreator(userId);
+		return batchJobList.getItems().stream()
+			.map(ModuleBatchJobResDTO::new)
+			.toList();
+	}
+
+	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspace(String workSpaceName) {
 		DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
+		return interactiveJobList.getItems().stream()
+			.map(ModuleInteractiveJobResDTO::new)
+			.toList();
+	}
+
+	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCreator(String creator) {
+		DeploymentList interactiveJobList = getInteractiveJobListByCreator(creator);
 		return interactiveJobList.getItems().stream()
 			.map(ModuleInteractiveJobResDTO::new)
 			.toList();
@@ -441,6 +457,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			return WorkloadStatus.PENDING;
 		}
 	}
+
 	private static WorkloadStatus getStatefulsetStatus(StatefulSetStatus statefulSetStatus) {
 		Integer replicas = statefulSetStatus.getReplicas();
 		Integer availableReplicas = statefulSetStatus.getAvailableReplicas();
@@ -459,11 +476,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.list()
 			.getItems();
 	}
+
 	private static List<Deployment> getDeploymentsInUseDataset(String key, KubernetesClient client) {
 		return client.apps().deployments().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
+
 	private static List<StatefulSet> getStatefulSetsInUseDataset(String key, KubernetesClient client) {
 		return client
 			.apps()
@@ -496,6 +515,18 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private JobList getBatchJobList(String workSpaceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).list();
+		}
+	}
+
+	private JobList getBatchJobListByCreator(String userId) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.batch().v1().jobs().withLabel(LabelField.CREATOR.getField(), userId).list();
+		}
+	}
+
+	private DeploymentList getInteractiveJobListByCreator(String userId) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.apps().deployments().withLabel(LabelField.CREATOR.getField(), userId).list();
 		}
 	}
 

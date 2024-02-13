@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
-import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
@@ -42,7 +41,7 @@ public class WorkspaceTotalDTO {
 		this.limitCPU = resourceQuotaResDTO.getLimitCPU();
 		this.limitMEM = resourceQuotaResDTO.getLimitMEM();
 		this.limitGPU = resourceQuotaResDTO.getLimitGPU();
-		this.age = DateUtils.getAge(workspaceDTO.getCreatedAt());
+		this.age = new AgeDTO(workspaceDTO.getCreatedAt());
 		this.runningCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.RUNNING);
 		this.errCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.ERROR);
 		this.pendingCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.PENDING);

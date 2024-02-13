@@ -3,7 +3,6 @@ package com.xiilab.modulek8s.workspace.dto;
 import java.time.LocalDateTime;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
-import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceReqVO;
 
@@ -73,7 +72,7 @@ public class WorkspaceDTO {
 			this.resourceName = resourceName;
 			this.description = description;
 			this.isPinYN = isPinYN;
-			this.age = DateUtils.getAge(createdTime);
+			this.age = new AgeDTO(createdTime);
 			this.recentlyWorkload = recentlyWorkload;
 		}
 	}

@@ -54,7 +54,7 @@ public class SocketConfig implements WebSocketConfigurer {
 
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(terminalSocket(), "/ws/terminal").setAllowedOrigins("*");
+		registry.addHandler(terminalSocket(), "/ws/workload/terminal").setAllowedOrigins("*");
 		registry.addHandler(workloadLogSocketHandler(), "/ws/workload/log").setAllowedOrigins("*");
 	}
 }

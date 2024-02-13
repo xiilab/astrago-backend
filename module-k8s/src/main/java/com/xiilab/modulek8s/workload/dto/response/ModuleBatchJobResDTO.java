@@ -16,7 +16,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Getter
 public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
-	private int remainTime;
 
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
@@ -52,7 +51,6 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 	private WorkloadStatus getWorkloadStatus(JobStatus jobStatus) {
 		Integer active = jobStatus.getActive();
 		Integer failed = jobStatus.getFailed();
-		Integer succeeded = jobStatus.getSucceeded();
 		Integer ready = jobStatus.getReady();
 		if (failed != null && failed > 0) {
 			return WorkloadStatus.ERROR;

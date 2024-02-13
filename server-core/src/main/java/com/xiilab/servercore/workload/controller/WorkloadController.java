@@ -1,7 +1,6 @@
 package com.xiilab.servercore.workload.controller;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +37,7 @@ public class WorkloadController {
 	private final WorkloadFacadeService workloadFacadeService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
+
 	@PostMapping("/{type}")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
@@ -71,7 +71,7 @@ public class WorkloadController {
 		UserInfoDTO userInfoDTO
 	) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadListByCondition(workloadType, workspaceName, searchName, workloadStatus,
+			workloadFacadeService.getOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
 				workloadSortCondition, pageNum, userInfoDTO), HttpStatus.OK);
 	}
 

@@ -16,7 +16,7 @@ client_id=kubernetes-client&grant_type=password&username=admin&password=xiirocks
 %}
 
 ### Batch Workload 생성
-POST http://localhost:8080/api/v1/core/workloads/batch
+POST http://localhost:8080/api/v1/core/workloads/BATCH
 Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
@@ -109,3 +109,6 @@ DELETE http://localhost:8080/api/v1/core/workloads/interactive?workSpaceName=def
 Authorization: Bearer {{access_token}}
 Content-Type: application/x-www-form-urlencoded
 
+### Workload list 조회
+GET http://localhost:8080/api/v1/core/workloads/jobList?workloadType=BATCH&pageNum=1
+Authorization: Bearer {{access_token}}
