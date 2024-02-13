@@ -20,16 +20,18 @@ public class WorkspaceDTO {
 		private String name;
 		private String description;
 		private LocalDateTime createAt;
-		private String creatorName;
 		private String creatorId;
+		private String creatorUserName;
+		private String creatorFullName;
 
 		public WorkspaceReqVO convertToVO() {
 			return WorkspaceReqVO.builder()
 				.name(this.name)
 				.description(this.description)
 				.createdAt(createAt)
-				.creatorUserName(creatorName)
 				.creatorId(creatorId)
+				.creatorUserName(creatorUserName)
+				.creatorFullName(creatorFullName)
 				.build();
 		}
 	}
@@ -50,7 +52,8 @@ public class WorkspaceDTO {
 		private String resourceName;
 		private String description;
 		private String creatorId;
-		private String creatorName;
+		private String creatorUserName;
+		private String creatorFullName;
 		private LocalDateTime createdAt;
 	}
 

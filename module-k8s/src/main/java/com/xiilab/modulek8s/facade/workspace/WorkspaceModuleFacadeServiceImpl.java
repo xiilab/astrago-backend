@@ -31,7 +31,7 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 			createWorkspaceDTO.getName(),
 			createWorkspaceDTO.getDescription(),
 			LocalDateTime.now(),
-			createWorkspaceDTO.getCreatorName(),
+			createWorkspaceDTO.getCreatorUserName(),
 			createWorkspaceDTO.getCreatorId()
 		));
 
