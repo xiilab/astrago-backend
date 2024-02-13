@@ -61,19 +61,6 @@ public class VolumeService {
 		int pageNumber = pageable.getPageNumber();
 		int pageSize = pageable.getPageSize();
 		int totalSize = volumes.size();
-		// int startIndex = (pageNumber - 1) * pageSize;
-		// int endIndex = Math.min(startIndex + pageSize, totalSize);
-
-		// if (startIndex >= totalSize || endIndex <= startIndex) {
-		// 	// 페이지 범위를 벗어나면 빈 리스트 반환
-		// 	return PageResDTO.builder()
-		// 		.content(null)
-		// 		.page(pageNumber)
-		// 		.size(pageSize)
-		// 		.totalCount(totalSize)
-		// 		.build();
-		// }
-		// List<PageVolumeResDTO> volumeResDTOS = volumes.subList(startIndex, endIndex);
 
 		return PageResDTO.builder()
 			.content(volumes)
