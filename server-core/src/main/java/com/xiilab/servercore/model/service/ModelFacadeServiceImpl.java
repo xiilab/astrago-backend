@@ -249,6 +249,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 				.builder()
 				.name(file.getName())
 				.type(file.getFileType())
+				.size(CoreFileUtils.formatFileSize(file.getSize() == null ? 0 : Long.parseLong(file.getSize())))
 				.path(FileType.D == file.getFileType() ? filePath + file.getName() + File.separator :
 					filePath + file.getName())
 				.build();

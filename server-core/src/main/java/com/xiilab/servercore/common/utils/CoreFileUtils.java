@@ -103,7 +103,8 @@ public class CoreFileUtils {
 						DirectoryDTO.ChildrenDTO dirChild = DirectoryDTO.ChildrenDTO.builder()
 							.name(file.getName())
 							.type(FileType.D)
-							.path(fullPath)
+							.path(null)
+							.size(CoreFileUtils.formatFileSize(file.length()))
 							.build();
 						directoryCnt += 1;
 						children.add(dirChild);
@@ -112,6 +113,7 @@ public class CoreFileUtils {
 							.name(file.getName())
 							.type(FileType.F)
 							.path(fullPath)
+							.size(CoreFileUtils.formatFileSize(file.length()))
 							.build();
 						fileCnt += 1;
 						children.add(fileChild);
