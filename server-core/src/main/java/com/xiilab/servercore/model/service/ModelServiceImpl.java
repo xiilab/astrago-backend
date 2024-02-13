@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -93,7 +94,7 @@ public class ModelServiceImpl implements ModelService{
 	public ModelDTO.ResModelWithStorage getModelWithStorage(Long modelId) {
 		Model modelWithStorage = modelRepository.getModelWithStorage(modelId);
 		if(modelWithStorage == null){
-			throw new RuntimeException("존재하지 않는 모델입니다.");
+			throw new RestApiException(ModelErrorCode.MODEL_NOT_FOUND);
 		}
 		return ModelDTO.ResModelWithStorage.toDto(modelWithStorage);
 	}
@@ -101,7 +102,7 @@ public class ModelServiceImpl implements ModelService{
 	@Override
 	public Model findById(Long modelId) {
 		Model model = modelRepository.findById(modelId)
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 모델입니다."));
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		return model;
 	}
 
@@ -109,7 +110,7 @@ public class ModelServiceImpl implements ModelService{
 	@Transactional
 	public void modifyModel(ModelDTO.ModifyModel modifyModel, Long modelId) {
 		Model model = modelRepository.findById(modelId)
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 모델입니다."));
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		model.modifyModelName(modifyModel.getModelName());
 	}
 
@@ -125,38 +126,38 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	public DirectoryDTO getAstragoModelFiles(Long modelId, String filePath) {
-		modelRepository.findById(modelId).orElseThrow(()-> new RuntimeException("존재하지 않는 모델입니다."));
+		modelRepository.findById(modelId).orElseThrow(()-> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		return CoreFileUtils.getAstragoFiles(filePath);
 	}
 
 	@Override
 	public void astragoModelUploadFile(Long modelId, String path, List<MultipartFile> files) {
 		AstragoModelEntity model = (AstragoModelEntity) modelRepository.findById(modelId)
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 모델입니다."));
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		long size = CoreFileUtils.datasetUploadFiles(path, files);
 		model.setModelSize(size);
 	}
 
 	@Override
 	public void astragoModelCreateDirectory(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO) {
-		modelRepository.findById(modelId).orElseThrow(() -> new RuntimeException("존재하지 않는 모델입니다."));
+		modelRepository.findById(modelId).orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		Path dirPath = Path.of(reqFilePathDTO.getPath());
 		// 디렉토리가 존재하지 않으면 생성
 		if (!Files.exists(dirPath)) {
 			try {
 				Files.createDirectories(dirPath);
 			} catch (IOException e) {
-				throw new RuntimeException("폴더 생성에 실패했습니다.");
+				throw new RestApiException(ModelErrorCode.MODEL_DIRECTORY_CREATE_FAIL);
 			}
 		} else {
-			throw new RuntimeException("이미 생성된 폴더입니다.");
+			throw new RestApiException(ModelErrorCode.MODEL_DIRECTORY_CREATE_ALREADY);
 		}
 	}
 
 	@Override
 	public void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO) {
 		modelRepository.findById(modelId)
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 모델입니다."));
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		String targetPath = reqFilePathDTO.getPath();
 		CoreFileUtils.deleteFileOrDirectory(targetPath);
 	}
@@ -164,7 +165,7 @@ public class ModelServiceImpl implements ModelService{
 	@Override
 	public DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath) {
 		modelRepository.findById(modelId)
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 모델입니다."));
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		Path targetPath = Path.of(filePath);
 		// 파일이 존재하는지 확인
 		if (Files.exists(targetPath)) {
@@ -180,7 +181,7 @@ public class ModelServiceImpl implements ModelService{
 						.mediaType(MediaType.parseMediaType("application/zip"))
 						.build();
 				} catch (IOException e) {
-					throw new RuntimeException("디렉토리 압축 및 다운로드 실패: " + e.getMessage());
+					throw new RestApiException(ModelErrorCode.MODEL_ZIP_DOWNLOAD_FAIL);
 				}
 			}else{
 				String fileName = CoreFileUtils.getFileName(filePath);
@@ -189,7 +190,7 @@ public class ModelServiceImpl implements ModelService{
 				try {
 					fileContent = Files.readAllBytes(targetPath);
 				} catch (IOException e) {
-					throw new RuntimeException("파일 다운로드를 실패했습니다.");
+					throw new RestApiException(ModelErrorCode.MODEL_FILE_DOWNLOAD_FAIL);
 				}
 				ByteArrayResource resource = new ByteArrayResource(fileContent);
 				MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
@@ -228,12 +229,12 @@ public class ModelServiceImpl implements ModelService{
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
 		if(workSpaceMappingEntity != null){
-			throw new RuntimeException("해당 워크스페이스에 이미 추가된 model입니다.");
+			throw new RestApiException(ModelErrorCode.MODEL_WORKSPACE_MAPPING_ALREADY);
 		}
 
 		//dataset entity 조회
 		Model model = modelRepository.findById(modelId)
-			.orElseThrow(() -> new RuntimeException("model이 존재하지 않습니다."));
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		//datasetWorkspaceMappingEntity 생성 및 model entity 추가
 		ModelWorkSpaceMappingEntity datasetWorkSpaceMappingEntity = ModelWorkSpaceMappingEntity.builder()
 			.workspaceResourceName(workspaceResourceName)
@@ -248,11 +249,11 @@ public class ModelServiceImpl implements ModelService{
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
 		if(workSpaceMappingEntity == null){
-			throw new RuntimeException("model이 존재하지 않습니다.");
+			throw new RestApiException(ModelErrorCode.MODEL_NOT_FOUND);
 		}
 		//owner or 본인 체크
 		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
-			throw new RuntimeException("삭제 권한이 없는 model입니다.");
+			throw new RestApiException(ModelErrorCode.MODEL_DELETE_FORBIDDEN);
 		}
 		modelWorkspaceRepository.deleteByModelIdAndWorkspaceResourceName(modelId, workspaceResourceName);
 	}
