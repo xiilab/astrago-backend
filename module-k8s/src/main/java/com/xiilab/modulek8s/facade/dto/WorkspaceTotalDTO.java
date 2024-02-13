@@ -47,7 +47,7 @@ public class WorkspaceTotalDTO {
 		this.pendingCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.PENDING);
 		this.endCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.END);
 		this.creatorId = workspaceDTO.getCreatorId();
-		this.creatorName = workspaceDTO.getCreatorName();
+		this.creatorName = workspaceDTO.getCreatorUserName();
 		this.createAt = workspaceDTO.getCreatedAt();
 	}
 

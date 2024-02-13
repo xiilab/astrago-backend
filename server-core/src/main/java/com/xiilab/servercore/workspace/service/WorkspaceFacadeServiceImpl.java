@@ -53,9 +53,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
 			.name(applicationForm.getName())
 			.description(applicationForm.getDescription())
-			.creatorName(userInfoDTO.getUserName())
 			.creatorId(userInfoDTO.getId())
-			.creatorName(userInfoDTO.getUserName())
+			.creatorUserName(userInfoDTO.getUserName())
+			.creatorFullName(userInfoDTO.getUserFullName())
 			.reqCPU(applicationForm.getReqCPU())
 			.reqMEM(applicationForm.getReqMEM())
 			.reqGPU(applicationForm.getReqGPU())
@@ -141,15 +141,15 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		return workspaceList.stream()
 			.filter(workspace -> userWorkspacePinList.contains(workspace.getResourceName()))
 			.map(workspace ->
-			new WorkspaceDTO.TotalResponseDTO(
-				workspace.getId(),
-				workspace.getName(),
-				workspace.getResourceName(),
-				workspace.getDescription(),
-				userWorkspacePinList.contains(workspace.getResourceName()),
-				workspace.getCreatedAt(),
-				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
-					userInfoDTO.getUserName()))).toList();
+				new WorkspaceDTO.TotalResponseDTO(
+					workspace.getId(),
+					workspace.getName(),
+					workspace.getResourceName(),
+					workspace.getDescription(),
+					userWorkspacePinList.contains(workspace.getResourceName()),
+					workspace.getCreatedAt(),
+					workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
+						userInfoDTO.getUserName()))).toList();
 
 	}
 
@@ -174,7 +174,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum, UserInfoDTO userInfoDTO) {
+	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum,
+		UserInfoDTO userInfoDTO) {
 		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaReqList.stream()

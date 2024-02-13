@@ -17,28 +17,30 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 	@Override
 	public WorkspaceDTO.ResponseDTO createWorkspace(WorkspaceDTO.RequestDTO workspaceReqDTO) {
-		WorkspaceResVO workSpace = workspaceRepo.createWorkSpace(workspaceReqDTO.convertToVO());
+		WorkspaceResVO workspace = workspaceRepo.createWorkSpace(workspaceReqDTO.convertToVO());
 		return new WorkspaceDTO.ResponseDTO(
-			workSpace.getUid(),
-			workSpace.getName(),
-			workSpace.getResourceName(),
-			workSpace.getDescription(),
-			workSpace.getCreatorId(),
-			workSpace.getCreatorUserName(),
-			workSpace.getCreatedAt());
+			workspace.getUid(),
+			workspace.getName(),
+			workspace.getResourceName(),
+			workspace.getDescription(),
+			workspace.getCreatorId(),
+			workspace.getCreatorUserName(),
+			workspace.getCreatorFullName(),
+			workspace.getCreatedAt());
 	}
 
 	@Override
 	public WorkspaceDTO.ResponseDTO getWorkspaceByName(String workspaceName) {
-		WorkspaceResVO workSpace = workspaceRepo.getWorkspaceByName(workspaceName);
+		WorkspaceResVO workspace = workspaceRepo.getWorkspaceByName(workspaceName);
 		return new WorkspaceDTO.ResponseDTO(
-			workSpace.getUid(),
-			workSpace.getName(),
-			workSpace.getResourceName(),
-			workSpace.getDescription(),
-			workSpace.getCreatorId(),
-			workSpace.getCreatorUserName(),
-			workSpace.getCreatedAt());
+			workspace.getUid(),
+			workspace.getName(),
+			workspace.getResourceName(),
+			workspace.getDescription(),
+			workspace.getCreatorId(),
+			workspace.getCreatorUserName(),
+			workspace.getCreatorFullName(),
+			workspace.getCreatedAt());
 	}
 
 	@Override
@@ -52,6 +54,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 			workspace.getDescription(),
 			workspace.getCreatorId(),
 			workspace.getCreatorUserName(),
+			workspace.getCreatorFullName(),
 			workspace.getCreatedAt()
 		)).toList();
 	}
