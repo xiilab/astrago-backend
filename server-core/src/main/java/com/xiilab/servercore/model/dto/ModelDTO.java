@@ -102,6 +102,7 @@ public class ModelDTO {
 		private String storageName;
 		private String ip;
 		private String storagePath;
+		private String modelPath;
 		private Integer requestVolume;
 		private String creator;
 		private String creatorName;
@@ -123,6 +124,7 @@ public class ModelDTO {
 					.division(model.getDivision())
 					.ip(((AstragoModelEntity)model).getStorageEntity().getIp())
 					.storagePath(((AstragoModelEntity)model).getStorageEntity().getStoragePath())
+					.modelPath(((AstragoModelEntity)model).getModelPath())
 					.storageName(((AstragoModelEntity)model).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
 					.build();
@@ -137,6 +139,7 @@ public class ModelDTO {
 					.division(model.getDivision())
 					.ip(((LocalModelEntity)model).getIp())
 					.storagePath(((LocalModelEntity)model).getStoragePath())
+					.modelPath("/")
 					.build();
 			}
 			return null;
