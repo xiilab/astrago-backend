@@ -27,8 +27,8 @@ public class DeleteWorkspaceVolumeReqDTO {
 		return DeleteVolumeDTO.builder()
 			.workspaceMetaName(workspaceMetaName)
 			.volumeMetaName(volumeMetaName)
-			.creator(creator)
-			.creatorName(creatorName)
+			.creatorId(creator)
+			.creatorUserName(creatorName)
 			.build();
 	}
 

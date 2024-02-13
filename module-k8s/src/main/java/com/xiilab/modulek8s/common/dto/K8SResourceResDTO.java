@@ -34,8 +34,8 @@ public abstract class K8SResourceResDTO {
 		this.name = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
 		this.description = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.DESCRIPTION.getField());
 		this.createdAt = LocalDateTime.parse(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()));
-		this.creatorName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_NAME.getField());
-		this.creatorId = hasMetadata.getMetadata().getLabels().get(LabelField.CREATOR.getField());
+		this.creatorName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField());
+		this.creatorId = hasMetadata.getMetadata().getLabels().get(LabelField.CREATOR_ID.getField());
 		this.type = getType();
 	}
 	//자식 클래스의 ResourceType을 조회하기 위한 메소드

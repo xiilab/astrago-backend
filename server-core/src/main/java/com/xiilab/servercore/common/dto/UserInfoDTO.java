@@ -16,14 +16,14 @@ import lombok.Getter;
 @Builder
 public class UserInfoDTO {
 	private String id;
-	private String userName;
 	private String email;
 	private LocalDateTime joinDate;
 	private SignUpMethod signUpMethod;
 	private AuthType auth;
 	private List<String> groups;
 	private List<String> workspaces;
-	private String userRealName;
+	private String userName;
+	private String userFullName;
 
 	public Set<String> getWorkspaceList(boolean isMyWorkspace) {
 		if (workspaces != null && !workspaces.isEmpty()) {
@@ -51,6 +51,6 @@ public class UserInfoDTO {
 			.filter(ws -> ws.contains("/owner"))
 			.map(group -> group.split("/")[0])
 			.toList();
-		return workspaces.contains(workspaceName) ? true : false;
+		return workspaces.contains(workspaceName);
 	}
 }

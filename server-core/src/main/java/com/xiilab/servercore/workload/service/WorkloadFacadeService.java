@@ -39,7 +39,7 @@ public class WorkloadFacadeService {
 	private final WorkloadHistoryService workloadHistoryService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserRealName());
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserFullName(), userInfoDTO.getUserFullName());
 		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 
 		// 워크로드 생성 알림

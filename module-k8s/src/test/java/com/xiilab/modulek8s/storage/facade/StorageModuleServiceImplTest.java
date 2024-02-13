@@ -312,7 +312,7 @@
 //
 // 	@Test
 // 	void 볼륨조회페이징검색포함() {
-// 		String option = "creator-name";
+// 		String option = "creator-user-name";
 // 		String workspaceMetaName = "yc-test-ns";
 // 		String keyword = "서준오";
 // 		String searchOption = "";

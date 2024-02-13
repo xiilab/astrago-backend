@@ -330,9 +330,9 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		if (persistentVolumeClaim == null) {
 			throw new K8sException(VolumeErrorCode.VOLUME_NOT_FOUND);
 		}
-		String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR.getField());
+		String labelCreator = persistentVolumeClaim.getMetadata().getLabels().get(LabelField.CREATOR_ID.getField());
 
-		return labelCreator.equals(creator) ? true : false;
+		return labelCreator.equals(creator);
 	}
 
 	@Override
@@ -580,8 +580,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		}
 		Map<String, String> annotations = pvc.getMetadata().getAnnotations();
 
-		if (option.equalsIgnoreCase(AnnotationField.CREATOR_NAME.getField())) {
-			return annotations.get(AnnotationField.CREATOR_NAME.getField()).equalsIgnoreCase(keyword);
+		if (option.equalsIgnoreCase(AnnotationField.CREATOR_USER_NAME.getField())) {
+			return annotations.get(AnnotationField.CREATOR_USER_NAME.getField()).equalsIgnoreCase(keyword);
 		} else if (option.equalsIgnoreCase(AnnotationField.NAME.getField())) {
 			return annotations.get(AnnotationField.NAME.getField()).equalsIgnoreCase(keyword);
 		}

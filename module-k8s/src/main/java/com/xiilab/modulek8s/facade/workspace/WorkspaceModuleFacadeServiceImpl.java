@@ -42,7 +42,7 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 				.namespace(workspace.getResourceName())
 				.description(createWorkspaceDTO.getDescription())
 				.creatorId(createWorkspaceDTO.getCreatorId())
-				.creatorName(createWorkspaceDTO.getCreatorId())
+				.creatorUserName(createWorkspaceDTO.getCreatorId())
 				.reqCPU(createWorkspaceDTO.getReqCPU())
 				.reqGPU(createWorkspaceDTO.getReqGPU())
 				.reqMEM(createWorkspaceDTO.getReqMEM())

@@ -28,7 +28,7 @@ public class WorkspaceDTO {
 				.name(this.name)
 				.description(this.description)
 				.createdAt(createAt)
-				.creatorName(creatorName)
+				.creatorUserName(creatorName)
 				.creatorId(creatorId)
 				.build();
 		}

@@ -380,7 +380,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		WorkloadResourceType resourceType) {
 		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
-			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_NAME.getField()))
+			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
 			.build();
 
@@ -407,7 +407,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		WorkloadResourceType resourceType) {
 		WorkloadResDTO.UsingModelDTO usingModelDTO = WorkloadResDTO.UsingModelDTO.builder()
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
-			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_NAME.getField()))
+			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
 			.build();
 
@@ -520,13 +520,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	private JobList getBatchJobListByCreator(String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.batch().v1().jobs().withLabel(LabelField.CREATOR.getField(), userId).list();
+			return kubernetesClient.batch().v1().jobs().withLabel(LabelField.CREATOR_ID.getField(), userId).list();
 		}
 	}
 
 	private DeploymentList getInteractiveJobListByCreator(String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.apps().deployments().withLabel(LabelField.CREATOR.getField(), userId).list();
+			return kubernetesClient.apps().deployments().withLabel(LabelField.CREATOR_ID.getField(), userId).list();
 		}
 	}
 
