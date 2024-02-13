@@ -49,6 +49,7 @@ public class DatasetDTO {
 		private String storageName;
 		private String ip;
 		private String storagePath;
+		private String datasetPath;
 		private Integer requestVolume;
 		private String creator;
 		private String creatorName;
@@ -70,6 +71,7 @@ public class DatasetDTO {
 					.division(dataset.getDivision())
 					.ip(((AstragoDatasetEntity)dataset).getStorageEntity().getIp())
 					.storagePath(((AstragoDatasetEntity)dataset).getStorageEntity().getStoragePath())
+					.datasetPath(((AstragoDatasetEntity)dataset).getDatasetPath())
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
 					.build();
@@ -84,6 +86,7 @@ public class DatasetDTO {
 					.division(dataset.getDivision())
 					.ip(((LocalDatasetEntity)dataset).getIp())
 					.storagePath(((LocalDatasetEntity)dataset).getStoragePath())
+					.datasetPath("/")
 					.build();
 			}
 			return null;
