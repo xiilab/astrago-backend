@@ -8,9 +8,10 @@ import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8sdb.entity.JobEntity;
 import com.xiilab.modulek8sdb.entity.WorkloadType;
-import com.xiilab.modulek8sdb.repository.JobHistoryRepo;
+import com.xiilab.modulek8sdb.repository.WorkloadHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class InteractiveJobInformer {
 	private final K8sAdapter k8sAdapter;
-	private final JobHistoryRepo jobHistoryRepo;
+	private final WorkloadHistoryRepo workloadHistoryRepo;
 
 	@PostConstruct
 	void doInformer() {
@@ -50,19 +51,26 @@ public class InteractiveJobInformer {
 			@Override
 			public void onDelete(Deployment deployment, boolean b) {
 				log.info("interactive job {}가 삭제되었습니다.", deployment.getMetadata().getName());
+				String namespace = deployment.getMetadata().getNamespace();
+				Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
 				Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
 				if (metadataFromResource != null) {
-					jobHistoryRepo.save(JobEntity.jobBuilder()
+					workloadHistoryRepo.save(JobEntity.jobBuilder()
 						.name(metadataFromResource.getName())
 						.description(metadataFromResource.getDescription())
+						.resourceName(metadataFromResource.getResourceName())
+						.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
+						.workspaceResourceName(namespace)
 						.envs(getEnvFromContainer(container))
 						.cpuReq(metadataFromResource.getCpuReq())
 						.memReq(metadataFromResource.getMemReq())
 						.gpuReq(metadataFromResource.getGpuReq())
-						.resourceName(metadataFromResource.getResourceName())
+						.cmd(String.join(" ", container.getCommand()))
 						.createdAt(metadataFromResource.getCreatedAt())
 						.deletedAt(metadataFromResource.getDeletedAt())
+						.creatorName(metadataFromResource.getCreatorName())
+						.creatorId(metadataFromResource.getCreatorId())
 						.workloadType(WorkloadType.INTERACTIVE)
 						.build());
 				}

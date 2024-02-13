@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.repository;
 
+
 import static com.xiilab.modulek8sdb.entity.QJobEntity.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCusotm 
 			.selectFrom(jobEntity)
 			.where(
 				jobEntity.workloadType.eq(workloadType),
+				eqWorkspaceName(workspaceName),
 				eqName(searchName),
 				eqUserId(userId),
 				eqWorkloadType(workloadType)
@@ -50,5 +52,12 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCusotm 
 			return null;
 		}
 		return jobEntity.workloadType.eq(workloadType);
+	}
+
+	private BooleanExpression eqWorkspaceName(String workspaceName) {
+		if (workspaceName == null) {
+			return null;
+		}
+		return jobEntity.workspaceName.eq(workspaceName);
 	}
 }

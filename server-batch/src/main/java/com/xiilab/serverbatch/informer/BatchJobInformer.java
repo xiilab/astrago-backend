@@ -13,7 +13,7 @@ import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8sdb.entity.JobEntity;
 import com.xiilab.modulek8sdb.entity.WorkloadType;
-import com.xiilab.modulek8sdb.repository.JobHistoryRepo;
+import com.xiilab.modulek8sdb.repository.WorkloadHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BatchJobInformer {
 	private final K8sAdapter k8sAdapter;
-	private final JobHistoryRepo jobHistoryRepo;
+	private final WorkloadHistoryRepo workloadHistoryRepo;
 
 	@PostConstruct
 	void doInformer() {
@@ -87,7 +87,7 @@ public class BatchJobInformer {
 				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
 				if (metadataFromResource != null) {
-					jobHistoryRepo.save(JobEntity.jobBuilder()
+					workloadHistoryRepo.save(JobEntity.jobBuilder()
 						.name(metadataFromResource.getName())
 						.description(metadataFromResource.getDescription())
 						.resourceName(metadataFromResource.getResourceName())
@@ -97,6 +97,7 @@ public class BatchJobInformer {
 						.cpuReq(metadataFromResource.getCpuReq())
 						.memReq(metadataFromResource.getMemReq())
 						.gpuReq(metadataFromResource.getGpuReq())
+						.cmd(String.join(" ", container.getCommand()))
 						.createdAt(metadataFromResource.getCreatedAt())
 						.deletedAt(metadataFromResource.getDeletedAt())
 						.creatorName(metadataFromResource.getCreatorName())
