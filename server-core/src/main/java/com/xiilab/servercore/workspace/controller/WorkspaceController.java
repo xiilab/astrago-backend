@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
-import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -38,7 +37,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
-	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
 

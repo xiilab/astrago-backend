@@ -21,5 +21,4 @@ public class CreateWorkspaceDTO {
 	private int reqCPU;
 	private int reqMEM;
 	private int reqGPU;
-	private int reqDisk;
 }

@@ -28,11 +28,11 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
-import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
@@ -44,14 +44,14 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
-	private final WorkspaceService workspaceService;
 	private final PinService pinService;
 	private final AlertService alertService;
 	private final DatasetService datasetService;
 	private final WorkloadHistoryService workloadHistoryService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserFullName(), userInfoDTO.getUserFullName());
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserFullName(),
+			userInfoDTO.getUserFullName());
 		// 데이터셋 볼륨 추가
 		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
 		// 모델 볼륨 추가
@@ -88,14 +88,21 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public void deleteWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
+	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO
 	) throws IOException {
 		if (workloadType == WorkloadType.BATCH) {
-			deleteBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
+			stopBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			deleteInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
+			stopInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
 		}
+	}
+
+	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
+		ModuleWorkloadResDTO workloadHistory = workloadHistoryService.getWorkloadHistoryById(id);
+		workloadHistoryService.deleteWorkloadHistory(id, userInfoDTO);
+		//해당 워크로드를 등록한 모든 Pin 삭제
+		pinService.deletePin(workloadHistory.getResourceName(), PinType.WORKLOAD);
 	}
 
 	public PageDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(WorkloadType workloadType, String workspaceName,
@@ -220,7 +227,7 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	private void deleteBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void stopBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
 		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 			WorkloadType.BATCH);
@@ -235,7 +242,7 @@ public class WorkloadFacadeService {
 			.build());
 	}
 
-	private void deleteInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
 		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 			WorkloadType.INTERACTIVE);
@@ -257,6 +264,7 @@ public class WorkloadFacadeService {
 			}
 		}
 	}
+
 	private void setCreatePVAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO) {
 		Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
 		DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(

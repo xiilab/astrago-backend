@@ -19,7 +19,6 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
-
 		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 		Map<String, Quantity> resourceRequests = container.getResources().getLimits();
 		Quantity getGpuRequest = resourceRequests.get("nvidia.com/gpu");

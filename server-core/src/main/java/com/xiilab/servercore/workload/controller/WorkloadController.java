@@ -76,14 +76,24 @@ public class WorkloadController {
 	}
 
 	@DeleteMapping("/{type}")
-	@Operation(summary = "워크로드 삭제 api")
-	public ResponseEntity<HttpStatus> deleteWorkload(
+	@Operation(summary = "워크로드 종료 api")
+	public ResponseEntity<HttpStatus> stopWorkload(
 		@PathVariable(value = "type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
 		@RequestParam("resourceName") String resourceName,
 		UserInfoDTO userInfoDTO
 	) throws IOException {
-		workloadFacadeService.deleteWorkload(workspaceResourceName, resourceName, workloadType, userInfoDTO);
+		workloadFacadeService.stopWorkload(workspaceResourceName, resourceName, workloadType, userInfoDTO);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping("/history/{id}")
+	@Operation(summary = "워크로드 삭제 api")
+	public ResponseEntity<HttpStatus> deleteWorkloadHistory(
+		@PathVariable(value = "id") long id,
+		UserInfoDTO userInfoDTO
+	) {
+		workloadFacadeService.deleteWorkloadHistory(id, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 

@@ -21,9 +21,24 @@ Authorization: Bearer {{access_token}}
 Content-Type: application/x-www-form-urlencoded
 
 ### workspace 상세 조회
-GET http://localhost:8080/api/v1/core/workspace/ws-d079d8f9-795f-4e6f-8c74-afebc742722f
+GET http://localhost:8080/api/v1/core/workspace/ws-9d29596e-5cf0-4c43-8b83-33a140aaff38
 Authorization: Bearer {{access_token}}
 Content-Type: application/x-www-form-urlencoded
+
+
+### workspace 생성
+POST http://localhost:8080/api/v1/core/workspace
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "name": "구미 사투리 학습",
+  "description": "이현영의 음성을 활용한 batch job",
+  "reqCPU": 1,
+  "reqGPU": 1,
+  "reqMEM": 1,
+  "userIds" : ["3810cb0d-0c82-4258-9e43-2d00f7a1d0b9"]
+}
 
 ### workspace update
 PATCH http://localhost:8080/api/v1/core/workspace/ws-005989e4-cb9f-46dc-a39e-6cce8ce69ad1
@@ -34,6 +49,10 @@ Content-Type: application/json
   "name": "뷰센 치약의 효능을 연구하기 위한 job",
   "description": "진행시키도록 하지~"
 }
+
+### workspace 삭제
+DELETE http://localhost:8080/api/v1/core/workspace/ws-9d29596e-5cf0-4c43-8b83-33a140aaff38
+Authorization: Bearer {{access_token}}
 
 ### workspace resource 현황 조회
 GET http://localhost:8080/api/v1/core/workspace/resource/state?workspaceName=ws-f4992891-72b9-4c99-bfef-229bdd53d48d
@@ -61,8 +80,6 @@ Content-Type: application/json
 GET http://localhost:8080/api/v1/core/workspace/resource?workspace=ws-f547c88a-8938-4cda-838e-a23d19850cf6
 Authorization: Bearer {{access_token}}
 Content-Type: application/x-www-form-urlencoded
-
-
 
 ### workspace resource quota 신청에 대한 승인/반려
 PATCH http://localhost:8080/api/v1/core/workspace/resource/2
