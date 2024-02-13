@@ -106,10 +106,10 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	@Override
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
-		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
-		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(
-			workSpaceName);
-
+		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchWorkloadListByCondition(
+			workSpaceName, null);
+		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveWorkloadListByCondition(
+			workSpaceName, null);
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);
 		}
@@ -154,11 +154,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		String storagePath = createLocalDatasetDTO.getStoragePath();
 		String namespace = createLocalDatasetDTO.getNamespace();
 		String pvcName = "astrago-dataset-pvc-" + UUID.randomUUID().toString().substring(6);
-		String pvName = "astrago-dataset-pv-"+ UUID.randomUUID().toString().substring(6);
-		String svcName = "astrago-dataset-svc-"+ UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-dataset-pv-" + UUID.randomUUID().toString().substring(6);
+		String svcName = "astrago-dataset-svc-" + UUID.randomUUID().toString().substring(6);
 		String datasetDeploymentName = "astrago-dataset-" + UUID.randomUUID().toString().substring(6);
-		String volumeLabelSelectorName = "dataset-storage-volume-"+ UUID.randomUUID().toString().substring(6);
-		String connectTestLabelName = "dataset-connect-test-"+ UUID.randomUUID().toString().substring(6);
+		String volumeLabelSelectorName = "dataset-storage-volume-" + UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "dataset-connect-test-" + UUID.randomUUID().toString().substring(6);
 
 		//pv 생성
 		CreatePV createPV = CreatePV.builder()

@@ -67,7 +67,9 @@ public interface WorkloadRepository {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName);
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceName(String workSpaceName);
+
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByCreator(String userId);
 
 	/**
 	 * interactive job workload list 조회
@@ -75,7 +77,9 @@ public interface WorkloadRepository {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName);
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspace(String workSpaceName);
+
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCreator(String creator);
 
 	/**
 	 * batch job workload 삭제

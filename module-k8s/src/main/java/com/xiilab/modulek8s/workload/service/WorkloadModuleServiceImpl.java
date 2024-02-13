@@ -67,13 +67,25 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName) {
-		return workloadRepository.getBatchJobWorkloadList(workSpaceName);
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId) {
+		if (workspaceName != null) {
+			return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
+		} else if (userId != null){
+			return workloadRepository.getBatchWorkloadListByCreator(userId);
+		} else {
+			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
+		}
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
-		return workloadRepository.getInteractiveJobWorkloadList(workSpaceName);
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, String userId) {
+		if (workspaceName != null) {
+			return workloadRepository.getInteractiveWorkloadListByWorkspace(workspaceName);
+		} else if (userId != null) {
+			return workloadRepository.getInteractiveWorkloadByCreator(userId);
+		} else {
+			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
+		}
 	}
 
 	@Override
