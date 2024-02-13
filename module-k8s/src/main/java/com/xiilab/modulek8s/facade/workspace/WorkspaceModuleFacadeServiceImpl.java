@@ -31,8 +31,9 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 			createWorkspaceDTO.getName(),
 			createWorkspaceDTO.getDescription(),
 			LocalDateTime.now(),
+			createWorkspaceDTO.getCreatorId(),
 			createWorkspaceDTO.getCreatorUserName(),
-			createWorkspaceDTO.getCreatorId()
+			createWorkspaceDTO.getCreatorFullName()
 		));
 
 		//워크스페이스 resource quota 생성
