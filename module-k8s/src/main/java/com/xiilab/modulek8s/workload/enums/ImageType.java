@@ -1,5 +1,14 @@
 package com.xiilab.modulek8s.workload.enums;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum ImageType {
-	BUILT_IN, DOCKER_HUB
+	BUILT("built-in-image"),
+	HUB("hub"),
+	CUSTOM("custom");
+
+	private final String type;
 }

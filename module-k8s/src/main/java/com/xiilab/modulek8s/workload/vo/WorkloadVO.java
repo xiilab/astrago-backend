@@ -1,10 +1,13 @@
 package com.xiilab.modulek8s.workload.vo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
@@ -14,11 +17,16 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSource;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 import io.fabric8.kubernetes.api.model.KubernetesResource;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.SecretKeySelector;
+import io.fabric8.kubernetes.api.model.SecretKeySelectorBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import lombok.Getter;
@@ -36,6 +44,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	//SchedulingType schedulingType;        // 스케줄링 방식
 	List<JobCodeVO> codes;    // code 정의
 	List<JobVolumeVO> volumes;    // volume 정의
+	String secretName;
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
@@ -49,29 +58,26 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			AtomicInteger volumeIndex = new AtomicInteger(1);
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
-				.map(codeReq -> new ContainerBuilder()
-					.withName(getUniqueResourceName() + "-git-clone-" + index)
-					.withImage("alpine/git")
-					.addAllToArgs(List.of(
-						"clone",
-						"-b",
-						codeReq.branch(),
-						codeReq.repositoryURL(),
-						codeReq.mountPath()
-					))
+				.map(codeVO -> new ContainerBuilder().withName(getUniqueResourceName() + "-git-clone-" + index)
+					// .withImage("alpine/git")
+					.withImage("k8s.gcr.io/git-sync/git-sync:v3.2.2")
+					//.addAllToArgs(List.of("clone", "-b", codeVO.branch(), codeVO.repositoryURL(), codeVO.mountPath()))
 					// init컨테이너와 아래서 생성한 emptyDir 볼륨 연결
 					.addNewVolumeMount()
 					.withName("git-clone-" + index.getAndIncrement())
-					.withMountPath(codeReq.mountPath())
+					.withMountPath(codeVO.mountPath())
 					.endVolumeMount()
-					.build()).toList();
+					.withEnv(getGithubEnvVarList(codeVO))
+					.build())
+				.toList();
 
 			// emptyDir 볼륨 생성
-			List<Volume> gitCloneVolumes = codes.stream().map(codeReq -> new VolumeBuilder()
-				.withName("git-clone-" + volumeIndex.getAndIncrement())
-				.withNewEmptyDir()
-				.endEmptyDir()
-				.build()).toList();
+			List<Volume> gitCloneVolumes = codes.stream()
+				.map(codeReq -> new VolumeBuilder().withName("git-clone-" + volumeIndex.getAndIncrement())
+					.withNewEmptyDir()
+					.endEmptyDir()
+					.build())
+				.toList();
 
 			podSpecBuilder.addAllToInitContainers(gitCloneContainers);
 			podSpecBuilder.addAllToVolumes(gitCloneVolumes);
@@ -86,14 +92,14 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	 */
 	public void addVolumes(PodSpecBuilder podSpecBuilder, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
-			List<Volume> addVolumes = volumes.stream().map(volume -> new VolumeBuilder()
-				.withName(volume.name())
-				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(volume.mountPath(), false))
-				.build()).toList();
+			List<Volume> addVolumes = volumes.stream()
+				.map(volume -> new VolumeBuilder().withName(volume.name())
+					.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(volume.mountPath(), false))
+					.build())
+				.toList();
 
 			podSpecBuilder.addAllToVolumes(addVolumes);
 		}
-
 	}
 
 	// 요청된 워크로드 리소스 MAP로 반환
@@ -103,17 +109,29 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
 
 		// gpu 요청여부에 따라 다른 결과 반환
-		return gpuRequest == 0 ?
-			Map.of(
-				"cpu", new Quantity(strCpuRequest),
-				"memory", new Quantity(strMemRequest)
-			)
-			:
-			Map.of(
-				"nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)),
-				"cpu", new Quantity(strCpuRequest),
-				"memory", new Quantity(strMemRequest)
-			);
+		return gpuRequest == 0 ? Map.of("cpu", new Quantity(strCpuRequest), "memory", new Quantity(strMemRequest)) :
+			Map.of("nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)), "cpu", new Quantity(strCpuRequest),
+				"memory", new Quantity(strMemRequest));
+	}
+
+	private List<EnvVar> getGithubEnvVarList(JobCodeVO codeVO) {
+		List<EnvVar> result = new ArrayList<>();
+		result.add(new EnvVarBuilder().withName("GIT_SYNC_REPO").withValue(codeVO.repositoryURL()).build());
+		result.add(new EnvVarBuilder().withName("GIT_SYNC_BRANCH").withValue(codeVO.branch()).build());
+		result.add(new EnvVarBuilder().withName("GIT_SYNC_ROOT").withValue(codeVO.mountPath()).build());
+		result.add(new EnvVarBuilder().withName("GIT_SYNC_PERMISSIONS").withValue("0777").build());
+		result.add(new EnvVarBuilder().withName("GIT_SYNC_ONE_TIME").withValue("true").build());
+		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialName())
+			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
+			result.add(new EnvVarBuilder().withName("GIT_SYNC_USERNAME")
+				.withValue(codeVO.credentialVO().credentialName())
+				.build());
+			result.add(new EnvVarBuilder().withName("GIT_SYNC_PASSWORD")
+				.withValue(codeVO.credentialVO().credentialLoginPw())
+				.build());
+		}
+
+		return result;
 	}
 
 	public abstract KubernetesResource createSpec();

@@ -6,6 +6,8 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -15,6 +17,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
@@ -47,15 +50,15 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public ModuleBatchJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
+	public ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 		Job resource = (Job)createResource(batchJobVO.createResource());
-		return new ModuleBatchJobResDTO(resource);
+		return new ModuleJobResDTO(resource);
 	}
 
 	@Override
-	public ModuleInteractiveJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
+	public ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
 		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
-		return new ModuleInteractiveJobResDTO(resource);
+		return new ModuleJobResDTO(resource);
 	}
 
 	@Override
@@ -225,7 +228,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new RuntimeException("해당하는 배치 잡 로그를 조회할 수 없습니다.");
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_BATCH_JOB_LOG);
 		}
 	}
 
@@ -241,7 +244,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new RuntimeException("해당하는 인터렉티브 잡 로그를 조회할 수 없습니다.");
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_INTERACTIVE_JOB_LOG);
 		}
 	}
 
@@ -402,6 +405,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.list()
 			.getItems();
 	}
+
+
 
 	private HasMetadata createResource(HasMetadata hasMetadata) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {

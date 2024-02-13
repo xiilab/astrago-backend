@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.keycloak.admin.client.resource.GroupResource;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.GroupCategory;
@@ -65,7 +69,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.toList();
 			return new GroupInfoDTO(group, groupUsers);
 		} catch (NotFoundException e) {
-			throw new NotFoundException("일치하는 그룹이 없습니다.");
+			throw new K8sException(WorkspaceErrorCode.NOT_FOUND_WORKSPACE);
 		}
 	}
 
@@ -183,10 +187,23 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.findFirst();
 
 			if(group.isEmpty()){
-				throw new IllegalArgumentException("해당 워크스페이스(" + subgroup.getName() + ")에 회원 추가 실패하였습니다.");
+				throw new K8sException(WorkspaceErrorCode.WORKSPACE_USER_ADD_FAIL);
 			}
 		}
 
+	}
+	@Override
+	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){
+
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+
+		GroupRepresentation wsSubGroupByGroupName = getWsSubGroupByGroupName(groupName);
+
+		List<UserRepresentation> members = realmClient.groups().group(wsSubGroupByGroupName.getId()).members();
+
+		return members.stream().filter(
+			userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search))
+			.map(GroupUserDTO::new).toList();
 	}
 
 	private GroupRepresentation getWsSubGroupByGroupName(String subGroupName){
@@ -202,9 +219,9 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equals(subGroupName))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("해당 이름의 그룹(워크스페이스:" + subGroupName + ")이(가) 없습니다."));
+			.orElseThrow(() -> new K8sException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 		return subGroup.getSubGroups().stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("user")).findFirst().get();
-
 	}
+
 }

@@ -1,5 +1,7 @@
 package com.xiilab.servercore.workspace.dto;
 
+import java.time.LocalDateTime;
+
 import com.xiilab.servercore.workspace.enumeration.ResourceQuotaStatus;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +19,8 @@ public class ResourceQuotaFormDTO {
 	private String requestReason;
 	private String rejectReason;
 	private ResourceQuotaStatus status;
+	private LocalDateTime modDate;
+	private LocalDateTime regDate;
 	private int cpuReq;
 	private int gpuReq;
 	private int memReq;

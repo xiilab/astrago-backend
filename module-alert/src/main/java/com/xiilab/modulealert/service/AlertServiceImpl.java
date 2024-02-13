@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.entity.AlertEntity;
 import com.xiilab.modulealert.repository.AlertRepository;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +55,6 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	private AlertEntity getAlertEntity(long id){
-		return alertRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 ID(" + id + ") 의 Alert이 없습니다."));
+		return alertRepository.findById(id).orElseThrow(() -> new RestApiException(CommonErrorCode.ALERT_NOT_FOUND));
 	}
 }

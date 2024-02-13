@@ -41,7 +41,7 @@ public class WorkloadController {
 		@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
 		@PathVariable(value = "type") WorkloadType workloadType,
 		UserInfoDTO userInfoDTO) {
-		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, workloadType, userInfoDTO);
+		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -84,10 +84,10 @@ public class WorkloadController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("{workspaceResourceName}/datasets")
+	@GetMapping("/datasets")
 	@Operation(summary = "워크로드 생성 시 데이터 셋 전체 조회")
 	public ResponseEntity getDatasets(
-		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
 		UserInfoDTO userInfoDTO) {
 		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByRepositoryType(

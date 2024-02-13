@@ -51,6 +51,7 @@ public class DatasetDTO {
 		private String storagePath;
 		private Integer requestVolume;
 		private String creator;
+		private String creatorName;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
 		private String size;
@@ -64,6 +65,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDatasetName())
 					.requestVolume(((AstragoDatasetEntity)dataset).getStorageEntity().getRequestVolume())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.division(dataset.getDivision())
 					.ip(((AstragoDatasetEntity)dataset).getStorageEntity().getIp())
@@ -77,6 +79,7 @@ public class DatasetDTO {
 					.storageType(((LocalDatasetEntity)dataset).getStorageType())
 					.datasetName(dataset.getDatasetName())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.division(dataset.getDivision())
 					.ip(((LocalDatasetEntity)dataset).getIp())
@@ -98,6 +101,7 @@ public class DatasetDTO {
 		private String datasetName;
 		private Integer requestVolume;
 		private String creator;
+		private String creatorName;
 		private LocalDateTime createdAt;
 		private DatasetDivision division;
 		private String size;
@@ -111,6 +115,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDatasetName())
 					.requestVolume(((AstragoDatasetEntity)dataset).getStorageEntity().getRequestVolume())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
@@ -123,6 +128,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDatasetName())
 					.requestVolume(null)
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
@@ -160,26 +166,62 @@ public class DatasetDTO {
 	public static class DatasetInWorkspace{
 		private Long datasetId;
 		private String datasetName;
+		private StorageType storageType;
+		private String creator;
+		private LocalDateTime createdAt;
+		private DatasetDivision division;
+		private String size;
+		private boolean isAvailable;
 
 		public static DatasetInWorkspace entityToDto(Dataset dataset) {
 			if (dataset.isAstargoDataset()) {
 				return DatasetInWorkspace.builder()
 					.datasetId(dataset.getDatasetId())
 					.datasetName(dataset.getDatasetName())
+					.storageType(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageType())
+					.creator(dataset.getRegUser().getRegUserName())
+					.createdAt(dataset.getRegDate())
+					.isAvailable(dataset.isAvailable())
+					.division(dataset.getDivision())
+					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return DatasetInWorkspace.builder()
 					.datasetId(dataset.getDatasetId())
+					.storageType(((LocalDatasetEntity)dataset).getStorageType())
 					.datasetName(dataset.getDatasetName())
+					.creator(dataset.getRegUser().getRegUserName())
+					.createdAt(dataset.getRegDate())
+					.isAvailable(dataset.isAvailable())
+					.division(dataset.getDivision())
 					.build();
 			}
 			return null;
 		}
 		public static DatasetInWorkspace mappingEntityToDto(DatasetWorkSpaceMappingEntity dataset){
-			return DatasetInWorkspace.builder()
-				.datasetId(dataset.getDataset().getDatasetId())
-				.datasetName(dataset.getDataset().getDatasetName())
-				.build();
+			if (dataset.getDataset().isAstargoDataset()) {
+				return DatasetInWorkspace.builder()
+					.datasetId(dataset.getDataset().getDatasetId())
+					.datasetName(dataset.getDataset().getDatasetName())
+					.storageType(((AstragoDatasetEntity)dataset.getDataset()).getStorageEntity().getStorageType())
+					.creator(dataset.getRegUser().getRegUserName())
+					.createdAt(dataset.getRegDate())
+					.isAvailable(dataset.getDataset().isAvailable())
+					.division(dataset.getDataset().getDivision())
+					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset.getDataset()).getDatasetSize()))
+					.build();
+			}else if (dataset.getDataset().isLocalDataset()) {
+				return DatasetInWorkspace.builder()
+					.datasetId(dataset.getDataset().getDatasetId())
+					.storageType(((LocalDatasetEntity)dataset.getDataset()).getStorageType())
+					.datasetName(dataset.getDataset().getDatasetName())
+					.creator(dataset.getRegUser().getRegUserName())
+					.createdAt(dataset.getRegDate())
+					.isAvailable(dataset.getDataset().isAvailable())
+					.division(dataset.getDataset().getDivision())
+					.build();
+			}
+			return null;
 		}
 	}
 	@Getter

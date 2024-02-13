@@ -124,4 +124,8 @@ public class GroupServiceImpl implements GroupService {
 	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
 		groupRepository.addWorkspaceMemberByUserId(groupName, userIdList);
 	}
+	@Override
+	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){
+		return groupRepository.getWorkspaceMemberBySearch(groupName, search);
+	}
 }

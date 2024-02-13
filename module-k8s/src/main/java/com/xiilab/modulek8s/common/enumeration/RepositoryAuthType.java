@@ -3,11 +3,11 @@ package com.xiilab.modulek8s.common.enumeration;
 import lombok.Getter;
 
 @Getter
-public enum CodeRepositoryType {
+public enum RepositoryAuthType {
 	PRIVATE("private"),
 	PUBLIC("public");
 
-	CodeRepositoryType(String type) {
+	RepositoryAuthType(String type) {
 		this.type = type;
 	}
 

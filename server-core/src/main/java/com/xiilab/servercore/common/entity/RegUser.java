@@ -15,4 +15,6 @@ public class RegUser{
 	protected String regUserId;
 	@Column(name = "REG_USER_NAME")
 	protected String regUserName;
+	@Column(name = "REG_USER_REAL_NAME")
+	protected String regUserRealName;
 }

@@ -71,4 +71,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
 		groupService.addWorkspaceMemberByUserId(groupName, userIdList);
 	}
+	@Override
+	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){
+		return groupService.getWorkspaceMemberBySearch(groupName, search);
+	}
 }

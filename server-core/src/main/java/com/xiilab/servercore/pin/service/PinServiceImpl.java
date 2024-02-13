@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.pin.entity.PinEntity;
 import com.xiilab.servercore.pin.enumeration.PinType;
@@ -55,7 +57,7 @@ public class PinServiceImpl implements PinService {
 			resourceName, userInfoDTO.getId());
 
 		if (pinEntity != null) {
-			throw new IllegalArgumentException("이미 pin이 추가되었습니다.");
+			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_PIN_ERROR);
 		}
 
 		//해당 유저가 pin을 6개 이상 생성했는지 검사
@@ -71,7 +73,7 @@ public class PinServiceImpl implements PinService {
 			resourceName, userInfoDTO.getId());
 
 		if (pinEntity != null) {
-			throw new IllegalArgumentException("이미 pin이 추가되었습니다.");
+			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_PIN_ERROR);
 		}
 
 		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));

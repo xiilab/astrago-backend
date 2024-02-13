@@ -20,7 +20,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private String workspace;    // 워크스페이스명
-	private WorkloadType workloadType;	//
+	private WorkloadType workloadType;
+	private Long credentialId;
 	private ModuleImageReqDTO image;
 	private List<ModulePortReqDTO> ports;
 	private List<ModuleEnvReqDTO> envs;

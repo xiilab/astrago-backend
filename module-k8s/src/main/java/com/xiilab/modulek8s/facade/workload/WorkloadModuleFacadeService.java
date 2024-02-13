@@ -9,6 +9,7 @@ import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
@@ -18,18 +19,11 @@ import io.fabric8.kubernetes.client.dsl.LogWatch;
 
 public interface WorkloadModuleFacadeService {
 	/**
-	 * 워크로드 - 배치잡 생성
+	 * 워크로드 - 잡 생성
 	 * @param moduleCreateWorkloadReqDTO
 	 * @return
 	 */
-	ModuleBatchJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
-
-	/**
-	 * 워크로드 - 인터렉티브잡 생성
-	 * @param moduleCreateWorkloadReqDTO
-	 * @return
-	 */
-	ModuleInteractiveJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
+	ModuleJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 
 	/**
 	 * 배치 워크로드 조회

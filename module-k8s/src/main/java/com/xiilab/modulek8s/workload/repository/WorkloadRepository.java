@@ -10,6 +10,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -25,7 +26,7 @@ public interface WorkloadRepository {
 	 * @param batchJobVO
 	 * @return BatchJobResDTO
 	 */
-	ModuleBatchJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO);
+	ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO);
 
 	/**
 	 * 워크로드 - IDE 잡 타입 생성
@@ -33,7 +34,7 @@ public interface WorkloadRepository {
 	 * @param interactiveJobVO
 	 * @return InteractiveJobResDTO
 	 */
-	ModuleInteractiveJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO);
+	ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO);
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
@@ -114,4 +115,5 @@ public interface WorkloadRepository {
 	boolean isUsedDataset(Long datasetId);
 
 	void deleteDeploymentByResourceName(String deploymentName, String namespace);
+
 }

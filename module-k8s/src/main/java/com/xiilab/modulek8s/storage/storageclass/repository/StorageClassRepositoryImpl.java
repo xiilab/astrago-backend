@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
@@ -48,7 +51,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.list()
 				.getItems();
 			if (storageClasses.size() == 0) {
-				throw new RuntimeException("해당 타입의 스토리지 클래스가 존재하지 않습니다.");
+				throw new K8sException(StorageErrorCode.STORAGE_NOT_FOUND);
 			}
 			return storageClasses;
 		}
@@ -92,7 +95,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.storageClasses()
 				.withName(storageClassMetaName).get();
 			if (storageClass == null || !isControlledByAstra(storageClass.getMetadata().getLabels())) {
-				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
+				throw new K8sException(StorageErrorCode.STORAGE_NOT_FOUND);
 			}
 			return StorageClassResDTO.toDTO(storageClass);
 		}
@@ -108,7 +111,7 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 
 			if (storageClassResource.get() == null || !isControlledByAstra(
 				storageClassResource.get().getMetadata().getLabels())) {
-				throw new RuntimeException("스토리지 클래스가 존재하지 않습니다.");
+				throw new K8sException(StorageErrorCode.STORAGE_NOT_FOUND);
 			}
 			storageClassResource.edit(
 				s -> new StorageClassBuilder(s).editMetadata()

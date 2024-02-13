@@ -12,7 +12,8 @@ public enum ResourceType {
 	STORAGE("st"),
 	PLUGIN("pg"),
 	RESOURCE_QUOTA("rq"),
-	SERVICE("sv");
+	SERVICE("sv"),
+	SECRET("sc");
 
 
 	private String name;

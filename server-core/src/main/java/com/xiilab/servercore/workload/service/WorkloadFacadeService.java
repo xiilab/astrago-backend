@@ -38,14 +38,10 @@ public class WorkloadFacadeService {
 	private final AlertService alertService;
 	private final WorkloadHistoryService workloadHistoryService;
 
-	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, WorkloadType workloadType,
-		UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName());
-		if (workloadType == WorkloadType.BATCH) {
-			workloadModuleFacadeService.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			workloadModuleFacadeService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-		}
+	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserRealName());
+		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+
 		// 워크로드 생성 알림
 		alertService.sendAlert(AlertDTO.builder()
 			.recipientId(userInfoDTO.getId())
@@ -63,6 +59,14 @@ public class WorkloadFacadeService {
 			return workloadModuleFacadeService.getInteractiveWorkload(workspaceName, resourceName);
 		} else {
 			return null;
+		}
+	}
+
+	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {
+		if (workloadType == WorkloadType.BATCH) {
+
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+
 		}
 	}
 
