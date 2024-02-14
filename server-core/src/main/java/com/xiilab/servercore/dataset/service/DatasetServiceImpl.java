@@ -257,4 +257,14 @@ public class DatasetServiceImpl implements DatasetService {
 		datasetWorkspaceRepository.deleteByDatasetIdAndWorkspaceResourceName(datasetId, workspaceResourceName);
 	}
 
+	@Override
+	public DatasetDTO.DatasetsInWorkspace getDatasetsByWorkspaceResourceName(String workspaceResourceName) {
+			List<DatasetWorkSpaceMappingEntity> datasets = datasetWorkspaceRepository.findByWorkspaceResourceName(
+				workspaceResourceName);
+			if(datasets != null || datasets.size() != 0){
+				return DatasetDTO.DatasetsInWorkspace.mappingEntitiesToDtos(datasets);
+			}
+			return null;
+	}
+
 }

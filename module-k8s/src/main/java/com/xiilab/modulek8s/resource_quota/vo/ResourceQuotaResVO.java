@@ -19,7 +19,6 @@ public class ResourceQuotaResVO extends K8SResourceResVO {
 	private int reqCPU;
 	private int reqMEM;
 	private int reqGPU;
-	private int reqDisk;
 	private int limitCPU;
 	private int limitMEM;
 	private int limitGPU;
@@ -31,7 +30,6 @@ public class ResourceQuotaResVO extends K8SResourceResVO {
 		this.reqCPU = getAmountFromMap(hard, REQUEST_CPU_KEY.getKey());
 		this.reqMEM = getAmountFromMap(hard, REQUEST_MEMORY_KEY.getKey());
 		this.reqGPU = getAmountFromMap(hard, REQUEST_GPU_KEY.getKey());
-		this.reqDisk = getAmountFromMap(hard, REQUEST_DISK_KEY.getKey());
 		this.limitCPU = getAmountFromMap(hard, LIMITS_CPU_KEY.getKey());
 		this.limitMEM = getAmountFromMap(hard, LIMITS_MEMORY_KEY.getKey());
 		this.limitGPU = getAmountFromMap(hard, LIMITS_GPU_KEY.getKey());

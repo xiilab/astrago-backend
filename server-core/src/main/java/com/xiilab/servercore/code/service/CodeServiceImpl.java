@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class CodeServiceImpl implements CodeService{
+public class CodeServiceImpl implements CodeService {
 	private final CodeRepository codeRepository;
 	private final CredentialService credentialService;
 
@@ -31,32 +31,33 @@ public class CodeServiceImpl implements CodeService{
 		// 사용자 Credential 조회
 		CredentialEntity credentialEntity = null;
 		CodeEntity saveCode = null;
-		try{
+		try {
 			// 사용자 Git 조회
 			GithubApi githubApi;
-			if(codeReqDTO.getCredentialId() != 0){
+			if (codeReqDTO.getCredentialId() != 0) {
 				// Credential을 사용하는 경우
 				credentialEntity = credentialService.getCredentialEntity(codeReqDTO.getCredentialId());
 				githubApi = new GithubApi(credentialEntity.getLoginPw());
-			}else {
+			} else {
 				// Credential을 사용하지 않는 경우
 				githubApi = new GithubApi("");
 			}
 			// 사용자 URL 체크
 			boolean urlCheck = !githubApi.getBranchList(getRepoByUrl(codeReqDTO.getCodeURL())).isEmpty();
 
-			if(urlCheck){
-				saveCode = codeRepository.save(CodeEntity.dtoConverter().codeReqDTO(codeReqDTO).credentialEntity(credentialEntity).build());
+			if (urlCheck) {
+				saveCode = codeRepository.save(
+					CodeEntity.dtoConverter().codeReqDTO(codeReqDTO).credentialEntity(credentialEntity).build());
 			}
-		}catch (RuntimeException e){
+		} catch (RuntimeException e) {
 			throw new RestApiException(CodeErrorCode.CODE_INVALID_TOKEN_OR_URL);
 		}
 		return new CodeResDTO(saveCode);
 	}
 
 	@Override
-	public List<CodeResDTO> getCodeList() {
-		List<CodeEntity> codeEntityList = codeRepository.findAll();
+	public List<CodeResDTO> getCodeList(String workspaceName) {
+		List<CodeEntity> codeEntityList = codeRepository.getAlertEntitiesByWorkspaceResourceName(workspaceName);
 		return codeEntityList.stream().map(CodeResDTO::new).toList();
 	}
 
@@ -74,9 +75,8 @@ public class CodeServiceImpl implements CodeService{
 		codeRepository.deleteById(id);
 	}
 
-	private CodeEntity getCodeEntity(long id){
+	private CodeEntity getCodeEntity(long id) {
 		return codeRepository.findById(id).orElseThrow(() -> new RestApiException(CodeErrorCode.CODE_NOT_FOUND));
 	}
-
 
 }

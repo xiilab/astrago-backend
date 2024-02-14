@@ -20,6 +20,7 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.moduleuser.service.UserService;
@@ -48,6 +49,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final GroupService groupService;
 	private final AlertService alertService;
 	private final ClusterService clusterService;
+	private final WorkspaceService workspaceService;
 	private final UserService userService;
 
 	@Override
@@ -222,6 +224,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public void deleteResourceQuota(long id) {
 		resourceQuotaRepository.deleteById(id);
+	}
+
+	@Override
+	public List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(UserInfoDTO userInfoDTO) {
+		Set<String> workspaceList = userInfoDTO.getWorkspaceList(false);
+		return workspaceList.stream()
+			.map(workspaceService::getWorkspaceResourceStatus)
+			.toList();
 	}
 
 }

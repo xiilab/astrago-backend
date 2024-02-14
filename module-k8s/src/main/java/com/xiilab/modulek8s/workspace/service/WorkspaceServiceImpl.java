@@ -60,6 +60,11 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	}
 
 	@Override
+	public WorkspaceDTO.WorkspaceResourceStatus getWorkspaceResourceStatus(String workspaceName) {
+		return workspaceRepo.getWorkspaceResourceStatus(workspaceName);
+	}
+
+	@Override
 	public void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
 		workspaceRepo.updateWorkspaceInfo(workspaceName, updateDTO);
 	}

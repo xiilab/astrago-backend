@@ -13,6 +13,7 @@ import com.xiilab.modulek8s.workspace.vo.WorkspaceResVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -69,9 +70,26 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 		}
 	}
 
+	@Override
+	public WorkspaceDTO.WorkspaceResourceStatus getWorkspaceResourceStatus(String namespace) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			//namespace 조회
+			WorkspaceResVO workspaceByName = getWorkspaceByName(namespace);
+			// namespace의 resourceQuota 조회
+			ResourceQuotaStatus resourceQuota = kubernetesClient.resourceQuotas()
+				.inNamespace(namespace)
+				.list()
+				.getItems()
+				.get(0)
+				.getStatus();
+			return new WorkspaceDTO.WorkspaceResourceStatus(workspaceByName, resourceQuota);
+		}
+	}
+
 	private HasMetadata createResource(HasMetadata hasMetadata) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.resource(hasMetadata).create();
 		}
 	}
+
 }

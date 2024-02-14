@@ -33,7 +33,6 @@ public class ResourceQuotaServiceImpl implements ResourceQuotaService {
 			.reqCPU(resourceQuotas.getReqCPU())
 			.reqGPU(resourceQuotas.getReqGPU())
 			.reqMEM(resourceQuotas.getReqMEM())
-			.reqDISK(resourceQuotas.getReqDisk())
 			.limitCPU(resourceQuotas.getLimitCPU())
 			.limitMEM(resourceQuotas.getLimitMEM())
 			.limitGPU(resourceQuotas.getLimitGPU())

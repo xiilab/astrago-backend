@@ -39,6 +39,8 @@ public class CodeEntity extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "CREDENTIAL_ID")
 	private CredentialEntity credentialEntity; 		// credential Entity
+	@Column(name = "WORKSPACE_NAME")
+	private String workspaceResourceName;
 
 
 	@Builder(builderClassName = "dtoConverter", builderMethodName = "dtoConverter")
@@ -46,5 +48,6 @@ public class CodeEntity extends BaseEntity {
 		this.codeType = codeReqDTO.getCodeType();
 		this.codeURL = codeReqDTO.getCodeURL();
 		this.credentialEntity = credentialEntity;
+		this.workspaceResourceName = codeReqDTO.getWorkspaceName();
 	}
 }
