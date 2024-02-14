@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.image.dto.ImageDTO;
 import com.xiilab.servercore.image.service.ImageService;
 
@@ -24,8 +25,9 @@ public class ImageController {
 	private final ImageService imageService;
 
 	@PostMapping()
-	public ResponseEntity<HttpStatus> saveImage(@RequestBody ImageDTO.ReqDTO imageDTO) {
-		imageService.saveImage(imageDTO);
+	public ResponseEntity<HttpStatus> saveImage(@RequestBody ImageDTO.ReqDTO imageDTO,
+		UserInfoDTO userInfoDTO) {
+		imageService.saveImage(imageDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

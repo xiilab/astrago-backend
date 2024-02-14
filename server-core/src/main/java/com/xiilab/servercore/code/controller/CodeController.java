@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,9 @@ public class CodeController {
 
 	@PostMapping("")
 	@Operation(summary = "공유 소스 코드 등록 API")
-	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO){
-		return new ResponseEntity<>(codeService.saveCode(codeReqDTO), HttpStatus.OK);
+	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO,
+		UserInfoDTO userInfoDTO){
+		return new ResponseEntity<>(codeService.saveCode(codeReqDTO, userInfoDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("")

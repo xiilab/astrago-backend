@@ -25,6 +25,7 @@ import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.moduleuser.enumeration.AuthType;
+import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -55,10 +56,10 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	private final ModelService modelService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WebClientService webClientService;
-
+	private final UserService userService;
 	@Override
 	@Transactional
-	public void insertAstragoDataset(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files) {
+	public void insertAstragoDataset(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files, UserInfoDTO userInfoDTO) {
 		StorageEntity storageEntity = storageService.findById(createModelDTO.getStorageId());
 
 		AstragoModelEntity astragoModel = AstragoModelEntity.builder()
@@ -67,6 +68,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 			.build();
 
 		modelService.insertAstragoDataset(astragoModel, files);
+		userService.increaseUserDatasetCount(userInfoDTO.getId());
 	}
 
 	@Override

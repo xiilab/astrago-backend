@@ -73,6 +73,7 @@ public class UserServiceImpl implements UserService {
 	public void joinGroup(String groupId, String userId) {
 		userRepository.joinGroup(groupId, userId);
 	}
+
 	@Override
 	public void joinDefaultGroup(String userId) {
 		userRepository.joinDefaultGroup(userId);
@@ -82,49 +83,44 @@ public class UserServiceImpl implements UserService {
 	public void deleteUserById(List<String> userId) {
 		userRepository.deleteUserById(userId);
 	}
+
 	@Override
-	public List<SearchDTO> getUserAndGroupBySearch(String search){
+	public List<SearchDTO> getUserAndGroupBySearch(String search) {
 		return userRepository.getUserAndGroupBySearch(search);
 	}
+
 	@Override
-	public void increaseUserWlCount(String userId){
+	public void increaseUserWlCount(String userId) {
 		userRepository.increaseUserWlCount(userId);
 	}
+
 	@Override
-	public void increaseUserWsCount(String userId){
+	public void increaseUserWsCount(String userId) {
 		userRepository.increaseUserWsCount(userId);
 	}
-	public void increaseUserWsFailCount(String userId){
+
+	public void increaseUserWsFailCount(String userId) {
 		userRepository.increaseUserWsFailCount(userId);
 	}
+
 	@Override
-	public void increaseUserWlFailCount(String userId){
+	public void increaseUserWlFailCount(String userId) {
 		userRepository.increaseUserWlFailCount(userId);
 	}
+
 	@Override
-	public void increaseUserImageCount(String userId){
-		
+	public void increaseUserImageCount(String userId) {
 		userRepository.increaseUserImageCount(userId);
 	}
+
 	@Override
-	public void increaseUserImageFailCount(String userId){
-		userRepository.increaseUserImageFailCount(userId);
-	}
-	@Override
-	public void increaseUserDatasetCount(String userId){
+	public void increaseUserDatasetCount(String userId) {
 		userRepository.increaseUserDatasetCount(userId);
 	}
+
 	@Override
-	public void increaseUserDatasetFailCount(String userId){
-		userRepository.increaseUserDatasetFailCount(userId);
-	}
-	@Override
-	public void increaseUserCodeCount(String userId){
+	public void increaseUserCodeCount(String userId) {
 		userRepository.increaseUserCodeCount(userId);
-	}
-	@Override
-	public void increaseUserCodeFailCount(String userId){
-		userRepository.increaseUserCodeFailCount(userId);
 	}
 
 }

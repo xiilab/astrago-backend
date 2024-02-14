@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.moduleuser.service.UserService;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.image.dto.ImageDTO;
 import com.xiilab.servercore.image.entity.ImageEntity;
 import com.xiilab.servercore.image.repository.ImageRepository;
@@ -15,14 +17,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 	private final ImageRepository imageRepository;
-
+	private final UserService userService;
 	@Override
-	public void saveImage(ImageDTO.ReqDTO imageDTO) {
+	public void saveImage(ImageDTO.ReqDTO imageDTO, UserInfoDTO userInfoDTO) {
 		imageRepository.save(ImageEntity.builder()
 			.name(imageDTO.getName())
 			.tag(imageDTO.getTag())
 			.description(imageDTO.getDescription())
 			.build());
+		userService.increaseUserImageCount(userInfoDTO.getId());
 	}
 
 	@Override

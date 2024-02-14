@@ -25,6 +25,7 @@ import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.moduleuser.enumeration.AuthType;
+import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -54,10 +55,11 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	private final StorageService storageService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WebClientService webClientService;
+	private final UserService userService;
 
 	@Override
 	@Transactional
-	public void insertAstragoDataset(DatasetDTO.CreateAstragoDataset createDatasetDTO, List<MultipartFile> files) {
+	public void insertAstragoDataset(DatasetDTO.CreateAstragoDataset createDatasetDTO, List<MultipartFile> files, UserInfoDTO userInfoDTO) {
 		//storage 조회
 		StorageEntity storageEntity = storageService.findById(createDatasetDTO.getStorageId());
 
@@ -68,6 +70,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			.build();
 
 		datasetService.insertAstragoDataset(astragoDataset, files);
+		userService.increaseUserDatasetCount(userInfoDTO.getId());
 	}
 
 	@Override
@@ -81,7 +84,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 
 	@Override
 	@Transactional
-	public void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO) {
+	public void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO, UserInfoDTO userInfoDTO) {
 		CreateLocalDatasetDTO createDto = CreateLocalDatasetDTO.builder()
 			.namespace(namespace)
 			.datasetName(createDatasetDTO.getDatasetName())
@@ -105,6 +108,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			.svcName(createLocalDatasetResDTO.getSvcName())
 			.build();
 		datasetService.insertLocalDataset(localDatasetEntity);
+		userService.increaseUserDatasetCount(userInfoDTO.getId());
 	}
 
 	@Override
@@ -126,7 +130,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				workloadModuleFacadeService.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
 			}
 			datasetService.modifyDataset(modifyDataset, datasetId);
-		} else{
+		} else {
 			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
@@ -186,9 +190,9 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.path(FileType.D == file.getFileType() ? filePath + file.getName() + File.separator :
 					filePath + file.getName())
 				.build();
-			if(file.getFileType() == FileType.D){
+			if (file.getFileType() == FileType.D) {
 				directoryCnt += 1;
-			}else{
+			} else {
 				fileCnt += 1;
 			}
 			fileList.add(children);
@@ -197,7 +201,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, String filePath) {
+	public DownloadFileResDTO downloadLocalDatasetFile(Long datasetId, String filePath) {
 		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
 		String httpUrl = dataset.getDns() + filePath;
 		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
@@ -312,7 +316,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.fileName(fileName)
 				.mediaType(mediaType)
 				.build();
-		}else{
+		} else {
 			throw new RestApiException(DatasetErrorCode.DATASET_FILE_NOT_FOUND);
 		}
 	}

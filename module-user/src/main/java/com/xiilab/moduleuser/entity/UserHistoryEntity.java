@@ -32,18 +32,10 @@ public class UserHistoryEntity{
 	private long wlFailCount;
 	@Column(name = "IMAGE_CREATE_COUNT")
 	private long imageCreateCount;
-	@Column(name = "IMAGE_FAIL_COUNT")
-	private long imageFailCount;
 	@Column(name = "DATASET_CREATE_COUNT")
 	private long datasetCreateCount;
-	@Column(name = "DATASET_FAIL_COUNT")
-	private long datasetFailCount;
 	@Column(name = "CODE_CREATE_COUNT")
 	private long codeCreateCount;
-	@Column(name = "CODE_FAIL_COUNT")
-	private long codeFailCount;
-	@Column(name = "LOGIN_COUNT")
-	private long loginCount;
 	@Column(name = "CREATE_DATE")
 	private LocalDateTime createDate;
 
@@ -65,19 +57,10 @@ public class UserHistoryEntity{
 	public void increaseUserImageCount(){
 		this.imageCreateCount++;
 	}
-	public void increaseUserImageFailCount(){
-		this.imageFailCount++;
-	}
 	public void increaseUserDatasetCount(){
 		this.datasetCreateCount++;
 	}
-	public void increaseUserDatasetFailCount(){
-		this.datasetFailCount++;
-	}
 	public void increaseUserCodeCount(){
 		this.codeCreateCount++;
-	}
-	public void increaseUserCodeFailCount(){
-		this.codeFailCount++;
 	}
 }

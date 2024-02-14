@@ -69,6 +69,7 @@ public class WorkloadFacadeService {
 			.alertType(AlertType.WORKLOAD)
 			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
 			.build());
+		userService.increaseUserWlCount(userInfoDTO.getId());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,

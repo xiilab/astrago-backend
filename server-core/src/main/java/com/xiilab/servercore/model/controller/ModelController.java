@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
@@ -28,10 +27,6 @@ import com.xiilab.servercore.model.service.ModelService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -47,8 +42,9 @@ public class ModelController {
 	@Operation(summary = "아스트라고 model 생성")
 	public ResponseEntity<HttpStatus> insertAstragoModel(
 		@RequestPart(name = "createModel") ModelDTO.CreateAstragoModel createModelDTO,
-		@RequestPart(name = "files", required = false) List<MultipartFile> files) {
-		modelFacadeService.insertAstragoDataset(createModelDTO, files);
+		@RequestPart(name = "files", required = false) List<MultipartFile> files,
+		UserInfoDTO userInfoDTO) {
+		modelFacadeService.insertAstragoDataset(createModelDTO, files, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 

@@ -5,13 +5,12 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
 
 public interface ModelFacadeService {
-	void insertAstragoDataset(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files);
+	void insertAstragoDataset(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files, UserInfoDTO userInfoDTO);
 
 	void insertLocalModel(ModelDTO.CreateLocalModel createLocalModel);
 

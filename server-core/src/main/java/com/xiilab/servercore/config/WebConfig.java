@@ -7,7 +7,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.xiilab.moduleuser.repository.KeycloakUserRepository;
-import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.security.CustomUserResolver;
 
 import lombok.RequiredArgsConstructor;
@@ -16,10 +15,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 	private final KeycloakUserRepository repository;
-	private final UserService userService;
 
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		resolvers.add(new CustomUserResolver(repository, userService));
+		resolvers.add(new CustomUserResolver(repository));
 	}
 }

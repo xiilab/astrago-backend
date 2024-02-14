@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.GithubApi;
+import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.entity.CodeEntity;
 import com.xiilab.servercore.code.repository.CodeRepository;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.credential.entity.CredentialEntity;
 import com.xiilab.servercore.credential.service.CredentialService;
 
@@ -24,10 +26,10 @@ import lombok.RequiredArgsConstructor;
 public class CodeServiceImpl implements CodeService {
 	private final CodeRepository codeRepository;
 	private final CredentialService credentialService;
-
+	private final UserService userService;
 	@Override
 	@Transactional
-	public CodeResDTO saveCode(CodeReqDTO codeReqDTO) {
+	public CodeResDTO saveCode(CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO) {
 		// 사용자 Credential 조회
 		CredentialEntity credentialEntity = null;
 		CodeEntity saveCode = null;
@@ -52,6 +54,7 @@ public class CodeServiceImpl implements CodeService {
 		} catch (RuntimeException e) {
 			throw new RestApiException(CodeErrorCode.CODE_INVALID_TOKEN_OR_URL);
 		}
+		userService.increaseUserCodeCount(userInfoDTO.getId());
 		return new CodeResDTO(saveCode);
 	}
 

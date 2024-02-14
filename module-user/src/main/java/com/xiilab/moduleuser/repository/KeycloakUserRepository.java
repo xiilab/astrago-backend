@@ -76,12 +76,8 @@ public class KeycloakUserRepository implements UserRepository {
 				.wsCreateCount(0L)
 				.wsFailCount(0L)
 				.codeCreateCount(0L)
-				.codeFailCount(0L)
 				.datasetCreateCount(0L)
-				.datasetFailCount(0L)
 				.imageCreateCount(0L)
-				.imageFailCount(0L)
-				.loginCount(0L)
 				.build());
 
 			return new UserInfo(representation);
@@ -376,44 +372,39 @@ public class KeycloakUserRepository implements UserRepository {
 		return userHistoryRepository.findById(userId).orElseThrow(() ->
 			new RestApiException(UserErrorCode.USER_NOT_FOUND_BY_ID));
 	}
+	@Override
 	public void increaseUserWlCount(String userId){
 		UserHistoryEntity userHistory = getUserHistory(userId);
 		userHistory.increaseUserWlCount();
 	}
+	@Override
 	public void increaseUserWsCount(String userId){
 		UserHistoryEntity userHistory = getUserHistory(userId);
 		userHistory.increaseUserWsCount();
 	}
+	@Override
 	public void increaseUserWsFailCount(String userId){
 		UserHistoryEntity userHistory = getUserHistory(userId);
 		userHistory.increaseUserWsFailCount();
 	}
+	@Override
 	public void increaseUserWlFailCount(String userId){
 		UserHistoryEntity userHistory = getUserHistory(userId);
 		userHistory.increaseUserWlFailCount();
 	}
+	@Override
 	public void increaseUserImageCount(String userId){
 		UserHistoryEntity userHistory = getUserHistory(userId);
 		userHistory.increaseUserImageCount();
 	}
-	public void increaseUserImageFailCount(String userId){
-		UserHistoryEntity userHistory = getUserHistory(userId);
-		userHistory.increaseUserImageFailCount();
-	}
+	@Override
 	public void increaseUserDatasetCount(String userId){
 		UserHistoryEntity userHistory = getUserHistory(userId);
 		userHistory.increaseUserDatasetCount();
 	}
-	public void increaseUserDatasetFailCount(String userId){
-		UserHistoryEntity userHistory = getUserHistory(userId);
-		userHistory.increaseUserDatasetFailCount();
-	}
+	@Override
 	public void increaseUserCodeCount(String userId){
 		UserHistoryEntity userHistory = getUserHistory(userId);
 		userHistory.increaseUserCodeCount();
-	}
-	public void increaseUserCodeFailCount(String userId){
-		UserHistoryEntity userHistory = getUserHistory(userId);
-		userHistory.increaseUserCodeFailCount();
 	}
 }

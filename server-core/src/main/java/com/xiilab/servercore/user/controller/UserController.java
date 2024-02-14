@@ -21,6 +21,7 @@ import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.common.dto.SearchCondition;
+import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.user.service.UserFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +36,8 @@ public class UserController {
 
 	@GetMapping()
 	@Operation(summary = "사용자 목록 조회")
-	public ResponseEntity<List<UserSummary>> getUserList(@ModelAttribute SearchCondition searchCondition) {
+	public ResponseEntity<List<UserSummary>> getUserList(@ModelAttribute SearchCondition searchCondition,
+		UserInfoDTO userInfoDTO) {
 		return ResponseEntity.ok(userFacadeService.getUserList(searchCondition));
 	}
 
