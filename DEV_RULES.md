@@ -198,7 +198,7 @@
     - InteliJ 자바 프로젝트 코딩 컨벤션 적용방법
 
     <aside>
-    👉 [https://velog.io/@nefertiri/인텔리제이-자바-프로젝트-코딩-컨벤션-적용하기](https://velog.io/@nefertiri/%EC%9D%B8%ED%85%94%EB%A6%AC%EC%A0%9C%EC%9D%B4-%EC%9E%90%EB%B0%94-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%BD%94%EB%94%A9-%EC%BB%A8%EB%B2%A4%EC%85%98-%EC%A0%81%EC%9A%A9%ED%95%98%EA%B8%B0)
+      👉 [https://velog.io/@nefertiri/인텔리제이-자바-프로젝트-코딩-컨벤션-적용하기](https://velog.io/@nefertiri/%EC%9D%B8%ED%85%94%EB%A6%AC%EC%A0%9C%EC%9D%B4-%EC%9E%90%EB%B0%94-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%BD%94%EB%94%A9-%EC%BB%A8%EB%B2%A4%EC%85%98-%EC%A0%81%EC%9A%A9%ED%95%98%EA%B8%B0)
 
     </aside>
 
@@ -224,3 +224,39 @@
 - 클래스를 작게 유지하기 위해 노력했는가?
 - 메서드당 line을 10까지만 허용
 - 길이가 길어지면 메서드로 분리
+
+## 3. Global Exception (전역 예외 처리)
+
+### 1. 사용 이유
+
+- 예외처리가 늘어나면서 예외 처리에 대한 중복 코드가 늘어 유지보수 어려움
+
+### 2. 사용 방법
+  기존 예외 처리 부분
+  ```java
+    throw new IllegalArgumentException("message");
+  ```
+  다음과 같이 변경
+  ```java
+    // RestAPI Error
+    throw new RestApiException();
+    // K8S Error
+    throw new K8sException();
+    // Common Error
+    throw new CommonException();
+  ```
+### 3. Message 처리 방법
+
+- astrago-backend/module-common/src/main/java/com/xiilab/modulecommon/exception/errorcode
+- 위치에 Enum Code 생성 혹은 추가 하여 아래 예시와 같이 사용
+
+### 4. 예시
+  ```java
+  public static String formatObjectMapper(String metric) {
+	try {
+		return objectMapper.readTree(metric).get("data").get("result").elements().next().get("value").get(1).asText();
+	} catch (JsonProcessingException e) {
+		throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
+	}
+  }
+  ```
