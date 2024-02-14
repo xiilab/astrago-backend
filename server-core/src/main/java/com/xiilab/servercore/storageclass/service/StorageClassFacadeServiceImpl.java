@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 

@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.code.dto.CodeReqDTO;
-import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.modulek8sdb.code.dto.CodeReqDTO;
+import com.xiilab.modulek8sdb.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
 
 import io.swagger.v3.oas.annotations.Operation;

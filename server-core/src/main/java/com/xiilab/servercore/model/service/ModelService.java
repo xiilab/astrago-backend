@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
-import com.xiilab.servercore.model.entity.AstragoModelEntity;
-import com.xiilab.servercore.model.entity.LocalModelEntity;
-import com.xiilab.servercore.model.entity.Model;
-import com.xiilab.servercore.workspace.dto.InsertWorkspaceModelDTO;
+import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
+import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
+import com.xiilab.modulek8sdb.model.entity.Model;
+import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
 
 public interface ModelService {
 	void insertAstragoDataset(AstragoModelEntity astragoModel, List<MultipartFile> files);

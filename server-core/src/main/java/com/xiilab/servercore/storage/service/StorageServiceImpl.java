@@ -8,11 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.K8sException;
-import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
-import com.xiilab.servercore.storage.dto.StorageDTO;
-import com.xiilab.servercore.storage.entity.StorageEntity;
-import com.xiilab.servercore.storage.repository.StorageRepository;
+import com.xiilab.modulek8sdb.storage.dto.StorageDTO;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.modulek8sdb.storage.repository.StorageRepository;
 
 import lombok.RequiredArgsConstructor;
 

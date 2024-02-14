@@ -10,11 +10,11 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulek8sdb.entity.JobEntity;
-import com.xiilab.modulek8sdb.entity.WorkloadType;
-import com.xiilab.modulek8sdb.repository.WorkloadHistoryRepo;
-import com.xiilab.modulek8sdb.repository.WorkloadHistoryRepoCusotm;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.WorkloadType;
+import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
+import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCusotm;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 import lombok.RequiredArgsConstructor;
 

@@ -8,9 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.repository.KeycloakUserRepository;
-import com.xiilab.servercore.common.entity.RegUser;
 
 import lombok.extern.slf4j.Slf4j;
 

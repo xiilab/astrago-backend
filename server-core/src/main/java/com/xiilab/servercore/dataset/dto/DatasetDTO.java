@@ -5,12 +5,12 @@ import java.util.List;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.servercore.common.enums.DatasetDivision;
+import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkSpaceMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
+import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
-import com.xiilab.servercore.dataset.entity.Dataset;
-import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
-import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
 
 import lombok.Builder;
 import lombok.Getter;

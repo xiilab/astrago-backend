@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.hub.dto.HubDTO;
+import com.xiilab.modulek8sdb.hub.dto.HubDTO;
 import com.xiilab.servercore.hub.service.HubService;
 
 import lombok.RequiredArgsConstructor;

@@ -5,12 +5,12 @@ import java.util.List;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
-import com.xiilab.servercore.workspace.dto.WorkspaceApplicationForm;
-import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
-import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
+import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
+import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 
 public interface WorkspaceFacadeService {
 	void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO);

@@ -2,7 +2,7 @@ package com.xiilab.servercore.workspace.dto;
 
 import java.time.LocalDateTime;
 
-import com.xiilab.servercore.workspace.enumeration.ResourceQuotaStatus;
+import com.xiilab.modulek8sdb.workspace.enums.ResourceQuotaStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

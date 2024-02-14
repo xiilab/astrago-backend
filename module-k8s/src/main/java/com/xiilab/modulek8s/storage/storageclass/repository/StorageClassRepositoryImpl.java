@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.exception.K8sException;
-import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;

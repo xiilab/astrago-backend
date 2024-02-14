@@ -12,14 +12,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.xiilab.servercore.hub.dto.HubDTO;
+import com.xiilab.modulek8sdb.hub.dto.HubDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
-import com.xiilab.servercore.hub.entity.HubCategoryMappingEntity;
-import com.xiilab.servercore.hub.entity.HubEntity;
-import com.xiilab.servercore.hub.repository.HubCategoryMappingRepository;
-import com.xiilab.servercore.hub.repository.HubRepository;
+import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
+import com.xiilab.modulek8sdb.hub.entity.HubEntity;
+import com.xiilab.modulek8sdb.hub.repository.HubCategoryMappingRepository;
+import com.xiilab.modulek8sdb.hub.repository.HubRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

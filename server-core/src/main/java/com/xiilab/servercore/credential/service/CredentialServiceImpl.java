@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.moduleuser.dto.AuthType;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.credential.dto.CredentialReqDTO;
-import com.xiilab.servercore.credential.dto.CredentialResDTO;
-import com.xiilab.servercore.credential.entity.CredentialEntity;
-import com.xiilab.servercore.credential.repository.CredentialRepository;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
+import com.xiilab.modulek8sdb.credential.dto.CredentialResDTO;
+import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
+import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.pin.entity.PinEntity;
-import com.xiilab.servercore.pin.enumeration.PinType;
-import com.xiilab.servercore.pin.repository.PinRepository;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.modulek8sdb.pin.entity.PinEntity;
+import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.pin.repository.PinRepository;
 
 import lombok.RequiredArgsConstructor;
 

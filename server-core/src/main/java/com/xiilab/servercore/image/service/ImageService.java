@@ -2,7 +2,7 @@ package com.xiilab.servercore.image.service;
 
 import java.util.List;
 
-import com.xiilab.servercore.image.dto.ImageDTO;
+import com.xiilab.modulek8sdb.image.dto.ImageDTO;
 
 public interface ImageService {
 	void saveImage(ImageDTO.ReqDTO imageDTO);

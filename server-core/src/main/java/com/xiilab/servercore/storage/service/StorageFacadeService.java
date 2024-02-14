@@ -1,6 +1,6 @@
 package com.xiilab.servercore.storage.service;
 
-import com.xiilab.servercore.storage.dto.StorageDTO;
+import com.xiilab.modulek8sdb.storage.dto.StorageDTO;
 
 public interface StorageFacadeService {
 	void insertStorage(StorageDTO storageDTO);
