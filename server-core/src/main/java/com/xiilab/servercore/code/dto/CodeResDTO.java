@@ -17,12 +17,14 @@ public class CodeResDTO {
 	private long id;
 	private CodeType codeType;
 	private String codeURL;
+	private String workspaceResourceName;
 	private CredentialResDTO credentialResDTO;
 
 	public CodeResDTO(CodeEntity codeEntity) {
 		this.id = codeEntity.getId();
 		this.codeType = codeEntity.getCodeType();
 		this.codeURL = codeEntity.getCodeURL();
+		this.workspaceResourceName = codeEntity.getWorkspaceResourceName();
 		this.credentialResDTO = codeEntity.getCredentialEntity() == null ? null : new CredentialResDTO(codeEntity.getCredentialEntity());
 	}
 }

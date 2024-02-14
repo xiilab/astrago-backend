@@ -8,5 +8,6 @@ import lombok.Getter;
 public class CodeReqDTO {
 	private CodeType codeType;
 	private String codeURL;
+	private String workspaceName;
 	private long credentialId;
 }
