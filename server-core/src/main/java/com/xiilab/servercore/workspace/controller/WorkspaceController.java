@@ -54,6 +54,13 @@ public class WorkspaceController {
 		return ResponseEntity.ok(workspaceService.getWorkspaceInfoByName(name));
 	}
 
+	@GetMapping("/resourceStatus")
+	@Operation(summary = "내가 속한 워크스페이스의 resource 현황 조회")
+	public ResponseEntity<List<WorkspaceDTO.WorkspaceResourceStatus>> getWorkspaceResourceStatus(
+		UserInfoDTO userInfoDTO) {
+		return ResponseEntity.ok(workspaceService.getUserWorkspaceResourceStatus(userInfoDTO));
+	}
+
 	@GetMapping("")
 	@Operation(summary = "워크스페이스 리스트 조회")
 	public ResponseEntity<PageDTO<WorkspaceDTO.TotalResponseDTO>> getWorkspaceList(
@@ -134,29 +141,32 @@ public class WorkspaceController {
 
 	@PostMapping("{workspaceResourceName}/datasets")
 	@Operation(summary = "워크스페이스 데이터 셋 추가")
-	public ResponseEntity insertWorkspaceDataset(@RequestBody InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO){
+	public ResponseEntity insertWorkspaceDataset(@RequestBody InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO) {
 		datasetService.insertWorkspaceDataset(insertWorkspaceDatasetDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
+
 	@DeleteMapping("{workspaceResourceName}/datasets/{datasetId}")
 	@Operation(summary = "워크스페이스 데이터 셋 삭제")
-	public ResponseEntity deleteWorkspaceDataset(@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
-		@PathVariable(value = "datasetId") Long datasetId, UserInfoDTO userInfoDTO){
+	public ResponseEntity deleteWorkspaceDataset(
+		@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(value = "datasetId") Long datasetId, UserInfoDTO userInfoDTO) {
 		datasetService.deleteWorkspaceDataset(workspaceResourceName, datasetId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@PostMapping("{workspaceResourceName}/models")
 	@Operation(summary = "워크스페이스 model 추가")
-	public ResponseEntity insertWorkspaceModel(@RequestBody InsertWorkspaceModelDTO insertWorkspaceModelDTO){
+	public ResponseEntity insertWorkspaceModel(@RequestBody InsertWorkspaceModelDTO insertWorkspaceModelDTO) {
 		modelService.insertWorkspaceModel(insertWorkspaceModelDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@DeleteMapping("{workspaceResourceName}/models/{modelId}")
 	@Operation(summary = "워크스페이스 model 삭제")
-	public ResponseEntity deleteWorkspaceModel(@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
-		@PathVariable(value = "modelId") Long modelId, UserInfoDTO userInfoDTO){
+	public ResponseEntity deleteWorkspaceModel(
+		@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(value = "modelId") Long modelId, UserInfoDTO userInfoDTO) {
 		modelService.deleteWorkspaceModel(workspaceResourceName, modelId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
