@@ -46,4 +46,6 @@ public interface DatasetService {
 	void insertWorkspaceDataset(InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO);
 
 	void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO);
+
+	DatasetDTO.DatasetsInWorkspace getDatasetsByWorkspaceResourceName(String workspaceResourceName);
 }

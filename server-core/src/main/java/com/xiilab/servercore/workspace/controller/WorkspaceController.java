@@ -18,7 +18,9 @@ import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workspace.dto.InsertWorkspaceDatasetDTO;
 import com.xiilab.servercore.workspace.dto.InsertWorkspaceModelDTO;
@@ -169,5 +171,24 @@ public class WorkspaceController {
 		@PathVariable(value = "modelId") Long modelId, UserInfoDTO userInfoDTO) {
 		modelService.deleteWorkspaceModel(workspaceResourceName, modelId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
+	}
+	@GetMapping("{workspaceResourceName}/datasets")
+	@Operation(summary = "워크스페이스 데이터 셋 전체 조회")
+	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByWorkspaceResourceName(
+			workspaceResourceName);
+
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
+	}
+
+	@GetMapping("{workspaceResourceName}/models")
+	@Operation(summary = "워크스페이스 model 전체 조회")
+	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByWorkspaceResourceName(
+			workspaceResourceName);
+
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 }
