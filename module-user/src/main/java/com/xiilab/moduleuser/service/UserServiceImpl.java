@@ -6,10 +6,10 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.repository.UserRepository;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
@@ -86,6 +86,45 @@ public class UserServiceImpl implements UserService {
 	public List<SearchDTO> getUserAndGroupBySearch(String search){
 		return userRepository.getUserAndGroupBySearch(search);
 	}
-
+	@Override
+	public void increaseUserWlCount(String userId){
+		userRepository.increaseUserWlCount(userId);
+	}
+	@Override
+	public void increaseUserWsCount(String userId){
+		userRepository.increaseUserWsCount(userId);
+	}
+	public void increaseUserWsFailCount(String userId){
+		userRepository.increaseUserWsFailCount(userId);
+	}
+	@Override
+	public void increaseUserWlFailCount(String userId){
+		userRepository.increaseUserWlFailCount(userId);
+	}
+	@Override
+	public void increaseUserImageCount(String userId){
+		
+		userRepository.increaseUserImageCount(userId);
+	}
+	@Override
+	public void increaseUserImageFailCount(String userId){
+		userRepository.increaseUserImageFailCount(userId);
+	}
+	@Override
+	public void increaseUserDatasetCount(String userId){
+		userRepository.increaseUserDatasetCount(userId);
+	}
+	@Override
+	public void increaseUserDatasetFailCount(String userId){
+		userRepository.increaseUserDatasetFailCount(userId);
+	}
+	@Override
+	public void increaseUserCodeCount(String userId){
+		userRepository.increaseUserCodeCount(userId);
+	}
+	@Override
+	public void increaseUserCodeFailCount(String userId){
+		userRepository.increaseUserCodeFailCount(userId);
+	}
 
 }

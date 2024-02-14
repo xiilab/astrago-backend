@@ -11,6 +11,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.repository.KeycloakUserRepository;
+import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomUserResolver implements HandlerMethodArgumentResolver {
 	private final KeycloakUserRepository repository;
-
+	private final UserService userService;
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		// userDto 가 파라미터에 포함되어 있는지 체크하여 true를 리턴한다.

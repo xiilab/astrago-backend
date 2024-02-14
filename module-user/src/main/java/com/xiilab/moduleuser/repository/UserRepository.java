@@ -35,4 +35,14 @@ public interface UserRepository {
 
 	void resetUserPassWord(String userId);
 	List<SearchDTO> getUserAndGroupBySearch(String search);
+	void increaseUserWlCount(String userId);
+	void increaseUserWsCount(String userId);
+	void increaseUserWsFailCount(String userId);
+	void increaseUserWlFailCount(String userId);
+	void increaseUserImageCount(String userId);
+	void increaseUserImageFailCount(String userId);
+	void increaseUserDatasetCount(String userId);
+	void increaseUserDatasetFailCount(String userId);
+	void increaseUserCodeCount(String userId);
+	void increaseUserCodeFailCount(String userId);
 }

@@ -1,5 +1,8 @@
 package com.xiilab.moduleuser.repository;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,11 +20,12 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
-import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
+import com.xiilab.moduleuser.entity.UserHistoryEntity;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
 import io.micrometer.common.util.StringUtils;
@@ -35,26 +39,57 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KeycloakUserRepository implements UserRepository {
 	private final KeycloakConfig keycloakConfig;
-
+	private final UserHistoryRepository userHistoryRepository;
 	@Value("${admin.init-password}")
 	private String initPassword;
 
 	@Override
 	public UserInfo joinUser(UserReqVO userReqVO) {
-		UserRepresentation userRepresentation = userReqVO.convertUserRep();
-		// User 중복 체크
-		checkUserDuplicate(userReqVO);
+		String userId = "";
+		try{
+			UserRepresentation userRepresentation = userReqVO.convertUserRep();
+			// User 중복 체크
+			checkUserDuplicate(userReqVO);
 
-		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
-		if (response.getStatus() != 200 && response.getStatus() != 201) {
-			throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
+			Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
+			if (response.getStatus() != 200 && response.getStatus() != 201) {
+				throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
+			}
+			log.info(response.getStatusInfo().getReasonPhrase());
+			UserRepresentation userRep = getUserByUsername(userReqVO.getUsername());
+			UserResource userResource = getUserResourceById(userRep.getId());
+			userResource.resetPassword(userReqVO.createCredentialRep());
+			userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
+			UserRepresentation representation = userResource.toRepresentation();
+			userId = representation.getId();
+
+			representation.getCreatedTimestamp();
+			LocalDateTime createTime = LocalDateTime.ofInstant(
+				Instant.ofEpochMilli(representation.getCreatedTimestamp()), ZoneId.systemDefault());
+
+			userHistoryRepository.save(UserHistoryEntity.builder()
+				.userId(representation.getId())
+				.groupId("")
+				.createDate(createTime)
+				.wlCreateCount(0L)
+				.wlFailCount(0L)
+				.wsCreateCount(0L)
+				.wsFailCount(0L)
+				.codeCreateCount(0L)
+				.codeFailCount(0L)
+				.datasetCreateCount(0L)
+				.datasetFailCount(0L)
+				.imageCreateCount(0L)
+				.imageFailCount(0L)
+				.loginCount(0L)
+				.build());
+
+			return new UserInfo(representation);
+
+		}catch (IllegalArgumentException e){
+			deleteUserById(List.of(userId));
+			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL_SAME_NAME);
 		}
-		log.info(response.getStatusInfo().getReasonPhrase());
-		UserRepresentation userRep = getUserByUsername(userReqVO.getUsername());
-		UserResource userResource = getUserResourceById(userRep.getId());
-		userResource.resetPassword(userReqVO.createCredentialRep());
-		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
-		return new UserInfo(userResource.toRepresentation());
 	}
 
 	private void checkUserDuplicate(UserReqVO userReqVO) {
@@ -187,6 +222,9 @@ public class KeycloakUserRepository implements UserRepository {
 	public void joinGroup(String groupId, String userId) {
 		UserResource userResource = getUserResourceById(userId);
 		userResource.joinGroup(groupId);
+
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.updateGroupId(groupId);
 	}
 
 	@Override
@@ -201,6 +239,9 @@ public class KeycloakUserRepository implements UserRepository {
 			.get().getSubGroups().stream().filter(subGroup -> subGroup.getName().equals("default")).findFirst().get();
 
 		userResource.joinGroup(defaultGroup.getId());
+
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.updateGroupId(defaultGroup.getId());
 	}
 
 	@Override
@@ -329,5 +370,50 @@ public class KeycloakUserRepository implements UserRepository {
 
 
 		return result;
+	}
+
+	private UserHistoryEntity getUserHistory(String userId){
+		return userHistoryRepository.findById(userId).orElseThrow(() ->
+			new RestApiException(UserErrorCode.USER_NOT_FOUND_BY_ID));
+	}
+	public void increaseUserWlCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserWlCount();
+	}
+	public void increaseUserWsCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserWsCount();
+	}
+	public void increaseUserWsFailCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserWsFailCount();
+	}
+	public void increaseUserWlFailCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserWlFailCount();
+	}
+	public void increaseUserImageCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserImageCount();
+	}
+	public void increaseUserImageFailCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserImageFailCount();
+	}
+	public void increaseUserDatasetCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserDatasetCount();
+	}
+	public void increaseUserDatasetFailCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserDatasetFailCount();
+	}
+	public void increaseUserCodeCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserCodeCount();
+	}
+	public void increaseUserCodeFailCount(String userId){
+		UserHistoryEntity userHistory = getUserHistory(userId);
+		userHistory.increaseUserCodeFailCount();
 	}
 }
