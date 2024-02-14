@@ -1,6 +1,7 @@
 package com.xiilab.servercore.code.dto;
 
 import com.xiilab.servercore.code.entity.CodeEntity;
+import com.xiilab.servercore.code.enumeration.CodeType;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CodeResDTO {
 	private long id;
-	private CodeEntity.CodeType codeType;
+	private CodeType codeType;
 	private String codeURL;
 	private CredentialResDTO credentialResDTO;
 
