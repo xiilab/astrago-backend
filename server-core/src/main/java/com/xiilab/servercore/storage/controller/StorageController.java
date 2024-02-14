@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.storage.dto.StorageDTO;
+import com.xiilab.modulek8sdb.storage.dto.StorageDTO;
 import com.xiilab.servercore.storage.service.StorageFacadeService;
 import com.xiilab.servercore.storage.service.StorageService;
 

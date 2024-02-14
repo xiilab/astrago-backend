@@ -11,7 +11,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.repository.KeycloakUserRepository;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 import lombok.RequiredArgsConstructor;
 

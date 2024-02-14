@@ -18,7 +18,7 @@
 // import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 // import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 // import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
-// import com.xiilab.servercore.common.dto.UserInfoDTO;
+// import com.xiilab.moduleuser.dto.UserInfoDTO;
 // import com.xiilab.servercore.pin.service.PinService;
 // import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 // import com.xiilab.servercore.workload.service.WorkloadFacadeService;

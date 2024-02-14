@@ -16,7 +16,7 @@
 // import org.springframework.boot.test.mock.mockito.MockBean;
 //
 // import com.xiilab.modulek8s.common.enumeration.CodeRepositoryType;
-// import com.xiilab.modulek8s.common.enumeration.StorageType;
+// import com.xiilab.modulek8sdb.common.enums.StorageType;
 // import com.xiilab.modulek8s.config.K8sAdapter;
 // import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 // import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;

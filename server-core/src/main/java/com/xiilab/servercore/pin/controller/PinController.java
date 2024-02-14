@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.pin.enumeration.PinType;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.service.PinService;
 
 import io.swagger.v3.oas.annotations.Operation;

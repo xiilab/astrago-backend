@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.image.dto.ImageDTO;
+import com.xiilab.modulek8sdb.image.dto.ImageDTO;
 import com.xiilab.servercore.image.service.ImageService;
 
 import lombok.RequiredArgsConstructor;

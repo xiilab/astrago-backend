@@ -15,8 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.servercore.common.enums.FileType;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.modulek8sdb.common.enums.FileType;
+import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

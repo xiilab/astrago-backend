@@ -18,19 +18,19 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
-import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
-import com.xiilab.servercore.dataset.entity.AstragoDatasetEntity;
-import com.xiilab.servercore.dataset.entity.Dataset;
-import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
-import com.xiilab.servercore.dataset.entity.LocalDatasetEntity;
-import com.xiilab.servercore.dataset.repository.DatasetRepository;
-import com.xiilab.servercore.dataset.repository.DatasetWorkspaceRepository;
-import com.xiilab.servercore.workspace.dto.InsertWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkSpaceMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
+import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
+import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkspaceRepository;
+import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
 
 import lombok.RequiredArgsConstructor;
 
