@@ -27,7 +27,6 @@ public class ResourceQuotaReqVO extends K8SResourceReqVO {
 	private int reqCpu;
 	private int reqMem;
 	private int reqGpu;
-	private int reqDisk;
 	private int limitCpu;
 	private int limitMem;
 	private int limitGpu;
@@ -71,7 +70,6 @@ public class ResourceQuotaReqVO extends K8SResourceReqVO {
 				REQUEST_CPU_KEY.getKey(), new Quantity(String.valueOf(this.reqCpu)),
 				REQUEST_MEMORY_KEY.getKey(), new Quantity(String.valueOf(this.reqMem), "Gi"),
 				REQUEST_GPU_KEY.getKey(), new Quantity(String.valueOf(this.reqGpu)),
-				REQUEST_DISK_KEY.getKey(), new Quantity(String.valueOf(this.reqDisk), "Gi"),
 				LIMITS_CPU_KEY.getKey(), new Quantity(String.valueOf(this.limitCpu)),
 				LIMITS_MEMORY_KEY.getKey(), new Quantity(String.valueOf(this.limitMem), "Gi"),
 				LIMITS_GPU_KEY.getKey(), new Quantity(String.valueOf(this.limitGpu))

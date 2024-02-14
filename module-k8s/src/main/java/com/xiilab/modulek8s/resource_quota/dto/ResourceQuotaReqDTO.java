@@ -13,7 +13,6 @@ public class ResourceQuotaReqDTO extends K8SResourceReqDTO {
 	private int reqCPU;
 	private int reqMEM;
 	private int reqGPU;
-	private int reqDisk;
 
 	public ResourceQuotaReqVO convertToResourceQuota() {
 		return ResourceQuotaReqVO.builder()
@@ -26,7 +25,6 @@ public class ResourceQuotaReqDTO extends K8SResourceReqDTO {
 			.reqCpu(reqCPU)
 			.reqMem(reqMEM)
 			.reqGpu(reqGPU)
-			.reqDisk(reqDisk)
 			.limitCpu(reqCPU)
 			.limitMem(reqMEM)
 			.limitGpu(reqGPU)
