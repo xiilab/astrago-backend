@@ -28,7 +28,7 @@ public class PinServiceImpl implements PinService {
 	}
 
 	@Override
-	public Set<String> getUserWorkloadPinList(String userId, String workspaceName) {
+	public Set<String> getUserWorkloadPinList(String userId) {
 		List<PinEntity> workloadPins = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKLOAD, userId);
 		return workloadPins.stream().map(PinEntity::getResourceName).collect(Collectors.toSet());
 	}
@@ -52,6 +52,11 @@ public class PinServiceImpl implements PinService {
 		}
 	}
 
+	@Override
+	public void deletePin(String resourceName, PinType pinType) {
+		pinRepository.deleteByResourceNameAndType(resourceName, pinType);
+	}
+
 	private void createWorkspacePin(String resourceName, UserInfoDTO userInfoDTO) {
 		PinEntity pinEntity = pinRepository.findByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKSPACE,
 			resourceName, userInfoDTO.getId());
@@ -61,7 +66,8 @@ public class PinServiceImpl implements PinService {
 		}
 
 		//해당 유저가 pin을 6개 이상 생성했는지 검사
-		List<PinEntity> workspaceList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKSPACE, userInfoDTO.getId());
+		List<PinEntity> workspaceList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKSPACE,
+			userInfoDTO.getId());
 		if (workspaceList.size() >= 6) {
 			throw new IllegalArgumentException("");
 		}
@@ -80,10 +86,12 @@ public class PinServiceImpl implements PinService {
 	}
 
 	private void deleteWorkspacePin(String resourceName, UserInfoDTO userInfoDTO) {
-		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKSPACE, resourceName, userInfoDTO.getId());
+		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKSPACE, resourceName,
+			userInfoDTO.getId());
 	}
 
 	private void deleteWorkloadPin(String resourceId, UserInfoDTO userInfoDTO) {
-		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKLOAD, resourceId, userInfoDTO.getId());
+		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKLOAD, resourceId,
+			userInfoDTO.getId());
 	}
 }

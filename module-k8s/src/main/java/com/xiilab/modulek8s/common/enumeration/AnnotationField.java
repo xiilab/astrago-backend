@@ -10,12 +10,13 @@ public enum AnnotationField {
 	WORKSPACE_NAME("ws-name"),
 	DESCRIPTION("description"),
 	CREATED_AT("created-at"),
-	CREATOR_ID("creator-id"),
-	CREATOR_NAME("creator-name"),
+	CREATOR_FULL_NAME("creator-full-name"),
+	CREATOR_USER_NAME("creator-user-name"),
 	TYPE("type"),
 	IMAGE_NAME("image-name"),
 	IMAGE_TAG("image-tag"),
 	DATASET_NAME("dataset-name"),
+	MODEL_NAME("model-name"),
 	IMAGE_TYPE("image-type")
 	;
 

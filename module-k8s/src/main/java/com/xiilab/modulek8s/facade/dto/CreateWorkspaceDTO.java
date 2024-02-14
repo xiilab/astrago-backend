@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 public class CreateWorkspaceDTO {
 	private String name;
 	private String description;
-	private String creatorName;
 	private String creatorId;
+	private String creatorUserName;
+	private String creatorFullName;
 	private List<String> userIds;
 	private int reqCPU;
 	private int reqMEM;
 	private int reqGPU;
-	private int reqDisk;
 }

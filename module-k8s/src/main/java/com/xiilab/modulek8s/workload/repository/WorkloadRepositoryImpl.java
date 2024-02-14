@@ -12,8 +12,10 @@ import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -143,7 +145,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceName(String workSpaceName) {
 		JobList batchJobList = getBatchJobList(workSpaceName);
 		return batchJobList.getItems().stream()
 			.map(ModuleBatchJobResDTO::new)
@@ -151,8 +153,24 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName) {
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCreator(String userId) {
+		JobList batchJobList = getBatchJobListByCreator(userId);
+		return batchJobList.getItems().stream()
+			.map(ModuleBatchJobResDTO::new)
+			.toList();
+	}
+
+	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspace(String workSpaceName) {
 		DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
+		return interactiveJobList.getItems().stream()
+			.map(ModuleInteractiveJobResDTO::new)
+			.toList();
+	}
+
+	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCreator(String creator) {
+		DeploymentList interactiveJobList = getInteractiveJobListByCreator(creator);
 		return interactiveJobList.getItems().stream()
 			.map(ModuleInteractiveJobResDTO::new)
 			.toList();
@@ -298,11 +316,71 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	@Override
+	public void createModelDeployment(CreateModelDeployment createDeployment) {
+		DeploymentVO deployment = DeploymentVO.dtoToEntity(createDeployment);
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resource(deployment.createResource()).create();
+		}
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String datasetId = "md-" + id;
+			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
+			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
+			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
+
+			List<WorkloadResDTO.UsingModelDTO> workloads = new ArrayList<>();
+
+			//워크로드 이름(사용자가 지정한 이름), 상태, job Type, 생성자 이름, 생성일자
+			for (Job job : jobsInUseDataset) {
+				getWorkloadInfoUsingModel(workloads, job, WorkloadResourceType.JOB);
+			}
+			for (StatefulSet statefulSet : statefulSetsInUseDataset) {
+				getWorkloadInfoUsingModel(workloads, statefulSet, WorkloadResourceType.STATEFULSET);
+			}
+			for (Deployment deployment : deploymentsInUseDataset) {
+				getWorkloadInfoUsingModel(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
+			}
+			return workloads;
+		}
+	}
+
+	@Override
+	public void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalModelDeploymentDTO) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.apps()
+				.deployments()
+				.inNamespace(modifyLocalModelDeploymentDTO.getNamespace())
+				.withName(modifyLocalModelDeploymentDTO.getDeploymentName())
+				.edit(d -> new DeploymentBuilder(d)
+					.editMetadata()
+					.addToAnnotations(AnnotationField.DATASET_NAME.getField(), modifyLocalModelDeploymentDTO.getModifyModelName())
+					.endMetadata()
+					.build());
+		}
+	}
+
+	@Override
+	public boolean isUsedModel(Long modelId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "md-" + modelId;
+			if(getJobsInUseDataset(label, client).size() == 0 &&
+				getStatefulSetsInUseDataset(label, client).size() == 0 &&
+				getDeploymentsInUseDataset(label, client).size() == 0){
+				return false;
+			}
+			return true;
+		}
+	}
+
 	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads, HasMetadata hasMetadata,
 		WorkloadResourceType resourceType) {
 		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
-			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_NAME.getField()))
+			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
 			.build();
 
@@ -324,6 +402,33 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 		usingDatasetDTO.setResourceType(resourceType);
 		workloads.add(usingDatasetDTO);
+	}
+	private static void getWorkloadInfoUsingModel(List<WorkloadResDTO.UsingModelDTO> workloads, HasMetadata hasMetadata,
+		WorkloadResourceType resourceType) {
+		WorkloadResDTO.UsingModelDTO usingModelDTO = WorkloadResDTO.UsingModelDTO.builder()
+			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
+			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField()))
+			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
+			.build();
+
+		switch (resourceType) {
+			case JOB:
+				Job job = (Job) hasMetadata;
+				usingModelDTO.setStatus(getJobStatus(job.getStatus()));
+				break;
+			case DEPLOYMENT:
+				Deployment deployment = (Deployment) hasMetadata;
+				usingModelDTO.setStatus(getDeploymentStatus(deployment.getStatus()));
+				break;
+			case STATEFULSET:
+				StatefulSet statefulSet = (StatefulSet) hasMetadata;
+				usingModelDTO.setStatus(getStatefulsetStatus(statefulSet.getStatus()));
+				break;
+			default:
+				usingModelDTO.setStatus(null);
+		}
+		usingModelDTO.setResourceType(resourceType);
+		workloads.add(usingModelDTO);
 	}
 	private static WorkloadStatus getJobStatus(JobStatus jobStatus) {
 		Integer active = jobStatus.getActive();
@@ -352,6 +457,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			return WorkloadStatus.PENDING;
 		}
 	}
+
 	private static WorkloadStatus getStatefulsetStatus(StatefulSetStatus statefulSetStatus) {
 		Integer replicas = statefulSetStatus.getReplicas();
 		Integer availableReplicas = statefulSetStatus.getAvailableReplicas();
@@ -370,11 +476,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.list()
 			.getItems();
 	}
+
 	private static List<Deployment> getDeploymentsInUseDataset(String key, KubernetesClient client) {
 		return client.apps().deployments().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
+
 	private static List<StatefulSet> getStatefulSetsInUseDataset(String key, KubernetesClient client) {
 		return client
 			.apps()
@@ -407,6 +515,18 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private JobList getBatchJobList(String workSpaceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).list();
+		}
+	}
+
+	private JobList getBatchJobListByCreator(String userId) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.batch().v1().jobs().withLabel(LabelField.CREATOR_ID.getField(), userId).list();
+		}
+	}
+
+	private DeploymentList getInteractiveJobListByCreator(String userId) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.apps().deployments().withLabel(LabelField.CREATOR_ID.getField(), userId).list();
 		}
 	}
 

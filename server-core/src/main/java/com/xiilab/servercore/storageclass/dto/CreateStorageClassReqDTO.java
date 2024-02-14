@@ -12,7 +12,8 @@ public class CreateStorageClassReqDTO extends APIBaseReqDTO {
 	private String ip;
 	private String storageSavePath;
 	private String creatorId;
-	private String creatorName;
+	private String creatorUserName;
+	private String creatorFullName;
 
 	public CreateStorageClassReqDTO() {
 		super();
@@ -22,16 +23,18 @@ public class CreateStorageClassReqDTO extends APIBaseReqDTO {
 		return CreateStorageClassDTO.builder()
 			.name(getName())
 			.description(getDescription())
-			.creator(creatorId)
-			.creatorName(creatorName)
+			.creatorId(creatorId)
+			.creatorUserName(creatorUserName)
+			.creatorFullName(creatorFullName)
 			.ip(ip)
 			.storageType(storageType)
 			.storageSavePath(storageSavePath)
 			.build();
 	}
 
-	public void setUserInfo(String creatorId, String creatorName) {
+	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {
 		this.creatorId = creatorId;
-		this.creatorName = creatorName;
+		this.creatorUserName = creatorName;
+		this.creatorFullName = creatorFullName;
 	}
 }

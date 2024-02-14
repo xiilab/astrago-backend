@@ -25,4 +25,20 @@ public class WorkloadResDTO {
 			this.resourceType = resourceType;
 		}
 	}
+	@Getter
+	@Builder
+	public static class UsingModelDTO{
+		private String workloadName;
+		private WorkloadResourceType resourceType;
+		private String creator;
+		private String createdAt;
+		WorkloadStatus status;
+
+		public void setStatus(WorkloadStatus workloadStatus){
+			this.status = workloadStatus;
+		}
+		public void setResourceType(WorkloadResourceType resourceType){
+			this.resourceType = resourceType;
+		}
+	}
 }

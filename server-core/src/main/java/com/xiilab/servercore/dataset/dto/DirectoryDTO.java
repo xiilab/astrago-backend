@@ -20,5 +20,6 @@ public class DirectoryDTO {
         private String name;
         private FileType type;
         private String path;
+        private String size;
     }
 }

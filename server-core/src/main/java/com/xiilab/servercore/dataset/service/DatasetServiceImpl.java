@@ -84,7 +84,7 @@ public class DatasetServiceImpl implements DatasetService {
 	public DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId) {
 		Dataset datasetWithStorage = datasetRepository.getDatasetWithStorage(datasetId);
 		if(datasetWithStorage == null){
-			throw new RuntimeException("존재하지 않는 데이터 셋입니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND);
 		}
 		return DatasetDTO.ResDatasetWithStorage.toDto(datasetWithStorage);
 	}
@@ -124,15 +124,15 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public DirectoryDTO getAstragoDatasetFiles(Long datasetId, String filePath) {
-		datasetRepository.findById(datasetId).orElseThrow(()-> new RuntimeException("데이터 셋이 존재하지않습니다."));
-		return CoreFileUtils.getAstragoDatasetFiles(filePath);
+		datasetRepository.findById(datasetId).orElseThrow(()-> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+		return CoreFileUtils.getAstragoFiles(filePath);
 	}
 
 	@Override
 	@Transactional
 	public void astragoDatasetUploadFile(Long datasetId, String path, List<MultipartFile> files) {
 		AstragoDatasetEntity dataset = (AstragoDatasetEntity) datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		long size = CoreFileUtils.datasetUploadFiles(path, files);
 		dataset.setDatasetSize(size);
 	}
@@ -140,7 +140,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
 		datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		String targetPath = reqFilePathDTO.getPath();
 		CoreFileUtils.deleteFileOrDirectory(targetPath);
 	}
@@ -148,7 +148,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DownloadFileResDTO DownloadAstragoDatasetFile(Long datasetId, String filePath) {
 		datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		Path targetPath = Path.of(filePath);
 		// 파일이 존재하는지 확인
 		if (Files.exists(targetPath)) {
@@ -164,7 +164,7 @@ public class DatasetServiceImpl implements DatasetService {
 						.mediaType(MediaType.parseMediaType("application/zip"))
 						.build();
 				} catch (IOException e) {
-					throw new RuntimeException("디렉토리 압축 및 다운로드 실패: " + e.getMessage());
+					throw new RestApiException(DatasetErrorCode.DATASET_ZIP_DOWNLOAD_FAIL);
 				}
 			}else{
 				String fileName = CoreFileUtils.getFileName(filePath);
@@ -173,7 +173,7 @@ public class DatasetServiceImpl implements DatasetService {
 				try {
 					fileContent = Files.readAllBytes(targetPath);
 				} catch (IOException e) {
-					throw new RuntimeException("파일 다운로드를 실패했습니다.");
+					throw new RestApiException(DatasetErrorCode.DATASET_FILE_DOWNLOAD_FAIL);
 				}
 				ByteArrayResource resource = new ByteArrayResource(fileContent);
 				MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
@@ -190,17 +190,17 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public void astragoDatasetCreateDirectory(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
-		datasetRepository.findById(datasetId).orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지않습니다."));
+		datasetRepository.findById(datasetId).orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		Path dirPath = Path.of(reqFilePathDTO.getPath());
 		// 디렉토리가 존재하지 않으면 생성
 		if (!Files.exists(dirPath)) {
 			try {
 				Files.createDirectories(dirPath);
 			} catch (IOException e) {
-				throw new RuntimeException("폴더 생성에 실패했습니다.");
+				throw new RestApiException(DatasetErrorCode.DATASET_DIRECTORY_CREATE_FAIL);
 			}
 		} else {
-			throw new RuntimeException("이미 생성된 폴더입니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_DIRECTORY_CREATE_ALREADY);
 		}
 	}
 
@@ -228,12 +228,12 @@ public class DatasetServiceImpl implements DatasetService {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
 			workspaceResourceName, datasetId);
 		if(workSpaceMappingEntity != null){
-			throw new RuntimeException("해당 워크스페이스에 이미 추가된 데이터 셋입니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_WORKSPACE_MAPPING_ALREADY);
 		}
 
 		//dataset entity 조회
 		Dataset dataset = datasetRepository.findById(datasetId)
-			.orElseThrow(() -> new RuntimeException("데이터 셋이 존재하지 않습니다."));
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		//datasetWorkspaceMappingEntity 생성 및 dataset entity 추가
 		DatasetWorkSpaceMappingEntity datasetWorkSpaceMappingEntity = DatasetWorkSpaceMappingEntity.builder()
 			.workspaceResourceName(workspaceResourceName)
@@ -248,11 +248,11 @@ public class DatasetServiceImpl implements DatasetService {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
 			workspaceResourceName, datasetId);
 		if(workSpaceMappingEntity == null){
-			throw new RuntimeException("데이터 셋이 존재하지 않습니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND);
 		}
 		//owner or 본인 체크
 		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
-			throw new RuntimeException("삭제 권한이 없는 데이터 셋입니다.");
+			throw new RestApiException(DatasetErrorCode.DATASET_DELETE_FORBIDDEN);
 		}
 		datasetWorkspaceRepository.deleteByDatasetIdAndWorkspaceResourceName(datasetId, workspaceResourceName);
 	}

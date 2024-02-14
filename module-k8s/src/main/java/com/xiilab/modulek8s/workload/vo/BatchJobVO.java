@@ -60,14 +60,13 @@ public class BatchJobVO extends WorkloadVO {
 					AnnotationField.WORKSPACE_NAME.getField(), getWorkspace(),
 					AnnotationField.DESCRIPTION.getField(), getDescription(),
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
-					AnnotationField.CREATOR_NAME.getField(), getCreatorName(),
-					AnnotationField.CREATOR_ID.getField(), getCreatorId(),
+					AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName(),
+					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName(),
 					AnnotationField.TYPE.getField(), getWorkloadType().getType(),
 					AnnotationField.IMAGE_NAME.getField(), getImage().name(),
-					AnnotationField.IMAGE_TAG.getField(), getImage().tag(),
 					AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType()
-				))
-			.withLabels(
+				)
+			).withLabels(
 				getLabelMap()
 			)
 			.build();
@@ -76,11 +75,12 @@ public class BatchJobVO extends WorkloadVO {
 	private Map<String, String> getLabelMap() {
 		Map<String, String> map = new HashMap<>();
 
-		map.put(LabelField.CREATOR.getField(), getCreatorName());
+		map.put(LabelField.CREATOR_ID.getField(), getCreatorId());
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
-		this.volumes.forEach(volume -> map.put(volume.name(), "true"));
+		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), "true"));
+		this.models.forEach(model -> map.put("md-" + model.id(), "true"));
 
 		return map;
 	}
@@ -109,29 +109,31 @@ public class BatchJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(secretName);
 		}
 		cloneGitRepo(podSpecBuilder, codes);
-		addVolumes(podSpecBuilder, volumes);
+		addVolumes(podSpecBuilder, datasets);
+		addVolumes(podSpecBuilder, models);
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withRestartPolicy("Never")
 			.addNewContainer()
 			.withName(getUniqueResourceName())
-			.withImage(image.name() + ":" + image.tag());
+			.withImage(image.name());
 
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
-		addVolumeMount(podSpecContainer);
+		addVolumeMount(podSpecContainer, datasets);
+		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
 		addContainerResource(podSpecContainer);
 
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
 			volumes.forEach(volume -> podSpecContainer
 				.addNewVolumeMount()
-				.withName(volume.name())
+				.withName(volume.pvName())
 				.withMountPath(volume.mountPath())
 				.endVolumeMount());
 		}

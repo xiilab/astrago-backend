@@ -87,7 +87,7 @@ public class CoreFileUtils {
 		}
 		return size;
 	}
-	public static DirectoryDTO getAstragoDatasetFiles(String path) {
+	public static DirectoryDTO getAstragoFiles(String path) {
 		List<DirectoryDTO.ChildrenDTO> children = new ArrayList<>();
 		File directory = new File(path);
 		int directoryCnt = 0;
@@ -103,7 +103,8 @@ public class CoreFileUtils {
 						DirectoryDTO.ChildrenDTO dirChild = DirectoryDTO.ChildrenDTO.builder()
 							.name(file.getName())
 							.type(FileType.D)
-							.path(fullPath)
+							.path(null)
+							.size(CoreFileUtils.formatFileSize(file.length()))
 							.build();
 						directoryCnt += 1;
 						children.add(dirChild);
@@ -112,6 +113,7 @@ public class CoreFileUtils {
 							.name(file.getName())
 							.type(FileType.F)
 							.path(fullPath)
+							.size(CoreFileUtils.formatFileSize(file.length()))
 							.build();
 						fileCnt += 1;
 						children.add(fileChild);

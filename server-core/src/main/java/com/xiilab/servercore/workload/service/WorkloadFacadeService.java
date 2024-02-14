@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.UUID;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulealert.dto.AlertDTO;
@@ -16,16 +17,22 @@ import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
+import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
+import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
-import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
-import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
+import com.xiilab.servercore.dataset.entity.Dataset;
+import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
@@ -37,13 +44,21 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
-	private final WorkspaceService workspaceService;
 	private final PinService pinService;
 	private final AlertService alertService;
+	private final DatasetService datasetService;
+	private final WorkloadHistoryService workloadHistoryService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserRealName());
-		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserFullName(),
+			userInfoDTO.getUserFullName());
+		// 데이터셋 볼륨 추가
+		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
+		// 모델 볼륨 추가
+		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
+
+		workloadModuleFacadeService.createJobWorkload(
+			moduleCreateWorkloadReqDTO.toModuleDTO());
 
 		// 워크로드 생성 알림
 		alertService.sendAlert(AlertDTO.builder()
@@ -73,193 +88,138 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public void deleteWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
+	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO
 	) throws IOException {
 		if (workloadType == WorkloadType.BATCH) {
-			deleteBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
+			stopBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			deleteInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
+			stopInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
 		}
 	}
 
-	public PageDTO getWorkloadListByCondition(WorkloadType workloadType,
-		String workspaceName,
-		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition, int pageNum,
-		UserInfoDTO userInfoDTO) {
-		if (workloadType == WorkloadType.BATCH) {
-			return getBatchWorkloadByCondition(workspaceName, searchName, workloadStatus, sortCondition, pageNum,
-				userInfoDTO);
-		} else {
-			return getInteractiveWorkloadByCondition(workspaceName, searchName, workloadStatus, sortCondition, pageNum,
-				userInfoDTO);
-		}
+	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
+		ModuleWorkloadResDTO workloadHistory = workloadHistoryService.getWorkloadHistoryById(id);
+		workloadHistoryService.deleteWorkloadHistory(id, userInfoDTO);
+		//해당 워크로드를 등록한 모든 Pin 삭제
+		pinService.deletePin(workloadHistory.getResourceName(), PinType.WORKLOAD);
 	}
 
-	private PageDTO<ModuleBatchJobResDTO> getBatchWorkloadByCondition(String workspaceName, String searchName,
-		WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition, int pageNum, UserInfoDTO userInfoDTO) {
-		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
-		//통합용 리스트 선언
-		List<ModuleBatchJobResDTO> totalJobList = new ArrayList<>();
-		//DB에 저장되어있는 유저가 추가한 PIN 목록(k8s resource의 name)
-		Set<String> userWorkloadPinList = pinService.getUserWorkloadPinList(userInfoDTO.getId(), workspaceName);
-		//특정 워크스페이스의 워크로드
-		List<ModuleBatchJobResDTO> batchJobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workspaceName);
-
-		// pin list filtering
-		List<ModuleBatchJobResDTO> pinList = batchJobWorkloadList.stream()
-			.filter(job -> userWorkloadPinList.contains(job.getResourceName())).toList();
-		//pin list에 대한 filtering sorting 검색
-		pinList = applyBatchWorkloadListCondition(pinList, searchName,
-			workloadStatus, sortCondition);
-
-		// 워크로드 일반 리스트를 가져옴
-		List<ModuleBatchJobResDTO> normalList = batchJobWorkloadList.stream()
-			.filter(job -> !userWorkloadPinList.contains(job.getResourceName()))
-			.toList();
-		//일반 리스트 대한 filtering sorting 검색
-		normalList = applyBatchWorkloadListCondition(normalList, searchName, workloadStatus, sortCondition);
-		//총 목록 - pin 리스트 개수
-		int normalListPageSize = getNormalListPageSize(pinList.size());
-		//총 페이지 개수
-		int totalPageSize = (int)Math.ceil(normalList.size() / (double)normalListPageSize);
-		//실질적인 페이지네이션 후의 리스트
-		List<ModuleBatchJobResDTO> normalPagingList = getPaginatedList(normalList, pageNum, normalListPageSize);
-		//TODO 종료된 workload list 조회 및 추가
-
-		if (totalPageSize == 0) {
-			return new PageDTO<>(0, 0, 0, null);
-		}
-
-		if (totalPageSize < pageNum) {
-			//사용자가 더 많은 페이지 인덱스를 입력했을 경우
-			throw new IllegalArgumentException("total page size보다 입력한 pageNum이 더 큽니다.");
-		}
-
-		totalJobList.addAll(pinList);
-		totalJobList.addAll(normalPagingList);
-
-		PageDTO<ModuleBatchJobResDTO> pageDTO = new PageDTO<>(totalJobList, pageNum, 10);
-
-		List<ModuleBatchJobResDTO> resultList = pageDTO.getContent()
-			.stream()
-			.map(workload ->
-				ModuleBatchJobResDTO.builder()
-					.uid(workload.getUid())
-					.name(workload.getName())
-					.resourceName(workload.getResourceName())
-					.description(workload.getDescription())
-					.creatorId(workload.getCreatorId())
-					.workspaceName(workspace.getName())
-					.workspaceResourceName(workspace.getResourceName())
-					.type(workload.getType())
-					.image(workload.getImage())
-					.gpuRequest(workload.getGpuRequest())
-					.cpuRequest(workload.getCpuRequest())
-					.memRequest(workload.getMemRequest())
-					.createdAt(workload.getCreatedAt())
-					.schedulingType(workload.getSchedulingType())
-					.envs(workload.getEnvs())
-					.ports(workload.getPorts())
-					.command(workload.getCommand())
-					.status(workload.getStatus())
-					.age(workload.getAge())
-					.isPinYN(userWorkloadPinList.contains(workload.getResourceName()))
-					.build())
-			.collect(Collectors.toList());
-		return new PageDTO<>(resultList, pageNum, 10);
-	}
-
-	private PageDTO<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCondition(String workspaceName,
+	public PageDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(WorkloadType workloadType, String workspaceName,
 		String searchName,
-		WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition, int pageNum, UserInfoDTO userInfoDTO) {
-		List<ModuleInteractiveJobResDTO> totalJobList = new ArrayList<>();
-		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
-		Set<String> userWorkloadPinList = pinService.getUserWorkloadPinList(userInfoDTO.getId(), workspaceName);
-		List<ModuleInteractiveJobResDTO> interactiveJobWorkloadList = workloadModuleService.getInteractiveJobWorkloadList(
-			workspaceName);
-
-		// pin list filtering
-		List<ModuleInteractiveJobResDTO> pinList = interactiveJobWorkloadList.stream()
-			.filter(job -> userWorkloadPinList.contains(job.getResourceName())).toList();
-
-		pinList = applyInteractiveWorkloadListCondition(pinList, searchName,
-			workloadStatus, sortCondition);
-
-		// PIN 등록하지 않은 전체 Job List
-		List<ModuleInteractiveJobResDTO> normalList = interactiveJobWorkloadList.stream()
-			.filter(job -> !userWorkloadPinList.contains(job.getResourceName()))
-			.toList();
-		// 전체 JOB List 검색 조건 filter
-		normalList = applyInteractiveWorkloadListCondition(normalList, searchName, workloadStatus,
-			sortCondition);
-		int normalListPageSize = getNormalListPageSize(pinList.size());
-
-		int totalPageSize = (int)Math.ceil(normalList.size() / (double)normalListPageSize);
-		List<ModuleInteractiveJobResDTO> normalPagingList = getPaginatedList(normalList, pageNum, normalListPageSize);
-		//TODO 종료된 workload list 조회 및 추가
-
-		if (totalPageSize == 0) {
-			return new PageDTO(0, 0, 0, null);
+		WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, int pageNum,
+		UserInfoDTO userInfoDTO) {
+		//통합용 리스트 선언
+		List<ModuleWorkloadResDTO> workloadResDTOList = new ArrayList<>();
+		if (workloadType == WorkloadType.BATCH) {
+			//k8s cluster에 생성되어있는 batchJob list
+			List<ModuleBatchJobResDTO> batchJobListFromCluster = workloadModuleService.getBatchWorkloadListByCondition(
+				workspaceName, userInfoDTO.getId());
+			//종료된 batchJob list
+			List<ModuleBatchJobResDTO> batchWorkloadHistoryList = workloadHistoryService.getBatchWorkloadHistoryList(
+				workspaceName,
+				null, userInfoDTO.getId());
+			workloadResDTOList.addAll(batchJobListFromCluster);
+			workloadResDTOList.addAll(batchWorkloadHistoryList);
+		} else {
+			//k8s cluster에서 생성되어있는 interactive job list 조회
+			List<ModuleInteractiveJobResDTO> interactiveJobFromCluster = workloadModuleService.getInteractiveWorkloadListByCondition(
+				workspaceName, userInfoDTO.getId());
+			//종료된 interactive job list 조회
+			List<ModuleInteractiveJobResDTO> interactiveWorkloadHistoryList = workloadHistoryService.getInteractiveWorkloadHistoryList(
+				workspaceName, null, userInfoDTO.getId());
+			workloadResDTOList.addAll(interactiveJobFromCluster);
+			workloadResDTOList.addAll(interactiveWorkloadHistoryList);
 		}
-
-		if (totalPageSize < pageNum) {
-			throw new IllegalArgumentException("total page size보다 입력한 pageNum이 더 큽니다.");
-		}
-
-		totalJobList.addAll(pinList);
-		totalJobList.addAll(normalPagingList);
-
-		PageDTO<ModuleInteractiveJobResDTO> pageDTO = new PageDTO<>(totalJobList, pageNum, 10);
-
-		List<ModuleInteractiveJobResDTO> resultList = pageDTO.getContent()
-			.stream()
-			.map(workload ->
-				ModuleInteractiveJobResDTO.builder()
-					.uid(workload.getUid())
-					.name(workload.getName())
-					.resourceName(workload.getResourceName())
-					.description(workload.getDescription())
-					.creatorId(workload.getCreatorId())
-					.workspaceName(workspace.getName())
-					.workspaceResourceName(workspace.getResourceName())
-					.type(workload.getType())
-					.image(workload.getImage())
-					.gpuRequest(workload.getGpuRequest())
-					.cpuRequest(workload.getCpuRequest())
-					.memRequest(workload.getMemRequest())
-					.createdAt(workload.getCreatedAt())
-					.schedulingType(workload.getSchedulingType())
-					.envs(workload.getEnvs())
-					.ports(workload.getPorts())
-					.command(workload.getCommand())
-					.status(workload.getStatus())
-					.age(workload.getAge())
-					.isPinYN(userWorkloadPinList.contains(workload.getResourceName()))
-					.build())
-			.collect(Collectors.toList());
-
-		return new PageDTO<>(resultList, pageNum, 10);
+		//핀 워크로드 목록 필터링
+		List<ModuleWorkloadResDTO> pinWorkloadList = filterAndMarkPinnedWorkloads(workloadResDTOList,
+			userInfoDTO.getId());
+		//일반 워크로드 목록 필터링
+		List<ModuleWorkloadResDTO> normalWorkloadList = filterNormalWorkloads(workloadResDTOList,
+			searchName, workloadStatus, workloadSortCondition, userInfoDTO.getId());
+		return new PageDTO<>(pinWorkloadList, normalWorkloadList, pageNum, 10);
 	}
 
-	private List<ModuleBatchJobResDTO> applyBatchWorkloadListCondition(List<ModuleBatchJobResDTO> workloadList,
+	private List<ModuleWorkloadResDTO> filterNormalWorkloads(List<ModuleWorkloadResDTO> workloadList, String searchName,
+		WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, String userId) {
+		// 사용자가 추가한 PIN 목록을 가져옵니다.
+		Set<String> userWorkloadPinList = getUserWorkloadPinList(userId);
+		// PIN이 없는 워크로드를 필터링합니다.
+		List<ModuleWorkloadResDTO> normalWorkloadList = filterPinnedWorkloads(workloadList, userWorkloadPinList,
+			false);
+		//필터링 및 정렬 적용
+		return applyWorkloadListCondition(normalWorkloadList, searchName, workloadStatus, workloadSortCondition);
+	}
+
+	/**
+	 * 워크로드 목록을 사용자가 추가한 PIN에 따라 필터링하고, PINYN을 업데이트한 후 반환합니다.
+	 *
+	 * @param workloadList 워크로드 목록
+	 * @param userId       사용자 ID
+	 * @return PIN에 따라 필터링된 작업량 목록
+	 */
+	private List<ModuleWorkloadResDTO> filterAndMarkPinnedWorkloads(List<ModuleWorkloadResDTO> workloadList,
+		String userId) {
+		// 사용자가 추가한 PIN 목록을 가져옵니다.
+		Set<String> userWorkloadPinList = getUserWorkloadPinList(userId);
+		// PIN에 따라 작업량을 필터링합니다.
+		List<ModuleWorkloadResDTO> pinWorkloadList = filterPinnedWorkloads(workloadList, userWorkloadPinList, true);
+		// 필터링된 작업량의 PINYN을 업데이트합니다.
+		markPinnedWorkloads(pinWorkloadList);
+		return pinWorkloadList;
+	}
+
+	/**
+	 * 사용자가 추가한 PIN 목록을 가져옵니다.
+	 *
+	 * @param userId 사용자 ID
+	 * @return 사용자가 추가한 PIN 목록
+	 */
+	private Set<String> getUserWorkloadPinList(String userId) {
+		return pinService.getUserWorkloadPinList(userId);
+	}
+
+	/**
+	 * 작업량 목록을 사용자가 추가한 PIN에 따라 필터링하여 반환합니다.
+	 *
+	 * @param workloadList        작업량 목록
+	 * @param userWorkloadPinList 사용자가 추가한 PIN 목록
+	 * @param pinFilterCondition  pin여부에 따라 필터링 할지에 대한 flag 값
+	 * @return PIN에 따라 필터링된 작업량 목록
+	 */
+	private List<ModuleWorkloadResDTO> filterPinnedWorkloads(List<ModuleWorkloadResDTO> workloadList,
+		Set<String> userWorkloadPinList, boolean pinFilterCondition) {
+		return workloadList.stream()
+			.filter(workload -> pinFilterCondition == userWorkloadPinList.contains(workload.getResourceName()))
+			.toList();
+	}
+
+	/**
+	 * 작업량 목록의 PINYN을 업데이트합니다.
+	 *
+	 * @param workloadList 작업량 목록
+	 */
+	private void markPinnedWorkloads(List<ModuleWorkloadResDTO> workloadList) {
+		workloadList.forEach(workload -> workload.updatePinYN(true));
+	}
+
+	private List<ModuleWorkloadResDTO> applyWorkloadListCondition(List<ModuleWorkloadResDTO> workloadList,
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
 
-		Stream<ModuleBatchJobResDTO> workloadStream = workloadList.stream()
+		Stream<ModuleWorkloadResDTO> workloadStream = workloadList.stream()
 			.filter(batch -> searchName == null || batch.getName().contains(searchName))
 			.filter(batch -> workloadStatus == null || batch.getStatus() == workloadStatus);
 
 		if (sortCondition != null) {
 			return switch (sortCondition) {
-
 				case AGE_ASC ->
-					workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getCreatedAt)).toList();
+					workloadStream.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt)).toList();
 				case AGE_DESC ->
-					workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getCreatedAt).reversed()).toList();
+					workloadStream.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed()).toList();
 				case REMAIN_TIME_ASC ->
-					workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getRemainTime)).toList();
+					workloadStream.sorted(Comparator.comparing(ModuleWorkloadResDTO::getRemainTime)).toList();
 				case REMAIN_TIME_DESC ->
-					workloadStream.sorted(Comparator.comparing(ModuleBatchJobResDTO::getRemainTime).reversed())
+					workloadStream.sorted(Comparator.comparing(ModuleWorkloadResDTO::getRemainTime).reversed())
 						.toList();
 			};
 		} else {
@@ -267,34 +227,11 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	private List<ModuleInteractiveJobResDTO> applyInteractiveWorkloadListCondition(
-		List<ModuleInteractiveJobResDTO> workloadList,
-		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
-
-		Stream<ModuleInteractiveJobResDTO> workloadStream = workloadList.stream()
-			.filter(batch -> searchName == null || batch.getResourceName().contains(searchName))
-			.filter(batch -> workloadStatus == null || batch.getStatus() == workloadStatus);
-
-		if (sortCondition != null) {
-			return switch (sortCondition) {
-				case AGE_ASC ->
-					workloadStream.sorted(Comparator.comparing(ModuleInteractiveJobResDTO::getCreatedAt)).toList();
-				case AGE_DESC ->
-					workloadStream.sorted(Comparator.comparing(ModuleInteractiveJobResDTO::getCreatedAt).reversed())
-						.toList();
-				case REMAIN_TIME_ASC, REMAIN_TIME_DESC ->
-					throw new IllegalArgumentException("interactive job은 remainTime을 계산할 수 없습니다.");
-			};
-		} else {
-			return workloadStream.toList();
-		}
-	}
-
-	private void deleteBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void stopBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
 		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 			WorkloadType.BATCH);
-		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getUserName());
+		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 		// 워크로드 삭제 알림
 		alertService.sendAlert(AlertDTO.builder()
@@ -305,11 +242,11 @@ public class WorkloadFacadeService {
 			.build());
 	}
 
-	private void deleteInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
 		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 			WorkloadType.INTERACTIVE);
-		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getUserName());
+		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 		// 워크로드 삭제 알림
 		alertService.sendAlert(AlertDTO.builder()
@@ -320,16 +257,43 @@ public class WorkloadFacadeService {
 			.build());
 	}
 
-	private <T extends ModuleWorkloadResDTO> List<T> getPaginatedList(List<T> workloadList,
-		int pageNum, int pageSize) {
-		int startIndex = (pageNum - 1) * pageSize;
-		int endIndex = Math.min(pageNum * pageSize, workloadList.size());
-		return workloadList.subList(startIndex, endIndex);
+	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		if (!ObjectUtils.isEmpty(list)) {
+			for (ModuleVolumeReqDTO reqDto : list) {
+				setCreatePVAndPVC(workspaceName, reqDto);
+			}
+		}
 	}
 
-	private int getNormalListPageSize(int pinListSize) {
-		return 10 - pinListSize;
-	}
+	private void setCreatePVAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO) {
+		Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
+		DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
+			findDataset);
 
+		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
+		String ip = resDatasetWithStorage.getIp();
+		String storagePath = resDatasetWithStorage.getStoragePath();
+		StorageType storageType = resDatasetWithStorage.getStorageType();
+		int requestVolume = 50;
+
+		// PV 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.ip(ip)
+			.storagePath(storagePath)
+			.namespace(workspaceName)
+			.storageType(storageType)
+			.requestVolume(requestVolume)
+			.build();
+		moduleVolumeReqDTO.setCreatePV(createPV);
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(workspaceName)
+			.requestVolume(requestVolume)
+			.build();
+		moduleVolumeReqDTO.setCreatePVC(createPVC);
+	}
 
 }

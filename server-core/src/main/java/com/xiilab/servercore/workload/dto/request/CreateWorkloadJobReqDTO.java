@@ -25,14 +25,16 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private ModuleImageReqDTO image;
 	private List<ModulePortReqDTO> ports;
 	private List<ModuleEnvReqDTO> envs;
-	private List<ModuleVolumeReqDTO> volumes;
+	private List<ModuleVolumeReqDTO> datasets;
+	private List<ModuleVolumeReqDTO> models;
 	private List<ModuleCodeReqDTO> codes;
 	private String command;
 	private int cpuRequest;
 	private int gpuRequest;
 	private int memRequest;
 	private String creatorId;
-	private String creatorName;
+	private String creatorUserName;
+	private String creatorFullName;
 	// SchedulingType schedulingType;        // 스케줄링 방식
 
 
@@ -43,23 +45,26 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.workspace(workspace)
 			.workloadType(workloadType)
 			.image(image)
+			.datasets(datasets)
+			.models(models)
 			.ports(ports)
 			.envs(envs)
-			.volumes(volumes)
 			.codes(codes)
 			.command(command)
 			.cpuRequest(cpuRequest)
 			.gpuRequest(gpuRequest)
 			.memRequest(memRequest)
 			.creatorId(creatorId)
-			.creatorName(creatorName)
+			.creatorUserName(creatorUserName)
+			.creatorFullName(creatorFullName)
 			.build();
 
 	}
 
-	public void setUserInfo(String creatorId, String creatorName) {
+	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {
 		this.creatorId = creatorId;
-		this.creatorName = creatorName;
+		this.creatorUserName = creatorName;
+		this.creatorFullName = creatorFullName;
 	}
 
 }

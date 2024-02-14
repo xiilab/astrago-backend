@@ -23,6 +23,7 @@ import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
+import com.xiilab.servercore.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
@@ -53,21 +54,20 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
 			.name(applicationForm.getName())
 			.description(applicationForm.getDescription())
-			.creatorName(userInfoDTO.getUserName())
 			.creatorId(userInfoDTO.getId())
-			.creatorName(userInfoDTO.getUserName())
+			.creatorUserName(userInfoDTO.getUserName())
+			.creatorFullName(userInfoDTO.getUserFullName())
 			.reqCPU(applicationForm.getReqCPU())
 			.reqMEM(applicationForm.getReqMEM())
 			.reqGPU(applicationForm.getReqGPU())
-			.reqDisk(applicationForm.getReqDisk())
 			.build());
 		//group 추가
 		groupService.createWorkspaceGroup(
 			GroupReqDTO.builder()
 				.name(workspace.getResourceName())
-				.createdBy(applicationForm.getCreatorName())
-				.createdUserId(applicationForm.getCreator())
-				.description(applicationForm.getDescription())
+				.createdBy(workspace.getCreatorUserName())
+				.createdUserId(workspace.getCreatorId())
+				.description(workspace.getDescription())
 				.users(applicationForm.getUserIds())
 				.build()
 		);
@@ -121,6 +121,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO) {
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
+		//pin 삭제
+		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
 		// 워크스페이스 삭제 알림
 		alertService.sendAlert(AlertDTO.builder()
@@ -141,15 +143,15 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		return workspaceList.stream()
 			.filter(workspace -> userWorkspacePinList.contains(workspace.getResourceName()))
 			.map(workspace ->
-			new WorkspaceDTO.TotalResponseDTO(
-				workspace.getId(),
-				workspace.getName(),
-				workspace.getResourceName(),
-				workspace.getDescription(),
-				userWorkspacePinList.contains(workspace.getResourceName()),
-				workspace.getCreatedAt(),
-				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
-					userInfoDTO.getUserName()))).toList();
+				new WorkspaceDTO.TotalResponseDTO(
+					workspace.getId(),
+					workspace.getName(),
+					workspace.getResourceName(),
+					workspace.getDescription(),
+					userWorkspacePinList.contains(workspace.getResourceName()),
+					workspace.getCreatedAt(),
+					workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
+						userInfoDTO.getUserName()))).toList();
 
 	}
 
@@ -174,7 +176,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum, UserInfoDTO userInfoDTO) {
+	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum,
+		UserInfoDTO userInfoDTO) {
 		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaReqList.stream()

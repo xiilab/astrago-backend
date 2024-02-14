@@ -31,8 +31,9 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 			createWorkspaceDTO.getName(),
 			createWorkspaceDTO.getDescription(),
 			LocalDateTime.now(),
-			createWorkspaceDTO.getCreatorName(),
-			createWorkspaceDTO.getCreatorId()
+			createWorkspaceDTO.getCreatorId(),
+			createWorkspaceDTO.getCreatorUserName(),
+			createWorkspaceDTO.getCreatorFullName()
 		));
 
 		//워크스페이스 resource quota 생성
@@ -42,11 +43,11 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 				.namespace(workspace.getResourceName())
 				.description(createWorkspaceDTO.getDescription())
 				.creatorId(createWorkspaceDTO.getCreatorId())
-				.creatorName(createWorkspaceDTO.getCreatorId())
+				.creatorUserName(createWorkspaceDTO.getCreatorUserName())
+				.creatorFullName(createWorkspaceDTO.getCreatorFullName())
 				.reqCPU(createWorkspaceDTO.getReqCPU())
 				.reqGPU(createWorkspaceDTO.getReqGPU())
 				.reqMEM(createWorkspaceDTO.getReqMEM())
-				.reqDisk(createWorkspaceDTO.getReqDisk())
 				.build());
 
 		return workspace;

@@ -2,18 +2,12 @@ package com.xiilab.modulek8s.facade.dto;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
+@SuperBuilder
 public class ModifyVolumeDTO extends K8SResourceReqDTO {
 	private String workspaceMetaName;
 	private String volumeMetaName;
-
-	@Builder
-	public ModifyVolumeDTO(String name, String description, String creatorName, String creator, String workspaceMetaName, String volumeMetaName) {
-		super(name, description, creatorName, creator);
-		this.workspaceMetaName = workspaceMetaName;
-		this.volumeMetaName = volumeMetaName;
-	}
 }

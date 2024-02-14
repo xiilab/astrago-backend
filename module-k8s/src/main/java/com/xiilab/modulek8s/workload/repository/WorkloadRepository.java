@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -68,7 +70,9 @@ public interface WorkloadRepository {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName);
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceName(String workSpaceName);
+
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByCreator(String userId);
 
 	/**
 	 * interactive job workload list 조회
@@ -76,7 +80,9 @@ public interface WorkloadRepository {
 	 * @param workSpaceName
 	 * @return
 	 */
-	List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName);
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspace(String workSpaceName);
+
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCreator(String creator);
 
 	/**
 	 * batch job workload 삭제
@@ -112,4 +118,11 @@ public interface WorkloadRepository {
 
 	void deleteDeploymentByResourceName(String deploymentName, String namespace);
 
+	void createModelDeployment(CreateModelDeployment createDeployment);
+
+	List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id);
+
+	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalModelDeploymentDTO);
+
+	boolean isUsedModel(Long modelId);
 }

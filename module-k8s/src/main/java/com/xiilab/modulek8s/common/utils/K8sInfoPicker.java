@@ -53,22 +53,37 @@ public class K8sInfoPicker {
 	}
 
 	/**
-	 * k8s resource에서 필요한 정보를 추출하는 메소드
-	 * astra에서 생성한 것과, 서버에서 직접 생성한 것을 분기처리
+	 * batch 워크로드 정보 조회 메소드
+	 * astra에서 생성 여부에 대해서 분기 처리
 	 *
-	 * @param hasMetadata k8s resource 객체(Job, Deployment...)
+	 * @param job
 	 * @return
 	 */
-	public static K8SResourceMetadataDTO getMetadataFromResource(HasMetadata hasMetadata) {
-		try {
-			if (isCreatedByAstra(hasMetadata)) {
-				return getMetadataFromAstraResource(hasMetadata);
-			} else {
-				return getMetadataFromNormalResource(hasMetadata);
-			}
-		} catch (NullPointerException e) {
-			return null;
+	public static K8SResourceMetadataDTO getBatchWorkloadInfoFromResource(Job job) {
+		K8SResourceMetadataDTO k8SResourceMetadataDTO;
+		if (isCreatedByAstra(job)) {
+			k8SResourceMetadataDTO = getBatchWorkloadFromAstraResource(job);
+		} else {
+			k8SResourceMetadataDTO = getBatchWorkloadInfoFromNormalResource(job);
 		}
+		return k8SResourceMetadataDTO;
+	}
+
+	/**
+	 * interactive 워크로드 정보 조회 메소드
+	 * astra에서 생성 여부에 대해서 분기 처리
+	 *
+	 * @param deployment
+	 * @return
+	 */
+	public static K8SResourceMetadataDTO getInteractiveWorkloadInfoFromResource(Deployment deployment) {
+		K8SResourceMetadataDTO k8SResourceMetadataDTO;
+		if (isCreatedByAstra(deployment)) {
+			k8SResourceMetadataDTO = getInteractiveWorkloadInfoFromAstraResource(deployment);
+		} else {
+			k8SResourceMetadataDTO = getInteractiveWorkloadInfoFromNormalResource(deployment);
+		}
+		return k8SResourceMetadataDTO;
 	}
 
 	/**
@@ -91,18 +106,84 @@ public class K8sInfoPicker {
 	 * astra에서 생성된 resource의 경우 값을 추출하는 메소드
 	 * astra에서 생성된 메소드의 경우 metadata에 정보를 저장하기에 해당 정보를 조회하여 매핑
 	 *
-	 * @param hasMetadata k8s resource 객체
+	 * @param job k8s resource 객체
 	 * @return
 	 */
-	private static K8SResourceMetadataDTO getMetadataFromAstraResource(HasMetadata hasMetadata) {
+	private static K8SResourceMetadataDTO getBatchWorkloadFromAstraResource(Job job) {
 		try {
-			ObjectMeta metadata = hasMetadata.getMetadata();
+			ObjectMeta metadata = job.getMetadata();
 			Map<String, String> annotations = metadata.getAnnotations();
+			Container container = getContainerFromHasMetadata(job);
+			ResourceDTO containerResourceReq = getContainerResourceReq(container);
 			return K8SResourceMetadataDTO.builder()
 				.name(annotations.get("name"))
 				.description(annotations.get("description"))
 				.resourceName(metadata.getName())
-				.creator(annotations.get("creator"))
+				.creatorId(annotations.get("creator-id"))
+				.creatorName(annotations.get("creator-name"))
+				.workspaceName(annotations.get("ws-name"))
+				.workspaceResourceName(metadata.getNamespace())
+				.createdAt(LocalDateTime.parse(annotations.get("created-at")))
+				.imgName(annotations.get("image-name"))
+				.imgTag(annotations.get("image-tag"))
+				.cpuReq(containerResourceReq.getCpuReq())
+				.memReq(containerResourceReq.getMemReq())
+				.gpuReq(containerResourceReq.getGpuReq())
+				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.build();
+		} catch (NullPointerException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * 서버에서 생성된 k8s resource의 정보를 추출하는 메소드
+	 *
+	 * @param job k8s resource 객체
+	 * @return
+	 */
+	private static K8SResourceMetadataDTO getBatchWorkloadInfoFromNormalResource(Job job) {
+		ObjectMeta metadata = job.getMetadata();
+		Container container = getContainerFromHasMetadata(job);
+		ResourceDTO containerResourceReq = getContainerResourceReq(container);
+		return K8SResourceMetadataDTO.builder()
+			.name(metadata.getName())
+			.workspaceName(metadata.getNamespace())
+			.workspaceResourceName(metadata.getNamespace())
+			.cpuReq(containerResourceReq.getCpuReq())
+			.memReq(containerResourceReq.getMemReq())
+			.gpuReq(containerResourceReq.getGpuReq())
+			.imgName(container.getImage().split(":")[0])
+			.imgTag(container.getImage().split(":")[1])
+			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
+			.deletedAt(LocalDateTime.now())
+			.build();
+	}
+
+	/**
+	 * astra에서 생성된 resource의 경우 값을 추출하는 메소드
+	 * astra에서 생성된 메소드의 경우 metadata에 정보를 저장하기에 해당 정보를 조회하여 매핑
+	 *
+	 * @param deployment k8s resource 객체
+	 * @return
+	 */
+	private static K8SResourceMetadataDTO getInteractiveWorkloadInfoFromAstraResource(Deployment deployment) {
+		try {
+			ObjectMeta metadata = deployment.getMetadata();
+			Map<String, String> annotations = metadata.getAnnotations();
+			Container container = getContainerFromHasMetadata(deployment);
+			ResourceDTO containerResourceReq = getContainerResourceReq(container);
+			return K8SResourceMetadataDTO.builder()
+				.name(annotations.get("name"))
+				.description(annotations.get("description"))
+				.resourceName(metadata.getName())
+				.creatorId(annotations.get("creator-id"))
+				.creatorName(annotations.get("creator-name"))
+				.workspaceName(annotations.get("ws-name"))
+				.workspaceResourceName(metadata.getNamespace())
+				.cpuReq(containerResourceReq.getCpuReq())
+				.memReq(containerResourceReq.getMemReq())
+				.gpuReq(containerResourceReq.getGpuReq())
 				.createdAt(LocalDateTime.parse(annotations.get("created-at")))
 				.imgName(annotations.get("image-name"))
 				.imgTag(annotations.get("image-tag"))
@@ -115,46 +196,26 @@ public class K8sInfoPicker {
 
 	/**
 	 * 서버에서 생성된 k8s resource의 정보를 추출하는 메소드
-	 * Kind에 따라 형변환을 통하여 resource spec에 있는 정보를 추출하여 매핑
 	 *
-	 * @param hasMetadata k8s resource 객체
+	 * @param deployment k8s resource 객체
 	 * @return
 	 */
-	private static K8SResourceMetadataDTO getMetadataFromNormalResource(HasMetadata hasMetadata) {
-		try {
-			String kind = hasMetadata.getKind();
-			ObjectMeta metadata = hasMetadata.getMetadata();
-			K8SResourceMetadataDTO.K8SResourceMetadataDTOBuilder metadataBuilder = K8SResourceMetadataDTO.builder();
-
-			if (isJobOrDeployment(kind)) {
-				Container container = getContainerFromHasMetadata(hasMetadata);
-				if (container != null) {
-					ResourceDTO containerResourceReq = getContainerResourceReq(container);
-
-					metadataBuilder = K8SResourceMetadataDTO.builder()
-						.cpuReq(containerResourceReq.getCpuReq())
-						.memReq(containerResourceReq.getMemReq())
-						.gpuReq(containerResourceReq.getGpuReq())
-						.imgName(container.getImage().split(":")[0])
-						.imgTag(container.getImage().split(":")[1]);
-				}
-			}
-
-			return metadataBuilder
-				.name(metadata.getName())
-				.description(null)
-				.resourceName(metadata.getName())
-				.creator(null)
-				.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
-				.deletedAt(LocalDateTime.now())
-				.build();
-		} catch (NullPointerException e) {
-			return null;
-		}
-	}
-
-	private static boolean isJobOrDeployment(String kind) {
-		return "Job".equals(kind) || "Deployment".equals(kind);
+	private static K8SResourceMetadataDTO getInteractiveWorkloadInfoFromNormalResource(Deployment deployment) {
+		ObjectMeta metadata = deployment.getMetadata();
+		Container container = getContainerFromHasMetadata(deployment);
+		ResourceDTO containerResourceReq = getContainerResourceReq(container);
+		return K8SResourceMetadataDTO.builder()
+			.name(metadata.getName())
+			.workspaceName(metadata.getNamespace())
+			.workspaceResourceName(metadata.getNamespace())
+			.cpuReq(containerResourceReq.getCpuReq())
+			.memReq(containerResourceReq.getMemReq())
+			.gpuReq(containerResourceReq.getGpuReq())
+			.imgName(container.getImage().split(":")[0])
+			.imgTag(container.getImage().split(":")[1])
+			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
+			.deletedAt(LocalDateTime.now())
+			.build();
 	}
 
 	private static Container getContainerFromHasMetadata(HasMetadata hasMetadata) {

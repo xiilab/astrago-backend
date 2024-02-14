@@ -50,12 +50,12 @@ public class ResourceQuotaReqVO extends K8SResourceReqVO {
 					AnnotationField.NAME.getField(), getName(),
 					AnnotationField.DESCRIPTION.getField(), getDescription(),
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
-					AnnotationField.CREATOR_NAME.getField(), getCreatorName(),
-					AnnotationField.CREATOR_ID.getField(), getCreatorId()
+					AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName(),
+					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName()
 				))
 			.withLabels(
 				Map.of(
-					LabelField.CREATOR.getField(), getCreatorName()
+					LabelField.CREATOR_ID.getField(), getCreatorId()
 				))
 			.build();
 	}

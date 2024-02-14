@@ -1,7 +1,6 @@
 package com.xiilab.servercore.workload.controller;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +21,8 @@ import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.model.dto.ModelDTO;
+import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
@@ -35,6 +36,8 @@ import lombok.RequiredArgsConstructor;
 public class WorkloadController {
 	private final WorkloadFacadeService workloadFacadeService;
 	private final DatasetService datasetService;
+	private final ModelService modelService;
+
 	@PostMapping("/{type}")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
@@ -68,32 +71,54 @@ public class WorkloadController {
 		UserInfoDTO userInfoDTO
 	) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadListByCondition(workloadType, workspaceName, searchName, workloadStatus,
+			workloadFacadeService.getOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
 				workloadSortCondition, pageNum, userInfoDTO), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{type}")
-	@Operation(summary = "워크로드 삭제 api")
-	public ResponseEntity<HttpStatus> deleteWorkload(
+	@Operation(summary = "워크로드 종료 api")
+	public ResponseEntity<HttpStatus> stopWorkload(
 		@PathVariable(value = "type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
 		@RequestParam("resourceName") String resourceName,
 		UserInfoDTO userInfoDTO
 	) throws IOException {
-		workloadFacadeService.deleteWorkload(workspaceResourceName, resourceName, workloadType, userInfoDTO);
+		workloadFacadeService.stopWorkload(workspaceResourceName, resourceName, workloadType, userInfoDTO);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping("/history/{id}")
+	@Operation(summary = "워크로드 삭제 api")
+	public ResponseEntity<HttpStatus> deleteWorkloadHistory(
+		@PathVariable(value = "id") long id,
+		UserInfoDTO userInfoDTO
+	) {
+		workloadFacadeService.deleteWorkloadHistory(id, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/datasets")
 	@Operation(summary = "워크로드 생성 시 데이터 셋 전체 조회")
-	public ResponseEntity getDatasets(
+	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
-		UserInfoDTO userInfoDTO){
+		UserInfoDTO userInfoDTO) {
 		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByRepositoryType(
 			workspaceResourceName, repositoryType, userInfoDTO);
 
-		return new ResponseEntity(datasetsByRepositoryType, HttpStatus.OK);
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
+	}
+
+	@GetMapping("/models")
+	@Operation(summary = "워크로드 생성 시 model 전체 조회")
+	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
+		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
+		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
+		UserInfoDTO userInfoDTO) {
+		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByRepositoryType(
+			workspaceResourceName, repositoryType, userInfoDTO);
+
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
 }

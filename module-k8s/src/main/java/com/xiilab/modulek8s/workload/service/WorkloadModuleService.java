@@ -3,8 +3,10 @@ package com.xiilab.modulek8s.workload.service;
 import java.util.List;
 
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
@@ -47,21 +49,9 @@ public interface WorkloadModuleService {
 	 */
 	ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
 
-	/**
-	 * batch job workload list 조회
-	 *
-	 * @param workSpaceName
-	 * @return
-	 */
-	List<ModuleBatchJobResDTO> getBatchJobWorkloadList(String workSpaceName);
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId);
 
-	/**
-	 * interactive job workload list 조회
-	 *
-	 * @param workSpaceName
-	 * @return
-	 */
-	List<ModuleInteractiveJobResDTO> getInteractiveJobWorkloadList(String workSpaceName);
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, String userId);
 
 	/**
 	 * batch job workload 삭제
@@ -86,10 +76,17 @@ public interface WorkloadModuleService {
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
+	void createModelDeployment(CreateModelDeployment createDeployment);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
 	boolean isUsedDataset(Long datasetId);
 
 	void deleteDeploymentByResourceName(String deploymentName, String namespace);
+
+	List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id);
+
+	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalDatasetDeploymentDTO);
+
+	boolean isUsedModel(Long modelId);
 }

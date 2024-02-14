@@ -19,7 +19,7 @@ public class StorageClassFacadeServiceImpl implements StorageClassFacadeService 
 	private final StorageModuleService storageModuleService;
 	@Override
 	public void createStorageClass(CreateStorageClassReqDTO createStorageClassReqDTO, UserInfoDTO userInfoDTO) {
-		createStorageClassReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName());
+		createStorageClassReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(), userInfoDTO.getUserFullName());
 		storageModuleService.createStorageClass(createStorageClassReqDTO.toModuleDto());
 	}
 

@@ -2,6 +2,7 @@ package com.xiilab.servercore.dataset.controller;
 
 import java.util.List;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import com.xiilab.servercore.dataset.service.DatasetFacadeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +40,7 @@ public class DatasetController {
 
 	@PostMapping("/datasets/astrago")
 	@Operation(summary = "아스트라고 데이터 셋 생성")
-	public ResponseEntity insertAstragoDataset(
+	public ResponseEntity<HttpStatus> insertAstragoDataset(
 		@RequestPart(name = "createDataset") DatasetDTO.CreateAstragoDataset createDatasetDTO,
 		@RequestPart(name = "files", required = false) List<MultipartFile> files){
 
@@ -48,7 +50,7 @@ public class DatasetController {
 	}
 	@PostMapping("/datasets/local")
 	@Operation(summary = "로컬 데이터 셋 생성")
-	public ResponseEntity insertLocalDataset(
+	public ResponseEntity<HttpStatus> insertLocalDataset(
 		@RequestBody DatasetDTO.CreateLocalDataset createDatasetDTO){
 
 		datasetFacadeService.insertLocalDataset(createDatasetDTO);
@@ -58,46 +60,46 @@ public class DatasetController {
 
 	@GetMapping("/datasets")
 	@Operation(summary = "데이터 셋 전체 조회")
-	public ResponseEntity getDatasets(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
+	public ResponseEntity<DatasetDTO.ResDatasets> getDatasets(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
 		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize,
-		UserInfoDTO userInfoDTO){
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
 		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageNo, pageSize, userInfoDTO);
 		return new ResponseEntity(datasets, HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/{datasetId}")
 	@Operation(summary = "데이터 셋 단건 조회")
-	public ResponseEntity getDataset(@PathVariable(name = "datasetId") Long datasetId){
+	public ResponseEntity<DatasetDTO.ResDatasetWithStorage> getDataset(@PathVariable(name = "datasetId") Long datasetId){
 		DatasetDTO.ResDatasetWithStorage datasetWithStorage = datasetFacadeService.getDataset(datasetId);
 		return new ResponseEntity(datasetWithStorage, HttpStatus.OK);
 	}
 
 	@PutMapping("/datasets/{datasetId}")
 	@Operation(summary = "데이터 셋 수정")
-	public ResponseEntity modifyDataset(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<HttpStatus> modifyDataset(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestBody DatasetDTO.ModifyDatset modifyDataset,
-		UserInfoDTO userInfoDTO){
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
 		datasetFacadeService.modifyDataset(modifyDataset, datasetId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/datasets/{datasetId}")
 	@Operation(summary = "데이터 셋 삭제")
-	public ResponseEntity deleteDataset(@PathVariable(name = "datasetId") Long datasetId, UserInfoDTO userInfoDTO){
+	public ResponseEntity<HttpStatus> deleteDataset(@PathVariable(name = "datasetId") Long datasetId, @Parameter(hidden = true) UserInfoDTO userInfoDTO){
 		datasetFacadeService.deleteDataset(datasetId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/astrago/{datasetId}/files")
 	@Operation(summary = "astrago 데이터 셋 파일리스트 조회")
-	public ResponseEntity getAstragoDatasetFiles(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<DirectoryDTO> getAstragoDatasetFiles(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DirectoryDTO datasetFiles = datasetService.getAstragoDatasetFiles(datasetId, filePath);
 		return new ResponseEntity(datasetFiles, HttpStatus.OK);
 	}
 	@GetMapping("/datasets/astrago/{datasetId}/file")
 	@Operation(summary = "astrago 데이터 셋 파일 상세 조회")
-	public ResponseEntity getAstragoDatasetFileInfo(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<DatasetDTO.FileInfo> getAstragoDatasetFileInfo(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DatasetDTO.FileInfo fileInfo = datasetFacadeService.getAstragoDatasetFileInfo(datasetId, filePath);
 		return new ResponseEntity(fileInfo, HttpStatus.OK);
@@ -105,7 +107,7 @@ public class DatasetController {
 
 	@GetMapping("/datasets/astrago/{datasetId}/preview")
 	@Operation(summary = "astrago 데이터 셋 파일 미리 보기")
-	public ResponseEntity getAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<Resource> getAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DownloadFileResDTO file = datasetFacadeService.getAstragoDatasetFile(datasetId, filePath);
 		HttpHeaders headers = new HttpHeaders();
@@ -115,7 +117,7 @@ public class DatasetController {
 
 	@PostMapping("/datasets/astrago/{datasetId}/files/upload")
 	@Operation(summary = "astrago 데이터 셋 파일 업로드")
-	public ResponseEntity astragoDatasetUploadFile(
+	public ResponseEntity<HttpStatus> astragoDatasetUploadFile(
 		@PathVariable(name = "datasetId") Long datasetId,
 		@RequestPart(name = "path") String path,
 		@RequestPart(name = "files") List<MultipartFile> files){
@@ -124,7 +126,7 @@ public class DatasetController {
 	}
 	@PostMapping("/datasets/astrago/{datasetId}/directory")
 	@Operation(summary = "astrago 데이터 셋 폴더 생성")
-	public ResponseEntity astragoDatasetCreateDirectory(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<HttpStatus> astragoDatasetCreateDirectory(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
 		datasetService.astragoDatasetCreateDirectory(datasetId, reqFilePathDTO);
 		return new ResponseEntity(HttpStatus.OK);
@@ -132,7 +134,7 @@ public class DatasetController {
 
 	@PostMapping("/datasets/astrago/{datasetId}/files/delete")
 	@Operation(summary = "astrago 데이터 셋 파일, 디렉토리 삭제")
-	public ResponseEntity astragoDatasetDeleteFiles(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<HttpStatus> astragoDatasetDeleteFiles(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO){
 		datasetService.astragoDatasetDeleteFiles(datasetId, reqFilePathDTO);
 		return new ResponseEntity(HttpStatus.OK);
@@ -140,7 +142,7 @@ public class DatasetController {
 
 	@GetMapping("/datasets/astrago/{datasetId}/files/download")
 	@Operation(summary = "astrago 데이터 셋 파일, 디렉토리 다운로드")
-	public ResponseEntity downloadAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<Resource> downloadAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DownloadFileResDTO downloadFileResDTO = datasetService.DownloadAstragoDatasetFile(datasetId, filePath);
 
@@ -151,7 +153,7 @@ public class DatasetController {
 
 	@GetMapping("/datasets/local/{datasetId}/files")
 	@Operation(summary = "local 데이터 셋 파일, 디렉토리 리스트 조회")
-	public ResponseEntity getLocalDatasetFiles(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<DirectoryDTO> getLocalDatasetFiles(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DirectoryDTO files = datasetFacadeService.getLocalDatasetFiles(datasetId,
 			filePath);
@@ -159,7 +161,7 @@ public class DatasetController {
 	}
 	@GetMapping("/datasets/local/{datasetId}/files/download")
 	@Operation(summary = "local 데이터 셋 파일 다운로드")
-	public ResponseEntity DownloadLocalDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<Resource> DownloadLocalDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DownloadFileResDTO file = datasetFacadeService.DownloadLocalDatasetFile(datasetId,
 			filePath);
@@ -170,7 +172,7 @@ public class DatasetController {
 
 	@GetMapping("/datasets/local/{datasetId}/file")
 	@Operation(summary = "local 데이터 셋 파일 상세 조회")
-	public ResponseEntity getLocalDatasetFileInfo(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<DatasetDTO.FileInfo> getLocalDatasetFileInfo(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DatasetDTO.FileInfo fileInfo = datasetFacadeService.getLocalDatasetFileInfo(datasetId,
 			filePath);
@@ -179,7 +181,7 @@ public class DatasetController {
 
 	@GetMapping("/datasets/local/{datasetId}/preview")
 	@Operation(summary = "local 데이터 셋 파일 미리 보기")
-	public ResponseEntity getLocalDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<Resource> getLocalDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath){
 		DownloadFileResDTO file = datasetFacadeService.getLocalDatasetFile(datasetId, filePath);
 		HttpHeaders headers = new HttpHeaders();

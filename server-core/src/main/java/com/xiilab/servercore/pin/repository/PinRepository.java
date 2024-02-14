@@ -3,8 +3,10 @@ package com.xiilab.servercore.pin.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.servercore.pin.entity.PinEntity;
 import com.xiilab.servercore.pin.enumeration.PinType;
@@ -18,4 +20,8 @@ public interface PinRepository extends JpaRepository<PinEntity, Long> {
 
 	void deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType type, String resourceName, String regUserId);
 
+	@Transactional
+	@Modifying
+	@Query("delete from TB_PIN t where t.resourceName = ?1 and t.type = ?2")
+	int deleteByResourceNameAndType(String resourceName, PinType type);
 }

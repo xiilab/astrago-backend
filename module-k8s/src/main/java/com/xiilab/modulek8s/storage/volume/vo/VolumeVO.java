@@ -41,7 +41,7 @@ public class VolumeVO extends K8SResourceReqVO {
 		return VolumeVO.builder()
 			.name(createVolumeDTO.getName())
 			.createdAt(LocalDateTime.now())
-			.creatorName(createVolumeDTO.getCreatorName())
+			.creatorUserName(createVolumeDTO.getCreatorUserName())
 			.creatorId(createVolumeDTO.getCreatorId())
 			.workspaceMetaDataName(createVolumeDTO.getWorkspaceMetaDataName())
 			.storageClassMetaName(createVolumeDTO.getStorageClassMetaName())
@@ -76,7 +76,7 @@ public class VolumeVO extends K8SResourceReqVO {
 
 	private HashMap<String, String> createLabels() {
 		HashMap<String, String> labels = new HashMap<>();
-		labels.put(LabelField.CREATOR.getField(), getCreatorId());
+		labels.put(LabelField.CREATOR_ID.getField(), getCreatorId());
 		labels.put(LabelField.STORAGE_TYPE.getField(), storageType.name());
 		labels.put(LabelField.CONTROL_BY.getField(), "astra");
 		labels.put(LabelField.STORAGE_NAME.getField(), storageClassMetaName);
@@ -88,7 +88,7 @@ public class VolumeVO extends K8SResourceReqVO {
 		annotation.put(AnnotationField.NAME.getField(), getName());
 		annotation.put(AnnotationField.DESCRIPTION.getField(), getDescription());
 		annotation.put(AnnotationField.CREATED_AT.getField(), String.valueOf(getCreatedAt()));
-		annotation.put(AnnotationField.CREATOR_NAME.getField(), getCreatorName());
+		annotation.put(AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName());
 		return annotation;
 	}
 }

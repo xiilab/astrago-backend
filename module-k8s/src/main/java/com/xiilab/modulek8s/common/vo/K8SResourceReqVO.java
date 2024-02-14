@@ -28,8 +28,10 @@ public abstract class K8SResourceReqVO {
 	String description;
 	//생성 요청 시간
 	LocalDateTime createdAt;
-	//사용자의 id
-	String creatorName;
+	//사용자의 username(unique)
+	String creatorUserName;
+	//사용자의 full name(unique x)
+	String creatorFullName;
 
 	//label
 	//사용자의 uuid
@@ -39,12 +41,13 @@ public abstract class K8SResourceReqVO {
 	ResourceType type;
 
 	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
-		String creatorName, String creatorId) {
+		String creatorUserName, String creatorFullName, String creatorId) {
 		this.resourceName = resourceName;
 		this.name = name;
 		this.description = description;
 		this.createdAt = createdAt;
-		this.creatorName = creatorName;
+		this.creatorUserName = creatorUserName;
+		this.creatorFullName = creatorFullName;
 		this.creatorId = creatorId;
 	}
 

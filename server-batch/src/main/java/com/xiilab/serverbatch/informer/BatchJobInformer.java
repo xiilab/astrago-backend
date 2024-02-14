@@ -13,9 +13,10 @@ import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8sdb.entity.JobEntity;
 import com.xiilab.modulek8sdb.entity.WorkloadType;
-import com.xiilab.modulek8sdb.repository.JobHistoryRepo;
+import com.xiilab.modulek8sdb.repository.WorkloadHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -31,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BatchJobInformer {
 	private final K8sAdapter k8sAdapter;
-	private final JobHistoryRepo jobHistoryRepo;
+	private final WorkloadHistoryRepo workloadHistoryRepo;
 
 	@PostConstruct
 	void doInformer() {
@@ -55,7 +56,7 @@ public class BatchJobInformer {
 					if (job2.getStatus().getSucceeded() != null && job2.getStatus().getSucceeded() > 0) {
 						log.info("{} job이 완료 되었습니다.", job2.getMetadata().getName());
 						String namespace = job2.getMetadata().getNamespace();
-						K8SResourceMetadataDTO metadataFromResource = getMetadataFromResource(job2);
+						K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job2);
 						Pod pod = kubernetesClient.pods()
 							.inNamespace(namespace)
 							.withLabels(Map.of("app", metadataFromResource.getResourceName()))
@@ -67,7 +68,8 @@ public class BatchJobInformer {
 							.withName(pod.getMetadata().getName())
 							.getLog();
 						String creator =
-							metadataFromResource.getCreator() != null ? metadataFromResource.getCreator() : "system";
+							metadataFromResource.getCreatorId() != null ? metadataFromResource.getCreatorId() :
+								"SYSTEM";
 						try {
 							FileUtils.saveLogFile(logResult, metadataFromResource.getResourceName(), creator);
 						} catch (IOException e) {
@@ -80,20 +82,25 @@ public class BatchJobInformer {
 			@Override
 			public void onDelete(Job job, boolean b) {
 				log.info("batch job {}가 삭제되었습니다.", job.getMetadata().getName());
+				String namespace = job.getMetadata().getNamespace();
+				Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
 				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
-				K8SResourceMetadataDTO metadataFromResource = getMetadataFromResource(job);
+				K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
 				if (metadataFromResource != null) {
-					jobHistoryRepo.save(JobEntity.jobBuilder()
+					workloadHistoryRepo.save(JobEntity.jobBuilder()
 						.name(metadataFromResource.getName())
 						.description(metadataFromResource.getDescription())
+						.resourceName(metadataFromResource.getResourceName())
+						.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
+						.workspaceResourceName(namespace)
 						.envs(getEnvFromContainer(container))
 						.cpuReq(metadataFromResource.getCpuReq())
 						.memReq(metadataFromResource.getMemReq())
 						.gpuReq(metadataFromResource.getGpuReq())
-						.resourceName(metadataFromResource.getResourceName())
+						.cmd(String.join(" ", container.getCommand()))
 						.createdAt(metadataFromResource.getCreatedAt())
 						.deletedAt(metadataFromResource.getDeletedAt())
-						.creator(metadataFromResource.getCreator())
+						.creatorName(metadataFromResource.getCreatorName())
 						.creatorId(metadataFromResource.getCreatorId())
 						.workloadType(WorkloadType.BATCH)
 						.build());

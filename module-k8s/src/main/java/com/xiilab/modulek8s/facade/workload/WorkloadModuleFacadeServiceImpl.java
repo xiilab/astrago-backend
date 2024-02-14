@@ -1,11 +1,14 @@
 package com.xiilab.modulek8s.facade.workload;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
@@ -13,13 +16,18 @@ import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.common.enumeration.VolumeSelectionType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalModelResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
+import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
@@ -59,19 +67,51 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		}
 
 		ModuleJobResDTO moduleJobResDTO = null;
-		if (workloadType == WorkloadType.BATCH) {
-			moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO);
+		try {
+			// Dataset PV 생성
+			createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
+			// Model PV 생성
+			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
+
+			if (workloadType == WorkloadType.BATCH) {
+				moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
+			} else if (workloadType == WorkloadType.INTERACTIVE) {
+				moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO);
+			}
+
+			CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+				moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
+
+			// 노드포트 연결
+			svcService.createNodePortService(createSvcReqDTO);
+		} catch (Exception e) {
+			// TODO ObjectUtils 유효성 검사 추가
+			// Dataset PV 삭제
+			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
+				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
+					volumeService.deletePVC(dataset.getCreatePV().getPvcName(), dataset.getCreatePV().getNamespace());
+					volumeService.deletePV(dataset.getCreatePV().getPvName());
+				}
+			}
+			// Model PV 삭제
+			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
+				for (ModuleVolumeReqDTO model : moduleCreateWorkloadReqDTO.getModels()) {
+					volumeService.deletePVC(model.getCreatePV().getPvcName(), model.getCreatePV().getNamespace());
+					volumeService.deletePV(model.getCreatePV().getPvName());
+				}
+			}
 		}
 
-		CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-			moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
-
-		// 노드포트 연결
-		svcService.createNodePortService(createSvcReqDTO);
-
 		return moduleJobResDTO;
+	}
+
+	private void createPVAndPVC(List<ModuleVolumeReqDTO> list) {
+		if (!CollectionUtils.isEmpty(list)) {
+			for (ModuleVolumeReqDTO reqDto : list) {
+				volumeService.createPV(reqDto.getCreatePV());
+				volumeService.createPVC(reqDto.getCreatePVC());
+			}
+		}
 	}
 
 	private void createAndSetImageSecret(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -113,9 +153,10 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	@Override
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
-		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchJobWorkloadList(workSpaceName);
-		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveJobWorkloadList(workSpaceName);
-
+		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchWorkloadListByCondition(
+			workSpaceName, null);
+		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveWorkloadListByCondition(
+			workSpaceName, null);
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);
 		}
@@ -159,11 +200,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		String storagePath = createLocalDatasetDTO.getStoragePath();
 		String namespace = createLocalDatasetDTO.getNamespace();
 		String pvcName = "astrago-dataset-pvc-" + UUID.randomUUID().toString().substring(6);
-		String pvName = "astrago-dataset-pv-"+ UUID.randomUUID().toString().substring(6);
-		String svcName = "astrago-dataset-svc-"+ UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-dataset-pv-" + UUID.randomUUID().toString().substring(6);
+		String svcName = "astrago-dataset-svc-" + UUID.randomUUID().toString().substring(6);
 		String datasetDeploymentName = "astrago-dataset-" + UUID.randomUUID().toString().substring(6);
-		String volumeLabelSelectorName = "dataset-storage-volume-"+ UUID.randomUUID().toString().substring(6);
-		String connectTestLabelName = "dataset-connect-test-"+ UUID.randomUUID().toString().substring(6);
+		String volumeLabelSelectorName = "dataset-storage-volume-" + UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "dataset-connect-test-" + UUID.randomUUID().toString().substring(6);
 
 		//pv 생성
 		CreatePV createPV = CreatePV.builder()
@@ -250,14 +291,102 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		volumeService.deletePV(pvName);
 	}
 
-	/**
-	 * TODO 스토리지 파사드 수정될때마다 같이 수정돼야함 (문제해결필요)
-	 * 워크스페이스(namespace)에 볼륨 생성
-	 *
-	 * @param createVolumeDTO
-	 */
-	private String createVolume(CreateVolumeDTO createVolumeDTO) {
-		return volumeService.createVolume(createVolumeDTO);
+	@Override
+	public CreateLocalModelResDTO createLocalModel(CreateLocalModelDTO createDto) {
+		String modelName = createDto.getModelName().replace(" ", "");
+		String ip = createDto.getIp();
+		String storagePath = createDto.getStoragePath();
+		String namespace = createDto.getNamespace();
+		String pvcName = "astrago-model-pvc-" + UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-model-pv-"+ UUID.randomUUID().toString().substring(6);
+		String svcName = "astrago-model-svc-"+ UUID.randomUUID().toString().substring(6);
+		String modelDeploymentName = "astrago-model-" + UUID.randomUUID().toString().substring(6);
+		String volumeLabelSelectorName = "model-storage-volume-"+ UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "model-connect-test-"+ UUID.randomUUID().toString().substring(6);
+
+		//pv 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvName(pvName)
+			.pvcName(pvcName)
+			.ip(ip)
+			.storagePath(storagePath)
+			.storageType(StorageType.NFS)
+			.requestVolume(50)
+			.namespace(namespace)
+			.build();
+		volumeService.createPV(createPV);
+		//pvc 생성
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(namespace)
+			.requestVolume(50)
+			.build();
+		volumeService.createPVC(createPVC);
+		//deployment 생성
+		CreateModelDeployment createDeployment = CreateModelDeployment.builder()
+			.modelName(modelName)
+			.deploymentName(modelDeploymentName)
+			.volumeLabelSelectorName(volumeLabelSelectorName)
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.namespace(namespace)
+			.connectTestLabelName(connectTestLabelName)
+			.hostPath(createDto.getHostPath())
+			.dockerImage(createDto.getDockerImage())
+			.build();
+		workloadModuleService.createModelDeployment(createDeployment);
+		//svc 생성
+		//svc -> labels -> app: connectTestLabelName
+		//connectTestLabelName, namespace, svcName, ClusterIP
+		CreateClusterIPSvcReqDTO createClusterIPSvcReqDTO = CreateClusterIPSvcReqDTO.builder()
+			.svcType(SvcType.CLUSTER_IP)
+			.deploymentName(connectTestLabelName)
+			.svcName(svcName)
+			.namespace(namespace)
+			.build();
+		svcService.createClusterIPService(createClusterIPSvcReqDTO);
+
+		//<service-name>.<namespace>.svc.cluster.local
+		String svcDNS = svcName + "." + namespace + ".svc.cluster.local/directory";
+		return CreateLocalModelResDTO.builder()
+			.dns(svcDNS)
+			.deploymentName(modelDeploymentName)
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.svcName(svcName)
+			.build();
+	}
+
+	@Override
+	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
+		return workloadModuleService.workloadsUsingModel(id);
+	}
+
+	@Override
+	public void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalDatasetDeploymentDTO) {
+		workloadModuleService.modifyLocalModelDeployment(modifyLocalDatasetDeploymentDTO);
+	}
+
+	@Override
+	public boolean isUsedModel(Long modelId) {
+		return workloadModuleService.isUsedModel(modelId);
+	}
+
+	@Override
+	public void deleteLocalModel(DeleteLocalModelDTO deleteLocalModelDTO) {
+		String deploymentName = deleteLocalModelDTO.getDeploymentName();
+		String svcName = deleteLocalModelDTO.getSvcName();
+		String pvcName = deleteLocalModelDTO.getPvcName();
+		String pvName = deleteLocalModelDTO.getPvName();
+		String namespace = deleteLocalModelDTO.getNamespace();
+		//svc 삭제
+		svcService.deleteServiceByResourceName(svcName, namespace);
+		//deployment 삭제
+		workloadModuleService.deleteDeploymentByResourceName(deploymentName, namespace);
+		//pvc 삭제
+		volumeService.deletePVC(pvcName, namespace);
+		//pv 삭제
+		volumeService.deletePV(pvName);
 	}
 
 	@Override
