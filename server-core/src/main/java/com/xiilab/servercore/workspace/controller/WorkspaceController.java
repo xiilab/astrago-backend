@@ -20,6 +20,7 @@ import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
@@ -178,4 +179,16 @@ public class WorkspaceController {
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
 		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByWorkspaceResourceName(
 			workspaceResourceName);
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
+	}
+
+	@GetMapping("{workspaceResourceName}/models")
+	@Operation(summary = "워크스페이스 model 전체 조회")
+	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByWorkspaceResourceName(
+			workspaceResourceName);
+
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
+	}
 }
