@@ -16,7 +16,10 @@ public interface WorkspaceRepo {
 
 	List<WorkspaceResVO> getWorkspaceList();
 
+	WorkspaceDTO.WorkspaceResourceStatus getWorkspaceResourceStatus(String workspaceName);
+
 	void deleteWorkspaceByName(String name);
+
 	void updateWorkspaceInfo(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
 }
 

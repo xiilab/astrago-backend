@@ -5,9 +5,12 @@ import java.time.LocalDateTime;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceReqVO;
+import com.xiilab.modulek8s.workspace.vo.WorkspaceResVO;
 
+import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -77,6 +80,47 @@ public class WorkspaceDTO {
 			this.isPinYN = isPinYN;
 			this.age = new AgeDTO(createdTime);
 			this.recentlyWorkload = recentlyWorkload;
+		}
+	}
+
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class WorkspaceResourceStatus {
+		private String id;
+		private String name;
+		private String resourceName;
+		private String description;
+		private ResourceStatus resourceStatus;
+
+		public WorkspaceResourceStatus(WorkspaceResVO workspaceResVO, ResourceQuotaStatus resourceStatus) {
+			this.id = workspaceResVO.getUid();
+			this.name = workspaceResVO.getName();
+			this.resourceName = workspaceResVO.getResourceName();
+			this.description = workspaceResVO.getDescription();
+			this.resourceStatus = new ResourceStatus(resourceStatus);
+		}
+	}
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class ResourceStatus {
+		private String cpuLimit;
+		private String cpuUsed;
+		private String gpuLimit;
+		private String gpuUsed;
+		private String memLimit;
+		private String memUsed;
+
+		public ResourceStatus (ResourceQuotaStatus resourceQuota) {
+			this.cpuLimit = resourceQuota.getHard().get("requests.cpu").getAmount();
+			this.cpuUsed = resourceQuota.getUsed().get("requests.cpu").getAmount();
+			this.gpuLimit = resourceQuota.getHard().get("requests.nvidia.com/gpu").getAmount();
+			this.gpuUsed = resourceQuota.getUsed().get("requests.nvidia.com/gpu").getAmount();
+			this.memLimit = resourceQuota.getHard().get("requests.memory").getAmount();
+			this.memUsed = resourceQuota.getUsed().get("requests.memory").getAmount();
 		}
 	}
 }
