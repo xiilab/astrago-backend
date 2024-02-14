@@ -257,4 +257,14 @@ public class ModelServiceImpl implements ModelService{
 		}
 		modelWorkspaceRepository.deleteByModelIdAndWorkspaceResourceName(modelId, workspaceResourceName);
 	}
+
+	@Override
+	public ModelDTO.ModelsInWorkspace getModelsByWorkspaceResourceName(String workspaceResourceName) {
+		List<ModelWorkSpaceMappingEntity> models = modelWorkspaceRepository.findByWorkspaceResourceName(
+			workspaceResourceName);
+		if(models != null || models.size() != 0){
+			return ModelDTO.ModelsInWorkspace.mappingEntitiesToDtos(models);
+		}
+		return null;
+	}
 }

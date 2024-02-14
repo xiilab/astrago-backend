@@ -46,4 +46,6 @@ public interface ModelService {
 	void insertWorkspaceModel(InsertWorkspaceModelDTO insertWorkspaceModelDTO);
 
 	void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserInfoDTO userInfoDTO);
+
+	ModelDTO.ModelsInWorkspace getModelsByWorkspaceResourceName(String workspaceResourceName);
 }
