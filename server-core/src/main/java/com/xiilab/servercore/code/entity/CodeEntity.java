@@ -1,6 +1,7 @@
 package com.xiilab.servercore.code.entity;
 
 import com.xiilab.servercore.code.dto.CodeReqDTO;
+import com.xiilab.servercore.code.enumeration.CodeType;
 import com.xiilab.servercore.common.entity.BaseEntity;
 import com.xiilab.servercore.credential.entity.CredentialEntity;
 
@@ -39,10 +40,6 @@ public class CodeEntity extends BaseEntity {
 	@JoinColumn(name = "CREDENTIAL_ID")
 	private CredentialEntity credentialEntity; 		// credential Entity
 
-	public enum CodeType{
-		GIT_HUB,
-		GIT_LAB
-	}
 
 	@Builder(builderClassName = "dtoConverter", builderMethodName = "dtoConverter")
 	CodeEntity(CodeReqDTO codeReqDTO, CredentialEntity credentialEntity) {
