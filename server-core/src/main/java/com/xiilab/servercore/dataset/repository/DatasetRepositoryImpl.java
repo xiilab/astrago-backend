@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.entity.Dataset;
 

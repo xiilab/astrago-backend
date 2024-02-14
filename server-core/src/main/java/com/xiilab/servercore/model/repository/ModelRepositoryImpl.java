@@ -2,7 +2,6 @@ package com.xiilab.servercore.model.repository;
 
 
 
-import static com.xiilab.servercore.dataset.entity.QDataset.*;
 import static com.xiilab.servercore.model.entity.QModel.*;
 
 import java.util.List;
@@ -15,11 +14,9 @@ import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.servercore.common.dto.UserInfoDTO;
-import com.xiilab.servercore.dataset.entity.Dataset;
 import com.xiilab.servercore.model.entity.Model;
-import com.xiilab.servercore.model.entity.QModel;
 
 import lombok.RequiredArgsConstructor;
 

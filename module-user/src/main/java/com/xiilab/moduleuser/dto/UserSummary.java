@@ -7,6 +7,8 @@ import java.util.List;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
+import com.xiilab.moduleuser.enumeration.SignUpMethod;
+
 import lombok.Builder;
 import lombok.Getter;
 
