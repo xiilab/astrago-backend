@@ -1,6 +1,6 @@
 package com.xiilab.servercore.hub.entity;
 
-import com.xiilab.servercore.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

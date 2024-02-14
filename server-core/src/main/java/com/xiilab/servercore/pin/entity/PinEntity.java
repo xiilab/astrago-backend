@@ -1,6 +1,6 @@
 package com.xiilab.servercore.pin.entity;
 
-import com.xiilab.servercore.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.servercore.pin.enumeration.PinType;
 
 import jakarta.persistence.Column;

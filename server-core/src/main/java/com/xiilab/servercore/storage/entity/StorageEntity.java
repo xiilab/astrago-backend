@@ -3,7 +3,7 @@ package com.xiilab.servercore.storage.entity;
 
 import com.xiilab.modulek8s.common.enumeration.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
-import com.xiilab.servercore.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.servercore.storage.dto.StorageDTO;
 
 import jakarta.persistence.Column;

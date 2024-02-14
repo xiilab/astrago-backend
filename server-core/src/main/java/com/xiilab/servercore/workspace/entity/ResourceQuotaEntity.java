@@ -1,6 +1,6 @@
 package com.xiilab.servercore.workspace.entity;
 
-import com.xiilab.servercore.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.servercore.workspace.enumeration.ResourceQuotaStatus;
 

@@ -3,7 +3,7 @@ package com.xiilab.servercore.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.xiilab.servercore.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.servercore.common.enums.DatasetDivision;
 import com.xiilab.servercore.dataset.entity.DatasetWorkSpaceMappingEntity;
 

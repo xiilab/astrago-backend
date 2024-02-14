@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import com.xiilab.servercore.common.entity.RegUser;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 
 @Configuration
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")

@@ -2,7 +2,7 @@ package com.xiilab.servercore.credential.entity;
 
 import java.time.LocalDateTime;
 
-import com.xiilab.servercore.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.servercore.credential.dto.CredentialReqDTO;
 import com.xiilab.servercore.credential.enumeration.CredentialType;
 

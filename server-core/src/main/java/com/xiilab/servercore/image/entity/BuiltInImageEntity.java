@@ -1,7 +1,7 @@
 package com.xiilab.servercore.image.entity;
 
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
-import com.xiilab.servercore.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.entity.ImageEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class BuiltInImageEntity extends BaseEntity {
+public class BuiltInImageEntity extends ImageEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "IMAGE_ID")

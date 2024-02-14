@@ -1,7 +1,6 @@
 package com.xiilab.modulek8s.facade.workload;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -13,12 +12,10 @@ import org.springframework.util.StringUtils;
 
 import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
 import com.xiilab.modulek8s.common.enumeration.StorageType;
-import com.xiilab.modulek8s.common.enumeration.VolumeSelectionType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelResDTO;
-import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
@@ -85,7 +82,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			// 노드포트 연결
 			svcService.createNodePortService(createSvcReqDTO);
 		} catch (Exception e) {
-			// TODO ObjectUtils 유효성 검사 추가
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
@@ -100,6 +96,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					volumeService.deletePV(model.getCreatePV().getPvName());
 				}
 			}
+
 		}
 
 		return moduleJobResDTO;
