@@ -15,8 +15,9 @@ public class K8SResourceMetadataDTO {
 	private LocalDateTime deletedAt;
 	private String workspaceName;
 	private String workspaceResourceName;
-	private String creatorName;
 	private String creatorId;
+	private String creatorUserName;
+	private String creatorFullName;
 	private Integer cpuReq;
 	private Integer gpuReq;
 	private Integer memReq;
