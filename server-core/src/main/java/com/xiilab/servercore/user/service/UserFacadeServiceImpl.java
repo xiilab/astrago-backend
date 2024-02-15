@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.dto.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.common.dto.SearchCondition;
@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserFacadeServiceImpl implements UserFacadeService {
 	private final UserService userService;
-
 	@Override
 	public UserInfo joinUser(UserReqVO userReqVO, String groupId) {
 		UserInfo userInfo = userService.joinUser(userReqVO);

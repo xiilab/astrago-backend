@@ -6,7 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
@@ -85,5 +85,25 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<SearchDTO> getUserAndGroupBySearch(String search){
 		return userRepository.getUserAndGroupBySearch(search);
+	}
+	@Override
+	public void increaseUserWlCount(String userId){
+		userRepository.increaseUserWlCount(userId);
+	}
+	@Override
+	public void increaseUserWsCount(String userId){
+		userRepository.increaseUserWsCount(userId);
+	}
+	@Override
+	public void increaseUserImageCount(String userId){
+		userRepository.increaseUserImageCount(userId);
+	}
+	@Override
+	public void increaseUserDatasetCount(String userId){
+		userRepository.increaseUserDatasetCount(userId);
+	}
+	@Override
+	public void increaseUserCodeCount(String userId){
+		userRepository.increaseUserCodeCount(userId);
 	}
 }

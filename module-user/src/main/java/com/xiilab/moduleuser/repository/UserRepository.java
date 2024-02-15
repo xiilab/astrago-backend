@@ -6,7 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
@@ -35,4 +35,9 @@ public interface UserRepository {
 
 	void resetUserPassWord(String userId);
 	List<SearchDTO> getUserAndGroupBySearch(String search);
+	void increaseUserWlCount(String userId);
+	void increaseUserWsCount(String userId);
+	void increaseUserImageCount(String userId);
+	void increaseUserDatasetCount(String userId);
+	void increaseUserCodeCount(String userId);
 }

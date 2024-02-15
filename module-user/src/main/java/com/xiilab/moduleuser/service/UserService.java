@@ -3,7 +3,7 @@ package com.xiilab.moduleuser.service;
 import java.util.List;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
@@ -37,4 +37,9 @@ public interface UserService {
 
 	void deleteUserById(List<String> userId);
 	List<SearchDTO> getUserAndGroupBySearch(String string);
+	void increaseUserWlCount(String userId);
+	void increaseUserWsCount(String userId);
+	void increaseUserImageCount(String userId);
+	void increaseUserDatasetCount(String userId);
+	void increaseUserCodeCount(String userId);
 }

@@ -2,8 +2,6 @@ package com.xiilab.modulek8sdb.model.repository;
 
 
 
-import static com.xiilab.modulek8sdb.model.entity.QModel.*;
-
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -15,7 +13,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.model.entity.QModel;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 
