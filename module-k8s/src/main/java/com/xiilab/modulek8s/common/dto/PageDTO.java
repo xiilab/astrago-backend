@@ -3,6 +3,8 @@ package com.xiilab.modulek8s.common.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.util.CollectionUtils;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -42,15 +44,15 @@ public class PageDTO<T> {
 		int normalPageSize = pageSize - pinList.size();
 		int startIndex = (pageNum - 1) * pageSize;
 		int endIndex = Math.min(pageNum * pageSize, normalList.size());
-		int totalPage = (int)Math.ceil(normalList.size() / (double)normalPageSize);
+		int totalPage = getPinTotalPage(pinList, normalList, normalPageSize);
 		//normal list
 		List<T> subListResult = normalList.subList(startIndex, endIndex);
 		result.addAll(pinList);
 		result.addAll(subListResult);
-		if (totalPage == 0) {
+		if (totalPage == 0 && CollectionUtils.isEmpty(pinList)) {
 			this.content = new ArrayList<>();
 		} else {
-			if (totalPage < pageNum) {
+			if (totalPage < pageNum && CollectionUtils.isEmpty(pinList)) {
 				//사용자가 더 많은 페이지 인덱스를 입력했을 경우
 				throw new IllegalArgumentException("total page size보다 입력한 pageNum이 더 큽니다.");
 			}
@@ -58,6 +60,16 @@ public class PageDTO<T> {
 			this.totalPageNum = totalPage;
 			this.currentPage = pageNum;
 			this.content = result;
+		}
+	}
+
+	private int getPinTotalPage(List<T> pinList, List<T> normalList, int normalPageSize) {
+		if (CollectionUtils.isEmpty(pinList) && CollectionUtils.isEmpty(normalList)) {
+			return 0;
+		} else if(CollectionUtils.isEmpty(normalList)) {
+			return pinList.size();
+		} else {
+			return (int)Math.ceil(normalList.size() / (double)normalPageSize);
 		}
 	}
 }
