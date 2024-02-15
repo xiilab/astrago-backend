@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.storage.dto;
+package com.xiilab.servercore.storage.dto;
 
 
 

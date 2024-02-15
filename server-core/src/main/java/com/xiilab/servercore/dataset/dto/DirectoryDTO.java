@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.dataset.dto;
+package com.xiilab.servercore.dataset.dto;
 
 import java.util.List;
 

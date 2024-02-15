@@ -3,7 +3,6 @@ package com.xiilab.modulek8sdb.storage.entity;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.modulek8sdb.storage.dto.StorageDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -70,24 +69,5 @@ public class StorageEntity extends BaseEntity {
 		this.volumeName = volumeName;
 		this.pvName = pvName;
 		this.pvcName = pvcName;
-	}
-
-
-
-	public static StorageEntity toEntity(StorageDTO.Create create){
-		return StorageEntity.builder()
-			.storageName(create.getStorageName())
-			.requestVolume(create.getRequestVolume())
-			.description(create.getDescription())
-			.storageType(create.getStorageType())
-			.ip(create.getIp())
-			.storagePath(create.getStoragePath())
-			.hostPath(create.getHostPath())
-			.astragoDeploymentName(create.getAstragoDeploymentName())
-			.namespace(create.getNamespace())
-			.pvName(create.getPvName())
-			.pvcName(create.getPvcName())
-			.volumeName(create.getVolumeName())
-			.build();
 	}
 }

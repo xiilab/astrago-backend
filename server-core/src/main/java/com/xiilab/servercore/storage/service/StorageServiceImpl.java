@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
-import com.xiilab.modulek8sdb.storage.dto.StorageDTO;
+import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.storage.repository.StorageRepository;
 
@@ -28,7 +28,7 @@ public class StorageServiceImpl implements StorageService {
 	@Override
 	@Transactional
 	public void insertStorage(StorageDTO.Create createStorageReqDTO) {
-		StorageEntity storageEntity = StorageEntity.toEntity(createStorageReqDTO);
+		StorageEntity storageEntity = createStorageReqDTO.toEntity();
 		storageRepository.save(storageEntity);
 	}
 
