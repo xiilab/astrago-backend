@@ -51,7 +51,7 @@ public interface WorkloadModuleFacadeService {
 
 	List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
 
-	ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username);
+	ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String userId);
 
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 

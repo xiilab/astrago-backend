@@ -169,11 +169,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return logService.watchLogByWorkload(workspaceName, podName);
 	}
 
-	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
+	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String userId) {
 		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
 			return workloadList.stream()
-				.filter(workload -> workload.getCreatorId().equals(username))
+				.filter(workload -> workload.getCreatorId().equals(userId))
 				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
 				.toList()
 				.get(0);
