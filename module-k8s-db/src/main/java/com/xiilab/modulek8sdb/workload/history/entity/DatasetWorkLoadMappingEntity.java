@@ -1,8 +1,8 @@
-package com.xiilab.modulek8sdb.dataset.entity;
+package com.xiilab.modulek8sdb.workload.history.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,14 +19,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "TB_DATASET_WORKSPACE_MAPPING")
+@Table(name = "TB_DATASET_WORKLOAD_MAPPING")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class DatasetWorkSpaceMappingEntity extends BaseEntity {
+public class DatasetWorkLoadMappingEntity{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "DATASET_WORKSPACE_MAPPING_ID")
+	@Column(name = "DATASET_WORKLOAD_MAPPING_ID")
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -34,14 +34,16 @@ public class DatasetWorkSpaceMappingEntity extends BaseEntity {
 	@JsonIgnore
 	private Dataset dataset;
 
-	@Column(name = "WORKSPACE_RESOURCE_NAME")
-	private String workspaceResourceName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "WORKLOAD_ID")
+	private WorkloadEntity workload;
 
 	@Builder
-	public DatasetWorkSpaceMappingEntity(Dataset dataset, String workspaceResourceName) {
+	public DatasetWorkLoadMappingEntity(Dataset dataset, WorkloadEntity workload) {
 		this.dataset = dataset;
-		this.workspaceResourceName = workspaceResourceName;
+		this.workload = workload;
 		//연관관계 편의 메서드
-		dataset.getWorkspaceMappingList().add(this);
+		dataset.getDatasetWorkloadMappingList().add(this);
+		workload.getDatasetWorkloadMappingList().add(this);
 	}
 }

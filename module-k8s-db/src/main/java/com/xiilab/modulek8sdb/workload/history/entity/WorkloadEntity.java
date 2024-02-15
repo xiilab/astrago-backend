@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.workload.history.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -66,9 +67,11 @@ public abstract class WorkloadEntity {
 	@OneToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	protected List<EnvEntity> envList;
+	protected List<EnvEntity> envList= new ArrayList<>();
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	protected List<VolumeEntity> volumeList;
+	protected List<VolumeEntity> volumeList= new ArrayList<>();
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	protected List<PortEntity> portList;
+	protected List<PortEntity> portList = new ArrayList<>();
+	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
+	protected List<DatasetWorkLoadMappingEntity> datasetWorkloadMappingList = new ArrayList<>();
 }
