@@ -2,6 +2,8 @@ package com.xiilab.modulek8s.workload.dto.response;
 
 import java.util.Map;
 
+import org.springframework.util.CollectionUtils;
+
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -38,7 +40,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		ports = container.getPorts().stream()
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
-		command = container.getCommand().get(0);
+		command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(0);
 		status = getWorkloadStatus(job.getStatus());
 	}
 
