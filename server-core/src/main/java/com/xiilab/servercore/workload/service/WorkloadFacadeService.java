@@ -39,7 +39,9 @@ import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkloadFacadeService {
@@ -134,6 +136,8 @@ public class WorkloadFacadeService {
 			workloadResDTOList.addAll(interactiveJobFromCluster);
 			workloadResDTOList.addAll(interactiveWorkloadHistoryList);
 		}
+		log.info(userInfoDTO.getId());
+		log.info(String.valueOf(workloadResDTOList.size()));
 		//핀 워크로드 목록 필터링
 		List<ModuleWorkloadResDTO> pinWorkloadList = filterAndMarkPinnedWorkloads(workloadResDTOList,
 			userInfoDTO.getId());
@@ -208,7 +212,7 @@ public class WorkloadFacadeService {
 
 	private List<ModuleWorkloadResDTO> applyWorkloadListCondition(List<ModuleWorkloadResDTO> workloadList,
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
-
+		log.info(String.valueOf(workloadList.size()));
 		Stream<ModuleWorkloadResDTO> workloadStream = workloadList.stream()
 			.filter(batch -> searchName == null || (batch.getName() != null && batch.getName().contains(searchName)))
 			.filter(batch -> workloadStatus == null || batch.getStatus() == workloadStatus);

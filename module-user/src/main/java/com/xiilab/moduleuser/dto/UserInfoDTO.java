@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// import com.xiilab.moduleuser.enumeration.AuthType;
-// import com.xiilab.moduleuser.enumeration.SignUpMethod;
-
 import com.xiilab.moduleuser.enumeration.AuthType;
 import com.xiilab.moduleuser.enumeration.SignUpMethod;
 

@@ -70,6 +70,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId) {
+		log.info("workspaceName : " + workspaceName);
+		log.info("userId : " + userId);
 		if (workspaceName != null) {
 			return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
 		} else if (userId != null){
