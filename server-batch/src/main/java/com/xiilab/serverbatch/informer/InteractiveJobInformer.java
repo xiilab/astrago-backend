@@ -69,7 +69,7 @@ public class InteractiveJobInformer {
 						.cmd(String.join(" ", container.getCommand()))
 						.createdAt(metadataFromResource.getCreatedAt())
 						.deletedAt(metadataFromResource.getDeletedAt())
-						.creatorName(metadataFromResource.getCreatorName())
+						.creatorName(metadataFromResource.getCreatorUserName())
 						.creatorId(metadataFromResource.getCreatorId())
 						.workloadType(WorkloadType.INTERACTIVE)
 						.build());
