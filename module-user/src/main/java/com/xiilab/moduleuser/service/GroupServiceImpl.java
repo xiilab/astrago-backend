@@ -1,6 +1,6 @@
 package com.xiilab.moduleuser.service;
 
-import static com.xiilab.moduleuser.dto.GroupCategory.*;
+import static com.xiilab.moduleuser.enumeration.GroupCategory.*;
 
 import java.util.List;
 import java.util.Objects;

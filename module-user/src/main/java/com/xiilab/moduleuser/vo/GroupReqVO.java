@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.keycloak.representations.idm.GroupRepresentation;
 
-import com.xiilab.moduleuser.dto.GroupCategory;
+import com.xiilab.moduleuser.enumeration.GroupCategory;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
