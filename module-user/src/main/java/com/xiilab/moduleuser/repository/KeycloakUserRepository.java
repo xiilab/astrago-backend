@@ -63,22 +63,7 @@ public class KeycloakUserRepository implements UserRepository {
 			UserRepresentation representation = userResource.toRepresentation();
 			userId = representation.getId();
 
-			representation.getCreatedTimestamp();
-			LocalDateTime createTime = LocalDateTime.ofInstant(
-				Instant.ofEpochMilli(representation.getCreatedTimestamp()), ZoneId.systemDefault());
-
-			userHistoryRepository.save(UserHistoryEntity.builder()
-				.userId(representation.getId())
-				.groupId("")
-				.createDate(createTime)
-				.wlCreateCount(0L)
-				.wlFailCount(0L)
-				.wsCreateCount(0L)
-				.wsFailCount(0L)
-				.codeCreateCount(0L)
-				.datasetCreateCount(0L)
-				.imageCreateCount(0L)
-				.build());
+			createUserHistory(representation);
 
 			return new UserInfo(representation);
 
@@ -367,10 +352,31 @@ public class KeycloakUserRepository implements UserRepository {
 
 		return result;
 	}
+	private void createUserHistory(UserRepresentation userRepresentation){
+		userRepresentation.getCreatedTimestamp();
+		LocalDateTime createTime = LocalDateTime.ofInstant(
+			Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp()), ZoneId.systemDefault());
 
+		userHistoryRepository.save(UserHistoryEntity.builder()
+			.userId(userRepresentation.getId())
+			.groupId("")
+			.createDate(createTime)
+			.wlCreateCount(0L)
+			.wlFailCount(0L)
+			.wsCreateCount(0L)
+			.wsFailCount(0L)
+			.codeCreateCount(0L)
+			.datasetCreateCount(0L)
+			.imageCreateCount(0L)
+			.build());
+	}
 	private UserHistoryEntity getUserHistory(String userId){
-		return userHistoryRepository.findById(userId).orElseThrow(() ->
-			new RestApiException(UserErrorCode.USER_NOT_FOUND_BY_ID));
+		return userHistoryRepository.findById(userId)
+			.orElseGet(() ->{
+				UserRepresentation representation = getUserResourceById(userId).toRepresentation();
+				createUserHistory(representation);
+				return getUserHistory(userId);
+				});
 	}
 	@Override
 	public void increaseUserWlCount(String userId){
