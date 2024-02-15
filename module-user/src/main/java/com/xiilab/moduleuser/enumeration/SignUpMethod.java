@@ -1,4 +1,4 @@
-package com.xiilab.moduleuser.dto;
+package com.xiilab.moduleuser.enumeration;
 
 public enum SignUpMethod {
 	GITHUB,
