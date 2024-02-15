@@ -133,6 +133,7 @@ public class WorkloadFacadeService {
 			workloadResDTOList.addAll(interactiveJobFromCluster);
 			workloadResDTOList.addAll(interactiveWorkloadHistoryList);
 		}
+		log.info(userInfoDTO.getId());
 		log.info(String.valueOf(workloadResDTOList.size()));
 		//핀 워크로드 목록 필터링
 		List<ModuleWorkloadResDTO> pinWorkloadList = filterAndMarkPinnedWorkloads(workloadResDTOList,
