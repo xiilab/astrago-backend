@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.workload.history.entity.DatasetWorkLoadMappingEntity;
 
 import jakarta.persistence.Column;
@@ -39,6 +40,10 @@ public abstract class Dataset extends BaseEntity {
 
 	@Column(name = "DATASET_NAME")
 	private String datasetName;
+
+	@Column(name = "DELETE_YN")
+	@Enumerated(EnumType.STRING)
+	private DeleteYN deleteYn = DeleteYN.N;
 
 	@Column(name = "DIVISION", insertable = false, updatable = false)
 	@Enumerated(EnumType.STRING)

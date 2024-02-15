@@ -74,4 +74,6 @@ public abstract class WorkloadEntity {
 	protected List<PortEntity> portList = new ArrayList<>();
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<DatasetWorkLoadMappingEntity> datasetWorkloadMappingList = new ArrayList<>();
+	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
+	protected List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = new ArrayList<>();
 }
