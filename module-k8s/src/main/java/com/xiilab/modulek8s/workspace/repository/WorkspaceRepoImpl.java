@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
-import com.xiilab.modulek8s.workspace.vo.WorkspaceReqVO;
-import com.xiilab.modulek8s.workspace.vo.WorkspaceResVO;
+import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -24,27 +23,27 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public WorkspaceResVO createWorkSpace(WorkspaceReqVO workspaceReqVO) {
+	public WorkspaceVO.ResponseVO createWorkSpace(WorkspaceVO.RequestVO workspaceReqVO) {
 		Namespace namespace = (Namespace)createResource(workspaceReqVO.createResource());
-		return new WorkspaceResVO(namespace);
+		return new WorkspaceVO.ResponseVO(namespace);
 	}
 
 	@Override
-	public WorkspaceResVO getWorkspaceByName(String name) {
+	public WorkspaceVO.ResponseVO getWorkspaceByName(String name) {
 		Namespace namespace;
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			namespace = kubernetesClient.namespaces().withName(name).get();
 		}
-		return new WorkspaceResVO(namespace);
+		return new WorkspaceVO.ResponseVO(namespace);
 	}
 
 	@Override
-	public List<WorkspaceResVO> getWorkspaceList() {
+	public List<WorkspaceVO.ResponseVO> getWorkspaceList() {
 		List<Namespace> items;
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			items = kubernetesClient.namespaces().list().getItems();
 		}
-		return items.stream().map(WorkspaceResVO::new).toList();
+		return items.stream().map(WorkspaceVO.ResponseVO::new).toList();
 	}
 
 	@Override
@@ -74,7 +73,7 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 	public WorkspaceDTO.WorkspaceResourceStatus getWorkspaceResourceStatus(String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			//namespace 조회
-			WorkspaceResVO workspaceByName = getWorkspaceByName(namespace);
+			WorkspaceVO.ResponseVO workspaceByName = getWorkspaceByName(namespace);
 			// namespace의 resourceQuota 조회
 			ResourceQuotaStatus resourceQuota = kubernetesClient.resourceQuotas()
 				.inNamespace(namespace)

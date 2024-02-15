@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.repository.WorkspaceRepo;
-import com.xiilab.modulek8s.workspace.vo.WorkspaceResVO;
+import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +17,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 	@Override
 	public WorkspaceDTO.ResponseDTO createWorkspace(WorkspaceDTO.RequestDTO workspaceReqDTO) {
-		WorkspaceResVO workspace = workspaceRepo.createWorkSpace(workspaceReqDTO.convertToVO());
+		WorkspaceVO.ResponseVO workspace = workspaceRepo.createWorkSpace(workspaceReqDTO.convertToVO());
 		return new WorkspaceDTO.ResponseDTO(
 			workspace.getUid(),
 			workspace.getName(),
@@ -31,7 +31,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 	@Override
 	public WorkspaceDTO.ResponseDTO getWorkspaceByName(String workspaceName) {
-		WorkspaceResVO workspace = workspaceRepo.getWorkspaceByName(workspaceName);
+		WorkspaceVO.ResponseVO workspace = workspaceRepo.getWorkspaceByName(workspaceName);
 		return new WorkspaceDTO.ResponseDTO(
 			workspace.getUid(),
 			workspace.getName(),
@@ -45,7 +45,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 	@Override
 	public List<WorkspaceDTO.ResponseDTO> getWorkspaceList() {
-		List<WorkspaceResVO> workspaceList = workspaceRepo.getWorkspaceList();
+		List<WorkspaceVO.ResponseVO> workspaceList = workspaceRepo.getWorkspaceList();
 		return workspaceList.stream().map(workspace
 			-> new WorkspaceDTO.ResponseDTO(
 			workspace.getUid(),

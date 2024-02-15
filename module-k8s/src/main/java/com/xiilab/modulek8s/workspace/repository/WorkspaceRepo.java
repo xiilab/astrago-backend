@@ -5,16 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
-import com.xiilab.modulek8s.workspace.vo.WorkspaceReqVO;
-import com.xiilab.modulek8s.workspace.vo.WorkspaceResVO;
+import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
 @Repository
 public interface WorkspaceRepo {
-	WorkspaceResVO createWorkSpace(WorkspaceReqVO workspaceReqVO);
+	WorkspaceVO.ResponseVO createWorkSpace(WorkspaceVO.RequestVO workspaceReqVO);
 
-	WorkspaceResVO getWorkspaceByName(String name);
+	WorkspaceVO.ResponseVO getWorkspaceByName(String name);
 
-	List<WorkspaceResVO> getWorkspaceList();
+	List<WorkspaceVO.ResponseVO> getWorkspaceList();
 
 	WorkspaceDTO.WorkspaceResourceStatus getWorkspaceResourceStatus(String workspaceName);
 

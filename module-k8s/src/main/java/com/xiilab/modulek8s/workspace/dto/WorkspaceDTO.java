@@ -4,8 +4,7 @@ import java.time.LocalDateTime;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
-import com.xiilab.modulek8s.workspace.vo.WorkspaceReqVO;
-import com.xiilab.modulek8s.workspace.vo.WorkspaceResVO;
+import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
 import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import lombok.AccessLevel;
@@ -27,8 +26,8 @@ public class WorkspaceDTO {
 		private String creatorUserName;
 		private String creatorFullName;
 
-		public WorkspaceReqVO convertToVO() {
-			return WorkspaceReqVO.builder()
+		public WorkspaceVO.RequestVO convertToVO() {
+			return WorkspaceVO.RequestVO.builder()
 				.name(this.name)
 				.description(this.description)
 				.createdAt(createAt)
@@ -94,7 +93,7 @@ public class WorkspaceDTO {
 		private String description;
 		private ResourceStatus resourceStatus;
 
-		public WorkspaceResourceStatus(WorkspaceResVO workspaceResVO, ResourceQuotaStatus resourceStatus) {
+		public WorkspaceResourceStatus(WorkspaceVO.ResponseVO workspaceResVO, ResourceQuotaStatus resourceStatus) {
 			this.id = workspaceResVO.getUid();
 			this.name = workspaceResVO.getName();
 			this.resourceName = workspaceResVO.getResourceName();
