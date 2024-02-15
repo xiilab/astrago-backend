@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.pin.entity.PinEntity;
@@ -79,10 +80,10 @@ public class PinServiceImpl implements PinService {
 			resourceName, userInfoDTO.getId());
 
 		if (pinEntity != null) {
-			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_PIN_ERROR);
+			throw new RestApiException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}
 
-		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
+		pinRepository.save(new PinEntity(PinType.WORKLOAD, resourceName));
 	}
 
 	private void deleteWorkspacePin(String resourceName, UserInfoDTO userInfoDTO) {
