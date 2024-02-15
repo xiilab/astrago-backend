@@ -59,8 +59,9 @@ public class WorkspaceController {
 	@GetMapping("/resourceStatus")
 	@Operation(summary = "내가 속한 워크스페이스의 resource 현황 조회")
 	public ResponseEntity<List<WorkspaceDTO.WorkspaceResourceStatus>> getWorkspaceResourceStatus(
+		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		UserInfoDTO userInfoDTO) {
-		return ResponseEntity.ok(workspaceService.getUserWorkspaceResourceStatus(userInfoDTO));
+		return ResponseEntity.ok(workspaceService.getUserWorkspaceResourceStatus(workspaceName, userInfoDTO));
 	}
 
 	@GetMapping("")

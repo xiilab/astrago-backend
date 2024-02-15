@@ -35,5 +35,5 @@ public interface WorkspaceFacadeService {
 	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO);
 
 	void deleteResourceQuota(long id);
-	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(UserInfoDTO userInfoDTO);
+	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserInfoDTO userInfoDTO);
 }

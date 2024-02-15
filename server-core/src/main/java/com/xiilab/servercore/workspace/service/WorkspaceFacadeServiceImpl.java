@@ -224,10 +224,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(UserInfoDTO userInfoDTO) {
+	public List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName,
+		UserInfoDTO userInfoDTO) {
 		Set<String> workspaceList = userInfoDTO.getWorkspaceList(false);
 		return workspaceList.stream()
 			.map(workspaceService::getWorkspaceResourceStatus)
+			.filter(workspace -> workspaceName == null || workspace.getName().contains(workspaceName))
 			.toList();
 	}
 
