@@ -207,7 +207,7 @@ public class WorkloadFacadeService {
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition sortCondition) {
 
 		Stream<ModuleWorkloadResDTO> workloadStream = workloadList.stream()
-			.filter(batch -> searchName == null || batch.getName().contains(searchName))
+			.filter(batch -> searchName == null || (batch.getName() != null && batch.getName().contains(searchName)))
 			.filter(batch -> workloadStatus == null || batch.getStatus() == workloadStatus);
 
 		if (sortCondition != null) {
