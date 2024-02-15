@@ -139,6 +139,7 @@ public class InteractiveJobVO extends WorkloadVO {
 
 	private void addContainerResource(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.withNewResources()
+			.addToRequests(getWorkloadResourceMap())
 			.addToLimits(getWorkloadResourceMap())
 			.endResources();
 	}

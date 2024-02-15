@@ -50,7 +50,7 @@ public class WorkloadFacadeService {
 	private final WorkloadHistoryService workloadHistoryService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserFullName(),
+		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
 			userInfoDTO.getUserFullName());
 		// 데이터셋 볼륨 추가
 		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());

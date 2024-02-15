@@ -90,6 +90,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private void initializeCollection() {
 		this.codes = getListIfNotEmpty(this.codes);
 		this.datasets = getListIfNotEmpty(this.datasets);
+		this.models = getListIfNotEmpty(this.models);
 		this.ports = getListIfNotEmpty(this.ports);
 		this.envs = getListIfNotEmpty(this.envs);
 	}
