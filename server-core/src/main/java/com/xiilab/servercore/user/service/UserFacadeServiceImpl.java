@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.moduleuser.common.FindDTO;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;

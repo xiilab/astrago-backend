@@ -5,12 +5,13 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 public interface ModelRepositoryCustom {
-	Page<Model> findByAuthorityWithPaging(PageRequest pageRequest, UserInfoDTO userInfoDTO);
+	Page<Model> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType authType);
 
 	Model getModelWithStorage(Long modelId);
-	List<Model> findByAuthority(UserInfoDTO userInfoDTO);
+	List<Model> findByAuthority(String userId, AuthType userAuth);
 }

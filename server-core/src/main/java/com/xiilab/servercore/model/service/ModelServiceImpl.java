@@ -79,7 +79,7 @@ public class ModelServiceImpl implements ModelService{
 	@Override
 	public ModelDTO.ResModels getModels(int pageNo, int pageSize, UserInfoDTO userInfoDTO) {
 		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
-		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO);
+		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth());
 		List<Model> entities = models.getContent();
 		long totalCount = models.getTotalElements();
 
@@ -211,7 +211,7 @@ public class ModelServiceImpl implements ModelService{
 				return ModelDTO.ModelsInWorkspace.mappingEntitiesToDtos(models);
 			}
 		}else{
-			List<Model> modelsByAuthority = modelRepository.findByAuthority(userInfoDTO);
+			List<Model> modelsByAuthority = modelRepository.findByAuthority(userInfoDTO.getId(), userInfoDTO.getAuth());
 			return ModelDTO.ModelsInWorkspace.entitiesToDtos(modelsByAuthority);
 		}
 		return null;

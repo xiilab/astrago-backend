@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.dataset.entity.QDataset;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 
@@ -25,9 +25,9 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<Dataset> findByAuthorityWithPaging(PageRequest pageRequest, UserInfoDTO userInfoDTO) {
+	public Page<Dataset> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType userAuth) {
 		List<Dataset> datasets = queryFactory.selectFrom(QDataset.dataset)
-			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
+			.where(creatorEq(userId, userAuth))
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
 			.orderBy(QDataset.dataset.regDate.desc())
@@ -35,16 +35,16 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 
 		Long count = queryFactory.select(QDataset.dataset.count())
 			.from(QDataset.dataset)
-			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
+			.where(creatorEq(userId, userAuth))
 			.fetchOne();
 		return new PageImpl<>(datasets, pageRequest, count);
 	}
 
 
 	@Override
-	public List<Dataset> findByAuthority(UserInfoDTO userInfoDTO) {
+	public List<Dataset> findByAuthority(String userId, AuthType userAuth) {
 		List<Dataset> datasets = queryFactory.selectFrom(QDataset.dataset)
-			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
+			.where(creatorEq(userId, userAuth))
 			.fetch();
 		return datasets;
 	}

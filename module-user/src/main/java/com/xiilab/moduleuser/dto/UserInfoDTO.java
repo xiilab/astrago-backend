@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// import com.xiilab.moduleuser.dto.AuthType;
+// import com.xiilab.modulecommon.enums.AuthType;
 // import com.xiilab.moduleuser.dto.SignUpMethod;
+
+import com.xiilab.modulecommon.enums.AuthType;
 
 import lombok.Builder;
 import lombok.Getter;

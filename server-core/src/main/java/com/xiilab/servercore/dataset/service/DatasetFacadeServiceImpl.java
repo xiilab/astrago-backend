@@ -24,7 +24,7 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.common.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;

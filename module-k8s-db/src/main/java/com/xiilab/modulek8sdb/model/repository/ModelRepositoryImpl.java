@@ -2,8 +2,6 @@ package com.xiilab.modulek8sdb.model.repository;
 
 
 
-import static com.xiilab.modulek8sdb.model.entity.QModel.*;
-
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -15,7 +13,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.model.entity.QModel;
-import com.xiilab.moduleuser.dto.AuthType;
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 
@@ -27,9 +25,9 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<Model> findByAuthorityWithPaging(PageRequest pageRequest, UserInfoDTO userInfoDTO) {
+	public Page<Model> findByAuthorityWithPaging(PageRequest pageRequest,String userId, AuthType userAuth) {
 		List<Model> models = queryFactory.selectFrom(QModel.model)
-			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
+			.where(creatorEq(userId, userAuth))
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
 			.orderBy(QModel.model.regDate.desc())
@@ -37,7 +35,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 
 		Long count = queryFactory.select(QModel.model.count())
 			.from(QModel.model)
-			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
+			.where(creatorEq(userId, userAuth))
 			.fetchOne();
 		return new PageImpl<>(models, pageRequest, count);
 	}
@@ -50,9 +48,9 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 	}
 
 	@Override
-	public List<Model> findByAuthority(UserInfoDTO userInfoDTO) {
+	public List<Model> findByAuthority(String userId, AuthType userAuth) {
 		List<Model> models = queryFactory.selectFrom(QModel.model)
-			.where(creatorEq(userInfoDTO.getId(), userInfoDTO.getAuth()))
+			.where(creatorEq(userId, userAuth))
 			.fetch();
 		return models;
 	}

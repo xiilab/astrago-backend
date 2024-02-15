@@ -1,4 +1,4 @@
-package com.xiilab.moduleuser.dto;
+package com.xiilab.modulecommon.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

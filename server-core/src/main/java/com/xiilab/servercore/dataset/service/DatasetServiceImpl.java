@@ -73,7 +73,7 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(int pageNo, int pageSize, UserInfoDTO userInfoDTO) {
 		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
-		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO);
+		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth());
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 
@@ -214,7 +214,7 @@ public class DatasetServiceImpl implements DatasetService {
 				return DatasetDTO.DatasetsInWorkspace.mappingEntitiesToDtos(datasets);
 			}
 		}else{
-			List<Dataset> datasetsByAuthority = datasetRepository.findByAuthority(userInfoDTO);
+			List<Dataset> datasetsByAuthority = datasetRepository.findByAuthority(userInfoDTO.getId(), userInfoDTO.getAuth());
 			return DatasetDTO.DatasetsInWorkspace.entitiesToDtos(datasetsByAuthority);
 		}
 		return null;

@@ -9,6 +9,8 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.AuthType;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
