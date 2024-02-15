@@ -46,6 +46,7 @@ public class NodeSvcVO extends K8SResourceReqVO {
 			.name(createSvcReqDTO.getName())
 			.description(createSvcReqDTO.getDescription())
 			.creatorUserName(createSvcReqDTO.getCreatorUserName())
+			.creatorFullName(createSvcReqDTO.getCreatorFullName())
 			.creatorId(createSvcReqDTO.getCreatorId())
 			.workspace(createSvcReqDTO.getWorkspace())
 			.svcType(createSvcReqDTO.getSvcType())

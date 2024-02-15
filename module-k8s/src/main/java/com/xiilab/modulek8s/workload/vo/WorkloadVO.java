@@ -65,6 +65,16 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 					.withMountPath(codeVO.mountPath())
 					.endVolumeMount()
 					.withEnv(getGithubEnvVarList(codeVO))
+					.withNewResources()
+					.addToRequests(Map.of(
+						"cpu", new Quantity("500m"),
+						"memory", new Quantity("1000Mi")
+					))
+					.addToLimits(Map.of(
+						"cpu", new Quantity("500m"),
+						"memory", new Quantity("1000Mi")
+					))
+					.endResources()
 					.build())
 				.toList();
 
@@ -120,6 +130,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(new EnvVarBuilder().withName("GIT_SYNC_ROOT").withValue(codeVO.mountPath()).build());
 		result.add(new EnvVarBuilder().withName("GIT_SYNC_PERMISSIONS").withValue("0777").build());
 		result.add(new EnvVarBuilder().withName("GIT_SYNC_ONE_TIME").withValue("true").build());
+		result.add(new EnvVarBuilder().withName("GIT_SYNC_WAIT").withValue("600").build());
 		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialName())
 			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
 			result.add(new EnvVarBuilder().withName("GIT_SYNC_USERNAME")

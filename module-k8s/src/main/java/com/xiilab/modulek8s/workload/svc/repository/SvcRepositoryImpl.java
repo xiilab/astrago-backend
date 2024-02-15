@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 @Repository
 @Slf4j
 public class SvcRepositoryImpl implements SvcRepository {
-
 	private final K8sAdapter k8sAdapter;
 	@Override
 	public void createNodePortService(NodeSvcVO nodeSvcVO) {
