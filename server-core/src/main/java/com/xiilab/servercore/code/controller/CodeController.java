@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8sdb.code.dto.CodeReqDTO;
 import com.xiilab.modulek8sdb.code.dto.CodeResDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.code.service.CodeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,8 +30,9 @@ public class CodeController {
 
 	@PostMapping("")
 	@Operation(summary = "공유 소스 코드 등록 API")
-	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO){
-		return new ResponseEntity<>(codeService.saveCode(codeReqDTO), HttpStatus.OK);
+	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+		return new ResponseEntity<>(codeService.saveCode(codeReqDTO, userInfoDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("")

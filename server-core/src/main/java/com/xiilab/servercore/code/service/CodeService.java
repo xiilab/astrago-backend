@@ -4,9 +4,10 @@ import java.util.List;
 
 import com.xiilab.modulek8sdb.code.dto.CodeReqDTO;
 import com.xiilab.modulek8sdb.code.dto.CodeResDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 public interface CodeService {
-	CodeResDTO saveCode(CodeReqDTO codeReqDTO);
+	CodeResDTO saveCode(CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO);
 	List<CodeResDTO> getCodeList(String workspaceName);
 	CodeResDTO getCodeById(long id);
 	void deleteCodeById(long id);

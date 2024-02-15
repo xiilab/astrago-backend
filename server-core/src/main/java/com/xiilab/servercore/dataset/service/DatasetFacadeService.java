@@ -10,11 +10,11 @@ import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 
 public interface DatasetFacadeService {
-	void insertAstragoDataset(DatasetDTO.CreateAstragoDataset createDatasetDTO, List<MultipartFile> files);
+	void insertAstragoDataset(DatasetDTO.CreateAstragoDataset createDatasetDTO, List<MultipartFile> files, UserInfoDTO userInfoDTO);
 
 	DatasetDTO.ResDatasetWithStorage getDataset(Long datasetId);
 
-	void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO);
+	void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO, UserInfoDTO userInfoDTO);
 
 	void modifyDataset(DatasetDTO.ModifyDatset modifyDatset, Long datasetId, UserInfoDTO userInfoDTO);
 

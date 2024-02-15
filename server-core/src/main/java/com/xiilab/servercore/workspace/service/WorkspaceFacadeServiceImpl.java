@@ -25,6 +25,7 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
@@ -49,6 +50,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final AlertService alertService;
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
+	private final UserService userService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -80,6 +82,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.alertType(AlertType.WORKLOAD)
 			.message(String.format(AlertMessage.CREATE_WORKSPACE.getMessage(), applicationForm.getName()))
 			.build());
+		userService.increaseUserWsCount(userInfoDTO.getId());
 	}
 
 	@Override

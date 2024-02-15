@@ -29,6 +29,7 @@ import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -48,6 +49,7 @@ public class WorkloadFacadeService {
 	private final AlertService alertService;
 	private final DatasetService datasetService;
 	private final WorkloadHistoryService workloadHistoryService;
+	private final UserService userService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserFullName(),
@@ -67,6 +69,7 @@ public class WorkloadFacadeService {
 			.alertType(AlertType.WORKLOAD)
 			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
 			.build());
+		userService.increaseUserWlCount(userInfoDTO.getId());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,

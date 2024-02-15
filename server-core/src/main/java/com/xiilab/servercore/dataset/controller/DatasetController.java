@@ -42,18 +42,20 @@ public class DatasetController {
 	@Operation(summary = "아스트라고 데이터 셋 생성")
 	public ResponseEntity<HttpStatus> insertAstragoDataset(
 		@RequestPart(name = "createDataset") DatasetDTO.CreateAstragoDataset createDatasetDTO,
-		@RequestPart(name = "files", required = false) List<MultipartFile> files){
+		@RequestPart(name = "files", required = false) List<MultipartFile> files,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
 
-		datasetFacadeService.insertAstragoDataset(createDatasetDTO, files);
+		datasetFacadeService.insertAstragoDataset(createDatasetDTO, files, userInfoDTO);
 
 		return new ResponseEntity(HttpStatus.OK);
 	}
 	@PostMapping("/datasets/local")
 	@Operation(summary = "로컬 데이터 셋 생성")
 	public ResponseEntity<HttpStatus> insertLocalDataset(
-		@RequestBody DatasetDTO.CreateLocalDataset createDatasetDTO){
+		@RequestBody DatasetDTO.CreateLocalDataset createDatasetDTO,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
 
-		datasetFacadeService.insertLocalDataset(createDatasetDTO);
+		datasetFacadeService.insertLocalDataset(createDatasetDTO, userInfoDTO);
 
 		return new ResponseEntity(HttpStatus.OK);
 	}
