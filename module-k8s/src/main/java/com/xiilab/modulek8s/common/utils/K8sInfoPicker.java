@@ -3,7 +3,6 @@ package com.xiilab.modulek8s.common.utils;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -129,9 +128,9 @@ public class K8sInfoPicker {
 				.cpuReq(containerResourceReq.getCpuReq())
 				.memReq(containerResourceReq.getMemReq())
 				.gpuReq(containerResourceReq.getGpuReq())
-				.createdAt(LocalDateTime.parse(AnnotationField.CREATED_AT.getField()))
 				.imgName(AnnotationField.IMAGE_NAME.getField())
 				.imgTag(AnnotationField.IMAGE_TAG.getField())
+				.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
 				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
 				.build();
 		} catch (NullPointerException e) {
@@ -159,7 +158,7 @@ public class K8sInfoPicker {
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imgName(container.getImage().split(":")[0])
 			.imgTag(container.getImage().split(":")[1])
-			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
+			.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
 			.deletedAt(LocalDateTime.now())
 			.build();
 	}
@@ -189,9 +188,9 @@ public class K8sInfoPicker {
 				.cpuReq(containerResourceReq.getCpuReq())
 				.memReq(containerResourceReq.getMemReq())
 				.gpuReq(containerResourceReq.getGpuReq())
-				.createdAt(LocalDateTime.parse(AnnotationField.CREATED_AT.getField()))
 				.imgName(AnnotationField.IMAGE_NAME.getField())
 				.imgTag(AnnotationField.IMAGE_TAG.getField())
+				.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
 				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
 				.build();
 		} catch (NullPointerException e) {
@@ -219,7 +218,7 @@ public class K8sInfoPicker {
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imgName(container.getImage().split(":")[0])
 			.imgTag(container.getImage().split(":")[1])
-			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
+			.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
 			.deletedAt(LocalDateTime.now())
 			.build();
 	}
