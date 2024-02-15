@@ -1,7 +1,7 @@
 package com.xiilab.modulek8sdb.model.entity;
 
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;

@@ -2,7 +2,7 @@ package com.xiilab.modulek8sdb.storage.dto;
 
 import java.util.List;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import lombok.Builder;

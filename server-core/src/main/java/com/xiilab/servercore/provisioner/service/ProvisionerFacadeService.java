@@ -2,7 +2,7 @@ package com.xiilab.servercore.provisioner.service;
 
 import java.util.List;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.servercore.provisioner.dto.InstallProvisioner;
 

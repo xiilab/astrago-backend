@@ -1,6 +1,6 @@
 package com.xiilab.modulek8sdb.image.dto.response;
 
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 
 import lombok.Getter;

@@ -16,7 +16,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
@@ -51,7 +51,7 @@ public interface WorkloadModuleFacadeService {
 
 	List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
 
-	ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String userId);
+	ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username);
 
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 

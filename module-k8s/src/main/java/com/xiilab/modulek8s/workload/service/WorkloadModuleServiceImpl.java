@@ -15,7 +15,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -70,8 +70,6 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId) {
-		log.info("workspaceName : " + workspaceName);
-		log.info("userId : " + userId);
 		if (workspaceName != null) {
 			return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
 		} else if (userId != null){

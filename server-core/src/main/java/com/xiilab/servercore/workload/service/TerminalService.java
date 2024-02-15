@@ -21,7 +21,7 @@ import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.servercore.common.utils.ThreadHelper;
 import com.xiilab.servercore.workload.dto.TerminalMessage;

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.servercore.provisioner.dto.InstallProvisioner;
 import com.xiilab.servercore.provisioner.service.ProvisionerFacadeService;

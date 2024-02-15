@@ -1,7 +1,7 @@
 package com.xiilab.servercore.storageclass.dto;
 
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 
 import lombok.Getter;

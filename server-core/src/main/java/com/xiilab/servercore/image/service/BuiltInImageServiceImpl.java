@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.image.dto.response.BuiltInImageResDTO;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 import com.xiilab.modulek8sdb.image.repository.BuiltInImageRepository;

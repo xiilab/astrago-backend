@@ -2,7 +2,7 @@ package com.xiilab.servercore.image.service;
 
 import java.util.List;
 
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.image.dto.response.BuiltInImageResDTO;
 
 public interface BuiltInImageService {

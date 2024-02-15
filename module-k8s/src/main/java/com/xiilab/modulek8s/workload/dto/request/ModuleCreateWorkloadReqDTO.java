@@ -7,7 +7,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.workload.enums.ImageType;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;

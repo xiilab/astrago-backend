@@ -1,6 +1,6 @@
 package com.xiilab.modulek8sdb.image.entity;
 
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.workload.history.entity.ImageEntity;
 
 import jakarta.persistence.Column;

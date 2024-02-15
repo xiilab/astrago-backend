@@ -1,6 +1,6 @@
 package com.xiilab.servercore.workload.dto;
 
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.servercore.workload.enumeration.TerminalMessageType;
 
 import lombok.Getter;

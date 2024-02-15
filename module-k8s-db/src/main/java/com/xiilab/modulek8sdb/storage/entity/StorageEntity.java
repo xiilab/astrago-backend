@@ -1,7 +1,7 @@
 package com.xiilab.modulek8sdb.storage.entity;
 
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.storage.dto.StorageDTO;
 

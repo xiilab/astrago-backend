@@ -1,7 +1,7 @@
 package com.xiilab.modulek8s.facade.dto;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

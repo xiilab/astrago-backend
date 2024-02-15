@@ -3,7 +3,7 @@ package com.xiilab.servercore.model.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;

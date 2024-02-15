@@ -3,7 +3,6 @@ package com.xiilab.modulek8s.workload.vo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.util.CollectionUtils;
@@ -11,7 +10,7 @@ import org.springframework.util.StringUtils;
 
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;

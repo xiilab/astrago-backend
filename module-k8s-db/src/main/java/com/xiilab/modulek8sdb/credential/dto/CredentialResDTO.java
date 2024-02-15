@@ -3,7 +3,7 @@ package com.xiilab.modulek8sdb.credential.dto;
 import java.time.LocalDateTime;
 
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
-import com.xiilab.modulek8sdb.credential.enumeration.CredentialType;
+import com.xiilab.modulecommon.enums.CredentialType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -11,7 +11,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
@@ -33,7 +33,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
@@ -169,11 +169,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return logService.watchLogByWorkload(workspaceName, podName);
 	}
 
-	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String userId) {
+	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
 		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
 			return workloadList.stream()
-				.filter(workload -> workload.getCreatorId().equals(userId))
+				.filter(workload -> workload.getCreatorId().equals(username))
 				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
 				.toList()
 				.get(0);

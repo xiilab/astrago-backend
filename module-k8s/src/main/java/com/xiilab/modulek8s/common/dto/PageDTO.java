@@ -3,8 +3,6 @@ package com.xiilab.modulek8s.common.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.util.CollectionUtils;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -49,7 +47,7 @@ public class PageDTO<T> {
 		List<T> subListResult = normalList.subList(startIndex, endIndex);
 		result.addAll(pinList);
 		result.addAll(subListResult);
-		if (totalPage == 0 && CollectionUtils.isEmpty(pinList)) {
+		if (totalPage == 0) {
 			this.content = new ArrayList<>();
 		} else {
 			if (totalPage < pageNum) {

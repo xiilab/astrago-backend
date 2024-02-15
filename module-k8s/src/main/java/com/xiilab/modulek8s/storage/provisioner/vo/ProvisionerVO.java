@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Chart;
 import com.xiilab.modulek8s.storage.common.crd.NFS.spec.HelmReleaseSpec;

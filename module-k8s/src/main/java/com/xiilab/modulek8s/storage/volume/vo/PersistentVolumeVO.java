@@ -5,7 +5,7 @@ import java.util.Collections;
 import com.xiilab.modulek8s.common.enumeration.AccessMode;
 import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 

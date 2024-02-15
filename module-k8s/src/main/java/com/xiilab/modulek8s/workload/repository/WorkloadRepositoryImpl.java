@@ -45,9 +45,7 @@ import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class WorkloadRepositoryImpl implements WorkloadRepository {
@@ -157,7 +155,6 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCreator(String userId) {
 		JobList batchJobList = getBatchJobListByCreator(userId);
-		log.info(String.valueOf(batchJobList.getItems().size()));
 		return batchJobList.getItems().stream()
 			.map(ModuleBatchJobResDTO::new)
 			.toList();

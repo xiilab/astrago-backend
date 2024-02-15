@@ -8,7 +8,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 import com.xiilab.modulek8sdb.image.entity.QBuiltInImageEntity;
 

@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelResDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;

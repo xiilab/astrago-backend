@@ -1,7 +1,6 @@
 package com.xiilab.modulek8sdb.dataset.repository;
 
 
-import static com.xiilab.modulek8sdb.dataset.entity.QDataset.*;
 
 import java.util.List;
 

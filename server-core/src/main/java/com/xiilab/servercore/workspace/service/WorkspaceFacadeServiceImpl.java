@@ -110,7 +110,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				userWorkspacePinList.contains(workspace.getResourceName()),
 				workspace.getCreatedAt(),
 				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
-					userInfoDTO.getId())))
+					userInfoDTO.getUserName())))
 			.toList();
 		return new PageDTO<>(resultList, pageNum, 9);
 	}
@@ -153,7 +153,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					userWorkspacePinList.contains(workspace.getResourceName()),
 					workspace.getCreatedAt(),
 					workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
-						userInfoDTO.getId()))).toList();
+						userInfoDTO.getUserName()))).toList();
 
 	}
 

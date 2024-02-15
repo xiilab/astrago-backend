@@ -1,4 +1,5 @@
 dependencies {
+    implementation project(':module-common')
     implementation project(':module-user')
     implementation project(':module-k8s')
     implementation 'org.springframework.boot:spring-boot-starter-web'

@@ -2,7 +2,7 @@ package com.xiilab.modulek8s.storage.provisioner.repository;
 
 import java.util.List;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 
 public interface ProvisionerRepository {

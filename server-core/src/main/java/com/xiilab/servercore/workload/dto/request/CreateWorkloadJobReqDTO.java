@@ -8,7 +8,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleEnvReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 
 import lombok.AllArgsConstructor;

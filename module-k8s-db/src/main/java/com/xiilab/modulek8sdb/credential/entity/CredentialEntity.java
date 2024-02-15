@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
-import com.xiilab.modulek8sdb.credential.enumeration.CredentialType;
+import com.xiilab.modulecommon.enums.CredentialType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

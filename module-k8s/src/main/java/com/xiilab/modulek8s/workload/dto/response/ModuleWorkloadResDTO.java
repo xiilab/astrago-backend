@@ -9,7 +9,7 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulek8s.workload.enums.WorkloadType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import lombok.Getter;

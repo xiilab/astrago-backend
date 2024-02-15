@@ -1,6 +1,6 @@
 package com.xiilab.servercore.provisioner.dto;
 
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

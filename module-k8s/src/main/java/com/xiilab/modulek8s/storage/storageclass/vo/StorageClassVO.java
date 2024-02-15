@@ -9,7 +9,7 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulek8s.common.enumeration.StorageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 
