@@ -21,6 +21,7 @@ public enum CommonErrorCode implements ErrorCode {
 	PLUGIN_ALREADY_INSTALLED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "이미 설치된 플러그인입니다."),
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "파일이 존재하지 않습니다."),
 	FILE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
+	FILE_INFO_LOOKUP_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 정보 불러오기에 실패했습니다."),
 	FILE_DOWNLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 다운로드에 실패했습니다."),
 	FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 업로드를 실패했습니다."),
 	// alert

@@ -16,7 +16,7 @@ import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
-import com.xiilab.modulek8sdb.storage.dto.StorageDTO;
+import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import lombok.RequiredArgsConstructor;

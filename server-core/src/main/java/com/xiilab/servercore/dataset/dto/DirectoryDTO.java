@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.dataset.dto;
+package com.xiilab.servercore.dataset.dto;
 
 import java.util.List;
 
@@ -21,5 +21,6 @@ public class DirectoryDTO {
         private FileType type;
         private String path;
         private String size;
+        private String fileCount;
     }
 }
