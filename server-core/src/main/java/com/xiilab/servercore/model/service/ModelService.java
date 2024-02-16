@@ -15,7 +15,7 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
 
 public interface ModelService {
-	void insertAstragoDataset(AstragoModelEntity astragoModel, List<MultipartFile> files);
+	void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files);
 
 	void insertLocalModel(LocalModelEntity localModelEntity);
 

@@ -58,7 +58,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 
 	@Override
 	@Transactional
-	public void insertAstragoDataset(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files) {
+	public void insertAstragoModel(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files) {
 		StorageEntity storageEntity = storageService.findById(createModelDTO.getStorageId());
 
 		AstragoModelEntity astragoModel = AstragoModelEntity.builder()
@@ -66,7 +66,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 			.storageEntity(storageEntity)
 			.build();
 
-		modelService.insertAstragoDataset(astragoModel, files);
+		modelService.insertAstragoModel(astragoModel, files);
 	}
 
 	@Override
