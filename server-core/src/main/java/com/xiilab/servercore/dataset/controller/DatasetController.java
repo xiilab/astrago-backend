@@ -148,6 +148,7 @@ public class DatasetController {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(downloadFileResDTO.getMediaType());
+		headers.add("Content-Disposition", "attachment; filename=" + downloadFileResDTO.getFileName());
 		return new ResponseEntity(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
@@ -167,6 +168,7 @@ public class DatasetController {
 			filePath);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(file.getMediaType());
+		headers.add("Content-Disposition", "attachment; filename=" + file.getFileName());
 		return new ResponseEntity(file.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
