@@ -21,5 +21,6 @@ public class DirectoryDTO {
         private FileType type;
         private String path;
         private String size;
+        private String fileCount;
     }
 }
