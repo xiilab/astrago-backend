@@ -188,6 +188,7 @@ public class DatasetServiceImpl implements DatasetService {
 					.build();
 			}
 		}else{
+			log.error("path :" + targetPath);
 			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}
