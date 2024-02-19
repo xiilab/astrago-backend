@@ -138,6 +138,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.alertType(AlertType.WORKLOAD)
 			.message(String.format(AlertMessage.DELETE_WORKSPACE.getMessage(), workspaceName))
 			.build());
+		// 워크스페이스 알림 설정 삭제
+		alertSetService.deleteAlert(workspaceName);
 	}
 
 	@Override

@@ -26,9 +26,10 @@ public enum CommonErrorCode implements ErrorCode {
 	FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 업로드를 실패했습니다."),
 	// alert
 	ALERT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 알림이 존재하지 않습니다."),
-	ALERT_NOT_FOUND_WORKSPACE_NAME(HttpStatus.NOT_FOUND.value(), "해당 워크스페이스 알림설정이 존재하지 않습니다."),
-	ALERT_SET_UPDATE_FAIL(HttpStatus.NOT_FOUND.value(), "해당 워크스페이스 알림설정 수정 실패했습니다."),
-	ALERT_SET_SAVE_FAIL(HttpStatus.NOT_FOUND.value(), "해당 워크스페이스 알림설정 저장 실패했습니다."),
+	ALERT_NOT_FOUND_WORKSPACE_NAME(HttpStatus.NOT_FOUND.value(), "해당 워크스페이스 알림 설정이 존재하지 않습니다."),
+	ALERT_SET_UPDATE_FAIL(HttpStatus.NOT_FOUND.value(), "해당 워크스페이스 알림 설정 수정 실패했습니다."),
+	ALERT_SET_SAVE_FAIL(HttpStatus.NOT_FOUND.value(), "해당 워크스페이스 알림 설정 저장 실패했습니다."),
+	ALERT_SET_DELETE_FAIL(HttpStatus.UNAUTHORIZED.value(), "해당 워크스페이스 알림 설정 삭제 실패했습니다."),
 	// HUB
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "허브 상세정보가 존재하지 않습니다."),
 	// terminal

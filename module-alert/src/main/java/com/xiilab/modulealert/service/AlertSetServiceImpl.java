@@ -29,7 +29,7 @@ public class AlertSetServiceImpl implements AlertSetService {
 					.resourceApprovalAlert(true)
 				.build());
 		}catch (IllegalArgumentException e){
-			throw new RestApiException(CommonErrorCode.ALERT_NOT_FOUND);
+			throw new RestApiException(CommonErrorCode.ALERT_SET_SAVE_FAIL);
 		}
 	}
 
@@ -49,7 +49,19 @@ public class AlertSetServiceImpl implements AlertSetService {
 
 			return AlertSetDTO.ResponseDTO.convertResponseDTO(updateAlertSet);
 		}catch (IllegalArgumentException e){
-			throw new RestApiException(CommonErrorCode.ALERT_NOT_FOUND);
+			throw new RestApiException(CommonErrorCode.ALERT_SET_UPDATE_FAIL);
+		}
+	}
+	@Override
+	@Transactional
+	public void deleteAlert(String workspaceName){
+		try{
+			AlertSetEntity alertSetEntity = getAlertSetEntity(workspaceName);
+
+			alertSetRepository.deleteById(alertSetEntity.getId());
+
+		}catch (IllegalArgumentException e){
+			throw new RestApiException(CommonErrorCode.ALERT_SET_DELETE_FAIL);
 		}
 	}
 
@@ -57,7 +69,7 @@ public class AlertSetServiceImpl implements AlertSetService {
 		try{
 			return alertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
 		}catch (RuntimeException e){
-			throw new RestApiException(CommonErrorCode.ALERT_NOT_FOUND);
+			throw new RestApiException(CommonErrorCode.ALERT_NOT_FOUND_WORKSPACE_NAME);
 		}
 	}
 
