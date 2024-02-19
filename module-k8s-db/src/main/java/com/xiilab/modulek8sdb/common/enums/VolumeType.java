@@ -6,5 +6,6 @@ import lombok.Getter;
 public enum VolumeType {
 	DATASET,
 	MODEL,
+	CODE,
 
 }
