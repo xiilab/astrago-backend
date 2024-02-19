@@ -59,7 +59,7 @@ public class DatasetDTO {
 		private List<WorkloadResDTO.UsingDatasetDTO> usingDatasets;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
-			if (dataset.isAstargoDataset()) {
+			if (dataset.isAstragoDataset()) {
 				return ResDatasetWithStorage.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageType())
@@ -111,7 +111,7 @@ public class DatasetDTO {
 		private boolean isAvailable;
 
 		public static ResDataset toDto(Dataset dataset) {
-			if (dataset.isAstargoDataset()) {
+			if (dataset.isAstragoDataset()) {
 				return ResDataset.builder()
 					.datasetId(dataset.getDatasetId())
 					.storageType(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageType())
@@ -177,7 +177,7 @@ public class DatasetDTO {
 		private boolean isAvailable;
 
 		public static DatasetInWorkspace entityToDto(Dataset dataset) {
-			if (dataset.isAstargoDataset()) {
+			if (dataset.isAstragoDataset()) {
 				return DatasetInWorkspace.builder()
 					.datasetId(dataset.getDatasetId())
 					.datasetName(dataset.getDatasetName())
@@ -202,7 +202,7 @@ public class DatasetDTO {
 			return null;
 		}
 		public static DatasetInWorkspace mappingEntityToDto(DatasetWorkSpaceMappingEntity dataset){
-			if (dataset.getDataset().isAstargoDataset()) {
+			if (dataset.getDataset().isAstragoDataset()) {
 				return DatasetInWorkspace.builder()
 					.datasetId(dataset.getDataset().getDatasetId())
 					.datasetName(dataset.getDataset().getDatasetName())

@@ -7,7 +7,6 @@ import java.util.List;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulek8sdb.workload.history.entity.DatasetWorkLoadMappingEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -68,6 +67,6 @@ public abstract class Dataset extends BaseEntity {
 	public void modifyDatasetName(String datasetName){
 		this.datasetName = datasetName;
 	}
-	public abstract boolean isAstargoDataset();
+	public abstract boolean isAstragoDataset();
 	public abstract boolean isLocalDataset();
 }

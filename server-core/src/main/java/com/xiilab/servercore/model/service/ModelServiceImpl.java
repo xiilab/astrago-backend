@@ -44,7 +44,7 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	@Transactional
-	public void insertAstragoDataset(AstragoModelEntity astragoModel, List<MultipartFile> files) {
+	public void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoModel.getStorageEntity().getHostPath();
 		String modelPath = storageRootPath + "/" + astragoModel.getModelName().replace(" ", "");
@@ -56,7 +56,7 @@ public class ModelServiceImpl implements ModelService{
 			// 업로드된 각 파일에 대해 작업 수행
 			if(files != null){
 				for (MultipartFile file : files) {
-					Path targetPath = uploadPath.resolve(file.getOriginalFilename());
+					Path targetPath = uploadPath.resolve(file.getOriginalFilename().replace(" ", "_"));
 					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 					size += file.getSize();
 				}
