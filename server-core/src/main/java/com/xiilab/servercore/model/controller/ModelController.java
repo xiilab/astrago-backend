@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelFacadeService;
