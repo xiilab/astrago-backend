@@ -23,4 +23,6 @@ public class K8SResourceMetadataDTO {
 	private Integer memReq;
 	private String imgName;
 	private String imgTag;
+	private String datasetIds;
+	private String modelIds;
 }

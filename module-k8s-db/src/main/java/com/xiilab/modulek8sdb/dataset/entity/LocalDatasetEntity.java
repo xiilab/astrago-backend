@@ -54,7 +54,7 @@ public class LocalDatasetEntity extends Dataset {
 	}
 
 	@Override
-	public boolean isAstargoDataset() {
+	public boolean isAstragoDataset() {
 		return false;
 	}
 
