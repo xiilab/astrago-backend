@@ -23,6 +23,10 @@ public class DatasetDTO {
 		private String path;
 	}
 	@Getter
+	public static class ReqFilePathsDTO {
+		private String[] paths;
+	}
+	@Getter
 	public static class CreateAstragoDataset {
 		private String datasetName;
 		private Long storageId;

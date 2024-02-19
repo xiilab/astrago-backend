@@ -35,7 +35,7 @@ public interface DatasetService {
 
 	void astragoDatasetUploadFile(Long datasetId, String path, List<MultipartFile> files);
 
-	void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
+	void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathsDTO reqFilePathDTO);
 
 	DownloadFileResDTO DownloadAstragoDatasetFile(Long datasetId, String reqFilePathDTO);
 
