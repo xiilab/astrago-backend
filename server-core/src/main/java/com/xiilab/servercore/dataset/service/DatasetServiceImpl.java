@@ -140,11 +140,13 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathsDTO reqFilePathsDTO) {
 		datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
-		String targetPath = reqFilePathDTO.getPath();
-		CoreFileUtils.deleteFileOrDirectory(targetPath);
+		String[] targetPaths = reqFilePathsDTO.getPaths();
+		for (String targetPath : targetPaths) {
+			CoreFileUtils.deleteFileOrDirectory(targetPath);
+		}
 	}
 
 	@Override
