@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.dto.AlertSetDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulealert.service.AlertSetService;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -49,6 +51,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final AlertService alertService;
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
+	private final AlertSetService alertSetService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -78,8 +81,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.recipientId(userInfoDTO.getId())
 			.senderId("SYSTEM")
 			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.CREATE_WORKSPACE.getMessage(), applicationForm.getName()))
+			.message(String.format(AlertMessage.CREATE_WORKSPACE.getMessage(), workspace.getName()))
 			.build());
+
+		alertSetService.saveAlertSet(workspace.getResourceName());
 	}
 
 	@Override
@@ -231,6 +236,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.map(workspaceService::getWorkspaceResourceStatus)
 			.filter(workspace -> workspaceName == null || workspace.getName().contains(workspaceName))
 			.toList();
+	}
+	@Override
+	public AlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName){
+		return alertSetService.getWorkspaceAlertSet(workspaceName);
+	}
+	@Override
+	public AlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, AlertSetDTO alertSetDTO){
+		return alertSetService.updateWorkspaceAlertSet(workspaceName, alertSetDTO);
 	}
 
 }
