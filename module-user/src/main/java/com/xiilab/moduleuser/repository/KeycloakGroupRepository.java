@@ -223,5 +223,41 @@ public class KeycloakGroupRepository implements GroupRepository {
 		return subGroup.getSubGroups().stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("user")).findFirst().get();
 	}
+	@Override
+	public GroupUserDTO getWorkspaceOwner(String groupName){
 
+		UserRepresentation owner = getWorkspaceGroupOwner(groupName);
+
+		return GroupUserDTO.builder()
+			.id(owner.getId())
+			.email(owner.getEmail())
+			.name(owner.getUsername())
+			.firstName(owner.getFirstName())
+			.lastName(owner.getLastName())
+			.build();
+	}
+	private UserRepresentation getWorkspaceGroupOwner(String subGroupName){
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+		// ws 그룹 조회
+		GroupRepresentation parentGroup = getParentGroup();
+		GroupRepresentation subGroup = parentGroup.getSubGroups()
+			.stream()
+			.filter(groupRepresentation ->
+				groupRepresentation.getName().equals(subGroupName))
+			.findFirst()
+			.orElseThrow(() -> new K8sException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
+		GroupRepresentation ownerGroup = subGroup.getSubGroups().stream()
+			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("owner")).findFirst().get();
+		return realmClient.groups().group(ownerGroup.getId()).members().get(0);
+	}
+	private GroupRepresentation getParentGroup(){
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+		return realmClient
+			.groups()
+			.groups()
+			.stream()
+			.filter(userRepository -> userRepository.getName().equals("ws"))
+			.findFirst()
+			.get();
+	}
 }
