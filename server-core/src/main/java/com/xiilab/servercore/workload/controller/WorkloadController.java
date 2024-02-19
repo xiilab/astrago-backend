@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
@@ -121,4 +122,14 @@ public class WorkloadController {
 		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
+	@GetMapping("/file/list")
+	public ResponseEntity<DirectoryDTO> getFileListInWorkloadContainer(
+		@RequestParam("workloadName") String workloadName,
+		@RequestParam("workspaceName") String workspaceName,
+		@RequestParam("workloadType") WorkloadType workloadType,
+		@RequestParam("path") String path
+	) throws IOException {
+		return new ResponseEntity<>(
+			workloadFacadeService.getFileListInWorkloadContainer(workloadName, workspaceName, workloadType, path), HttpStatus.OK);
+	}
 }

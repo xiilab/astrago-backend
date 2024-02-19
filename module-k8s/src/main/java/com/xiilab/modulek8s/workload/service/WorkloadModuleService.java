@@ -1,7 +1,10 @@
 package com.xiilab.modulek8s.workload.service;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
@@ -13,7 +16,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
@@ -76,6 +78,7 @@ public interface WorkloadModuleService {
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
+
 	void createModelDeployment(CreateModelDeployment createDeployment);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
@@ -89,4 +92,7 @@ public interface WorkloadModuleService {
 	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
 	boolean isUsedModel(Long modelId);
+
+	DirectoryDTO getDirectoryDTOListInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException;
 }

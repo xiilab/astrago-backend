@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -125,4 +126,8 @@ public interface WorkloadRepository {
 	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalModelDeploymentDTO);
 
 	boolean isUsedModel(Long modelId);
+
+	List<String> getFileListInWorkloadContainer(String podName, String namespace, String path) throws IOException;
+
+	int getDirectoryFileCount(String podName, String namespace, String path) throws IOException;
 }

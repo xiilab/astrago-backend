@@ -15,9 +15,11 @@ import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
@@ -26,13 +28,12 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.service.DatasetService;
-import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
@@ -138,6 +139,11 @@ public class WorkloadFacadeService {
 		List<ModuleWorkloadResDTO> normalWorkloadList = filterNormalWorkloads(workloadResDTOList,
 			searchName, workloadStatus, workloadSortCondition, userInfoDTO.getId());
 		return new PageDTO<>(pinWorkloadList, normalWorkloadList, pageNum, 10);
+	}
+
+	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		return workloadModuleService.getDirectoryDTOListInWorkloadContainer(workloadName, workspaceName, workloadType, path);
 	}
 
 	private List<ModuleWorkloadResDTO> filterNormalWorkloads(List<ModuleWorkloadResDTO> workloadList, String searchName,

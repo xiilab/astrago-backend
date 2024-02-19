@@ -1,10 +1,15 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -44,6 +49,7 @@ import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
+import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -376,6 +382,72 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			}
 			return true;
 		}
+	}
+
+	@Override
+	public List<String> getFileListInWorkloadContainer(String podName, String namespace, String path)
+		throws IOException {
+		String pattern = MessageFormat.format("stat {0}/* --format=%n,%F,%s,%Y", path);
+		return executeCommandToContainer(podName, namespace, pattern);
+	}
+
+	@Override
+	public int getDirectoryFileCount(String podName, String namespace, String path) throws IOException {
+		String pattern = MessageFormat.format("ls {0} -l | grep ^- | wc -l", path);
+		List<String> result = executeCommandToContainer(podName, namespace, pattern);
+		if (CollectionUtils.isEmpty(result)) {
+			return 0;
+		}
+		try {
+			return Integer.parseInt(result.get(0));
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
+	private List<String> executeCommandToContainer(String podName, String namespace, String command) {
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		ExecWatch execWatch = kubernetesClient.pods()
+			.inNamespace(namespace)
+			.withName(podName)
+			.redirectingInput()
+			.redirectingOutput()
+			.redirectingError()
+			.withTTY()
+			.exec("sh", "-c", command);
+		// InputStream output = execWatch.getOutput();
+		// 		// //bufferedReader생성
+		// 		// BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(output));
+		// 		// //bufferedReader를 읽기전 백업을 위해 mark를 지정한다.
+		// 		// bufferedReader.mark(262144);
+		// 		// //한줄을 읽어 해당 줄에 해당 문구가 존재하거나 Null이라면 빈 배열로 리턴한다.
+		// 		// String readLine = bufferedReader.readLine();
+		// 		// if (readLine == null) {
+		// 		// 	return null;
+		// 		// }
+		// 		// //검증을 통과 했다면 reset하여 한줄을 읽기전 상태로 되돌린다.
+		// 		// bufferedReader.reset();
+		// 		// //가져온 reader를 dto로 매핑하여 리턴한다.
+		// 		// return bufferedReader.lines().toList();
+		// 스트림에서 데이터를 읽어오기 위한 버퍼드 리더
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(execWatch.getOutput()));
+		List<String> lines = new ArrayList<>();
+
+		String line;
+		try {
+			// 스트림에서 한 줄씩 읽어오기
+			while ((line = bufferedReader.readLine()) != null) {
+				// 각 줄을 리스트에 추가
+				lines.add(line);
+			}
+		} catch (IOException e) {
+			// 예외 처리
+		} finally {
+			// ExecWatch 정리
+			execWatch.close();
+		}
+
+		return lines;
 	}
 
 	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads,
