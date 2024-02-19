@@ -58,7 +58,7 @@ public class DatasetServiceImpl implements DatasetService {
 			// 업로드된 각 파일에 대해 작업 수행
 			if(files != null){
 				for (MultipartFile file : files) {
-					Path targetPath = uploadPath.resolve(file.getOriginalFilename());
+					Path targetPath = uploadPath.resolve(file.getOriginalFilename().replace(" ", "_"));
 					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 					size += file.getSize();
 				}

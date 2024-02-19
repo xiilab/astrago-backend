@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;

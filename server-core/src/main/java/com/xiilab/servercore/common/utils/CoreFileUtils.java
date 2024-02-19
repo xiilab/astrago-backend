@@ -20,8 +20,10 @@ import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class CoreFileUtils {
 	static final long kilobyte = 1024;
 	static final long megabyte = kilobyte * 1024;
@@ -76,12 +78,13 @@ public class CoreFileUtils {
 	public static long datasetUploadFiles(String path, List<MultipartFile> files) {
 		long size = 0;
 		for (MultipartFile file : files) {
-			String filePath = path + File.separator + file.getOriginalFilename();
+			String filePath = path + File.separator + file.getOriginalFilename().replace(" ", "_");
 			File saveFile = new File(filePath);
 			try {
 				file.transferTo(saveFile);
 				size += file.getSize();
 			} catch (IOException e) {
+				log.error("io exception : " + e);
 				throw new RestApiException(CommonErrorCode.FILE_SAVE_FAIL);
 			}
 		}
