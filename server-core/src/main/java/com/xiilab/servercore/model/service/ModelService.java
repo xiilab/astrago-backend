@@ -37,7 +37,7 @@ public interface ModelService {
 
 	void astragoModelCreateDirectory(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO);
 
-	void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO);
+	void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathsDTO reqFilePathsDTO);
 
 	DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath);
 

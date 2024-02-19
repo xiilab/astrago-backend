@@ -61,18 +61,26 @@ public class CoreFileUtils {
 
 	public static void deleteFileOrDirectory(String path) {
 		File fileOrDirectory = new File(path);
-		if (fileOrDirectory.isFile()) {
-			fileOrDirectory.delete(); // 파일이면 삭제
-		} else {
-			// 디렉토리면 하위 파일 및 디렉토리를 모두 삭제
-			File[] files = fileOrDirectory.listFiles();
-			if (files != null) {
-				for (File file : files) {
-					deleteFileOrDirectory(file.getPath());
+		String target = fileOrDirectory.getName();
+		try {
+			if (fileOrDirectory.exists()) { // 파일 또는 디렉토리가 존재하는지 확인
+				if (fileOrDirectory.isFile()) {
+					fileOrDirectory.delete(); // 파일이면 삭제
+				} else {
+					// 디렉토리면 하위 파일 및 디렉토리를 모두 삭제
+					File[] files = fileOrDirectory.listFiles();
+					if (files != null) {
+						for (File file : files) {
+							deleteFileOrDirectory(file.getPath());
+						}
+					}
+					// 마지막으로 빈 디렉토리 삭제
+					fileOrDirectory.delete();
 				}
 			}
-			// 마지막으로 빈 디렉토리 삭제
-			fileOrDirectory.delete();
+		} catch (SecurityException e) {
+			log.error("file delete exception : ", e);
+			throw new RestApiException(CommonErrorCode.FILE_PERMISSION_DENIED, target);
 		}
 	}
 	public static long datasetUploadFiles(String path, List<MultipartFile> files) {
