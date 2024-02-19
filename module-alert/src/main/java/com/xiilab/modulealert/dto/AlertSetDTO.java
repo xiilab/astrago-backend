@@ -38,15 +38,4 @@ public class AlertSetDTO {
 		}
 	}
 
-	public static AlertSetEntity convertEntity(AlertSetDTO alertSetDTO){
-		return AlertSetEntity.builder()
-			.workspaceName(alertSetDTO.getWorkspaceName())
-			.workloadStartAlert(alertSetDTO.isWorkloadStartAlert())
-			.workloadEndAlert(alertSetDTO.isWorkloadEndAlert())
-			.workloadErrorAlert(alertSetDTO.isWorkloadErrorAlert())
-			.resourceApprovalAlert(alertSetDTO.isResourceApprovalAlert())
-			.build();
-	}
-
-
 }
