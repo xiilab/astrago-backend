@@ -92,8 +92,9 @@ public class MonitorController {
 	 */
 	@GetMapping("/dashboard/node")
 	@Operation(summary = "관리자 대시보드 Node 리스트 조회")
-	public ResponseEntity<List<ResponseDTO.NodeResponseDTO>> getDashboardNodeList(){
-		return new ResponseEntity<>(monitorService.getNodeList(), HttpStatus.OK);
+	public ResponseEntity<List<ResponseDTO.NodeResponseDTO>> getDashboardNodeList(
+		@RequestParam(name = "status", required = false) String status){
+		return new ResponseEntity<>(monitorService.getNodeList(status), HttpStatus.OK);
 }
 
 	/**
@@ -102,8 +103,9 @@ public class MonitorController {
 	 */
 	@GetMapping("/dashboard/wl")
 	@Operation(summary = "관리자 대시보드 워크로드 리스트 조회")
-	public ResponseEntity<List<ResponseDTO.WorkloadResponseDTO>> getDashboardWlList(){
-		return new ResponseEntity<>(monitorService.getWlList(), HttpStatus.OK);
+	public ResponseEntity<List<ResponseDTO.WorkloadResponseDTO>> getDashboardWlList(
+		@RequestParam(name = "status", required = false) String status){
+		return new ResponseEntity<>(monitorService.getWlList(status), HttpStatus.OK);
 	}
 
 	/**
