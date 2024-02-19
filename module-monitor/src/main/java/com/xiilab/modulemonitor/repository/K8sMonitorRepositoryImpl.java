@@ -206,13 +206,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage){
 		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
-			List<Node> nodeList;
-			if(!StringUtils.isEmpty(nodeName)){
-				nodeList = List.of(kubernetesClient.nodes().withName(nodeName).get());
-			}else {
-				nodeList = kubernetesClient.nodes().list().getItems();
-			}
-
+			List<Node> nodeList = getNodeList(nodeName);
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
@@ -234,12 +228,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage){
 		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
-			List<Node> nodeList;
-			if(!StringUtils.isEmpty(nodeName)){
-				nodeList = List.of(kubernetesClient.nodes().withName(nodeName).get());
-			}else {
-				nodeList = kubernetesClient.nodes().list().getItems();
-			}
+			List<Node> nodeList = getNodeList(nodeName);
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
@@ -259,12 +248,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName){
 		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
-			List<Node> nodeList;
-			if(!StringUtils.isEmpty(nodeName)){
-				nodeList = List.of(kubernetesClient.nodes().withName(nodeName).get());
-			}else {
-				nodeList = kubernetesClient.nodes().list().getItems();
-			}
+			List<Node> nodeList = getNodeList(nodeName);
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 GPU total 값을 합산
@@ -278,6 +262,15 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 				.total(String.valueOf(totalGpuCapacity))
 				.usage(totalGpuRequests)
 				.build();
+		}
+	}
+	private List<Node> getNodeList(String nodeName){
+		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			if (!StringUtils.isEmpty(nodeName)) {
+				return List.of(kubernetesClient.nodes().withName(nodeName).get());
+			} else {
+				return kubernetesClient.nodes().list().getItems();
+			}
 		}
 	}
 
