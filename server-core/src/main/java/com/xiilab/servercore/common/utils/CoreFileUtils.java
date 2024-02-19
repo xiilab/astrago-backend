@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulek8sdb.common.enums.FileType;
-import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -100,12 +100,18 @@ public class CoreFileUtils {
 				for (File file : files) {
 					String fullPath = file.getParent() + File.separator + file.getName();
 					if (file.isDirectory()) {
-						DirectoryDTO.ChildrenDTO dirChild = DirectoryDTO.ChildrenDTO.builder()
-							.name(file.getName())
-							.type(FileType.D)
-							.path(fullPath)
-							.size(CoreFileUtils.formatFileSize(file.length()))
-							.build();
+						DirectoryDTO.ChildrenDTO dirChild = null;
+						try {
+							dirChild = DirectoryDTO.ChildrenDTO.builder()
+								.name(file.getName())
+								.type(FileType.D)
+								.path(fullPath)
+								.size(CoreFileUtils.formatFileSize(file.length()))
+								.fileCount(Files.list(Path.of(fullPath)).count() + " FILES")
+								.build();
+						} catch (IOException e) {
+							throw new RestApiException(CommonErrorCode.FILE_INFO_LOOKUP_FAIL);
+						}
 						directoryCnt += 1;
 						children.add(dirChild);
 					} else if (file.isFile()) {
@@ -114,6 +120,7 @@ public class CoreFileUtils {
 							.type(FileType.F)
 							.path(fullPath)
 							.size(CoreFileUtils.formatFileSize(file.length()))
+							.fileCount(null)
 							.build();
 						fileCnt += 1;
 						children.add(fileChild);
@@ -148,7 +155,7 @@ public class CoreFileUtils {
 						Files.copy(path, zipOutputStream);
 						zipOutputStream.closeEntry();
 					} catch (IOException e) {
-						e.printStackTrace();
+						throw new RestApiException(CommonErrorCode.FILE_INFO_LOOKUP_FAIL);
 					}
 				});
 		}

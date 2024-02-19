@@ -1,7 +1,7 @@
 package com.xiilab.modulek8sdb.code.dto;
 
-import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.enums.CodeType;
+import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.credential.dto.CredentialResDTO;
 
@@ -20,7 +20,7 @@ public class CodeResDTO {
 	private String codeURL;
 	private String workspaceResourceName;
 	private CredentialResDTO credentialResDTO;
-	private RegUser creator;
+	private RegUser regUser;
 
 	public CodeResDTO(CodeEntity codeEntity) {
 		this.id = codeEntity.getId();
@@ -28,6 +28,6 @@ public class CodeResDTO {
 		this.codeURL = codeEntity.getCodeURL();
 		this.workspaceResourceName = codeEntity.getWorkspaceResourceName();
 		this.credentialResDTO = codeEntity.getCredentialEntity() == null ? null : new CredentialResDTO(codeEntity.getCredentialEntity());
-		this.creator = codeEntity.getRegUser();
+		this.regUser = codeEntity.getRegUser();
 	}
 }

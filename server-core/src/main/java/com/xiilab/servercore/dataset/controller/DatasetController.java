@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.service.DatasetFacadeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -148,6 +148,7 @@ public class DatasetController {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(downloadFileResDTO.getMediaType());
+		headers.add("Content-Disposition", "attachment; filename=" + downloadFileResDTO.getFileName());
 		return new ResponseEntity(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
@@ -167,6 +168,7 @@ public class DatasetController {
 			filePath);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(file.getMediaType());
+		headers.add("Content-Disposition", "attachment; filename=" + file.getFileName());
 		return new ResponseEntity(file.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 

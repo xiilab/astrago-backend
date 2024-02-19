@@ -22,7 +22,7 @@ import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
@@ -33,10 +33,12 @@ import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkspaceRepository;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class DatasetServiceImpl implements DatasetService {
 
 	private final DatasetRepository datasetRepository;
@@ -164,6 +166,7 @@ public class DatasetServiceImpl implements DatasetService {
 						.mediaType(MediaType.parseMediaType("application/zip"))
 						.build();
 				} catch (IOException e) {
+					log.error("io exception: " + e);
 					throw new RestApiException(DatasetErrorCode.DATASET_ZIP_DOWNLOAD_FAIL);
 				}
 			}else{
@@ -173,6 +176,7 @@ public class DatasetServiceImpl implements DatasetService {
 				try {
 					fileContent = Files.readAllBytes(targetPath);
 				} catch (IOException e) {
+					log.error("io exception: " + e);
 					throw new RestApiException(DatasetErrorCode.DATASET_FILE_DOWNLOAD_FAIL);
 				}
 				ByteArrayResource resource = new ByteArrayResource(fileContent);
@@ -184,6 +188,7 @@ public class DatasetServiceImpl implements DatasetService {
 					.build();
 			}
 		}else{
+			log.error("path :" + targetPath);
 			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}

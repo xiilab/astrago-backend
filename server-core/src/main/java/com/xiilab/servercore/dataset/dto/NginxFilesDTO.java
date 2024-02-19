@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.dataset.dto;
+package com.xiilab.servercore.dataset.dto;
 
 import com.xiilab.modulek8sdb.common.enums.FileType;
 

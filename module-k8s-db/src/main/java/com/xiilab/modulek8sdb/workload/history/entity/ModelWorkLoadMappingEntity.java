@@ -1,7 +1,9 @@
-package com.xiilab.modulek8sdb.model.entity;
+package com.xiilab.modulek8sdb.workload.history.entity;
+
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.model.entity.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,13 +20,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "TB_MODEL_WORKSPACE_MAPPING")
+@Table(name = "TB_MODEL_WORKLOAD_MAPPING")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class ModelWorkSpaceMappingEntity extends BaseEntity {
+public class ModelWorkLoadMappingEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "MODEL_WORKSPACE_MAPPING_ID")
+	@Column(name = "MODEL_WORKLOAD_MAPPING_ID")
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -32,14 +35,16 @@ public class ModelWorkSpaceMappingEntity extends BaseEntity {
 	@JsonIgnore
 	private Model model;
 
-	@Column(name = "WORKSPACE_RESOURCE_NAME")
-	private String workspaceResourceName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "WORKLOAD_ID")
+	private WorkloadEntity workload;
 
 	@Builder
-	public ModelWorkSpaceMappingEntity(Model model, String workspaceResourceName) {
+	public ModelWorkLoadMappingEntity(Model model, WorkloadEntity workload) {
 		this.model = model;
-		this.workspaceResourceName = workspaceResourceName;
+		this.workload = workload;
 		//연관관계 편의 메서드
-		model.getModelWorkSpaceMappingList().add(this);
+		model.getModelWorkLoadMappingList().add(this);
+		workload.getModelWorkloadMappingList().add(this);
 	}
 }
