@@ -44,7 +44,7 @@ public class AstragoModelEntity extends Model {
 	}
 
 	@Override
-	public boolean isAstargoModel() {
+	public boolean isAstragoModel() {
 		return true;
 	}
 

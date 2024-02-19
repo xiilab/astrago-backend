@@ -141,7 +141,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 				throw new RestApiException(ModelErrorCode.MODEL_NOT_DELETE_IN_USE);
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
-			if (model.isAstargoModel()) {
+			if (model.isAstragoModel()) {
 				//workspace mapping 삭제
 				modelService.deleteModelWorkspaceMappingById(modelId);
 				//dataset 삭제

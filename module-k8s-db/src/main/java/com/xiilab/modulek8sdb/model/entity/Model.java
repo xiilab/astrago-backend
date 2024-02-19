@@ -6,7 +6,7 @@ import java.util.List;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulek8sdb.workload.history.entity.ModelWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -68,6 +68,6 @@ public abstract class Model extends BaseEntity {
 	public void modifyModelName(String modelName){
 		this.modelName = modelName;
 	}
-	public abstract boolean isAstargoModel();
+	public abstract boolean isAstragoModel();
 	public abstract boolean isLocalModel();
 }
