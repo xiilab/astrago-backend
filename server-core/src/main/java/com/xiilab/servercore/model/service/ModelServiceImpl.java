@@ -151,11 +151,13 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
-	public void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO) {
+	public void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathsDTO reqFilePathsDTO) {
 		modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
-		String targetPath = reqFilePathDTO.getPath();
-		CoreFileUtils.deleteFileOrDirectory(targetPath);
+		String[] targetPaths = reqFilePathsDTO.getPaths();
+		for (String targetPath : targetPaths) {
+			CoreFileUtils.deleteFileOrDirectory(targetPath);
+		}
 	}
 
 	@Override

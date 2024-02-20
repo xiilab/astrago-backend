@@ -161,6 +161,10 @@ public class ModelDTO {
 	public static class ReqFilePathDTO {
 		private String path;
 	}
+	@Getter
+	public static class ReqFilePathsDTO {
+		private String[] paths;
+	}
 
 	@Getter
 	@Builder

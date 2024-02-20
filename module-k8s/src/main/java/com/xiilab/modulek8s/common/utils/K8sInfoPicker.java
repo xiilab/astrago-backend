@@ -135,6 +135,7 @@ public class K8sInfoPicker {
 				.gpuReq(containerResourceReq.getGpuReq())
 				.imgName(AnnotationField.IMAGE_NAME.getField())
 				.imgTag(AnnotationField.IMAGE_TAG.getField())
+				.codeIds(annotations.get(AnnotationField.CODE_IDS.getField()))
 				// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
 				// .deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
 				.createdAt(createTime)

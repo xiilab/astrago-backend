@@ -133,8 +133,8 @@ public class ModelController {
 	@PostMapping("/models/astrago/{modelId}/files/delete")
 	@Operation(summary = "astrago model 파일, 디렉토리 삭제")
 	public ResponseEntity<HttpStatus> astragoModelDeleteFiles(@PathVariable(name = "modelId") Long modelId,
-		@RequestBody ModelDTO.ReqFilePathDTO reqFilePathDTO){
-		modelService.astragoModelDeleteFiles(modelId, reqFilePathDTO);
+		@RequestBody ModelDTO.ReqFilePathsDTO reqFilePathsDTO){
+		modelService.astragoModelDeleteFiles(modelId, reqFilePathsDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 

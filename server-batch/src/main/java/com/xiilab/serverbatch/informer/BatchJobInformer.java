@@ -21,6 +21,10 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8sdb.code.entity.CodeEntity;
+import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.code.repository.CodeRepository;
+import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.common.enums.VolumeType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
@@ -54,8 +58,10 @@ public class BatchJobInformer {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
 	private final DatasetRepository datasetRepository;
 	private final ModelRepository modelRepository;
+	private final CodeRepository codeRepository;
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
+	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 	private final AlertService alertService;
 	private final AlertSetService alertSetService;
 
@@ -110,7 +116,6 @@ public class BatchJobInformer {
 								"SYSTEM";
 						try {
 							FileUtils.saveLogFile(logResult, metadataFromResource.getResourceName(), creator);
-
 						} catch (IOException e) {
 							log.error("로그 파일 저장 중 에러가 발생하였습니다.\n" + e.getMessage());
 						}
@@ -154,6 +159,11 @@ public class BatchJobInformer {
 					String[] modelIdList = modelIds != null ? modelIds.split(",") : null;
 					saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
 
+					//소스코드 mapping insert
+					String codeIds = metadataFromResource.getCodeIds();
+					String[] codeIdList = codeIds != null ? codeIds.split(",") : null;
+					saveDataMapping(codeIdList, codeRepository::findById, jobEntity, VolumeType.CODE);
+
 					AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 					// 해당 워크스페이스 알림 설정이 True인 경우
 					if(workspaceAlertSet.isWorkloadEndAlert()){
@@ -185,13 +195,20 @@ public class BatchJobInformer {
 								.workload(jobEntity)
 								.build();
 							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
-						}else{
+						}else if(type == VolumeType.MODEL){
 							Model model = (Model)entity;
 							ModelWorkLoadMappingEntity modelWorkLoadMappingEntity = ModelWorkLoadMappingEntity.builder()
 								.model(model)
 								.workload(jobEntity)
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
+						}else{
+							CodeEntity code = (CodeEntity)entity;
+							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
+								.workload(jobEntity)
+								.code(code)
+								.build();
+							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						}
 					});
 				}
