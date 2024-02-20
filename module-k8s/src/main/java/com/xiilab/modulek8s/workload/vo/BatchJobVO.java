@@ -98,7 +98,7 @@ public class BatchJobVO extends WorkloadVO {
 	public JobSpec createSpec() {
 		return new JobSpecBuilder()
 			// .withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
-			.withTtlSecondsAfterFinished(1000)
+			.withTtlSecondsAfterFinished(10)
 			.withNewTemplate()
 			.withNewMetadata()
 			.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()

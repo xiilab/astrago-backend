@@ -35,8 +35,18 @@ public class AlertSetServiceImpl implements AlertSetService {
 
 	@Override
 	public AlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName) {
-		AlertSetEntity alertSetEntity = getAlertSetEntity(workspaceName);
-		return AlertSetDTO.ResponseDTO.convertResponseDTO(alertSetEntity);
+		if(workspaceName.contains("wl")){
+			AlertSetEntity alertSetEntity = getAlertSetEntity(workspaceName);
+			return AlertSetDTO.ResponseDTO.convertResponseDTO(alertSetEntity);
+		}else {
+			return AlertSetDTO.ResponseDTO.builder()
+				.workloadEndAlert(false)
+				.workloadErrorAlert(false)
+				.workloadStartAlert(false)
+				.resourceApprovalAlert(false)
+				.resourceApprovalAlert(false)
+				.build();
+		}
 	}
 
 	@Override

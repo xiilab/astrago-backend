@@ -106,7 +106,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					volumeService.deletePV(model.getCreatePV().getPvName());
 				}
 			}
-
 		}
 
 		return moduleJobResDTO;

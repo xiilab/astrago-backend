@@ -87,6 +87,8 @@ public class WorkloadFacadeService {
 		}
 
 		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+
+		alertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
 	}
 
 	private void setCodeCredentialReqDTO(List<ModuleCodeReqDTO> codes) {
