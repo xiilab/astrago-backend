@@ -62,6 +62,7 @@ public class WorkloadFacadeService {
 
 		workloadModuleFacadeService.createJobWorkload(
 			moduleCreateWorkloadReqDTO.toModuleDTO());
+		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,

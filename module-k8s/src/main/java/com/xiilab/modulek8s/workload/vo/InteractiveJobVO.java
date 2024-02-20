@@ -59,7 +59,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			.withAnnotations(
 				Map.of(
 					AnnotationField.NAME.getField(), getName(),
-					AnnotationField.WORKSPACE_NAME.getField(), getWorkspace(),
+					AnnotationField.WORKSPACE_NAME.getField(), getWorkspaceName(),
 					AnnotationField.DESCRIPTION.getField(), getDescription(),
 					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
 					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName(),

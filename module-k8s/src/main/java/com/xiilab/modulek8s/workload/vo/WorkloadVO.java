@@ -31,6 +31,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public abstract class WorkloadVO extends K8SResourceReqVO {
 	String workspace;        //워크스페이스
+	String workspaceName;	 //워크스페이스 이름
 	WorkloadType workloadType;        // 워크로드 타입
 	JobImageVO image;        //사용할 image
 	int gpuRequest;        // 워크로드 gpu 요청량

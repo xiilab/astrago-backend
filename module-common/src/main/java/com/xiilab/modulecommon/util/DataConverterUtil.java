@@ -84,9 +84,16 @@ public class DataConverterUtil {
 	 * @param metric 매핑될 metric
 	 * @return 매핑된 값
 	 */
-	public static String formatObjectMapper(String metric){
-		try{
-			return objectMapper.readTree(metric).get("data").get("result").elements().next().get("value").get(1).asText();
+	public static String formatObjectMapper(String metric) {
+		try {
+			JsonNode root = objectMapper.readTree(metric);
+			JsonNode valueNode = root.path("data").path("result");
+
+			if (valueNode.isMissingNode() || !valueNode.elements().hasNext()) {
+				return "";
+			}
+
+			return valueNode.elements().next().get("value").get(1).asText();
 		} catch (JsonProcessingException e) {
 			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
 		}
