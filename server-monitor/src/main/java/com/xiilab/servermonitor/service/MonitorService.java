@@ -277,12 +277,12 @@ public class MonitorService {
 		// GPU
 		String gpuMetric = prometheus.getRealTimeMetricByQuery(
 			String.format(Promql.GPU_USAGE.getQuery(), result));
-		// MEM
-		String memMetric = prometheus.getRealTimeMetricByQuery(
-			String.format(Promql.GPU_MEM_USAGE.getQuery(), result, result, result));
 		if(nodeName != null){
 			result = "node = \"" + nodeName + "\"";
 		}
+		// MEM
+		String memMetric = prometheus.getRealTimeMetricByQuery(
+			String.format(Promql.NODE_MEM_USAGE.getQuery(), result));
 		// CPU
 		String cpuMetric = prometheus.getRealTimeMetricByQuery(
 			String.format(Promql.CPU_USAGE.getQuery(), result));
