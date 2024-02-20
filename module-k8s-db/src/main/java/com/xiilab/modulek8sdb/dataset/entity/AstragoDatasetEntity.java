@@ -44,7 +44,7 @@ public class AstragoDatasetEntity extends Dataset {
 		this.datasetSize = size;
 	}
 	@Override
-	public boolean isAstargoDataset() {
+	public boolean isAstragoDataset() {
 		return true;
 	}
 

@@ -32,27 +32,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(RestApiException.class)
 	public ResponseEntity<Object> handleCustomException(RestApiException e) {
 		ErrorCode errorCode = e.getErrorCode();
+		String target = e.getTarget();
+		if(!target.isBlank()){
+			String msg = String.format(errorCode.getMessage(), target);
+			log.error("restApiException :" + msg);
+			return handleExceptionInternal(errorCode, msg);
+		}
+		log.error("restApiException :" + errorCode.getMessage());
 		return handleExceptionInternal(errorCode);
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException e) {
-		log.warn("handleIllegalArgument", e);
+		log.error("handleIllegalArgument", e);
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
 		return handleExceptionInternal(errorCode, e.getMessage());
 	}
 
 	@ExceptionHandler({Exception.class})
 	public ResponseEntity<Object> handleAllException(Exception ex) {
-		log.warn("handleAllException", ex);
-		log.warn(String.valueOf(ex.getStackTrace()));
+		log.error("handleAllException", ex);
+		log.error(String.valueOf(ex.getStackTrace()));
 		ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
 		return handleExceptionInternal(errorCode);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<Object> handleControllerArgumentNotValid(ConstraintViolationException ex) {
-		log.warn("handleControllerArgumentNotValid", ex);
+		log.error("handleControllerArgumentNotValid", ex);
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
 		return handleExceptionInternal(ex, errorCode);
 	}
@@ -60,7 +67,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(
 		MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status,
 		WebRequest request) {
-		log.warn("handleIllegalArgument", ex);
+		log.error("handleIllegalArgument", ex);
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
 		return handleExceptionInternal(ex, errorCode);
 	}

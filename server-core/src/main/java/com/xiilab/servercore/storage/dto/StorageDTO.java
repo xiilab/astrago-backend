@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.storage.dto;
+package com.xiilab.servercore.storage.dto;
 
 import java.util.List;
 
@@ -32,6 +32,23 @@ public class StorageDTO {
 		private String pvcName;
 		private String volumeName;
 		private int requestVolume;
+
+		public StorageEntity toEntity(){
+			return StorageEntity.builder()
+				.storageName(this.storageName)
+				.requestVolume(this.requestVolume)
+				.description(this.description)
+				.storageType(this.storageType)
+				.ip(this.ip)
+				.storagePath(this.storagePath)
+				.hostPath(this.hostPath)
+				.astragoDeploymentName(this.astragoDeploymentName)
+				.namespace(this.namespace)
+				.pvName(this.pvName)
+				.pvcName(this.pvcName)
+				.volumeName(this.volumeName)
+				.build();
+		}
 	}
 
 	@Getter

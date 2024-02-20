@@ -22,7 +22,7 @@ import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
@@ -33,10 +33,12 @@ import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkspaceRepository;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class DatasetServiceImpl implements DatasetService {
 
 	private final DatasetRepository datasetRepository;
@@ -56,7 +58,7 @@ public class DatasetServiceImpl implements DatasetService {
 			// 업로드된 각 파일에 대해 작업 수행
 			if(files != null){
 				for (MultipartFile file : files) {
-					Path targetPath = uploadPath.resolve(file.getOriginalFilename());
+					Path targetPath = uploadPath.resolve(file.getOriginalFilename().replace(" ", "_"));
 					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 					size += file.getSize();
 				}
@@ -138,11 +140,13 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathsDTO reqFilePathsDTO) {
 		datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
-		String targetPath = reqFilePathDTO.getPath();
-		CoreFileUtils.deleteFileOrDirectory(targetPath);
+		String[] targetPaths = reqFilePathsDTO.getPaths();
+		for (String targetPath : targetPaths) {
+			CoreFileUtils.deleteFileOrDirectory(targetPath);
+		}
 	}
 
 	@Override
@@ -164,6 +168,7 @@ public class DatasetServiceImpl implements DatasetService {
 						.mediaType(MediaType.parseMediaType("application/zip"))
 						.build();
 				} catch (IOException e) {
+					log.error("io exception: " + e);
 					throw new RestApiException(DatasetErrorCode.DATASET_ZIP_DOWNLOAD_FAIL);
 				}
 			}else{
@@ -173,6 +178,7 @@ public class DatasetServiceImpl implements DatasetService {
 				try {
 					fileContent = Files.readAllBytes(targetPath);
 				} catch (IOException e) {
+					log.error("io exception: " + e);
 					throw new RestApiException(DatasetErrorCode.DATASET_FILE_DOWNLOAD_FAIL);
 				}
 				ByteArrayResource resource = new ByteArrayResource(fileContent);
@@ -184,6 +190,7 @@ public class DatasetServiceImpl implements DatasetService {
 					.build();
 			}
 		}else{
+			log.error("path :" + targetPath);
 			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}

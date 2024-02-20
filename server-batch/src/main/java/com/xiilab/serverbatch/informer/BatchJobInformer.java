@@ -5,14 +5,37 @@ import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
-import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.dto.AlertSetDTO;
+import com.xiilab.modulealert.enumeration.AlertMessage;
+import com.xiilab.modulealert.enumeration.AlertType;
+import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulealert.service.AlertSetService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8sdb.code.entity.CodeEntity;
+import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.code.repository.CodeRepository;
+import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.common.enums.VolumeType;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
+import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.model.entity.Model;
+import com.xiilab.modulek8sdb.model.repository.ModelRepository;
+import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.WorkloadType;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;
@@ -33,13 +56,21 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchJobInformer {
 	private final K8sAdapter k8sAdapter;
 	private final WorkloadHistoryRepo workloadHistoryRepo;
+	private final DatasetRepository datasetRepository;
+	private final ModelRepository modelRepository;
+	private final CodeRepository codeRepository;
+	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
+	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
+	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
+	private final AlertService alertService;
+	private final AlertSetService alertSetService;
 
 	@PostConstruct
 	void doInformer() {
 		jobInformer();
 	}
 
-	private void jobInformer() {
+	public void jobInformer() {
 		KubernetesClient kubernetesClient = k8sAdapter.configServer();
 		SharedInformerFactory informers = kubernetesClient.informers();
 		SharedIndexInformer<Job> jobSharedIndexInformer = informers.sharedIndexInformerFor(
@@ -48,6 +79,19 @@ public class BatchJobInformer {
 			@Override
 			public void onAdd(Job job) {
 				log.info("{} batch job이 생성되었습니다.", job.getMetadata().getName());
+
+				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
+
+				AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+				// 해당 워크스페이스 알림 설정이 True인 경우
+				if(workspaceAlertSet.isWorkloadStartAlert()){
+					alertService.sendAlert(AlertDTO.builder()
+						.recipientId(batchWorkloadInfoFromResource.getCreatorId())
+						.alertType(AlertType.WORKLOAD)
+						.message(String.format(AlertMessage.WORKSPACE_START.getMessage(), job.getMetadata().getName()))
+						.senderId("SYSTEM")
+						.build());
+				}
 			}
 
 			@Override
@@ -59,7 +103,7 @@ public class BatchJobInformer {
 						K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job2);
 						Pod pod = kubernetesClient.pods()
 							.inNamespace(namespace)
-							.withLabels(Map.of("app", metadataFromResource.getResourceName()))
+							.withLabels(Map.of(LabelField.APP.getField(), metadataFromResource.getResourceName()))
 							.list()
 							.getItems()
 							.get(0);
@@ -87,7 +131,7 @@ public class BatchJobInformer {
 				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
 				if (metadataFromResource != null) {
-					workloadHistoryRepo.save(JobEntity.jobBuilder()
+					JobEntity jobEntity = JobEntity.jobBuilder()
 						.name(metadataFromResource.getName())
 						.description(metadataFromResource.getDescription())
 						.resourceName(metadataFromResource.getResourceName())
@@ -100,15 +144,79 @@ public class BatchJobInformer {
 						.cmd(String.join(" ", container.getCommand()))
 						.createdAt(metadataFromResource.getCreatedAt())
 						.deletedAt(metadataFromResource.getDeletedAt())
-						.creatorName(metadataFromResource.getCreatorName())
+						.creatorName(metadataFromResource.getCreatorUserName())
 						.creatorId(metadataFromResource.getCreatorId())
 						.workloadType(WorkloadType.BATCH)
-						.build());
+						.build();
+					workloadHistoryRepo.save(jobEntity);
+
+					// dataset, model mapping insert
+					String datasetIds = metadataFromResource.getDatasetIds();
+					String[] datasetIdList = datasetIds != null ? datasetIds.split(",") : null;
+					saveDataMapping(datasetIdList, datasetRepository::findById, jobEntity, VolumeType.DATASET);
+
+					String modelIds = metadataFromResource.getModelIds();
+					String[] modelIdList = modelIds != null ? modelIds.split(",") : null;
+					saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
+
+					//소스코드 mapping insert
+					String codeIds = metadataFromResource.getCodeIds();
+					String[] codeIdList = codeIds != null ? codeIds.split(",") : null;
+					saveDataMapping(codeIdList, codeRepository::findById, jobEntity, VolumeType.CODE);
+
+					AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+					// 해당 워크스페이스 알림 설정이 True인 경우
+					if(workspaceAlertSet.isWorkloadEndAlert()){
+						alertService.sendAlert(AlertDTO.builder()
+							.recipientId(metadataFromResource.getCreatorId())
+							.alertType(AlertType.WORKLOAD)
+							.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
+							.senderId("SYSTEM")
+							.build());
+					}
 				}
 			}
 		});
 
 		log.info("Starting all registered batch job informers");
 		informers.startAllRegisteredInformers();
+	}
+	// 데이터셋 또는 모델 정보를 저장하는 메서드
+	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity, VolumeType type) {
+		if (ids != null) {
+			for (String id : ids) {
+				if (StringUtils.hasText(id)) {
+					Optional<?> optionalEntity = findByIdFunction.apply(Long.valueOf(id));
+					optionalEntity.ifPresent(entity -> {
+						if(type == VolumeType.DATASET){
+							Dataset dataset = (Dataset)entity;
+							DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity = DatasetWorkLoadMappingEntity.builder()
+								.dataset(dataset)
+								.workload(jobEntity)
+								.build();
+							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
+						}else if(type == VolumeType.MODEL){
+							Model model = (Model)entity;
+							ModelWorkLoadMappingEntity modelWorkLoadMappingEntity = ModelWorkLoadMappingEntity.builder()
+								.model(model)
+								.workload(jobEntity)
+								.build();
+							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
+						}else{
+							CodeEntity code = (CodeEntity)entity;
+							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
+								.workload(jobEntity)
+								.code(code)
+								.build();
+							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
+						}
+					});
+				}
+			}
+		}
+	}
+
+	private AlertSetDTO.ResponseDTO getAlertSet(String workspaceName){
+		return alertSetService.getWorkspaceAlertSet(workspaceName);
 	}
 }

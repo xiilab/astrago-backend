@@ -16,9 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.dto.AlertSetDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulealert.service.AlertSetService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulecommon.enums.StorageType;
@@ -34,8 +36,8 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
-import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
@@ -53,17 +55,19 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final PinService pinService;
-	private final AlertService alertService;
 	private final DatasetService datasetService;
 	private final WorkloadHistoryService workloadHistoryService;
 	private final CredentialService credentialService;
+	private final AlertSetService alertSetService;
+	private final AlertService alertService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
 			userInfoDTO.getUserFullName());
 
 		// 이미지 credential 세팅
-		if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getImage().getCredentialId()) &&  moduleCreateWorkloadReqDTO.getImage().getCredentialId() > 0) {
+		if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getImage().getCredentialId())
+			&& moduleCreateWorkloadReqDTO.getImage().getCredentialId() > 0) {
 			setImageCredentialReqDTO(moduleCreateWorkloadReqDTO.getImage(), userInfoDTO);
 		}
 
@@ -83,14 +87,6 @@ public class WorkloadFacadeService {
 		}
 
 		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
-
-		// 워크로드 생성 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
-			.build());
 	}
 
 	private void setCodeCredentialReqDTO(List<ModuleCodeReqDTO> codes) {
@@ -301,13 +297,17 @@ public class WorkloadFacadeService {
 			WorkloadType.BATCH);
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
-		// 워크로드 삭제 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.DELETE_WORKLOAD.getMessage(), workloadName))
-			.build());
+
+		AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(workloadName);
+		// 해당 워크스페이스 알림 설정이 True인 경우
+		if(workspaceAlertSet.isWorkloadEndAlert()){
+			alertService.sendAlert(AlertDTO.builder()
+				.recipientId(userInfoDTO.getId())
+				.senderId("SYSTEM")
+				.alertType(AlertType.WORKLOAD)
+				.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), workloadName))
+				.build());
+		}
 	}
 
 	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
@@ -316,13 +316,17 @@ public class WorkloadFacadeService {
 			WorkloadType.INTERACTIVE);
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
-		// 워크로드 삭제 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.DELETE_WORKLOAD.getMessage(), workloadName))
-			.build());
+		// 해당 워크스페이스 알림 설정이 True인 경우
+
+		AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(workloadName);
+		if(workspaceAlertSet.isWorkloadEndAlert()){
+			alertService.sendAlert(AlertDTO.builder()
+				.recipientId(userInfoDTO.getId())
+				.senderId("SYSTEM")
+				.alertType(AlertType.WORKLOAD)
+				.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), workloadName))
+				.build());
+		}
 	}
 
 	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {

@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
-import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
@@ -15,7 +15,7 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
 
 public interface ModelService {
-	void insertAstragoDataset(AstragoModelEntity astragoModel, List<MultipartFile> files);
+	void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files);
 
 	void insertLocalModel(LocalModelEntity localModelEntity);
 
@@ -37,7 +37,7 @@ public interface ModelService {
 
 	void astragoModelCreateDirectory(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO);
 
-	void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO);
+	void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathsDTO reqFilePathsDTO);
 
 	DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath);
 

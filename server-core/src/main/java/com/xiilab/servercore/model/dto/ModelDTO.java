@@ -44,7 +44,7 @@ public class ModelDTO {
 		private boolean isAvailable;
 
 		public static ModelDTO.ResModel toDto(Model model) {
-			if (model.isAstargoModel()) {
+			if (model.isAstragoModel()) {
 				return ResModel.builder()
 					.modelId(model.getModelId())
 					.storageType(((AstragoModelEntity)model).getStorageEntity().getStorageType())
@@ -108,7 +108,7 @@ public class ModelDTO {
 		private List<WorkloadResDTO.UsingModelDTO> usingModels;
 
 		public static ModelDTO.ResModelWithStorage toDto(Model model){
-			if (model.isAstargoModel()) {
+			if (model.isAstragoModel()) {
 				return ResModelWithStorage.builder()
 					.modelId(model.getModelId())
 					.storageType(((AstragoModelEntity)model).getStorageEntity().getStorageType())
@@ -161,6 +161,10 @@ public class ModelDTO {
 	public static class ReqFilePathDTO {
 		private String path;
 	}
+	@Getter
+	public static class ReqFilePathsDTO {
+		private String[] paths;
+	}
 
 	@Getter
 	@Builder
@@ -175,7 +179,7 @@ public class ModelDTO {
 		private boolean isAvailable;
 
 		public static ModelInWorkspace entityToDto(Model model) {
-			if (model.isAstargoModel()) {
+			if (model.isAstragoModel()) {
 				return ModelInWorkspace.builder()
 					.modelId(model.getModelId())
 					.modelName(model.getModelName())
@@ -200,7 +204,7 @@ public class ModelDTO {
 			return null;
 		}
 		public static ModelInWorkspace mappingEntityToDto(ModelWorkSpaceMappingEntity model){
-			if (model.getModel().isAstargoModel()) {
+			if (model.getModel().isAstragoModel()) {
 				return ModelInWorkspace.builder()
 					.modelId(model.getModel().getModelId())
 					.modelName(model.getModel().getModelName())

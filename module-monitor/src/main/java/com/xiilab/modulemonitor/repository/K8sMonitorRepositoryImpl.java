@@ -3,18 +3,22 @@ package com.xiilab.modulemonitor.repository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulemonitor.config.K8sAdapter;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.K8sErrorStatus;
 import com.xiilab.modulemonitor.service.K8sMonitorService;
 
 import io.fabric8.kubernetes.api.model.Event;
+import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -157,7 +161,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 			// K8s 워크로드 리스트 조회
 			return kubernetesClient.pods().list().getItems().stream().map(pod ->
 				ResponseDTO.WorkloadResponseDTO.builder()
-					.wlName(pod.getMetadata().getNamespace())
+					.wlName(pod.getMetadata().getName())
+					.wsName(pod.getMetadata().getNamespace())
 					.status(pod.getStatus().getPhase())
 					.build()).toList();
 		}
@@ -197,4 +202,206 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorService {
 				.build();
 		}
 	}
+
+	@Override
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage){
+		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
+			List<Node> nodeList = getNodeList(nodeName);
+			List<Pod> podList = kubernetesClient.pods().list().getItems();
+
+			// 모든 노드의 CPU total 값을 합산
+			int totalCpuCapacity = totalCapacity(nodeList, "CPU");
+
+			// 모든 노드의 request 값을 합산
+			String totalCpuRequests = totalRequests(nodeList, podList, "CPU");
+			String request = DataConverterUtil.roundToString(totalCpuRequests);
+
+			return ResponseDTO.ResponseClusterDTO.builder()
+				.name("CPU")
+				.total(totalCpuCapacity + " CORE")
+				.request(DataConverterUtil.roundToNearestHalf(Double.parseDouble(request)) + " CORE")
+				.usage(DataConverterUtil.roundToNearestHalf((totalCpuCapacity * cpuUsage) / 100) + " CORE")
+				.build();
+		}
+	}
+
+	@Override
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage){
+		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
+			List<Node> nodeList = getNodeList(nodeName);
+			List<Pod> podList = kubernetesClient.pods().list().getItems();
+
+			// 모든 노드의 CPU total 값을 합산
+			int totalMemCapacity = totalCapacity(nodeList, "MEM");
+
+			// 모든 노드의 request 값을 합산
+			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
+
+			return ResponseDTO.ResponseClusterDTO.builder()
+				.name("MEMORY")
+				.total(totalMemCapacity + " Ki")
+				.request(totalMemRequests+ " Ki")
+				.usage(memUsage + " Ki")
+				.build();
+		}
+	}
+	@Override
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName){
+		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
+			List<Node> nodeList = getNodeList(nodeName);
+			List<Pod> podList = kubernetesClient.pods().list().getItems();
+
+			// 모든 노드의 GPU total 값을 합산
+			int totalGpuCapacity = totalCapacity(nodeList, "GPU");
+
+			// 모든 노드의 request 값을 합산
+			String totalGpuRequests = totalRequests(nodeList, podList, "GPU");
+
+			return ResponseDTO.ResponseClusterDTO.builder()
+				.name("GPU")
+				.total(String.valueOf(totalGpuCapacity))
+				.usage(totalGpuRequests)
+				.build();
+		}
+	}
+	private List<Node> getNodeList(String nodeName){
+		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			if (!StringUtils.isEmpty(nodeName)) {
+				return List.of(kubernetesClient.nodes().withName(nodeName).get());
+			} else {
+				return kubernetesClient.nodes().list().getItems();
+			}
+		}
+	}
+
+	private int totalCapacity(List<Node> nodeList, String resourceName){
+		return switch (resourceName) {
+			case "CPU" ->
+				nodeList.stream()
+					.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("cpu").toString()))
+					.sum();
+			case "MEM" ->
+				nodeList.stream()
+					.mapToInt(node ->
+						Integer.parseInt(node.getStatus().getCapacity().get("memory").toString().replace("Ki", "")))
+					.sum();
+			case "GPU" ->
+				nodeList.stream()
+					.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu")))
+					.mapToInt(node ->
+						Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
+					.sum();
+			default -> 0;
+		};
+	}
+
+	private String totalRequests(List<Node> nodeList, List<Pod> podList, String resourceName){
+		return switch (resourceName) {
+			case "CPU" ->
+				nodeList.stream()
+					.map(node -> {
+						List<Pod> runningPodsOnNode = podList.stream()
+							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+							.toList();
+
+						return calculateTotalCpuRequests(runningPodsOnNode);
+					})
+					.reduce("0", (x, y) ->
+						String.valueOf(DataConverterUtil.parseAndSum(x, y)));
+			case "GPU" ->
+				nodeList.stream()
+					.map(node -> {
+						List<Pod> runningPodsOnNode = podList.stream()
+							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+							.toList();
+
+						return calculateTotalGpuRequests(runningPodsOnNode);
+					}).reduce("0", (x, y) -> String.valueOf(Integer.parseInt(x) + Integer.parseInt(y)));
+			case "MEM" ->
+				nodeList.stream()
+					.map(node -> {
+						List<Pod> runningPodsOnNode = podList.stream()
+							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+							.toList();
+
+						return calculateTotalMemRequests(runningPodsOnNode);
+					})
+					.reduce("0", (x, y) ->
+						String.valueOf(DataConverterUtil.parseAndSum(x, y)));
+			default -> "";
+		};
+	}
+
+	private String calculateTotalCpuRequests(List<Pod> podList) {
+		String containerResult = podList.stream()
+			.flatMap(pod -> pod.getSpec().getContainers().stream())
+			.filter(container -> container.getResources().getRequests().get("cpu") != null)
+			.map(container -> {
+				String cpuAmount = container.getResources().getRequests().get("cpu").getAmount();
+				String cpuFormat = container.getResources().getRequests().get("cpu").getFormat();
+				if (cpuFormat.isBlank()) {
+					return cpuAmount + "000";
+				} else {
+					return cpuAmount;
+				}
+			})
+			.reduce("0", (acc, val) -> String.valueOf(Integer.parseInt(acc) + Integer.parseInt(val)));
+
+		String initContainerResult = podList.stream()
+			.flatMap(pod -> pod.getSpec().getInitContainers().stream())
+			.filter(container -> container.getResources().getRequests().get("cpu") != null)
+			.map(container -> {
+				String cpuAmount = container.getResources().getRequests().get("cpu").getAmount();
+				String cpuFormat = container.getResources().getRequests().get("cpu").getFormat();
+				if (cpuFormat.isBlank()) {
+					return cpuAmount + "000";
+				} else {
+					return cpuAmount;
+				}
+			})
+			.reduce("0", (acc, val) -> String.valueOf(Integer.parseInt(acc) + Integer.parseInt(val)));
+
+		return String.valueOf(Integer.parseInt(containerResult) + Integer.parseInt(initContainerResult));
+	}
+
+	private String calculateTotalGpuRequests(List<Pod> podList) {
+		String containerResult = podList.stream()
+			.flatMap(pod -> pod.getSpec().getContainers().stream())
+			.filter(container -> container.getResources().getRequests().get("nvidia.com/gpu") != null)
+			.map(container -> {
+				String cpuAmount = container.getResources().getRequests().get("nvidia.com/gpu").getAmount();
+				return cpuAmount;
+			})
+			.reduce("0", (acc, val) -> String.valueOf(Integer.parseInt(acc) + Integer.parseInt(val)));
+
+		return String.valueOf(Integer.parseInt(containerResult));
+	}
+	private String calculateTotalMemRequests(List<Pod> podList) {
+		String containerResult = podList.stream()
+			.flatMap(pod -> pod.getSpec().getContainers().stream())
+			.filter(container -> container.getResources().getRequests().get("memory") != null)
+			.map(container -> {
+				String memAmount = container.getResources().getRequests().get("memory").getAmount();
+				String memFormat = container.getResources().getRequests().get("memory").getFormat();
+				// 메모리 요청의 단위를 킬로바이트(KiB)로 변환하여 합산
+				long memInKiB = DataConverterUtil.convertToKiB(memAmount, memFormat);
+				return String.valueOf(memInKiB);
+			})
+			.reduce("0", (acc, val) -> String.valueOf(Long.parseLong(acc) + Long.parseLong(val)));
+
+		String initContainerResult = podList.stream()
+			.flatMap(pod -> pod.getSpec().getInitContainers().stream())
+			.filter(container -> container.getResources().getRequests().get("memory") != null)
+			.map(container -> {
+				String memAmount = container.getResources().getRequests().get("memory").getAmount();
+				String memFormat = container.getResources().getRequests().get("memory").getFormat();
+				// 메모리 요청의 단위를 킬로바이트(KiB)로 변환하여 합산
+				long memInKiB = DataConverterUtil.convertToKiB(memAmount, memFormat);
+				return String.valueOf(memInKiB);
+			})
+			.reduce("0", (acc, val) -> String.valueOf(Long.parseLong(acc) + Long.parseLong(val)));
+
+		return String.valueOf(Integer.parseInt(containerResult) + Integer.parseInt(initContainerResult));
+	}
+
 }

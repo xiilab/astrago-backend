@@ -29,9 +29,9 @@ import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.common.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
-import com.xiilab.modulek8sdb.dataset.dto.NginxFilesDTO;
+import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
@@ -142,7 +142,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				throw new RestApiException(DatasetErrorCode.DATASET_NOT_DELETE_IN_USE);
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
-			if (dataset.isAstargoDataset()) {
+			if (dataset.isAstragoDataset()) {
 				//workspace mapping 삭제
 				datasetService.deleteDatasetWorkspaceMappingById(datasetId);
 				//dataset 삭제

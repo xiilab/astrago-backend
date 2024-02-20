@@ -15,6 +15,8 @@ import org.springframework.util.CollectionUtils;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.LabelField;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -115,21 +117,29 @@ public class K8sInfoPicker {
 			Map<String, String> annotations = metadata.getAnnotations();
 			Container container = getContainerFromHasMetadata(job);
 			ResourceDTO containerResourceReq = getContainerResourceReq(container);
+			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
-				.name(annotations.get("name"))
-				.description(annotations.get("description"))
+				.name(AnnotationField.NAME.getField())
+				.description(AnnotationField.DESCRIPTION.getField())
 				.resourceName(metadata.getName())
-				.creatorId(annotations.get("creator-id"))
-				.creatorName(annotations.get("creator-name"))
-				.workspaceName(annotations.get("ws-name"))
+				.creatorId(annotations.get(LabelField.CREATOR_ID.getField()))
+				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
+				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
+				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
+				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
+				.workspaceName(AnnotationField.WORKSPACE_NAME.getField())
 				.workspaceResourceName(metadata.getNamespace())
-				.createdAt(LocalDateTime.parse(annotations.get("created-at")))
-				.imgName(annotations.get("image-name"))
-				.imgTag(annotations.get("image-tag"))
 				.cpuReq(containerResourceReq.getCpuReq())
 				.memReq(containerResourceReq.getMemReq())
 				.gpuReq(containerResourceReq.getGpuReq())
-				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.imgName(AnnotationField.IMAGE_NAME.getField())
+				.imgTag(AnnotationField.IMAGE_TAG.getField())
+				.codeIds(annotations.get(AnnotationField.CODE_IDS.getField()))
+				// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+				// .deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.createdAt(createTime)
+				.deletedAt(deleteTime)
 				.build();
 		} catch (NullPointerException e) {
 			return null;
@@ -148,6 +158,7 @@ public class K8sInfoPicker {
 		ResourceDTO containerResourceReq = getContainerResourceReq(container);
 		return K8SResourceMetadataDTO.builder()
 			.name(metadata.getName())
+			.resourceName(metadata.getLabels().get("app"))
 			.workspaceName(metadata.getNamespace())
 			.workspaceResourceName(metadata.getNamespace())
 			.cpuReq(containerResourceReq.getCpuReq())
@@ -155,6 +166,7 @@ public class K8sInfoPicker {
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imgName(container.getImage().split(":")[0])
 			.imgTag(container.getImage().split(":")[1])
+			// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
 			.deletedAt(LocalDateTime.now())
 			.build();
@@ -173,21 +185,28 @@ public class K8sInfoPicker {
 			Map<String, String> annotations = metadata.getAnnotations();
 			Container container = getContainerFromHasMetadata(deployment);
 			ResourceDTO containerResourceReq = getContainerResourceReq(container);
+			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
-				.name(annotations.get("name"))
-				.description(annotations.get("description"))
+				.name(AnnotationField.NAME.getField())
+				.description(AnnotationField.DESCRIPTION.getField())
 				.resourceName(metadata.getName())
-				.creatorId(annotations.get("creator-id"))
-				.creatorName(annotations.get("creator-name"))
-				.workspaceName(annotations.get("ws-name"))
+				.creatorId(annotations.get(LabelField.CREATOR_ID.getField()))
+				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
+				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
+				.workspaceName(AnnotationField.WORKSPACE_NAME.getField())
 				.workspaceResourceName(metadata.getNamespace())
 				.cpuReq(containerResourceReq.getCpuReq())
 				.memReq(containerResourceReq.getMemReq())
 				.gpuReq(containerResourceReq.getGpuReq())
-				.createdAt(LocalDateTime.parse(annotations.get("created-at")))
-				.imgName(annotations.get("image-name"))
-				.imgTag(annotations.get("image-tag"))
-				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.imgName(AnnotationField.IMAGE_NAME.getField())
+				.imgTag(AnnotationField.IMAGE_TAG.getField())
+				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
+				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
+				// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+				// .deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.createdAt(createTime)
+				.deletedAt(deleteTime)
 				.build();
 		} catch (NullPointerException e) {
 			return null;
@@ -206,6 +225,7 @@ public class K8sInfoPicker {
 		ResourceDTO containerResourceReq = getContainerResourceReq(container);
 		return K8SResourceMetadataDTO.builder()
 			.name(metadata.getName())
+			.resourceName(metadata.getLabels().get("app"))
 			.workspaceName(metadata.getNamespace())
 			.workspaceResourceName(metadata.getNamespace())
 			.cpuReq(containerResourceReq.getCpuReq())
@@ -213,6 +233,7 @@ public class K8sInfoPicker {
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imgName(container.getImage().split(":")[0])
 			.imgTag(container.getImage().split(":")[1])
+			// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
 			.deletedAt(LocalDateTime.now())
 			.build();

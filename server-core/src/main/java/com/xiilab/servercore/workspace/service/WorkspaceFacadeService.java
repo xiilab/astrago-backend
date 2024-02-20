@@ -2,6 +2,7 @@ package com.xiilab.servercore.workspace.service;
 
 import java.util.List;
 
+import com.xiilab.modulealert.dto.AlertSetDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -35,5 +36,7 @@ public interface WorkspaceFacadeService {
 	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO);
 
 	void deleteResourceQuota(long id);
-	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(UserInfoDTO userInfoDTO);
+	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserInfoDTO userInfoDTO);
+	AlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName);
+	AlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, AlertSetDTO alertSetDTO);
 }

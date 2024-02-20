@@ -41,6 +41,8 @@ import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 import com.xiilab.modulek8s.workload.svc.service.SvcService;
+import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
@@ -50,6 +52,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeService {
 	private final WorkloadModuleService workloadModuleService;
+	private final WorkspaceService workspaceService;
 	private final VolumeService volumeService;
 	private final SvcService svcService;
 	private final LogService logService;
@@ -57,6 +60,10 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 	@Override
 	public ModuleJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+		//생성 요청한 workspace가 존재하는지 확인
+		WorkspaceDTO.ResponseDTO workspaceByName = workspaceService.getWorkspaceByName(
+			moduleCreateWorkloadReqDTO.getWorkspace());
+
 		WorkloadType workloadType = moduleCreateWorkloadReqDTO.getWorkloadType();
 		// Secret 생성
 		if (moduleCreateWorkloadReqDTO.getImage().getRepositoryAuthType() == RepositoryAuthType.PRIVATE) {
@@ -71,9 +78,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
 
 			if (workloadType == WorkloadType.BATCH) {
-				moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO);
+				moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO,
+					workspaceByName.getName());
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
-				moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO);
+				moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO,
+					workspaceByName.getName());
 			}
 
 			CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
@@ -296,11 +305,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		String storagePath = createDto.getStoragePath();
 		String namespace = createDto.getNamespace();
 		String pvcName = "astrago-model-pvc-" + UUID.randomUUID().toString().substring(6);
-		String pvName = "astrago-model-pv-"+ UUID.randomUUID().toString().substring(6);
-		String svcName = "astrago-model-svc-"+ UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-model-pv-" + UUID.randomUUID().toString().substring(6);
+		String svcName = "astrago-model-svc-" + UUID.randomUUID().toString().substring(6);
 		String modelDeploymentName = "astrago-model-" + UUID.randomUUID().toString().substring(6);
-		String volumeLabelSelectorName = "model-storage-volume-"+ UUID.randomUUID().toString().substring(6);
-		String connectTestLabelName = "model-connect-test-"+ UUID.randomUUID().toString().substring(6);
+		String volumeLabelSelectorName = "model-storage-volume-" + UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "model-connect-test-" + UUID.randomUUID().toString().substring(6);
 
 		//pv 생성
 		CreatePV createPV = CreatePV.builder()

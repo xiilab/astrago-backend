@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
+import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -38,12 +40,18 @@ public abstract class Model extends BaseEntity {
 	@Column(name = "MODEL_NAME")
 	private String modelName;
 
+	@Column(name = "DELETE_YN")
+	@Enumerated(EnumType.STRING)
+	private DeleteYN deleteYn = DeleteYN.N;
+
 	@Column(name = "DIVISION", insertable = false, updatable = false)
 	@Enumerated(EnumType.STRING)
 	protected DatasetDivision division;
 
 	@OneToMany(mappedBy = "model")
-	private List<ModelWorkSpaceMappingEntity> mappingEntities = new ArrayList<>();
+	private List<ModelWorkSpaceMappingEntity> modelWorkSpaceMappingList = new ArrayList<>();
+	@OneToMany(mappedBy = "model")
+	private List<ModelWorkLoadMappingEntity> modelWorkLoadMappingList = new ArrayList<>();
 
 	@Transient
 	private boolean isAvailable = false;
@@ -54,12 +62,12 @@ public abstract class Model extends BaseEntity {
 	}
 
 	public boolean isAvailable() {
-		return !this.getMappingEntities().isEmpty();
+		return !this.getModelWorkSpaceMappingList().isEmpty();
 	}
 
 	public void modifyModelName(String modelName){
 		this.modelName = modelName;
 	}
-	public abstract boolean isAstargoModel();
+	public abstract boolean isAstragoModel();
 	public abstract boolean isLocalModel();
 }

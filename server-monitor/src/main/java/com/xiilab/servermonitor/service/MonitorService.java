@@ -277,12 +277,12 @@ public class MonitorService {
 		// GPU
 		String gpuMetric = prometheus.getRealTimeMetricByQuery(
 			String.format(Promql.GPU_USAGE.getQuery(), result));
-		// MEM
-		String memMetric = prometheus.getRealTimeMetricByQuery(
-			String.format(Promql.GPU_MEM_USAGE.getQuery(), result, result, result));
 		if(nodeName != null){
 			result = "node = \"" + nodeName + "\"";
 		}
+		// MEM
+		String memMetric = prometheus.getRealTimeMetricByQuery(
+			String.format(Promql.NODE_MEM_USAGE.getQuery(), result));
 		// CPU
 		String cpuMetric = prometheus.getRealTimeMetricByQuery(
 			String.format(Promql.CPU_USAGE.getQuery(), result));
@@ -297,33 +297,55 @@ public class MonitorService {
 	 * 대시보드 노드 리스트 출력 메소드
 	 * @return
 	 */
-	public List<ResponseDTO.NodeResponseDTO> getNodeList(){
-		return k8sMonitorService.getNodeList();
+	public List<ResponseDTO.NodeResponseDTO> getNodeList(String status){
+		List<ResponseDTO.NodeResponseDTO> nodeList = k8sMonitorService.getNodeList();
+		if(StringUtils.hasText(status)){
+			return nodeList.stream().filter(nodeResponseDTO ->
+				nodeResponseDTO.status().equals(status)).toList();
+		}else{
+			return nodeList;
+		}
 	}
 
 	/**
 	 * 대시보드 워크로드 리스트 출력 메소드
 	 * @return
 	 */
-	public List<ResponseDTO.WorkloadResponseDTO> getWlList(){
-		return k8sMonitorService.getWlList();
+	public List<ResponseDTO.WorkloadResponseDTO> getWlList(String status){
+		List<ResponseDTO.WorkloadResponseDTO> wlList = k8sMonitorService.getWlList();
+		if(StringUtils.hasText(status)){
+			return wlList.stream().filter(workloadResponseDTO ->
+				workloadResponseDTO.status().equals(status)).toList();
+		}else {
+			return wlList;
+		}
 	}
 
 	private ResponseDTO.NodeResourceDTO mapToNodeResourceDTO(String gpuMetric, String memMetric, String cpuMetric, String diskUsage, String nodeName){
-		// gpu 사용량 매핑
-		String gpuResult = DataConverterUtil.formatObjectMapper(gpuMetric);
 		// cpu 사용량 매핑
 		String cpuResult = DataConverterUtil.formatObjectMapper(cpuMetric);
+		// gpu 사용량 매핑
+		String gpuResult = DataConverterUtil.formatObjectMapper(gpuMetric);
 		// mem 사용량 매핑
 		String memResult = DataConverterUtil.formatObjectMapper(memMetric);
 		// disk 사용량 매핑
 		String diskResult = DataConverterUtil.formatObjectMapper(diskUsage);
+		// CPU 총사이즈 및 요청량 조회
+		ResponseDTO.ResponseClusterDTO clusterCPU = k8sMonitorService.getDashboardClusterCPU(nodeName, DataConverterUtil.formatRoundTo(cpuResult));
+		// MEM 총사이즈 및 요청량 조회
+		ResponseDTO.ResponseClusterDTO clusterMEM = k8sMonitorService.getDashboardClusterMEM(nodeName, memResult);
 
 		return ResponseDTO.NodeResourceDTO.builder()
 			.nodeName(nodeName)
-			.gpuUsage(DataConverterUtil.formatRoundTo(gpuResult))
+			// CPU
+			.cpuTotal(clusterCPU.total())
+			.cpuRequest(clusterCPU.request())
 			.cpuUsage(DataConverterUtil.formatRoundTo(cpuResult))
+			// MEM
+			.memTotal(clusterMEM.total())
+			.memRequest(clusterMEM.request())
 			.memUsage(DataConverterUtil.formatRoundTo(memResult))
+			.gpuUsage(DataConverterUtil.formatRoundTo(gpuResult))
 			.diskUsage(DataConverterUtil.formatRoundTo(diskResult))
 			.build();
 	}
@@ -377,6 +399,22 @@ public class MonitorService {
 		}
 		return workspaceDTOList;
 	}
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterDISK(){
+
+		String diskTotal = prometheus.getRealTimeMetricByQuery(
+			String.format(Promql.TOTAL_NODE_DISK_SIZE_BYTES.getQuery(), ""));
+		String diskUsage = prometheus.getRealTimeMetricByQuery(
+			String.format(Promql.USAGE_NODE_DISK_SIZE_BYTES.getQuery(), ""));
+
+		String diskTotalByte = DataConverterUtil.formatObjectMapper(diskTotal);
+		String diskUsageByte = DataConverterUtil.formatObjectMapper(diskUsage);
+
+		return ResponseDTO.ResponseClusterDTO.builder()
+			.name("DISK")
+			.total(DataConverterUtil.formatDiskSize(diskTotalByte))
+			.usage(DataConverterUtil.formatDiskSize(diskUsageByte))
+			.build();
+	}
 
 	/**
 	 * 해당 WS의 Resource Info 조회 메소드
@@ -385,6 +423,23 @@ public class MonitorService {
 	 */
 	public ResponseDTO.WorkspaceResponseDTO getWorkspaceResourcesInfo(String namespace){
 		return k8sMonitorService.getWlList(namespace);
+	}
+
+	public List<ResponseDTO.ResponseClusterDTO> getDashboardCluster(){
+		String cpuMetric = prometheus.getRealTimeMetricByQuery(
+			String.format(Promql.CPU_USAGE.getQuery(), ""));
+		String cpuResponse = DataConverterUtil.formatObjectMapper(cpuMetric);
+		String memMetric = prometheus.getRealTimeMetricByQuery(Promql.NODE_MEM_USAGE_KI.getQuery());
+		String memResponse = DataConverterUtil.formatObjectMapper(memMetric);
+		return List.of(
+			// CPU
+			k8sMonitorService.getDashboardClusterCPU("", DataConverterUtil.formatRoundTo(cpuResponse)),
+			// MEM
+			k8sMonitorService.getDashboardClusterMEM("", memResponse),
+
+			k8sMonitorService.getDashboardClusterGPU(""),
+			getDashboardClusterDISK()
+		);
 	}
 
 

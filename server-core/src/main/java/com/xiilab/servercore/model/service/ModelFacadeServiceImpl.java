@@ -28,9 +28,9 @@ import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.common.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.modulek8sdb.dataset.dto.DirectoryDTO;
+import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
-import com.xiilab.modulek8sdb.dataset.dto.NginxFilesDTO;
+import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.dataset.service.WebClientService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
@@ -58,7 +58,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 
 	@Override
 	@Transactional
-	public void insertAstragoDataset(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files) {
+	public void insertAstragoModel(ModelDTO.CreateAstragoModel createModelDTO, List<MultipartFile> files) {
 		StorageEntity storageEntity = storageService.findById(createModelDTO.getStorageId());
 
 		AstragoModelEntity astragoModel = AstragoModelEntity.builder()
@@ -66,7 +66,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 			.storageEntity(storageEntity)
 			.build();
 
-		modelService.insertAstragoDataset(astragoModel, files);
+		modelService.insertAstragoModel(astragoModel, files);
 	}
 
 	@Override
@@ -141,7 +141,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 				throw new RestApiException(ModelErrorCode.MODEL_NOT_DELETE_IN_USE);
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
-			if (model.isAstargoModel()) {
+			if (model.isAstragoModel()) {
 				//workspace mapping 삭제
 				modelService.deleteModelWorkspaceMappingById(modelId);
 				//dataset 삭제
