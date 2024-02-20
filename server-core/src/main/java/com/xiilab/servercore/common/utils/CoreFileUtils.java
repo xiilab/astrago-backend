@@ -23,9 +23,10 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreFileUtils {
-	static final long kilobyte = 1024;
-	static final long megabyte = kilobyte * 1024;
-	static final long gigabyte = megabyte * 1024;
+	private static final long KILOBYTE = 1024;
+	private static final long MEGABYTE = KILOBYTE * 1024;
+	private static final long GIGABYTE = MEGABYTE * 1024;
+
 	public static String getFileName(String filePath) {
 		File file = new File(filePath);
 		if (file.isFile()) {
@@ -39,22 +40,15 @@ public class CoreFileUtils {
 		String[] parts = fileName.split("\\.");
 		String fileExtension = parts[parts.length - 1].toLowerCase();
 
-		switch (fileExtension) {
-			case "txt":
-				return MediaType.TEXT_PLAIN;
-			case "jpg":
-			case "jpeg":
-				return MediaType.IMAGE_JPEG;
-			case "png":
-				return MediaType.IMAGE_PNG;
-			case "pdf":
-				return MediaType.APPLICATION_PDF;
-			case "zip":
-				return MediaType.parseMediaType("application/zip");
+		return switch (fileExtension) {
+			case "txt" -> MediaType.TEXT_PLAIN;
+			case "jpg", "jpeg" -> MediaType.IMAGE_JPEG;
+			case "png" -> MediaType.IMAGE_PNG;
+			case "pdf" -> MediaType.APPLICATION_PDF;
+			case "zip" -> MediaType.parseMediaType("application/zip");
 			// 추가적인 파일 형식에 대한 처리를 여기에 추가할 수 있습니다.
-			default:
-				return MediaType.APPLICATION_OCTET_STREAM;
-		}
+			default -> MediaType.APPLICATION_OCTET_STREAM;
+		};
 	}
 
 	public static void deleteFileOrDirectory(String path) {
@@ -73,6 +67,7 @@ public class CoreFileUtils {
 			fileOrDirectory.delete();
 		}
 	}
+
 	public static long datasetUploadFiles(String path, List<MultipartFile> files) {
 		long size = 0;
 		for (MultipartFile file : files) {
@@ -87,6 +82,7 @@ public class CoreFileUtils {
 		}
 		return size;
 	}
+
 	public static DirectoryDTO getAstragoFiles(String path) {
 		List<DirectoryDTO.ChildrenDTO> children = new ArrayList<>();
 		File directory = new File(path);
@@ -163,12 +159,12 @@ public class CoreFileUtils {
 	}
 
 	public static String formatFileSize(long bytes) {
-		if (bytes >= gigabyte) {
-			return String.format("%.2f GB", (double) bytes / gigabyte);
-		} else if (bytes >= megabyte) {
-			return String.format("%.2f MB", (double) bytes / megabyte);
-		} else if (bytes >= kilobyte) {
-			return String.format("%.2f KB", (double) bytes / kilobyte);
+		if (bytes >= GIGABYTE) {
+			return String.format("%.2f GB", (double)bytes / GIGABYTE);
+		} else if (bytes >= MEGABYTE) {
+			return String.format("%.2f MB", (double)bytes / MEGABYTE);
+		} else if (bytes >= KILOBYTE) {
+			return String.format("%.2f KB", (double)bytes / KILOBYTE);
 		} else {
 			return bytes + " Bytes";
 		}
