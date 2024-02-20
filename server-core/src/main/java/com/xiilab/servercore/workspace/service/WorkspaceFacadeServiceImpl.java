@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.dto.AlertSetDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulealert.service.AlertSetService;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -21,18 +23,18 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
-import com.xiilab.moduleuser.dto.GroupReqDTO;
-import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
-import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
-import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
+import com.xiilab.moduleuser.dto.GroupReqDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.service.GroupService;
+import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,9 +48,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final ResourceQuotaRepository resourceQuotaRepository;
 	private final PinService pinService;
 	private final GroupService groupService;
-	private final AlertService alertService;
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
+	private final AlertSetService alertSetService;
+	private final AlertService alertService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -73,13 +76,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.users(applicationForm.getUserIds())
 				.build()
 		);
-		// 워크스페이스 생성 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.CREATE_WORKSPACE.getMessage(), applicationForm.getName()))
-			.build());
+		alertSetService.saveAlertSet(workspace.getResourceName());
 	}
 
 	@Override
@@ -126,13 +123,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
-		// 워크스페이스 삭제 알림
-		alertService.sendAlert(AlertDTO.builder()
-			.recipientId(userInfoDTO.getId())
-			.senderId("SYSTEM")
-			.alertType(AlertType.WORKLOAD)
-			.message(String.format(AlertMessage.DELETE_WORKSPACE.getMessage(), workspaceName))
-			.build());
+		// 워크스페이스 알림 설정 삭제
+		alertSetService.deleteAlert(workspaceName);
 	}
 
 	@Override
@@ -213,6 +205,17 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				resourceQuotaEntity.getMemReq(),
 				resourceQuotaEntity.getGpuReq()
 			);
+
+			AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
+			if(workspaceAlertSet.isResourceApprovalAlert()){
+
+				alertService.sendAlert(AlertDTO.builder()
+					.recipientId(resourceQuotaEntity.getRegUser().getRegUserId())
+					.alertType(AlertType.WORKLOAD)
+					.message(AlertMessage.RESOURCE_APPROVAL.getMessage())
+					.senderId("SYSTEM")
+					.build());
+			}
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
 		}
@@ -231,6 +234,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.map(workspaceService::getWorkspaceResourceStatus)
 			.filter(workspace -> workspaceName == null || workspace.getName().contains(workspaceName))
 			.toList();
+	}
+	@Override
+	public AlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName){
+		return alertSetService.getWorkspaceAlertSet(workspaceName);
+	}
+	@Override
+	public AlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, AlertSetDTO alertSetDTO){
+		return alertSetService.updateWorkspaceAlertSet(workspaceName, alertSetDTO);
 	}
 
 }

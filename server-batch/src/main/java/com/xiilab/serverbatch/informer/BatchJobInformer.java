@@ -11,6 +11,12 @@ import java.util.function.Function;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulealert.dto.AlertDTO;
+import com.xiilab.modulealert.dto.AlertSetDTO;
+import com.xiilab.modulealert.enumeration.AlertMessage;
+import com.xiilab.modulealert.enumeration.AlertType;
+import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulealert.service.AlertSetService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -56,6 +62,9 @@ public class BatchJobInformer {
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
+	private final AlertService alertService;
+	private final AlertSetService alertSetService;
+
 	@PostConstruct
 	void doInformer() {
 		jobInformer();
@@ -70,6 +79,19 @@ public class BatchJobInformer {
 			@Override
 			public void onAdd(Job job) {
 				log.info("{} batch job이 생성되었습니다.", job.getMetadata().getName());
+
+				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
+
+				AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+				// 해당 워크스페이스 알림 설정이 True인 경우
+				if(workspaceAlertSet.isWorkloadStartAlert()){
+					alertService.sendAlert(AlertDTO.builder()
+						.recipientId(batchWorkloadInfoFromResource.getCreatorId())
+						.alertType(AlertType.WORKLOAD)
+						.message(String.format(AlertMessage.WORKSPACE_START.getMessage(), job.getMetadata().getName()))
+						.senderId("SYSTEM")
+						.build());
+				}
 			}
 
 			@Override
@@ -141,6 +163,17 @@ public class BatchJobInformer {
 					String codeIds = metadataFromResource.getCodeIds();
 					String[] codeIdList = codeIds != null ? codeIds.split(",") : null;
 					saveDataMapping(codeIdList, codeRepository::findById, jobEntity, VolumeType.CODE);
+
+					AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+					// 해당 워크스페이스 알림 설정이 True인 경우
+					if(workspaceAlertSet.isWorkloadEndAlert()){
+						alertService.sendAlert(AlertDTO.builder()
+							.recipientId(metadataFromResource.getCreatorId())
+							.alertType(AlertType.WORKLOAD)
+							.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
+							.senderId("SYSTEM")
+							.build());
+					}
 				}
 			}
 		});
@@ -181,5 +214,9 @@ public class BatchJobInformer {
 				}
 			}
 		}
+	}
+
+	private AlertSetDTO.ResponseDTO getAlertSet(String workspaceName){
+		return alertSetService.getWorkspaceAlertSet(workspaceName);
 	}
 }
