@@ -39,9 +39,9 @@ public abstract class ModuleWorkloadResDTO {
 	List<ModulePortResDTO> ports;        // port 정의
 	String command;                      // 워크로드 명령
 	WorkloadStatus status;               // 워크로드 status
-	boolean isPinYN; 		             // PIN YN
-	AgeDTO age;							 // 워크로드 경과시간
-	int remainTime;						 // 잔여시간
+	boolean isPinYN;                     // PIN YN
+	AgeDTO age;                             // 워크로드 경과시간
+	int remainTime;                         // 잔여시간
 
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
@@ -52,12 +52,11 @@ public abstract class ModuleWorkloadResDTO {
 		creatorUserName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField());
 		creatorFullName = hasMetadata.getMetadata().getLabels().get(AnnotationField.CREATOR_FULL_NAME.getField());
 		workspaceResourceName = hasMetadata.getMetadata().getNamespace();
-		workspaceName = hasMetadata.getMetadata().getAnnotations().get("name");
+		workspaceName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.WORKSPACE_NAME.getField());
 		createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 		age = new AgeDTO(createdAt);
 		type = getType();
 	}
-
 
 	public void updatePinYN(boolean pinYN) {
 		this.isPinYN = pinYN;
