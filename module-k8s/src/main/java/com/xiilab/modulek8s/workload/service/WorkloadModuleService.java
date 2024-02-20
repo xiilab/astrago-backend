@@ -3,6 +3,8 @@ package com.xiilab.modulek8s.workload.service;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
@@ -95,4 +97,10 @@ public interface WorkloadModuleService {
 
 	DirectoryDTO getDirectoryDTOListInWorkloadContainer(String workloadName, String workspaceName,
 		WorkloadType workloadType, String path) throws IOException;
+
+	Resource downloadFileFromWorkload(String workloadName, String workpspaceName, WorkloadType workloadType,
+		String path) throws IOException;
+
+	Resource downloadFolderFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws IOException;
 }

@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulealert.dto.AlertDTO;
@@ -18,6 +19,8 @@ import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -144,6 +147,17 @@ public class WorkloadFacadeService {
 	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
 		WorkloadType workloadType, String path) throws IOException {
 		return workloadModuleService.getDirectoryDTOListInWorkloadContainer(workloadName, workspaceName, workloadType, path);
+	}
+
+	public Resource downloadFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType, String path) throws
+		IOException {
+		String[] split = path.split("/");
+		String fileName = split[split.length - 1];
+		if (!fileName.contains(".")) {
+			throw new RestApiException(WorkloadErrorCode.WORKLOAD_FOLDER_DOWN_ERR);
+		} else {
+			return workloadModuleService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		}
 	}
 
 	private List<ModuleWorkloadResDTO> filterNormalWorkloads(List<ModuleWorkloadResDTO> workloadList, String searchName,

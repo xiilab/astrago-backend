@@ -1,8 +1,13 @@
 package com.xiilab.servercore.workload.controller;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -122,14 +127,35 @@ public class WorkloadController {
 		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
-	@GetMapping("/file/list")
+	@GetMapping("/{workloadName}/file/list")
+	@Operation(summary = "workload 파일리스트 조회")
 	public ResponseEntity<DirectoryDTO> getFileListInWorkloadContainer(
-		@RequestParam("workloadName") String workloadName,
+		@PathVariable("workloadName") String workloadName,
 		@RequestParam("workspaceName") String workspaceName,
 		@RequestParam("workloadType") WorkloadType workloadType,
 		@RequestParam("path") String path
 	) throws IOException {
 		return new ResponseEntity<>(
 			workloadFacadeService.getFileListInWorkloadContainer(workloadName, workspaceName, workloadType, path), HttpStatus.OK);
+	}
+
+	@GetMapping("/{workloadName}/file/download")
+	public ResponseEntity<Resource> downloadWorkloadFile(
+		@PathVariable(value = "workloadName") String workloadName,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(value = "path") String path
+	) throws IOException {
+		String contentType = Files.probeContentType(Paths.get(path));
+		MediaType mediaType;
+		if (contentType == null) {
+			mediaType = MediaType.TEXT_PLAIN;
+		} else {
+			mediaType = MediaType.parseMediaType(contentType);
+		}
+
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_TYPE, mediaType.toString())
+			.body(workloadFacadeService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path));
 	}
 }

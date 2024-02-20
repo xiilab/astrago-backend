@@ -48,6 +48,7 @@ import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import lombok.RequiredArgsConstructor;
@@ -403,6 +404,44 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		} catch (Exception e) {
 			return 0;
 		}
+	}
+
+	/**
+	 * 생성된 파드에서 파일을 다운로드 받는 메소드
+	 *
+	 * @param podName   파드이름
+	 * @param namespace namespace
+	 * @param filePath  다운받으려고하는 파일 위치
+	 * @return 파일 복사 성공 여부
+	 */
+	@Override
+	public CopyOrReadable downloadFileFromPod(String podName, String namespace, String filePath) {
+		//fabric8io를 사용하여 해당 프로젝트가 올라가있는 파드에서 파일을 내려받는다.
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		//해당 경로에 있는 파일 객체를 가져온다.
+		return kubernetesClient.pods()
+			.inNamespace(namespace)
+			.withName(podName)
+			.file(filePath);
+	}
+
+	/**
+	 * 생성된 파드에서 폴더를 다운로드 받는 메소드
+	 *
+	 * @param podName    파드이름
+	 * @param namespace  namespace
+	 * @param folderPath 다운받으려고하는 파일 위치
+	 * @return 파일 복사 성공 여부
+	 */
+	@Override
+	public CopyOrReadable downloadFolderFromPod(String podName, String namespace, String folderPath) {
+		//fabric8io를 사용하여 해당 프로젝트가 올라가있는 파드에서 파일을 내려받는다.
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		//해당 경로에 있는 파일 객체를 가져온다.
+		return kubernetesClient.pods()
+			.inNamespace(namespace)
+			.withName(podName)
+			.dir(folderPath);
 	}
 
 	private List<String> executeCommandToContainer(String podName, String namespace, String command) {

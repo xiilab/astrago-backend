@@ -19,6 +19,7 @@ import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 
 @Repository
@@ -130,4 +131,8 @@ public interface WorkloadRepository {
 	List<String> getFileListInWorkloadContainer(String podName, String namespace, String path) throws IOException;
 
 	int getDirectoryFileCount(String podName, String namespace, String path) throws IOException;
+
+	CopyOrReadable downloadFileFromPod(String podName, String namespace, String filePath);
+
+	CopyOrReadable downloadFolderFromPod(String podName, String namespace, String folderPath);
 }
