@@ -74,7 +74,7 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName());
 		annotationMap.put(AnnotationField.TYPE.getField(), getWorkloadType().getType());
 		annotationMap.put(AnnotationField.IMAGE_NAME.getField(), getImage().name());
-		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType());
+		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().name());
 		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
 		return annotationMap;

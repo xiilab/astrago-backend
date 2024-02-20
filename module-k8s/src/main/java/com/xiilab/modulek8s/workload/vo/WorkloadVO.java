@@ -45,6 +45,9 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	// List<JobVolumeVO> volumes;    // volume 정의
 	String secretName;
 
+	public void addNewImageSecret(PodSpecBuilder podSpecBuilder, String secretName) {
+
+	}
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
 	 *
