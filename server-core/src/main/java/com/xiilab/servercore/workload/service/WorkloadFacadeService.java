@@ -60,9 +60,9 @@ public class WorkloadFacadeService {
 		// 모델 볼륨 추가
 		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
 
-		workloadModuleFacadeService.createJobWorkload(
-			moduleCreateWorkloadReqDTO.toModuleDTO());
 		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+
+		alertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
