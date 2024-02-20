@@ -32,7 +32,8 @@ public enum CommonErrorCode implements ErrorCode {
 	// monitor
 	MONITOR_METRIC_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 메트릭이 존재하지 않습니다."),
 	// credential
-	CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 크레덴셜이 존재하지 않습니다.")
+	CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 크레덴셜이 존재하지 않습니다."),
+	IMAGE_CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "이미지 크레덴셜이 존재하지 않습니다.")
 	;
 	private final int code;
 	private final String message;

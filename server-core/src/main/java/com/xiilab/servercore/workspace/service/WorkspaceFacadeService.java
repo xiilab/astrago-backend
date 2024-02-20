@@ -9,7 +9,7 @@ import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
-import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 
 public interface WorkspaceFacadeService {

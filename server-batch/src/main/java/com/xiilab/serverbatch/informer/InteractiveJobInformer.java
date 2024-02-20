@@ -4,10 +4,10 @@ import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import org.springframework.stereotype.Component;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
-import com.xiilab.modulek8sdb.workload.history.entity.WorkloadType;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;

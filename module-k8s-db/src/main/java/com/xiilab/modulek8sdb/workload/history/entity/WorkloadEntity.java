@@ -3,6 +3,8 @@ package com.xiilab.modulek8sdb.workload.history.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;

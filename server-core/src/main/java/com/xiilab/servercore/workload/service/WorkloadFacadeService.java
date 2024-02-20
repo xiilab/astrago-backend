@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
@@ -21,6 +25,8 @@ import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
+import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -28,7 +34,9 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.credential.service.CredentialService;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -48,17 +56,33 @@ public class WorkloadFacadeService {
 	private final AlertService alertService;
 	private final DatasetService datasetService;
 	private final WorkloadHistoryService workloadHistoryService;
+	private final CredentialService credentialService;
 
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
 			userInfoDTO.getUserFullName());
-		// 데이터셋 볼륨 추가
-		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
-		// 모델 볼륨 추가
-		setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
 
-		workloadModuleFacadeService.createJobWorkload(
-			moduleCreateWorkloadReqDTO.toModuleDTO());
+		// 이미지 credential 세팅
+		if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getImage().getCredentialId()) &&  moduleCreateWorkloadReqDTO.getImage().getCredentialId() > 0) {
+			setImageCredentialReqDTO(moduleCreateWorkloadReqDTO.getImage(), userInfoDTO);
+		}
+
+		// 코드 credential 세팅
+		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getCodes())) {
+			setCodeCredentialReqDTO(moduleCreateWorkloadReqDTO.getCodes());
+		}
+
+		// 데이터셋 볼륨 추가
+		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
+			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
+		}
+
+		// 모델 볼륨 추가
+		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
+			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
+		}
+
+		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 
 		// 워크로드 생성 알림
 		alertService.sendAlert(AlertDTO.builder()
@@ -67,6 +91,50 @@ public class WorkloadFacadeService {
 			.alertType(AlertType.WORKLOAD)
 			.message(String.format(AlertMessage.CREATE_WORKLOAD.getMessage(), moduleCreateWorkloadReqDTO.getName()))
 			.build());
+	}
+
+	private void setCodeCredentialReqDTO(List<ModuleCodeReqDTO> codes) {
+		// 코드 목록에 있는 크레덴셜 ID만 추출
+		List<Long> credentialIds = codes.stream()
+			.map(ModuleCodeReqDTO::getCredentialId)
+			.filter(credentialId -> credentialId != null && credentialId > 0)
+			.toList();
+		if (CollectionUtils.isEmpty(credentialIds)) {
+			return ;
+		}
+
+		// 크레덴셜 목록 조회
+		CredentialResDTO.CredentialInfos credentialInfos = credentialService.findCredentialByIdIn(credentialIds,
+			PageRequest.of(1, 9999));
+		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = converListToMap(
+			!CollectionUtils.isEmpty(credentialInfos.getDatasets()) ? credentialInfos.getDatasets() :
+				new ArrayList<>());
+
+		codes.forEach(moduleCodeReqDTO -> {
+			Long credentialId = moduleCodeReqDTO.getCredentialId();
+			if (!ObjectUtils.isEmpty(credentialId) && credentialInfoMap.containsKey(credentialId)) {
+				CredentialResDTO.CredentialInfo credentialInfo = credentialInfoMap.get(
+					moduleCodeReqDTO.getCredentialId());
+				moduleCodeReqDTO.setCredentialReqDTO(credentialInfo.toModuleCredentialReqDTO());
+			}
+		});
+	}
+
+	private Map<Long, CredentialResDTO.CredentialInfo> converListToMap(List<CredentialResDTO.CredentialInfo> datasets) {
+		return datasets
+			.stream()
+			.collect(Collectors.toMap(
+				CredentialResDTO::getId,
+				credentialInfo -> credentialInfo
+			));
+	}
+
+	private void setImageCredentialReqDTO(ModuleImageReqDTO moduleImageReqDTO, UserInfoDTO userInfoDTO) {
+		// ModuleImageReqDTO imageReqDTO = moduleCreateWorkloadReqDTO.getImage();
+		CredentialResDTO.CredentialInfo findCredential = credentialService.findCredentialById(
+			moduleImageReqDTO.getCredentialId(),
+			userInfoDTO);
+		moduleImageReqDTO.setCredentialReqDTO(findCredential.toModuleCredentialReqDTO());
 	}
 
 	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
@@ -258,10 +326,8 @@ public class WorkloadFacadeService {
 	}
 
 	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
-		if (!ObjectUtils.isEmpty(list)) {
-			for (ModuleVolumeReqDTO reqDto : list) {
-				setCreatePVAndPVC(workspaceName, reqDto);
-			}
+		for (ModuleVolumeReqDTO reqDto : list) {
+			setCreatePVAndPVC(workspaceName, reqDto);
 		}
 	}
 
