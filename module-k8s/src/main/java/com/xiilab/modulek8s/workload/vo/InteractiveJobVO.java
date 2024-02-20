@@ -57,21 +57,28 @@ public class InteractiveJobVO extends WorkloadVO {
 			.withName(jobName)
 			.withNamespace(workspace)
 			.withAnnotations(
-				Map.of(
-					AnnotationField.NAME.getField(), getName(),
-					AnnotationField.WORKSPACE_NAME.getField(), getWorkspaceName(),
-					AnnotationField.DESCRIPTION.getField(), getDescription(),
-					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
-					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName(),
-					AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName(),
-					AnnotationField.TYPE.getField(), getWorkloadType().getType(),
-					AnnotationField.IMAGE_NAME.getField(), getImage().name(),
-					AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType()
-				))
+				getAnnotationMap()
+			)
 			.withLabels(
 				getLabelMap()
 			)
 			.build();
+	}
+
+	private Map<String, String> getAnnotationMap() {
+		Map<String, String> annotationMap = new HashMap<>();
+		annotationMap.put(AnnotationField.NAME.getField(), getName());
+		annotationMap.put(AnnotationField.DESCRIPTION.getField(), getDescription());
+		annotationMap.put(AnnotationField.WORKSPACE_NAME.getField(), getWorkspace());
+		annotationMap.put(AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString());
+		annotationMap.put(AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName());
+		annotationMap.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName());
+		annotationMap.put(AnnotationField.TYPE.getField(), getWorkloadType().getType());
+		annotationMap.put(AnnotationField.IMAGE_NAME.getField(), getImage().name());
+		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType());
+		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
+		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
+		return annotationMap;
 	}
 
 	private Map<String, String> getLabelMap() {
@@ -94,7 +101,9 @@ public class InteractiveJobVO extends WorkloadVO {
 			.withReplicas(1)
 			.withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
 			.withTemplate(new PodTemplateSpecBuilder()
-				.withNewMetadata().withLabels(Collections.singletonMap(LabelField.APP.getField(), jobName)).endMetadata()
+				.withNewMetadata()
+				.withLabels(Collections.singletonMap(LabelField.APP.getField(), jobName))
+				.endMetadata()
 				.withSpec(createPodSpec())
 				.build()
 			)
@@ -112,6 +121,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		addVolumes(podSpecBuilder, models);
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
+			.withTerminationGracePeriodSeconds(600L)
 			.addNewContainer()
 			.withName(getUniqueResourceName())
 			.withImage(image.name());
@@ -127,7 +137,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer, List<JobVolumeVO> volumes) {
+	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
+		List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
 			volumes.forEach(volume -> podSpecContainer
 				.addNewVolumeMount()

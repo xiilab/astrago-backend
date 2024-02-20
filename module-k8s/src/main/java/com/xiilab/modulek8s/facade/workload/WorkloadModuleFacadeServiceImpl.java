@@ -66,7 +66,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 		WorkloadType workloadType = moduleCreateWorkloadReqDTO.getWorkloadType();
 		// Secret 생성
-		if (moduleCreateWorkloadReqDTO.getImage().repositoryAuthType() == RepositoryAuthType.PRIVATE) {
+		if (moduleCreateWorkloadReqDTO.getImage().getRepositoryAuthType() == RepositoryAuthType.PRIVATE) {
 			createAndSetImageSecret(moduleCreateWorkloadReqDTO);
 		}
 
@@ -106,7 +106,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					volumeService.deletePV(model.getCreatePV().getPvName());
 				}
 			}
-
 		}
 
 		return moduleJobResDTO;
@@ -122,7 +121,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	private void createAndSetImageSecret(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
-		ModuleCredentialReqDTO credentialReqDTO = moduleCreateWorkloadReqDTO.getImage().credentialReqDTO();
+		ModuleCredentialReqDTO credentialReqDTO = moduleCreateWorkloadReqDTO.getImage().getCredentialReqDTO();
 		String imageSecretName = null;
 		if (credentialReqDTO != null && credentialReqDTO.credentialId() != null
 			&& credentialReqDTO.credentialId() > 0) {

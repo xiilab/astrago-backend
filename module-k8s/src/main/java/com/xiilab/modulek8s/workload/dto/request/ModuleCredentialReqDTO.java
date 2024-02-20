@@ -1,6 +1,6 @@
 package com.xiilab.modulek8s.workload.dto.request;
 
-import com.xiilab.modulek8s.workload.enums.CredentialType;
+import com.xiilab.modulecommon.enums.CredentialType;
 import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 
 public record ModuleCredentialReqDTO(

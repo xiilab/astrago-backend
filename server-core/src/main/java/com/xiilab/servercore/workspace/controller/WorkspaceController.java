@@ -28,7 +28,7 @@ import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
-import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 

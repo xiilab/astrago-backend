@@ -1,6 +1,6 @@
 package com.xiilab.modulek8s.workload.secret.vo;
 
-import com.xiilab.modulek8s.workload.enums.CredentialType;
+import com.xiilab.modulecommon.enums.CredentialType;
 
 public record CredentialVO (
 	String workspaceName,

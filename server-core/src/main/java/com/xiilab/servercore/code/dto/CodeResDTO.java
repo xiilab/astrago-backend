@@ -1,9 +1,9 @@
-package com.xiilab.modulek8sdb.code.dto;
+package com.xiilab.servercore.code.dto;
 
 import com.xiilab.modulek8sdb.code.enums.CodeType;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
-import com.xiilab.modulek8sdb.credential.dto.CredentialResDTO;
+import com.xiilab.servercore.credential.dto.CredentialResDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

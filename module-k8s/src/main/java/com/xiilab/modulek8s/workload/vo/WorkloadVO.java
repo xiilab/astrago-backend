@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -44,6 +45,9 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	// List<JobVolumeVO> volumes;    // volume 정의
 	String secretName;
 
+	public void addNewImageSecret(PodSpecBuilder podSpecBuilder, String secretName) {
+
+	}
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
 	 *
@@ -57,9 +61,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
 				.map(codeVO -> new ContainerBuilder().withName(getUniqueResourceName() + "-git-clone-" + index)
-					// .withImage("alpine/git")
 					.withImage("k8s.gcr.io/git-sync/git-sync:v3.2.2")
-					//.addAllToArgs(List.of("clone", "-b", codeVO.branch(), codeVO.repositoryURL(), codeVO.mountPath()))
 					// init컨테이너와 아래서 생성한 emptyDir 볼륨 연결
 					.addNewVolumeMount()
 					.withName("git-clone-" + index.getAndIncrement())
@@ -131,7 +133,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(new EnvVarBuilder().withName("GIT_SYNC_ROOT").withValue(codeVO.mountPath()).build());
 		result.add(new EnvVarBuilder().withName("GIT_SYNC_PERMISSIONS").withValue("0777").build());
 		result.add(new EnvVarBuilder().withName("GIT_SYNC_ONE_TIME").withValue("true").build());
-		result.add(new EnvVarBuilder().withName("GIT_SYNC_WAIT").withValue("600").build());
+		result.add(new EnvVarBuilder().withName("GIT_SYNC_TIMEOUT").withValue("600").build());
 		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialName())
 			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
 			result.add(new EnvVarBuilder().withName("GIT_SYNC_USERNAME")
@@ -143,6 +145,16 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		}
 
 		return result;
+	}
+
+	protected String getJobVolumeIds(List<JobVolumeVO> list) {
+		if (CollectionUtils.isEmpty(list)) {
+			return "";
+		}
+
+		return list.stream()
+			.map(jobVolumeVO -> String.valueOf(jobVolumeVO.id()))
+			.collect(Collectors.joining(","));
 	}
 
 	public abstract KubernetesResource createSpec();

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
-import com.xiilab.modulek8sdb.credential.dto.CredentialResDTO;
+import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
 import lombok.RequiredArgsConstructor;

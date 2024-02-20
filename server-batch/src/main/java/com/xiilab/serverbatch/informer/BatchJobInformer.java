@@ -17,6 +17,7 @@ import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulealert.service.AlertSetService;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -35,7 +36,6 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
-import com.xiilab.modulek8sdb.workload.history.entity.WorkloadType;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;
