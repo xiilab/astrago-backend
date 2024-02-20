@@ -39,11 +39,12 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 		return jobImageVO.credentialVO();
 	}
 
-	public BatchJobVO toBatchJobVO() {
+	public BatchJobVO toBatchJobVO(String workspaceName) {
 		initializeCollection();
 
 		return BatchJobVO.builder()
 			.workspace(this.workspace)
+			.workspaceName(workspaceName)
 			.name(this.getName())
 			.description(this.getDescription())
 			.creatorId(this.getCreatorId())
@@ -63,11 +64,12 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.build();
 	}
 
-	public InteractiveJobVO toInteractiveJobVO() {
+	public InteractiveJobVO toInteractiveJobVO(String workspaceName) {
 		initializeCollection();
 
 		return InteractiveJobVO.builder()
 			.workspace(this.workspace)
+			.workspaceName(workspaceName)
 			.name(this.getName())
 			.description(this.getDescription())
 			.creatorId(this.getCreatorId())
