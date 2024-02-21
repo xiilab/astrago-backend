@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/nodes")
 public class NodeController {
 	private final NodeService nodeService;
+	private final NodeFacadeService nodeFacadeService;
 
 	@GetMapping("")
 	public ResponseEntity<List<ResponseDTO.NodeDTO>> getNodeList(){

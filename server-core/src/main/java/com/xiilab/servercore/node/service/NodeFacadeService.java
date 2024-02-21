@@ -14,11 +14,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NodeFacadeService {
 	private final NodeRepository nodeRepository;
-	private final PrometheusService prometheus;
 
 	public List<ResponseDTO.NodeDTO> getNodeList(){
-
-		return nodeRepository.getNodeList();
+		List<ResponseDTO.NodeDTO> nodeList = nodeRepository.getNodeList();
+		return null;
 	}
 
 	/**
