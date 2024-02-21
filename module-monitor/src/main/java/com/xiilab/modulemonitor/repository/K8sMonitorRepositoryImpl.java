@@ -11,7 +11,6 @@ import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulemonitor.config.K8sAdapter;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.K8sErrorStatus;
-import com.xiilab.modulemonitor.service.K8sMonitorService;
 
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.Node;
@@ -23,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class K8sMonitorRepositoryImpl implements K8sMonitorService {
+public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 	private final K8sAdapter k8sAdapter;
 	private final List<K8sErrorStatus> targetReasons = Arrays.asList(

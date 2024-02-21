@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/core/node")
+@RequestMapping("/api/v1/core/nodes")
 public class NodeController {
 	private final NodeService nodeService;
 
