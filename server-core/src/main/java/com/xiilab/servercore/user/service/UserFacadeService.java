@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
+import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -21,6 +22,9 @@ public interface UserFacadeService {
 
 	//사용자 상세 조회
 	UserInfo getUserInfoById(String userId);
+
+	// 사용자 정보 수정
+	UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
 
 	//사용자 승인/거절 업데이트
 	void updateUserApprovalYN(List<String> userIdList, boolean approvalYN);

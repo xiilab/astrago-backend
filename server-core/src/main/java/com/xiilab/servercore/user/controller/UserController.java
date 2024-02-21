@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
+import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.common.dto.SearchCondition;
@@ -43,6 +45,12 @@ public class UserController {
 	@Operation(summary = "사용자 상세 정보 조회")
 	public ResponseEntity<UserInfo> getUserInfoById(@PathVariable(name = "id") String id) {
 		return ResponseEntity.ok(userFacadeService.getUserInfoById(id));
+	}
+	@PatchMapping()
+	@Operation(summary = "사용자 정보 수정")
+	public ResponseEntity<UserInfo> updateUserInfoById(@RequestBody UpdateUserDTO updateUserDTO,
+		UserInfoDTO userInfo) {
+		return ResponseEntity.ok(userFacadeService.updateUserInfoById(userInfo.getId(), updateUserDTO));
 	}
 
 	@GetMapping("/approval")
@@ -104,5 +112,4 @@ public class UserController {
 	public ResponseEntity<List<SearchDTO>> getUserAndGroupBySearch(@PathVariable(name = "search") String search){
 		return new ResponseEntity<>(userFacadeService.getUserAndGroupBySearch(search), HttpStatus.OK);
 	}
-
 }

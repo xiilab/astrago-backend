@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
-import com.xiilab.modulemonitor.service.PrometheusService;
 
 import lombok.RequiredArgsConstructor;
 

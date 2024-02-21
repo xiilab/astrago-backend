@@ -2,9 +2,10 @@ package com.xiilab.moduleuser.service;
 
 import java.util.List;
 
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
+import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -37,4 +38,5 @@ public interface UserService {
 
 	void deleteUserById(List<String> userId);
 	List<SearchDTO> getUserAndGroupBySearch(String string);
+	UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
 }

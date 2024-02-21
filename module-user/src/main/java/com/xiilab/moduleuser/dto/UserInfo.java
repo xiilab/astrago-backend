@@ -19,18 +19,20 @@ import lombok.Getter;
 public class UserInfo {
 	private String id;
 	private String userName;
-	private String userRealName;
 	private String email;
 	private LocalDateTime joinDate;
 	private SignUpMethod signUpMethod;
 	private AuthType auth;
 	private List<String> groups;
 	private List<String> workspaces;
+	private String firstName;
+	private String lastName;
 
 	public UserInfo(UserRepresentation userRep, List<GroupRepresentation> groupReps) {
 		this.id = userRep.getId();
 		this.userName = userRep.getUsername();
-		this.userRealName = userRep.getLastName() + userRep.getFirstName();
+		this.firstName = userRep.getLastName();
+		this.lastName = userRep.getFirstName();
 		this.email = userRep.getEmail();
 		this.joinDate = convertUnixToLocalDateTime(userRep.getCreatedTimestamp());
 		this.signUpMethod = null;

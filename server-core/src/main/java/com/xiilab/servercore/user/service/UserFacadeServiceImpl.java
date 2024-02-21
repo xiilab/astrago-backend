@@ -4,9 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
+import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.service.UserService;
@@ -78,5 +79,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public List<SearchDTO> getUserAndGroupBySearch(String search){
 		return userService.getUserAndGroupBySearch(search);
+	}
+	@Override
+	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+		return userService.updateUserInfoById(id, updateUserDTO);
 	}
 }
