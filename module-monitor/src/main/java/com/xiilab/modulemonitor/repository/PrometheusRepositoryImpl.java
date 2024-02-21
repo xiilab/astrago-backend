@@ -6,10 +6,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.xiilab.modulemonitor.service.PrometheusService;
 
 @Repository
-public class PrometheusRepositoryImpl implements PrometheusService {
+public class PrometheusRepositoryImpl implements PrometheusRepository {
 	@Value("${prometheus.url}")
 	private String prometheusURL;
 

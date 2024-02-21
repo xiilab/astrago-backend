@@ -17,6 +17,10 @@ import com.xiilab.modulealert.service.AlertSetService;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8sdb.code.entity.CodeEntity;
+import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.code.repository.CodeRepository;
+import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.common.enums.VolumeType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
@@ -27,6 +31,7 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.WorkloadType;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
@@ -50,12 +55,14 @@ public class InteractiveJobInformer {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
 	private final DatasetRepository datasetRepository;
 	private final ModelRepository modelRepository;
+	private final CodeRepository codeRepository;
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final GroupService groupService;
 	private final AlertService alertService;
 	private final AlertSetService alertSetService;
 
+	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 	@PostConstruct
 	void doInformer() {
 		jobInformer();
@@ -122,6 +129,11 @@ public class InteractiveJobInformer {
 					String modelIds = metadataFromResource.getModelIds();
 					String[] modelIdList = modelIds != null ? modelIds.split(",") : null;
 					saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
+
+					//소스코드 mapping insert
+					String codeIds = metadataFromResource.getCodeIds();
+					String[] codeIdList = codeIds != null ? codeIds.split(",") : null;
+					saveDataMapping(codeIdList, codeRepository::findById, jobEntity, VolumeType.CODE);
 				}
 
 				AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
@@ -155,13 +167,20 @@ public class InteractiveJobInformer {
 								.workload(jobEntity)
 								.build();
 							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
-						}else{
+						}else if(type == VolumeType.MODEL){
 							Model model = (Model)entity;
 							ModelWorkLoadMappingEntity modelWorkLoadMappingEntity = ModelWorkLoadMappingEntity.builder()
 								.model(model)
 								.workload(jobEntity)
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
+						}else{
+							CodeEntity code = (CodeEntity)entity;
+							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
+								.workload(jobEntity)
+								.code(code)
+								.build();
+							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						}
 					});
 				}
