@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -103,4 +104,9 @@ public interface WorkloadModuleService {
 
 	Resource downloadFolderFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
 		String path) throws IOException;
+
+	void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType, String path);
+
+	Boolean uploadFileToPod(String podName, String namespace, String path, List<File> files);
+
 }

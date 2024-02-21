@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,6 +12,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
@@ -35,6 +37,7 @@ import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.pin.service.PinService;
@@ -42,7 +45,9 @@ import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkloadFacadeService {
@@ -146,10 +151,12 @@ public class WorkloadFacadeService {
 
 	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
 		WorkloadType workloadType, String path) throws IOException {
-		return workloadModuleService.getDirectoryDTOListInWorkloadContainer(workloadName, workspaceName, workloadType, path);
+		return workloadModuleService.getDirectoryDTOListInWorkloadContainer(workloadName, workspaceName, workloadType,
+			path);
 	}
 
-	public Resource downloadFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType, String path) throws
+	public Resource downloadFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws
 		IOException {
 		String[] split = path.split("/");
 		String fileName = split[split.length - 1];
@@ -157,6 +164,26 @@ public class WorkloadFacadeService {
 			throw new RestApiException(WorkloadErrorCode.WORKLOAD_FOLDER_DOWN_ERR);
 		} else {
 			return workloadModuleService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		}
+	}
+
+	public void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) {
+		workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+	}
+
+	public void workloadFileUpload(String workloadName, String workspaceName, String path, List<MultipartFile> files) {
+		List<File> fileList = files.stream().map(file -> {
+			try {
+				return CoreFileUtils.convertInputStreamToFile(file);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}).toList();
+		workloadModuleService.uploadFileToPod(workloadName, workspaceName, path, fileList);
+		for (File file : fileList) {
+			boolean delete = file.delete();
+			log.info("{} 파일 삭제 결과 : {}",file.getName(), delete);
 		}
 	}
 

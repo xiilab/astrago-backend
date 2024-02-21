@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.service;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -220,6 +221,22 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		CopyOrReadable copyOrReadable = workloadRepository.downloadFolderFromPod(pod.getMetadata().getName(),
 			workspaceName, path);
 		return convertFolderToZipResource(copyOrReadable, path);
+	}
+
+	@Override
+	public void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) {
+		Pod pod = getJobPod(workspaceName, workloadName, workloadType);
+		workloadRepository.deleteFileFromPod(pod.getMetadata().getName(), workspaceName, path);
+	}
+
+	@Override
+	public Boolean uploadFileToPod(String podName, String namespace, String path, List<File> files) {
+		for (File file : files) {
+			Boolean b = workloadRepository.uploadFileToPod(podName, namespace, path, file);
+			log.info("파일 업로드 성공여부 : " + b);
+		}
+		return null;
 	}
 
 	public Resource convertFileStreamToResource(CopyOrReadable fileStream) throws IOException {

@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.repository;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
@@ -444,6 +445,32 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.dir(folderPath);
 	}
 
+	@Override
+	public void deleteFileFromPod(String podName, String namespace, String filePath) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			//해당 경로에 있는 파일 객체를 가져온다.
+			kubernetesClient.pods()
+				.inNamespace(namespace)
+				.withName(podName)
+				.redirectingInput()
+				.redirectingOutput()
+				.redirectingError()
+				.withTTY()
+				.exec("sh", "-c", String.format("rm -rf %s", filePath));
+		}
+	}
+
+	@Override
+	public Boolean uploadFileToPod(String podName, String namespace, String path, File file) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.pods()
+				.inNamespace(namespace)
+				.withName(podName)
+				.file(path + File.separator + file.getName())
+				.upload(file.toPath());
+		}
+	}
+
 	private List<String> executeCommandToContainer(String podName, String namespace, String command) {
 		KubernetesClient kubernetesClient = k8sAdapter.configServer();
 		ExecWatch execWatch = kubernetesClient.pods()
@@ -668,5 +695,4 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			return workloadName;
 		}
 	}
-
 }

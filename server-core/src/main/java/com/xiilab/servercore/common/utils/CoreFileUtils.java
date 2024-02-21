@@ -2,6 +2,7 @@ package com.xiilab.servercore.common.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,10 +14,10 @@ import java.util.zip.ZipOutputStream;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulecommon.enums.FileType;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -168,5 +169,14 @@ public class CoreFileUtils {
 		} else {
 			return bytes + " Bytes";
 		}
+	}
+
+	public static File convertInputStreamToFile(MultipartFile file) throws IOException {
+		File tempFile = new File(file.getOriginalFilename());
+		boolean newFile = tempFile.createNewFile();
+		FileOutputStream fos = new FileOutputStream(tempFile);
+		fos.write(file.getBytes());
+		fos.close();
+		return tempFile;
 	}
 }

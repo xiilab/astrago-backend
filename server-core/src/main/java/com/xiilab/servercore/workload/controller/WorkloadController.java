@@ -3,6 +3,7 @@ package com.xiilab.servercore.workload.controller;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -136,10 +139,12 @@ public class WorkloadController {
 		@RequestParam("path") String path
 	) throws IOException {
 		return new ResponseEntity<>(
-			workloadFacadeService.getFileListInWorkloadContainer(workloadName, workspaceName, workloadType, path), HttpStatus.OK);
+			workloadFacadeService.getFileListInWorkloadContainer(workloadName, workspaceName, workloadType, path),
+			HttpStatus.OK);
 	}
 
 	@GetMapping("/{workloadName}/file/download")
+	@Operation(summary = "workload 파일 다운로드")
 	public ResponseEntity<Resource> downloadWorkloadFile(
 		@PathVariable(value = "workloadName") String workloadName,
 		@RequestParam(value = "workspaceName") String workspaceName,
@@ -157,5 +162,28 @@ public class WorkloadController {
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_TYPE, mediaType.toString())
 			.body(workloadFacadeService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path));
+	}
+
+	@DeleteMapping("/{workloadName}/file")
+	@Operation(summary = "workload 파일 삭제")
+	public ResponseEntity<HttpStatus> deleteFileFromWorkload(
+		@PathVariable(value = "workloadName") String workloadName,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(value = "path") String path
+	) {
+		workloadFacadeService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/{workloadName}/files/upload")
+	@Operation(summary = "workload 파일 업로드")
+	public ResponseEntity<HttpStatus> workloadFileUpload(
+		@PathVariable(name = "workloadName") String workloadName,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestPart(name = "path") String path,
+		@RequestPart(name = "files") List<MultipartFile> files) {
+		workloadFacadeService.workloadFileUpload(workloadName, workspaceName, path, files);
+		return ResponseEntity.ok().build();
 	}
 }

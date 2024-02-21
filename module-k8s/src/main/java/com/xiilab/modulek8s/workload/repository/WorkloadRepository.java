@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -135,4 +136,8 @@ public interface WorkloadRepository {
 	CopyOrReadable downloadFileFromPod(String podName, String namespace, String filePath);
 
 	CopyOrReadable downloadFolderFromPod(String podName, String namespace, String folderPath);
+
+	void deleteFileFromPod(String podName, String namespace, String filePath);
+
+	Boolean uploadFileToPod(String podName, String namespace, String path, File file);
 }
