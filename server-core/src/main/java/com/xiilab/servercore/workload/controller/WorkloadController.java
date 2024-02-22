@@ -131,7 +131,7 @@ public class WorkloadController {
 		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
-	@GetMapping("/{workloadName}/file/list")
+	@GetMapping("/{workloadName}/files/list")
 	@Operation(summary = "workload 파일리스트 조회")
 	public ResponseEntity<DirectoryDTO> getFileListInWorkloadContainer(
 		@PathVariable("workloadName") String workloadName,
@@ -144,7 +144,7 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
-	@GetMapping("/{workloadName}/file/download")
+	@GetMapping("/{workloadName}/files/download")
 	@Operation(summary = "workload 파일 다운로드")
 	public ResponseEntity<Resource> downloadWorkloadFile(
 		@PathVariable(value = "workloadName") String workloadName,
@@ -158,7 +158,7 @@ public class WorkloadController {
 			.body(workloadFacadeService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path));
 	}
 
-	@DeleteMapping("/{workloadName}/file")
+	@DeleteMapping("/{workloadName}/files")
 	@Operation(summary = "workload 파일 삭제")
 	public ResponseEntity<HttpStatus> deleteFileFromWorkload(
 		@PathVariable(value = "workloadName") String workloadName,
