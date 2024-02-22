@@ -12,6 +12,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -390,6 +391,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public List<String> getFileListInWorkloadContainer(String podName, String namespace, String path)
 		throws IOException {
 		String pattern = MessageFormat.format("stat {0}/* --format=%n,%F,%s,%Y", path);
+		return executeCommandToContainer(podName, namespace, pattern);
+	}
+
+	@Override
+	public List<String> getFileInfoInWorkloadContainer(String podName, String namespace, String path) throws
+		IOException {
+		String pattern = MessageFormat.format("stat {0} --format=%n,%F,%s,%Y", path);
 		return executeCommandToContainer(podName, namespace, pattern);
 	}
 

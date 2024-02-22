@@ -1,8 +1,6 @@
 package com.xiilab.servercore.workload.controller;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
@@ -22,12 +20,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.enums.RepositoryType;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
@@ -151,14 +152,7 @@ public class WorkloadController {
 		@RequestParam(value = "workloadType") WorkloadType workloadType,
 		@RequestParam(value = "path") String path
 	) throws IOException {
-		String contentType = Files.probeContentType(Paths.get(path));
-		MediaType mediaType;
-		if (contentType == null) {
-			mediaType = MediaType.TEXT_PLAIN;
-		} else {
-			mediaType = MediaType.parseMediaType(contentType);
-		}
-
+		MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(path);
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_TYPE, mediaType.toString())
 			.body(workloadFacadeService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path));
@@ -178,12 +172,38 @@ public class WorkloadController {
 
 	@PostMapping("/{workloadName}/files/upload")
 	@Operation(summary = "workload 파일 업로드")
-	public ResponseEntity<HttpStatus> workloadFileUpload(
+	public ResponseEntity<FileUploadResultDTO> workloadFileUpload(
 		@PathVariable(name = "workloadName") String workloadName,
 		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
 		@RequestPart(name = "path") String path,
 		@RequestPart(name = "files") List<MultipartFile> files) {
-		workloadFacadeService.workloadFileUpload(workloadName, workspaceName, path, files);
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(
+			workloadFacadeService.workloadFileUpload(workloadName, workspaceName, workloadType, path, files));
+	}
+
+	@GetMapping("/{workloadName}/files/info")
+	@Operation(summary = "workload 파일 상세 조회")
+	public ResponseEntity<FileInfoDTO> getWorkloadFileInfo(
+		@PathVariable(name = "workloadName") String workloadName,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(name = "path") String path) throws IOException {
+		return ResponseEntity.ok()
+			.body(workloadFacadeService.getWorkloadFileInfo(workloadName, workspaceName, workloadType, path));
+	}
+
+	@GetMapping("/{workloadName}/files/preview")
+	@Operation(summary = "workload 파일 미리보기")
+	public ResponseEntity<byte[]> getWorkloadFilePreview(
+		@PathVariable(name = "workloadName") String workloadName,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(name = "path") String path
+	) throws IOException {
+		MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(path);
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_TYPE, mediaType.toString())
+			.body(workloadFacadeService.getWorkloadFilePreview(workloadName, workspaceName, workloadType, path));
 	}
 }

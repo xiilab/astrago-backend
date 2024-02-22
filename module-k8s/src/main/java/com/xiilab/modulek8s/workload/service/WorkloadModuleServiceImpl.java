@@ -1,15 +1,10 @@
 package com.xiilab.modulek8s.workload.service;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -17,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
@@ -205,6 +201,16 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
+	public FileInfoDTO getFileInfoDtoInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		Pod pod = getJobPod(workspaceName, workloadName, workloadType);
+		String podName = pod.getMetadata().getName();
+		List<String> fileListInWorkloadContainer = workloadRepository.getFileInfoInWorkloadContainer(podName,
+			workspaceName, path);
+		return FileInfoDTO.convertRawString().rawString(fileListInWorkloadContainer.get(0)).build();
+	}
+
+	@Override
 	public Resource downloadFileFromWorkload(String workloadName, String workpspaceName, WorkloadType workloadType,
 		String path) throws
 		IOException {
@@ -220,7 +226,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		Pod pod = getJobPod(workspaceName, workloadName, workloadType);
 		CopyOrReadable copyOrReadable = workloadRepository.downloadFolderFromPod(pod.getMetadata().getName(),
 			workspaceName, path);
-		return convertFolderToZipResource(copyOrReadable, path);
+		return null;
 	}
 
 	@Override
@@ -231,12 +237,13 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public Boolean uploadFileToPod(String podName, String namespace, String path, List<File> files) {
-		for (File file : files) {
-			Boolean b = workloadRepository.uploadFileToPod(podName, namespace, path, file);
-			log.info("파일 업로드 성공여부 : " + b);
-		}
-		return null;
+	public Boolean uploadFileToPod(String workloadName, String workspaceName, WorkloadType workloadType, String path,
+		File file) {
+		Pod jobPod = getJobPod(workspaceName, workloadName, workloadType);
+		Boolean result = workloadRepository.uploadFileToPod(jobPod.getMetadata().getName(),
+			jobPod.getMetadata().getNamespace(), path, file);
+		log.info("파일 업로드 성공여부 : " + result);
+		return result;
 	}
 
 	public Resource convertFileStreamToResource(CopyOrReadable fileStream) throws IOException {
@@ -248,33 +255,33 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		return new InputStreamResource(inputStream);
 	}
 
-	private Resource convertFolderToZipResource(CopyOrReadable fileStream, String path) throws IOException {
-		//파일 존재하는지 체크용
-		InputStream inputStream = fileStream.read();
-		InputStream inputStream2 = fileStream.read();
-		//InputStream을 체크한다.
-		if (inputStream.read() == -1) {
-			throw new FileNotFoundException("해당 파일이 존재하지 않습니다.");
-		}
-		ZipInputStream zipInputStream = new ZipInputStream(inputStream2);
-		String[] split = path.split("/");
-		String s = split[split.length - 1];
-		ZipEntry zipEntry;
-		while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-			if (!zipEntry.getName().startsWith(s)) {
-				continue;
-			}
-			// 파일일 경우 파일 생성 후 데이터 쓰기
-			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("/Users/hc.park/test.zip", true));
-			byte[] buffer = new byte[1024];
-			int bytesRead;
-			while ((bytesRead = zipInputStream.read(buffer)) != -1) {
-				bos.write(buffer, 0, bytesRead);
-			}
-			bos.close();
-		}
-		InputStream inputStream3 = new FileInputStream("/Users/hc.park/test.zip");
-		ZipInputStream zipInputStream2 = new ZipInputStream(inputStream3);
-		return new InputStreamResource(zipInputStream2);
-	}
+	// private Resource convertFolderToZipResource(CopyOrReadable fileStream, String path) throws IOException {
+	// 	//파일 존재하는지 체크용
+	// 	InputStream inputStream = fileStream.read();
+	// 	InputStream inputStream2 = fileStream.read();
+	// 	//InputStream을 체크한다.
+	// 	if (inputStream.read() == -1) {
+	// 		throw new FileNotFoundException("해당 파일이 존재하지 않습니다.");
+	// 	}
+	// 	ZipInputStream zipInputStream = new ZipInputStream(inputStream2);
+	// 	String[] split = path.split("/");
+	// 	String s = split[split.length - 1];
+	// 	ZipEntry zipEntry;
+	// 	while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+	// 		if (!zipEntry.getName().startsWith(s)) {
+	// 			continue;
+	// 		}
+	// 		// 파일일 경우 파일 생성 후 데이터 쓰기
+	// 		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("/Users/hc.park/test.zip", true));
+	// 		byte[] buffer = new byte[1024];
+	// 		int bytesRead;
+	// 		while ((bytesRead = zipInputStream.read(buffer)) != -1) {
+	// 			bos.write(buffer, 0, bytesRead);
+	// 		}
+	// 		bos.close();
+	// 	}
+	// 	InputStream inputStream3 = new FileInputStream("/Users/hc.park/test.zip");
+	// 	ZipInputStream zipInputStream2 = new ZipInputStream(inputStream3);
+	// 	return new InputStreamResource(zipInputStream2);
+	// }
 }

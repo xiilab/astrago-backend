@@ -130,6 +130,7 @@ public interface WorkloadRepository {
 	boolean isUsedModel(Long modelId);
 
 	List<String> getFileListInWorkloadContainer(String podName, String namespace, String path) throws IOException;
+	List<String> getFileInfoInWorkloadContainer(String podName, String namespace, String path) throws IOException;
 
 	int getDirectoryFileCount(String podName, String namespace, String path) throws IOException;
 

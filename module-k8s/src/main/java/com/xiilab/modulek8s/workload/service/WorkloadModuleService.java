@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.core.io.Resource;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
@@ -99,6 +100,9 @@ public interface WorkloadModuleService {
 	DirectoryDTO getDirectoryDTOListInWorkloadContainer(String workloadName, String workspaceName,
 		WorkloadType workloadType, String path) throws IOException;
 
+	FileInfoDTO getFileInfoDtoInWorkloadContainer(String workloadName, String workpaceName,
+		WorkloadType workloadType, String path) throws IOException;
+
 	Resource downloadFileFromWorkload(String workloadName, String workpspaceName, WorkloadType workloadType,
 		String path) throws IOException;
 
@@ -107,6 +111,5 @@ public interface WorkloadModuleService {
 
 	void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType, String path);
 
-	Boolean uploadFileToPod(String podName, String namespace, String path, List<File> files);
-
+	Boolean uploadFileToPod(String podName, String namespace, WorkloadType workloadType, String path, File file);
 }

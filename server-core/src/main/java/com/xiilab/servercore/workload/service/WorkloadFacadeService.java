@@ -19,6 +19,7 @@ import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -37,6 +38,7 @@ import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -155,6 +157,11 @@ public class WorkloadFacadeService {
 			path);
 	}
 
+	public FileInfoDTO getFileInfoInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		return workloadModuleService.getFileInfoDtoInWorkloadContainer(workloadName, workspaceName, workloadType, path);
+	}
+
 	public Resource downloadFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
 		String path) throws
 		IOException {
@@ -172,7 +179,10 @@ public class WorkloadFacadeService {
 		workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
 	}
 
-	public void workloadFileUpload(String workloadName, String workspaceName, String path, List<MultipartFile> files) {
+	public FileUploadResultDTO workloadFileUpload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path, List<MultipartFile> files) {
+		int successCnt = 0;
+		int failCnt = 0;
 		List<File> fileList = files.stream().map(file -> {
 			try {
 				return CoreFileUtils.convertInputStreamToFile(file);
@@ -180,11 +190,32 @@ public class WorkloadFacadeService {
 				throw new RuntimeException(e);
 			}
 		}).toList();
-		workloadModuleService.uploadFileToPod(workloadName, workspaceName, path, fileList);
+		for (File file : fileList) {
+			Boolean result = workloadModuleService.uploadFileToPod(workloadName, workspaceName, workloadType, path, file);
+			if (result) {
+				successCnt += 1;
+			} else {
+				failCnt += 1;
+			}
+		}
 		for (File file : fileList) {
 			boolean delete = file.delete();
-			log.info("{} 파일 삭제 결과 : {}",file.getName(), delete);
+			log.info("{} 파일 삭제 결과 : {}", file.getName(), delete);
 		}
+		return new FileUploadResultDTO(successCnt, failCnt);
+	}
+
+	public FileInfoDTO getWorkloadFileInfo(String workloadName, String workspaceName,
+		WorkloadType workloadType,
+		String path) throws IOException {
+		return getFileInfoInWorkloadContainer(workloadName, workspaceName,
+			workloadType, path);
+		// Resource resource = downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
+	}
+
+	public byte[] getWorkloadFilePreview(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws IOException {
+		return downloadFileFromWorkload(workloadName, workspaceName, workloadType, path).getContentAsByteArray();
 	}
 
 	private List<ModuleWorkloadResDTO> filterNormalWorkloads(List<ModuleWorkloadResDTO> workloadList, String searchName,
