@@ -31,8 +31,8 @@ public class UserInfo {
 	public UserInfo(UserRepresentation userRep, List<GroupRepresentation> groupReps) {
 		this.id = userRep.getId();
 		this.userName = userRep.getUsername();
-		this.firstName = userRep.getLastName();
-		this.lastName = userRep.getFirstName();
+		this.firstName = userRep.getFirstName();
+		this.lastName = userRep.getLastName();
 		this.email = userRep.getEmail();
 		this.joinDate = convertUnixToLocalDateTime(userRep.getCreatedTimestamp());
 		this.signUpMethod = null;
