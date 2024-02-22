@@ -143,8 +143,8 @@ public class DatasetController {
 	@PostMapping("/datasets/astrago/{datasetId}/files/delete")
 	@Operation(summary = "astrago 데이터 셋 파일, 디렉토리 삭제")
 	public ResponseEntity<HttpStatus> astragoDatasetDeleteFiles(@PathVariable(name = "datasetId") Long datasetId,
-		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
-		datasetService.astragoDatasetDeleteFiles(datasetId, reqFilePathDTO);
+		@RequestBody DatasetDTO.ReqFilePathsDTO reqFilePathsDTO){
+		datasetService.astragoDatasetDeleteFiles(datasetId, reqFilePathsDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
