@@ -59,4 +59,11 @@ public class DirectoryDTO {
 			this.fileCount = fileCount;
 		}
 	}
+
+	@Getter
+	@AllArgsConstructor
+	public static class FilePreviewInfoDTO {
+		private ChildrenDTO fileInfo;
+		private byte[] file;
+	}
 }

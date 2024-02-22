@@ -18,9 +18,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.service.DatasetFacadeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -104,10 +105,10 @@ public class DatasetController {
 
 	@GetMapping("/datasets/astrago/{datasetId}/file")
 	@Operation(summary = "astrago 데이터 셋 파일 상세 조회")
-	public ResponseEntity<DatasetDTO.FileInfo> getAstragoDatasetFileInfo(
+	public ResponseEntity<FileInfoDTO> getAstragoDatasetFileInfo(
 		@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath) {
-		DatasetDTO.FileInfo fileInfo = datasetFacadeService.getAstragoDatasetFileInfo(datasetId, filePath);
+		FileInfoDTO fileInfo = datasetFacadeService.getAstragoDatasetFileInfo(datasetId, filePath);
 		return new ResponseEntity(fileInfo, HttpStatus.OK);
 	}
 
@@ -144,7 +145,7 @@ public class DatasetController {
 	public ResponseEntity<HttpStatus> astragoDatasetDeleteFiles(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestBody DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
 		datasetService.astragoDatasetDeleteFiles(datasetId, reqFilePathDTO);
-		return new ResponseEntity(HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/astrago/{datasetId}/files/download")
@@ -156,7 +157,7 @@ public class DatasetController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(downloadFileResDTO.getMediaType());
 		headers.add("Content-Disposition", "attachment; filename=" + downloadFileResDTO.getFileName());
-		return new ResponseEntity(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
+		return new ResponseEntity<>(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/local/{datasetId}/files")
@@ -165,7 +166,7 @@ public class DatasetController {
 		@RequestParam(value = "filePath") String filePath) {
 		DirectoryDTO files = datasetFacadeService.getLocalDatasetFiles(datasetId,
 			filePath);
-		return new ResponseEntity(files, HttpStatus.OK);
+		return new ResponseEntity<>(files, HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/local/{datasetId}/files/download")
@@ -177,16 +178,14 @@ public class DatasetController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(file.getMediaType());
 		headers.add("Content-Disposition", "attachment; filename=" + file.getFileName());
-		return new ResponseEntity(file.getByteArrayResource(), headers, HttpStatus.OK);
+		return new ResponseEntity<>(file.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/local/{datasetId}/file")
 	@Operation(summary = "local 데이터 셋 파일 상세 조회")
-	public ResponseEntity<DatasetDTO.FileInfo> getLocalDatasetFileInfo(@PathVariable(name = "datasetId") Long datasetId,
+	public ResponseEntity<FileInfoDTO> getLocalDatasetFileInfo(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath) {
-		DatasetDTO.FileInfo fileInfo = datasetFacadeService.getLocalDatasetFileInfo(datasetId,
-			filePath);
-		return new ResponseEntity(fileInfo, HttpStatus.OK);
+		return new ResponseEntity<>(datasetFacadeService.getLocalDatasetFileInfo(datasetId, filePath), HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/local/{datasetId}/preview")
@@ -196,6 +195,6 @@ public class DatasetController {
 		DownloadFileResDTO file = datasetFacadeService.getLocalDatasetFile(datasetId, filePath);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(file.getMediaType());
-		return new ResponseEntity(file.getByteArrayResource(), headers, HttpStatus.OK);
+		return new ResponseEntity<>(file.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 }

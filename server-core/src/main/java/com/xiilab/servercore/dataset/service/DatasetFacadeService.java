@@ -4,9 +4,10 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 
 public interface DatasetFacadeService {
@@ -24,11 +25,11 @@ public interface DatasetFacadeService {
 
 	DownloadFileResDTO DownloadLocalDatasetFile(Long datasetId, String filePath);
 
-	DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, String filePath);
+	FileInfoDTO getLocalDatasetFileInfo(Long datasetId, String filePath);
 
 	DownloadFileResDTO getLocalDatasetFile(Long datasetId, String filePath);
 
-	DatasetDTO.FileInfo getAstragoDatasetFileInfo(Long datasetId, String filePath);
+	FileInfoDTO getAstragoDatasetFileInfo(Long datasetId, String filePath);
 
 	DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath);
 }

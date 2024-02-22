@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
 import com.xiilab.modulecommon.enums.StorageType;
@@ -168,14 +169,14 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	}
 
 	@Override
-	public ModelDTO.FileInfo getAstragoModelFileInfo(Long modelId, String filePath) {
+	public FileInfoDTO getAstragoModelFileInfo(Long modelId, String filePath) {
 		modelService.findById(modelId);
 		File file = new File(filePath);
 		if (file.exists()) {
 			String size = webClientService.formatFileSize(file.length());
 			String lastModifiedTime = webClientService.formatLastModifiedTime(file.lastModified());
 			String contentPath = filePath;
-			return ModelDTO.FileInfo.builder()
+			return FileInfoDTO.builder()
 				.fileName(file.getName())
 				.size(size)
 				.lastModifiedTime(lastModifiedTime)
@@ -274,7 +275,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	}
 
 	@Override
-	public ModelDTO.FileInfo getLocalModelFileInfo(Long modelId, String filePath) {
+	public FileInfoDTO getLocalModelFileInfo(Long modelId, String filePath) {
 		LocalModelEntity model = (LocalModelEntity)modelService.findById(modelId);
 		String httpUrl = model.getDns() + filePath;
 		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
@@ -283,7 +284,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 		String lastModifiedTime = webClientService.formatLastModifiedTime(fileInfo.getLastModified());
 		String contentPath = filePath;
 
-		return ModelDTO.FileInfo.builder()
+		return FileInfoDTO.builder()
 			.fileName(fileName)
 			.size(size)
 			.lastModifiedTime(lastModifiedTime)
