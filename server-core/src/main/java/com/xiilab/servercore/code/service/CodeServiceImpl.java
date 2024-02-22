@@ -10,10 +10,10 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.dto.CodeReqDTO;
-import com.xiilab.modulek8sdb.code.dto.CodeResDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
+import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
 import jakarta.transaction.Transactional;

@@ -1,8 +1,5 @@
 package com.xiilab.modulek8sdb.workload.history.repository;
 
-
-// import static com.xiilab.modulek8sdb.entity.QJobEntity.*;
-
 import static com.xiilab.modulek8sdb.workload.history.entity.QJobEntity.*;
 
 import java.util.List;
@@ -11,8 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
-import com.xiilab.modulek8sdb.workload.history.entity.WorkloadType;
 
 import lombok.RequiredArgsConstructor;
 

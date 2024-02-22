@@ -4,8 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-// import com.xiilab.modulek8sdb.workload.history.dto.PortDTO;
-
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.workload.history.dto.PortDTO;
 
 import jakarta.persistence.Entity;

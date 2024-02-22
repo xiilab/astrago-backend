@@ -144,7 +144,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				throw new RestApiException(DatasetErrorCode.DATASET_NOT_DELETE_IN_USE);
 			}
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
-			if (dataset.isAstargoDataset()) {
+			if (dataset.isAstragoDataset()) {
 				//workspace mapping 삭제
 				datasetService.deleteDatasetWorkspaceMappingById(datasetId);
 				//dataset 삭제

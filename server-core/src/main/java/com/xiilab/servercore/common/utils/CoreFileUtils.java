@@ -21,8 +21,10 @@ import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class CoreFileUtils {
 	private static final long KILOBYTE = 1024;
 	private static final long MEGABYTE = KILOBYTE * 1024;
@@ -54,30 +56,39 @@ public class CoreFileUtils {
 
 	public static void deleteFileOrDirectory(String path) {
 		File fileOrDirectory = new File(path);
-		if (fileOrDirectory.isFile()) {
-			fileOrDirectory.delete(); // 파일이면 삭제
-		} else {
-			// 디렉토리면 하위 파일 및 디렉토리를 모두 삭제
-			File[] files = fileOrDirectory.listFiles();
-			if (files != null) {
-				for (File file : files) {
-					deleteFileOrDirectory(file.getPath());
+		String target = fileOrDirectory.getName();
+		try {
+			if (fileOrDirectory.exists()) { // 파일 또는 디렉토리가 존재하는지 확인
+				if (fileOrDirectory.isFile()) {
+					fileOrDirectory.delete(); // 파일이면 삭제
+				} else {
+					// 디렉토리면 하위 파일 및 디렉토리를 모두 삭제
+					File[] files = fileOrDirectory.listFiles();
+					if (files != null) {
+						for (File file : files) {
+							deleteFileOrDirectory(file.getPath());
+						}
+					}
+					// 마지막으로 빈 디렉토리 삭제
+					fileOrDirectory.delete();
 				}
 			}
-			// 마지막으로 빈 디렉토리 삭제
-			fileOrDirectory.delete();
+		} catch (SecurityException e) {
+			log.error("file delete exception : ", e);
+			throw new RestApiException(CommonErrorCode.FILE_PERMISSION_DENIED, target);
 		}
 	}
 
 	public static long datasetUploadFiles(String path, List<MultipartFile> files) {
 		long size = 0;
 		for (MultipartFile file : files) {
-			String filePath = path + File.separator + file.getOriginalFilename();
+			String filePath = path + File.separator + file.getOriginalFilename().replace(" ", "_");
 			File saveFile = new File(filePath);
 			try {
 				file.transferTo(saveFile);
 				size += file.getSize();
 			} catch (IOException e) {
+				log.error("io exception : " + e);
 				throw new RestApiException(CommonErrorCode.FILE_SAVE_FAIL);
 			}
 		}

@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum WorkloadType {
 	BATCH("batch"),
-	INTERACTIVE("interactive");
+	INTERACTIVE("interactive"),
+	DEPLOY("deploy");
 
 	private final String type;
 }

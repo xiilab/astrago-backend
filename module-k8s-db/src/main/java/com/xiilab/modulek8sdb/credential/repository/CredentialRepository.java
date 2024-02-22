@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 
 @Repository
-public interface CredentialRepository extends JpaRepository<CredentialEntity, Long> {
+public interface CredentialRepository extends JpaRepository<CredentialEntity, Long>, CredentialRepositoryCustom {
 	Page<CredentialEntity> findByRegUser_RegUserId(String name, Pageable pageable);
 }

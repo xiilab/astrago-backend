@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.common.utils;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +117,8 @@ public class K8sInfoPicker {
 			Map<String, String> annotations = metadata.getAnnotations();
 			Container container = getContainerFromHasMetadata(job);
 			ResourceDTO containerResourceReq = getContainerResourceReq(container);
+			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
 				.name(AnnotationField.NAME.getField())
 				.description(AnnotationField.DESCRIPTION.getField())
@@ -123,6 +126,8 @@ public class K8sInfoPicker {
 				.creatorId(annotations.get(LabelField.CREATOR_ID.getField()))
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
+				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
+				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.workspaceName(AnnotationField.WORKSPACE_NAME.getField())
 				.workspaceResourceName(metadata.getNamespace())
 				.cpuReq(containerResourceReq.getCpuReq())
@@ -130,8 +135,11 @@ public class K8sInfoPicker {
 				.gpuReq(containerResourceReq.getGpuReq())
 				.imgName(AnnotationField.IMAGE_NAME.getField())
 				.imgTag(AnnotationField.IMAGE_TAG.getField())
-				.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
-				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.codeIds(annotations.get(AnnotationField.CODE_IDS.getField()))
+				// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+				// .deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.createdAt(createTime)
+				.deletedAt(deleteTime)
 				.build();
 		} catch (NullPointerException e) {
 			return null;
@@ -158,7 +166,8 @@ public class K8sInfoPicker {
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imgName(container.getImage().split(":")[0])
 			.imgTag(container.getImage().split(":")[1])
-			.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+			// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
 			.deletedAt(LocalDateTime.now())
 			.build();
 	}
@@ -176,6 +185,8 @@ public class K8sInfoPicker {
 			Map<String, String> annotations = metadata.getAnnotations();
 			Container container = getContainerFromHasMetadata(deployment);
 			ResourceDTO containerResourceReq = getContainerResourceReq(container);
+			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
 				.name(AnnotationField.NAME.getField())
 				.description(AnnotationField.DESCRIPTION.getField())
@@ -190,8 +201,12 @@ public class K8sInfoPicker {
 				.gpuReq(containerResourceReq.getGpuReq())
 				.imgName(AnnotationField.IMAGE_NAME.getField())
 				.imgTag(AnnotationField.IMAGE_TAG.getField())
-				.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
-				.deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
+				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
+				// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+				// .deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.createdAt(createTime)
+				.deletedAt(deleteTime)
 				.build();
 		} catch (NullPointerException e) {
 			return null;
@@ -218,7 +233,8 @@ public class K8sInfoPicker {
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imgName(container.getImage().split(":")[0])
 			.imgTag(container.getImage().split(":")[1])
-			.createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+			// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
 			.deletedAt(LocalDateTime.now())
 			.build();
 	}

@@ -44,7 +44,7 @@ public class ModelController {
 	public ResponseEntity<HttpStatus> insertAstragoModel(
 		@RequestPart(name = "createModel") ModelDTO.CreateAstragoModel createModelDTO,
 		@RequestPart(name = "files", required = false) List<MultipartFile> files) {
-		modelFacadeService.insertAstragoDataset(createModelDTO, files);
+		modelFacadeService.insertAstragoModel(createModelDTO, files);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -134,8 +134,8 @@ public class ModelController {
 	@PostMapping("/models/astrago/{modelId}/files/delete")
 	@Operation(summary = "astrago model 파일, 디렉토리 삭제")
 	public ResponseEntity<HttpStatus> astragoModelDeleteFiles(@PathVariable(name = "modelId") Long modelId,
-		@RequestBody ModelDTO.ReqFilePathDTO reqFilePathDTO){
-		modelService.astragoModelDeleteFiles(modelId, reqFilePathDTO);
+		@RequestBody ModelDTO.ReqFilePathsDTO reqFilePathsDTO){
+		modelService.astragoModelDeleteFiles(modelId, reqFilePathsDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -147,6 +147,7 @@ public class ModelController {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(downloadFileResDTO.getMediaType());
+		headers.add("Content-Disposition", "attachment; filename=" + downloadFileResDTO.getFileName());
 		return new ResponseEntity<>(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
@@ -167,6 +168,7 @@ public class ModelController {
 			filePath);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(file.getMediaType());
+		headers.add("Content-Disposition", "attachment; filename=" + file.getFileName());
 		return new ResponseEntity<>(file.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 

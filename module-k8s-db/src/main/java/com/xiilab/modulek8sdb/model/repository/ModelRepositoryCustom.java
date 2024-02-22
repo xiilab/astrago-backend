@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8sdb.model.entity.Model;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 public interface ModelRepositoryCustom {
 	Page<Model> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType authType);

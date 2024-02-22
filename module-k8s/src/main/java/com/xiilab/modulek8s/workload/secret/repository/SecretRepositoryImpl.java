@@ -1,11 +1,12 @@
 package com.xiilab.modulek8s.workload.secret.repository;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.enums.CredentialType;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8s.workload.enums.CredentialType;
 import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
-import com.xiilab.modulek8s.workload.secret.vo.SecretVO;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -22,7 +23,7 @@ public class SecretRepositoryImpl implements SecretRepository {
 	public String createSecret(CredentialVO credentialVO) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Secret createSecret = null;
-			if (credentialVO.credentialType() == CredentialType.DOCKER_HUB) {
+			if (credentialVO.credentialType() == CredentialType.DOCKER) {
 				createSecret = createDockerSecret(credentialVO);
 			}
 			Secret result = client.secrets()
@@ -35,10 +36,6 @@ public class SecretRepositoryImpl implements SecretRepository {
 
 	private Secret createDockerSecret(CredentialVO credentialVO) {
 		return KubernetesResourceUtil.createDockerRegistrySecret(DOCKER_HUB_API_URL,
-			credentialVO.credentialLoginId(), credentialVO.credentialLoginPw(), credentialVO.credentialName());
+			credentialVO.credentialLoginId(), credentialVO.credentialLoginPw(), "sc-" + UUID.randomUUID());
 	}
-
-	// private Secret createGitSecret(CredentialVO credentialVO) {
-	// 	return
-	// }
 }

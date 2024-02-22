@@ -15,7 +15,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.dataset.entity.QDataset;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 import lombok.RequiredArgsConstructor;
 

@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -55,21 +57,27 @@ public class BatchJobVO extends WorkloadVO {
 			.withName(jobName)
 			.withNamespace(workspace)
 			.withAnnotations(
-				Map.of(
-					AnnotationField.NAME.getField(), getName(),
-					AnnotationField.WORKSPACE_NAME.getField(), getWorkspace(),
-					AnnotationField.DESCRIPTION.getField(), getDescription(),
-					AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString(),
-					AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName(),
-					AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName(),
-					AnnotationField.TYPE.getField(), getWorkloadType().getType(),
-					AnnotationField.IMAGE_NAME.getField(), getImage().name(),
-					AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType()
-				)
+				getAnnotationMap()
 			).withLabels(
 				getLabelMap()
 			)
 			.build();
+	}
+
+	private Map<String, String> getAnnotationMap() {
+		Map<String, String> annotationMap = new HashMap<>();
+		annotationMap.put(AnnotationField.NAME.getField(), getName());
+		annotationMap.put(AnnotationField.DESCRIPTION.getField(), getDescription());
+		annotationMap.put(AnnotationField.WORKSPACE_NAME.getField(), getWorkspace());
+		annotationMap.put(AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString());
+		annotationMap.put(AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName());
+		annotationMap.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName());
+		annotationMap.put(AnnotationField.TYPE.getField(), getWorkloadType().getType());
+		annotationMap.put(AnnotationField.IMAGE_NAME.getField(), getImage().name());
+		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().name());
+		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
+		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
+		return annotationMap;
 	}
 
 	private Map<String, String> getLabelMap() {
@@ -105,15 +113,17 @@ public class BatchJobVO extends WorkloadVO {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
-		if (this.secretName != null && this.secretName.length() > 0) {
-			podSpecBuilder.addNewImagePullSecret(secretName);
+		// if (this.secretName != null && this.secretName.length() > 0) {
+		if (!ObjectUtils.isEmpty(this.secretName)) {
+			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
-		cloneGitRepo(podSpecBuilder, codes);
-		addVolumes(podSpecBuilder, datasets);
-		addVolumes(podSpecBuilder, models);
+		cloneGitRepo(podSpecBuilder, this.codes);
+		addVolumes(podSpecBuilder, this.datasets);
+		addVolumes(podSpecBuilder, this.models);
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withRestartPolicy("Never")
+			.withTerminationGracePeriodSeconds(600L)
 			.addNewContainer()
 			.withName(getUniqueResourceName())
 			.withImage(image.name());
@@ -129,7 +139,8 @@ public class BatchJobVO extends WorkloadVO {
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer, List<JobVolumeVO> volumes) {
+	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
+		List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
 			volumes.forEach(volume -> podSpecContainer
 				.addNewVolumeMount()

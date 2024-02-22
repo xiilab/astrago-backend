@@ -4,6 +4,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -19,6 +24,7 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -66,14 +72,22 @@ public abstract class WorkloadEntity {
 	protected String workloadCMD;
 	@OneToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
+	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList= new ArrayList<>();
+	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<VolumeEntity> volumeList= new ArrayList<>();
+	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<PortEntity> portList = new ArrayList<>();
+	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<DatasetWorkLoadMappingEntity> datasetWorkloadMappingList = new ArrayList<>();
+	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
+	protected List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = new ArrayList<>();
 }

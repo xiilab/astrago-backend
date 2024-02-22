@@ -83,10 +83,14 @@ public record ResponseDTO() {
 	 */
 	@Builder
 	public record NodeResourceDTO(String nodeName,
-								  double gpuUsage,
+								  String cpuTotal,
+								  String cpuRequest,
 								  double cpuUsage,
-								  double diskUsage,
-								  double memUsage) {
+								  String memTotal,
+								  String memRequest,
+								  double memUsage,
+								  double gpuUsage,
+								  double diskUsage) {
 	}
 
 	/**
@@ -103,6 +107,7 @@ public record ResponseDTO() {
 	 */
 	@Builder
 	public record WorkloadResponseDTO(String wlName,
+									  String wsName,
 									  String status) {
 	}
 
@@ -118,5 +123,12 @@ public record ResponseDTO() {
 									   String memUsed,
 									   String memHard,
 									   List<WorkloadResponseDTO> workloadResponseDTOS) {
+	}
+	@Builder
+	public record ResponseClusterDTO(String name,
+									 String total,
+									 String request,
+									 String usage){
+
 	}
 }

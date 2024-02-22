@@ -1,7 +1,9 @@
-package com.xiilab.modulek8sdb.credential.dto;
+package com.xiilab.servercore.credential.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulecommon.enums.CredentialType;
 
@@ -44,6 +46,22 @@ public class CredentialResDTO {
 				credential.getRegUser().getRegUserName(), credential.getCreatedAt());
 			this.loginId = credential.getLoginId();
 			this.loginPw = credential.getLoginPw();
+		}
+
+		public ModuleCredentialReqDTO toModuleCredentialReqDTO() {
+			return new ModuleCredentialReqDTO(getId(), getLoginId(), getLoginPw(), getName(), getType());
+		}
+	}
+
+	@Getter
+	@AllArgsConstructor
+	public static class CredentialInfos {
+		List<CredentialInfo> datasets;
+		long totalCount;
+
+		public static CredentialInfos entitiesToDtos(List<CredentialEntity> datasets, long totalCount) {
+			return new CredentialInfos(datasets.stream().map(CredentialResDTO.CredentialInfo::new).toList(),
+				totalCount);
 		}
 	}
 }

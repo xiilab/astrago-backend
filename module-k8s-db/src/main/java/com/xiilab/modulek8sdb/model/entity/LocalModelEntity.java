@@ -55,7 +55,7 @@ public class LocalModelEntity extends Model {
 	}
 
 	@Override
-	public boolean isAstargoModel() {
+	public boolean isAstragoModel() {
 		return false;
 	}
 

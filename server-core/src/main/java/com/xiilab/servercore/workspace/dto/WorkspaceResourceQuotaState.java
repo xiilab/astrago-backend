@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.workspace.dto;
+package com.xiilab.servercore.workspace.dto;
 
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;

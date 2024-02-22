@@ -75,7 +75,7 @@ public class MonitorController {
 	 */
 	@GetMapping("/dashboard/workspace")
 	@Operation(summary = "관리자 대시보드  워크스페이스 자원 사용량 리스트")
-	public ResponseEntity<List<ResponseDTO.WorkspaceDTO>> getWorkspaceResourceList(){
+	public ResponseEntity<List<ResponseDTO.WorkspaceDTO>> getDashboardWorkspaceResourceList(){
 		return new ResponseEntity<>(monitorService.getWorkspaceResourceList(), HttpStatus.OK);
 	}
 	/**
@@ -83,7 +83,7 @@ public class MonitorController {
 	 */
 	@GetMapping("/dashboard/node/{nodeName}")
 	@Operation(summary = "관리자 대시보드  노드별 자원 사용량 조회")
-	public ResponseEntity<ResponseDTO.NodeResourceDTO> getNodeResource(@PathVariable(name = "nodeName") String nodeName){
+	public ResponseEntity<ResponseDTO.NodeResourceDTO> getDashboardNodeResourceByNodeName(@PathVariable(name = "nodeName") String nodeName){
 		return new ResponseEntity<>(monitorService.getNodeResource(nodeName), HttpStatus.OK);
 	}
 	/**
@@ -92,8 +92,9 @@ public class MonitorController {
 	 */
 	@GetMapping("/dashboard/node")
 	@Operation(summary = "관리자 대시보드 Node 리스트 조회")
-	public ResponseEntity<List<ResponseDTO.NodeResponseDTO>> getNodeList(){
-		return new ResponseEntity<>(monitorService.getNodeList(), HttpStatus.OK);
+	public ResponseEntity<List<ResponseDTO.NodeResponseDTO>> getDashboardNodeList(
+		@RequestParam(name = "status", required = false) String status){
+		return new ResponseEntity<>(monitorService.getNodeList(status), HttpStatus.OK);
 }
 
 	/**
@@ -101,9 +102,10 @@ public class MonitorController {
 	 * @return
 	 */
 	@GetMapping("/dashboard/wl")
-	@Operation(summary = "관리자 대시보드  워크로드 리스트 조회")
-	public ResponseEntity<List<ResponseDTO.WorkloadResponseDTO>> getWlList(){
-		return new ResponseEntity<>(monitorService.getWlList(), HttpStatus.OK);
+	@Operation(summary = "관리자 대시보드 워크로드 리스트 조회")
+	public ResponseEntity<List<ResponseDTO.WorkloadResponseDTO>> getDashboardWlList(
+		@RequestParam(name = "status", required = false) String status){
+		return new ResponseEntity<>(monitorService.getWlList(status), HttpStatus.OK);
 	}
 
 	/**
@@ -115,6 +117,11 @@ public class MonitorController {
 	@Operation(summary = "Workspace Resource 조회")
 	public ResponseEntity<ResponseDTO.WorkspaceResponseDTO> getWorkspaceResourcesInfo(@PathVariable(name = "namespace") String namespace){
 		return new ResponseEntity<>(monitorService.getWorkspaceResourcesInfo(namespace), HttpStatus.OK);
+	}
+	@GetMapping("/dashboard/cluster")
+	@Operation(summary = "관리자 대시보드 클러스터 조회")
+	public ResponseEntity<List<ResponseDTO.ResponseClusterDTO>> getDashboardCluster(){
+		return new ResponseEntity<>(monitorService.getDashboardCluster(), HttpStatus.OK);
 	}
 
 }

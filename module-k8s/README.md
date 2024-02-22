@@ -20,12 +20,15 @@
 - annotation
     - 이름 : name
     - 설명 : description
+    - 워크스페이스 리소스명: ws-name
     - 생성시각 : created-at
     - 생성자 username : creator-user-name
     - 생성자 이름(실명) : creator-full-name
+    - 잡 타입: type(batch, interactive)
     - 이미지명 : image-name
     - 이미지 태그명: image-tag
-    - 잡 타입: type(batch, interactive)
+    - 데이터셋 IDS(= dataset-ids): 1,2,3
+    - 모델 IDS(=model-ids): 1,2,3
 - label
     - 생성자 id : creator-id
     - 사용한 볼륨은 label에 list형을 못넣기때문에 row로 나열(볼륨의 meta name : true)
@@ -35,8 +38,8 @@
     - 사용한 codes : codes
     - 생성 플랫폼: control-by (astra)
     - 잡 이름(pod에만 존재): job-name
-    - ds-[DATASET_ID(DB PK)]: "true"
-    - md-[MDOEL_ID(DB PK)]: "true"
+    - ds-[DATASET_ID[DB PK]]: "true"
+    - md-[MDOEL_ID[DB PK]]: "true"
 
 ## Volume(PV,PVC)
 

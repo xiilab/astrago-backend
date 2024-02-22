@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.workspace.dto;
+package com.xiilab.servercore.workspace.dto;
 
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyVolumeDTO;

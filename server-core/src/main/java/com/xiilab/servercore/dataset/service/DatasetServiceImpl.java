@@ -58,7 +58,7 @@ public class DatasetServiceImpl implements DatasetService {
 			// 업로드된 각 파일에 대해 작업 수행
 			if(files != null){
 				for (MultipartFile file : files) {
-					Path targetPath = uploadPath.resolve(file.getOriginalFilename());
+					Path targetPath = uploadPath.resolve(file.getOriginalFilename().replace(" ", "_"));
 					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 					size += file.getSize();
 				}
@@ -140,11 +140,13 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
+	public void astragoDatasetDeleteFiles(Long datasetId, DatasetDTO.ReqFilePathsDTO reqFilePathsDTO) {
 		datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
-		String targetPath = reqFilePathDTO.getPath();
-		CoreFileUtils.deleteFileOrDirectory(targetPath);
+		String[] targetPaths = reqFilePathsDTO.getPaths();
+		for (String targetPath : targetPaths) {
+			CoreFileUtils.deleteFileOrDirectory(targetPath);
+		}
 	}
 
 	@Override
