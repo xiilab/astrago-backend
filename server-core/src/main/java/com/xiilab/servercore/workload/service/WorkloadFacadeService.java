@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,8 +12,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulealert.dto.AlertDTO;
@@ -20,10 +23,15 @@ import com.xiilab.modulealert.dto.AlertSetDTO;
 import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulealert.service.AlertSetService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
@@ -34,21 +42,24 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.common.dto.FileUploadResultDTO;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.service.DatasetService;
-import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkloadFacadeService {
@@ -204,6 +215,73 @@ public class WorkloadFacadeService {
 		List<ModuleWorkloadResDTO> normalWorkloadList = filterNormalWorkloads(workloadResDTOList,
 			searchName, workloadStatus, workloadSortCondition, userInfoDTO.getId());
 		return new PageDTO<>(pinWorkloadList, normalWorkloadList, pageNum, 10);
+	}
+
+	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		return workloadModuleService.getDirectoryDTOListInWorkloadContainer(workloadName, workspaceName, workloadType,
+			path);
+	}
+
+	public FileInfoDTO getFileInfoInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		return workloadModuleService.getFileInfoDtoInWorkloadContainer(workloadName, workspaceName, workloadType, path);
+	}
+
+	public Resource downloadFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws
+		IOException {
+		String[] split = path.split("/");
+		String fileName = split[split.length - 1];
+		if (!fileName.contains(".")) {
+			throw new RestApiException(WorkloadErrorCode.WORKLOAD_FOLDER_DOWN_ERR);
+		} else {
+			return workloadModuleService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		}
+	}
+
+	public void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) {
+		workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+	}
+
+	public FileUploadResultDTO workloadFileUpload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path, List<MultipartFile> files) {
+		int successCnt = 0;
+		int failCnt = 0;
+		List<File> fileList = files.stream().map(file -> {
+			try {
+				return CoreFileUtils.convertInputStreamToFile(file);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}).toList();
+		for (File file : fileList) {
+			Boolean result = workloadModuleService.uploadFileToPod(workloadName, workspaceName, workloadType, path, file);
+			if (result) {
+				successCnt += 1;
+			} else {
+				failCnt += 1;
+			}
+		}
+		for (File file : fileList) {
+			boolean delete = file.delete();
+			log.info("{} 파일 삭제 결과 : {}", file.getName(), delete);
+		}
+		return new FileUploadResultDTO(successCnt, failCnt);
+	}
+
+	public FileInfoDTO getWorkloadFileInfo(String workloadName, String workspaceName,
+		WorkloadType workloadType,
+		String path) throws IOException {
+		return getFileInfoInWorkloadContainer(workloadName, workspaceName,
+			workloadType, path);
+		// Resource resource = downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
+	}
+
+	public byte[] getWorkloadFilePreview(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws IOException {
+		return downloadFileFromWorkload(workloadName, workspaceName, workloadType, path).getContentAsByteArray();
 	}
 
 	private List<ModuleWorkloadResDTO> filterNormalWorkloads(List<ModuleWorkloadResDTO> workloadList, String searchName,

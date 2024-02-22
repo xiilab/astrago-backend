@@ -54,7 +54,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		log.error("handleAllException", ex);
 		log.error(String.valueOf(ex.getStackTrace()));
 		ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
-		return handleExceptionInternal(errorCode);
+		return handleExceptionInternal(errorCode, ex.getMessage());
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)

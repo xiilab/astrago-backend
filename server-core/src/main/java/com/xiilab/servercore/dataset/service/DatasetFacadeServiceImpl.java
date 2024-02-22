@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tomcat.jni.FileInfo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -15,27 +16,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.FileType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.modulek8sdb.common.enums.FileType;
-import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
-import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
-import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
+import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
@@ -214,7 +216,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public DatasetDTO.FileInfo getLocalDatasetFileInfo(Long datasetId, String filePath) {
+	public FileInfoDTO getLocalDatasetFileInfo(Long datasetId, String filePath) {
 		LocalDatasetEntity dataset = (LocalDatasetEntity)datasetService.findById(datasetId);
 		String httpUrl = dataset.getDns() + filePath;
 		HttpHeaders fileInfo = webClientService.getFileInfo(httpUrl);
@@ -223,7 +225,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 		String lastModifiedTime = webClientService.formatLastModifiedTime(fileInfo.getLastModified());
 		String contentPath = filePath;
 
-		return DatasetDTO.FileInfo.builder()
+		return FileInfoDTO.builder()
 			.fileName(fileName)
 			.size(size)
 			.lastModifiedTime(lastModifiedTime)
@@ -257,14 +259,14 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public DatasetDTO.FileInfo getAstragoDatasetFileInfo(Long datasetId, String filePath) {
+	public FileInfoDTO getAstragoDatasetFileInfo(Long datasetId, String filePath) {
 		datasetService.findById(datasetId);
 		File file = new File(filePath);
 		if (file.exists()) {
 			String size = webClientService.formatFileSize(file.length());
 			String lastModifiedTime = webClientService.formatLastModifiedTime(file.lastModified());
 			String contentPath = filePath;
-			return DatasetDTO.FileInfo.builder()
+			return FileInfoDTO.builder()
 				.fileName(file.getName())
 				.size(size)
 				.lastModifiedTime(lastModifiedTime)

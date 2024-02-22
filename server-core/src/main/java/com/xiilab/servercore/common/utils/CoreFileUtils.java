@@ -2,6 +2,7 @@ package com.xiilab.servercore.common.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,10 +14,10 @@ import java.util.zip.ZipOutputStream;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulek8sdb.common.enums.FileType;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -25,9 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class CoreFileUtils {
-	static final long kilobyte = 1024;
-	static final long megabyte = kilobyte * 1024;
-	static final long gigabyte = megabyte * 1024;
+	private static final long KILOBYTE = 1024;
+	private static final long MEGABYTE = KILOBYTE * 1024;
+	private static final long GIGABYTE = MEGABYTE * 1024;
+
 	public static String getFileName(String filePath) {
 		File file = new File(filePath);
 		if (file.isFile()) {
@@ -41,22 +43,15 @@ public class CoreFileUtils {
 		String[] parts = fileName.split("\\.");
 		String fileExtension = parts[parts.length - 1].toLowerCase();
 
-		switch (fileExtension) {
-			case "txt":
-				return MediaType.TEXT_PLAIN;
-			case "jpg":
-			case "jpeg":
-				return MediaType.IMAGE_JPEG;
-			case "png":
-				return MediaType.IMAGE_PNG;
-			case "pdf":
-				return MediaType.APPLICATION_PDF;
-			case "zip":
-				return MediaType.parseMediaType("application/zip");
+		return switch (fileExtension) {
+			case "txt" -> MediaType.TEXT_PLAIN;
+			case "jpg", "jpeg" -> MediaType.IMAGE_JPEG;
+			case "png" -> MediaType.IMAGE_PNG;
+			case "pdf" -> MediaType.APPLICATION_PDF;
+			case "zip" -> MediaType.parseMediaType("application/zip");
 			// 추가적인 파일 형식에 대한 처리를 여기에 추가할 수 있습니다.
-			default:
-				return MediaType.APPLICATION_OCTET_STREAM;
-		}
+			default -> MediaType.APPLICATION_OCTET_STREAM;
+		};
 	}
 
 	public static void deleteFileOrDirectory(String path) {
@@ -83,6 +78,7 @@ public class CoreFileUtils {
 			throw new RestApiException(CommonErrorCode.FILE_PERMISSION_DENIED, target);
 		}
 	}
+
 	public static long datasetUploadFiles(String path, List<MultipartFile> files) {
 		long size = 0;
 		for (MultipartFile file : files) {
@@ -98,6 +94,7 @@ public class CoreFileUtils {
 		}
 		return size;
 	}
+
 	public static DirectoryDTO getAstragoFiles(String path) {
 		List<DirectoryDTO.ChildrenDTO> children = new ArrayList<>();
 		File directory = new File(path);
@@ -174,14 +171,23 @@ public class CoreFileUtils {
 	}
 
 	public static String formatFileSize(long bytes) {
-		if (bytes >= gigabyte) {
-			return String.format("%.2f GB", (double) bytes / gigabyte);
-		} else if (bytes >= megabyte) {
-			return String.format("%.2f MB", (double) bytes / megabyte);
-		} else if (bytes >= kilobyte) {
-			return String.format("%.2f KB", (double) bytes / kilobyte);
+		if (bytes >= GIGABYTE) {
+			return String.format("%.2f GB", (double)bytes / GIGABYTE);
+		} else if (bytes >= MEGABYTE) {
+			return String.format("%.2f MB", (double)bytes / MEGABYTE);
+		} else if (bytes >= KILOBYTE) {
+			return String.format("%.2f KB", (double)bytes / KILOBYTE);
 		} else {
 			return bytes + " Bytes";
 		}
+	}
+
+	public static File convertInputStreamToFile(MultipartFile file) throws IOException {
+		File tempFile = new File(file.getOriginalFilename());
+		boolean newFile = tempFile.createNewFile();
+		FileOutputStream fos = new FileOutputStream(tempFile);
+		fos.write(file.getBytes());
+		fos.close();
+		return tempFile;
 	}
 }

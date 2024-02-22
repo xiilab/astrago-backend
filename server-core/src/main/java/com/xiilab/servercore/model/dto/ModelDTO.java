@@ -124,7 +124,7 @@ public class ModelDTO {
 					.storageName(((AstragoModelEntity)model).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
 					.build();
-			}else if (model.isLocalModel()) {
+			} else if (model.isLocalModel()) {
 				return ResModelWithStorage.builder()
 					.modelId(model.getModelId())
 					.storageType(((LocalModelEntity)model).getStorageType())
@@ -140,7 +140,8 @@ public class ModelDTO {
 			}
 			return null;
 		}
-		public void addUsingModels(List<WorkloadResDTO.UsingModelDTO> usingModels){
+
+		public void addUsingModels(List<WorkloadResDTO.UsingModelDTO> usingModels) {
 			this.usingModels = usingModels;
 		}
 	}
@@ -149,14 +150,7 @@ public class ModelDTO {
 	public static class ModifyModel {
 		private String modelName;
 	}
-	@Getter
-	@Builder
-	public static class FileInfo{
-		private String fileName;
-		private String size;
-		private String lastModifiedTime;
-		private String contentPath;
-	}
+
 	@Getter
 	public static class ReqFilePathDTO {
 		private String path;
@@ -215,7 +209,7 @@ public class ModelDTO {
 					.division(model.getModel().getDivision())
 					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model.getModel()).getModelSize()))
 					.build();
-			}else if (model.getModel().isLocalModel()) {
+			} else if (model.getModel().isLocalModel()) {
 				return ModelInWorkspace.builder()
 					.modelId(model.getModel().getModelId())
 					.storageType(((LocalModelEntity)model.getModel()).getStorageType())
@@ -229,6 +223,7 @@ public class ModelDTO {
 			return null;
 		}
 	}
+
 	@Getter
 	@Builder
 	public static class ModelsInWorkspace {
@@ -239,6 +234,7 @@ public class ModelDTO {
 				.datasets(models.stream().map(ModelDTO.ModelInWorkspace::entityToDto).toList())
 				.build();
 		}
+
 		public static ModelDTO.ModelsInWorkspace mappingEntitiesToDtos(List<ModelWorkSpaceMappingEntity> models) {
 			return ModelDTO.ModelsInWorkspace.builder()
 				.datasets(models.stream().map(ModelDTO.ModelInWorkspace::mappingEntityToDto).toList())

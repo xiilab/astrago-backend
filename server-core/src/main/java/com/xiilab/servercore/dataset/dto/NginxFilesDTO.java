@@ -1,6 +1,6 @@
 package com.xiilab.servercore.dataset.dto;
 
-import com.xiilab.modulek8sdb.common.enums.FileType;
+import com.xiilab.modulecommon.enums.FileType;
 
 import lombok.Getter;
 
