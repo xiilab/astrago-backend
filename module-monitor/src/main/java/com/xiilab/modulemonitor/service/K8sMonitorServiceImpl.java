@@ -1,6 +1,7 @@
 package com.xiilab.modulemonitor.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -66,5 +67,17 @@ public class K8sMonitorServiceImpl implements K8sMonitorService{
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName) {
 		return k8sMonitorRepository.getDashboardClusterGPU(nodeName);
+	}
+	@Override
+	public Map<String, Map<String, Long>> getClusterReason(long minute){
+		return k8sMonitorRepository.getClusterReason(minute);
+	}
+	@Override
+	public String getNodeName(String podName, String namespace){
+		return k8sMonitorRepository.getNodeName(podName, namespace);
+	}
+	@Override
+	public ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace){
+		return k8sMonitorRepository.getClusterPendingAndFailPod(podName, namespace);
 	}
 }

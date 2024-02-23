@@ -1,6 +1,7 @@
 package com.xiilab.servermonitor.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -123,5 +124,41 @@ public class MonitorController {
 	public ResponseEntity<List<ResponseDTO.ResponseClusterDTO>> getDashboardCluster(){
 		return new ResponseEntity<>(monitorService.getDashboardCluster(), HttpStatus.OK);
 	}
+	@GetMapping("/cluster/resource")
+	@Operation(summary = "클러스터 모니터링 리소스 Count 조회")
+	public ResponseEntity<ResponseDTO.ClusterResourceDTO> getClusterResource(){
+		return new ResponseEntity<>(monitorService.getClusterResource(), HttpStatus.OK);
+	}
+
+	@GetMapping("/cluster/objct")
+	@Operation(summary = "클러스터 모니터링 Object 상태 현황 조화")
+	public ResponseEntity<ResponseDTO.ClusterObjectDTO> getClusterObject(){
+		return new ResponseEntity<>(monitorService.getClusterObject(), HttpStatus.OK);
+	}
+
+	@GetMapping("/cluster/reason")
+	@Operation(summary = "클러스터 모니터링 K8s Warning Events by Reason")
+	public ResponseEntity<Map<String, Map<String, Long>>> getClusterReason(
+		@RequestParam(name = "minute", required = false) Long minute){
+		return new ResponseEntity<>(monitorService.getClusterReason(minute), HttpStatus.OK);
+	}
+	@GetMapping("/cluster/pending-pod")
+	@Operation(summary = "클러스터 모니터링 K8s pod Pending Count")
+	public ResponseEntity<Map<String, Map<String, Long>>> getClusterPendingCount(
+		@RequestParam(name = "minute", required = false) Long minute){
+		return new ResponseEntity<>(monitorService.getClusterPendingCount(minute), HttpStatus.OK);
+	}
+	@GetMapping("/cluster/restart-container")
+	@Operation(summary = "클러스터 모니터링 K8s Container Restart")
+	public ResponseEntity<Map<String, Map<String, Long>>> getClusterContainerRestart(
+		@RequestParam(name = "minute", required = false) Long minute){
+		return new ResponseEntity<>(monitorService.getClusterContainerRestart(minute), HttpStatus.OK);
+	}
+	@GetMapping("/cluster/pending-fail-pod")
+	@Operation(summary = "클러스터 모니터링 K8s pod pending and fail info")
+	public ResponseEntity<List<ResponseDTO.ClusterPodInfo>> getClusterPendingAndFailPod(){
+		return new ResponseEntity<>(monitorService.getClusterPendingAndFailPod(), HttpStatus.OK);
+	}
+
 
 }

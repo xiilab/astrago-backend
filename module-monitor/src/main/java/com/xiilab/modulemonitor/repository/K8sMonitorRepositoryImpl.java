@@ -1,9 +1,14 @@
 package com.xiilab.modulemonitor.repository;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -140,13 +145,19 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 * 노드 전체 리스트 조회 메소드
 	 */
 	@Override
-	public List<ResponseDTO.NodeResponseDTO> getNodeList(){
+	public List<ResponseDTO.NodeResponseDTO> getNodeList() {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.nodes().list().getItems().stream().map(node ->
 				ResponseDTO.NodeResponseDTO.builder()
 					.nodeName(node.getMetadata().getName())
 					.ip(node.getStatus().getAddresses().get(0).getAddress())
-					.status(node.getStatus().getConditions().stream().filter(nodeCondition -> nodeCondition.getStatus().equals("True")).toList().get(0).getType())
+					.status(node.getStatus()
+						.getConditions()
+						.stream()
+						.filter(nodeCondition -> nodeCondition.getStatus().equals("True"))
+						.toList()
+						.get(0)
+						.getType())
 					.build()).toList();
 		}
 	}
@@ -155,7 +166,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 * 워크스페이스 리소스 정보 조회 메소드
 	 */
 	@Override
-	public List<ResponseDTO.WorkloadResponseDTO> getWlList(){
+	public List<ResponseDTO.WorkloadResponseDTO> getWlList() {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			// K8s 워크로드 리스트 조회
 			return kubernetesClient.pods().list().getItems().stream().map(pod ->
@@ -166,13 +177,14 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 					.build()).toList();
 		}
 	}
+
 	/**
 	 * 해당 WS의 Resource Info 조회 API
 	 * @param namespace 조회될 WS name
-	 * @return CPU,GPU,MEM등의 ResourceQuota, 상태별 워크로드 리스트
+	 * @return CPU, GPU, MEM등의 ResourceQuota, 상태별 워크로드 리스트
 	 */
 	@Override
-	public ResponseDTO.WorkspaceResponseDTO getWlList(String namespace){
+	public ResponseDTO.WorkspaceResponseDTO getWlList(String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			// namespace의 resourceQuota 조회
 			ResourceQuotaStatus resourceQuota = kubernetesClient.resourceQuotas()
@@ -203,8 +215,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	}
 
 	@Override
-	public ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage){
-		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			List<Node> nodeList = getNodeList(nodeName);
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
@@ -225,8 +237,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	}
 
 	@Override
-	public ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage){
-		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			List<Node> nodeList = getNodeList(nodeName);
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
@@ -239,14 +251,15 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			return ResponseDTO.ResponseClusterDTO.builder()
 				.name("MEMORY")
 				.total(totalMemCapacity + " Ki")
-				.request(totalMemRequests+ " Ki")
+				.request(totalMemRequests + " Ki")
 				.usage(memUsage + " Ki")
 				.build();
 		}
 	}
+
 	@Override
-	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName){
-		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()){
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			List<Node> nodeList = getNodeList(nodeName);
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
@@ -263,8 +276,9 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.build();
 		}
 	}
-	private List<Node> getNodeList(String nodeName){
-		try(KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+
+	private List<Node> getNodeList(String nodeName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			if (!StringUtils.isEmpty(nodeName)) {
 				return List.of(kubernetesClient.nodes().withName(nodeName).get());
 			} else {
@@ -273,60 +287,54 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		}
 	}
 
-	private int totalCapacity(List<Node> nodeList, String resourceName){
+	private int totalCapacity(List<Node> nodeList, String resourceName) {
 		return switch (resourceName) {
-			case "CPU" ->
-				nodeList.stream()
-					.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("cpu").toString()))
-					.sum();
-			case "MEM" ->
-				nodeList.stream()
-					.mapToInt(node ->
-						Integer.parseInt(node.getStatus().getCapacity().get("memory").toString().replace("Ki", "")))
-					.sum();
-			case "GPU" ->
-				nodeList.stream()
-					.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu")))
-					.mapToInt(node ->
-						Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
-					.sum();
+			case "CPU" -> nodeList.stream()
+				.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("cpu").toString()))
+				.sum();
+			case "MEM" -> nodeList.stream()
+				.mapToInt(node ->
+					Integer.parseInt(node.getStatus().getCapacity().get("memory").toString().replace("Ki", "")))
+				.sum();
+			case "GPU" -> nodeList.stream()
+				.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu")))
+				.mapToInt(node ->
+					Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
+				.sum();
 			default -> 0;
 		};
 	}
 
-	private String totalRequests(List<Node> nodeList, List<Pod> podList, String resourceName){
+	private String totalRequests(List<Node> nodeList, List<Pod> podList, String resourceName) {
 		return switch (resourceName) {
-			case "CPU" ->
-				nodeList.stream()
-					.map(node -> {
-						List<Pod> runningPodsOnNode = podList.stream()
-							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
-							.toList();
+			case "CPU" -> nodeList.stream()
+				.map(node -> {
+					List<Pod> runningPodsOnNode = podList.stream()
+						.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+						.toList();
 
-						return calculateTotalCpuRequests(runningPodsOnNode);
-					})
-					.reduce("0", (x, y) ->
-						String.valueOf(DataConverterUtil.parseAndSum(x, y)));
-			case "GPU" ->
-				nodeList.stream()
-					.map(node -> {
-						List<Pod> runningPodsOnNode = podList.stream()
-							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
-							.toList();
+					return calculateTotalCpuRequests(runningPodsOnNode);
+				})
+				.reduce("0", (x, y) ->
+					String.valueOf(DataConverterUtil.parseAndSum(x, y)));
+			case "GPU" -> nodeList.stream()
+				.map(node -> {
+					List<Pod> runningPodsOnNode = podList.stream()
+						.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+						.toList();
 
-						return calculateTotalGpuRequests(runningPodsOnNode);
-					}).reduce("0", (x, y) -> String.valueOf(Integer.parseInt(x) + Integer.parseInt(y)));
-			case "MEM" ->
-				nodeList.stream()
-					.map(node -> {
-						List<Pod> runningPodsOnNode = podList.stream()
-							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
-							.toList();
+					return calculateTotalGpuRequests(runningPodsOnNode);
+				}).reduce("0", (x, y) -> String.valueOf(Integer.parseInt(x) + Integer.parseInt(y)));
+			case "MEM" -> nodeList.stream()
+				.map(node -> {
+					List<Pod> runningPodsOnNode = podList.stream()
+						.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+						.toList();
 
-						return calculateTotalMemRequests(runningPodsOnNode);
-					})
-					.reduce("0", (x, y) ->
-						String.valueOf(DataConverterUtil.parseAndSum(x, y)));
+					return calculateTotalMemRequests(runningPodsOnNode);
+				})
+				.reduce("0", (x, y) ->
+					String.valueOf(DataConverterUtil.parseAndSum(x, y)));
 			default -> "";
 		};
 	}
@@ -375,6 +383,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 		return String.valueOf(Integer.parseInt(containerResult));
 	}
+
 	private String calculateTotalMemRequests(List<Pod> podList) {
 		String containerResult = podList.stream()
 			.flatMap(pod -> pod.getSpec().getContainers().stream())
@@ -402,5 +411,65 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 		return String.valueOf(Integer.parseInt(containerResult) + Integer.parseInt(initContainerResult));
 	}
+
+	@Override
+	public Map<String, Map<String, Long>> getClusterReason(long minute) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			// 이벤트 리스트 불러오기
+			List<io.fabric8.kubernetes.api.model.events.v1.Event> eventList = kubernetesClient.events()
+				.v1()
+				.events()
+				.list()
+				.getItems();
+			// 현재 시간 UTC 조회
+			Instant now = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+			List<ResponseDTO.ClusterReasonDTO> clusterReasonDTOList = eventList.stream()
+				.map(event -> {
+						String eventTime =
+							!StringUtils.isBlank(event.getDeprecatedLastTimestamp()) ? event.getDeprecatedLastTimestamp() :
+								event.getEventTime().getTime();
+
+						long fewMinutesAgo = DataConverterUtil.fewMinutesAgo(now, eventTime);
+						return ResponseDTO.ClusterReasonDTO.builder()
+							.reason(event.getReason())
+							.time(DataConverterUtil.datetimeFormatter(fewMinutesAgo))
+							.lastSEEN(fewMinutesAgo)
+							.build();
+					}
+				).toList();
+			// lastSEEN으로 정렬된 맵 반환
+			return clusterReasonDTOList.stream()
+				.filter(clusterReasonDTO -> clusterReasonDTO.lastSEEN() < minute)
+				.collect(Collectors.groupingBy(ResponseDTO.ClusterReasonDTO::time,
+					Collectors.groupingBy(ResponseDTO.ClusterReasonDTO::reason, Collectors.counting())
+				))
+				.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey()) // 시간별로 정렬
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+					(oldValue, newValue) -> oldValue, LinkedHashMap::new));
+		}
+	}
+
+	@Override
+	public String getNodeName(String podName, String namespace){
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName();
+		}
+	}
+
+	@Override
+	public ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace){
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+				Pod pod = kubernetesClient.pods().inNamespace(namespace).withName(podName).get();
+
+			return ResponseDTO.ClusterPodInfo.builder()
+				.podName(podName)
+				.nodeName(pod.getSpec().getNodeName())
+				.status(pod.getStatus().getPhase())
+				.reason(pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason())
+				.build();
+		}
+	}
+
 
 }

@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.springframework.stereotype.Service;
 
@@ -90,7 +92,7 @@ public class DataConverterUtil {
 			JsonNode valueNode = root.path("data").path("result");
 
 			if (valueNode.isMissingNode() || !valueNode.elements().hasNext()) {
-				return "";
+				return "0";
 			}
 
 			return valueNode.elements().next().get("value").get(1).asText();
@@ -183,5 +185,33 @@ public class DataConverterUtil {
 	 */
 	public static int parseAndSum(String x, String y){
 		return Integer.parseInt(x.replaceAll("[^0-9]", "")) + Integer.parseInt(y.replaceAll("[^0-9]", ""));
+	}
+
+	public static String datetimeFormatter(long fewMinutesAgo) {
+		// 현재 시간
+		LocalDateTime now = LocalDateTime.now();
+
+		// 주어진 시간(fewMinutesAgo)만큼 현재 시간에서 빼기
+		LocalDateTime fewMinutesAgoTime = now.minusMinutes(fewMinutesAgo);
+
+		// AM/PM 형식으로 출력하기 위한 포매터 설정
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+
+		// 포맷 적용하여 문자열로 변환
+		return fewMinutesAgoTime.format(formatter);
+	}
+	public static long fewMinutesAgo(Instant now, String lastTimestamp){
+		// 몇분전 발생인지 계산
+		Instant eventTime = Instant.parse(lastTimestamp)
+			.truncatedTo(ChronoUnit.MINUTES);
+		return ChronoUnit.MINUTES.between(eventTime, now);
+	}
+	public static String getCurrentTime(){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+		return DataConverterUtil.toUnixTime(LocalDateTime.now().format(formatter));
+	}
+	public static String subtractMinutesFromCurrentTime(long minutes){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+		return DataConverterUtil.toUnixTime(LocalDateTime.now().minusMinutes(minutes).format(formatter));
 	}
 }
