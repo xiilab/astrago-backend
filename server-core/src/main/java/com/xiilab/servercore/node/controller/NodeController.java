@@ -25,7 +25,7 @@ public class NodeController {
 
 	@GetMapping("")
 	public ResponseEntity<List<ResponseDTO.NodeDTO>> getNodeList(){
-		return new ResponseEntity<>(nodeService.getNodeList(), HttpStatus.OK);
+		return new ResponseEntity<>(nodeFacadeService.getNodeList(), HttpStatus.OK);
 	}
 
 	/**

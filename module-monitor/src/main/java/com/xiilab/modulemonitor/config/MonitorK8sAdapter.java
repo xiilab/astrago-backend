@@ -7,7 +7,7 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 @Component
-public class K8sAdapter {
+public class MonitorK8sAdapter {
 	/**
 	 * ~/.kube/config 읽어온 Config
 	 * @return KubernetesClient

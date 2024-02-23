@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.util.DataConverterUtil;
-import com.xiilab.modulemonitor.config.K8sAdapter;
+import com.xiilab.modulemonitor.config.MonitorK8sAdapter;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.K8sErrorStatus;
 
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
-	private final K8sAdapter k8sAdapter;
+	private final MonitorK8sAdapter monitorK8SAdapter;
 	private final List<K8sErrorStatus> targetReasons = Arrays.asList(
 		K8sErrorStatus.CrashLoopBackOff,
 		K8sErrorStatus.ImagePullBackOff,
@@ -45,7 +45,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public long getWorkloadErrorCount(String namespace) {
 		List<Pod> pods = new ArrayList<>();
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			pods = kubernetesClient.pods().inNamespace(namespace).list().getItems();
 		}
 		// pods List중 Error Count 조회
@@ -77,7 +77,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 */
 	@Override
 	public long getWorkloadCountByNamespace(String namespace) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			return kubernetesClient.pods().inNamespace(namespace).list().getItems().size();
 		}
 	}
@@ -88,7 +88,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 */
 	@Override
 	public List<ResponseDTO.EventDTO> getEventList() {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Event> events = kubernetesClient.v1().events().list().getItems();
 			return eventToDTO(events);
 		}
@@ -101,7 +101,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 */
 	@Override
 	public List<ResponseDTO.EventDTO> getEventList(String namespace) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Event> events = kubernetesClient.v1().events().inNamespace(namespace).list().getItems();
 			return eventToDTO(events);
 		}
@@ -115,7 +115,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 */
 	@Override
 	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Event> events = kubernetesClient.v1().events().inNamespace(namespace).list().getItems().stream()
 				.filter(event -> event.getKind().equalsIgnoreCase("pod"))
 				.filter(event ->
@@ -145,8 +145,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 * 노드 전체 리스트 조회 메소드
 	 */
 	@Override
-	public List<ResponseDTO.NodeResponseDTO> getNodeList() {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+	public List<ResponseDTO.NodeResponseDTO> getNodeList(){
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			return kubernetesClient.nodes().list().getItems().stream().map(node ->
 				ResponseDTO.NodeResponseDTO.builder()
 					.nodeName(node.getMetadata().getName())
@@ -168,6 +168,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public List<ResponseDTO.WorkloadResponseDTO> getWlList() {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+      
 			// K8s 워크로드 리스트 조회
 			return kubernetesClient.pods().list().getItems().stream().map(pod ->
 				ResponseDTO.WorkloadResponseDTO.builder()
@@ -184,8 +185,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 * @return CPU, GPU, MEM등의 ResourceQuota, 상태별 워크로드 리스트
 	 */
 	@Override
-	public ResponseDTO.WorkspaceResponseDTO getWlList(String namespace) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+	public ResponseDTO.WorkspaceResponseDTO getWlList(String namespace){
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			// namespace의 resourceQuota 조회
 			ResourceQuotaStatus resourceQuota = kubernetesClient.resourceQuotas()
 				.inNamespace(namespace)
@@ -279,6 +280,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 	private List<Node> getNodeList(String nodeName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+      
 			if (!StringUtils.isEmpty(nodeName)) {
 				return List.of(kubernetesClient.nodes().withName(nodeName).get());
 			} else {

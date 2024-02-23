@@ -138,13 +138,31 @@ public class DataConverterUtil {
 				return Long.parseLong(amount); // 기본적으로 KiB로 가정
 		}
 	}
+	// 메모리의 단위를 변환하는 메서드
+	public static String convertToMemorySize(String amount) {
+		double doubleValue = Double.parseDouble(amount); // 부동 소수점으로 파싱
+		long size = (long) doubleValue;
+		long target = (long) doubleValue;
+		if (size >= TERA_BYTE) {
+			return String.format("%.2f GB", (double) target / TERA_BYTE);
+		} else if (size >= GIGA_BYTE) {
+			return String.format("%.2f GB", (double) target / GIGA_BYTE);
+		} else if (size >= MEGA_BYTE) {
+			return String.format("%.2f MB", (double) target / MEGA_BYTE);
+		} else if (size >= KILO_BYTE) {
+			return String.format("%.2f KB", (double) target / KILO_BYTE);
+		} else {
+			return size + " Bytes";
+		}
+	}
 
 	/**
 	 * DISK 사이즈 계산하는 메소드
 	 * @param bytes 계산될 Bytes
 	 */
 	public static String formatDiskSize(String bytes) {
-		long size = Long.parseLong(bytes);
+		double doubleValue = Double.parseDouble(bytes); // 부동 소수점으로 파싱
+		long size = (long) doubleValue;
 		if (size >= TERA_BYTE) {
 			return String.format("%.2f TB", (double) size / TERA_BYTE);
 		} else if (size >= GIGA_BYTE) {
@@ -156,6 +174,17 @@ public class DataConverterUtil {
 		} else {
 			return size + " Bytes";
 		}
+	}
+
+	public static int convertToCPU(String resource) {
+		double doubleValue = Double.parseDouble(resource); // 부동 소수점으로 파싱
+		int core = (int) doubleValue;
+		return core;
+	}
+	public static int convertToGPU(String resource) {
+		double doubleValue = Double.parseDouble(resource); // 부동 소수점으로 파싱
+		int count = (int) doubleValue;
+		return count;
 	}
 
 	/**
