@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.node.repository;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
+import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
@@ -20,6 +22,7 @@ import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
+import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
@@ -31,23 +34,54 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final String GPU_NAME = "nvidia.com/gpu.product";
 	private final String GPU_COUNT = "nvidia.com/gpu.count";
+	private final String NETWORK_UNAVAILABLE = "NetworkUnavailable";
+	private final String MEMORY_PRESSURE = "MemoryPressure";
+	private final String DISK_PRESSURE = "DiskPressure";
+	private final String PID_PRESSURE = "PIDPressure";
+	private final String READY = "Ready";
 	@Value("${mig-profile-path}")
 	private String migProfilePath;
 
 	@Override
 	public List<ResponseDTO.NodeDTO> getNodeList() {
+		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Node> nodes = client.nodes().list().getItems();
 
-			return nodes.stream().filter(node ->
-					node.getMetadata().getLabels().get(GPU_NAME) != null)
-				.map(node ->
-					ResponseDTO.NodeDTO.builder()
-						.nodeName(node.getMetadata().getName())
-						.gpuName(node.getMetadata().getLabels().get(GPU_NAME))
-						.gpuCount(node.getMetadata().getLabels().get(GPU_COUNT))
-						.build()).toList();
+			for (Node node : nodes) {
+				List<NodeCondition> conditions = node.getStatus().getConditions();
+				boolean status = true;
+				for (NodeCondition condition : conditions) {
+					String type = condition.getType();
+					String conditionStatus = condition.getStatus();
+
+					if ((type.equalsIgnoreCase(NETWORK_UNAVAILABLE) ||
+						type.equalsIgnoreCase(MEMORY_PRESSURE) ||
+						type.equalsIgnoreCase(DISK_PRESSURE) ||
+						type.equalsIgnoreCase(PID_PRESSURE)) &&
+						!conditionStatus.equalsIgnoreCase("false")) {
+						status = false;
+						break;
+					}
+
+					if (type.equalsIgnoreCase(READY) && !conditionStatus.equalsIgnoreCase("true")) {
+						status = false;
+						break;
+					}
+				}
+				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
+					.nodeName(node.getMetadata().getName())
+					.gpuCount(node.getMetadata().getLabels().get(GPU_COUNT) == null ? 0 :
+						Integer.parseInt(node.getMetadata().getLabels().get(GPU_COUNT)))
+					.ip(node.getStatus().getAddresses().get(0).getAddress())
+					.status(status)
+					.age(new AgeDTO(node.getMetadata().getCreationTimestamp()))
+					.build();
+
+				nodeDtos.add(dto);
+			}
 		}
+		return nodeDtos;
 	}
 
 	@Override

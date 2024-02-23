@@ -196,18 +196,20 @@ public class PrometheusServiceImpl implements PrometheusService{
 		String result = "";
 		// GPU일 경우 kubernetes_node 사용
 		if (promql.getType().equals("GPU")) {
-			if (!requestDTO.nodeName().isBlank()) {
+			if (requestDTO.nodeName() != null && !requestDTO.nodeName().isBlank()) {
 				result = "kubernetes_node=\"" + requestDTO.nodeName() + "\",";
 			}
 		}else if(promql.getType().equals("NODE")){
-			result = "node=\"" + requestDTO.nodeName() + "\",";
+			if (requestDTO.nodeName() != null && !requestDTO.nodeName().isBlank()) {
+				result = "node=\"" + requestDTO.nodeName() + "\",";
+			}
 		}
 		else {
-			if (!requestDTO.nodeName().isBlank()) {
+			if (requestDTO.namespace() != null && !requestDTO.namespace().isBlank()) {
 				result = "namespace=\"" + requestDTO.namespace() + "\",";
 			}
 		}
-		if (!requestDTO.podName().isBlank()) {
+		if (requestDTO.podName() != null && !requestDTO.podName().isBlank()) {
 			result = result + "pod=\"" + requestDTO.podName() + "\"";
 		}
 		return String.format(promql.getQuery(), result.toLowerCase());
