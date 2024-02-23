@@ -4,8 +4,9 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
 
@@ -20,7 +21,7 @@ public interface ModelFacadeService {
 
 	void deleteModel(Long modelId, UserInfoDTO userInfoDTO);
 
-	ModelDTO.FileInfo getAstragoModelFileInfo(Long modelId, String filePath);
+	FileInfoDTO getAstragoModelFileInfo(Long modelId, String filePath);
 
 	DownloadFileResDTO getAstragoModelFile(Long modelId, String filePath);
 
@@ -28,7 +29,7 @@ public interface ModelFacadeService {
 
 	DownloadFileResDTO DownloadLocalModelFile(Long modelId, String filePath);
 
-	ModelDTO.FileInfo getLocalModelFileInfo(Long modelId, String filePath);
+	FileInfoDTO getLocalModelFileInfo(Long modelId, String filePath);
 
 	DownloadFileResDTO getLocalModelFile(Long modelId, String filePath);
 }
