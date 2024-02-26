@@ -111,4 +111,9 @@ public class NodeFacadeService {
 	public void updateMIGAllProfile(String nodeName, String option) {
 		nodeRepository.updateMIGAllProfile(nodeName, option);
 	}
+
+	public ResponseDTO.NodeInfo getNode(String resourceName) {
+		return nodeRepository.getNodeByResourceName(resourceName);
+
+	}
 }

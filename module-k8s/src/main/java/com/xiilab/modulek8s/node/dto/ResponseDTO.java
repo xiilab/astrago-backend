@@ -5,6 +5,8 @@ import java.util.List;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 
+import io.fabric8.kubernetes.api.model.NodeCondition;
+import io.fabric8.kubernetes.api.model.NodeSystemInfo;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -26,6 +28,7 @@ public class ResponseDTO {
 		private AgeDTO age;
 		private int gpuCount;
 		private boolean status;
+		private boolean schedulable;
 
 		public void setTotalGPU(String totalGPU){
 			this.totalGPU = totalGPU;
@@ -49,6 +52,18 @@ public class ResponseDTO {
 		public void setRequestDISK(String requestDISK){
 			this.requestDISK = requestDISK;
 		}
+	}
+	@Builder
+	@Getter
+	public static class NodeInfo{
+		private String nodeName;
+		private String ip;
+		private String hostName;
+		private String role;
+		private String creationTimestamp;
+		private List<NodeCondition>  nodeCondition;
+		private NodeSystemInfo nodeSystemInfo;
+
 	}
 	@Builder
 	public record MIGProfile(MIGProduct migProduct,

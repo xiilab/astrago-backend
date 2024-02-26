@@ -27,6 +27,10 @@ public class NodeController {
 	public ResponseEntity<List<ResponseDTO.NodeDTO>> getNodeList(){
 		return new ResponseEntity<>(nodeFacadeService.getNodeList(), HttpStatus.OK);
 	}
+	@GetMapping("/{resourceName}")
+	public ResponseEntity<ResponseDTO.NodeInfo> getNode(@PathVariable(name = "resourceName") String resourceName){
+		return new ResponseEntity<>(nodeFacadeService.getNode(resourceName), HttpStatus.OK);
+	}
 
 	/**
 	 * 등록된 node의 mig 가능한 리스트를 리턴하는 API

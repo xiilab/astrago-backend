@@ -23,6 +23,7 @@ import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
 import io.fabric8.kubernetes.api.model.NodeCondition;
+import io.fabric8.kubernetes.api.model.NodeSystemInfo;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final String GPU_NAME = "nvidia.com/gpu.product";
 	private final String GPU_COUNT = "nvidia.com/gpu.count";
+	private final String HOST_NAME = "kubernetes.io/hostname";
+	private final String ROLE= "node-role.kubernetes.io/control-plane";
 	private final String NETWORK_UNAVAILABLE = "NetworkUnavailable";
 	private final String MEMORY_PRESSURE = "MemoryPressure";
 	private final String DISK_PRESSURE = "DiskPressure";
@@ -50,25 +53,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 			for (Node node : nodes) {
 				List<NodeCondition> conditions = node.getStatus().getConditions();
-				boolean status = true;
-				for (NodeCondition condition : conditions) {
-					String type = condition.getType();
-					String conditionStatus = condition.getStatus();
-
-					if ((type.equalsIgnoreCase(NETWORK_UNAVAILABLE) ||
-						type.equalsIgnoreCase(MEMORY_PRESSURE) ||
-						type.equalsIgnoreCase(DISK_PRESSURE) ||
-						type.equalsIgnoreCase(PID_PRESSURE)) &&
-						!conditionStatus.equalsIgnoreCase("false")) {
-						status = false;
-						break;
-					}
-
-					if (type.equalsIgnoreCase(READY) && !conditionStatus.equalsIgnoreCase("true")) {
-						status = false;
-						break;
-					}
-				}
+				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
 					.nodeName(node.getMetadata().getName())
 					.gpuCount(node.getMetadata().getLabels().get(GPU_COUNT) == null ? 0 :
@@ -76,12 +61,36 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.ip(node.getStatus().getAddresses().get(0).getAddress())
 					.status(status)
 					.age(new AgeDTO(node.getMetadata().getCreationTimestamp()))
+					.schedulable(node.getSpec().getUnschedulable() == null || node.getSpec().getUnschedulable() == false ? true : false)
 					.build();
 
 				nodeDtos.add(dto);
 			}
 		}
 		return nodeDtos;
+	}
+
+	private boolean isStatus(List<NodeCondition> conditions) {
+		boolean status = true;
+		for (NodeCondition condition : conditions) {
+			String type = condition.getType();
+			String conditionStatus = condition.getStatus();
+
+			if ((type.equalsIgnoreCase(NETWORK_UNAVAILABLE) ||
+				type.equalsIgnoreCase(MEMORY_PRESSURE) ||
+				type.equalsIgnoreCase(DISK_PRESSURE) ||
+				type.equalsIgnoreCase(PID_PRESSURE)) &&
+				!conditionStatus.equalsIgnoreCase("false")) {
+				status = false;
+				break;
+			}
+
+			if (type.equalsIgnoreCase(READY) && !conditionStatus.equalsIgnoreCase("true")) {
+				status = false;
+				break;
+			}
+		}
+		return status;
 	}
 
 	@Override
@@ -126,10 +135,36 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 	}
 
-	private Node getNode(String nodeName) {
+	public Node getNode(String nodeName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			return client.nodes().list().getItems().stream().filter(node ->
-				node.getMetadata().getName().equals(nodeName)).findFirst().orElseThrow();
+			Node node = client.nodes().withName(nodeName).get();
+			if(node == null){
+				throw new K8sException(NodeErrorCode.NODE_NOT_FOUND);
+			}
+			return node;
+		}
+	}
+	public ResponseDTO.NodeInfo getNodeByResourceName(String nodeName) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			Node node = client.nodes().withName(nodeName).get();
+			if(node == null){
+				throw new K8sException(NodeErrorCode.NODE_NOT_FOUND);
+			}
+			List<NodeCondition> conditions = node.getStatus().getConditions();
+
+			String role = node.getMetadata().getLabels().containsKey(ROLE) ? "control-plane" : "data-plane";
+			NodeSystemInfo nodeInfo = node.getStatus().getNodeInfo();
+			ResponseDTO.NodeInfo dto = ResponseDTO.NodeInfo.builder()
+				.nodeName(node.getMetadata().getName())
+				.ip(node.getStatus().getAddresses().get(0).getAddress())
+				.hostName(node.getMetadata().getLabels().get(HOST_NAME))
+				.nodeCondition(conditions)
+				.role(role)
+				.creationTimestamp(node.getMetadata().getCreationTimestamp())
+				.nodeSystemInfo(nodeInfo)
+				.build();
+
+			return dto;
 		}
 	}
 
