@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -27,24 +26,45 @@ public class MonitorController {
 
 	/**
 	 * 실시간 모니터링 조회 API
-	 * @param requestDTO
 	 * @return 조회된 Monitor Metric
 	 */
 	@GetMapping()
 	@Operation(summary = "Get Prometheus Real Time Metric")
 	public ResponseEntity<List<ResponseDTO.RealTimeDTO>> getPrometheusRealTimeMetric(
-		@RequestBody RequestDTO requestDTO) {
+		@RequestParam(name = "metricName") String metricName,
+		@RequestParam(name = "namespace", required = false) String namespace,
+		@RequestParam(name = "podName", required = false) String podName,
+		@RequestParam(name = "nodeName", required = false) String nodeName) {
+		RequestDTO requestDTO = RequestDTO.builder()
+			.metricName(metricName)
+			.namespace(namespace)
+			.podName(podName)
+			.nodeName(nodeName)
+			.build();
 		return new ResponseEntity<>(monitorService.getRealTimeMetric(requestDTO), HttpStatus.OK);
 	}
 
 	/**
 	 * 과거 모니터링 조회 API
-	 * @param requestDTO
 	 * @return 조회된 Monitor Metric
 	 */
 	@GetMapping("/history")
 	@Operation(summary = "Get Prometheus History Metric")
-	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getPrometheusHistoryMetric(@RequestBody RequestDTO requestDTO) {
+	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getPrometheusHistoryMetric(
+		@RequestParam(name = "metricName") String metricName,
+		@RequestParam(name = "startDate", required = false) String startDate,
+		@RequestParam(name = "endDate", required = false) String endDate,
+		@RequestParam(name = "namespace", required = false) String namespace,
+		@RequestParam(name = "podName", required = false) String podName,
+		@RequestParam(name = "nodeName", required = false) String nodeName) {
+		RequestDTO requestDTO = RequestDTO.builder()
+			.metricName(metricName)
+			.startDate(startDate)
+			.endDate(endDate)
+			.namespace(namespace)
+			.podName(podName)
+			.nodeName(nodeName)
+			.build();
 		return new ResponseEntity<>(monitorService.getHistoryMetric(requestDTO), HttpStatus.OK);
 	}
 

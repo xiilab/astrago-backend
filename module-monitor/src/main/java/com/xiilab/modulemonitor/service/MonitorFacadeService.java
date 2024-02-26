@@ -54,7 +54,7 @@ public class MonitorFacadeService {
 			String.format(Promql.NODE_MEM_USAGE.getQuery(), result, result, result));
 		// CPU
 		String cpuMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.CPU_USAGE.getQuery(), result));
+			String.format(Promql.NODE_CPU_USAGE.getQuery(), result));
 		// DISK
 		String diskUsage = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.NODE_DISK_USAGE.getQuery(), result, result, result));
@@ -64,7 +64,7 @@ public class MonitorFacadeService {
 
 	public List<ResponseDTO.ResponseClusterDTO> getDashboardCluster() {
 		String cpuMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.CPU_USAGE.getQuery(), ""));
+			String.format(Promql.NODE_CPU_USAGE.getQuery(), ""));
 		String cpuResponse = DataConverterUtil.formatObjectMapper(cpuMetric);
 		String memMetric = prometheusService.getRealTimeMetricByQuery(Promql.NODE_MEM_USAGE_KI.getQuery());
 		String memResponse = DataConverterUtil.formatObjectMapper(memMetric);

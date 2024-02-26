@@ -457,7 +457,10 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public String getNodeName(String podName, String namespace){
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			return Objects.nonNull(kubernetesClient.pods().inNamespace(namespace).withName(podName).get())?
-				kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() : "";
+				kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() != null ?
+					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() :
+					""
+				: "";
 		}
 	}
 
