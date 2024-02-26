@@ -1,7 +1,6 @@
 package com.xiilab.modulemonitor.service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -41,7 +40,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		// Promql 생성
 		String promql = getPromql(requestDTO);
 		String result = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
-		return extractHistoryMetrics(result, requestDTO);
+		return extractHistoryMetrics(result, requestDTO.metricName());
 	}
 
 	@Override
@@ -50,8 +49,10 @@ public class PrometheusServiceImpl implements PrometheusService{
 	}
 
 	@Override
-	public String getHistoryMetricByQuery(String promql, String startDate, String endDate) {
-		return prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
+	public List<ResponseDTO.HistoryDTO> getHistoryMetricByQuery(String promql, String startDate, String endDate) {
+		String historyMetricByQuery = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
+
+		return extractHistoryMetrics(historyMetricByQuery, "");
 	}
 
 	/**
@@ -61,6 +62,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 	 * @param metricName Metric 이름
 	 * @return 반환될 ResponseDTO List
 	 */
+	@Override
 	public List<ResponseDTO.RealTimeDTO> extractMetrics(String jsonResponse, String metricName) {
 		List<ResponseDTO.RealTimeDTO> responseDTOS = new ArrayList<>();
 
@@ -122,10 +124,10 @@ public class PrometheusServiceImpl implements PrometheusService{
 	 * 조회된 Prometheus History Metrics 추출하여 HistoryDTO List 반환하는 메소드
 	 *
 	 * @param jsonResponse 조회된 Metric 객체
-	 * @param requestDTO Metric 이름
+	 * @param metricName Metric 이름
 	 * @return 반환될 HistoryDTO List
 	 */
-	public List<ResponseDTO.HistoryDTO> extractHistoryMetrics(String jsonResponse, RequestDTO requestDTO) {
+	public List<ResponseDTO.HistoryDTO> extractHistoryMetrics(String jsonResponse, String metricName) {
 		List<ResponseDTO.HistoryDTO> responseDTOS = new ArrayList<>();
 
 		try {
@@ -137,7 +139,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			JsonNode results = jsonNode.path("data").path("result");
 			for (JsonNode result : results) {
 				// 리스트에 추가
-				responseDTOS.add(createHistoryDTO(result, requestDTO.metricName()));
+				responseDTOS.add(createHistoryDTO(result, metricName));
 			}
 		} catch (JsonProcessingException e) {
 			throw new IllegalArgumentException(e.getMessage());

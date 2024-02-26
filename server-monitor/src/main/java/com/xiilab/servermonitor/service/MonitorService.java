@@ -1,19 +1,12 @@
 package com.xiilab.servermonitor.service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
@@ -137,7 +130,24 @@ public class MonitorService {
 	public List<ResponseDTO.ResponseClusterDTO> getDashboardCluster(){
 		return monitorFacadeService.getDashboardCluster();
 	}
-
+	public ResponseDTO.ClusterResourceDTO getClusterResource(){
+		return monitorFacadeService.getClusterResource();
+	}
+	public ResponseDTO.ClusterObjectDTO getClusterObject(){
+		return monitorFacadeService.getClusterObject();
+	}
+	public Map<String, Map<String, Long>> getClusterReason(long minute){
+		return k8sMonitorService.getClusterReason(minute);
+	}
+	public Map<String, Map<String, Long>> getClusterPendingCount(long minute){
+		return monitorFacadeService.getClusterPendingCount(minute);
+	}
+	public Map<String, Map<String, Long>> getClusterContainerRestart(long minute){
+		return monitorFacadeService.getClusterContainerRestart(minute);
+	}
+	public List<ResponseDTO.ClusterPodInfo> getClusterPendingAndFailPod(){
+		return monitorFacadeService.getClusterPendingAndFailPod();
+	}
 
 }
 

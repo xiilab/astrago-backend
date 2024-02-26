@@ -129,6 +129,43 @@ public record ResponseDTO() {
 									 String total,
 									 String request,
 									 String usage){
-
 	}
+	@Builder
+	public record ClusterResourceDTO(String nodeCount,
+									 String daemonsetCount,
+									 String podCount,
+									 String persistentVolumeCount,
+									 String deploymentsCount,
+									 String serviceCount,
+									 String containerCount,
+									 String namespaceCount,
+									 String statefulsetCount,
+									 String hpaCount){}
+	@Builder
+	public record ClusterObjectDTO(String podRuning,
+								   String nodeReady,
+								   String pendingPodCount,
+								   String failPodCount,
+								   String unHealthyDeployments,
+								   String unHealthyDaemonSet,
+								   String unHealthyHPA,
+								   String unHealthyStatefulset,
+								   String containerRestart,
+								   String containerImageRestart){}
+
+	@Builder
+	public record ClusterReasonDTO(long lastSEEN,
+								   String time,
+								   String reason){}
+	@Builder
+	public record ClusterPendingDTO(String date,
+									String podName,
+									String nodeName,
+									String value){}
+	@Builder
+	public record ClusterPodInfo(String podName,
+								 String nodeName,
+								 String status,
+								 String reason){}
+
 }
