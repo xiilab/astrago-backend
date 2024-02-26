@@ -1,6 +1,5 @@
 package com.xiilab.modulecommon.util;
 
-import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -192,10 +191,8 @@ public class DataConverterUtil {
 	 */
 	public static String roundToString(String request) {
 		// m 값을 Core로 변환
-		double result = (double) Integer.parseInt(request) / 1000;
-		// 소수점 한 자리까지 표시
-		DecimalFormat df = new DecimalFormat("#.#");
-		return df.format(result);
+		double result = Double.parseDouble(request);
+		return String.format("%.2f", result);
 	}
 	public static double roundToNearestHalf(double number) {
 		double integerPart = Math.floor(number);

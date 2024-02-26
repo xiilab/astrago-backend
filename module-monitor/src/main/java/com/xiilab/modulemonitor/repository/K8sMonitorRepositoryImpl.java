@@ -19,6 +19,7 @@ import com.xiilab.modulemonitor.enumeration.K8sErrorStatus;
 
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -156,7 +157,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 						.stream()
 						.filter(nodeCondition -> nodeCondition.getStatus().equals("True"))
 						.toList()
-						.get(0)
+						.stream().findFirst().orElse(new NodeCondition().toBuilder().withType("NotReady").build())
 						.getType())
 					.build()).toList();
 		}
@@ -455,7 +456,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public String getNodeName(String podName, String namespace){
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			return kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName();
+			return Objects.nonNull(kubernetesClient.pods().inNamespace(namespace).withName(podName).get())?
+				kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() : "";
 		}
 	}
 

@@ -236,8 +236,10 @@ public class MonitorFacadeService {
 		String imagePullBackoffCount = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.CONTAINER_IMAGE_PULL_BACK_OFF_COUNT.getQuery(), ""));
 
+		String podRunningPercent = DataConverterUtil.formatObjectMapper(podRunning);
+
 		return ResponseDTO.ClusterObjectDTO.builder()
-			.podRuning(DataConverterUtil.formatObjectMapper(podRunning))
+			.podRuning(DataConverterUtil.roundToString(podRunningPercent))
 			.pendingPodCount(DataConverterUtil.formatObjectMapper(podPendingCount))
 			.failPodCount(DataConverterUtil.formatObjectMapper(podFailCount))
 			.nodeReady(DataConverterUtil.formatObjectMapper(nodeReady))
@@ -258,8 +260,7 @@ public class MonitorFacadeService {
 		String startDate = DataConverterUtil.subtractMinutesFromCurrentTime(minute);
 
 		// Pending History 조회
-		List<ResponseDTO.HistoryDTO> historyMetricByQuery = prometheusService.getHistoryMetricByQuery(promql, startDate,
-			endDate);
+		List<ResponseDTO.HistoryDTO> historyMetricByQuery = prometheusService.getHistoryMetricByQuery(promql, startDate, endDate);
 
 		List<ResponseDTO.ClusterPendingDTO> clusterPendingDTOList = new ArrayList<>();
 
@@ -295,7 +296,6 @@ public class MonitorFacadeService {
 			endDate);
 
 		List<ResponseDTO.ClusterPendingDTO> clusterPendingDTOList = new ArrayList<>();
-
 		for (ResponseDTO.HistoryDTO historyDTO : historyMetricByQuery) {
 			for (ResponseDTO.ValueDTO valueDTO : historyDTO.valueDTOS()) {
 				clusterPendingDTOList.add(ResponseDTO.ClusterPendingDTO.builder()

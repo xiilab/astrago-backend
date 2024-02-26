@@ -116,6 +116,7 @@ public enum Promql {
 	CONTAINER_IMAGE_PULL_BACK_OFF_COUNT("count(kube_pod_container_status_waiting_reason{reason=\"ImagePullBackOff\"})", "Container imagePullBackOff Count", "CONTAINER"),
 	CONTAINER_RESTART("kube_pod_container_status_restarts_total != 0", "컨테이너 재시작 조회", "CONTAINER"),
 
+
 	;
 // GPU 사용량, GPU Limit, GPU Request
 	private final String query;
