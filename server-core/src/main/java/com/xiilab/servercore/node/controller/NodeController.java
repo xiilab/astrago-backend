@@ -14,8 +14,11 @@ import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "NodeController", description = "노드 api")
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/core/nodes")
@@ -24,8 +27,19 @@ public class NodeController {
 	private final NodeFacadeService nodeFacadeService;
 
 	@GetMapping("")
+	@Operation(summary = "노드 전체 리스트 조회")
 	public ResponseEntity<List<ResponseDTO.NodeDTO>> getNodeList(){
 		return new ResponseEntity<>(nodeFacadeService.getNodeList(), HttpStatus.OK);
+	}
+	@GetMapping("/{resourceName}")
+	@Operation(summary = "노드 상세 조회")
+	public ResponseEntity<ResponseDTO.NodeInfo> getNodeByResourceName(@PathVariable(name = "resourceName") String resourceName){
+		return new ResponseEntity<>(nodeFacadeService.getNodeByResourceName(resourceName), HttpStatus.OK);
+	}
+	@GetMapping("/{resourceName}/resources")
+	@Operation(summary = "노드 리소스 상세 조회")
+	public ResponseEntity<ResponseDTO.NodeResourceInfo> getNode(@PathVariable(name = "resourceName") String resourceName){
+		return new ResponseEntity<>(nodeFacadeService.getNodeResourceByResourceName(resourceName), HttpStatus.OK);
 	}
 
 	/**

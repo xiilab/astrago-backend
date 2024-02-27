@@ -104,6 +104,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			DataConverterUtil.getStringOrNull(metricData, "instance"),
 			DataConverterUtil.getStringOrNull(metricData, "modelName"),
 			DataConverterUtil.getStringOrNull(metricData, "gpu"),
+			DataConverterUtil.getStringOrNull(metricData, "resource"),
 			String.valueOf(value)
 		);
 	}

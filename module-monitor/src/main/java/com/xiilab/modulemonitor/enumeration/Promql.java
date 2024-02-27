@@ -36,6 +36,7 @@ public enum Promql {
 		+ "/ max by (mountpoint) (label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}) * 100", "Node Disk 사용량", "NODE"),
 	TOTAL_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{mountpoint=\"/\"})", "전체 노드의 DISK SIZE(Bytes) 조회", "NODE"),
 	USAGE_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{mountpoint=\"/\"}) - sum(node_filesystem_avail_bytes{mountpoint=\"/\"})", "전체 노드의 DISK 사용중인 Bytes 조회", "NODE"),
+
 	USAGE_NODE_CPU_CORE("sum(kube_pod_container_resource_requests{resource=\"cpu\",%s})by(node)", "특정 노드의 cpu 코어 수 조회", "NODE"),
 	USAGE_NODE_MEMORY_SIZE("sum(kube_pod_container_resource_requests{resource=\"memory\",%s})by(node)", "특정 노드의 memory size 조회", "NODE"),
 	USAGE_NODE_GPU_COUNT("sum(kube_pod_container_resource_requests{resource=\"nvidia_com_gpu\",%s})by(node)", "특정 노드의 gpu 개수 조회", "NODE"),
@@ -49,6 +50,11 @@ public enum Promql {
 	NODE_CPU_TEMP("label_replace(avg(node_hwmon_temp_celsius) by(instance),  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}", "노드 CPU TEMP 조회", "NODE"),
 	NODE_NETWORK_RECEIVE("avg by(instance) (label_replace(node_network_receive_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{%s})", "노드의 네트워크 수신", "NODE"),
 	NODE_NETWORK_TRANSMIT("avg by(instance) (node_network_transmit_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{})","노드의 네트워크 송신","NODE"),
+	TOTAL_NODE_REQUEST_RESOURCE("sum(kube_pod_container_resource_requests{%s})by(resource)", "특정 노드의 request 리소스 사용량 조회", "NODE"),
+	TOTAL_NODE_LIMIT_RESOURCE("sum(kube_pod_container_resource_limits{%s})by(resource)", "특정 노드의 limit 리소스 사용량 조회", "NODE"),
+
+
+
 
 
 	// WORK SPACE

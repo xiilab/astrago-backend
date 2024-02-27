@@ -19,4 +19,9 @@ public interface NodeRepository {
 	ResponseDTO.MIGProfile getNodeMIGProfileFromJson(String productName) throws FileNotFoundException;
 	List<MigMixedDTO> getMigMixedInfo(Node node);
 
+	Node getNode(String resourceName);
+
+	ResponseDTO.NodeInfo getNodeByResourceName(String resourceName);
+
+	ResponseDTO.NodeResourceInfo getNodeResourceByResourceName(String resourceName);
 }

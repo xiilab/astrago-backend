@@ -19,6 +19,7 @@ public record ResponseDTO() {
 							  String instance,
 							  String modelName,
 							  String gpuIndex,
+							  String resource,
 							  String value) {
 	}
 

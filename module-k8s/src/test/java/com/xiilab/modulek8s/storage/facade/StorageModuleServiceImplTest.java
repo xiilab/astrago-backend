@@ -851,9 +851,13 @@
 // 		String gpuCount = "nvidia.com/gpu.count";
 // 		String address = "projectcalico.org/IPv4Address";
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			Node node1 = client.nodes().withName("gpu-titan-2").get();
+// 			Node node2 = client.nodes().list().getItems().stream().filter(node ->
+// 				node.getMetadata().getName().equals("gpu-titan-2")).findFirst().get();
 // 			List<Node> nodes = client.nodes().list().getItems();
 // 			for (Node node : nodes) {
 // 				String nodeName = node.getMetadata().getName(); //"gpu-titan-2"
+// 				node.getSpec().getUnschedulable(); // true = cordon or null, false = uncordon
 // 				//mem, cpu, disk, gpu
 // 				//request cpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="cpu"})by(node)
 // 				//request gpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="gpu"})
