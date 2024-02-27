@@ -42,7 +42,7 @@ public class DirectoryDTO {
 		ChildrenDTO(String rawString) {
 			//에러체크
 			if (rawString.contains("Syntax error") || rawString.contains("stat: cannot statx"))
-				throw new IllegalArgumentException("경로를 다시 확인해주세요");
+					throw new IllegalArgumentException("해당 경로가 올바르지 않거나, 빈 디렉토리입니다.");
 			String[] fileArray = rawString.split(",");
 			this.name = getFileName(fileArray[0]);
 			this.type = fileArray[1].equals("directory") ? FileType.D : FileType.F;
