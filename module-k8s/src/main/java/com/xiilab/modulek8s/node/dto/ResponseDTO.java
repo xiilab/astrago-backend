@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.node.dto;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
@@ -17,40 +18,61 @@ public class ResponseDTO {
 	public static class NodeDTO {
 		private String nodeName;
 		private String ip;
-		private String totalGPU;
-		private String totalMEM;
-		private String totalCPU;
-		private String totalDISK;
-		private String requestGPU;
-		private String requestMEM;
-		private String requestCPU;
-		private String requestDISK;
+		private double totalGPU;
+		private double totalMEM;
+		private double totalCPU;
+		private double totalDISK;
+		private double requestGPU;
+		private double requestMEM;
+		private double requestCPU;
+		private double requestDISK;
+		private double gpuPercent;
+		private double cpuPercent;
+		private double memPercent;
+		private double diskPercent;
+
 		private AgeDTO age;
 		private int gpuCount;
 		private boolean status;
 		private boolean schedulable;
 
-		public void setTotalGPU(String totalGPU){
-			this.totalGPU = totalGPU;
+		public void setTotalGPU(double totalGPU){
+			this.totalGPU = roundToFirstDecimalPlace(totalGPU);
 		}
-		public void setRequestGPU(String requestGPU){
-			this.requestGPU = requestGPU;
-		}public void setTotalMEM(String totalMEM){
-			this.totalMEM = totalMEM;
+		public void setRequestGPU(double requestGPU){
+			this.requestGPU = roundToFirstDecimalPlace(requestGPU);
+		}public void setTotalMEM(double totalMEM){
+			this.totalMEM = roundToFirstDecimalPlace(totalMEM);
 		}
-		public void setRequestMEM(String requestMEM){
-			this.requestMEM = requestMEM;
-		}public void setTotalCPU(String totalCPU){
-			this.totalCPU = totalCPU;
+		public void setRequestMEM(double requestMEM){
+			this.requestMEM = roundToFirstDecimalPlace(requestMEM);
+		}public void setTotalCPU(double totalCPU){
+			this.totalCPU = roundToFirstDecimalPlace(totalCPU);
 		}
-		public void setRequestCPU(String requestCPU){
-			this.requestCPU = requestCPU;
+		public void setRequestCPU(double requestCPU){
+			this.requestCPU = roundToFirstDecimalPlace(requestCPU);
 		}
-		public void setTotalDISK(String totalDISK){
-			this.totalDISK = totalDISK;
+		public void setTotalDISK(double totalDISK){
+			this.totalDISK = roundToFirstDecimalPlace(totalDISK);
 		}
-		public void setRequestDISK(String requestDISK){
-			this.requestDISK = requestDISK;
+		public void setRequestDISK(double requestDISK){
+			this.requestDISK = roundToFirstDecimalPlace(requestDISK);
+		}
+		public void percentCalculation(){
+			this.gpuPercent = calculatePercentage(this.requestGPU, this.totalGPU);
+			this.cpuPercent = calculatePercentage(this.requestCPU, this.totalCPU);
+			this.memPercent = calculatePercentage(this.requestMEM, this.totalMEM);
+			this.diskPercent = calculatePercentage(this.requestDISK, this.totalDISK);
+		}
+		private int calculatePercentage(double request, double total) {
+			if (total == 0) {
+				return 0;
+			}
+			return (int) Math.ceil(request / total * 100);
+		}
+		public static double roundToFirstDecimalPlace(double number) {
+			DecimalFormat df = new DecimalFormat("#.#");
+			return Double.parseDouble(df.format(number));
 		}
 	}
 	@Builder
@@ -116,14 +138,17 @@ public class ResponseDTO {
 			private int gpuPercent;
 
 			public void cpuPercentCalculation(double totalCPU){
-				long cpuCore = this.cpu / 1000;
-				this.cpuPercent = (int)(cpuCore / totalCPU * 100);
+				double cpuCore = this.cpu / 1000.0;
+				this.cpuPercent = roundToFirstDecimalPlace((cpuCore / totalCPU * 100));
 			}
 			public void memoryPercentCalculation(double totalMEM){
-				this.memoryPercent = (int)(this.memory / totalMEM * 100);
+				this.memoryPercent = roundToFirstDecimalPlace((this.memory / totalMEM * 100));
 			}
 			public void gpuPercentCalculation(double totalGPU){
-				this.gpuPercent = (int)(this.gpu / totalGPU * 100);
+				this.gpuPercent = roundToFirstDecimalPlace((this.gpu / totalGPU * 100));
+			}
+			public static int roundToFirstDecimalPlace(double number) {
+				return (int)(Math.ceil(number));
 			}
 		}
 		@Getter
@@ -137,14 +162,17 @@ public class ResponseDTO {
 			private int gpuPercent;
 
 			public void cpuPercentCalculation(double totalCPU){
-				long cpuCore = this.cpu / 1000;
-				this.cpuPercent = (int)(cpuCore / totalCPU * 100);
+				double cpuCore = this.cpu / 1000.0;
+				this.cpuPercent = roundToFirstDecimalPlace((cpuCore / totalCPU * 100));
 			}
 			public void memoryPercentCalculation(double totalMEM){
-				this.memoryPercent = (int)(this.memory / totalMEM * 100);
+				this.memoryPercent = roundToFirstDecimalPlace((this.memory / totalMEM * 100));
 			}
 			public void gpuPercentCalculation(double totalGPU){
-				this.gpuPercent = (int)(this.gpu / totalGPU * 100);
+				this.gpuPercent = roundToFirstDecimalPlace((this.gpu / totalGPU * 100));
+			}
+			public static int roundToFirstDecimalPlace(double number) {
+				return (int)(Math.ceil(number));
 			}
 		}
 	}

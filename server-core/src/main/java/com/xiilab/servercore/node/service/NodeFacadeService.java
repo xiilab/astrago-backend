@@ -25,22 +25,22 @@ public class NodeFacadeService {
 		List<ResponseDTO.NodeDTO> nodeList = nodeRepository.getNodeList();
 		RequestDTO requestDTO = new RequestDTO();
 
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalCpuMap = getMetricMap(requestDTO,
-			Promql.TOTAL_NODE_CPU_CORE);
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageCpuMap = getMetricMap(requestDTO,
-			Promql.USAGE_NODE_CPU_CORE);
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalGpuMap = getMetricMap(requestDTO,
-			Promql.TOTAL_NODE_GPU_COUNT);
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageGpuMap = getMetricMap(requestDTO,
-			Promql.USAGE_NODE_GPU_COUNT);
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalMemMap = getMetricMap(requestDTO,
-			Promql.TOTAL_NODE_MEMORY_SIZE);
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageMemMap = getMetricMap(requestDTO,
-			Promql.USAGE_NODE_MEMORY_SIZE);
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalDiskMap = getMetricMap(requestDTO,
-			Promql.NODE_ROOT_DISK_SIZE);
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageDiskMap = getMetricMap(requestDTO,
-			Promql.NODE_ROOT_DISK_USAGE_SIZE);
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalCpuMap = listToMap(getMetricMap(requestDTO,
+			Promql.TOTAL_NODE_CPU_CORE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageCpuMap = listToMap(getMetricMap(requestDTO,
+			Promql.USAGE_NODE_CPU_CORE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalGpuMap = listToMap(getMetricMap(requestDTO,
+			Promql.TOTAL_NODE_GPU_COUNT));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageGpuMap = listToMap(getMetricMap(requestDTO,
+			Promql.USAGE_NODE_GPU_COUNT));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalMemMap = listToMap(getMetricMap(requestDTO,
+			Promql.TOTAL_NODE_MEMORY_SIZE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageMemMap = listToMap(getMetricMap(requestDTO,
+			Promql.USAGE_NODE_MEMORY_SIZE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalDiskMap = listToMap(getMetricMap(requestDTO,
+			Promql.NODE_ROOT_DISK_SIZE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageDiskMap = listToMap(getMetricMap(requestDTO,
+			Promql.NODE_ROOT_DISK_USAGE_SIZE));
 
 		for (ResponseDTO.NodeDTO nodeDTO : nodeList) {
 			String nodeName = nodeDTO.getNodeName();
@@ -52,39 +52,40 @@ public class NodeFacadeService {
 			nodeDTO.setRequestMEM(getValueFromMap(usageMemMap, nodeName, Promql.USAGE_NODE_MEMORY_SIZE));
 			nodeDTO.setTotalDISK(getValueFromMap(totalDiskMap, nodeName, Promql.NODE_ROOT_DISK_SIZE));
 			nodeDTO.setRequestDISK(getValueFromMap(usageDiskMap, nodeName, Promql.NODE_ROOT_DISK_USAGE_SIZE));
+			nodeDTO.percentCalculation();
 		}
-
 		return nodeList;
 	}
-	private String getValueFromMap(Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> metricMap, String nodeName, Promql promql) {
+
+
+	private double getValueFromMap(Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> metricMap, String nodeName, Promql promql) {
 		com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO realTimeDTO = metricMap.get(nodeName);
 		if (realTimeDTO == null) {
-			return "0";
+			return 0.0;
 		}
 		String value = realTimeDTO.value();
 		switch (promql) {
 			case TOTAL_NODE_CPU_CORE:
 			case USAGE_NODE_CPU_CORE:
-				return DataConverterUtil.convertToCPU(value) + " CORE";
+				return DataConverterUtil.convertToCPU(value);
 			case TOTAL_NODE_GPU_COUNT:
 			case USAGE_NODE_GPU_COUNT:
-				return DataConverterUtil.convertToGPU(value) + " 개";
+				return (DataConverterUtil.convertToGPU(value));
 			case TOTAL_NODE_MEMORY_SIZE:
 			case USAGE_NODE_MEMORY_SIZE:
-				return DataConverterUtil.convertToMemorySize(value);
+				return (DataConverterUtil.convertToGBMemorySize(value));
 			case NODE_ROOT_DISK_SIZE:
 			case NODE_ROOT_DISK_USAGE_SIZE:
-				return DataConverterUtil.formatDiskSize(value);
+				return (DataConverterUtil.formatGBDiskSize(value));
 			default:
-				return "0";
+				return 0.0;
 		}
 	}
 	// MetricType에 따라 요청을 처리하는 메서드 추가
-	private Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> getMetricMap(
+	private List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> getMetricMap(
 		RequestDTO requestDTO, Promql promql) {
 		requestDTO.changeMetricName(promql.name());
-		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> metricList = prometheusService.getRealTimeMetric(requestDTO);
-		return listToMap(metricList);
+		return prometheusService.getRealTimeMetric(requestDTO);
 	}
 	private Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> listToMap(
 		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> list) {
@@ -121,13 +122,10 @@ public class NodeFacadeService {
 		ResponseDTO.NodeResourceInfo nodeResourceInfo = nodeRepository.getNodeResourceByResourceName(
 			resourceName);
 		RequestDTO requestDTO = RequestDTO.builder()
-			.metricName(Promql.TOTAL_NODE_REQUEST_RESOURCE.name())
 			.nodeName(resourceName).build();
-		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource = prometheusService.getRealTimeMetric(
-			requestDTO);
-		requestDTO.changeMetricName(Promql.TOTAL_NODE_LIMIT_RESOURCE.name());
-		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource = prometheusService.getRealTimeMetric(
-			requestDTO);
+
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource = getMetricMap(requestDTO, Promql.TOTAL_NODE_REQUEST_RESOURCE);
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource = getMetricMap(requestDTO, Promql.TOTAL_NODE_LIMIT_RESOURCE);
 
 		double totalCPUResource = getTotalResource(Promql.TOTAL_NODE_CPU_CORE.name());
 		double totalGPUResource = getTotalResource(Promql.TOTAL_NODE_GPU_COUNT.name());
