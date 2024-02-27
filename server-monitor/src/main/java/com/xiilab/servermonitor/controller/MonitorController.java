@@ -150,7 +150,7 @@ public class MonitorController {
 		return new ResponseEntity<>(monitorService.getClusterResource(), HttpStatus.OK);
 	}
 
-	@GetMapping("/cluster/objct")
+	@GetMapping("/cluster/object")
 	@Operation(summary = "클러스터 모니터링 Object 상태 현황 조화")
 	public ResponseEntity<ResponseDTO.ClusterObjectDTO> getClusterObject(){
 		return new ResponseEntity<>(monitorService.getClusterObject(), HttpStatus.OK);

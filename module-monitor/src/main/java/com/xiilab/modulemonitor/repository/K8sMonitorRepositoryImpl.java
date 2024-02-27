@@ -427,6 +427,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			// 현재 시간 UTC 조회
 			Instant now = Instant.now().truncatedTo(ChronoUnit.MINUTES);
 			List<ResponseDTO.ClusterReasonDTO> clusterReasonDTOList = eventList.stream()
+				.filter(event -> !event.getType().equals("Normal"))
 				.map(event -> {
 						String eventTime =
 							!StringUtils.isBlank(event.getDeprecatedLastTimestamp()) ? event.getDeprecatedLastTimestamp() :
