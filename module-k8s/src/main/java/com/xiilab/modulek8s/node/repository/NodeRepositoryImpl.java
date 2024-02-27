@@ -58,7 +58,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private String migProfilePath;
 
 	@Override
-	public List<ResponseDTO.NodeDTO> getNodeList() {
+	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
 		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Node> nodes = client.nodes().list().getItems();
@@ -75,11 +75,24 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.age(new AgeDTO(node.getMetadata().getCreationTimestamp()))
 					.schedulable(node.getSpec().getUnschedulable() == null || node.getSpec().getUnschedulable() == false ? true : false)
 					.build();
-
 				nodeDtos.add(dto);
 			}
 		}
-		return nodeDtos;
+		int totalCount = nodeDtos.size();
+		int startIndex = (pageNo - 1) * pageSize;
+		int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+		if (startIndex >= totalCount || endIndex <= startIndex) {
+			// 페이지 범위를 벗어나면 빈 리스트 반환
+			 return ResponseDTO.PageNodeDTO.builder()
+				.nodes(null)
+				.totalCount(totalCount)
+				.build();
+		}
+		return ResponseDTO.PageNodeDTO.builder()
+			.nodes(nodeDtos.subList(startIndex, endIndex))
+			.totalCount(totalCount)
+			.build();
 	}
 
 	private boolean isStatus(List<NodeCondition> conditions) {

@@ -13,6 +13,13 @@ import lombok.Getter;
 
 public class ResponseDTO {
 
+
+	@Builder
+	@Getter
+	public static class PageNodeDTO{
+		private List<NodeDTO> nodes;
+		private long totalCount;
+	}
 	@Builder
 	@Getter
 	public static class NodeDTO {

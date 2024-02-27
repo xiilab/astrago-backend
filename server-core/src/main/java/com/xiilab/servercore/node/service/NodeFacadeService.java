@@ -21,8 +21,8 @@ public class NodeFacadeService {
 	private final NodeRepository nodeRepository;
 	private final PrometheusService prometheusService;
 
-	public List<ResponseDTO.NodeDTO> getNodeList() {
-		List<ResponseDTO.NodeDTO> nodeList = nodeRepository.getNodeList();
+	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
+		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(pageNo, pageSize);
 		RequestDTO requestDTO = new RequestDTO();
 
 		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalCpuMap = listToMap(getMetricMap(requestDTO,
@@ -41,18 +41,19 @@ public class NodeFacadeService {
 			Promql.NODE_ROOT_DISK_SIZE));
 		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageDiskMap = listToMap(getMetricMap(requestDTO,
 			Promql.NODE_ROOT_DISK_USAGE_SIZE));
-
-		for (ResponseDTO.NodeDTO nodeDTO : nodeList) {
-			String nodeName = nodeDTO.getNodeName();
-			nodeDTO.setTotalCPU(getValueFromMap(totalCpuMap, nodeName, Promql.TOTAL_NODE_CPU_CORE));
-			nodeDTO.setRequestCPU(getValueFromMap(usageCpuMap, nodeName, Promql.USAGE_NODE_CPU_CORE));
-			nodeDTO.setTotalGPU(getValueFromMap(totalGpuMap, nodeName, Promql.TOTAL_NODE_GPU_COUNT));
-			nodeDTO.setRequestGPU(getValueFromMap(usageGpuMap, nodeName, Promql.USAGE_NODE_GPU_COUNT));
-			nodeDTO.setTotalMEM(getValueFromMap(totalMemMap, nodeName, Promql.TOTAL_NODE_MEMORY_SIZE));
-			nodeDTO.setRequestMEM(getValueFromMap(usageMemMap, nodeName, Promql.USAGE_NODE_MEMORY_SIZE));
-			nodeDTO.setTotalDISK(getValueFromMap(totalDiskMap, nodeName, Promql.NODE_ROOT_DISK_SIZE));
-			nodeDTO.setRequestDISK(getValueFromMap(usageDiskMap, nodeName, Promql.NODE_ROOT_DISK_USAGE_SIZE));
-			nodeDTO.percentCalculation();
+		if(nodeList.getNodes() != null){
+			for (ResponseDTO.NodeDTO nodeDTO : nodeList.getNodes()) {
+				String nodeName = nodeDTO.getNodeName();
+				nodeDTO.setTotalCPU(getValueFromMap(totalCpuMap, nodeName, Promql.TOTAL_NODE_CPU_CORE));
+				nodeDTO.setRequestCPU(getValueFromMap(usageCpuMap, nodeName, Promql.USAGE_NODE_CPU_CORE));
+				nodeDTO.setTotalGPU(getValueFromMap(totalGpuMap, nodeName, Promql.TOTAL_NODE_GPU_COUNT));
+				nodeDTO.setRequestGPU(getValueFromMap(usageGpuMap, nodeName, Promql.USAGE_NODE_GPU_COUNT));
+				nodeDTO.setTotalMEM(getValueFromMap(totalMemMap, nodeName, Promql.TOTAL_NODE_MEMORY_SIZE));
+				nodeDTO.setRequestMEM(getValueFromMap(usageMemMap, nodeName, Promql.USAGE_NODE_MEMORY_SIZE));
+				nodeDTO.setTotalDISK(getValueFromMap(totalDiskMap, nodeName, Promql.NODE_ROOT_DISK_SIZE));
+				nodeDTO.setRequestDISK(getValueFromMap(usageDiskMap, nodeName, Promql.NODE_ROOT_DISK_USAGE_SIZE));
+				nodeDTO.percentCalculation();
+			}
 		}
 		return nodeList;
 	}
