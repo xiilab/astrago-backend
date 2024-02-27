@@ -1,10 +1,13 @@
 package com.xiilab.modulecommon.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -248,5 +251,33 @@ public class DataConverterUtil {
 	public static String subtractMinutesFromCurrentTime(long minutes){
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
 		return DataConverterUtil.toUnixTime(LocalDateTime.now().minusMinutes(minutes).format(formatter));
+	}
+	public static int getStep(String startDate, String endDate) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date start = sdf.parse(startDate);
+			Date end = sdf.parse(endDate);
+
+			// Date -> 밀리세컨즈
+			long timeMil1 = start.getTime();
+			long timeMil2 = end.getTime();
+
+			long diffDay = (timeMil2- timeMil1) / (1000 * 60 * 60 * 24);
+
+			int result = 2048;
+
+			if(diffDay < 8){
+				return result;
+			} else if (diffDay <= 30) {
+				return result * 2;
+			} else if (diffDay <= 90) {
+				return result * 4;
+			} else{
+				return result * 16;
+			}
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

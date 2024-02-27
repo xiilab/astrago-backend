@@ -34,12 +34,13 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	@Override
 	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO) {
+		int step = DataConverterUtil.getStep(requestDTO.startDate(), requestDTO.endDate());
 		// 검색시간 UnixTime로 변환
 		String startDate = DataConverterUtil.toUnixTime(requestDTO.startDate());
 		String endDate = DataConverterUtil.toUnixTime(requestDTO.endDate());
 		// Promql 생성
 		String promql = getPromql(requestDTO);
-		String result = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
+		String result = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate, step);
 		return extractHistoryMetrics(result, requestDTO.metricName());
 	}
 
