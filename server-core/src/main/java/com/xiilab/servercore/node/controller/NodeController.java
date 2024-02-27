@@ -42,7 +42,6 @@ public class NodeController {
 	public ResponseEntity<ResponseDTO.NodeResourceInfo> getNode(@PathVariable(name = "resourceName") String resourceName){
 		return new ResponseEntity<>(nodeFacadeService.getNodeResourceByResourceName(resourceName), HttpStatus.OK);
 	}
-
 	/**
 	 * 등록된 node의 mig 가능한 리스트를 리턴하는 API
 	 *

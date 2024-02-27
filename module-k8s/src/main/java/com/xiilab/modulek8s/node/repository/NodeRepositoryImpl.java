@@ -48,7 +48,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String MEMORY = "memory";
 	private final String PODS = "pods";
 	private final String HOST_NAME = "kubernetes.io/hostname";
-	private final String ROLE= "node-role.kubernetes.io/control-plane";
+	private final String ROLE = "node-role.kubernetes.io/control-plane";
 	private final String NETWORK_UNAVAILABLE = "NetworkUnavailable";
 	private final String MEMORY_PRESSURE = "MemoryPressure";
 	private final String DISK_PRESSURE = "DiskPressure";
@@ -73,7 +73,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.ip(node.getStatus().getAddresses().get(0).getAddress())
 					.status(status)
 					.age(new AgeDTO(node.getMetadata().getCreationTimestamp()))
-					.schedulable(node.getSpec().getUnschedulable() == null || node.getSpec().getUnschedulable() == false ? true : false)
+					.schedulable(
+						node.getSpec().getUnschedulable() == null || node.getSpec().getUnschedulable() == false ? true :
+							false)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -84,7 +86,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 		if (startIndex >= totalCount || endIndex <= startIndex) {
 			// 페이지 범위를 벗어나면 빈 리스트 반환
-			 return ResponseDTO.PageNodeDTO.builder()
+			return ResponseDTO.PageNodeDTO.builder()
 				.nodes(null)
 				.totalCount(totalCount)
 				.build();
@@ -163,16 +165,17 @@ public class NodeRepositoryImpl implements NodeRepository {
 	public Node getNode(String nodeName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Node node = client.nodes().withName(nodeName).get();
-			if(node == null){
+			if (node == null) {
 				throw new K8sException(NodeErrorCode.NODE_NOT_FOUND);
 			}
 			return node;
 		}
 	}
+
 	public ResponseDTO.NodeInfo getNodeByResourceName(String nodeName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Node node = client.nodes().withName(nodeName).get();
-			if(node == null){
+			if (node == null) {
 				throw new K8sException(NodeErrorCode.NODE_NOT_FOUND);
 			}
 			List<NodeCondition> conditions = node.getStatus().getConditions();
@@ -197,7 +200,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	public ResponseDTO.NodeResourceInfo getNodeResourceByResourceName(String resourceName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Node node = client.nodes().withName(resourceName).get();
-			if(node == null){
+			if (node == null) {
 				throw new K8sException(NodeErrorCode.NODE_NOT_FOUND);
 			}
 			Map<String, String> labels = node.getMetadata().getLabels();
@@ -205,36 +208,44 @@ public class NodeRepositoryImpl implements NodeRepository {
 			Map<String, Quantity> allocatable = node.getStatus().getAllocatable();
 
 			ResponseDTO.NodeResourceInfo.Capacity capacityResource = ResponseDTO.NodeResourceInfo.Capacity.builder()
-				.capacityCpu(capacity.get(CPU).getAmount() + capacity.get(CPU).getFormat())
-				.capacityEphemeralStorage(capacity.get(EPHEMERAL_STORAGE).getAmount() + capacity.get(EPHEMERAL_STORAGE).getFormat())
-				.capacityHugepages1Gi(capacity.get(HUGEPAGES_1Gi).getAmount() + capacity.get(HUGEPAGES_1Gi).getFormat())
-				.capacityHugepages2Mi(capacity.get(HUGEPAGES_2Mi).getAmount() + capacity.get(HUGEPAGES_2Mi).getFormat())
-				.capacityMemory(capacity.get(MEMORY).getAmount() + capacity.get(MEMORY).getFormat())
-				.capacityPods(capacity.get(PODS).getAmount() + capacity.get(PODS).getFormat())
-				.capacityGpu(capacity.get(GPU).getAmount() + capacity.get(GPU).getFormat())
+				.capacityCpu(getNonNullValueOrZero(capacity.get(CPU)))
+				.capacityEphemeralStorage(getNonNullValueOrZero(capacity.get(EPHEMERAL_STORAGE)))
+				.capacityHugepages1Gi(getNonNullValueOrZero(capacity.get(HUGEPAGES_1Gi)))
+				.capacityHugepages2Mi(getNonNullValueOrZero(capacity.get(HUGEPAGES_2Mi)))
+				.capacityMemory(getNonNullValueOrZero(capacity.get(MEMORY)))
+				.capacityPods(getNonNullValueOrZero(capacity.get(PODS)))
+				.capacityGpu(getNonNullValueOrZero(capacity.get(GPU)))
 				.build();
 			ResponseDTO.NodeResourceInfo.Allocatable allocatableResource = ResponseDTO.NodeResourceInfo.Allocatable.builder()
-				.allocatableCpu(allocatable.get(CPU).getAmount() + allocatable.get(CPU).getFormat())
-				.allocatableEphemeralStorage(allocatable.get(EPHEMERAL_STORAGE).getAmount() + allocatable.get(EPHEMERAL_STORAGE).getFormat())
-				.allocatableHugepages1Gi(allocatable.get(HUGEPAGES_1Gi).getAmount() + allocatable.get(HUGEPAGES_1Gi).getFormat())
-				.allocatableHugepages2Mi(allocatable.get(HUGEPAGES_2Mi).getAmount() + allocatable.get(HUGEPAGES_2Mi).getFormat())
-				.allocatableMemory(allocatable.get(MEMORY).getAmount() + allocatable.get(MEMORY).getFormat())
-				.allocatablePods(allocatable.get(PODS).getAmount() + allocatable.get(PODS).getFormat())
-				.allocatableGpu(allocatable.get(GPU).getAmount() + allocatable.get(GPU).getFormat())
+				.allocatableCpu(getNonNullValueOrZero(allocatable.get(CPU)))
+				.allocatableEphemeralStorage(getNonNullValueOrZero(allocatable.get(EPHEMERAL_STORAGE)))
+				.allocatableHugepages1Gi(getNonNullValueOrZero(allocatable.get(HUGEPAGES_1Gi)))
+				.allocatableHugepages2Mi(getNonNullValueOrZero(allocatable.get(HUGEPAGES_2Mi)))
+				.allocatableMemory(getNonNullValueOrZero(allocatable.get(MEMORY)))
+				.allocatablePods(getNonNullValueOrZero(allocatable.get(PODS)))
+				.allocatableGpu(getNonNullValueOrZero(allocatable.get(GPU)))
 				.build();
+
+			String version = null;
+			if (!(labels.get(GPU_DRIVER_VER_MAJOR) == null || labels.get(GPU_DRIVER_VER_MINOR) == null || labels.get(
+				GPU_DRIVER_VER_REV) == null)) {
+				version = labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(GPU_DRIVER_VER_REV);
+			}
 
 			ResponseDTO.NodeResourceInfo nodeResourceInfo = ResponseDTO.NodeResourceInfo.builder()
 				.gpuType(labels.get(GPU_NAME))
 				.gpuMem(labels.get(GPU_MEMORY))
 				.gpuCount(labels.get(GPU_COUNT))
-				.gpuDriverVersion(
-					labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(
-						GPU_DRIVER_VER_REV))
+				.gpuDriverVersion(version)
 				.capacity(capacityResource)
 				.allocatable(allocatableResource)
 				.build();
 			return nodeResourceInfo;
 		}
+	}
+
+	private String getNonNullValueOrZero(Quantity resource) {
+		return resource != null ? (resource.getAmount() + resource.getFormat()) : "0";
 	}
 
 	private long nodeAssignWorkloadCount(String nodeName) {
