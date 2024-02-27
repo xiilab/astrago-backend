@@ -28,8 +28,9 @@ public class NodeController {
 
 	@GetMapping("")
 	@Operation(summary = "노드 전체 리스트 조회")
-	public ResponseEntity<List<ResponseDTO.NodeDTO>> getNodeList(){
-		return new ResponseEntity<>(nodeFacadeService.getNodeList(), HttpStatus.OK);
+	public ResponseEntity<ResponseDTO.PageNodeDTO> getNodeList(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
+		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize){
+		return new ResponseEntity<>(nodeFacadeService.getNodeList(pageNo, pageSize), HttpStatus.OK);
 	}
 	@GetMapping("/{resourceName}")
 	@Operation(summary = "노드 상세 조회")

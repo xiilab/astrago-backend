@@ -11,7 +11,7 @@ import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import io.fabric8.kubernetes.api.model.Node;
 
 public interface NodeRepository {
-	List<ResponseDTO.NodeDTO> getNodeList();
+	ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize);
 	ResponseDTO.MIGProfile getNodeMIGProfiles(String nodeName);
 	void updateMIGAllProfile(String nodeName, String option);
 	int getGPUCount(Node node);

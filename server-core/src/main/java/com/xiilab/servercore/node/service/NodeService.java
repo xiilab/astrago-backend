@@ -14,11 +14,6 @@ import lombok.RequiredArgsConstructor;
 public class NodeService {
 	private final NodeRepository nodeRepository;
 
-	public List<ResponseDTO.NodeDTO> getNodeList(){
-
-		return nodeRepository.getNodeList();
-	}
-
 	/**
 	 * nodeName로 가능한 mig profile list를 조회하는 메소드
 	 *
