@@ -22,4 +22,6 @@ public interface NodeRepository {
 	Node getNode(String resourceName);
 
 	ResponseDTO.NodeInfo getNodeByResourceName(String resourceName);
+
+	ResponseDTO.NodeResourceInfo getNodeResourceByResourceName(String resourceName);
 }

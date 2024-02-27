@@ -24,6 +24,7 @@ import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
 import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.NodeSystemInfo;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,17 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final String GPU_NAME = "nvidia.com/gpu.product";
 	private final String GPU_COUNT = "nvidia.com/gpu.count";
+	private final String GPU_DRIVER_VER_MAJOR = "nvidia.com/cuda.driver.major";
+	private final String GPU_DRIVER_VER_MINOR = "nvidia.com/cuda.driver.minor";
+	private final String GPU_DRIVER_VER_REV = "nvidia.com/cuda.driver.rev";
+	private final String GPU_MEMORY = "nvidia.com/gpu.memory";
+	private final String GPU = "nvidia.com/gpu";
+	private final String CPU = "cpu";
+	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
+	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
+	private final String HUGEPAGES_2Mi = "hugepages-2Mi";
+	private final String MEMORY = "memory";
+	private final String PODS = "pods";
 	private final String HOST_NAME = "kubernetes.io/hostname";
 	private final String ROLE= "node-role.kubernetes.io/control-plane";
 	private final String NETWORK_UNAVAILABLE = "NetworkUnavailable";
@@ -165,6 +177,50 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.build();
 
 			return dto;
+		}
+	}
+
+	@Override
+	public ResponseDTO.NodeResourceInfo getNodeResourceByResourceName(String resourceName) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			Node node = client.nodes().withName(resourceName).get();
+			if(node == null){
+				throw new K8sException(NodeErrorCode.NODE_NOT_FOUND);
+			}
+			Map<String, String> labels = node.getMetadata().getLabels();
+			Map<String, Quantity> capacity = node.getStatus().getCapacity();
+			Map<String, Quantity> allocatable = node.getStatus().getAllocatable();
+
+			ResponseDTO.NodeResourceInfo.Capacity capacityResource = ResponseDTO.NodeResourceInfo.Capacity.builder()
+				.capacityCpu(capacity.get(CPU).getAmount() + capacity.get(CPU).getFormat())
+				.capacityEphemeralStorage(capacity.get(EPHEMERAL_STORAGE).getAmount() + capacity.get(EPHEMERAL_STORAGE).getFormat())
+				.capacityHugepages1Gi(capacity.get(HUGEPAGES_1Gi).getAmount() + capacity.get(HUGEPAGES_1Gi).getFormat())
+				.capacityHugepages2Mi(capacity.get(HUGEPAGES_2Mi).getAmount() + capacity.get(HUGEPAGES_2Mi).getFormat())
+				.capacityMemory(capacity.get(MEMORY).getAmount() + capacity.get(MEMORY).getFormat())
+				.capacityPods(capacity.get(PODS).getAmount() + capacity.get(PODS).getFormat())
+				.capacityGpu(capacity.get(GPU).getAmount() + capacity.get(GPU).getFormat())
+				.build();
+			ResponseDTO.NodeResourceInfo.Allocatable allocatableResource = ResponseDTO.NodeResourceInfo.Allocatable.builder()
+				.allocatableCpu(allocatable.get(CPU).getAmount() + allocatable.get(CPU).getFormat())
+				.allocatableEphemeralStorage(allocatable.get(EPHEMERAL_STORAGE).getAmount() + allocatable.get(EPHEMERAL_STORAGE).getFormat())
+				.allocatableHugepages1Gi(allocatable.get(HUGEPAGES_1Gi).getAmount() + allocatable.get(HUGEPAGES_1Gi).getFormat())
+				.allocatableHugepages2Mi(allocatable.get(HUGEPAGES_2Mi).getAmount() + allocatable.get(HUGEPAGES_2Mi).getFormat())
+				.allocatableMemory(allocatable.get(MEMORY).getAmount() + allocatable.get(MEMORY).getFormat())
+				.allocatablePods(allocatable.get(PODS).getAmount() + allocatable.get(PODS).getFormat())
+				.allocatableGpu(allocatable.get(GPU).getAmount() + allocatable.get(GPU).getFormat())
+				.build();
+
+			ResponseDTO.NodeResourceInfo nodeResourceInfo = ResponseDTO.NodeResourceInfo.builder()
+				.gpuType(labels.get(GPU_NAME))
+				.gpuMem(labels.get(GPU_MEMORY))
+				.gpuCount(labels.get(GPU_COUNT))
+				.gpuDriverVersion(
+					labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(
+						GPU_DRIVER_VER_REV))
+				.capacity(capacityResource)
+				.allocatable(allocatableResource)
+				.build();
+			return nodeResourceInfo;
 		}
 	}
 

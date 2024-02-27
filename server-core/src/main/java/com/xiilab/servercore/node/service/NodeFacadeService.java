@@ -112,8 +112,87 @@ public class NodeFacadeService {
 		nodeRepository.updateMIGAllProfile(nodeName, option);
 	}
 
-	public ResponseDTO.NodeInfo getNode(String resourceName) {
+	public ResponseDTO.NodeInfo getNodeByResourceName(String resourceName) {
 		return nodeRepository.getNodeByResourceName(resourceName);
 
+	}
+
+	public ResponseDTO.NodeResourceInfo getNodeResourceByResourceName(String resourceName) {
+		ResponseDTO.NodeResourceInfo nodeResourceInfo = nodeRepository.getNodeResourceByResourceName(
+			resourceName);
+		RequestDTO requestDTO = RequestDTO.builder()
+			.metricName(Promql.TOTAL_NODE_REQUEST_RESOURCE.name())
+			.nodeName(resourceName).build();
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource = prometheusService.getRealTimeMetric(
+			requestDTO);
+		requestDTO.changeMetricName(Promql.TOTAL_NODE_LIMIT_RESOURCE.name());
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource = prometheusService.getRealTimeMetric(
+			requestDTO);
+
+		double totalCPUResource = getTotalResource(Promql.TOTAL_NODE_CPU_CORE.name());
+		double totalGPUResource = getTotalResource(Promql.TOTAL_NODE_GPU_COUNT.name());
+		double totalMEMResource = getTotalResource(Promql.TOTAL_NODE_MEMORY_SIZE.name()) / 1024;
+
+		ResponseDTO.NodeResourceInfo.Requests requests = buildRequests(requestResource, totalCPUResource, totalGPUResource, totalMEMResource);
+		ResponseDTO.NodeResourceInfo.Limits limits = buildLimits(limitResource, totalCPUResource, totalGPUResource, totalMEMResource);
+
+		nodeResourceInfo.setRequests(requests);
+		nodeResourceInfo.setLimits(limits);
+
+		return nodeResourceInfo;
+	}
+	private double getTotalResource(String metricName) {
+		RequestDTO requestDTO = new RequestDTO();
+		requestDTO.changeMetricName(metricName);
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalResource = prometheusService.getRealTimeMetric(requestDTO);
+		return Double.parseDouble(totalResource.get(0).value());
+	}
+	private ResponseDTO.NodeResourceInfo.Requests buildRequests(List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource,
+		double totalCPUResource, double totalGPUResource, double totalMEMResource) {
+		long cpu = 0;
+		long memory = 0;
+		long gpu = 0;
+		for (com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO request : requestResource) {
+			if (request.resource().equalsIgnoreCase("memory")) {
+				memory = (long) Double.parseDouble(request.value()) / 1024;
+			} else if (request.resource().equalsIgnoreCase("cpu")) {
+				cpu = (long) (Double.parseDouble(request.value()) * 1000);
+			} else if (request.resource().equalsIgnoreCase("nvidia_com_gpu")) {
+				gpu = (long) Float.parseFloat(request.value());
+			}
+		}
+		ResponseDTO.NodeResourceInfo.Requests requests = ResponseDTO.NodeResourceInfo.Requests.builder()
+			.cpu(cpu)
+			.memory(memory)
+			.gpu(gpu)
+			.build();
+		requests.cpuPercentCalculation(totalCPUResource);
+		requests.gpuPercentCalculation(totalGPUResource);
+		requests.memoryPercentCalculation(totalMEMResource);
+		return requests;
+	}
+	private ResponseDTO.NodeResourceInfo.Limits buildLimits(List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource,
+		double totalCPUResource, double totalGPUResource, double totalMEMResource) {
+		long cpu = 0;
+		long memory = 0;
+		long gpu = 0;
+		for (com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO limits : limitResource) {
+			if (limits.resource().equalsIgnoreCase("memory")) {
+				memory = (long) Double.parseDouble(limits.value()) / 1024;
+			} else if (limits.resource().equalsIgnoreCase("cpu")) {
+				cpu = (long) (Double.parseDouble(limits.value()) * 1000);
+			} else if (limits.resource().equalsIgnoreCase("nvidia_com_gpu")) {
+				gpu = (long) Float.parseFloat(limits.value());
+			}
+		}
+		ResponseDTO.NodeResourceInfo.Limits limitsObj = ResponseDTO.NodeResourceInfo.Limits.builder()
+			.gpu(gpu)
+			.memory(memory)
+			.cpu(cpu)
+			.build();
+		limitsObj.cpuPercentCalculation(totalCPUResource);
+		limitsObj.gpuPercentCalculation(totalGPUResource);
+		limitsObj.memoryPercentCalculation(totalMEMResource);
+		return limitsObj;
 	}
 }
