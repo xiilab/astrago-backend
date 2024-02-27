@@ -154,6 +154,11 @@ public class DataConverterUtil {
 			return size + " Bytes";
 		}
 	}
+	// 메모리의 단위를 변환하는 메서드
+	public static double convertToGBMemorySize(String amount) {
+		double doubleValue = Double.parseDouble(amount); // 부동 소수점으로 파싱
+		return doubleValue / GIGA_BYTE;
+	}
 
 	/**
 	 * DISK 사이즈 계산하는 메소드
@@ -174,16 +179,20 @@ public class DataConverterUtil {
 			return size + " Bytes";
 		}
 	}
-
-	public static int convertToCPU(String resource) {
-		double doubleValue = Double.parseDouble(resource); // 부동 소수점으로 파싱
-		int core = (int) doubleValue;
-		return core;
+	/**
+	 * DISK 사이즈 계산하는 메소드
+	 * @param bytes 계산될 Bytes
+	 */
+	public static double formatGBDiskSize(String bytes) {
+		double doubleValue = Double.parseDouble(bytes); // 부동 소수점으로 파싱
+		return doubleValue / GIGA_BYTE;
 	}
-	public static int convertToGPU(String resource) {
-		double doubleValue = Double.parseDouble(resource); // 부동 소수점으로 파싱
-		int count = (int) doubleValue;
-		return count;
+
+	public static double convertToCPU(String resource) {
+		return Double.parseDouble(resource); // 부동 소수점으로 파싱
+	}
+	public static double convertToGPU(String resource) {
+		return Double.parseDouble(resource); // 부동 소수점으로 파싱
 	}
 
 	/**
