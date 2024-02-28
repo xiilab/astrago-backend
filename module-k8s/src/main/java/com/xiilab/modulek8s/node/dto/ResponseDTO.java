@@ -42,6 +42,7 @@ public class ResponseDTO {
 		private int gpuCount;
 		private boolean status;
 		private boolean schedulable;
+		private boolean migCapable;
 
 		public void setTotalGPU(double totalGPU){
 			this.totalGPU = roundToFirstDecimalPlace(totalGPU);
