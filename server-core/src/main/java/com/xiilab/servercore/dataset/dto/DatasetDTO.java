@@ -1,15 +1,16 @@
 package com.xiilab.servercore.dataset.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
-import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 
 import lombok.Builder;
@@ -58,7 +59,7 @@ public class DatasetDTO {
 		private String creator;
 		private String creatorName;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private List<WorkloadResDTO.UsingDatasetDTO> usingDatasets;
 
@@ -110,7 +111,7 @@ public class DatasetDTO {
 		private String creator;
 		private String creatorName;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private boolean isAvailable;
 
@@ -126,7 +127,7 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
+					.size(String.valueOf(((AstragoDatasetEntity)dataset).getDatasetSize()))
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return ResDataset.builder()
@@ -139,9 +140,13 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
+					.size("0")
 					.build();
 			}
 			return null;
+		}
+		public void datasetSizeFormatFileSize(String format){
+			this.size = format;
 		}
 	}
 
@@ -158,6 +163,16 @@ public class DatasetDTO {
 				.datasets(datasets.stream().map(ResDataset::toDto).toList())
 				.build();
 		}
+		public void datasetSizeFormatFileSize(){
+			for (ResDataset dataset : datasets) {
+				dataset.datasetSizeFormatFileSize(CoreFileUtils.formatFileSize(Long.parseLong(dataset.getSize())));
+			}
+		}
+		public void sortDatasets(){
+			List<DatasetDTO.ResDataset> targetDatasets = new ArrayList<>(this.datasets);
+			targetDatasets.sort((dataset1, dataset2) -> Integer.parseInt(dataset2.getSize()) - Integer.parseInt(dataset1.getSize()));
+			this.datasets = targetDatasets;
+		}
 	}
 
 	@Getter
@@ -168,7 +183,7 @@ public class DatasetDTO {
 		private StorageType storageType;
 		private String creator;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private boolean isAvailable;
 

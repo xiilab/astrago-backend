@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
+import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 
 import jakarta.persistence.Column;
@@ -46,7 +46,7 @@ public abstract class Dataset extends BaseEntity {
 
 	@Column(name = "DIVISION", insertable = false, updatable = false)
 	@Enumerated(EnumType.STRING)
-	protected DatasetDivision division;
+	protected RepositoryDivision division;
 
 	@OneToMany(mappedBy = "dataset")
 	private List<DatasetWorkSpaceMappingEntity> workspaceMappingList = new ArrayList<>();

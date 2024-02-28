@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
+import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 
@@ -46,7 +46,7 @@ public abstract class Model extends BaseEntity {
 
 	@Column(name = "DIVISION", insertable = false, updatable = false)
 	@Enumerated(EnumType.STRING)
-	protected DatasetDivision division;
+	protected RepositoryDivision division;
 
 	@OneToMany(mappedBy = "model")
 	private List<ModelWorkSpaceMappingEntity> modelWorkSpaceMappingList = new ArrayList<>();

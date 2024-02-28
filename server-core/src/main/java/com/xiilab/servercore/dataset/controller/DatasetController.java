@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
+import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
@@ -44,9 +46,7 @@ public class DatasetController {
 	public ResponseEntity<HttpStatus> insertAstragoDataset(
 		@RequestPart(name = "createDataset") DatasetDTO.CreateAstragoDataset createDatasetDTO,
 		@RequestPart(name = "files", required = false) List<MultipartFile> files) {
-
 		datasetFacadeService.insertAstragoDataset(createDatasetDTO, files);
-
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
@@ -54,19 +54,17 @@ public class DatasetController {
 	@Operation(summary = "로컬 데이터 셋 생성")
 	public ResponseEntity<HttpStatus> insertLocalDataset(
 		@RequestBody DatasetDTO.CreateLocalDataset createDatasetDTO) {
-
 		datasetFacadeService.insertLocalDataset(createDatasetDTO);
-
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets")
 	@Operation(summary = "데이터 셋 전체 조회")
 	public ResponseEntity<DatasetDTO.ResDatasets> getDatasets(
-		@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
-		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize,
+		PageInfo pageInfo,
+		RepositorySearchCondition repositorySearchCondition,
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
-		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageNo, pageSize, userInfoDTO);
+		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageInfo, repositorySearchCondition, userInfoDTO);
 		return new ResponseEntity(datasets, HttpStatus.OK);
 	}
 
