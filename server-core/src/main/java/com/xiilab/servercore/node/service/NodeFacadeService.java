@@ -12,6 +12,7 @@ import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
 import com.xiilab.modulemonitor.service.PrometheusService;
+import com.xiilab.servercore.node.dto.ScheduleDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -193,5 +194,9 @@ public class NodeFacadeService {
 		limitsObj.gpuPercentCalculation(totalGPUResource);
 		limitsObj.memoryPercentCalculation(totalMEMResource);
 		return limitsObj;
+	}
+
+	public void setSchedule(String resourceName, ScheduleDTO scheduleDTO) {
+		nodeRepository.setSchedule(resourceName, scheduleDTO.getScheduleType());
 	}
 }
