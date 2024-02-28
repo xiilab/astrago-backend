@@ -22,8 +22,8 @@ public class AlertManagerController {
 
 	@PostMapping()
 	@Operation(summary = "Alert Manager 등록 API")
-	public ResponseEntity<AlertManagerDTO.ResponseDTO> saveAlertManager(@RequestBody AlertManagerDTO alertManagerDTO){
-		return new ResponseEntity(alertManagerService.saveAlertManager(alertManagerDTO), HttpStatus.OK);
+	public ResponseEntity<AlertManagerDTO.ResponseDTO> saveAlertManager(@RequestBody AlertManagerDTO.RequestDTO requestDTO){
+		return new ResponseEntity(alertManagerService.saveAlertManager(requestDTO), HttpStatus.OK);
 	}
 
 

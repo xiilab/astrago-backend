@@ -11,6 +11,8 @@ import com.xiilab.modulealert.entity.AlertManagerEntity;
 import com.xiilab.modulealert.enumeration.CategoryType;
 import com.xiilab.modulealert.repository.AlertManagerRepository;
 import com.xiilab.modulemonitor.service.K8sAlertService;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,18 +20,28 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AlertManagerServiceImpl implements AlertManagerService{
 	private final AlertManagerRepository alertManagerRepository;
+	private final UserService userService;
 	private final K8sAlertService k8sAlertService;
 
 	@Override
-	public AlertManagerDTO.ResponseDTO saveAlertManager(AlertManagerDTO alertManagerDTO){
+	public AlertManagerDTO.ResponseDTO saveAlertManager(AlertManagerDTO.RequestDTO requestDTO){
 
-		AlertManagerEntity alertManagerEntity = alertManagerDTO.convertEntity();
+		AlertManagerEntity alertManagerEntity = requestDTO.convertEntity();
 
-		alertManagerEntity.addCategory(alertManagerDTO.getCategoryDTOList());
+		alertManagerEntity.addCategory(requestDTO.getCategoryDTOList());
 
-		alertManagerEntity.addUser(alertManagerDTO.getUserDTOList());
+		alertManagerEntity.addUser(requestDTO.getUserIdList().stream().map(userId ->{
+			UserInfo userInfo = userService.getUserInfoById(userId);
+			return AlertManagerDTO.UserDTO.builder()
+				.id(userInfo.getId())
+				.email(userInfo.getEmail())
+				.userName(userInfo.getUserName())
+				.firstName(userInfo.getFirstName())
+				.lastName(userInfo.getLastName())
+				.build();
+		}).toList());
 
-		alertManagerEntity.addNode(alertManagerDTO.getNodeDTOList());
+		alertManagerEntity.addNode(requestDTO.getNodeDTOList());
 
 		AlertManagerEntity saveManager = alertManagerRepository.save(alertManagerEntity);
 
@@ -55,16 +67,16 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 
 	/**
 	 * Promql PrometheusRule에 생성될 Alert query List
-	 * @param alertManagerDTO 해당 Rule에서 사용될 alertManagerDTO
+	 * @param responseDTO 해당 Rule에서 사용될 alertManagerDTO
 	 * @return 생성된 PrometheusRule List
 	 */
-	public List<String> creatExpr(AlertManagerDTO alertManagerDTO){
+	public List<String> creatExpr(AlertManagerDTO.ResponseDTO responseDTO){
 		List<String> exprList = new ArrayList<>();
 		// Monitor Alert Node별 Expr 생성
-		for (AlertManagerDTO.NodeDTO nodeDTO : alertManagerDTO.getNodeDTOList()) {
-			if(Objects.nonNull(alertManagerDTO.getCategoryDTOList())) {
+		for (AlertManagerDTO.NodeDTO nodeDTO : responseDTO.getNodeDTOList()) {
+			if(Objects.nonNull(responseDTO.getCategoryDTOList())) {
 				// NodePromql List 생성
-				alertManagerDTO.getCategoryDTOList().forEach(categoryDTO -> {
+				responseDTO.getCategoryDTOList().forEach(categoryDTO -> {
 					String promql = "";
 					switch (categoryDTO.getCategoryType()) {
 						// 특정 노드의 GPU 온도를 평균 내어 설정한 값과 비교하여 알림을 발생시킵니다

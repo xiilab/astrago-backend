@@ -3,10 +3,12 @@ jar { enabled = true }
 
 dependencies {
     implementation project(':module-common')
+    implementation project(':module-user')
     implementation project(':module-monitor')
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'io.fabric8:openshift-client:6.9.2'
 }
 

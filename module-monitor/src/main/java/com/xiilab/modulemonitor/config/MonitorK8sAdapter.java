@@ -6,7 +6,6 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 @Component
@@ -27,6 +26,8 @@ public class MonitorK8sAdapter {
 	 * @return
 	 */
 	public OpenShiftClient defaultOpenShiftClient(){
-		return new DefaultOpenShiftClient();
+		return new KubernetesClientBuilder().build().adapt(OpenShiftClient.class);
+
+		// return new DefaultOpenShiftClient();
 	}
 }
