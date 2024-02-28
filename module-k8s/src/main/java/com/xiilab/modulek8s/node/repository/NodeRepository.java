@@ -7,6 +7,7 @@ import java.util.Map;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
+import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
 import io.fabric8.kubernetes.api.model.Node;
 
@@ -24,4 +25,6 @@ public interface NodeRepository {
 	ResponseDTO.NodeInfo getNodeByResourceName(String resourceName);
 
 	ResponseDTO.NodeResourceInfo getNodeResourceByResourceName(String resourceName);
+
+	void setSchedule(String resourceName, ScheduleType scheduleType);
 }
