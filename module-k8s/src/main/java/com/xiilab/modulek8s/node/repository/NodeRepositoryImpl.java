@@ -65,6 +65,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			List<Node> nodes = client.nodes().list().getItems();
 
 			for (Node node : nodes) {
+				boolean migCapable = getMigCapable(node);
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
@@ -77,6 +78,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.schedulable(
 						node.getSpec().getUnschedulable() == null || node.getSpec().getUnschedulable() == false ? true :
 							false)
+					.migCapable(migCapable)
 					.build();
 				nodeDtos.add(dto);
 			}
