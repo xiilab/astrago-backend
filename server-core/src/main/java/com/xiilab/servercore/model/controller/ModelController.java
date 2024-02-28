@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
+import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
@@ -57,10 +59,10 @@ public class ModelController {
 
 	@GetMapping("/models")
 	@Operation(summary = "model 전체 조회")
-	public ResponseEntity<ModelDTO.ResModels> getModels(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
-		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize,
+	public ResponseEntity<ModelDTO.ResModels> getModels(PageInfo pageInfo,
+		RepositorySearchCondition repositorySearchCondition,
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
-		ModelDTO.ResModels models = modelService.getModels(pageNo, pageSize, userInfoDTO);
+		ModelDTO.ResModels models = modelService.getModels(pageInfo, repositorySearchCondition, userInfoDTO);
 
 		return new ResponseEntity<>(models, HttpStatus.OK);
 	}
