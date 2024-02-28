@@ -165,6 +165,8 @@ public class PrometheusServiceImpl implements PrometheusService{
 			.nameSpace(DataConverterUtil.getStringOrNull(metricData, "namespace"))
 			.instance(DataConverterUtil.getStringOrNull(metricData, "instance"))
 			.metricName(metric)
+			.kubeNodeName(DataConverterUtil.getStringOrNull(metricData, "kubernetes_node"))
+			.gpuIndex(DataConverterUtil.getStringOrNull(metricData, "gpu"))
 			.podName(DataConverterUtil.getStringOrNull(metricData, "pod"))
 			.nodeName(DataConverterUtil.getStringOrNull(metricData, "node"))
 			.valueDTOS(createHistoryValue(values))
