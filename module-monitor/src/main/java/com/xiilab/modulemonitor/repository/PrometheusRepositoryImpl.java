@@ -43,7 +43,7 @@ public class PrometheusRepositoryImpl implements PrometheusRepository {
 			promql, startDate, endDate);
 		return responseEntity.getBody();
 	}
-	public String getHistoryMetricByQuery(String promql, String startDate, String endDate, int step) {
+	public String getHistoryMetricByQuery(String promql, String startDate, String endDate, long step) {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> responseEntity = restTemplate.getForEntity(
 			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=" + step, String.class,
