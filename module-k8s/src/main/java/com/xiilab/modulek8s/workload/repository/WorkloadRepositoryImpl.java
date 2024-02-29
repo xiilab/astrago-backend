@@ -243,7 +243,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public Pod getInteractiveJobPod(String workspaceName, String workloadName) throws K8sException{
+	public Pod getInteractiveJobPod(String workspaceName, String workloadName) throws K8sException {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Deployment deployment = kubernetesClient.apps()
 				.deployments()
@@ -476,6 +476,17 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				.file(path + File.separator + file.getName())
 				.upload(file.toPath());
 		}
+	}
+
+	@Override
+	public boolean mkdirToPod(String podName, String namespace, String path) {
+		List<String> result = executeCommandToContainer(podName, namespace, String.format("mkdir %s", path));
+		if (!CollectionUtils.isEmpty(result)) {
+			if (result.get(0).contains("No such file or directory")) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private List<String> executeCommandToContainer(String podName, String namespace, String command) {

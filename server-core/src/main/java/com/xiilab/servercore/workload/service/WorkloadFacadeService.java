@@ -259,7 +259,7 @@ public class WorkloadFacadeService {
 			}
 		}).toList();
 		for (File file : fileList) {
-			Boolean result = workloadModuleService.uploadFileToPod(workloadName, workspaceName, workloadType, path, file);
+			Boolean result = workloadModuleService.uploadFileToWorkload(workloadName, workspaceName, workloadType, path, file);
 			if (result) {
 				successCnt += 1;
 			} else {
@@ -448,4 +448,7 @@ public class WorkloadFacadeService {
 		moduleVolumeReqDTO.setCreatePVC(createPVC);
 	}
 
+	public boolean workloadMkdir(String workloadName, String workspaceName, WorkloadType workloadType, String path) {
+		return workloadModuleService.mkdirToWorkload(workloadName, workspaceName, workloadType, path);
+	}
 }

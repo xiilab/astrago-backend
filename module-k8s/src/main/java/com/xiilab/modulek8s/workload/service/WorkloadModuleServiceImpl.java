@@ -240,13 +240,19 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public Boolean uploadFileToPod(String workloadName, String workspaceName, WorkloadType workloadType, String path,
+	public Boolean uploadFileToWorkload(String workloadName, String workspace, WorkloadType workloadType, String path,
 		File file) {
-		Pod jobPod = getJobPod(workspaceName, workloadName, workloadType);
+		Pod jobPod = getJobPod(workspace, workloadName, workloadType);
 		Boolean result = workloadRepository.uploadFileToPod(jobPod.getMetadata().getName(),
 			jobPod.getMetadata().getNamespace(), path, file);
 		log.info("파일 업로드 성공여부 : " + result);
 		return result;
+	}
+
+	@Override
+	public boolean mkdirToWorkload(String workload, String workspace, WorkloadType workloadType, String path) {
+		Pod jobPod = getJobPod(workspace, workload, workloadType);
+		return workloadRepository.mkdirToPod(jobPod.getMetadata().getName(), workspace, path);
 	}
 
 	public Resource convertFileStreamToResource(CopyOrReadable fileStream) throws IOException {

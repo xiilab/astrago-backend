@@ -182,6 +182,17 @@ public class WorkloadController {
 			workloadFacadeService.workloadFileUpload(workloadName, workspaceName, workloadType, path, files));
 	}
 
+	@PostMapping("/{workloadName}/folder")
+	@Operation(summary = "workload 폴더 생성")
+	public ResponseEntity<Boolean> workloadMkdir(
+		@PathVariable(name = "workloadName") String workloadName,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(name = "path") String path
+	) {
+		return ResponseEntity.ok(workloadFacadeService.workloadMkdir(workloadName, workspaceName, workloadType, path));
+	}
+
 	@GetMapping("/{workloadName}/files/info")
 	@Operation(summary = "workload 파일 상세 조회")
 	public ResponseEntity<FileInfoDTO> getWorkloadFileInfo(

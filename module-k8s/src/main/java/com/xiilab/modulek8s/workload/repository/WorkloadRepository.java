@@ -141,4 +141,5 @@ public interface WorkloadRepository {
 	void deleteFileFromPod(String podName, String namespace, String filePath);
 
 	Boolean uploadFileToPod(String podName, String namespace, String path, File file);
+	boolean mkdirToPod(String podName, String namespace, String path);
 }
