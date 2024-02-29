@@ -13,8 +13,14 @@ public class WorkloadResDTO {
 
 	@Builder
 	@Getter
-	public static class PageWorkloadResDTO{
+	public static class PageUsingDatasetDTO {
 		private List<UsingDatasetDTO> usingWorkloads;
+		private long totalCount;
+	}
+	@Builder
+	@Getter
+	public static class PageUsingModelDTO {
+		private List<UsingModelDTO> usingWorkloads;
 		private long totalCount;
 	}
 

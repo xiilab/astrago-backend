@@ -138,7 +138,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		return workloadRepository.workloadsUsingDataset(pageNo, pageSize, id);
 	}
 
@@ -168,8 +168,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
-		return workloadRepository.workloadsUsingModel(id);
+	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
+		return workloadRepository.workloadsUsingModel(pageNo, pageSize, id);
 	}
 
 	@Override

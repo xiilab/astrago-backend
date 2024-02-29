@@ -266,7 +266,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		return workloadModuleService.workloadsUsingDataset(pageNo, pageSize, id);
 	}
 
@@ -364,8 +364,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
-		return workloadModuleService.workloadsUsingModel(id);
+	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
+		return workloadModuleService.workloadsUsingModel(pageNo, pageSize, id);
 	}
 
 	@Override

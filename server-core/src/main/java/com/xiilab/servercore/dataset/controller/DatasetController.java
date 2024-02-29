@@ -78,11 +78,11 @@ public class DatasetController {
 	}
 	@GetMapping("/datasets/{datasetId}/workloads")
 	@Operation(summary = "데이터 셋을 사용중인 워크로드 리스트 조회")
-	public ResponseEntity<WorkloadResDTO.PageWorkloadResDTO> getWorkloadsUsingDataset(
+	public ResponseEntity<WorkloadResDTO.PageUsingDatasetDTO> getWorkloadsUsingDataset(
 		PageInfo pageInfo,
 		@PathVariable(name = "datasetId") Long datasetId
 	) {
-		WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset = datasetFacadeService.getWorkloadsUsingDataset(
+		WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset = datasetFacadeService.getWorkloadsUsingDataset(
 			pageInfo, datasetId);
 		return new ResponseEntity(workloadsUsingDataset, HttpStatus.OK);
 	}

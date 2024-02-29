@@ -259,7 +259,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "ds-" + id;
 			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
@@ -283,13 +283,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 			if (startIndex >= totalCount || endIndex <= startIndex) {
 				// 페이지 범위를 벗어나면 빈 리스트 반환
-				return WorkloadResDTO.PageWorkloadResDTO.builder()
+				return WorkloadResDTO.PageUsingDatasetDTO.builder()
 					.usingWorkloads(null)
 					.totalCount(totalCount)
 					.build();
 			}
 
-			return WorkloadResDTO.PageWorkloadResDTO.builder()
+			return WorkloadResDTO.PageUsingDatasetDTO.builder()
 				.usingWorkloads(workloads.subList(startIndex, endIndex))
 				.totalCount(totalCount)
 				.build();
@@ -349,7 +349,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
+	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "md-" + id;
 			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
@@ -368,7 +368,21 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			for (Deployment deployment : deploymentsInUseDataset) {
 				getWorkloadInfoUsingModel(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
 			}
-			return workloads;
+			int totalCount = workloads.size();
+			int startIndex = (pageNo - 1) * pageSize;
+			int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+			if (startIndex >= totalCount || endIndex <= startIndex) {
+				// 페이지 범위를 벗어나면 빈 리스트 반환
+				return WorkloadResDTO.PageUsingModelDTO.builder()
+					.usingWorkloads(null)
+					.totalCount(totalCount)
+					.build();
+			}
+			return WorkloadResDTO.PageUsingModelDTO.builder()
+				.usingWorkloads(workloads.subList(startIndex, endIndex))
+				.totalCount(totalCount)
+				.build();
 		}
 	}
 
