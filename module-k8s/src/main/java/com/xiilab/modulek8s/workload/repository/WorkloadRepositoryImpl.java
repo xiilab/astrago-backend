@@ -12,7 +12,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -239,12 +238,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_BATCH_JOB_LOG);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
 
 	@Override
-	public Pod getInteractiveJobPod(String workspaceName, String workloadName) {
+	public Pod getInteractiveJobPod(String workspaceName, String workloadName) throws K8sException{
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Deployment deployment = kubernetesClient.apps()
 				.deployments()
@@ -255,7 +254,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_INTERACTIVE_JOB_LOG);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
 
