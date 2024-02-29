@@ -1,12 +1,12 @@
 package com.xiilab.modulek8s.workload.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -40,13 +40,16 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	private final WorkloadRepository workloadRepository;
 
-	public ModuleJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName) {
+	public ModuleJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName) {
 		return workloadRepository.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toBatchJobVO(workspaceName));
 	}
 
 	@Override
-	public ModuleJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName) {
-		return workloadRepository.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toInteractiveJobVO(workspaceName));
+	public ModuleJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName) {
+		return workloadRepository.createInteractiveJobWorkload(
+			moduleCreateWorkloadReqDTO.toInteractiveJobVO(workspaceName));
 	}
 
 	@Override
@@ -248,11 +251,15 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	public Resource convertFileStreamToResource(CopyOrReadable fileStream) throws IOException {
 		InputStream inputStream = fileStream.read();
-		//InputStream을 체크한다.
-		if (inputStream.read() == -1) {
-			throw new FileNotFoundException("해당 파일이 존재하지 않습니다.");
+		// InputStream을 바이트 배열로 복사
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		byte[] buffer = new byte[4096];
+		int bytesRead;
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			outputStream.write(buffer, 0, bytesRead);
 		}
-		return new InputStreamResource(inputStream);
+		byte[] fileBytes = outputStream.toByteArray();
+		return new ByteArrayResource(fileBytes);
 	}
 
 	// private Resource convertFolderToZipResource(CopyOrReadable fileStream, String path) throws IOException {
