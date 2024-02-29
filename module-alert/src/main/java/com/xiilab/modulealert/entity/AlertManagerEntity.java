@@ -50,6 +50,7 @@ public class AlertManagerEntity {
 		if(Objects.nonNull(categoryDTODTOList)){
 			List<AlertCategoryEntity> alertCategoryEntityList = categoryDTODTOList.stream().map(categoryDTO ->
 				AlertCategoryEntity.builder()
+					.operator(categoryDTO.getOperator())
 					.categoryType(categoryDTO.getCategoryType())
 					.durationTime(categoryDTO.getDurationTime())
 					.maximum(categoryDTO.getMaximum())
@@ -63,7 +64,7 @@ public class AlertManagerEntity {
 		if(Objects.nonNull(userDTOList)){
 			List<AlertUserEntity> userEntityList = userDTOList.stream().map(userDTO ->
 				AlertUserEntity.builder()
-					.userId(userDTO.getId())
+					.userId(userDTO.getUserId())
 					.userName(userDTO.getUserName())
 					.firstName(userDTO.getFirstName())
 					.lastName(userDTO.getLastName())
@@ -82,5 +83,11 @@ public class AlertManagerEntity {
 					.alertManager(this).build()).toList();
 			this.alertNodeEntityList.addAll(nodeEntityList);
 		}
+	}
+
+	public void updateAlertManager(AlertManagerDTO.RequestDTO requestDTO){
+		this.alertName = requestDTO.getAlertName();
+		this.emailYN = requestDTO.isEmailYN();
+		this.systemYN = requestDTO.isSystemYN();
 	}
 }

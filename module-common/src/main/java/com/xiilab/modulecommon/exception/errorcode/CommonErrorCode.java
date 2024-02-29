@@ -33,6 +33,10 @@ public enum CommonErrorCode implements ErrorCode {
 	ALERT_SET_DELETE_FAIL(HttpStatus.UNAUTHORIZED.value(), "해당 워크스페이스 알림 설정 삭제 실패했습니다."),
 	ALERT_MANAGER_NOTFOUND_ROLE(HttpStatus.NOT_FOUND.value(), "PrometheusRule에 사용될 Rule이 없습니다."),
 	ALERT_MANAGER_ADD_RULE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "PrometheusRule 추가 실패하였습니다."),
+	ALERT_MANAGER_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ALERT MANAGER 삭제 실패하였습니다."),
+	ALERT_MANAGER_K8S_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "PrometheusRule 삭제 실패하였습니다."),
+	AlERT_MANAGER_NOTFOUND(HttpStatus.NOT_FOUND.value(), "해당 ID의 Alert Manager 없습니다."),
+	Alert_MANAGER_EMAIL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Email 수신 선택시 사용자 정보값은 필수입니다."),
 	// HUB
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "허브 상세정보가 존재하지 않습니다."),
 	// terminal

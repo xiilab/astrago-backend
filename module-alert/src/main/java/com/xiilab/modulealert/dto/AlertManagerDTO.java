@@ -36,7 +36,6 @@ public class AlertManagerDTO {
 	public static class RequestDTO extends AlertManagerDTO{
 		private List<String> userIdList;
 
-
 		public AlertManagerEntity convertEntity(){
 			return AlertManagerEntity.builder()
 				.alertName(this.getAlertName())
@@ -118,7 +117,7 @@ public class AlertManagerDTO {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class UserDTO {
-		private String id;
+		private long id;
 		private String userId;
 		private String userName; // 사용자 이름
 		private String email; // 사용자 Email
@@ -127,7 +126,7 @@ public class AlertManagerDTO {
 
 		@Builder(builderMethodName = "toDTOBuilder", builderClassName = "toDTOBuilder")
 		public UserDTO(AlertUserEntity userEntity){
-			this.id = userEntity.getUserId();
+			this.id = userEntity.getId();
 			this.userId = userEntity.getUserId();
 			this.userName = userEntity.getUserName();
 			this.email = userEntity.getEmail();

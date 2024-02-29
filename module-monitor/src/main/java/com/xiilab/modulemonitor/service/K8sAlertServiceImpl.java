@@ -17,4 +17,15 @@ public class K8sAlertServiceImpl implements K8sAlertService{
 	public void createPrometheusRule(long alertId, List<String> exprList) {
 		k8sAlertRepository.createPrometheusRule(alertId, exprList);
 	}
+
+	@Override
+	public void deletePrometheusRule(long alertId) {
+		k8sAlertRepository.deletePrometheusRule(alertId);
+	}
+
+	@Override
+	public void updatePrometheusRule(long alertId, List<String> exprList) {
+		k8sAlertRepository.updatePrometheusRule(alertId, exprList);
+	}
+
 }

@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 	private static final String PROMETHEUS = "prometheus";
+	private static final String NAMESPACE = "astrago";
 	private final MonitorK8sAdapter k8sAdapter;
 
 	@Override
@@ -42,19 +43,37 @@ public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 				.build();
 
 			createPrometheusRule(prometheusRule);
-		}else{
-			throw new K8sException(CommonErrorCode.ALERT_MANAGER_NOTFOUND_ROLE);
 		}
 	}
+
+	@Override
+	public void deletePrometheusRule(long alertId){
+		String name = setName(alertId);
+		try (OpenShiftClient client = k8sAdapter.defaultOpenShiftClient()) {
+			// 해당 name의 prometheusRule 삭제
+			client.monitoring().prometheusRules().inNamespace(NAMESPACE).withName(name).delete();
+		}catch (KubernetesClientException e){
+			throw new K8sException(CommonErrorCode.ALERT_MANAGER_K8S_DELETE_FAIL);
+		}
+	}
+
+	@Override
+	public void updatePrometheusRule(long alertId, List<String> exprList) {
+		// 기존 PrometheusRule 삭제
+		deletePrometheusRule(alertId);
+		// 수정된 PrometheusRule 추가
+		createPrometheusRule(alertId, exprList);
+	}
+
 	/**
 	 * prometheusRule 생성하는 메소드
 	 * @param prometheusRule 생성될 prometheusRule
 	 * @return 생성 여부
 	 */
-	public void createPrometheusRule(PrometheusRule prometheusRule){
+	private void createPrometheusRule(PrometheusRule prometheusRule){
 		try (OpenShiftClient client = k8sAdapter.defaultOpenShiftClient()) {
 			// PrometheusRule 생성
-			client.monitoring().prometheusRules().inNamespace("alert-manager").create(prometheusRule);
+			client.monitoring().prometheusRules().inNamespace("astrago").create(prometheusRule);
 		}catch (KubernetesClientException e){
 			throw new K8sException(CommonErrorCode.ALERT_MANAGER_ADD_RULE_FAIL);
 		}
