@@ -58,7 +58,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
-					.size(String.valueOf(((AstragoModelEntity)model).getModelSize()))
+					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.build();
 			} else if (model.isLocalModel()) {
 				return ResModel.builder()
@@ -71,7 +71,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
-					.size("0")
+					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.build();
 			}
 			return null;
@@ -93,16 +93,6 @@ public class ModelDTO {
 				.totalCount(totalCount)
 				.models(models.stream().map(ModelDTO.ResModel::toDto).toList())
 				.build();
-		}
-		public void modelSizeFormatFileSize(){
-			for (ModelDTO.ResModel model : models) {
-				model.modelSizeFormatFileSize(CoreFileUtils.formatFileSize(Long.parseLong(model.getSize())));
-			}
-		}
-		public void sortModels(){
-			List<ModelDTO.ResModel> targetModels = new ArrayList<>(this.models);
-			targetModels.sort((model1, model2) -> Integer.parseInt(model2.getSize()) - Integer.parseInt(model1.getSize()));
-			this.models = targetModels;
 		}
 	}
 

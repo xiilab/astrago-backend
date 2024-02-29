@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
@@ -73,7 +74,16 @@ public class ModelController {
 		ModelDTO.ResModelWithStorage model = modelFacadeService.getModel(modelId);
 		return new ResponseEntity<>(model, HttpStatus.OK);
 	}
-
+	@GetMapping("/models/{modelId}/workloads")
+	@Operation(summary = "데이터 셋을 사용중인 워크로드 리스트 조회")
+	public ResponseEntity<WorkloadResDTO.PageUsingModelDTO> getWorkloadsUsingModel(
+		PageInfo pageInfo,
+		@PathVariable(name = "modelId") Long modelId
+	) {
+		WorkloadResDTO.PageUsingModelDTO workloadsUsingModel = modelFacadeService.getWorkloadsUsingModel(
+			pageInfo, modelId);
+		return new ResponseEntity(workloadsUsingModel, HttpStatus.OK);
+	}
 	@PutMapping("/models/{modelId}")
 	@Operation(summary = "model 수정")
 	public ResponseEntity<HttpStatus> modifyModel(@PathVariable(name = "modelId") Long modelId,

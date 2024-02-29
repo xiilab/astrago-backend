@@ -35,5 +35,5 @@ public interface DatasetFacadeService {
 
 	DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath);
 
-	WorkloadResDTO.PageWorkloadResDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId);
+	WorkloadResDTO.PageUsingDatasetDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId);
 }
