@@ -111,7 +111,7 @@ public interface WorkloadRepository {
 
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
 
-	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+	WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 

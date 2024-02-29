@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
@@ -69,11 +70,21 @@ public class DatasetController {
 	}
 
 	@GetMapping("/datasets/{datasetId}")
-	@Operation(summary = "데이터 셋 단건 조회")
+	@Operation(summary = "데이터 셋 상세 조회")
 	public ResponseEntity<DatasetDTO.ResDatasetWithStorage> getDataset(
 		@PathVariable(name = "datasetId") Long datasetId) {
 		DatasetDTO.ResDatasetWithStorage datasetWithStorage = datasetFacadeService.getDataset(datasetId);
 		return new ResponseEntity(datasetWithStorage, HttpStatus.OK);
+	}
+	@GetMapping("/datasets/{datasetId}/workloads")
+	@Operation(summary = "데이터 셋을 사용중인 워크로드 리스트 조회")
+	public ResponseEntity<WorkloadResDTO.PageWorkloadResDTO> getWorkloadsUsingDataset(
+		PageInfo pageInfo,
+		@PathVariable(name = "datasetId") Long datasetId
+	) {
+		WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset = datasetFacadeService.getWorkloadsUsingDataset(
+			pageInfo, datasetId);
+		return new ResponseEntity(workloadsUsingDataset, HttpStatus.OK);
 	}
 
 	@PutMapping("/datasets/{datasetId}")

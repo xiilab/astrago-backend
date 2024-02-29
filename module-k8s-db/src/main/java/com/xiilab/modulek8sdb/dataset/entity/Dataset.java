@@ -40,6 +40,9 @@ public abstract class Dataset extends BaseEntity {
 	@Column(name = "DATASET_NAME")
 	private String datasetName;
 
+	@Column(name = "DATASET_SIZE")
+	private Long datasetSize;
+
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYn = DeleteYN.N;
@@ -63,7 +66,9 @@ public abstract class Dataset extends BaseEntity {
 	public boolean isAvailable() {
 		 return !this.getWorkspaceMappingList().isEmpty();
 	}
-
+	public void setDatasetSize(long size){
+		this.datasetSize = size;
+	}
 	public void modifyDatasetName(String datasetName){
 		this.datasetName = datasetName;
 	}

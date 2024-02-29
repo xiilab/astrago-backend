@@ -36,7 +36,8 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 
 		OrderSpecifier<? extends Serializable> sort =
-			sortType == RepositorySortType.NAME ? model.modelName.desc() : model.regDate.desc();
+			sortType == RepositorySortType.NAME ? model.modelName.desc() :
+				sortType == RepositorySortType.CREATED_AT ? model.regDate.desc() : model.modelSize.desc();
 
 		List<Model> models = queryFactory.selectFrom(model)
 			.where(
@@ -44,9 +45,9 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText())
 			)
+			.orderBy(sort)
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
-			.orderBy(sort)
 			.fetch();
 
 		Long count = queryFactory.select(model.count())

@@ -6,6 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
@@ -32,4 +34,6 @@ public interface DatasetFacadeService {
 	FileInfoDTO getAstragoDatasetFileInfo(Long datasetId, String filePath);
 
 	DownloadFileResDTO getAstragoDatasetFile(Long datasetId, String filePath);
+
+	WorkloadResDTO.PageWorkloadResDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId);
 }

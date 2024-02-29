@@ -86,12 +86,7 @@ public class ModelServiceImpl implements ModelService{
 		List<Model> entities = models.getContent();
 		long totalCount = models.getTotalElements();
 
-		ModelDTO.ResModels resModels = ModelDTO.ResModels.entitiesToDtos(entities, totalCount);
-		if(repositorySearchCondition.getSort() == RepositorySortType.FILE_SIZE){
-			resModels.sortModels();
-		}
-		resModels.modelSizeFormatFileSize();
-		return resModels;
+		return ModelDTO.ResModels.entitiesToDtos(entities, totalCount);
 	}
 
 	@Override

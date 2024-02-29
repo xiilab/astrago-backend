@@ -40,6 +40,9 @@ public abstract class Model extends BaseEntity {
 	@Column(name = "MODEL_NAME")
 	private String modelName;
 
+	@Column(name = "MODEL_SIZE")
+	private Long modelSize;
+
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYn = DeleteYN.N;
@@ -64,7 +67,9 @@ public abstract class Model extends BaseEntity {
 	public boolean isAvailable() {
 		return !this.getModelWorkSpaceMappingList().isEmpty();
 	}
-
+	public void setModelSize(long size){
+		this.modelSize = size;
+	}
 	public void modifyModelName(String modelName){
 		this.modelName = modelName;
 	}

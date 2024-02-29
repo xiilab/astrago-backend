@@ -7,7 +7,7 @@ public class PageInfo {
 	private Integer page;
 	private Integer pageSize;
 	public PageInfo(Integer page, Integer pageSize) {
-		this.page = page == null ? 0 : page;
-		this.pageSize = pageSize == null ? 0 : pageSize;
+		this.page = page == null ? 1 : page;
+		this.pageSize = pageSize == null ? 10 : pageSize;
 	}
 }

@@ -61,7 +61,6 @@ public class DatasetDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
-		private List<WorkloadResDTO.UsingDatasetDTO> usingDatasets;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
 			if (dataset.isAstragoDataset()) {
@@ -96,9 +95,6 @@ public class DatasetDTO {
 			}
 			return null;
 		}
-		public void addUsingDatasets(List<WorkloadResDTO.UsingDatasetDTO> usingDatasets){
-			this.usingDatasets = usingDatasets;
-		}
 	}
 
 	@Getter
@@ -127,7 +123,7 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
-					.size(String.valueOf(((AstragoDatasetEntity)dataset).getDatasetSize()))
+					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return ResDataset.builder()
@@ -140,13 +136,10 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
-					.size("0")
+					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
 					.build();
 			}
 			return null;
-		}
-		public void datasetSizeFormatFileSize(String format){
-			this.size = format;
 		}
 	}
 
@@ -162,16 +155,6 @@ public class DatasetDTO {
 				.totalCount(totalCount)
 				.datasets(datasets.stream().map(ResDataset::toDto).toList())
 				.build();
-		}
-		public void datasetSizeFormatFileSize(){
-			for (ResDataset dataset : datasets) {
-				dataset.datasetSizeFormatFileSize(CoreFileUtils.formatFileSize(Long.parseLong(dataset.getSize())));
-			}
-		}
-		public void sortDatasets(){
-			List<DatasetDTO.ResDataset> targetDatasets = new ArrayList<>(this.datasets);
-			targetDatasets.sort((dataset1, dataset2) -> Integer.parseInt(dataset2.getSize()) - Integer.parseInt(dataset1.getSize()));
-			this.datasets = targetDatasets;
 		}
 	}
 

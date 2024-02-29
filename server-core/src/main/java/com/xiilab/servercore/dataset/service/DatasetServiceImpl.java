@@ -82,12 +82,7 @@ public class DatasetServiceImpl implements DatasetService {
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 
-		DatasetDTO.ResDatasets resDatasets = DatasetDTO.ResDatasets.entitiesToDtos(entities, totalCount);
-		if(repositorySearchCondition.getSort() == RepositorySortType.FILE_SIZE){
-			resDatasets.sortDatasets();
-		}
-		resDatasets.datasetSizeFormatFileSize();
-		return resDatasets;
+		return DatasetDTO.ResDatasets.entitiesToDtos(entities, totalCount);
 	}
 
 	@Override
