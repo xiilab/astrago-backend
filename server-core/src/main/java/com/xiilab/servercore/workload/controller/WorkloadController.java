@@ -164,7 +164,7 @@ public class WorkloadController {
 		@PathVariable(value = "workloadName") String workloadName,
 		@RequestParam(value = "workspaceName") String workspaceName,
 		@RequestParam(value = "workloadType") WorkloadType workloadType,
-		@RequestParam(value = "path") String path
+		@RequestParam(value = "paths") List<String> path
 	) {
 		workloadFacadeService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
 		return ResponseEntity.ok().build();

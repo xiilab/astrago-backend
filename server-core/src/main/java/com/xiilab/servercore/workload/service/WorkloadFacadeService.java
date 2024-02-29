@@ -241,8 +241,10 @@ public class WorkloadFacadeService {
 	}
 
 	public void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
-		String path) {
-		workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		List<String> paths) {
+		for (String path : paths) {
+			workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		}
 	}
 
 	public FileUploadResultDTO workloadFileUpload(String workloadName, String workspaceName, WorkloadType workloadType,
