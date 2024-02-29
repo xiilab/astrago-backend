@@ -79,7 +79,7 @@ public interface WorkloadModuleService {
 
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 
-	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+	WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 

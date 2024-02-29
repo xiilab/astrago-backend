@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulecommon.enums.AuthType;
@@ -34,17 +35,19 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 		RepositorySearchCondition repositorySearchCondition) {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 		OrderSpecifier<? extends Serializable> sort =
-			sortType == RepositorySortType.NAME ? dataset.datasetName.desc() : dataset.regDate.desc();
+			sortType == RepositorySortType.NAME ? dataset.datasetName.desc() :
+				sortType == RepositorySortType.CREATED_AT ? dataset.regDate.desc() : dataset.datasetSize.desc();
 
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
 			.where(
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
-				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText())
+				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
+				dataset.deleteYn.eq(DeleteYN.N)
 			)
+			.orderBy(sort)
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
-			.orderBy(sort)
 			.fetch();
 
 		Long count = queryFactory.select(dataset.count())

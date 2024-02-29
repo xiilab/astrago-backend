@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.tomcat.jni.FileInfo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +28,7 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
@@ -75,9 +75,6 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	@Override
 	public DatasetDTO.ResDatasetWithStorage getDataset(Long datasetId) {
 		DatasetDTO.ResDatasetWithStorage datasetWithStorage = datasetService.getDatasetWithStorage(datasetId);
-		Long id = datasetWithStorage.getDatasetId();
-		List<WorkloadResDTO.UsingDatasetDTO> usingDatasetDTOS = workloadModuleFacadeService.workloadsUsingDataset(id);
-		datasetWithStorage.addUsingDatasets(usingDatasetDTOS);
 		return datasetWithStorage;
 	}
 
@@ -106,6 +103,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			.pvName(createLocalDatasetResDTO.getPvName())
 			.svcName(createLocalDatasetResDTO.getSvcName())
 			.build();
+		localDatasetEntity.setDatasetSize(0l);
 		datasetService.insertLocalDataset(localDatasetEntity);
 	}
 
@@ -317,6 +315,11 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 		}else{
 			throw new RestApiException(DatasetErrorCode.DATASET_FILE_NOT_FOUND);
 		}
+	}
+
+	@Override
+	public WorkloadResDTO.PageWorkloadResDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId) {
+		return workloadModuleFacadeService.workloadsUsingDataset(pageInfo.getPage(), pageInfo.getPageSize(), datasetId);
 	}
 
 	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Dataset dataset) {

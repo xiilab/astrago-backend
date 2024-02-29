@@ -138,8 +138,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
-		return workloadRepository.workloadsUsingDataset(id);
+	public WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+		return workloadRepository.workloadsUsingDataset(pageNo, pageSize, id);
 	}
 
 	@Override
