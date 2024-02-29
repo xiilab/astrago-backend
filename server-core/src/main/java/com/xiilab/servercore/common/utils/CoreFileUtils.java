@@ -183,11 +183,21 @@ public class CoreFileUtils {
 	}
 
 	public static File convertInputStreamToFile(MultipartFile file) throws IOException {
-		File tempFile = new File(file.getOriginalFilename());
+		String spacePath = getSpacePath(file.getOriginalFilename());
+		File tempFile = new File(spacePath);
 		boolean newFile = tempFile.createNewFile();
 		FileOutputStream fos = new FileOutputStream(tempFile);
 		fos.write(file.getBytes());
 		fos.close();
 		return tempFile;
+	}
+
+	public static String getSpacePath(String path) {
+		String[] split = path.split("/");
+		String fileName = split[split.length - 1];
+		if (fileName.contains(" ")) {
+			split[split.length - 1] = fileName.replaceAll(" ", "_");
+		}
+		return String.join("/", split);
 	}
 }
