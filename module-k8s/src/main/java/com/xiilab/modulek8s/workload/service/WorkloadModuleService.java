@@ -79,7 +79,7 @@ public interface WorkloadModuleService {
 
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 
-	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+	WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 
@@ -111,5 +111,7 @@ public interface WorkloadModuleService {
 
 	void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType, String path);
 
-	Boolean uploadFileToPod(String podName, String namespace, WorkloadType workloadType, String path, File file);
+	Boolean uploadFileToWorkload(String workloadName, String workspace, WorkloadType workloadType, String path, File file);
+
+	boolean mkdirToWorkload(String workload, String workspace, WorkloadType workloadType, String path);
 }

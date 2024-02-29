@@ -7,10 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 
@@ -41,6 +44,13 @@ public class NodeController {
 	@Operation(summary = "노드 리소스 상세 조회")
 	public ResponseEntity<ResponseDTO.NodeResourceInfo> getNode(@PathVariable(name = "resourceName") String resourceName){
 		return new ResponseEntity<>(nodeFacadeService.getNodeResourceByResourceName(resourceName), HttpStatus.OK);
+	}
+	@PostMapping("/{resourceName}/schedule")
+	@Operation(summary = "노드 스케줄 설정")
+	public ResponseEntity<HttpStatus> setSchedule(@RequestBody ScheduleDTO scheduleDTO,
+		@PathVariable String resourceName){
+		nodeFacadeService.setSchedule(resourceName, scheduleDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	/**
 	 * 등록된 node의 mig 가능한 리스트를 리턴하는 API

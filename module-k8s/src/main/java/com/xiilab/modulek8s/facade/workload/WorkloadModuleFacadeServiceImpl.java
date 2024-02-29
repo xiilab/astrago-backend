@@ -266,8 +266,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
-		return workloadModuleService.workloadsUsingDataset(id);
+	public WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+		return workloadModuleService.workloadsUsingDataset(pageNo, pageSize, id);
 	}
 
 	@Override

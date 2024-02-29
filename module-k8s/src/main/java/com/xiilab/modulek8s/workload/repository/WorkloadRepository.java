@@ -111,7 +111,7 @@ public interface WorkloadRepository {
 
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
 
-	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+	WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 
@@ -141,4 +141,5 @@ public interface WorkloadRepository {
 	void deleteFileFromPod(String podName, String namespace, String filePath);
 
 	Boolean uploadFileToPod(String podName, String namespace, String path, File file);
+	boolean mkdirToPod(String podName, String namespace, String path);
 }

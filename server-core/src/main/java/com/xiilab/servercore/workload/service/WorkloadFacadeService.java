@@ -241,8 +241,10 @@ public class WorkloadFacadeService {
 	}
 
 	public void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
-		String path) {
-		workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		List<String> paths) {
+		for (String path : paths) {
+			workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		}
 	}
 
 	public FileUploadResultDTO workloadFileUpload(String workloadName, String workspaceName, WorkloadType workloadType,
@@ -257,7 +259,7 @@ public class WorkloadFacadeService {
 			}
 		}).toList();
 		for (File file : fileList) {
-			Boolean result = workloadModuleService.uploadFileToPod(workloadName, workspaceName, workloadType, path, file);
+			Boolean result = workloadModuleService.uploadFileToWorkload(workloadName, workspaceName, workloadType, path, file);
 			if (result) {
 				successCnt += 1;
 			} else {
@@ -446,4 +448,7 @@ public class WorkloadFacadeService {
 		moduleVolumeReqDTO.setCreatePVC(createPVC);
 	}
 
+	public boolean workloadMkdir(String workloadName, String workspaceName, WorkloadType workloadType, String path) {
+		return workloadModuleService.mkdirToWorkload(workloadName, workspaceName, workloadType, path);
+	}
 }

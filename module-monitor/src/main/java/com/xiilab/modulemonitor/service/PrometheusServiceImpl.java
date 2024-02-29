@@ -34,7 +34,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	@Override
 	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO) {
-		int step = DataConverterUtil.getStep(requestDTO.startDate(), requestDTO.endDate());
+		long step = DataConverterUtil.getStep(requestDTO.startDate(), requestDTO.endDate());
 		// 검색시간 UnixTime로 변환
 		String startDate = DataConverterUtil.toUnixTime(requestDTO.startDate());
 		String endDate = DataConverterUtil.toUnixTime(requestDTO.endDate());
@@ -165,6 +165,9 @@ public class PrometheusServiceImpl implements PrometheusService{
 			.nameSpace(DataConverterUtil.getStringOrNull(metricData, "namespace"))
 			.instance(DataConverterUtil.getStringOrNull(metricData, "instance"))
 			.metricName(metric)
+			.kubeNodeName(DataConverterUtil.getStringOrNull(metricData, "kubernetes_node"))
+			.gpuIndex(DataConverterUtil.getStringOrNull(metricData, "gpu"))
+			.modelName(DataConverterUtil.getStringOrNull(metricData, "modelName"))
 			.podName(DataConverterUtil.getStringOrNull(metricData, "pod"))
 			.nodeName(DataConverterUtil.getStringOrNull(metricData, "node"))
 			.valueDTOS(createHistoryValue(values))

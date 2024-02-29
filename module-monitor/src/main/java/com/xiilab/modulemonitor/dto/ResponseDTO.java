@@ -31,6 +31,9 @@ public record ResponseDTO() {
 							 String nameSpace,
 							 String nodeName,
 							 String podName,
+							 String kubeNodeName,
+							 String modelName,
+							 String gpuIndex,
 							 String instance,
 							 List<ValueDTO> valueDTOS
 	) {

@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Promql {
 	// GPU
-	GPU_TEMP("DCGM_FI_DEV_GPU_TEMP{%s}","GPU 온도 조회","GPU"),
+	GPU_TEMP("avg(DCGM_FI_DEV_GPU_TEMP{%s}) by(gpu, kubernetes_node, modelName)","GPU 온도 조회","GPU"),
 	GPU_FAN_SPEED("DCGM_FI_DEV_FAN_SPEED{%s}","GPU 팬 속도 조회","GPU"),
 	GPU_AVG_TEMP("avg(DCGM_FI_DEV_GPU_TEMP{%s})","GPU 평균 온도 조회","GPU"),
 	GPU_MEM_TEMP("avg(DCGM_FI_DEV_MEMORY_TEMP{%s})","GPU MEM 온도 조회","GPU"),

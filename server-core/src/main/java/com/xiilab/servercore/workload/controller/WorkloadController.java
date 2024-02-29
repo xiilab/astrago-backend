@@ -164,7 +164,7 @@ public class WorkloadController {
 		@PathVariable(value = "workloadName") String workloadName,
 		@RequestParam(value = "workspaceName") String workspaceName,
 		@RequestParam(value = "workloadType") WorkloadType workloadType,
-		@RequestParam(value = "path") String path
+		@RequestParam(value = "paths") List<String> path
 	) {
 		workloadFacadeService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
 		return ResponseEntity.ok().build();
@@ -180,6 +180,17 @@ public class WorkloadController {
 		@RequestPart(name = "files") List<MultipartFile> files) {
 		return ResponseEntity.ok(
 			workloadFacadeService.workloadFileUpload(workloadName, workspaceName, workloadType, path, files));
+	}
+
+	@PostMapping("/{workloadName}/folder")
+	@Operation(summary = "workload 폴더 생성")
+	public ResponseEntity<Boolean> workloadMkdir(
+		@PathVariable(name = "workloadName") String workloadName,
+		@RequestParam(value = "workspaceName") String workspaceName,
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(name = "path") String path
+	) {
+		return ResponseEntity.ok(workloadFacadeService.workloadMkdir(workloadName, workspaceName, workloadType, path));
 	}
 
 	@GetMapping("/{workloadName}/files/info")

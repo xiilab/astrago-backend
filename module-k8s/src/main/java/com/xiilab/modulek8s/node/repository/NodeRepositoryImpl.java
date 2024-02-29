@@ -19,6 +19,7 @@ import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
+import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
@@ -64,6 +65,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			List<Node> nodes = client.nodes().list().getItems();
 
 			for (Node node : nodes) {
+				boolean migCapable = getMigCapable(node);
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
@@ -76,6 +78,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.schedulable(
 						node.getSpec().getUnschedulable() == null || node.getSpec().getUnschedulable() == false ? true :
 							false)
+					.migCapable(migCapable)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -241,6 +244,18 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.allocatable(allocatableResource)
 				.build();
 			return nodeResourceInfo;
+		}
+	}
+
+	@Override
+	public void setSchedule(String resourceName, ScheduleType scheduleType) {
+		getNode(resourceName);
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
+				.editSpec()
+				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
+				.endSpec()
+				.build());
 		}
 	}
 

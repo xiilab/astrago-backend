@@ -1,16 +1,19 @@
 package com.xiilab.servercore.model.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
+import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
+import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.ModelWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +42,7 @@ public class ModelDTO {
 		private String creator;
 		private String creatorName;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private boolean isAvailable;
 
@@ -55,10 +58,10 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
+					.size(String.valueOf(((AstragoModelEntity)model).getModelSize()))
 					.build();
 			} else if (model.isLocalModel()) {
-				return ModelDTO.ResModel.builder()
+				return ResModel.builder()
 					.modelId(model.getModelId())
 					.storageType(((LocalModelEntity)model).getStorageType())
 					.modelName(model.getModelName())
@@ -68,9 +71,13 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
+					.size("0")
 					.build();
 			}
 			return null;
+		}
+		public void modelSizeFormatFileSize(String format){
+			this.size = format;
 		}
 	}
 
@@ -86,6 +93,16 @@ public class ModelDTO {
 				.totalCount(totalCount)
 				.models(models.stream().map(ModelDTO.ResModel::toDto).toList())
 				.build();
+		}
+		public void modelSizeFormatFileSize(){
+			for (ModelDTO.ResModel model : models) {
+				model.modelSizeFormatFileSize(CoreFileUtils.formatFileSize(Long.parseLong(model.getSize())));
+			}
+		}
+		public void sortModels(){
+			List<ModelDTO.ResModel> targetModels = new ArrayList<>(this.models);
+			targetModels.sort((model1, model2) -> Integer.parseInt(model2.getSize()) - Integer.parseInt(model1.getSize()));
+			this.models = targetModels;
 		}
 	}
 
@@ -103,7 +120,7 @@ public class ModelDTO {
 		private String creator;
 		private String creatorName;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private List<WorkloadResDTO.UsingModelDTO> usingModels;
 
@@ -168,7 +185,7 @@ public class ModelDTO {
 		private StorageType storageType;
 		private String creator;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private boolean isAvailable;
 

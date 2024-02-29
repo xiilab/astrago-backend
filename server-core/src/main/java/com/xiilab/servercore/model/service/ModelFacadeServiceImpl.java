@@ -95,6 +95,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 			.pvName(createLocalModelResDTO.getPvName())
 			.svcName(createLocalModelResDTO.getSvcName())
 			.build();
+		localModelEntity.setModelSize(0L);
 		modelService.insertLocalModel(localModelEntity);
 	}
 

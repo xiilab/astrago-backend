@@ -38,6 +38,7 @@
 // import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 // import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeServiceImpl;
 // import com.xiilab.modulek8s.node.dto.ResponseDTO;
+// import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Chart;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.HelmReleaseSpec;
@@ -55,6 +56,7 @@
 // import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 // import io.fabric8.kubernetes.api.model.NamespaceList;
 // import io.fabric8.kubernetes.api.model.Node;
+// import io.fabric8.kubernetes.api.model.NodeBuilder;
 // import io.fabric8.kubernetes.api.model.NodeSelectorRequirementBuilder;
 // import io.fabric8.kubernetes.api.model.ObjectMeta;
 // import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -873,6 +875,19 @@
 // 			}
 //
 // 			System.out.println(nodes);
+// 		}
+// 	}
+// 	@Test
+// 	@DisplayName("노드 스케쥴 설정")
+// 	void nodeSchedule(){
+// 		String resourceName = "master-x3250m5-1";
+// 		ScheduleType scheduleType = ScheduleType.OFF;
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
+// 				.editSpec()
+// 				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
+// 				.endSpec()
+// 				.build());
 // 		}
 // 	}
 // }

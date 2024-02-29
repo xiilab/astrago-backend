@@ -12,7 +12,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -239,12 +238,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_BATCH_JOB_LOG);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
 
 	@Override
-	public Pod getInteractiveJobPod(String workspaceName, String workloadName) {
+	public Pod getInteractiveJobPod(String workspaceName, String workloadName) throws K8sException {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Deployment deployment = kubernetesClient.apps()
 				.deployments()
@@ -255,12 +254,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_INTERACTIVE_JOB_LOG);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
+	public WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "ds-" + id;
 			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
@@ -278,7 +277,22 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			for (Deployment deployment : deploymentsInUseDataset) {
 				getWorkloadInfoUsingDataset(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
 			}
-			return workloads;
+			int totalCount = workloads.size();
+			int startIndex = (pageNo - 1) * pageSize;
+			int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+			if (startIndex >= totalCount || endIndex <= startIndex) {
+				// 페이지 범위를 벗어나면 빈 리스트 반환
+				return WorkloadResDTO.PageWorkloadResDTO.builder()
+					.usingWorkloads(null)
+					.totalCount(totalCount)
+					.build();
+			}
+
+			return WorkloadResDTO.PageWorkloadResDTO.builder()
+				.usingWorkloads(workloads.subList(startIndex, endIndex))
+				.totalCount(totalCount)
+				.build();
 		}
 	}
 
@@ -477,6 +491,17 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				.file(path + File.separator + file.getName())
 				.upload(file.toPath());
 		}
+	}
+
+	@Override
+	public boolean mkdirToPod(String podName, String namespace, String path) {
+		List<String> result = executeCommandToContainer(podName, namespace, String.format("mkdir %s", path));
+		if (!CollectionUtils.isEmpty(result)) {
+			if (result.get(0).contains("No such file or directory")) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private List<String> executeCommandToContainer(String podName, String namespace, String command) {
