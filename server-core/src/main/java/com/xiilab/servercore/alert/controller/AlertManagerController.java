@@ -48,9 +48,16 @@ public class AlertManagerController {
 
 	@PatchMapping("/{id}")
 	@Operation(summary = "Alert Manager 수정 API")
-	public ResponseEntity<HttpStatus> updateMonitor(@PathVariable(name = "id") Long id,
+	public ResponseEntity<HttpStatus> updateAlertManagerById(@PathVariable(name = "id") Long id,
 		@RequestBody @Valid AlertManagerDTO.RequestDTO requestDTO){
 		alertManagerService.updateAlertManagerById(id, requestDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	@PatchMapping("/{id}/{enable}")
+	@Operation(summary = "Alert Manager 활성화 비활성화 API")
+	public ResponseEntity<HttpStatus> enableAlertManagerById(@PathVariable(name = "id") Long id,
+		@PathVariable(name = "enable") boolean enable){
+		alertManagerService.enableAlertManagerById(id, enable);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -60,12 +67,14 @@ public class AlertManagerController {
 		return new ResponseEntity<>(alertManagerService.getAlertManagerList(), HttpStatus.OK);
 	}
 
+
 	@PostMapping("/receive")
 	@Operation(summary = "Alert Manager 알림 전달 받는 API")
 	public ResponseEntity<HttpStatus> receiveAlert(@RequestBody String alertData){
 		alertManagerService.receiveAlert(alertData);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 	@GetMapping("/receive")
 	@Operation(summary = "Alert Manager를 통하여 전달받은 알림 리스트 조회")
 	public ResponseEntity<List<AlertManagerReceiveDTO.ResponseDTO>> getAlertManagerReceiveList(UserInfoDTO userInfoDTO){

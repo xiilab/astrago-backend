@@ -74,9 +74,8 @@ public class AlertManagerDTO {
 		}
 	}
 
-
-	@Builder
 	@Getter
+	@Builder
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class CategoryDTO {

@@ -6,4 +6,5 @@ public interface K8sAlertRepository {
 	void createPrometheusRule(long alertId, List<String> exprList);
 	void deletePrometheusRule(long alertId);
 	void updatePrometheusRule(long alertId, List<String> exprList);
+	boolean validationCheck(long alertId);
 }

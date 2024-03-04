@@ -65,6 +65,19 @@ public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 		createPrometheusRule(alertId, exprList);
 	}
 
+	@Override
+	public boolean validationCheck(long id){
+		try (OpenShiftClient client = k8sAdapter.defaultOpenShiftClient()) {
+			return !client.monitoring()
+				.prometheusRules()
+				.inNamespace("astrago")
+				.withName("prometheus-" + id).isReady();
+
+		}catch (KubernetesClientException e){
+			throw new K8sException(CommonErrorCode.ALERT_MANAGER_ADD_RULE_FAIL);
+		}
+	}
+
 	/**
 	 * prometheusRule 생성하는 메소드
 	 * @param prometheusRule 생성될 prometheusRule

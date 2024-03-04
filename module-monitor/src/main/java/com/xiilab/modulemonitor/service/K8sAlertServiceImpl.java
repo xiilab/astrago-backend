@@ -27,5 +27,9 @@ public class K8sAlertServiceImpl implements K8sAlertService{
 	public void updatePrometheusRule(long alertId, List<String> exprList) {
 		k8sAlertRepository.updatePrometheusRule(alertId, exprList);
 	}
+	@Override
+	public boolean validationCheck(long alertId){
+		return k8sAlertRepository.validationCheck(alertId);
+	}
 
 }

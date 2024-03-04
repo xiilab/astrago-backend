@@ -14,4 +14,5 @@ public interface AlertManagerService {
 	List<AlertManagerDTO.ResponseDTO> getAlertManagerList();
 	void receiveAlert(String alertData);
 	List<AlertManagerReceiveDTO.ResponseDTO> getAlertManagerReceiveList(UserInfoDTO userInfoDTO);
+	void enableAlertManagerById(long id, boolean enable);
 }

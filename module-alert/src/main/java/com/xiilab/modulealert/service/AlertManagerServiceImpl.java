@@ -73,7 +73,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 
 		AlertManagerEntity saveManager = alertManagerRepository.save(alertManagerEntity);
 
-		List<String> alertExpr = creatExpr(requestDTO);
+		List<String> alertExpr = creatExpr(requestDTO.getNodeDTOList(), requestDTO.getCategoryDTOList());
 
 		try{
 			// K8s Prometheus Rule 등록
@@ -133,8 +133,9 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 				.build();
 		}).toList());
 		alertManagerEntity.getAlertList().clear();
+		List<String> expr = creatExpr(requestDTO.getNodeDTOList(), requestDTO.getCategoryDTOList());
 		// k8s prometheusRule update
-		k8sAlertService.updatePrometheusRule(alertManagerEntity.getId(), creatExpr(requestDTO));
+		k8sAlertService.updatePrometheusRule(alertManagerEntity.getId(), expr);
 	}
 
 	@Override
@@ -224,8 +225,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	@Override
 	public List<AlertManagerReceiveDTO.ResponseDTO> getAlertManagerReceiveList(UserInfoDTO userInfoDTO){
 
-		List<AlertManagerReceiveEntity> alertManagerReceiveEntityList = alertManagerReceiveRepository.findByAlertManagerAlertManagerUserEntityListUserId(
-			"749211a2-f16f-459b-a44e-d0cff74cd74d");
+		List<AlertManagerReceiveEntity> alertManagerReceiveEntityList = alertManagerReceiveRepository.findByAlertManagerAlertManagerUserEntityListUserId(userInfoDTO.getId());
 
 		return alertManagerReceiveEntityList.stream().map(alertManagerReceiveEntity ->
 				AlertManagerReceiveDTO.ResponseDTO.responseDTOBuilder()
@@ -233,18 +233,34 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					.alertManagerEntity(alertManagerReceiveEntity.getAlertManager())
 					.build()).toList();
 	}
+	@Override
+	public void enableAlertManagerById(long id, boolean enable){
+		if(enable){
+			if(k8sAlertService.validationCheck(id)){
+				AlertManagerDTO.ResponseDTO findAlert = getAlertManagerById(id);
+				List<String> expr = creatExpr(findAlert.getNodeDTOList(), findAlert.getCategoryDTOList());
+				// K8s Prometheus Rule 등록
+				k8sAlertService.createPrometheusRule(id, expr);
+			}else{
+				throw new RestApiException(CommonErrorCode.ALERT_MANAGER_RULE_READY);
+			}
+		}else {
+			// 등록된 Prometheus 삭제
+			k8sAlertService.deletePrometheusRule(id);
+		}
+	}
 	/**
 	 * Promql PrometheusRule에 생성될 Alert query List
-	 * @param requestDTO 해당 Rule에서 사용될 alertManagerDTO
+	 *
 	 * @return 생성된 PrometheusRule List
 	 */
-	public List<String> creatExpr(AlertManagerDTO.RequestDTO requestDTO){
+	public List<String> creatExpr(List<AlertManagerDTO.NodeDTO> nodeDTOList, List<AlertManagerDTO.CategoryDTO> categoryDTOList){
 		List<String> exprList = new ArrayList<>();
 		// Alert Node별 Expr 생성
-		for (AlertManagerDTO.NodeDTO nodeDTO : requestDTO.getNodeDTOList()) {
-			if(Objects.nonNull(requestDTO.getCategoryDTOList())) {
+		for (AlertManagerDTO.NodeDTO nodeDTO : nodeDTOList) {
+			if(Objects.nonNull(categoryDTOList)) {
 				// NodePromql List 생성
-				requestDTO.getCategoryDTOList().forEach(categoryDTO -> {
+				categoryDTOList.forEach(categoryDTO -> {
 					String promql = "";
 					switch (categoryDTO.getCategoryType()) {
 						// 특정 노드의 GPU 온도를 평균 내어 설정한 값과 비교하여 알림을 발생시킵니다
