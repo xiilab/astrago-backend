@@ -51,6 +51,7 @@ import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.servercore.code.service.CodeService;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
@@ -60,6 +61,7 @@ import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.servercore.image.dto.ImageReqDTO;
+import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
@@ -67,7 +69,9 @@ import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkloadFacadeService {
@@ -79,6 +83,8 @@ public class WorkloadFacadeService {
 	private final CredentialService credentialService;
 	private final AlertSetService alertSetService;
 	private final AlertService alertService;
+	private final CodeService codeService;
+	private final ImageService imageService;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
