@@ -42,4 +42,6 @@ public interface UserService {
 	UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
 
 	void updateUserEnable(String id, boolean enable);
+
+	UserDTO.UserInfo getUserById(String id);
 }

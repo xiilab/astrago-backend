@@ -46,8 +46,8 @@ public class UserController {
 
 	@GetMapping("/{id}")
 	@Operation(summary = "사용자 상세 정보 조회")
-	public ResponseEntity<UserInfo> getUserInfoById(@PathVariable(name = "id") String id) {
-		return ResponseEntity.ok(userFacadeService.getUserInfoById(id));
+	public ResponseEntity<UserDTO.UserInfo> getUserInfoById(@PathVariable(name = "id") String id) {
+		return ResponseEntity.ok(userFacadeService.getUserById(id));
 	}
 	@PatchMapping()
 	@Operation(summary = "사용자 정보 수정")

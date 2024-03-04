@@ -42,4 +42,6 @@ public interface UserFacadeService {
 	List<SearchDTO> getUserAndGroupBySearch(String search);
 
 	void updateUserEnable(String id, boolean enable);
+
+	UserDTO.UserInfo getUserById(String id);
 }

@@ -44,6 +44,7 @@ public class UserReqVO {
 		userRepresentation.setEmail(this.email);
 		userRepresentation.setUsername(username);
 		userRepresentation.setEnabled(false);
+		userRepresentation.setRealmRoles(List.of("ROLE_USER"));
 		Map<String, List<String>> attributes = new HashMap<>();
 		attributes.put("approvalYN", List.of(String.valueOf(false)));
 		attributes.put("signUpPath", List.of(SignUpPath.ASTRAGO.name()));

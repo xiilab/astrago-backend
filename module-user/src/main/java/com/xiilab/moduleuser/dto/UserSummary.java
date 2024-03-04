@@ -20,7 +20,6 @@ public class UserSummary{
 	private final String fullName;
 	private final String name;
 	private final String email;
-	private final SignUpMethod signUpMethod;
 	private final SignUpPath signUpPath;
 	private final LocalDate joinDate;
 	private final String enable;
@@ -33,7 +32,6 @@ public class UserSummary{
 		this.name = userRepresentation.getUsername();
 		this.email = userRepresentation.getEmail();
 		this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ? SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
-		this.signUpMethod = null;
 		// 에포크 시간을 Instant로 변환
 		Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 		// 특정 시간대에 맞춰 LocalDateTime으로 변환

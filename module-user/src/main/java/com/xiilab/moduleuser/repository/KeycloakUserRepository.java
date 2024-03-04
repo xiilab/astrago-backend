@@ -151,7 +151,28 @@ public class KeycloakUserRepository implements UserRepository {
 		}
 		return new UserInfo(userRepresentation, groupList);
 	}
-
+	@Override
+	public UserDTO.UserInfo getUserById(String userId) {
+		UserResource userResource = getUserResourceById(userId);
+		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
+		UserRepresentation userRepresentation = userResource.toRepresentation();
+		try {
+			RoleRepresentation roleRepresentation = roleRepresentations.stream()
+				.filter(role -> role.getName().contains("ROLE_"))
+				.toList()
+				.get(0);
+			userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_INFO);
+		}
+		List<GroupRepresentation> groupList;
+		try {
+			groupList = userResource.groups();
+		} catch (NullPointerException e) {
+			groupList = null;
+		}
+		return new UserDTO.UserInfo(userRepresentation, groupList);
+	}
 	@Override
 	public List<UserSummary> getUserListSearchByAttribute(String attribute) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
