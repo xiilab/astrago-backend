@@ -89,7 +89,7 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PatchMapping("/{id}/reset")
+	@PatchMapping("/{id}/resetPassword")
 	@Operation(summary = "비밀번호 초기화")
 	public ResponseEntity<HttpStatus> resetPassword(@PathVariable(name = "id") String id) {
 		userFacadeService.resetUserPassWord(id);
