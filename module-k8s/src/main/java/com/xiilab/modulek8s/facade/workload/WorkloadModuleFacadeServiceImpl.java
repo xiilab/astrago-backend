@@ -87,11 +87,13 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					workspaceByName.getName());
 			}
 
-			CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-				moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
+			if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getPorts())) {
+				CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+					moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
 
-			// 노드포트 연결
-			svcService.createNodePortService(createSvcReqDTO);
+				// 노드포트 연결
+				svcService.createNodePortService(createSvcReqDTO);
+			}
 		} catch (Exception e) {
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
