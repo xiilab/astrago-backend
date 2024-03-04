@@ -38,50 +38,53 @@ public class AlertManagerEntity {
 	private boolean systemYN;
 	@Builder.Default
 	@OneToMany(mappedBy = "alertManager", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private List<AlertCategoryEntity> alertCategoryEntityList = new ArrayList<>(); // 알림 받을 category List
+	private List<AlertManagerCategoryEntity> alertManagerCategoryEntityList = new ArrayList<>(); // 알림 받을 category List
 	@Builder.Default
 	@OneToMany(mappedBy = "alertManager", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private List<AlertUserEntity> alertUserEntityList = new ArrayList<>(); // 알림 받을 user List
+	private List<AlertManagerUserEntity> alertManagerUserEntityList = new ArrayList<>(); // 알림 받을 user List
 	@Builder.Default
 	@OneToMany(mappedBy = "alertManager", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private List<AlertNodeEntity> alertNodeEntityList = new ArrayList<>(); // 알림 받을 node List
+	private List<AlertManagerNodeEntity> alertManagerNodeEntityList = new ArrayList<>(); // 알림 받을 node List
+	@Builder.Default
+	@OneToMany(mappedBy = "alertManager", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	private List<AlertManagerReceiveEntity> alertList = new ArrayList<>(); // AlertManager에서 발생한 alert List
 
 	public void addCategory(List<AlertManagerDTO.CategoryDTO> categoryDTODTOList){
 		if(Objects.nonNull(categoryDTODTOList)){
-			List<AlertCategoryEntity> alertCategoryEntityList = categoryDTODTOList.stream().map(categoryDTO ->
-				AlertCategoryEntity.builder()
+			List<AlertManagerCategoryEntity> alertManagerCategoryEntityList = categoryDTODTOList.stream().map(categoryDTO ->
+				AlertManagerCategoryEntity.builder()
 					.operator(categoryDTO.getOperator())
-					.categoryType(categoryDTO.getCategoryType())
+					.alertManagerCategoryType(categoryDTO.getCategoryType())
 					.durationTime(categoryDTO.getDurationTime())
 					.maximum(categoryDTO.getMaximum())
 					.alertManager(this)
 					.build()).toList();
 
-			this.alertCategoryEntityList.addAll(alertCategoryEntityList);
+			this.alertManagerCategoryEntityList.addAll(alertManagerCategoryEntityList);
 		}
 	}
 	public void addUser(List<AlertManagerDTO.UserDTO> userDTOList){
 		if(Objects.nonNull(userDTOList)){
-			List<AlertUserEntity> userEntityList = userDTOList.stream().map(userDTO ->
-				AlertUserEntity.builder()
+			List<AlertManagerUserEntity> userEntityList = userDTOList.stream().map(userDTO ->
+				AlertManagerUserEntity.builder()
 					.userId(userDTO.getUserId())
 					.userName(userDTO.getUserName())
 					.firstName(userDTO.getFirstName())
 					.lastName(userDTO.getLastName())
 					.email(userDTO.getEmail())
 					.alertManager(this).build()).toList();
-			this.alertUserEntityList.addAll(userEntityList);
+			this.alertManagerUserEntityList.addAll(userEntityList);
 		}
 	}
 
 	public void addNode(List<AlertManagerDTO.NodeDTO> nodeDTOList){
 		if(Objects.nonNull(nodeDTOList)){
-			List<AlertNodeEntity> nodeEntityList = nodeDTOList.stream().map(nodeDTO ->
-				AlertNodeEntity.builder()
+			List<AlertManagerNodeEntity> nodeEntityList = nodeDTOList.stream().map(nodeDTO ->
+				AlertManagerNodeEntity.builder()
 					.nodeName(nodeDTO.getNodeName())
 					.nodeIp(nodeDTO.getNodeIp())
 					.alertManager(this).build()).toList();
-			this.alertNodeEntityList.addAll(nodeEntityList);
+			this.alertManagerNodeEntityList.addAll(nodeEntityList);
 		}
 	}
 

@@ -2,7 +2,7 @@ package com.xiilab.modulealert.entity;
 
 import java.time.LocalDateTime;
 
-import com.xiilab.modulealert.enumeration.AlertType;
+import com.xiilab.modulealert.enumeration.SystemAlertType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,12 +15,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_ALERT")
+@Entity(name = "TB_SYSTEM_ALERT")
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class AlertEntity{
+public class SystemAlertEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ALERT_ID")
@@ -30,7 +30,7 @@ public class AlertEntity{
 	@Column(name = "SENDER")
 	private String senderId;
 	@Column(name = "ALERT_TYPE")
-	private AlertType alertType;
+	private SystemAlertType systemAlertType;
 	@Column(name = "ALERT_MESSAGE")
 	private String message;
 	@Column(name = "ALERT_DATE")

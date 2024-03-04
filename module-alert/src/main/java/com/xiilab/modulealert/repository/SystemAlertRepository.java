@@ -5,11 +5,11 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.xiilab.modulealert.entity.AlertEntity;
+import com.xiilab.modulealert.entity.SystemAlertEntity;
 
 @Repository
-public interface AlertRepository extends JpaRepository<AlertEntity, Long> {
+public interface SystemAlertRepository extends JpaRepository<SystemAlertEntity, Long> {
 	// 수신받은 Alert List 조회
-	List<AlertEntity> getAlertEntitiesByRecipientId(String recipientId);
+	List<SystemAlertEntity> getAlertEntitiesByRecipientId(String recipientId);
 
 }

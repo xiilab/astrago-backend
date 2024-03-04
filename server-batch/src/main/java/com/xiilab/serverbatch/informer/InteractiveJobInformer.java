@@ -1,21 +1,17 @@
 package com.xiilab.serverbatch.informer;
 
-import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
-
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.xiilab.modulealert.dto.AlertDTO;
-import com.xiilab.modulealert.dto.AlertSetDTO;
-import com.xiilab.modulealert.enumeration.AlertMessage;
-import com.xiilab.modulealert.enumeration.AlertType;
-import com.xiilab.modulealert.service.AlertService;
-import com.xiilab.modulealert.service.AlertSetService;
-import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
+import com.xiilab.modulealert.dto.SystemAlertDTO;
+import com.xiilab.modulealert.dto.SystemAlertSetDTO;
+import com.xiilab.modulealert.enumeration.SystemAlertMessage;
+import com.xiilab.modulealert.enumeration.SystemAlertType;
+import com.xiilab.modulealert.service.SystemAlertService;
+import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8sdb.common.enums.VolumeType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
@@ -31,8 +27,6 @@ import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
@@ -53,8 +47,8 @@ public class InteractiveJobInformer {
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final GroupService groupService;
-	private final AlertService alertService;
-	private final AlertSetService alertSetService;
+	private final SystemAlertService systemAlertService;
+	private final SystemAlertSetService systemAlertSetService;
 
 	@PostConstruct
 	void doInformer() {
@@ -71,14 +65,15 @@ public class InteractiveJobInformer {
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 
-				AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
+				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
 				if(workspaceAlertSet.isWorkloadStartAlert()){
 					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					alertService.sendAlert(AlertDTO.builder()
+					systemAlertService.sendAlert(SystemAlertDTO.builder()
 						.recipientId(workspaceOwner.getId())
-						.alertType(AlertType.WORKLOAD)
-						.message(String.format(AlertMessage.WORKSPACE_START.getMessage(), deployment.getMetadata().getName()))
+						.systemAlertType(SystemAlertType.WORKLOAD)
+						.message(String.format(
+							SystemAlertMessage.WORKSPACE_START.getMessage(), deployment.getMetadata().getName()))
 						.senderId("SYSTEM")
 						.build());
 				}
@@ -124,14 +119,14 @@ public class InteractiveJobInformer {
 				// 	saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
 				// }
 
-				AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
+				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
 				if(workspaceAlertSet.isWorkloadEndAlert()){
 					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					alertService.sendAlert(AlertDTO.builder()
+					systemAlertService.sendAlert(SystemAlertDTO.builder()
 						.recipientId(workspaceOwner.getId())
-						.alertType(AlertType.WORKLOAD)
-						.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
+						.systemAlertType(SystemAlertType.WORKLOAD)
+						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
 						.senderId("SYSTEM")
 						.build());
 				}

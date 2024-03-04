@@ -12,20 +12,26 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_ALERT_NODE")
+@Entity(name = "TB_ALERT_MANAGER_USER")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class AlertNodeEntity {
+public class AlertManagerUserEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "ALERT_NODE_ID")
+	@Column(name = "ALERT_MANAGER_USER_ID")
 	private Long id;
-	@Column
-	private String nodeName;
-	@Column
-	private String nodeIp;
+	@Column(name = "USER_ID")
+	private String userId;
+	@Column(name = "USER_NAME")
+	private String userName;
+	@Column(name = "USER_FIRST_NAME")
+	private String firstName;
+	@Column(name = "USER_LAST_NAME")
+	private String lastName;
+	@Column(name = "USER_EMAIL")
+	private String email;
 	@ManyToOne
 	private AlertManagerEntity alertManager;
 }

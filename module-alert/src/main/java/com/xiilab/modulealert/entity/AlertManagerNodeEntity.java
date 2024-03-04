@@ -1,10 +1,7 @@
 package com.xiilab.modulealert.entity;
 
-import com.xiilab.modulealert.enumeration.CategoryType;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,22 +12,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_ALERT_CATEGORY")
+@Entity(name = "TB_ALERT_MANAGER_NODE")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class AlertCategoryEntity {
+public class AlertManagerNodeEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ALERT_MANAGER_NODE_ID")
 	private Long id;
-	@Enumerated(EnumType.STRING)
-	private CategoryType categoryType; // item 항목
-	private String operator; // 연산자
-	private String maximum; // 한계점
-	private String durationTime; // 지속시간
+	@Column
+	private String nodeName;
+	@Column
+	private String nodeIp;
 	@ManyToOne
 	private AlertManagerEntity alertManager;
-
-
 }

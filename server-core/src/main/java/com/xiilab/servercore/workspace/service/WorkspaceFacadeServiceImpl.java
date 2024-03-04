@@ -7,12 +7,12 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.xiilab.modulealert.dto.AlertDTO;
-import com.xiilab.modulealert.dto.AlertSetDTO;
-import com.xiilab.modulealert.enumeration.AlertMessage;
-import com.xiilab.modulealert.enumeration.AlertType;
-import com.xiilab.modulealert.service.AlertService;
-import com.xiilab.modulealert.service.AlertSetService;
+import com.xiilab.modulealert.dto.SystemAlertDTO;
+import com.xiilab.modulealert.dto.SystemAlertSetDTO;
+import com.xiilab.modulealert.enumeration.SystemAlertMessage;
+import com.xiilab.modulealert.enumeration.SystemAlertType;
+import com.xiilab.modulealert.service.SystemAlertService;
+import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -26,7 +26,6 @@ import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
-import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
@@ -35,6 +34,7 @@ import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,8 +50,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final GroupService groupService;
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
-	private final AlertSetService alertSetService;
-	private final AlertService alertService;
+	private final SystemAlertSetService systemAlertSetService;
+	private final SystemAlertService systemAlertService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -76,7 +76,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.users(applicationForm.getUserIds())
 				.build()
 		);
-		alertSetService.saveAlertSet(workspace.getResourceName());
+		systemAlertSetService.saveAlertSet(workspace.getResourceName());
 	}
 
 	@Override
@@ -124,7 +124,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
 		// 워크스페이스 알림 설정 삭제
-		alertSetService.deleteAlert(workspaceName);
+		systemAlertSetService.deleteAlert(workspaceName);
 	}
 
 	@Override
@@ -206,13 +206,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				resourceQuotaEntity.getGpuReq()
 			);
 
-			AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
+			SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
 			if(workspaceAlertSet.isResourceApprovalAlert()){
 
-				alertService.sendAlert(AlertDTO.builder()
+				systemAlertService.sendAlert(SystemAlertDTO.builder()
 					.recipientId(resourceQuotaEntity.getRegUser().getRegUserId())
-					.alertType(AlertType.WORKLOAD)
-					.message(AlertMessage.RESOURCE_APPROVAL.getMessage())
+					.systemAlertType(SystemAlertType.WORKLOAD)
+					.message(SystemAlertMessage.RESOURCE_APPROVAL.getMessage())
 					.senderId("SYSTEM")
 					.build());
 			}
@@ -236,12 +236,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.toList();
 	}
 	@Override
-	public AlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName){
-		return alertSetService.getWorkspaceAlertSet(workspaceName);
+	public SystemAlertSetDTO.ResponseDTOSystem getWorkspaceAlertSet(String workspaceName){
+		return systemAlertSetService.getWorkspaceAlertSet(workspaceName);
 	}
 	@Override
-	public AlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, AlertSetDTO alertSetDTO){
-		return alertSetService.updateWorkspaceAlertSet(workspaceName, alertSetDTO);
+	public SystemAlertSetDTO.ResponseDTOSystem updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO){
+		return systemAlertSetService.updateWorkspaceAlertSet(workspaceName, systemAlertSetDTO);
 	}
 
 }

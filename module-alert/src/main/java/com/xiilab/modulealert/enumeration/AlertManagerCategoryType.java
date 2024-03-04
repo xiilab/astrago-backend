@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum CategoryType {
+public enum AlertManagerCategoryType {
 	GPU_TEMP("GPU 온도", "avg(DCGM_FI_DEV_GPU_TEMP{kubernetes_node = \"%s\"}) %s %s"), // GPU 온도
 	GPU_MEMORY("GPU 메모리 사용률", "avg(DCGM_FI_DEV_GPU_UTIL{kubernetes_node=\"%s\"}) %s %s"), // GPU 메모리
 	GPU_USAGE("GPU 사용률", "avg(DCGM_FI_DEV_FB_USED{kubernetes_node=\"%s\"}) %s %s"), // GPU 사용량

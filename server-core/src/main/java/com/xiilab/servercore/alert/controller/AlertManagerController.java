@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.xiilab.modulealert.dto.AlertManagerDTO;
+import com.xiilab.modulealert.dto.AlertManagerReceiveDTO;
 import com.xiilab.modulealert.service.AlertManagerService;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -56,6 +58,18 @@ public class AlertManagerController {
 	@Operation(summary = "Alert Manager 전체 조회 API")
 	public ResponseEntity<List<AlertManagerDTO.ResponseDTO>> getAlertManagerList(){
 		return new ResponseEntity<>(alertManagerService.getAlertManagerList(), HttpStatus.OK);
+	}
+
+	@PostMapping("/receive")
+	@Operation(summary = "Alert Manager 알림 전달 받는 API")
+	public ResponseEntity<HttpStatus> receiveAlert(@RequestBody String alertData){
+		alertManagerService.receiveAlert(alertData);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	@GetMapping("/receive")
+	@Operation(summary = "Alert Manager를 통하여 전달받은 알림 리스트 조회")
+	public ResponseEntity<List<AlertManagerReceiveDTO.ResponseDTO>> getAlertManagerReceiveList(UserInfoDTO userInfoDTO){
+		return new ResponseEntity<>(alertManagerService.getAlertManagerReceiveList(userInfoDTO), HttpStatus.OK);
 	}
 
 }

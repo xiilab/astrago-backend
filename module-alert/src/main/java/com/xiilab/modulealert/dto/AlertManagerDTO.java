@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.xiilab.modulealert.entity.AlertCategoryEntity;
+import com.xiilab.modulealert.entity.AlertManagerCategoryEntity;
 import com.xiilab.modulealert.entity.AlertManagerEntity;
-import com.xiilab.modulealert.entity.AlertNodeEntity;
-import com.xiilab.modulealert.entity.AlertUserEntity;
-import com.xiilab.modulealert.enumeration.CategoryType;
+import com.xiilab.modulealert.entity.AlertManagerNodeEntity;
+import com.xiilab.modulealert.entity.AlertManagerUserEntity;
+import com.xiilab.modulealert.enumeration.AlertManagerCategoryType;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -52,23 +52,25 @@ public class AlertManagerDTO {
 	public static class ResponseDTO extends AlertManagerDTO{
 		private long id;
 		private List<AlertManagerDTO.UserDTO> userDTOList;
-
+		private List<AlertManagerReceiveDTO.ResponseDTO> alertManagerReceiveDTOList;
 		@Builder(builderClassName = "toDTOBuilder", builderMethodName = "toDTOBuilder")
 		ResponseDTO(AlertManagerEntity alertManager) {
 			this.id = alertManager.getId();
 			this.alertName = alertManager.getAlertName();
 			this.emailYN = alertManager.isEmailYN();
 			this.systemYN = alertManager.isSystemYN();
-			this.nodeDTOList = Objects.nonNull(alertManager.getAlertNodeEntityList()) ?
-				alertManager.getAlertNodeEntityList().stream().map(nodeEntity ->
+			this.nodeDTOList = Objects.nonNull(alertManager.getAlertManagerNodeEntityList()) ?
+				alertManager.getAlertManagerNodeEntityList().stream().map(nodeEntity ->
 					AlertManagerDTO.NodeDTO.toDTOBuilder().nodeEntity(nodeEntity).build()).toList() : new ArrayList<>();
-			this.categoryDTOList = Objects.nonNull(alertManager.getAlertCategoryEntityList()) ?
-				alertManager.getAlertCategoryEntityList().stream().map(alertCategoryEntity ->
-					AlertManagerDTO.CategoryDTO.toDTOBuilder().alertCategoryEntity(alertCategoryEntity).build()).toList() : new ArrayList<>();
-			this.userDTOList = Objects.nonNull(alertManager.getAlertUserEntityList()) ?
-				alertManager.getAlertUserEntityList().stream().map(userEntity ->
+			this.categoryDTOList = Objects.nonNull(alertManager.getAlertManagerCategoryEntityList()) ?
+				alertManager.getAlertManagerCategoryEntityList().stream().map(alertManagerCategoryEntity ->
+					CategoryDTO.toDTOBuilder().alertManagerCategoryEntity(alertManagerCategoryEntity).build()).toList() : new ArrayList<>();
+			this.userDTOList = Objects.nonNull(alertManager.getAlertManagerUserEntityList()) ?
+				alertManager.getAlertManagerUserEntityList().stream().map(userEntity ->
 					AlertManagerDTO.UserDTO.toDTOBuilder().userEntity(userEntity).build()).toList() : new ArrayList<>();
-
+			this.alertManagerReceiveDTOList = Objects.nonNull(alertManager.getAlertList()) ?
+				alertManager.getAlertList().stream().map(alertManagerReceiveEntity ->
+					AlertManagerReceiveDTO.ResponseDTO.responseDTOBuilder().alertManagerReceiveEntity(alertManagerReceiveEntity).alertManagerEntity(alertManagerReceiveEntity.getAlertManager()).build()).toList() : new ArrayList<>();
 		}
 	}
 
@@ -80,18 +82,18 @@ public class AlertManagerDTO {
 	public static class CategoryDTO {
 		private long id;
 		@Enumerated(EnumType.STRING)
-		private CategoryType categoryType; // item 항목
+		private AlertManagerCategoryType categoryType; // item 항목
 		private String operator;
 		private String maximum; // 한계점
 		private String durationTime; // 지속시간
 
 		@Builder(builderMethodName = "toDTOBuilder", builderClassName = "toDTOBuilder")
-		public CategoryDTO(AlertCategoryEntity alertCategoryEntity) {
-			this.id = alertCategoryEntity.getId();
-			this.operator = alertCategoryEntity.getOperator();
-			this.categoryType = alertCategoryEntity.getCategoryType();
-			this.maximum = alertCategoryEntity.getMaximum();
-			this.durationTime = alertCategoryEntity.getDurationTime();
+		public CategoryDTO(AlertManagerCategoryEntity alertManagerCategoryEntity) {
+			this.id = alertManagerCategoryEntity.getId();
+			this.operator = alertManagerCategoryEntity.getOperator();
+			this.categoryType = alertManagerCategoryEntity.getAlertManagerCategoryType();
+			this.maximum = alertManagerCategoryEntity.getMaximum();
+			this.durationTime = alertManagerCategoryEntity.getDurationTime();
 		}
 	}
 
@@ -105,7 +107,7 @@ public class AlertManagerDTO {
 		private String nodeIp;
 
 		@Builder(builderMethodName = "toDTOBuilder", builderClassName = "toDTOBuilder")
-		public NodeDTO(AlertNodeEntity nodeEntity){
+		public NodeDTO(AlertManagerNodeEntity nodeEntity){
 			this.id = nodeEntity.getId();
 			this.nodeName = nodeEntity.getNodeName();
 			this.nodeIp = nodeEntity.getNodeIp();
@@ -125,7 +127,7 @@ public class AlertManagerDTO {
 		private String lastName;
 
 		@Builder(builderMethodName = "toDTOBuilder", builderClassName = "toDTOBuilder")
-		public UserDTO(AlertUserEntity userEntity){
+		public UserDTO(AlertManagerUserEntity userEntity){
 			this.id = userEntity.getId();
 			this.userId = userEntity.getUserId();
 			this.userName = userEntity.getUserName();
@@ -134,4 +136,5 @@ public class AlertManagerDTO {
 			this.lastName = userEntity.getLastName();
 		}
 	}
+
 }
