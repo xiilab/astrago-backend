@@ -256,7 +256,7 @@ public class MonitorFacadeService {
 		// Cluster Pending History 조회 Promql
 		String promql = Promql.POD_PENDING.getQuery();
 		// 검색 기간
-		String endDate = DataConverterUtil.getCurrentTime();
+		String endDate = DataConverterUtil.getCurrentUnixTime();
 		String startDate = DataConverterUtil.subtractMinutesFromCurrentTime(minute);
 
 		// Pending History 조회
@@ -288,7 +288,7 @@ public class MonitorFacadeService {
 		// Cluster Pending History 조회 Promql
 		String promql = Promql.CONTAINER_RESTART.getQuery();
 		// 검색 기간
-		String endDate = DataConverterUtil.getCurrentTime();
+		String endDate = DataConverterUtil.getCurrentUnixTime();
 		String startDate = DataConverterUtil.subtractMinutesFromCurrentTime(minute);
 
 		// Pending History 조회

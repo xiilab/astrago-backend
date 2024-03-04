@@ -14,22 +14,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.modulealert.dto.AlertSetDTO;
+import com.xiilab.modulealert.dto.SystemAlertSetDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
+import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
+import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
+import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
-import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
-import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
-import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
-import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
-import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -196,15 +196,15 @@ public class WorkspaceController {
 
 	@GetMapping("/alert/{workspaceName}")
 	@Operation(summary = "워크스페이스 Alert Setting 조회 메소드")
-	public ResponseEntity<AlertSetDTO.ResponseDTO> getWorkspaceAlertSet(
+	public ResponseEntity<SystemAlertSetDTO.ResponseDTOSystem> getWorkspaceAlertSet(
 		@PathVariable(name = "workspaceName") String workspaceName){
 		return new ResponseEntity<>(workspaceService.getWorkspaceAlertSet(workspaceName), HttpStatus.OK);
 	}
 	@PatchMapping("/alert/{workspaceName}")
 	@Operation(summary = "워크스페이스 Alert Setting 수정 메소드")
-	public ResponseEntity<AlertSetDTO.ResponseDTO> updateWorkspaceAlertSet(
+	public ResponseEntity<SystemAlertSetDTO.ResponseDTOSystem> updateWorkspaceAlertSet(
 		@PathVariable(name = "workspaceName") String workspaceName,
-		@RequestBody AlertSetDTO updateDTO){
+		@RequestBody SystemAlertSetDTO updateDTO){
 		return new ResponseEntity<>(workspaceService.updateWorkspaceAlertSet(workspaceName, updateDTO), HttpStatus.OK);
 	}
 }

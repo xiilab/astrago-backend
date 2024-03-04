@@ -244,7 +244,7 @@ public class DataConverterUtil {
 			.truncatedTo(ChronoUnit.MINUTES);
 		return ChronoUnit.MINUTES.between(eventTime, now);
 	}
-	public static String getCurrentTime(){
+	public static String getCurrentUnixTime(){
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
 		return DataConverterUtil.toUnixTime(LocalDateTime.now().format(formatter));
 	}
@@ -268,5 +268,13 @@ public class DataConverterUtil {
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	/**
+	 * 알림 발생시간 생성하는 메소드
+	 * @return 발생된 시간 "2월 24일 금요일 오후 4:21"
+	 */
+	public static String getCurrentTime(LocalDateTime realTime){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm ");
+		return realTime.format(formatter);
 	}
 }

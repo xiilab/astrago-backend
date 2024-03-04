@@ -9,4 +9,5 @@ import lombok.RequiredArgsConstructor;
 @Builder
 public class K8sException extends RuntimeException{
 	private final ErrorCode errorCode;
+
 }

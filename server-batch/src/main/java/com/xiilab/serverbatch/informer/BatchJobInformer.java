@@ -11,13 +11,12 @@ import java.util.function.Function;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.xiilab.modulealert.dto.AlertDTO;
-import com.xiilab.modulealert.dto.AlertSetDTO;
-import com.xiilab.modulealert.enumeration.AlertMessage;
-import com.xiilab.modulealert.enumeration.AlertType;
-import com.xiilab.modulealert.service.AlertService;
-import com.xiilab.modulealert.service.AlertSetService;
-import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulealert.dto.SystemAlertDTO;
+import com.xiilab.modulealert.dto.SystemAlertSetDTO;
+import com.xiilab.modulealert.enumeration.SystemAlertMessage;
+import com.xiilab.modulealert.enumeration.SystemAlertType;
+import com.xiilab.modulealert.service.SystemAlertService;
+import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -38,8 +37,6 @@ import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -62,8 +59,8 @@ public class BatchJobInformer {
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
-	private final AlertService alertService;
-	private final AlertSetService alertSetService;
+	private final SystemAlertService systemAlertService;
+	private final SystemAlertSetService systemAlertSetService;
 
 	@PostConstruct
 	void doInformer() {
@@ -82,13 +79,13 @@ public class BatchJobInformer {
 
 				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
 
-				AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
 				if(workspaceAlertSet.isWorkloadStartAlert()){
-					alertService.sendAlert(AlertDTO.builder()
+					systemAlertService.sendAlert(SystemAlertDTO.builder()
 						.recipientId(batchWorkloadInfoFromResource.getCreatorId())
-						.alertType(AlertType.WORKLOAD)
-						.message(String.format(AlertMessage.WORKSPACE_START.getMessage(), job.getMetadata().getName()))
+						.systemAlertType(SystemAlertType.WORKLOAD)
+						.message(String.format(SystemAlertMessage.WORKSPACE_START.getMessage(), job.getMetadata().getName()))
 						.senderId("SYSTEM")
 						.build());
 				}
@@ -166,13 +163,13 @@ public class BatchJobInformer {
 					// String[] codeIdList = codeIds != null ? codeIds.split(",") : null;
 					// saveDataMapping(codeIdList, codeRepository::findById, jobEntity, VolumeType.CODE);
 
-					AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+					SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 					// 해당 워크스페이스 알림 설정이 True인 경우
 					if(workspaceAlertSet.isWorkloadEndAlert()){
-						alertService.sendAlert(AlertDTO.builder()
+						systemAlertService.sendAlert(SystemAlertDTO.builder()
 							.recipientId(metadataFromResource.getCreatorId())
-							.alertType(AlertType.WORKLOAD)
-							.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
+							.systemAlertType(SystemAlertType.WORKLOAD)
+							.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
 							.senderId("SYSTEM")
 							.build());
 					}
@@ -218,7 +215,7 @@ public class BatchJobInformer {
 		}
 	}
 
-	private AlertSetDTO.ResponseDTO getAlertSet(String workspaceName){
-		return alertSetService.getWorkspaceAlertSet(workspaceName);
+	private SystemAlertSetDTO.ResponseDTOSystem getAlertSet(String workspaceName){
+		return systemAlertSetService.getWorkspaceAlertSet(workspaceName);
 	}
 }
