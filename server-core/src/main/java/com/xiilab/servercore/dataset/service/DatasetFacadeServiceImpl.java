@@ -318,7 +318,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	}
 
 	@Override
-	public WorkloadResDTO.PageWorkloadResDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId) {
+	public WorkloadResDTO.PageUsingDatasetDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId) {
 		return workloadModuleFacadeService.workloadsUsingDataset(pageInfo.getPage(), pageInfo.getPageSize(), datasetId);
 	}
 

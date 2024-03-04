@@ -26,6 +26,7 @@ import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -102,9 +103,6 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	@Override
 	public ModelDTO.ResModelWithStorage getModel(Long modelId) {
 		ModelDTO.ResModelWithStorage modelWithStorage = modelService.getModelWithStorage(modelId);
-		Long id = modelWithStorage.getModelId();
-		List<WorkloadResDTO.UsingModelDTO> usingModelDTOS = workloadModuleFacadeService.workloadsUsingModel(id);
-		modelWithStorage.addUsingModels(usingModelDTOS);
 		return modelWithStorage;
 	}
 
@@ -316,6 +314,11 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 		} else {
 			throw new RestApiException(ModelErrorCode.MODEL_PREVIEW_FAIL);
 		}
+	}
+
+	@Override
+	public WorkloadResDTO.PageUsingModelDTO getWorkloadsUsingModel(PageInfo pageInfo, Long modelId) {
+		 return workloadModuleFacadeService.workloadsUsingModel(pageInfo.getPage(), pageInfo.getPageSize(), modelId);
 	}
 
 	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Model model) {

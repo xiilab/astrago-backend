@@ -61,7 +61,7 @@ public interface WorkloadModuleFacadeService {
 
 	CreateLocalDatasetResDTO createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO);
 
-	WorkloadResDTO.PageWorkloadResDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
+	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
@@ -71,7 +71,7 @@ public interface WorkloadModuleFacadeService {
 
 	CreateLocalModelResDTO createLocalModel(CreateLocalModelDTO createDto);
 
-	List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id);
+	WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id);
 
 	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
