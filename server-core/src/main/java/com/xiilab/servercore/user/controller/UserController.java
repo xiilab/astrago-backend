@@ -71,12 +71,20 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PatchMapping("/{id}/activation")
-	@Operation(summary = "사용자 활성화 여부 업데이트")
-	public ResponseEntity<HttpStatus> updateUserActivationYN(
-		@RequestBody List<String> idList,
-		@RequestParam(name = "activationYN") boolean activationYN) {
-		userFacadeService.updateUserActivationYN(idList, activationYN);
+	// @PatchMapping("/{id}/activation")
+	// @Operation(summary = "사용자 활성화 여부 업데이트")
+	// public ResponseEntity<HttpStatus> updateUserActivationYN(
+	// 	@RequestBody List<String> idList,
+	// 	@RequestParam(name = "activationYN") boolean activationYN) {
+	// 	userFacadeService.updateUserActivationYN(idList, activationYN);
+	// 	return ResponseEntity.ok().build();
+	// }
+	@PatchMapping("/{id}/enable")
+	@Operation(summary = "사용자 enable 업데이트")
+	public ResponseEntity<HttpStatus> updateUserEnable(
+		@PathVariable String id,
+		@RequestParam(name = "enable") boolean enable) {
+		userFacadeService.updateUserEnable(id, enable);
 		return ResponseEntity.ok().build();
 	}
 

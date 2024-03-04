@@ -92,4 +92,9 @@ public class UserServiceImpl implements UserService {
 	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
 		return userRepository.updateUserInfoById(id, updateUserDTO);
 	}
+
+	@Override
+	public void updateUserEnable(String id, boolean enable) {
+		userRepository.updateUserEnable(id, enable);
+	}
 }

@@ -389,4 +389,16 @@ public class KeycloakUserRepository implements UserRepository {
 		return new UserInfo(userResource.toRepresentation());
 	}
 
+	@Override
+	public void updateUserEnable(String id, boolean enable) {
+		try{
+			UserResource userResource = getUserResourceById(id);
+			UserRepresentation representation = userResource.toRepresentation();
+			representation.setEnabled(enable);
+			userResource.update(representation);
+		}catch (NotFoundException e){
+			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_BY_ID);
+		}
+	}
+
 }

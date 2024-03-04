@@ -40,4 +40,6 @@ public interface UserService {
 	void deleteUserById(List<String> userId);
 	List<SearchDTO> getUserAndGroupBySearch(String string);
 	UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
+
+	void updateUserEnable(String id, boolean enable);
 }

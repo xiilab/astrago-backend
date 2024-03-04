@@ -40,4 +40,6 @@ public interface UserFacadeService {
 
 	void deleteUserById(List<String> userIdList);
 	List<SearchDTO> getUserAndGroupBySearch(String search);
+
+	void updateUserEnable(String id, boolean enable);
 }

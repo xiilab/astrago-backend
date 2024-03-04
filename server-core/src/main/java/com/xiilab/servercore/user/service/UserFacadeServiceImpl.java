@@ -77,6 +77,12 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	public List<SearchDTO> getUserAndGroupBySearch(String search){
 		return userService.getUserAndGroupBySearch(search);
 	}
+
+	@Override
+	public void updateUserEnable(String id, boolean enable) {
+		userService.updateUserEnable(id, enable);
+	}
+
 	@Override
 	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
 		return userService.updateUserInfoById(id, updateUserDTO);
