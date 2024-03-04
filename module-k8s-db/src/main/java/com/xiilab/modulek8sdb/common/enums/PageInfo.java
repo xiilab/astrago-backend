@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class PageInfo {
-	private Integer page;
+	private Integer pageNo;
 	private Integer pageSize;
-	public PageInfo(Integer page, Integer pageSize) {
-		this.page = page == null ? 1 : page;
+	public PageInfo(Integer pageNo, Integer pageSize) {
+		this.pageNo = pageNo == null ? 1 : pageNo;
 		this.pageSize = pageSize == null ? 10 : pageSize;
 	}
 }

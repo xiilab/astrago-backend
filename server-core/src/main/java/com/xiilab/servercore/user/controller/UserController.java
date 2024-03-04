@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,13 +15,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
-import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.user.service.UserFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,8 +38,10 @@ public class UserController {
 
 	@GetMapping()
 	@Operation(summary = "사용자 목록 조회")
-	public ResponseEntity<List<UserSummary>> getUserList(@ModelAttribute SearchCondition searchCondition) {
-		return ResponseEntity.ok(userFacadeService.getUserList(searchCondition));
+	public ResponseEntity<UserDTO.PageUsersDTO> getUserList(
+		PageInfo pageInfo,
+		UserSearchCondition searchCondition) {
+		return ResponseEntity.ok(userFacadeService.getUserList(pageInfo, searchCondition));
 	}
 
 	@GetMapping("/{id}")

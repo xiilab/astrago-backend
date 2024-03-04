@@ -5,14 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.moduleuser.common.FindDTO;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
-import com.xiilab.servercore.common.dto.SearchCondition;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -34,12 +35,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public List<UserSummary> getUserList(SearchCondition searchCondition) {
-		FindDTO findDTO = FindDTO.builder()
-			.option(searchCondition.getOption())
-			.keyword(searchCondition.getKeyword())
-			.build();
-		return userService.getUserList(findDTO);
+	public UserDTO.PageUsersDTO getUserList(PageInfo pageInfo, UserSearchCondition searchCondition) {
+		return userService.getUserList(pageInfo.getPageNo(), pageInfo.getPageSize(), searchCondition);
 	}
 
 	@Override

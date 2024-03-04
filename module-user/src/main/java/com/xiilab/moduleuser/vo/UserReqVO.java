@@ -1,20 +1,25 @@
 package com.xiilab.moduleuser.vo;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
+import com.xiilab.moduleuser.dto.SignUpPath;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserReqVO {
@@ -39,7 +44,11 @@ public class UserReqVO {
 		userRepresentation.setEmail(this.email);
 		userRepresentation.setUsername(username);
 		userRepresentation.setEnabled(false);
-		userRepresentation.setAttributes(Map.of("approvalYN", List.of(String.valueOf(false))));
+		Map<String, List<String>> attributes = new HashMap<>();
+		attributes.put("approvalYN", List.of(String.valueOf(false)));
+		attributes.put("signUpPath", List.of(SignUpPath.ASTRAGO.name()));
+
+		userRepresentation.setAttributes(attributes);
 		return userRepresentation;
 	}
 

@@ -6,10 +6,11 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
@@ -17,7 +18,7 @@ import com.xiilab.moduleuser.vo.UserReqVO;
 public interface UserRepository {
 	UserInfo joinUser(UserReqVO userReqVO);
 
-	List<UserSummary> getUserList(FindDTO findDTO);
+	UserDTO.PageUsersDTO getUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition);
 
 	UserInfo getUserInfoById(String userId);
 

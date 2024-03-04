@@ -1,6 +1,10 @@
 package com.xiilab.moduleuser.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +21,10 @@ public class UserSummary{
 	private final String name;
 	private final String email;
 	private final SignUpMethod signUpMethod;
+	private final SignUpPath signUpPath;
 	private final LocalDate joinDate;
-	private final boolean enable;
+	private final String enable;
+	private final String approval;
 	private final List<UserGroupDTO> userGroupDTOList;
 
 	public UserSummary(UserRepresentation userRepresentation, List<GroupRepresentation> groupRepresentationList) {
@@ -26,9 +32,15 @@ public class UserSummary{
 		this.fullName = userRepresentation.getLastName() + userRepresentation.getFirstName();
 		this.name = userRepresentation.getUsername();
 		this.email = userRepresentation.getEmail();
+		this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ? SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
 		this.signUpMethod = null;
-		this.joinDate = null;
-		this.enable = userRepresentation.isEnabled();
+		// 에포크 시간을 Instant로 변환
+		Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
+		// 특정 시간대에 맞춰 LocalDateTime으로 변환
+		LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+		this.joinDate = localDateTime.toLocalDate();
+		this.enable = String.valueOf(userRepresentation.isEnabled());
+		this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
 		this.userGroupDTOList = groupRepresentationList != null ?
 			groupRepresentationList.stream().filter(groupRepresentation -> !groupRepresentation.getName().contains("ws")).map(groupRepresentation ->
 				UserGroupDTO.builder().groupId(groupRepresentation.getId()).groupName(groupRepresentation.getName()).build()).toList() : new ArrayList<>();

@@ -3,19 +3,21 @@ package com.xiilab.servercore.user.service;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
-import com.xiilab.servercore.common.dto.SearchCondition;
 
 public interface UserFacadeService {
 	//회원가입
 	UserInfo joinUser(UserReqVO userReqVO, String groupId);
 
 	//사용자 리스트 조회
-	List<UserSummary> getUserList(SearchCondition searchCondition);
+	UserDTO.PageUsersDTO getUserList(PageInfo pageInfo, UserSearchCondition searchCondition);
 
 	//사용자 승인 신청 계정 리스트 조회
 	List<UserSummary> getWaitingApprovalUserList();
