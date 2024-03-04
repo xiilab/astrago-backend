@@ -18,10 +18,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
+import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
+import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.servercore.dataset.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
@@ -77,9 +80,9 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
-	public ModelDTO.ResModels getModels(int pageNo, int pageSize, UserInfoDTO userInfoDTO) {
-		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
-		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth());
+	public ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserInfoDTO userInfoDTO) {
+		PageRequest pageRequest = PageRequest.of(pageInfo.getPage() - 1, pageInfo.getPageSize());
+		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth(), repositorySearchCondition);
 		List<Model> entities = models.getContent();
 		long totalCount = models.getTotalElements();
 

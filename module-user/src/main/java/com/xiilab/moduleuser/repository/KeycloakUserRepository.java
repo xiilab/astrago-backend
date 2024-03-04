@@ -13,13 +13,14 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
-import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
+import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -330,4 +331,25 @@ public class KeycloakUserRepository implements UserRepository {
 
 		return result;
 	}
+	@Override
+	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+
+		UserResource userResource = keycloakConfig.getRealmClient().users().get(id);
+
+		UserRepresentation representation = userResource.toRepresentation();
+
+		representation.setFirstName(updateUserDTO.getFirstName());
+		representation.setLastName(updateUserDTO.getLastName());
+		// 비밀번호 변경
+		if(!StringUtils.isEmpty(updateUserDTO.getPassword())){
+			// 비밀번호 변경을 위해 credential 설정
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false, updateUserDTO.getPassword());
+			//비밀번호 설정
+			userResource.resetPassword(authenticationSettings);
+		}
+		keycloakConfig.getRealmClient().users().get(id).update(representation);
+
+		return new UserInfo(userResource.toRepresentation());
+	}
+
 }

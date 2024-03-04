@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
+import java.util.List;
+
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
@@ -8,6 +10,19 @@ import lombok.Getter;
 
 @Getter
 public class WorkloadResDTO {
+
+	@Builder
+	@Getter
+	public static class PageUsingDatasetDTO {
+		private List<UsingDatasetDTO> usingWorkloads;
+		private long totalCount;
+	}
+	@Builder
+	@Getter
+	public static class PageUsingModelDTO {
+		private List<UsingModelDTO> usingWorkloads;
+		private long totalCount;
+	}
 
 	@Getter
 	@Builder

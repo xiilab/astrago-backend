@@ -6,10 +6,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.xiilab.modulemonitor.service.PrometheusService;
 
 @Repository
-public class PrometheusRepositoryImpl implements PrometheusService {
+public class PrometheusRepositoryImpl implements PrometheusRepository {
 	@Value("${prometheus.url}")
 	private String prometheusURL;
 
@@ -40,7 +39,14 @@ public class PrometheusRepositoryImpl implements PrometheusService {
 	public String getHistoryMetricByQuery(String promql, String startDate, String endDate) {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=256", String.class,
+			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=2048", String.class,
+			promql, startDate, endDate);
+		return responseEntity.getBody();
+	}
+	public String getHistoryMetricByQuery(String promql, String startDate, String endDate, long step) {
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<String> responseEntity = restTemplate.getForEntity(
+			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=" + step, String.class,
 			promql, startDate, endDate);
 		return responseEntity.getBody();
 	}

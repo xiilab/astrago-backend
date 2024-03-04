@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -18,6 +20,7 @@ import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 
 @Repository
@@ -108,7 +111,7 @@ public interface WorkloadRepository {
 
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
 
-	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
+	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 
@@ -120,9 +123,23 @@ public interface WorkloadRepository {
 
 	void createModelDeployment(CreateModelDeployment createDeployment);
 
-	List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id);
+	WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id);
 
 	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalModelDeploymentDTO);
 
 	boolean isUsedModel(Long modelId);
+
+	List<String> getFileListInWorkloadContainer(String podName, String namespace, String path) throws IOException;
+	List<String> getFileInfoInWorkloadContainer(String podName, String namespace, String path) throws IOException;
+
+	int getDirectoryFileCount(String podName, String namespace, String path) throws IOException;
+
+	CopyOrReadable downloadFileFromPod(String podName, String namespace, String filePath);
+
+	CopyOrReadable downloadFolderFromPod(String podName, String namespace, String folderPath);
+
+	void deleteFileFromPod(String podName, String namespace, String filePath);
+
+	Boolean uploadFileToPod(String podName, String namespace, String path, File file);
+	boolean mkdirToPod(String podName, String namespace, String path);
 }

@@ -185,7 +185,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
 			return workloadList.stream()
-				.filter(workload -> workload.getCreatorId().equals(username))
+				.filter(workload -> workload.getCreatorUserName().equals(username))
 				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
 				.toList()
 				.get(0);
@@ -269,8 +269,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
-		return workloadModuleService.workloadsUsingDataset(id);
+	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+		return workloadModuleService.workloadsUsingDataset(pageNo, pageSize, id);
 	}
 
 	@Override
@@ -367,8 +367,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
-		return workloadModuleService.workloadsUsingModel(id);
+	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
+		return workloadModuleService.workloadsUsingModel(pageNo, pageSize, id);
 	}
 
 	@Override

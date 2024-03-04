@@ -5,9 +5,10 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
+import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.repository.UserRepository;
@@ -85,5 +86,9 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<SearchDTO> getUserAndGroupBySearch(String search){
 		return userRepository.getUserAndGroupBySearch(search);
+	}
+	@Override
+	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+		return userRepository.updateUserInfoById(id, updateUserDTO);
 	}
 }

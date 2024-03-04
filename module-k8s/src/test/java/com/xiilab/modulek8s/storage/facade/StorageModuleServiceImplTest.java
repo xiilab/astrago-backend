@@ -24,12 +24,12 @@
 // import org.springframework.test.context.ContextConfiguration;
 //
 // import com.fasterxml.jackson.databind.ObjectMapper;
+// import com.xiilab.modulecommon.enums.StorageType;
 // import com.xiilab.modulek8s.TestConfiguration;
 // import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 // import com.xiilab.modulek8s.common.enumeration.LabelField;
 // import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 // import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
-// import com.xiilab.modulek8sdb.common.enums.StorageType;
 // import com.xiilab.modulek8s.config.K8sAdapter;
 // import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 // import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
@@ -37,6 +37,8 @@
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 // import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 // import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeServiceImpl;
+// import com.xiilab.modulek8s.node.dto.ResponseDTO;
+// import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Chart;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.HelmReleaseSpec;
@@ -53,6 +55,8 @@
 // import io.fabric8.kubernetes.api.model.HasMetadata;
 // import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 // import io.fabric8.kubernetes.api.model.NamespaceList;
+// import io.fabric8.kubernetes.api.model.Node;
+// import io.fabric8.kubernetes.api.model.NodeBuilder;
 // import io.fabric8.kubernetes.api.model.NodeSelectorRequirementBuilder;
 // import io.fabric8.kubernetes.api.model.ObjectMeta;
 // import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -76,6 +80,7 @@
 // import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 // import io.fabric8.kubernetes.api.model.batch.v1.Job;
 // import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
+// import io.fabric8.kubernetes.api.model.metrics.v1beta1.NodeMetrics;
 // import io.fabric8.kubernetes.api.model.storage.StorageClass;
 // import io.fabric8.kubernetes.api.model.storage.StorageClassBuilder;
 // import io.fabric8.kubernetes.client.KubernetesClient;
@@ -99,6 +104,7 @@
 // 	private WorkloadModuleFacadeServiceImpl workloadModuleFacadeService;
 // 	@MockBean
 // 	private ObjectMapper objectMapper;
+//
 //
 // 	@Test
 // 	void getStorageClasses() {
@@ -465,8 +471,8 @@
 // 				.parameters(parameters)
 // 				.reclaimPolicy(ReclaimPolicyType.DELETE)
 // 				.createdAt(createdAt)
-// 				.creatorName(creatorName)
-// 				.creator(creator)
+// 				.creatorFullName(creatorName)
+// 				.creatorUserName(creator)
 // 				.build();
 //
 // 			StorageClass resource = (StorageClass)storageClassVO.createResource();
@@ -838,6 +844,50 @@
 //
 // 			// replicaSet.getMetadata().getOwnerReferences().get(0).getName()
 // 			System.out.println(deployment);
+// 		}
+// 	}
+// 	@Test
+// 	@DisplayName("node 목록 조회")
+// 	void 노드목록조회(){
+// 		String gpuName = "nvidia.com/gpu.product";
+// 		String gpuCount = "nvidia.com/gpu.count";
+// 		String address = "projectcalico.org/IPv4Address";
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			Node node1 = client.nodes().withName("gpu-titan-2").get();
+// 			Node node2 = client.nodes().list().getItems().stream().filter(node ->
+// 				node.getMetadata().getName().equals("gpu-titan-2")).findFirst().get();
+// 			List<Node> nodes = client.nodes().list().getItems();
+// 			for (Node node : nodes) {
+// 				String nodeName = node.getMetadata().getName(); //"gpu-titan-2"
+// 				node.getSpec().getUnschedulable(); // true = cordon or null, false = uncordon
+// 				//mem, cpu, disk, gpu
+// 				//request cpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="cpu"})by(node)
+// 				//request gpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="gpu"})
+// 				//request memory => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="memory"})/1024 = ki
+// 				//총 cpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="cpu"})by(node)
+// 				//총 gpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="nvidia_com_gpu"})by(node)
+// 				//총 mem => sum(kube_node_status_capacity{node="gpu-titan-2",resource="memory"})by(node)/1024 = ki
+//
+// 				//총 disk => max by (mountpoint) (label_replace(node_filesystem_size_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
+// 				//사용량 disk => max by (mountpoint) (label_replace(node_filesystem_avail_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
+//
+//
+// 			}
+//
+// 			System.out.println(nodes);
+// 		}
+// 	}
+// 	@Test
+// 	@DisplayName("노드 스케쥴 설정")
+// 	void nodeSchedule(){
+// 		String resourceName = "master-x3250m5-1";
+// 		ScheduleType scheduleType = ScheduleType.OFF;
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
+// 				.editSpec()
+// 				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
+// 				.endSpec()
+// 				.build());
 // 		}
 // 	}
 // }

@@ -1,16 +1,19 @@
 package com.xiilab.servercore.model.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8sdb.common.enums.DatasetDivision;
+import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
+import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.ModelWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +42,7 @@ public class ModelDTO {
 		private String creator;
 		private String creatorName;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private boolean isAvailable;
 
@@ -55,10 +58,10 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
+					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.build();
 			} else if (model.isLocalModel()) {
-				return ModelDTO.ResModel.builder()
+				return ResModel.builder()
 					.modelId(model.getModelId())
 					.storageType(((LocalModelEntity)model).getStorageType())
 					.modelName(model.getModelName())
@@ -68,6 +71,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
+					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.build();
 			}
 			return null;
@@ -103,7 +107,7 @@ public class ModelDTO {
 		private String creator;
 		private String creatorName;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private List<WorkloadResDTO.UsingModelDTO> usingModels;
 
@@ -124,7 +128,7 @@ public class ModelDTO {
 					.storageName(((AstragoModelEntity)model).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
 					.build();
-			}else if (model.isLocalModel()) {
+			} else if (model.isLocalModel()) {
 				return ResModelWithStorage.builder()
 					.modelId(model.getModelId())
 					.storageType(((LocalModelEntity)model).getStorageType())
@@ -140,23 +144,13 @@ public class ModelDTO {
 			}
 			return null;
 		}
-		public void addUsingModels(List<WorkloadResDTO.UsingModelDTO> usingModels){
-			this.usingModels = usingModels;
-		}
 	}
 
 	@Getter
 	public static class ModifyModel {
 		private String modelName;
 	}
-	@Getter
-	@Builder
-	public static class FileInfo{
-		private String fileName;
-		private String size;
-		private String lastModifiedTime;
-		private String contentPath;
-	}
+
 	@Getter
 	public static class ReqFilePathDTO {
 		private String path;
@@ -174,7 +168,7 @@ public class ModelDTO {
 		private StorageType storageType;
 		private String creator;
 		private LocalDateTime createdAt;
-		private DatasetDivision division;
+		private RepositoryDivision division;
 		private String size;
 		private boolean isAvailable;
 
@@ -188,7 +182,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
+					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.build();
 			} else if (model.isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -213,9 +207,9 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model.getModel()).getModelSize()))
+					.size(CoreFileUtils.formatFileSize(model.getModel().getModelSize()))
 					.build();
-			}else if (model.getModel().isLocalModel()) {
+			} else if (model.getModel().isLocalModel()) {
 				return ModelInWorkspace.builder()
 					.modelId(model.getModel().getModelId())
 					.storageType(((LocalModelEntity)model.getModel()).getStorageType())
@@ -229,6 +223,7 @@ public class ModelDTO {
 			return null;
 		}
 	}
+
 	@Getter
 	@Builder
 	public static class ModelsInWorkspace {
@@ -239,6 +234,7 @@ public class ModelDTO {
 				.datasets(models.stream().map(ModelDTO.ModelInWorkspace::entityToDto).toList())
 				.build();
 		}
+
 		public static ModelDTO.ModelsInWorkspace mappingEntitiesToDtos(List<ModelWorkSpaceMappingEntity> models) {
 			return ModelDTO.ModelsInWorkspace.builder()
 				.datasets(models.stream().map(ModelDTO.ModelInWorkspace::mappingEntityToDto).toList())
