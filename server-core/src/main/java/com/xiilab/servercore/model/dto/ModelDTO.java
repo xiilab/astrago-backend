@@ -76,9 +76,6 @@ public class ModelDTO {
 			}
 			return null;
 		}
-		public void modelSizeFormatFileSize(String format){
-			this.size = format;
-		}
 	}
 
 	@Getter
@@ -147,10 +144,6 @@ public class ModelDTO {
 			}
 			return null;
 		}
-
-		public void addUsingModels(List<WorkloadResDTO.UsingModelDTO> usingModels) {
-			this.usingModels = usingModels;
-		}
 	}
 
 	@Getter
@@ -189,7 +182,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
+					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.build();
 			} else if (model.isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -214,7 +207,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model.getModel()).getModelSize()))
+					.size(CoreFileUtils.formatFileSize(model.getModel().getModelSize()))
 					.build();
 			} else if (model.getModel().isLocalModel()) {
 				return ModelInWorkspace.builder()
