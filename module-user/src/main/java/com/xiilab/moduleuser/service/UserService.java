@@ -44,4 +44,5 @@ public interface UserService {
 	void updateUserEnable(String id, boolean enable);
 
 	UserDTO.UserInfo getUserById(String id);
+	List<UserInfo> getAdminList();
 }

@@ -123,4 +123,9 @@ public class UserController {
 	public ResponseEntity<List<SearchDTO>> getUserAndGroupBySearch(@PathVariable(name = "search") String search){
 		return new ResponseEntity<>(userFacadeService.getUserAndGroupBySearch(search), HttpStatus.OK);
 	}
+	@GetMapping("/admin")
+	@Operation(summary = "관리자 리스트 조회")
+	public ResponseEntity<List<UserInfo>> getAdminList(){
+		return new ResponseEntity<>(userFacadeService.getAdminList(), HttpStatus.OK);
+	}
 }

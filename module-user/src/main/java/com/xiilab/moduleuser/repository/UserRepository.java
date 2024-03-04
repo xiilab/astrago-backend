@@ -42,4 +42,5 @@ public interface UserRepository {
 	void updateUserEnable(String id, boolean enable);
 
 	UserDTO.UserInfo getUserById(String id);
+	List<UserInfo> getAdminList();
 }

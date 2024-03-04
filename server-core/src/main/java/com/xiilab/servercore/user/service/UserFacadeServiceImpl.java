@@ -92,4 +92,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
 		return userService.updateUserInfoById(id, updateUserDTO);
 	}
+
+	@Override
+	public List<UserInfo> getAdminList(){
+		return userService.getAdminList();
+	}
 }
