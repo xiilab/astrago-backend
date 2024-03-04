@@ -317,7 +317,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	public Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> getAlertReceiveDTOList(String currentTime){
 		// 해당시간 발생된 AlertEntity List 조회
 		List<AlertManagerReceiveEntity> alertList = alertManagerReceiveRepository.findAlertEntityByCurrentTime(currentTime).orElseThrow(() ->
-			new IllegalArgumentException("해당 시간의 알림이 존재하지 않습니다."));
+			new RestApiException(CommonErrorCode.ALERT_MANAGER_ADD_RULE_FAIL));
 		// AlertManager ID 별로 AlertDTO Map 생성
 		List<AlertManagerReceiveDTO.ReceiveDTO> list = alertList.stream().map(alertManagerReceiveEntity ->
 			AlertManagerReceiveDTO.ReceiveDTO.receiveDTOBuilder()
