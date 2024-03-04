@@ -20,7 +20,6 @@ import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
-import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -77,7 +76,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserInfoDTO userInfoDTO) {
-		PageRequest pageRequest = PageRequest.of(pageInfo.getPage() - 1, pageInfo.getPageSize());
+		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth(), repositorySearchCondition);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();

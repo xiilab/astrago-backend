@@ -318,7 +318,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 
 	@Override
 	public WorkloadResDTO.PageUsingModelDTO getWorkloadsUsingModel(PageInfo pageInfo, Long modelId) {
-		 return workloadModuleFacadeService.workloadsUsingModel(pageInfo.getPage(), pageInfo.getPageSize(), modelId);
+		 return workloadModuleFacadeService.workloadsUsingModel(pageInfo.getPageNo(), pageInfo.getPageSize(), modelId);
 	}
 
 	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Model model) {
