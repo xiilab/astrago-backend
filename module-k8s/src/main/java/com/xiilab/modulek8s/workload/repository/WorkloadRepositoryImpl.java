@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.stereotype.Repository;
@@ -32,6 +34,9 @@ import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
+import com.xiilab.modulek8s.workload.vo.JobCodeVO;
+import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
+import com.xiilab.modulek8s.workload.vo.WorkloadVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
@@ -62,13 +67,19 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 		Job resource = (Job)createResource(batchJobVO.createResource());
-		return new ModuleJobResDTO(resource);
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
+		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
+		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
+		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
 	public ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
 		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
-		return new ModuleJobResDTO(resource);
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVOJobVO.getCodes());
+		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getDatasets());
+		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getModels());
+		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
@@ -243,7 +254,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public Pod getInteractiveJobPod(String workspaceName, String workloadName) throws K8sException {
+	public Pod getInteractiveJobPod(String workspaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Deployment deployment = kubernetesClient.apps()
 				.deployments()
@@ -742,4 +753,29 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			return workloadName;
 		}
 	}
+
+	private Map<Long, Map<String, String>> getCodesInfoMap(List<JobCodeVO> jobCodeVOList) {
+		Map<Long, Map<String, String>> codesMap = new HashMap<>();
+		for (JobCodeVO jobCodeVO : jobCodeVOList) {
+			Long id = jobCodeVO.id();
+			String mountPath = jobCodeVO.mountPath();
+			String branch = jobCodeVO.branch();
+			codesMap.computeIfAbsent(jobCodeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
+			codesMap.get(id).put("branch", branch);
+		}
+
+		return codesMap;
+	}
+
+	private Map<Long, Map<String, String>> getVolumesInfoMap(List<JobVolumeVO> jobVolumeVOList) {
+		Map<Long, Map<String, String>> volumesMap = new HashMap<>();
+		for (JobVolumeVO jobVolumeVO : jobVolumeVOList) {
+			Long id = jobVolumeVO.id();
+			String mountPath = jobVolumeVO.mountPath();
+			volumesMap.computeIfAbsent(jobVolumeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
+		}
+
+		return volumesMap;
+	}
+
 }

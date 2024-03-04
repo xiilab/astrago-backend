@@ -22,7 +22,7 @@ import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.common.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.modulecommon.dto.DirectoryDTO;

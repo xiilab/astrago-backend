@@ -42,6 +42,12 @@ public abstract class ModuleWorkloadResDTO {
 	boolean isPinYN;                     // PIN YN
 	AgeDTO age;                             // 워크로드 경과시간
 	int remainTime;                         // 잔여시간
+	String datasetIds;
+	String modelIds;
+	String codeIds;
+	String imageId;
+	String imageType;
+	String imageCredentialId;
 
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		uid = hasMetadata.getMetadata().getUid();
@@ -50,12 +56,18 @@ public abstract class ModuleWorkloadResDTO {
 		description = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.DESCRIPTION.getField());
 		creatorId = hasMetadata.getMetadata().getLabels().get(LabelField.CREATOR_ID.getField());
 		creatorUserName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField());
-		creatorFullName = hasMetadata.getMetadata().getLabels().get(AnnotationField.CREATOR_FULL_NAME.getField());
+		creatorFullName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_FULL_NAME.getField());
 		workspaceResourceName = hasMetadata.getMetadata().getNamespace();
 		workspaceName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.WORKSPACE_NAME.getField());
 		createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 		age = new AgeDTO(createdAt);
 		type = getType();
+		datasetIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.DATASET_IDS.getField());
+		modelIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.MODEL_IDS.getField());
+		codeIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CODE_IDS.getField());
+		imageType = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_TYPE.getField());
+		imageCredentialId = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_CREDENTIAL_ID.getField());
+		imageId = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_ID.getField());
 	}
 
 	public void updatePinYN(boolean pinYN) {

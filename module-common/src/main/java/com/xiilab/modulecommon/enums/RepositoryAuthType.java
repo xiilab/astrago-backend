@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.common.enumeration;
+package com.xiilab.modulecommon.enums;
 
 import lombok.Getter;
 

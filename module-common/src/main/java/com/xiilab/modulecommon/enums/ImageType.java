@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.workload.enums;
+package com.xiilab.modulecommon.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
