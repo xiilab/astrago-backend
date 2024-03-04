@@ -53,9 +53,9 @@ public class WorkloadController {
 	@Operation(summary = "워크로드 상세 조회")
 	public ResponseEntity<WorkloadHistoryResDTO.FindWorkload> getWorkloadInfo(
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
-		@RequestParam("resourceName") String resourceName) {
+		@RequestParam("workloadResourceName") String workloadResourceName) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadInfoByResourceName(workspaceResourceName, resourceName),
+			workloadFacadeService.getWorkloadInfoByResourceName(workspaceResourceName, workloadResourceName),
 			HttpStatus.OK);
 	}
 

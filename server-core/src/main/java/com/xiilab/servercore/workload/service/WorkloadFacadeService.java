@@ -193,9 +193,9 @@ public class WorkloadFacadeService {
 		moduleImageReqDTO.setCredentialReqDTO(findCredential.toModuleCredentialReqDTO());
 	}
 
-	public WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String resourceName) {
+	public WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName) {
 		return workloadHistoryService.getWorkloadInfoByResourceName(
-			workspaceName, resourceName);
+			workspaceName, workloadResourceName);
 	}
 
 	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {

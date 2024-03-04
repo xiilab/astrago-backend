@@ -145,11 +145,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String resourceName) {
+	public WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName) {
 		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
-			workspaceName, resourceName).orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
-		WorkloadHistoryResDTO.FindWorkload from = WorkloadHistoryResDTO.FindWorkload.from(jobEntity);
-		System.out.println("jobEntity = " + jobEntity);
+			workspaceName, workloadResourceName).orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
 		return WorkloadHistoryResDTO.FindWorkload.from(jobEntity);
 	}
 

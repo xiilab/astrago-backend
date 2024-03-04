@@ -13,7 +13,7 @@ public interface WorkloadHistoryService {
 	List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName, String userId);
 	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName, String userId);
 	ModuleWorkloadResDTO getWorkloadHistoryById(long id);
-	WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String resourceName);
+	WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName);
 	// ModuleWorkloadResDTO getWorkloadHistoryByWorkloadId(long id);
 	void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO);
 	void saveWorkloadHistory(WorkloadHistoryReqDTO.CreateWorkloadHistory createWorkloadHistory);
