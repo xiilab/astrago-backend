@@ -38,10 +38,14 @@ public class DatasetWorkLoadMappingEntity{
 	@JoinColumn(name = "WORKLOAD_ID")
 	private WorkloadEntity workload;
 
+	@Column(name = "MOUNT_PATH")
+	private String mountPath;
+
 	@Builder
-	public DatasetWorkLoadMappingEntity(Dataset dataset, WorkloadEntity workload) {
+	public DatasetWorkLoadMappingEntity(Dataset dataset, WorkloadEntity workload, String mountPath) {
 		this.dataset = dataset;
 		this.workload = workload;
+		this.mountPath = mountPath;
 		//연관관계 편의 메서드
 		// dataset.getDatasetWorkloadMappingList().add(this);
 		// workload.getDatasetWorkloadMappingList().add(this);

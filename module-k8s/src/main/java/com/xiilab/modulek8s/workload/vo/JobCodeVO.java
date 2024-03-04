@@ -6,12 +6,13 @@ public record JobCodeVO(
 	//CodeRepositoryType codeRepositoryType,  // repository 타입
 	// String userName,        // userName (private 타입에서 사용)
 	// String token,           // 토큰 (private 타입에서 사용)
+	Long id,
 	String repositoryURL,   // repository URL
 	String branch,          // repository branch
 	String mountPath,       // 소스코드 마운트 경로
 	CredentialVO credentialVO
 ) {
-	public JobCodeVO(String repositoryURL, String branch, String mountPath) {
-		this(repositoryURL, branch, mountPath, null);
+	public JobCodeVO(Long codeId, String repositoryURL, String branch, String mountPath) {
+		this(codeId, repositoryURL, branch, mountPath, null);
 	}
 }

@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -21,6 +23,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -51,12 +54,12 @@ public abstract class WorkloadEntity {
 	protected String workspaceName;
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	protected String workspaceResourceName;
-	@Column(name = "WORKLOAD_REQ_GPU")
+	@Column(name = "WORKLOAD_REQ_GPU", precision = 10, scale = 1)
 	protected Integer gpuRequest;
 	@Column(name = "WORKLOAD_REQ_CPU")
-	protected Integer cpuRequest;
-	@Column(name = "WORKLOAD_REQ_MEM")
-	protected Integer memRequest;
+	protected BigDecimal cpuRequest;
+	@Column(name = "WORKLOAD_REQ_MEM", precision = 10, scale = 1)
+	protected BigDecimal memRequest;
 	@Column(name = "WORKLOAD_CREATOR")
 	protected String creatorName;
 	@Column(name = "WORKLOAD_CREATOR_ID")
@@ -70,14 +73,14 @@ public abstract class WorkloadEntity {
 	protected WorkloadType workloadType;
 	@Column(name = "WORKLOAD_CMD")
 	protected String workloadCMD;
-	@OneToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	protected List<EnvEntity> envList= new ArrayList<>();
+	protected List<EnvEntity> envList = new ArrayList<>();
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	protected List<VolumeEntity> volumeList= new ArrayList<>();
+	protected List<VolumeEntity> volumeList = new ArrayList<>();
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<PortEntity> portList = new ArrayList<>();

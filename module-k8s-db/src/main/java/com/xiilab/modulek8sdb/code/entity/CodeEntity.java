@@ -1,8 +1,9 @@
 package com.xiilab.modulek8sdb.code.entity;
 
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.code.enums.CodeType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.modulek8sdb.code.dto.CodeReqDTO;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 
 import jakarta.persistence.Column;
@@ -13,19 +14,21 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_CODE")
+@Entity
+@Table(name = "TB_CODE")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
+@Inheritance(strategy = InheritanceType.JOINED)
 public class CodeEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +37,10 @@ public class CodeEntity extends BaseEntity {
 	@Column(name = "CODE_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	private CodeType codeType;
+
+	@Column(name = "REPOSITORY_TYPE")
+	@Enumerated(value = EnumType.STRING)
+	private RepositoryType repositoryType;
 	@Column(name = "CODE_URL")
 	private String codeURL;
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -42,12 +49,17 @@ public class CodeEntity extends BaseEntity {
 	@Column(name = "WORKSPACE_NAME")
 	private String workspaceResourceName;
 
+	@Column(name = "DELETE_YN")
+	@Enumerated(EnumType.STRING)
+	private DeleteYN deleteYn = DeleteYN.N;
+
 
 	@Builder(builderClassName = "dtoConverter", builderMethodName = "dtoConverter")
-	CodeEntity(CodeReqDTO codeReqDTO, CredentialEntity credentialEntity) {
-		this.codeType = codeReqDTO.getCodeType();
-		this.codeURL = codeReqDTO.getCodeURL();
+	CodeEntity(CodeType codeType, String codeURL, String workspaceResourceName, CredentialEntity credentialEntity, RepositoryType repositoryType) {
+		this.codeType = codeType;
+		this.codeURL = codeURL;
 		this.credentialEntity = credentialEntity;
-		this.workspaceResourceName = codeReqDTO.getWorkspaceName();
+		this.workspaceResourceName = workspaceResourceName;
+		this.repositoryType = repositoryType;
 	}
 }

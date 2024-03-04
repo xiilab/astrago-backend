@@ -35,19 +35,15 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	String workspaceName;	 //워크스페이스 이름
 	WorkloadType workloadType;        // 워크로드 타입
 	JobImageVO image;        //사용할 image
-	int gpuRequest;        // 워크로드 gpu 요청량
-	float cpuRequest;        // 워크로드 cpu 요청량
-	float memRequest;        // 워크로드 mem 요청량
+	Integer gpuRequest;        // 워크로드 gpu 요청량
+	Float cpuRequest;        // 워크로드 cpu 요청량
+	Float memRequest;        // 워크로드 mem 요청량
 	//SchedulingType schedulingType;        // 스케줄링 방식
 	List<JobCodeVO> codes;    // code 정의
 	List<JobVolumeVO> datasets;
 	List<JobVolumeVO> models;
-	// List<JobVolumeVO> volumes;    // volume 정의
 	String secretName;
 
-	public void addNewImageSecret(PodSpecBuilder podSpecBuilder, String secretName) {
-
-	}
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
 	 *
@@ -154,6 +150,16 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 
 		return list.stream()
 			.map(jobVolumeVO -> String.valueOf(jobVolumeVO.id()))
+			.collect(Collectors.joining(","));
+	}
+
+	protected String getJobCodeIds(List<JobCodeVO> list) {
+		if (CollectionUtils.isEmpty(list)) {
+			return "";
+		}
+
+		return list.stream()
+			.map(jobCodeVO -> String.valueOf(jobCodeVO.id()))
 			.collect(Collectors.joining(","));
 	}
 

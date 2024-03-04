@@ -33,7 +33,7 @@ public class VolumeEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkloadEntity workload;
 
-	public static List<VolumeEntity> createVolumeList(List<String> volumes, WorkloadEntity workload) {
+	public static List<VolumeEntity> generateVolumeList(List<String> volumes, WorkloadEntity workload) {
 		if (CollectionUtils.isEmpty(volumes)) {
 			return Collections.emptyList();
 		}

@@ -10,7 +10,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
@@ -91,7 +93,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			// 노드포트 연결
 			svcService.createNodePortService(createSvcReqDTO);
 		} catch (Exception e) {
-			e.printStackTrace();
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
@@ -106,6 +107,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					volumeService.deletePV(model.getCreatePV().getPvName());
 				}
 			}
+
+			throw new RestApiException(WorkloadErrorCode.FAILED_CREATE_WORKLOAD);
 		}
 
 		return moduleJobResDTO;

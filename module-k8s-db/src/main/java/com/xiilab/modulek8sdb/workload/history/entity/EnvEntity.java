@@ -36,7 +36,7 @@ public class EnvEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkloadEntity workload;
 
-	public static List<EnvEntity> createEnvList(Map<String, String> envs, WorkloadEntity workload) {
+	public static List<EnvEntity> generateEnvList(Map<String, String> envs, WorkloadEntity workload) {
 		if (CollectionUtils.isEmpty(envs)) {
 			return Collections.emptyList();
 		}

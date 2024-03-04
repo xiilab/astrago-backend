@@ -19,7 +19,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.common.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DirectoryDTO;

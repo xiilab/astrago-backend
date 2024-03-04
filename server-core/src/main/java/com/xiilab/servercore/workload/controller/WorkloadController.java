@@ -18,12 +18,13 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.common.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
@@ -50,12 +51,11 @@ public class WorkloadController {
 
 	@GetMapping("/{type}")
 	@Operation(summary = "워크로드 상세 조회")
-	public ResponseEntity<ModuleWorkloadResDTO> getWorkloadInfo(
+	public ResponseEntity<WorkloadHistoryResDTO.FindWorkload> getWorkloadInfo(
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
-		@RequestParam("resourceName") String resourceName,
-		@PathVariable(value = "type") WorkloadType workloadType) {
+		@RequestParam("resourceName") String resourceName) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadInfoByResourceName(workspaceResourceName, resourceName, workloadType),
+			workloadFacadeService.getWorkloadInfoByResourceName(workspaceResourceName, resourceName),
 			HttpStatus.OK);
 	}
 

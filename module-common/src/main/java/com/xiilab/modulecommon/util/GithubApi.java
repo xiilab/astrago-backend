@@ -10,6 +10,10 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+
 public class GithubApi {
 	private GitHub gitHub;
 
@@ -22,7 +26,16 @@ public class GithubApi {
 			}
 			gitHub.checkApiUrlValidity();
 		} catch (IOException e) {
-			throw new RuntimeException("깃허브 API를 호출 할 수 없습니다.");
+			throw new RestApiException(CodeErrorCode.CONNECTION_ERROR_MESSAGE);
+		}
+	}
+
+	public boolean isRepoConnected(String repoName) {
+		try {
+			gitHub.getRepository(repoName);
+			return true;
+		} catch (IOException e) {
+			throw new RestApiException(CodeErrorCode.CONNECTION_ERROR_MESSAGE);
 		}
 	}
 
@@ -32,7 +45,7 @@ public class GithubApi {
 			Map<String, GHBranch> branches = repository.getBranches();
 			return branches.values().stream().map(GHBranch::getName).toList();
 		} catch (IOException e) {
-			throw new RuntimeException("브랜치 목록을 조회할 수 없습니다.");
+			throw new RestApiException(CodeErrorCode.NOT_FOUND_BRANCH_LIST);
 		}
 	}
 }

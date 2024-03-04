@@ -13,22 +13,33 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
+@Getter
 @SuperBuilder
-public class ModuleJobResDTO extends ModuleWorkloadResDTO{
+public class ModuleJobResDTO extends ModuleWorkloadResDTO {
 	private WorkloadStatus status;
+	private Map<Long, Map<String, String>> codesInfoMap;
+	private Map<Long, Map<String, String>> datasetInfoMap;
+	private Map<Long, Map<String, String>> modelInfoMap;
 
-	public ModuleJobResDTO(Deployment deployment) {
+	public ModuleJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
 		super(deployment);
 		initializeFromContainer(deployment.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = getWorkloadStatus(deployment.getStatus());
+		this.codesInfoMap = codesInfoMap;
+		this.datasetInfoMap = datasetInfoMap;
+		this.modelInfoMap = modelInfoMap;
 	}
 
-	public ModuleJobResDTO(Job job) {
+	public ModuleJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
 		super(job);
 		initializeFromContainer(job.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = getWorkloadStatus(job.getStatus());
+		this.codesInfoMap = codesInfoMap;
+		this.datasetInfoMap = datasetInfoMap;
+		this.modelInfoMap = modelInfoMap;
 	}
 
 	@Override
@@ -43,19 +54,16 @@ public class ModuleJobResDTO extends ModuleWorkloadResDTO{
 		Quantity getGpuRequest = resourceRequests.get("nvidia.com/gpu");
 		Quantity getCpuRequest = resourceRequests.get("cpu");
 		Quantity getMemory = resourceRequests.get("memory");
-		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() + ResourcesUnit.GPU_UNIT.getUnit() :
-			"0" + ResourcesUnit.GPU_UNIT.getUnit();
-		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() :
-			"0" + ResourcesUnit.CPU_UNIT.getUnit();
-		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() :
-			"0" + ResourcesUnit.MEM_UNIT.getUnit();
+		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() : "0";
+		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() : "0";
+		memRequest = getMemory != null ? getMemory.getAmount() : "0";
 		envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
 		ports = container.getPorts().stream()
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
-		command = container.getCommand() != null ? null : container.getCommand().get(0);
+		command = container.getCommand() != null ? container.getCommand().get(2) : null;
 	}
 
 	private WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {

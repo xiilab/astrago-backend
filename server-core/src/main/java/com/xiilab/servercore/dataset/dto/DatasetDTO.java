@@ -205,6 +205,7 @@ public class DatasetDTO {
 			}
 			return null;
 		}
+
 		public static DatasetInWorkspace mappingEntityToDto(DatasetWorkSpaceMappingEntity dataset){
 			if (dataset.getDataset().isAstragoDataset()) {
 				return DatasetInWorkspace.builder()

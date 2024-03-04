@@ -1,4 +1,4 @@
-package com.xiilab.servercore.common.enums;
+package com.xiilab.modulecommon.enums;
 
 import lombok.Getter;
 
