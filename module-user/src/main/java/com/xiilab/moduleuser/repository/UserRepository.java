@@ -37,9 +37,11 @@ public interface UserRepository {
 
 	void resetUserPassWord(String userId);
 	List<SearchDTO> getUserAndGroupBySearch(String search);
-	UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
+	void updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
 
 	void updateUserEnable(String id, boolean enable);
 
 	UserDTO.UserInfo getUserById(String id);
+
+	UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition);
 }
