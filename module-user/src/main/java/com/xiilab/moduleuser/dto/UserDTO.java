@@ -26,6 +26,11 @@ public class UserDTO {
 	}
 
 	@Getter
+	public static class ReqUserIds{
+		private List<String> ids;
+	}
+
+	@Getter
 	public static class UserInfo {
 		private String id;
 		private String userName;

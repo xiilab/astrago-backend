@@ -66,9 +66,9 @@ public class UserController {
 	@PatchMapping("/approval")
 	@Operation(summary = "사용자 승인 여부 업데이트")
 	public ResponseEntity<HttpStatus> updateUserApprovalYN(
-		@RequestBody List<String> idList,
+		@RequestBody UserDTO.ReqUserIds reqUserIds,
 		@RequestParam(name = "approvalYN") boolean approvalYN) {
-		userFacadeService.updateUserApprovalYN(idList, approvalYN);
+		userFacadeService.updateUserApprovalYN(reqUserIds.getIds(), approvalYN);
 		return ResponseEntity.ok().build();
 	}
 
