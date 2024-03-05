@@ -110,30 +110,30 @@ jobs:
       with:
         images: ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}
 
-    # # Docker buildx 설정
-    # - name: Docker Setup Buildx
-    #   if: ${{ steps.image-repo.outputs.value == 'docker.io/xiilab' }}
-    #   uses: docker/setup-buildx-action@v3.0.0
-
-    # # Harbor buildx 설정
-    # - name: Docker Setup Buildx
-    #   if: ${{ steps.image-repo.outputs.value == 'harbor.xiilab.com:32443/uyuni' }}
-    #   uses: docker/setup-buildx-action@v3.0.0
-    #   with:
-    #     buildkitd-flags: --debug --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
-    #     platforms: linux/amd64
-    #     driver-opts: |
-    #       network=host
-    #     #config: /etc/buildkit/buildkitd.toml
-    #     config-inline: |
-    #       [registry."harbor.xiilab.com:32443"]
-    #         http = true
-    #         insecure = true
-    #         mirrors = ["harbor.xiilab.com:32443"]
-    #         ca=["/etc/docker/certs.d/harbor.xiilab.com:32443/ca.crt"]
-    #         [[registry."harbor.xiilab.com:32443".keypair]]
-    #           key="/home/runner/tls/tls.key"
-    #           cert="/home/runner/tls/tls.crt"
+    # Docker buildx 설정
+    - name: Docker Setup Buildx
+      if: ${{ steps.image-repo.outputs.value == 'docker.io/xiilab' }}
+      uses: docker/setup-buildx-action@v3.0.0
+      
+    # Harbor buildx 설정
+    - name: Docker Setup Buildx
+      if: ${{ steps.image-repo.outputs.value == 'harbor.xiilab.com:32443/uyuni' }}
+      uses: docker/setup-buildx-action@v3.0.0
+      with:
+        buildkitd-flags: --debug --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
+        platforms: linux/amd64
+        driver-opts: |
+          network=host
+        #config: /etc/buildkit/buildkitd.toml
+        config-inline: |
+          [registry."harbor.xiilab.com:32443"]
+            http = true
+            insecure = true
+            mirrors = ["harbor.xiilab.com:32443"]
+            ca=["/etc/docker/certs.d/harbor.xiilab.com:32443/ca.crt"]
+            [[registry."harbor.xiilab.com:32443".keypair]]
+              key="/home/runner/tls/tls.key"
+              cert="/home/runner/tls/tls.crt"
 
     
     - name: 이미지 레파지토리가 맞는지 디버깅
