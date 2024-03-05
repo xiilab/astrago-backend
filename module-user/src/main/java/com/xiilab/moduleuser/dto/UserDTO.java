@@ -36,7 +36,6 @@ public class UserDTO {
 		private String enable;
 		private String approval;
 		private List<String> groups;
-		private List<String> workspaces;
 		private String firstName;
 		private String lastName;
 
@@ -59,10 +58,6 @@ public class UserDTO {
 				this.groups = groupReps.stream()
 					.filter(group -> group.getPath().contains("/account/"))
 					.map(GroupRepresentation::getName)
-					.toList();
-				this.workspaces = groupReps.stream()
-					.filter(group -> group.getPath().contains("/ws/"))
-					.map(group -> group.getPath().split("/ws/")[1])
 					.toList();
 			}
 		}

@@ -43,6 +43,21 @@ public class UserSummary{
 			groupRepresentationList.stream().filter(groupRepresentation -> !groupRepresentation.getName().contains("ws")).map(groupRepresentation ->
 				UserGroupDTO.builder().groupId(groupRepresentation.getId()).groupName(groupRepresentation.getName()).build()).toList() : new ArrayList<>();
 	}
+	public UserSummary(UserRepresentation userRepresentation) {
+		this.uid = userRepresentation.getId();
+		this.fullName = userRepresentation.getLastName() + userRepresentation.getFirstName();
+		this.name = userRepresentation.getUsername();
+		this.email = userRepresentation.getEmail();
+		this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ? SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
+		// 에포크 시간을 Instant로 변환
+		Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
+		// 특정 시간대에 맞춰 LocalDateTime으로 변환
+		LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+		this.joinDate = localDateTime.toLocalDate();
+		this.enable = String.valueOf(userRepresentation.isEnabled());
+		this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
+		this.userGroupDTOList = null;
+	}
 
 	@Builder
 	@Getter
