@@ -101,4 +101,8 @@ public class UserServiceImpl implements UserService {
 	public UserDTO.UserInfo getUserById(String id) {
 		return userRepository.getUserById(id);
 	}
+	@Override
+	public List<UserInfo> getAdminList(){
+		return userRepository.getAdminList();
+	}
 }

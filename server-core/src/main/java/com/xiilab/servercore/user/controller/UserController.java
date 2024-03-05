@@ -19,6 +19,7 @@ import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.user.service.UserFacadeService;
@@ -123,5 +124,10 @@ public class UserController {
 	@Operation(summary = "전체 검색")
 	public ResponseEntity<List<SearchDTO>> getUserAndGroupBySearch(@PathVariable(name = "search") String search){
 		return new ResponseEntity<>(userFacadeService.getUserAndGroupBySearch(search), HttpStatus.OK);
+	}
+	@GetMapping("/admin")
+	@Operation(summary = "관리자 리스트 조회")
+	public ResponseEntity<List<UserInfo>> getAdminList(){
+		return new ResponseEntity<>(userFacadeService.getAdminList(), HttpStatus.OK);
 	}
 }

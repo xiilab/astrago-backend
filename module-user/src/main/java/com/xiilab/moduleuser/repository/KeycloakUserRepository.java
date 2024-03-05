@@ -451,4 +451,11 @@ public class KeycloakUserRepository implements UserRepository {
 		}
 	}
 
+	@Override
+	public List<UserInfo> getAdminList(){
+		List<UserRepresentation> adminList = keycloakConfig.getRealmClient().roles().get("ROLE_ADMIN").getUserMembers();
+		return adminList.stream().map(userRepresentation ->
+			new UserInfo(userRepresentation, null)).toList();
+	}
+
 }
