@@ -23,19 +23,20 @@ public class JobEntity extends WorkloadEntity {
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	JobEntity(String name, String description, String resourceName, String workspaceName, String workspaceResourceName, Float cpuReq, Integer gpuReq, Float memReq,
-		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorName, String creatorId, Map<String, String> envs,
+		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId, Map<String, String> envs,
 		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd, ImageEntity image) {
 		this.name = name;
 		this.description = description;
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
-		this.cpuRequest = new BigDecimal(cpuReq);
+		this.cpuRequest = BigDecimal.valueOf(cpuReq);
 		this.gpuRequest = gpuReq;
-		this.memRequest = new BigDecimal(memReq);
+		this.memRequest = BigDecimal.valueOf(memReq);
 		this.createdAt = createdAt;
 		this.deletedAt = deletedAt;
 		this.creatorId = creatorId;
+		this.creatorRealName = creatorRealName;
 		this.creatorName = creatorName;
 		this.envList = EnvEntity.generateEnvList(envs, this);
 		this.volumeList = VolumeEntity.generateVolumeList(volumes, this);
@@ -43,6 +44,9 @@ public class JobEntity extends WorkloadEntity {
 		this.workloadType = workloadType;
 		this.workloadCMD = workloadCmd;
 		this.image = image;
-		// end::tagname[]
+	}
+
+	public void updateDeletedAt(LocalDateTime endDateTime) {
+		this.deletedAt = endDateTime;
 	}
 }

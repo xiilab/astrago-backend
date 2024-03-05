@@ -3,13 +3,12 @@ package com.xiilab.serverbatch.informer;
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
 
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulealert.dto.AlertDTO;
 import com.xiilab.modulealert.dto.AlertSetDTO;
@@ -17,29 +16,25 @@ import com.xiilab.modulealert.enumeration.AlertMessage;
 import com.xiilab.modulealert.enumeration.AlertType;
 import com.xiilab.modulealert.service.AlertService;
 import com.xiilab.modulealert.service.AlertSetService;
-import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.common.enums.VolumeType;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.model.entity.Model;
+import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -123,48 +118,32 @@ public class BatchJobInformer {
 				}
 			}
 
+			@Transactional
 			@Override
 			public void onDelete(Job job, boolean b) {
 				log.info("batch job {}가 삭제되었습니다.", job.getMetadata().getName());
-				String namespace = job.getMetadata().getNamespace();
 				// Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
 				// Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
-				// TODO 종료될 때, deleteAt, deleteYN 업데이트 필요
 
 				if (metadataFromResource != null) {
-					// JobEntity jobEntity = JobEntity.jobBuilder()
-					// 	.name(metadataFromResource.getName())
-					// 	.description(metadataFromResource.getDescription())
-					// 	.resourceName(metadataFromResource.getResourceName())
-					// 	.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
-					// 	.workspaceResourceName(namespace)
-					// 	.envs(getEnvFromContainer(container))
-					// 	.cpuReq(metadataFromResource.getCpuReq())
-					// 	.memReq(metadataFromResource.getMemReq())
-					// 	.gpuReq(metadataFromResource.getGpuReq())
-					// 	.cmd(String.join(" ", container.getCommand()))
-					// 	.createdAt(metadataFromResource.getCreatedAt())
-					// 	.deletedAt(metadataFromResource.getDeletedAt())
-					// 	.creatorName(metadataFromResource.getCreatorUserName())
-					// 	.creatorId(metadataFromResource.getCreatorId())
-					// 	.workloadType(WorkloadType.BATCH)
-					// 	.build();
-					// workloadHistoryRepo.save(jobEntity);
+					JobEntity endJob = workloadHistoryRepo.findByResourceName(job.getMetadata().getName())
+						.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_UPDATE_END_WORKLOAD_INFO));
 
-					// dataset, model mapping insert
-					// String datasetIds = metadataFromResource.getDatasetIds();
-					// String[] datasetIdList = datasetIds != null ? datasetIds.split(",") : null;
-					// saveDataMapping(datasetIdList, datasetRepository::findById, jobEntity, VolumeType.DATASET);
-					//
-					// String modelIds = metadataFromResource.getModelIds();
-					// String[] modelIdList = modelIds != null ? modelIds.split(",") : null;
-					// saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
-					//
-					// //소스코드 mapping insert
-					// String codeIds = metadataFromResource.getCodeIds();
-					// String[] codeIdList = codeIds != null ? codeIds.split(",") : null;
-					// saveDataMapping(codeIdList, codeRepository::findById, jobEntity, VolumeType.CODE);
+					// 워크로드 종료될 때, deleteAt 업데이트
+					endJob.updateDeletedAt(metadataFromResource.getDeletedAt());
+					workloadHistoryRepo.save(endJob);
+
+					/**
+					 * TODO DELETE_YN 업데이트 필요
+					 * 모델, 데이터셋은 매핑 엔티티만 업데이트
+					 * 코드, 이미지는 커스텀이면 매핑, 원본 업데이트, 아니면 매핑만 업데이트
+					 */
+
+					// List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = endJob.getModelWorkloadMappingList();
+					// List<DatasetWorkLoadMappingEntity> datasetWorkloadMappingList = endJob.getDatasetWorkloadMappingList();
+					// List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = endJob.getCodeWorkloadMappingList();
+					// ImageWorkloadMappingEntity imageWorkloadMappingEntity = endJob.getImageWorkloadMappingEntity();
 
 					AlertSetDTO.ResponseDTO workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 					// 해당 워크스페이스 알림 설정이 True인 경우
@@ -182,40 +161,6 @@ public class BatchJobInformer {
 
 		log.info("Starting all registered batch job informers");
 		informers.startAllRegisteredInformers();
-	}
-	// 데이터셋 또는 모델 정보를 저장하는 메서드
-	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity, VolumeType type) {
-		if (ids != null) {
-			for (String id : ids) {
-				if (StringUtils.hasText(id)) {
-					Optional<?> optionalEntity = findByIdFunction.apply(Long.valueOf(id));
-					optionalEntity.ifPresent(entity -> {
-						if(type == VolumeType.DATASET){
-							Dataset dataset = (Dataset)entity;
-							DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity = DatasetWorkLoadMappingEntity.builder()
-								.dataset(dataset)
-								.workload(jobEntity)
-								.build();
-							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
-						}else if(type == VolumeType.MODEL){
-							Model model = (Model)entity;
-							ModelWorkLoadMappingEntity modelWorkLoadMappingEntity = ModelWorkLoadMappingEntity.builder()
-								.model(model)
-								.workload(jobEntity)
-								.build();
-							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
-						}else{
-							CodeEntity code = (CodeEntity)entity;
-							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
-								.workload(jobEntity)
-								.code(code)
-								.build();
-							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
-						}
-					});
-				}
-			}
-		}
 	}
 
 	private AlertSetDTO.ResponseDTO getAlertSet(String workspaceName){

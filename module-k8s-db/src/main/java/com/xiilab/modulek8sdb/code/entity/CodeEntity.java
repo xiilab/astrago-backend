@@ -1,5 +1,7 @@
 package com.xiilab.modulek8sdb.code.entity;
 
+import org.hibernate.annotations.SQLDelete;
+
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.code.enums.CodeType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
@@ -29,11 +31,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.JOINED)
+@SQLDelete(sql = "UPDATE TB_CODE tc SET tc.DELETE_YN = 'Y' WHERE tc.CODE_ID = ?")
 public class CodeEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "CODE_ID")
 	private Long id;								// CODE ID
+	@Column(name = "TITLE")
+	private String title;
 	@Column(name = "CODE_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	private CodeType codeType;
