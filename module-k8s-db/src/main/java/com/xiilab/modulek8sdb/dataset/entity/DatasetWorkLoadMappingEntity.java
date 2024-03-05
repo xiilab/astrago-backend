@@ -1,11 +1,16 @@
 package com.xiilab.modulek8sdb.dataset.entity;
 
 
+import org.hibernate.annotations.SQLDelete;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,6 +26,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "TB_DATASET_WORKLOAD_MAPPING")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE TB_DATASET_WORKLOAD_MAPPING tdwm SET tdwm.DELETE_YN = 'Y' WHERE tdwm.DATASET_WORKLOAD_MAPPING_ID = ?")
 @Getter
 public class DatasetWorkLoadMappingEntity{
 
@@ -40,6 +46,10 @@ public class DatasetWorkLoadMappingEntity{
 
 	@Column(name = "MOUNT_PATH")
 	private String mountPath;
+
+	@Column(name = "DELETE_YN")
+	@Enumerated(EnumType.STRING)
+	private DeleteYN deleteYN = DeleteYN.N;
 
 	@Builder
 	public DatasetWorkLoadMappingEntity(Dataset dataset, WorkloadEntity workload, String mountPath) {

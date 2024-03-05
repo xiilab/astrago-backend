@@ -20,7 +20,8 @@ public enum WorkloadErrorCode  implements ErrorCode {
 	WORKLOAD_FOLDER_DOWN_ERR(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 폴더 다운로드는 아직 지원하지 않습니다."),
 	FAILED_CREATE_WORKLOAD(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 생성에 실패하였습니다."),
 	FAILED_SAVE_WORKLOAD_HISTORY(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 등록에 실패하였습니다."),
-	FAILED_LOAD_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 등록에 실패하였습니다.")
+	FAILED_LOAD_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 등록에 실패하였습니다."),
+	FAILED_UPDATE_END_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 수정에 실패하였습니다.")
 	;
 
 	private final int code;

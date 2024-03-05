@@ -4,8 +4,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import com.xiilab.modulealert.dto.SystemAlertDTO;
 import com.xiilab.modulealert.dto.SystemAlertSetDTO;
 import com.xiilab.modulealert.enumeration.SystemAlertMessage;
@@ -13,16 +11,10 @@ import com.xiilab.modulealert.enumeration.SystemAlertType;
 import com.xiilab.modulealert.service.SystemAlertService;
 import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8sdb.common.enums.VolumeType;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
-import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
@@ -135,32 +127,5 @@ public class InteractiveJobInformer {
 
 		log.info("Starting all registered interative job informers");
 		informers.startAllRegisteredInformers();
-	}
-	// 데이터셋 또는 모델 정보를 저장하는 메서드
-	public void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity, VolumeType type) {
-		if (ids != null) {
-			for (String id : ids) {
-				if (StringUtils.hasText(id)) {
-					Optional<?> optionalEntity = findByIdFunction.apply(Long.valueOf(id));
-					optionalEntity.ifPresent(entity -> {
-						if(type == VolumeType.DATASET){
-							Dataset dataset = (Dataset)entity;
-							DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity = DatasetWorkLoadMappingEntity.builder()
-								.dataset(dataset)
-								.workload(jobEntity)
-								.build();
-							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
-						}else{
-							Model model = (Model)entity;
-							ModelWorkLoadMappingEntity modelWorkLoadMappingEntity = ModelWorkLoadMappingEntity.builder()
-								.model(model)
-								.workload(jobEntity)
-								.build();
-							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
-						}
-					});
-				}
-			}
-		}
 	}
 }

@@ -19,10 +19,7 @@ import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
-import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.user.service.UserFacadeService;
 
@@ -49,25 +46,29 @@ public class UserController {
 	public ResponseEntity<UserDTO.UserInfo> getUserInfoById(@PathVariable(name = "id") String id) {
 		return ResponseEntity.ok(userFacadeService.getUserById(id));
 	}
-	@PatchMapping()
+	@PatchMapping("/{id}")
 	@Operation(summary = "사용자 정보 수정")
-	public ResponseEntity<UserInfo> updateUserInfoById(@RequestBody UpdateUserDTO updateUserDTO,
-		UserInfoDTO userInfo) {
-		return ResponseEntity.ok(userFacadeService.updateUserInfoById(userInfo.getId(), updateUserDTO));
+	public ResponseEntity<HttpStatus> updateUserInfoById(@RequestBody UpdateUserDTO updateUserDTO,
+		@PathVariable(name = "id") String id) {
+		userFacadeService.updateUserInfoById(id, updateUserDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/approval")
 	@Operation(summary = "승인 대기 사용자 목록 조회")
-	public ResponseEntity<List<UserSummary>> getWaitingApprovalUserList() {
-		return ResponseEntity.ok(userFacadeService.getWaitingApprovalUserList());
+	public ResponseEntity<UserDTO.PageUsersDTO> getWaitingApprovalUserList(
+		PageInfo pageInfo,
+		UserSearchCondition searchCondition
+	) {
+		return ResponseEntity.ok(userFacadeService.getWaitingApprovalUserList(pageInfo, searchCondition));
 	}
 
 	@PatchMapping("/approval")
 	@Operation(summary = "사용자 승인 여부 업데이트")
 	public ResponseEntity<HttpStatus> updateUserApprovalYN(
-		@RequestBody List<String> idList,
+		@RequestBody UserDTO.ReqUserIds reqUserIds,
 		@RequestParam(name = "approvalYN") boolean approvalYN) {
-		userFacadeService.updateUserApprovalYN(idList, approvalYN);
+		userFacadeService.updateUserApprovalYN(reqUserIds.getIds(), approvalYN);
 		return ResponseEntity.ok().build();
 	}
 

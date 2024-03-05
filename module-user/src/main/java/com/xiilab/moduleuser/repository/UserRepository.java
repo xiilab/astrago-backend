@@ -33,14 +33,20 @@ public interface UserRepository {
 	void updateUserRole(String userId, AuthType authType);
 
 	void joinGroup(String groupId, String userId);
-	void joinDefaultGroup(String userId);
+	
+  void joinDefaultGroup(String userId);
 
 	void resetUserPassWord(String userId);
-	List<SearchDTO> getUserAndGroupBySearch(String search);
-	UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
+	
+  List<SearchDTO> getUserAndGroupBySearch(String search);
+	
+  void updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
 
 	void updateUserEnable(String id, boolean enable);
 
 	UserDTO.UserInfo getUserById(String id);
+
 	List<UserInfo> getAdminList();
+
+	UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition);
 }
