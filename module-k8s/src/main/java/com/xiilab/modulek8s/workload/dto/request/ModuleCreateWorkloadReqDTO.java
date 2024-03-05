@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
-import com.xiilab.modulek8s.workload.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
@@ -29,9 +29,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
 	private String command;    // 실행할 명령어
 	private WorkloadType workloadType;    // 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
-	private int gpuRequest;
-	private float cpuRequest;
-	private float memRequest;
+	private Integer gpuRequest;
+	private Float cpuRequest;
+	private Float memRequest;
 	private String imageSecretName;
 
 	public CredentialVO toCredentialVO() {

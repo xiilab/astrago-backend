@@ -55,7 +55,7 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 		String workloadName = splitMessage[2];
 		String podName = getPodNameByWorkloadType(workspaceName, workloadName, workloadType)
 			.map(pod -> pod.getMetadata().getName())
-			.orElseThrow(() -> new K8sException(WorkloadErrorCode.NOT_FOUND_POD));
+			.orElseThrow(() -> new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD));
 		if (!StringUtils.hasText(podName)) {
 			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}

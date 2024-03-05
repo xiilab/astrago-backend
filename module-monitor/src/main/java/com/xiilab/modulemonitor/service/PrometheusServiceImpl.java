@@ -34,13 +34,14 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	@Override
 	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO) {
+		long step = DataConverterUtil.getStep(requestDTO.startDate(), requestDTO.endDate());
 		// 검색시간 UnixTime로 변환
 		String startDate = DataConverterUtil.toUnixTime(requestDTO.startDate());
 		String endDate = DataConverterUtil.toUnixTime(requestDTO.endDate());
 		// Promql 생성
 		String promql = getPromql(requestDTO);
-		String result = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
-		return extractHistoryMetrics(result, requestDTO);
+		String result = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate, step);
+		return extractHistoryMetrics(result, requestDTO.metricName());
 	}
 
 	@Override
@@ -49,8 +50,10 @@ public class PrometheusServiceImpl implements PrometheusService{
 	}
 
 	@Override
-	public String getHistoryMetricByQuery(String promql, String startDate, String endDate) {
-		return prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
+	public List<ResponseDTO.HistoryDTO> getHistoryMetricByQuery(String promql, String startDate, String endDate) {
+		String historyMetricByQuery = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
+
+		return extractHistoryMetrics(historyMetricByQuery, "");
 	}
 
 	@Override
@@ -67,6 +70,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 	 * @param metricName Metric 이름
 	 * @return 반환될 ResponseDTO List
 	 */
+	@Override
 	public List<ResponseDTO.RealTimeDTO> extractMetrics(String jsonResponse, String metricName) {
 		List<ResponseDTO.RealTimeDTO> responseDTOS = new ArrayList<>();
 
@@ -108,6 +112,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			DataConverterUtil.getStringOrNull(metricData, "instance"),
 			DataConverterUtil.getStringOrNull(metricData, "modelName"),
 			DataConverterUtil.getStringOrNull(metricData, "gpu"),
+			DataConverterUtil.getStringOrNull(metricData, "resource"),
 			String.valueOf(value)
 		);
 	}
@@ -128,10 +133,10 @@ public class PrometheusServiceImpl implements PrometheusService{
 	 * 조회된 Prometheus History Metrics 추출하여 HistoryDTO List 반환하는 메소드
 	 *
 	 * @param jsonResponse 조회된 Metric 객체
-	 * @param requestDTO Metric 이름
+	 * @param metricName Metric 이름
 	 * @return 반환될 HistoryDTO List
 	 */
-	public List<ResponseDTO.HistoryDTO> extractHistoryMetrics(String jsonResponse, RequestDTO requestDTO) {
+	public List<ResponseDTO.HistoryDTO> extractHistoryMetrics(String jsonResponse, String metricName) {
 		List<ResponseDTO.HistoryDTO> responseDTOS = new ArrayList<>();
 
 		try {
@@ -143,7 +148,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			JsonNode results = jsonNode.path("data").path("result");
 			for (JsonNode result : results) {
 				// 리스트에 추가
-				responseDTOS.add(createHistoryDTO(result, requestDTO.metricName()));
+				responseDTOS.add(createHistoryDTO(result, metricName));
 			}
 		} catch (JsonProcessingException e) {
 			throw new IllegalArgumentException(e.getMessage());
@@ -167,6 +172,9 @@ public class PrometheusServiceImpl implements PrometheusService{
 			.nameSpace(DataConverterUtil.getStringOrNull(metricData, "namespace"))
 			.instance(DataConverterUtil.getStringOrNull(metricData, "instance"))
 			.metricName(metric)
+			.kubeNodeName(DataConverterUtil.getStringOrNull(metricData, "kubernetes_node"))
+			.gpuIndex(DataConverterUtil.getStringOrNull(metricData, "gpu"))
+			.modelName(DataConverterUtil.getStringOrNull(metricData, "modelName"))
 			.podName(DataConverterUtil.getStringOrNull(metricData, "pod"))
 			.nodeName(DataConverterUtil.getStringOrNull(metricData, "node"))
 			.valueDTOS(createHistoryValue(values))
@@ -202,18 +210,20 @@ public class PrometheusServiceImpl implements PrometheusService{
 		String result = "";
 		// GPU일 경우 kubernetes_node 사용
 		if (promql.getType().equals("GPU")) {
-			if (!requestDTO.nodeName().isBlank()) {
+			if (requestDTO.nodeName() != null && !requestDTO.nodeName().isBlank()) {
 				result = "kubernetes_node=\"" + requestDTO.nodeName() + "\",";
 			}
 		}else if(promql.getType().equals("NODE")){
-			result = "node=\"" + requestDTO.nodeName() + "\",";
+			if (requestDTO.nodeName() != null && !requestDTO.nodeName().isBlank()) {
+				result = "node=\"" + requestDTO.nodeName() + "\",";
+			}
 		}
 		else {
-			if (!requestDTO.nodeName().isBlank()) {
+			if (requestDTO.namespace() != null && !requestDTO.namespace().isBlank()) {
 				result = "namespace=\"" + requestDTO.namespace() + "\",";
 			}
 		}
-		if (!requestDTO.podName().isBlank()) {
+		if (requestDTO.podName() != null && !requestDTO.podName().isBlank()) {
 			result = result + "pod=\"" + requestDTO.podName() + "\"";
 		}
 		return String.format(promql.getQuery(), result.toLowerCase());

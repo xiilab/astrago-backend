@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -66,6 +67,12 @@ public class InteractiveJobVO extends WorkloadVO {
 	}
 
 	private Map<String, String> getAnnotationMap() {
+		String imageCredentialId = "";
+		if (getImage() != null && getImage().credentialVO() != null && !ObjectUtils.isEmpty(
+			getImage().credentialVO().credentialLoginId())) {
+			imageCredentialId = String.valueOf(getImage().credentialVO().credentialId());
+		}
+
 		Map<String, String> annotationMap = new HashMap<>();
 		annotationMap.put(AnnotationField.NAME.getField(), getName());
 		annotationMap.put(AnnotationField.DESCRIPTION.getField(), getDescription());
@@ -76,8 +83,12 @@ public class InteractiveJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.TYPE.getField(), getWorkloadType().getType());
 		annotationMap.put(AnnotationField.IMAGE_NAME.getField(), getImage().name());
 		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType());
+		annotationMap.put(AnnotationField.IMAGE_CREDENTIAL_ID.getField(), imageCredentialId);
 		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
+		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
+		annotationMap.put(AnnotationField.IMAGE_ID.getField(), String.valueOf(getImage().id()));
+
 		return annotationMap;
 	}
 
@@ -90,6 +101,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		map.put(LabelField.JOB_NAME.getField(), jobName);
 		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), "true"));
 		this.models.forEach(model -> map.put("md-" + model.id(), "true"));
+		this.codes.forEach(code -> map.put("cd-" + code.id(), "true"));
 
 		return map;
 	}

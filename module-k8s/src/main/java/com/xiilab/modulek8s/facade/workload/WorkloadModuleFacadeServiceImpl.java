@@ -10,7 +10,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.xiilab.modulek8s.common.enumeration.RepositoryAuthType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
@@ -85,13 +87,14 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					workspaceByName.getName());
 			}
 
-			CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-				moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
+			if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getPorts())) {
+				CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
+					moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
 
-			// 노드포트 연결
-			svcService.createNodePortService(createSvcReqDTO);
+				// 노드포트 연결
+				svcService.createNodePortService(createSvcReqDTO);
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
@@ -106,6 +109,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					volumeService.deletePV(model.getCreatePV().getPvName());
 				}
 			}
+
+			throw new RestApiException(WorkloadErrorCode.FAILED_CREATE_WORKLOAD);
 		}
 
 		return moduleJobResDTO;
@@ -266,8 +271,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
-		return workloadModuleService.workloadsUsingDataset(id);
+	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+		return workloadModuleService.workloadsUsingDataset(pageNo, pageSize, id);
 	}
 
 	@Override
@@ -364,8 +369,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
-		return workloadModuleService.workloadsUsingModel(id);
+	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
+		return workloadModuleService.workloadsUsingModel(pageNo, pageSize, id);
 	}
 
 	@Override

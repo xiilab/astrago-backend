@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.xiilab.modulecommon.exception.ErrorCode;
 import com.xiilab.modulecommon.exception.ErrorResponse;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
@@ -33,13 +34,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleCustomException(RestApiException e) {
 		ErrorCode errorCode = e.getErrorCode();
 		String target = e.getTarget();
-		if(!target.isBlank()){
+		if (!target.isBlank()) {
 			String msg = String.format(errorCode.getMessage(), target);
 			log.error("restApiException :" + msg);
 			return handleExceptionInternal(errorCode, msg);
 		}
 		log.error("restApiException :" + errorCode.getMessage());
 		return handleExceptionInternal(errorCode);
+	}
+
+	@ExceptionHandler(K8sException.class)
+	public ResponseEntity<Object> handleK8sException(K8sException e) {
+		ErrorCode errorCode = e.getErrorCode();
+		String msg = String.format(errorCode.getMessage());
+		log.error("k8sException :" + msg);
+		return handleExceptionInternal(errorCode, msg);
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
@@ -54,7 +63,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		log.error("handleAllException", ex);
 		log.error(String.valueOf(ex.getStackTrace()));
 		ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
-		return handleExceptionInternal(errorCode);
+		return handleExceptionInternal(errorCode, ex.getMessage());
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
@@ -63,6 +72,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
 		return handleExceptionInternal(ex, errorCode);
 	}
+
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(
 		MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status,
@@ -76,10 +86,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode));
 	}
+
 	private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode, String message) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode, message));
 	}
+
 	private ResponseEntity<Object> handleExceptionInternal(BindException e, ErrorCode errorCode) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(e, errorCode));
@@ -90,18 +102,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(ex, errorCode));
 	}
+
 	private ErrorResponse makeErrorResponse(final ErrorCode errorCode) {
 		return ErrorResponse.builder()
 			.resultCode(errorCode.getCode())
 			.resultMsg(errorCode.getMessage())
 			.build();
 	}
+
 	private ErrorResponse makeErrorResponse(ErrorCode errorCode, String message) {
 		return ErrorResponse.builder()
 			.resultCode(errorCode.getCode())
 			.resultMsg(message)
 			.build();
 	}
+
 	private ErrorResponse makeErrorResponse(BindException e, ErrorCode errorCode) {
 		List<ErrorResponse.ValidationError> errorList = e.getBindingResult().getFieldErrors()
 			.stream()
@@ -113,6 +128,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			.errors(errorList)
 			.build();
 	}
+
 	private ErrorResponse makeErrorResponse(ConstraintViolationException ex, ErrorCode errorCode) {
 		List<ErrorResponse.ValidationError> errorList = new ArrayList<>();
 		for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {

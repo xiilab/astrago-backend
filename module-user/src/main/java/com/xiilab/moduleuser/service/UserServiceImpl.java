@@ -6,10 +6,11 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.repository.UserRepository;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -27,8 +28,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<UserSummary> getUserList(FindDTO findDTO) {
-		return userRepository.getUserList(findDTO);
+	public UserDTO.PageUsersDTO getUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition) {
+		return userRepository.getUserList(pageNo, pageSize, searchCondition);
 	}
 
 	@Override
@@ -90,5 +91,15 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
 		return userRepository.updateUserInfoById(id, updateUserDTO);
+	}
+
+	@Override
+	public void updateUserEnable(String id, boolean enable) {
+		userRepository.updateUserEnable(id, enable);
+	}
+
+	@Override
+	public UserDTO.UserInfo getUserById(String id) {
+		return userRepository.getUserById(id);
 	}
 }

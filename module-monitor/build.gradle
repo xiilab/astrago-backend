@@ -5,6 +5,7 @@ dependencies {
     implementation project(':module-common')
     // K8s
     implementation 'io.fabric8:kubernetes-client:6.9.2'
+    implementation 'io.fabric8:openshift-client:6.9.2'
     // lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
     // webClient

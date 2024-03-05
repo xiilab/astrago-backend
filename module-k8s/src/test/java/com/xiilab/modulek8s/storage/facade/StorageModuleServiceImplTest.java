@@ -38,6 +38,7 @@
 // import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 // import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeServiceImpl;
 // import com.xiilab.modulek8s.node.dto.ResponseDTO;
+// import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.Chart;
 // import com.xiilab.modulek8s.storage.common.crd.NFS.spec.HelmReleaseSpec;
@@ -55,6 +56,7 @@
 // import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 // import io.fabric8.kubernetes.api.model.NamespaceList;
 // import io.fabric8.kubernetes.api.model.Node;
+// import io.fabric8.kubernetes.api.model.NodeBuilder;
 // import io.fabric8.kubernetes.api.model.NodeSelectorRequirementBuilder;
 // import io.fabric8.kubernetes.api.model.ObjectMeta;
 // import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -851,9 +853,13 @@
 // 		String gpuCount = "nvidia.com/gpu.count";
 // 		String address = "projectcalico.org/IPv4Address";
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			Node node1 = client.nodes().withName("gpu-titan-2").get();
+// 			Node node2 = client.nodes().list().getItems().stream().filter(node ->
+// 				node.getMetadata().getName().equals("gpu-titan-2")).findFirst().get();
 // 			List<Node> nodes = client.nodes().list().getItems();
 // 			for (Node node : nodes) {
 // 				String nodeName = node.getMetadata().getName(); //"gpu-titan-2"
+// 				node.getSpec().getUnschedulable(); // true = cordon or null, false = uncordon
 // 				//mem, cpu, disk, gpu
 // 				//request cpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="cpu"})by(node)
 // 				//request gpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="gpu"})
@@ -869,6 +875,19 @@
 // 			}
 //
 // 			System.out.println(nodes);
+// 		}
+// 	}
+// 	@Test
+// 	@DisplayName("노드 스케쥴 설정")
+// 	void nodeSchedule(){
+// 		String resourceName = "master-x3250m5-1";
+// 		ScheduleType scheduleType = ScheduleType.OFF;
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
+// 				.editSpec()
+// 				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
+// 				.endSpec()
+// 				.build());
 // 		}
 // 	}
 // }

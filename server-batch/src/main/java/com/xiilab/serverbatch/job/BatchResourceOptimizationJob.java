@@ -14,10 +14,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
-import com.xiilab.modulealert.dto.AlertDTO;
-import com.xiilab.modulealert.enumeration.AlertMessage;
-import com.xiilab.modulealert.enumeration.AlertType;
-import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulealert.dto.SystemAlertDTO;
+import com.xiilab.modulealert.enumeration.SystemAlertMessage;
+import com.xiilab.modulealert.enumeration.SystemAlertType;
+import com.xiilab.modulealert.service.SystemAlertService;
 import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
@@ -35,7 +35,7 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 	private ApplicationContext applicationContext;
 	private WorkloadModuleService workloadModuleService;
 	private PrometheusService prometheusService;
-	private AlertService alertService;
+	private SystemAlertService alertService;
 
 	@Override
 	public void executeInternal(JobExecutionContext context) {
@@ -43,7 +43,7 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 			applicationContext = (ApplicationContext)context.getScheduler().getContext().get("applicationContext");
 			workloadModuleService = applicationContext.getBean(WorkloadModuleService.class);
 			prometheusService = applicationContext.getBean(PrometheusService.class);
-			alertService = applicationContext.getBean(AlertService.class);
+			alertService = applicationContext.getBean(SystemAlertService.class);
 		} catch (SchedulerException e) {
 			throw new RuntimeException(e);
 		}
@@ -96,10 +96,10 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 
 		//삭제 될 리소스에 대한 알림
 		for (ModuleWorkloadResDTO moduleWorkloadResDTO : parentControllerList) {
-			alertService.sendAlert(AlertDTO.builder()
+			alertService.sendAlert(SystemAlertDTO.builder()
 				.recipientId(moduleWorkloadResDTO.getCreatorId())
-				.alertType(AlertType.WORKLOAD)
-				.message(String.format(AlertMessage.RESOURCE_OPTIMIZATION_ALERT.getMessage(),
+				.systemAlertType(SystemAlertType.WORKLOAD)
+				.message(String.format(SystemAlertMessage.RESOURCE_OPTIMIZATION_ALERT.getMessage(),
 					moduleWorkloadResDTO.getWorkspaceName(), moduleWorkloadResDTO.getName()))
 				.senderId("SYSTEM")
 				.build());

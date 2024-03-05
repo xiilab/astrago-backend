@@ -38,9 +38,17 @@ public class CodeWorkLoadMappingEntity {
 	@JoinColumn(name = "WORKLOAD_ID")
 	private WorkloadEntity workload;
 
+	@Column(name = "branch")
+	private String branch;
+
+	@Column(name = "mountPath")
+	private String mountPath;
+
 	@Builder
-	public CodeWorkLoadMappingEntity(CodeEntity code, WorkloadEntity workload) {
+	public CodeWorkLoadMappingEntity(CodeEntity code, WorkloadEntity workload, String branch, String mountPath) {
 		this.code = code;
 		this.workload = workload;
+		this.branch = branch;
+		this.mountPath = mountPath;
 	}
 }

@@ -191,7 +191,7 @@ public class K8sInfoPicker {
 				.name(AnnotationField.NAME.getField())
 				.description(AnnotationField.DESCRIPTION.getField())
 				.resourceName(metadata.getName())
-				.creatorId(annotations.get(LabelField.CREATOR_ID.getField()))
+				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
 				.workspaceName(AnnotationField.WORKSPACE_NAME.getField())

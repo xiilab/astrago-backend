@@ -27,8 +27,6 @@ public class AstragoModelEntity extends Model {
 
 	@Column(name = "MODEL_PATH")
 	private String modelPath;
-	@Column(name = "MODEL_SIZE")
-	private Long modelSize;
 
 	@Builder
 	public AstragoModelEntity(Long modelId, String modelName, StorageEntity storageEntity) {
@@ -38,9 +36,6 @@ public class AstragoModelEntity extends Model {
 
 	public void setModelPath(String datasetPath){
 		this.modelPath = datasetPath;
-	}
-	public void setModelSize(long size){
-		this.modelSize = size;
 	}
 
 	@Override

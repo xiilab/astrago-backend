@@ -1,26 +1,18 @@
 package com.xiilab.serverbatch.informer;
 
-import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
-
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.xiilab.modulealert.dto.AlertDTO;
-import com.xiilab.modulealert.dto.AlertSetDTO;
-import com.xiilab.modulealert.enumeration.AlertMessage;
-import com.xiilab.modulealert.enumeration.AlertType;
-import com.xiilab.modulealert.service.AlertService;
-import com.xiilab.modulealert.service.AlertSetService;
-import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
+import com.xiilab.modulealert.dto.SystemAlertDTO;
+import com.xiilab.modulealert.dto.SystemAlertSetDTO;
+import com.xiilab.modulealert.enumeration.SystemAlertMessage;
+import com.xiilab.modulealert.enumeration.SystemAlertType;
+import com.xiilab.modulealert.service.SystemAlertService;
+import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8sdb.code.entity.CodeEntity;
-import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.code.repository.CodeRepository;
-import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.common.enums.VolumeType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
@@ -35,8 +27,6 @@ import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
@@ -54,14 +44,12 @@ public class InteractiveJobInformer {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
 	private final DatasetRepository datasetRepository;
 	private final ModelRepository modelRepository;
-	private final CodeRepository codeRepository;
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final GroupService groupService;
-	private final AlertService alertService;
-	private final AlertSetService alertSetService;
+	private final SystemAlertService systemAlertService;
+	private final SystemAlertSetService systemAlertSetService;
 
-	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 	@PostConstruct
 	void doInformer() {
 		jobInformer();
@@ -77,14 +65,15 @@ public class InteractiveJobInformer {
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 
-				AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
+				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
 				if(workspaceAlertSet.isWorkloadStartAlert()){
 					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					alertService.sendAlert(AlertDTO.builder()
+					systemAlertService.sendAlert(SystemAlertDTO.builder()
 						.recipientId(workspaceOwner.getId())
-						.alertType(AlertType.WORKLOAD)
-						.message(String.format(AlertMessage.WORKSPACE_START.getMessage(), deployment.getMetadata().getName()))
+						.systemAlertType(SystemAlertType.WORKLOAD)
+						.message(String.format(
+							SystemAlertMessage.WORKSPACE_START.getMessage(), deployment.getMetadata().getName()))
 						.senderId("SYSTEM")
 						.build());
 				}
@@ -96,53 +85,48 @@ public class InteractiveJobInformer {
 
 			@Override
 			public void onDelete(Deployment deployment, boolean b) {
-				log.info("interactive job {}가 삭제되었습니다.", deployment.getMetadata().getName());
-				String namespace = deployment.getMetadata().getNamespace();
-				Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
-				Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
-				K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
-				if (metadataFromResource != null) {
-					JobEntity jobEntity = JobEntity.jobBuilder()
-						.name(metadataFromResource.getName())
-						.description(metadataFromResource.getDescription())
-						.resourceName(metadataFromResource.getResourceName())
-						.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
-						.workspaceResourceName(namespace)
-						.envs(getEnvFromContainer(container))
-						.cpuReq(metadataFromResource.getCpuReq())
-						.memReq(metadataFromResource.getMemReq())
-						.gpuReq(metadataFromResource.getGpuReq())
-						.cmd(String.join(" ", container.getCommand()))
-						.createdAt(metadataFromResource.getCreatedAt())
-						.deletedAt(metadataFromResource.getDeletedAt())
-						.creatorName(metadataFromResource.getCreatorUserName())
-						.creatorId(metadataFromResource.getCreatorId())
-						.workloadType(WorkloadType.INTERACTIVE)
-						.build();
-					workloadHistoryRepo.save(jobEntity);
-					// dataset, model mapping insert
-					String datasetIds = metadataFromResource.getDatasetIds();
-					String[] datasetIdList = datasetIds != null ? datasetIds.split(",") : null;
-					saveDataMapping(datasetIdList, datasetRepository::findById, jobEntity, VolumeType.DATASET);
+				// log.info("interactive job {}가 삭제되었습니다.", deployment.getMetadata().getName());
+				// String namespace = deployment.getMetadata().getNamespace();
+				// Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
+				// Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
+				// K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
+				// if (metadataFromResource != null) {
+				// 	JobEntity jobEntity = JobEntity.jobBuilder()
+				// 		.name(metadataFromResource.getName())
+				// 		.description(metadataFromResource.getDescription())
+				// 		.resourceName(metadataFromResource.getResourceName())
+				// 		.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
+				// 		.workspaceResourceName(namespace)
+				// 		.envs(getEnvFromContainer(container))
+				// 		.cpuReq(metadataFromResource.getCpuReq())
+				// 		.memReq(metadataFromResource.getMemReq())
+				// 		.gpuReq(metadataFromResource.getGpuReq())
+				// 		.cmd(String.join(" ", container.getCommand()))
+				// 		.createdAt(metadataFromResource.getCreatedAt())
+				// 		.deletedAt(metadataFromResource.getDeletedAt())
+				// 		.creatorName(metadataFromResource.getCreatorUserName())
+				// 		.creatorId(metadataFromResource.getCreatorId())
+				// 		.workloadType(WorkloadType.INTERACTIVE)
+				// 		.build();
+				// 	workloadHistoryRepo.save(jobEntity);
+				// 	// dataset, model mapping insert
+				// 	String datasetIds = metadataFromResource.getDatasetIds();
+				// 	String[] datasetIdList = datasetIds != null ? datasetIds.split(",") : null;
+				// 	saveDataMapping(datasetIdList, datasetRepository::findById, jobEntity, VolumeType.DATASET);
+				//
+				// 	String modelIds = metadataFromResource.getModelIds();
+				// 	String[] modelIdList = modelIds != null ? modelIds.split(",") : null;
+				// 	saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
+				// }
 
-					String modelIds = metadataFromResource.getModelIds();
-					String[] modelIdList = modelIds != null ? modelIds.split(",") : null;
-					saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
-
-					//소스코드 mapping insert
-					String codeIds = metadataFromResource.getCodeIds();
-					String[] codeIdList = codeIds != null ? codeIds.split(",") : null;
-					saveDataMapping(codeIdList, codeRepository::findById, jobEntity, VolumeType.CODE);
-				}
-
-				AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
+				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
 				if(workspaceAlertSet.isWorkloadEndAlert()){
 					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					alertService.sendAlert(AlertDTO.builder()
+					systemAlertService.sendAlert(SystemAlertDTO.builder()
 						.recipientId(workspaceOwner.getId())
-						.alertType(AlertType.WORKLOAD)
-						.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
+						.systemAlertType(SystemAlertType.WORKLOAD)
+						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
 						.senderId("SYSTEM")
 						.build());
 				}
@@ -166,20 +150,13 @@ public class InteractiveJobInformer {
 								.workload(jobEntity)
 								.build();
 							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
-						}else if(type == VolumeType.MODEL){
+						}else{
 							Model model = (Model)entity;
 							ModelWorkLoadMappingEntity modelWorkLoadMappingEntity = ModelWorkLoadMappingEntity.builder()
 								.model(model)
 								.workload(jobEntity)
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
-						}else{
-							CodeEntity code = (CodeEntity)entity;
-							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
-								.workload(jobEntity)
-								.code(code)
-								.build();
-							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						}
 					});
 				}

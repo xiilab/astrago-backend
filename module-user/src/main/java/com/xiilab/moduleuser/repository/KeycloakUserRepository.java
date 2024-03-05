@@ -1,6 +1,7 @@
 package com.xiilab.moduleuser.repository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,13 +17,16 @@ import org.springframework.stereotype.Component;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
+import com.xiilab.moduleuser.enums.UserCreatedAt;
+import com.xiilab.moduleuser.enums.UserEnable;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
 import io.micrometer.common.util.StringUtils;
@@ -63,31 +67,38 @@ public class KeycloakUserRepository implements UserRepository {
 		// 이름 중복 검사
 		boolean isUsernameExists = list.stream()
 			.anyMatch(userRepresentation -> userRepresentation.getUsername().equals(userReqVO.getUsername()));
-		if(isUsernameExists) {
+		if (isUsernameExists) {
 			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL_SAME_NAME);
 		}
 		// 메일 중복검사
 		boolean isEmailExists = list.stream()
 			.anyMatch(userRepresentation -> userRepresentation.getEmail().equals(userReqVO.getEmail()));
-		if(isEmailExists) {
+		if (isEmailExists) {
 			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL_SAME_EMAIL);
 		}
 	}
 
 	@Override
-	public List<UserSummary> getUserList(FindDTO findDTO) {
+	public UserDTO.PageUsersDTO getUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
-
-		return realmClient.users().list().stream().filter(user
-			-> user.getAttributes() != null
-			&& user.getAttributes().containsKey("approvalYN")
-			&& user.getAttributes().containsValue(List.of("true"))
-			&& searchInfo(findDTO, user)
-		).map(userRepresentation -> {
+		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
+			.stream().filter(user
+				-> user.getAttributes() != null
+				&& user.getAttributes().containsKey("approvalYN")
+				&& searchName(searchCondition.getSearchText(), user)
+				&& enableEq(searchCondition.getUserEnable(), user)
+			)
+			.sorted(
+				searchCondition.getCreatedAt() == UserCreatedAt.DESC ?
+				Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
+					Comparator.comparing(UserRepresentation::getCreatedTimestamp)
+			)
+			.toList();
+		List<UserSummary> userSummaries = users.stream().map(userRepresentation -> {
 			// 워크스페이스 관련 그룹 제외
 			List<GroupRepresentation> groups = realmClient.users()
 				.get(userRepresentation.getId())
-				.groups(0, 100)
+				.groups(0, Integer.MAX_VALUE)
 				.stream()
 				.filter(
 					groupRepresentation -> !groupRepresentation.getName().equals("ws") && !groupRepresentation.getName()
@@ -95,6 +106,27 @@ public class KeycloakUserRepository implements UserRepository {
 				.toList();
 			return new UserSummary(userRepresentation, groups);
 		}).toList();
+		int totalCount = users.size();
+		int startIndex = (pageNo - 1) * pageSize;
+		int endIndex = Math.min(startIndex + pageSize, totalCount);
+		if (startIndex >= totalCount || endIndex <= startIndex) {
+			// 페이지 범위를 벗어나면 빈 리스트 반환
+			return UserDTO.PageUsersDTO.builder()
+				.users(null)
+				.totalCount(totalCount)
+				.build();
+		}
+		return UserDTO.PageUsersDTO.builder()
+			.users(userSummaries.subList(startIndex, endIndex))
+			.totalCount(totalCount)
+			.build();
+	}
+
+	private boolean enableEq(UserEnable userEnable, UserRepresentation user) {
+		if(userEnable == null){
+			return true;
+		}
+		return userEnable.isEnable() == user.isEnabled();
 	}
 
 	@Override
@@ -119,7 +151,28 @@ public class KeycloakUserRepository implements UserRepository {
 		}
 		return new UserInfo(userRepresentation, groupList);
 	}
-
+	@Override
+	public UserDTO.UserInfo getUserById(String userId) {
+		UserResource userResource = getUserResourceById(userId);
+		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
+		UserRepresentation userRepresentation = userResource.toRepresentation();
+		try {
+			RoleRepresentation roleRepresentation = roleRepresentations.stream()
+				.filter(role -> role.getName().contains("ROLE_"))
+				.toList()
+				.get(0);
+			userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_INFO);
+		}
+		List<GroupRepresentation> groupList;
+		try {
+			groupList = userResource.groups();
+		} catch (NullPointerException e) {
+			groupList = null;
+		}
+		return new UserDTO.UserInfo(userRepresentation, groupList);
+	}
 	@Override
 	public List<UserSummary> getUserListSearchByAttribute(String attribute) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
@@ -211,11 +264,11 @@ public class KeycloakUserRepository implements UserRepository {
 			// userId 유효 체크
 			userResource.toRepresentation();
 			// 비밀번호 변경을 위해 credential 설정
-			CredentialRepresentation authenticationSettings = getAuthenticationSettings(true, userId);
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(true, "astrago");
 			//비밀번호 리셋
 			userResource.resetPassword(authenticationSettings);
 		} catch (NotFoundException e) {
-			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_INFO);
+			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_BY_ID);
 		}
 
 	}
@@ -256,17 +309,18 @@ public class KeycloakUserRepository implements UserRepository {
 		return newCredential;
 	}
 
-	private boolean searchInfo(FindDTO findDTO, UserRepresentation user) {
+	private boolean searchName(String searchText, UserRepresentation user) {
 		boolean search = true;
-		if (StringUtils.isBlank(findDTO.getSearchCondition().getOption()) && StringUtils.isBlank(
-			findDTO.getSearchCondition().getKeyword())) {
+		if (StringUtils.isBlank(searchText)) {
 			return search;
 		}
-		if (findDTO.getSearchCondition().getOption().equalsIgnoreCase("ALL")) {
-			search = user.getFirstName().contains(findDTO.getSearchCondition().getKeyword())
-				|| user.getLastName().contains(findDTO.getSearchCondition().getKeyword())
-				|| user.getEmail().contains(findDTO.getSearchCondition().getKeyword());
-		}
+
+		String userRealName = user.getLastName() + user.getFirstName();
+		String userName = user.getUsername();
+
+		search = user.getEmail().contains(searchText) ||
+			userRealName.contains(searchText) ||
+			userName.contains(searchText);
 		return search;
 	}
 
@@ -280,29 +334,32 @@ public class KeycloakUserRepository implements UserRepository {
 		List<UserRepresentation> userList = realmClient.users()
 			.list()
 			.stream()
-			.filter(userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search))
+			.filter(
+				userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(
+					search))
 			.toList();
 
 		// 검색 조회된 사용자 정보 리스트
 		List<SearchDTO> searchUserList = userList.stream().map(user ->
-				SearchDTO.builder().id(user.getId())
-					.name(user.getUsername())
-					.firstName(user.getFirstName())
-					.lastName(user.getLastName())
-					.email(user.getEmail())
-					.groupYN(false)
-					.userGroupDTOS(
-						realmClient.users().get(user.getId())
-							.groups(0, 100)
-							.stream()
-							.filter(groupRepresentation -> !groupRepresentation.getName().equals("owner") && !groupRepresentation.getName().equals("ws") &&
-								!groupRepresentation.getName().equals("user"))
-							.map(groupRepresentation ->
-								UserSummary.UserGroupDTO.builder()
-									.groupId(groupRepresentation.getId())
-									.groupName(groupRepresentation.getName())
-									.build()).toList())
-					.build()).toList();
+			SearchDTO.builder().id(user.getId())
+				.name(user.getUsername())
+				.firstName(user.getFirstName())
+				.lastName(user.getLastName())
+				.email(user.getEmail())
+				.groupYN(false)
+				.userGroupDTOS(
+					realmClient.users().get(user.getId())
+						.groups(0, 100)
+						.stream()
+						.filter(groupRepresentation -> !groupRepresentation.getName().equals("owner")
+							&& !groupRepresentation.getName().equals("ws") &&
+							!groupRepresentation.getName().equals("user"))
+						.map(groupRepresentation ->
+							UserSummary.UserGroupDTO.builder()
+								.groupId(groupRepresentation.getId())
+								.groupName(groupRepresentation.getName())
+								.build()).toList())
+				.build()).toList();
 
 		// account Group
 		GroupRepresentation accountGroup = realmClient.groups()
@@ -317,22 +374,22 @@ public class KeycloakUserRepository implements UserRepository {
 				groupRepresentation.getName().contains(search))
 			.map(groupRepresentation ->
 				SearchDTO.builder()
-				.id(groupRepresentation.getId())
-				.name(groupRepresentation.getName())
-				.groupYN(true)
-				.groupUserDTOS(
-					realmClient.groups().group(groupRepresentation.getId())
-						.members().stream().map(GroupUserDTO::new).toList())
-				.build()).toList();
+					.id(groupRepresentation.getId())
+					.name(groupRepresentation.getName())
+					.groupYN(true)
+					.groupUserDTOS(
+						realmClient.groups().group(groupRepresentation.getId())
+							.members().stream().map(GroupUserDTO::new).toList())
+					.build()).toList();
 		// 조회된 group, user List에 추가
 		result.addAll(searchGroupList);
 		result.addAll(searchUserList);
 
-
 		return result;
 	}
+
 	@Override
-	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO) {
 
 		UserResource userResource = keycloakConfig.getRealmClient().users().get(id);
 
@@ -341,15 +398,28 @@ public class KeycloakUserRepository implements UserRepository {
 		representation.setFirstName(updateUserDTO.getFirstName());
 		representation.setLastName(updateUserDTO.getLastName());
 		// 비밀번호 변경
-		if(!StringUtils.isEmpty(updateUserDTO.getPassword())){
+		if (!StringUtils.isEmpty(updateUserDTO.getPassword())) {
 			// 비밀번호 변경을 위해 credential 설정
-			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false, updateUserDTO.getPassword());
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false,
+				updateUserDTO.getPassword());
 			//비밀번호 설정
 			userResource.resetPassword(authenticationSettings);
 		}
 		keycloakConfig.getRealmClient().users().get(id).update(representation);
 
 		return new UserInfo(userResource.toRepresentation());
+	}
+
+	@Override
+	public void updateUserEnable(String id, boolean enable) {
+		try{
+			UserResource userResource = getUserResourceById(id);
+			UserRepresentation representation = userResource.toRepresentation();
+			representation.setEnabled(enable);
+			userResource.update(representation);
+		}catch (NotFoundException e){
+			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_BY_ID);
+		}
 	}
 
 }

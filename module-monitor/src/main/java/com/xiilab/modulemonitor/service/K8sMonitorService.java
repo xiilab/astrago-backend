@@ -1,6 +1,7 @@
 package com.xiilab.modulemonitor.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -19,4 +20,7 @@ public interface K8sMonitorService {
 	ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage);
 	ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage);
 	ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName);
+	Map<String, Map<String, Long>> getClusterReason(long minute);
+	String getNodeName(String podName, String namespace);
+	ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace);
 }

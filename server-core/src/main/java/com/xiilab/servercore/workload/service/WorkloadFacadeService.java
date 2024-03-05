@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,19 +12,29 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.xiilab.modulealert.dto.AlertDTO;
-import com.xiilab.modulealert.dto.AlertSetDTO;
-import com.xiilab.modulealert.enumeration.AlertMessage;
-import com.xiilab.modulealert.enumeration.AlertType;
-import com.xiilab.modulealert.service.AlertService;
-import com.xiilab.modulealert.service.AlertSetService;
+import com.xiilab.modulealert.dto.SystemAlertDTO;
+import com.xiilab.modulealert.dto.SystemAlertSetDTO;
+import com.xiilab.modulealert.enumeration.SystemAlertMessage;
+import com.xiilab.modulealert.enumeration.SystemAlertType;
+import com.xiilab.modulealert.service.SystemAlertService;
+import com.xiilab.modulealert.service.SystemAlertSetService;
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
@@ -32,23 +43,35 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.image.entity.ImageEntity;
+import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.code.dto.CodeReqDTO;
+import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.servercore.code.service.CodeService;
+import com.xiilab.servercore.common.dto.FileUploadResultDTO;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.servercore.dataset.service.DatasetService;
-import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.servercore.image.dto.ImageReqDTO;
+import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
+import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkloadFacadeService {
@@ -58,9 +81,12 @@ public class WorkloadFacadeService {
 	private final DatasetService datasetService;
 	private final WorkloadHistoryService workloadHistoryService;
 	private final CredentialService credentialService;
-	private final AlertSetService alertSetService;
-	private final AlertService alertService;
+	private final CodeService codeService;
+	private final ImageService imageService;
+	private final SystemAlertSetService systemAlertSetService;
+	private final SystemAlertService systemAlertService;
 
+	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
 			userInfoDTO.getUserFullName());
@@ -86,9 +112,50 @@ public class WorkloadFacadeService {
 			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
 		}
 
-		workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+		try {
+			// 커스텀 이미지일 때만 이미지 데이터 저장
+			if (moduleCreateWorkloadReqDTO.getImage().getType() == ImageType.CUSTOM && ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getImage().getId())) {
+				saveCustomImageAndRequestSetImageId(moduleCreateWorkloadReqDTO);
+			}
+			saveCodeAndRequestSetCodeId(moduleCreateWorkloadReqDTO);
+			ModuleJobResDTO jobWorkload = workloadModuleFacadeService.createJobWorkload(
+				moduleCreateWorkloadReqDTO.toModuleDTO());
+			// 워크로드 엔티티에 데이터 추가
+			workloadHistoryService.saveWorkloadHistory(WorkloadHistoryReqDTO.CreateWorkloadHistory.from(jobWorkload));
+			systemAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
+		} catch (Exception e) {
+			// e.printStackTrace();
+			throw new RestApiException(WorkloadErrorCode.FAILED_CREATE_WORKLOAD);
+		}
 
-		alertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
+	}
+
+	private void saveCustomImageAndRequestSetImageId(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO) {
+		ModuleImageReqDTO imageDTO = moduleCreateWorkloadReqDTO.getImage();
+		if (imageDTO.getType() == ImageType.CUSTOM && ObjectUtils.isEmpty(imageDTO.getId())) {
+			// Image ID가 없으면 커스텀 이미지로 등록
+			ImageReqDTO.SaveImage saveImageReqDTO = ImageReqDTO.SaveImage.createCustomImageBuilder()
+				.imageName(moduleCreateWorkloadReqDTO.getImage().getName())
+				.repositoryAuthType(moduleCreateWorkloadReqDTO.getImage().getRepositoryAuthType())
+				.imageType(moduleCreateWorkloadReqDTO.getImage().getType())
+				.workloadType(moduleCreateWorkloadReqDTO.getWorkloadType())
+				.credentialId(moduleCreateWorkloadReqDTO.getImage().getCredentialId())
+				.build();
+			ImageEntity imageEntity = imageService.saveImage(saveImageReqDTO);
+			moduleCreateWorkloadReqDTO.getImage().setId(imageEntity.getId());
+		}
+	}
+
+	/* 코드 엔티티에 데이터 추가 & 추가된 엔티티 ID request에 set */
+	private void saveCodeAndRequestSetCodeId(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO) {
+		for (ModuleCodeReqDTO moduleCodeReqDTO : moduleCreateWorkloadReqDTO.getCodes()) {
+			if (moduleCodeReqDTO.getRepositoryType() == RepositoryType.USER) {
+				CodeReqDTO codeReqDTO = new CodeReqDTO(moduleCodeReqDTO.getRepositoryURL(), null,
+					moduleCodeReqDTO.getCredentialId(), moduleCodeReqDTO.getRepositoryType());
+				CodeResDTO codeResDTO = codeService.saveCode(codeReqDTO);
+				moduleCodeReqDTO.setCodeId(codeResDTO.getId());
+			}
+		}
 	}
 
 	private void setCodeCredentialReqDTO(List<ModuleCodeReqDTO> codes) {
@@ -104,7 +171,7 @@ public class WorkloadFacadeService {
 		// 크레덴셜 목록 조회
 		CredentialResDTO.CredentialInfos credentialInfos = credentialService.findCredentialByIdIn(credentialIds,
 			PageRequest.of(1, 9999));
-		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = converListToMap(
+		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = convertListToMap(
 			!CollectionUtils.isEmpty(credentialInfos.getDatasets()) ? credentialInfos.getDatasets() :
 				new ArrayList<>());
 
@@ -118,7 +185,7 @@ public class WorkloadFacadeService {
 		});
 	}
 
-	private Map<Long, CredentialResDTO.CredentialInfo> converListToMap(List<CredentialResDTO.CredentialInfo> datasets) {
+	private Map<Long, CredentialResDTO.CredentialInfo> convertListToMap(List<CredentialResDTO.CredentialInfo> datasets) {
 		return datasets
 			.stream()
 			.collect(Collectors.toMap(
@@ -135,15 +202,9 @@ public class WorkloadFacadeService {
 		moduleImageReqDTO.setCredentialReqDTO(findCredential.toModuleCredentialReqDTO());
 	}
 
-	public ModuleWorkloadResDTO getWorkloadInfoByResourceName(String workspaceName, String resourceName,
-		WorkloadType workloadType) {
-		if (workloadType == WorkloadType.BATCH) {
-			return workloadModuleFacadeService.getBatchWorkload(workspaceName, resourceName);
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			return workloadModuleFacadeService.getInteractiveWorkload(workspaceName, resourceName);
-		} else {
-			return null;
-		}
+	public WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName) {
+		return workloadHistoryService.getWorkloadInfoByResourceName(
+			workspaceName, workloadResourceName);
 	}
 
 	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {
@@ -204,6 +265,75 @@ public class WorkloadFacadeService {
 		List<ModuleWorkloadResDTO> normalWorkloadList = filterNormalWorkloads(workloadResDTOList,
 			searchName, workloadStatus, workloadSortCondition, userInfoDTO.getId());
 		return new PageDTO<>(pinWorkloadList, normalWorkloadList, pageNum, 10);
+	}
+
+	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		return workloadModuleService.getDirectoryDTOListInWorkloadContainer(workloadName, workspaceName, workloadType,
+			path);
+	}
+
+	public FileInfoDTO getFileInfoInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		return workloadModuleService.getFileInfoDtoInWorkloadContainer(workloadName, workspaceName, workloadType, path);
+	}
+
+	public Resource downloadFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws
+		IOException {
+		String[] split = path.split("/");
+		String fileName = split[split.length - 1];
+		if (!fileName.contains(".")) {
+			throw new RestApiException(WorkloadErrorCode.WORKLOAD_FOLDER_DOWN_ERR);
+		} else {
+			return workloadModuleService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		}
+	}
+
+	public void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		List<String> paths) {
+		for (String path : paths) {
+			workloadModuleService.deleteFileFromWorkload(workloadName, workspaceName, workloadType, path);
+		}
+	}
+
+	public FileUploadResultDTO workloadFileUpload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path, List<MultipartFile> files) {
+		int successCnt = 0;
+		int failCnt = 0;
+		List<File> fileList = files.stream().map(file -> {
+			try {
+				return CoreFileUtils.convertInputStreamToFile(file);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}).toList();
+		for (File file : fileList) {
+			Boolean result = workloadModuleService.uploadFileToWorkload(workloadName, workspaceName, workloadType, path, file);
+			if (result) {
+				successCnt += 1;
+			} else {
+				failCnt += 1;
+			}
+		}
+		for (File file : fileList) {
+			boolean delete = file.delete();
+			log.info("{} 파일 삭제 결과 : {}", file.getName(), delete);
+		}
+		return new FileUploadResultDTO(successCnt, failCnt);
+	}
+
+	public FileInfoDTO getWorkloadFileInfo(String workloadName, String workspaceName,
+		WorkloadType workloadType,
+		String path) throws IOException {
+		return getFileInfoInWorkloadContainer(workloadName, workspaceName,
+			workloadType, path);
+		// Resource resource = downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
+	}
+
+	public byte[] getWorkloadFilePreview(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws IOException {
+		return downloadFileFromWorkload(workloadName, workspaceName, workloadType, path).getContentAsByteArray();
 	}
 
 	private List<ModuleWorkloadResDTO> filterNormalWorkloads(List<ModuleWorkloadResDTO> workloadList, String searchName,
@@ -300,14 +430,14 @@ public class WorkloadFacadeService {
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 
-		AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(workloadName);
+		SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
 		if(workspaceAlertSet.isWorkloadEndAlert()){
-			alertService.sendAlert(AlertDTO.builder()
+			systemAlertService.sendAlert(SystemAlertDTO.builder()
 				.recipientId(userInfoDTO.getId())
 				.senderId("SYSTEM")
-				.alertType(AlertType.WORKLOAD)
-				.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), workloadName))
+				.systemAlertType(SystemAlertType.WORKLOAD)
+				.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
 				.build());
 		}
 	}
@@ -320,13 +450,13 @@ public class WorkloadFacadeService {
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
 
-		AlertSetDTO.ResponseDTO workspaceAlertSet = alertSetService.getWorkspaceAlertSet(workloadName);
+		SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(workloadName);
 		if(workspaceAlertSet.isWorkloadEndAlert()){
-			alertService.sendAlert(AlertDTO.builder()
+			systemAlertService.sendAlert(SystemAlertDTO.builder()
 				.recipientId(userInfoDTO.getId())
 				.senderId("SYSTEM")
-				.alertType(AlertType.WORKLOAD)
-				.message(String.format(AlertMessage.WORKSPACE_END.getMessage(), workloadName))
+				.systemAlertType(SystemAlertType.WORKLOAD)
+				.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
 				.build());
 		}
 	}
@@ -366,6 +496,10 @@ public class WorkloadFacadeService {
 			.requestVolume(requestVolume)
 			.build();
 		moduleVolumeReqDTO.setCreatePVC(createPVC);
+	}
+
+	public boolean workloadMkdir(String workloadName, String workspaceName, WorkloadType workloadType, String path) {
+		return workloadModuleService.mkdirToWorkload(workloadName, workspaceName, workloadType, path);
 	}
 
 }

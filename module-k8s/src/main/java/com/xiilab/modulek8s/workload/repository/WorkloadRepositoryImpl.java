@@ -1,12 +1,19 @@
 package com.xiilab.modulek8s.workload.repository;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -29,6 +36,9 @@ import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
+import com.xiilab.modulek8s.workload.vo.JobCodeVO;
+import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
+import com.xiilab.modulek8s.workload.vo.WorkloadVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.OwnerReference;
@@ -49,8 +59,10 @@ import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
+import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,13 +75,19 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 		Job resource = (Job)createResource(batchJobVO.createResource());
-		return new ModuleJobResDTO(resource);
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
+		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
+		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
+		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
 	public ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
 		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
-		return new ModuleJobResDTO(resource);
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVOJobVO.getCodes());
+		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getDatasets());
+		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getModels());
+		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
@@ -239,7 +257,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_BATCH_JOB_LOG);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
 
@@ -255,12 +273,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
 		} catch (NullPointerException e) {
-			throw new K8sException(WorkloadErrorCode.NOT_FOUND_INTERACTIVE_JOB_LOG);
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
+	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "ds-" + id;
 			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
@@ -278,7 +296,22 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			for (Deployment deployment : deploymentsInUseDataset) {
 				getWorkloadInfoUsingDataset(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
 			}
-			return workloads;
+			int totalCount = workloads.size();
+			int startIndex = (pageNo - 1) * pageSize;
+			int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+			if (startIndex >= totalCount || endIndex <= startIndex) {
+				// 페이지 범위를 벗어나면 빈 리스트 반환
+				return WorkloadResDTO.PageUsingDatasetDTO.builder()
+					.usingWorkloads(null)
+					.totalCount(totalCount)
+					.build();
+			}
+
+			return WorkloadResDTO.PageUsingDatasetDTO.builder()
+				.usingWorkloads(workloads.subList(startIndex, endIndex))
+				.totalCount(totalCount)
+				.build();
 		}
 	}
 
@@ -335,7 +368,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
+	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "md-" + id;
 			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
@@ -354,7 +387,21 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			for (Deployment deployment : deploymentsInUseDataset) {
 				getWorkloadInfoUsingModel(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
 			}
-			return workloads;
+			int totalCount = workloads.size();
+			int startIndex = (pageNo - 1) * pageSize;
+			int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+			if (startIndex >= totalCount || endIndex <= startIndex) {
+				// 페이지 범위를 벗어나면 빈 리스트 반환
+				return WorkloadResDTO.PageUsingModelDTO.builder()
+					.usingWorkloads(null)
+					.totalCount(totalCount)
+					.build();
+			}
+			return WorkloadResDTO.PageUsingModelDTO.builder()
+				.usingWorkloads(workloads.subList(startIndex, endIndex))
+				.totalCount(totalCount)
+				.build();
 		}
 	}
 
@@ -385,6 +432,154 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			}
 			return true;
 		}
+	}
+
+	@Override
+	public List<String> getFileListInWorkloadContainer(String podName, String namespace, String path)
+		throws IOException {
+		String pattern = MessageFormat.format("stat {0}/* --format=%n,%F,%s,%Y", path);
+		return executeCommandToContainer(podName, namespace, pattern);
+	}
+
+	@Override
+	public List<String> getFileInfoInWorkloadContainer(String podName, String namespace, String path) throws
+		IOException {
+		String pattern = MessageFormat.format("stat {0} --format=%n,%F,%s,%Y", path);
+		return executeCommandToContainer(podName, namespace, pattern);
+	}
+
+	@Override
+	public int getDirectoryFileCount(String podName, String namespace, String path) throws IOException {
+		String pattern = MessageFormat.format("ls {0} -l | grep ^- | wc -l", path);
+		List<String> result = executeCommandToContainer(podName, namespace, pattern);
+		if (CollectionUtils.isEmpty(result)) {
+			return 0;
+		}
+		try {
+			return Integer.parseInt(result.get(0));
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
+	/**
+	 * 생성된 파드에서 파일을 다운로드 받는 메소드
+	 *
+	 * @param podName   파드이름
+	 * @param namespace namespace
+	 * @param filePath  다운받으려고하는 파일 위치
+	 * @return 파일 복사 성공 여부
+	 */
+	@Override
+	public CopyOrReadable downloadFileFromPod(String podName, String namespace, String filePath) {
+		//fabric8io를 사용하여 해당 프로젝트가 올라가있는 파드에서 파일을 내려받는다.
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		//해당 경로에 있는 파일 객체를 가져온다.
+		return kubernetesClient.pods()
+			.inNamespace(namespace)
+			.withName(podName)
+			.file(filePath);
+	}
+
+	/**
+	 * 생성된 파드에서 폴더를 다운로드 받는 메소드
+	 *
+	 * @param podName    파드이름
+	 * @param namespace  namespace
+	 * @param folderPath 다운받으려고하는 파일 위치
+	 * @return 파일 복사 성공 여부
+	 */
+	@Override
+	public CopyOrReadable downloadFolderFromPod(String podName, String namespace, String folderPath) {
+		//fabric8io를 사용하여 해당 프로젝트가 올라가있는 파드에서 파일을 내려받는다.
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		//해당 경로에 있는 파일 객체를 가져온다.
+		return kubernetesClient.pods()
+			.inNamespace(namespace)
+			.withName(podName)
+			.dir(folderPath);
+	}
+
+	@Override
+	public void deleteFileFromPod(String podName, String namespace, String filePath) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			//해당 경로에 있는 파일 객체를 가져온다.
+			kubernetesClient.pods()
+				.inNamespace(namespace)
+				.withName(podName)
+				.redirectingInput()
+				.redirectingOutput()
+				.redirectingError()
+				.withTTY()
+				.exec("sh", "-c", String.format("rm -rf %s", filePath));
+		}
+	}
+
+	@Override
+	public Boolean uploadFileToPod(String podName, String namespace, String path, File file) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.pods()
+				.inNamespace(namespace)
+				.withName(podName)
+				.file(path + File.separator + file.getName())
+				.upload(file.toPath());
+		}
+	}
+
+	@Override
+	public boolean mkdirToPod(String podName, String namespace, String path) {
+		List<String> result = executeCommandToContainer(podName, namespace, String.format("mkdir %s", path));
+		if (!CollectionUtils.isEmpty(result)) {
+			if (result.get(0).contains("No such file or directory")) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private List<String> executeCommandToContainer(String podName, String namespace, String command) {
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		ExecWatch execWatch = kubernetesClient.pods()
+			.inNamespace(namespace)
+			.withName(podName)
+			.redirectingInput()
+			.redirectingOutput()
+			.redirectingError()
+			.withTTY()
+			.exec("sh", "-c", command);
+		// InputStream output = execWatch.getOutput();
+		// 		// //bufferedReader생성
+		// 		// BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(output));
+		// 		// //bufferedReader를 읽기전 백업을 위해 mark를 지정한다.
+		// 		// bufferedReader.mark(262144);
+		// 		// //한줄을 읽어 해당 줄에 해당 문구가 존재하거나 Null이라면 빈 배열로 리턴한다.
+		// 		// String readLine = bufferedReader.readLine();
+		// 		// if (readLine == null) {
+		// 		// 	return null;
+		// 		// }
+		// 		// //검증을 통과 했다면 reset하여 한줄을 읽기전 상태로 되돌린다.
+		// 		// bufferedReader.reset();
+		// 		// //가져온 reader를 dto로 매핑하여 리턴한다.
+		// 		// return bufferedReader.lines().toList();
+		// 스트림에서 데이터를 읽어오기 위한 버퍼드 리더
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(execWatch.getOutput()));
+		List<String> lines = new ArrayList<>();
+
+		String line;
+		try {
+			// 스트림에서 한 줄씩 읽어오기
+			while ((line = bufferedReader.readLine()) != null) {
+				// 각 줄을 리스트에 추가
+				lines.add(line);
+			}
+		} catch (IOException e) {
+			// 예외 처리
+		} finally {
+			// ExecWatch 정리
+			execWatch.close();
+		}
+
+		return lines;
 	}
 
 	@Override
@@ -665,6 +860,30 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			kubernetesClient.apps().deployments().inNamespace(workSpaceName).withName(workloadName).delete();
 			return workloadName;
 		}
+	}
+
+	private Map<Long, Map<String, String>> getCodesInfoMap(List<JobCodeVO> jobCodeVOList) {
+		Map<Long, Map<String, String>> codesMap = new HashMap<>();
+		for (JobCodeVO jobCodeVO : jobCodeVOList) {
+			Long id = jobCodeVO.id();
+			String mountPath = jobCodeVO.mountPath();
+			String branch = jobCodeVO.branch();
+			codesMap.computeIfAbsent(jobCodeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
+			codesMap.get(id).put("branch", branch);
+		}
+
+		return codesMap;
+	}
+
+	private Map<Long, Map<String, String>> getVolumesInfoMap(List<JobVolumeVO> jobVolumeVOList) {
+		Map<Long, Map<String, String>> volumesMap = new HashMap<>();
+		for (JobVolumeVO jobVolumeVO : jobVolumeVOList) {
+			Long id = jobVolumeVO.id();
+			String mountPath = jobVolumeVO.mountPath();
+			volumesMap.computeIfAbsent(jobVolumeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
+		}
+
+		return volumesMap;
 	}
 
 }

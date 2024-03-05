@@ -23,7 +23,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
@@ -74,3 +74,5 @@ github:
 mig-profile-path: src/main/resources/MigProfile.json
 server:
   max-http-request-header-size: 40KB
+prometheus:
+  url: http://10.61.3.12:30090/

@@ -28,9 +28,9 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private List<ModuleVolumeReqDTO> models;
 	private List<ModuleCodeReqDTO> codes;
 	private String command;
-	private int cpuRequest;
-	private int gpuRequest;
-	private int memRequest;
+	private Float cpuRequest;
+	private Integer gpuRequest;
+	private Float memRequest;
 	private String creatorId;
 	private String creatorUserName;
 	private String creatorFullName;

@@ -14,6 +14,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import java.util.Collections;
+import java.util.Map;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,21 +35,31 @@ public class PortEntity {
 	@Column(name = "PORT_NAME")
 	private String name;
 	@Column(name = "PORT_NUM")
-	private int portNum;
+	private Integer portNum;
 	@Column(name = "PORT_TARTGET_NUM")
-	private int targetPortNum;
+	private Integer targetPortNum;
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkloadEntity workload;
 
-	public static List<PortEntity> createPortList(List<PortDTO> ports, WorkloadEntity workload) {
+	public static List<PortEntity> generatePortList(Map<String, Integer> ports, WorkloadEntity workload) {
 		if (CollectionUtils.isEmpty(ports)) {
 			return Collections.emptyList();
 		}
-		return ports.stream().map(port -> PortEntity.builder()
-			.name(port.getName())
-			.portNum(port.getPortNum())
-			.targetPortNum(port.getTargetPortNum())
-			.workload(workload)
-			.build()).toList();
+		return ports.entrySet().stream()
+			.map(entry ->
+				PortEntity.builder()
+					.name(entry.getKey())
+					.portNum(entry.getValue())
+					.workload(workload)
+					.build()
+			)
+			.toList();
 	}
+	// 	return ports.stream().map(port -> PortEntity.builder()
+	// 		.name(port.getName())
+	// 		.portNum(port.getPortNum())
+	// 		.targetPortNum(port.getTargetPortNum())
+	// 		.workload(workload)
+	// 		.build()).toList();
+	// }
 }

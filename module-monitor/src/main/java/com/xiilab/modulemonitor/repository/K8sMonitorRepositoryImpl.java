@@ -1,9 +1,14 @@
 package com.xiilab.modulemonitor.repository;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +19,7 @@ import com.xiilab.modulemonitor.enumeration.K8sErrorStatus;
 
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -146,7 +152,13 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				ResponseDTO.NodeResponseDTO.builder()
 					.nodeName(node.getMetadata().getName())
 					.ip(node.getStatus().getAddresses().get(0).getAddress())
-					.status(node.getStatus().getConditions().stream().filter(nodeCondition -> nodeCondition.getStatus().equals("True")).toList().get(0).getType())
+					.status(node.getStatus()
+						.getConditions()
+						.stream()
+						.filter(nodeCondition -> nodeCondition.getStatus().equals("True"))
+						.toList()
+						.stream().findFirst().orElse(new NodeCondition().toBuilder().withType("NotReady").build())
+						.getType())
 					.build()).toList();
 		}
 	}
@@ -402,5 +414,70 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 		return String.valueOf(Integer.parseInt(containerResult) + Integer.parseInt(initContainerResult));
 	}
+
+	@Override
+	public Map<String, Map<String, Long>> getClusterReason(long minute) {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			// 이벤트 리스트 불러오기
+			List<io.fabric8.kubernetes.api.model.events.v1.Event> eventList = kubernetesClient.events()
+				.v1()
+				.events()
+				.list()
+				.getItems();
+			// 현재 시간 UTC 조회
+			Instant now = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+			List<ResponseDTO.ClusterReasonDTO> clusterReasonDTOList = eventList.stream()
+				.filter(event -> !event.getType().equals("Normal"))
+				.map(event -> {
+						String eventTime =
+							!StringUtils.isBlank(event.getDeprecatedLastTimestamp()) ? event.getDeprecatedLastTimestamp() :
+								event.getEventTime().getTime();
+
+						long fewMinutesAgo = DataConverterUtil.fewMinutesAgo(now, eventTime);
+						return ResponseDTO.ClusterReasonDTO.builder()
+							.reason(event.getReason())
+							.time(DataConverterUtil.datetimeFormatter(fewMinutesAgo))
+							.lastSEEN(fewMinutesAgo)
+							.build();
+					}
+				).toList();
+			// lastSEEN으로 정렬된 맵 반환
+			return clusterReasonDTOList.stream()
+				.filter(clusterReasonDTO -> clusterReasonDTO.lastSEEN() < minute)
+				.collect(Collectors.groupingBy(ResponseDTO.ClusterReasonDTO::time,
+					Collectors.groupingBy(ResponseDTO.ClusterReasonDTO::reason, Collectors.counting())
+				))
+				.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey()) // 시간별로 정렬
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+					(oldValue, newValue) -> oldValue, LinkedHashMap::new));
+		}
+	}
+
+	@Override
+	public String getNodeName(String podName, String namespace){
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			return Objects.nonNull(kubernetesClient.pods().inNamespace(namespace).withName(podName).get())?
+				kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() != null ?
+					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() :
+					""
+				: "";
+		}
+	}
+
+	@Override
+	public ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace){
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+				Pod pod = kubernetesClient.pods().inNamespace(namespace).withName(podName).get();
+
+			return ResponseDTO.ClusterPodInfo.builder()
+				.podName(podName)
+				.nodeName(pod.getSpec().getNodeName())
+				.status(pod.getStatus().getPhase())
+				.reason(pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason())
+				.build();
+		}
+	}
+
 
 }

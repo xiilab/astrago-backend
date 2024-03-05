@@ -1,9 +1,20 @@
 package com.xiilab.modulek8s.workload.service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
@@ -21,6 +32,7 @@ import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -129,8 +141,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id) {
-		return workloadRepository.workloadsUsingDataset(id);
+	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
+		return workloadRepository.workloadsUsingDataset(pageNo, pageSize, id);
 	}
 
 	@Override
@@ -159,8 +171,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<WorkloadResDTO.UsingModelDTO> workloadsUsingModel(Long id) {
-		return workloadRepository.workloadsUsingModel(id);
+	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
+		return workloadRepository.workloadsUsingModel(pageNo, pageSize, id);
 	}
 
 	@Override
@@ -172,6 +184,122 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public boolean isUsedModel(Long modelId) {
 		return workloadRepository.isUsedModel(modelId);
 	}
+
+	@Override
+	public DirectoryDTO getDirectoryDTOListInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		Pod pod = getJobPod(workspaceName, workloadName, workloadType);
+		String podName = pod.getMetadata().getName();
+		List<String> fileListInWorkloadContainer = workloadRepository.getFileListInWorkloadContainer(
+			podName, workspaceName, path);
+		DirectoryDTO directoryDTO = DirectoryDTO.convertRawString().rawStringList(fileListInWorkloadContainer).build();
+		if (!CollectionUtils.isEmpty(directoryDTO.getChildren())) {
+			List<DirectoryDTO.ChildrenDTO> children = directoryDTO.getChildren();
+			for (DirectoryDTO.ChildrenDTO child : children) {
+				if (child.getType() == FileType.D) {
+					int directoryFileCount = workloadRepository.getDirectoryFileCount(podName, workspaceName,
+						child.getPath());
+					child.updateFileCount(String.valueOf(directoryFileCount));
+				}
+			}
+		}
+		return directoryDTO;
+	}
+
+	@Override
+	public FileInfoDTO getFileInfoDtoInWorkloadContainer(String workloadName, String workspaceName,
+		WorkloadType workloadType, String path) throws IOException {
+		Pod pod = getJobPod(workspaceName, workloadName, workloadType);
+		String podName = pod.getMetadata().getName();
+		List<String> fileListInWorkloadContainer = workloadRepository.getFileInfoInWorkloadContainer(podName,
+			workspaceName, path);
+		return FileInfoDTO.convertRawString().rawString(fileListInWorkloadContainer.get(0)).build();
+	}
+
+	@Override
+	public Resource downloadFileFromWorkload(String workloadName, String workpspaceName, WorkloadType workloadType,
+		String path) throws
+		IOException {
+		Pod pod = getJobPod(workpspaceName, workloadName, workloadType);
+		CopyOrReadable copyOrReadable = workloadRepository.downloadFileFromPod(pod.getMetadata().getName(),
+			workpspaceName, path);
+		return convertFileStreamToResource(copyOrReadable);
+	}
+
+	@Override
+	public Resource downloadFolderFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) throws IOException {
+		Pod pod = getJobPod(workspaceName, workloadName, workloadType);
+		CopyOrReadable copyOrReadable = workloadRepository.downloadFolderFromPod(pod.getMetadata().getName(),
+			workspaceName, path);
+		return null;
+	}
+
+	@Override
+	public void deleteFileFromWorkload(String workloadName, String workspaceName, WorkloadType workloadType,
+		String path) {
+		Pod pod = getJobPod(workspaceName, workloadName, workloadType);
+		workloadRepository.deleteFileFromPod(pod.getMetadata().getName(), workspaceName, path);
+	}
+
+	@Override
+	public Boolean uploadFileToWorkload(String workloadName, String workspace, WorkloadType workloadType, String path,
+		File file) {
+		Pod jobPod = getJobPod(workspace, workloadName, workloadType);
+		Boolean result = workloadRepository.uploadFileToPod(jobPod.getMetadata().getName(),
+			jobPod.getMetadata().getNamespace(), path, file);
+		log.info("파일 업로드 성공여부 : " + result);
+		return result;
+	}
+
+	@Override
+	public boolean mkdirToWorkload(String workload, String workspace, WorkloadType workloadType, String path) {
+		Pod jobPod = getJobPod(workspace, workload, workloadType);
+		return workloadRepository.mkdirToPod(jobPod.getMetadata().getName(), workspace, path);
+	}
+
+	public Resource convertFileStreamToResource(CopyOrReadable fileStream) throws IOException {
+		InputStream inputStream = fileStream.read();
+		// InputStream을 바이트 배열로 복사
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		byte[] buffer = new byte[4096];
+		int bytesRead;
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			outputStream.write(buffer, 0, bytesRead);
+		}
+		byte[] fileBytes = outputStream.toByteArray();
+		return new ByteArrayResource(fileBytes);
+	}
+
+	// private Resource convertFolderToZipResource(CopyOrReadable fileStream, String path) throws IOException {
+	// 	//파일 존재하는지 체크용
+	// 	InputStream inputStream = fileStream.read();
+	// 	InputStream inputStream2 = fileStream.read();
+	// 	//InputStream을 체크한다.
+	// 	if (inputStream.read() == -1) {
+	// 		throw new FileNotFoundException("해당 파일이 존재하지 않습니다.");
+	// 	}
+	// 	ZipInputStream zipInputStream = new ZipInputStream(inputStream2);
+	// 	String[] split = path.split("/");
+	// 	String s = split[split.length - 1];
+	// 	ZipEntry zipEntry;
+	// 	while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+	// 		if (!zipEntry.getName().startsWith(s)) {
+	// 			continue;
+	// 		}
+	// 		// 파일일 경우 파일 생성 후 데이터 쓰기
+	// 		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("/Users/hc.park/test.zip", true));
+	// 		byte[] buffer = new byte[1024];
+	// 		int bytesRead;
+	// 		while ((bytesRead = zipInputStream.read(buffer)) != -1) {
+	// 			bos.write(buffer, 0, bytesRead);
+	// 		}
+	// 		bos.close();
+	// 	}
+	// 	InputStream inputStream3 = new FileInputStream("/Users/hc.park/test.zip");
+	// 	ZipInputStream zipInputStream2 = new ZipInputStream(inputStream3);
+	// 	return new InputStreamResource(zipInputStream2);
+	// }
 
 	@Override
 	public List<ModuleWorkloadResDTO> getAstraInteractiveWorkloadList() {

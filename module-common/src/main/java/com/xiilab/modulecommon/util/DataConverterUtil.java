@@ -1,11 +1,15 @@
 package com.xiilab.modulecommon.util;
 
-import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.springframework.stereotype.Service;
 
@@ -90,7 +94,7 @@ public class DataConverterUtil {
 			JsonNode valueNode = root.path("data").path("result");
 
 			if (valueNode.isMissingNode() || !valueNode.elements().hasNext()) {
-				return "";
+				return "0";
 			}
 
 			return valueNode.elements().next().get("value").get(1).asText();
@@ -136,13 +140,36 @@ public class DataConverterUtil {
 				return Long.parseLong(amount); // 기본적으로 KiB로 가정
 		}
 	}
+	// 메모리의 단위를 변환하는 메서드
+	public static String convertToMemorySize(String amount) {
+		double doubleValue = Double.parseDouble(amount); // 부동 소수점으로 파싱
+		long size = (long) doubleValue;
+		long target = (long) doubleValue;
+		if (size >= TERA_BYTE) {
+			return String.format("%.2f GB", (double) target / TERA_BYTE);
+		} else if (size >= GIGA_BYTE) {
+			return String.format("%.2f GB", (double) target / GIGA_BYTE);
+		} else if (size >= MEGA_BYTE) {
+			return String.format("%.2f MB", (double) target / MEGA_BYTE);
+		} else if (size >= KILO_BYTE) {
+			return String.format("%.2f KB", (double) target / KILO_BYTE);
+		} else {
+			return size + " Bytes";
+		}
+	}
+	// 메모리의 단위를 변환하는 메서드
+	public static double convertToGBMemorySize(String amount) {
+		double doubleValue = Double.parseDouble(amount); // 부동 소수점으로 파싱
+		return doubleValue / GIGA_BYTE;
+	}
 
 	/**
 	 * DISK 사이즈 계산하는 메소드
 	 * @param bytes 계산될 Bytes
 	 */
 	public static String formatDiskSize(String bytes) {
-		long size = Long.parseLong(bytes);
+		double doubleValue = Double.parseDouble(bytes); // 부동 소수점으로 파싱
+		long size = (long) doubleValue;
 		if (size >= TERA_BYTE) {
 			return String.format("%.2f TB", (double) size / TERA_BYTE);
 		} else if (size >= GIGA_BYTE) {
@@ -155,16 +182,29 @@ public class DataConverterUtil {
 			return size + " Bytes";
 		}
 	}
+	/**
+	 * DISK 사이즈 계산하는 메소드
+	 * @param bytes 계산될 Bytes
+	 */
+	public static double formatGBDiskSize(String bytes) {
+		double doubleValue = Double.parseDouble(bytes); // 부동 소수점으로 파싱
+		return doubleValue / GIGA_BYTE;
+	}
+
+	public static double convertToCPU(String resource) {
+		return Double.parseDouble(resource); // 부동 소수점으로 파싱
+	}
+	public static double convertToGPU(String resource) {
+		return Double.parseDouble(resource); // 부동 소수점으로 파싱
+	}
 
 	/**
 	 * String 값 소수점 첫자리 반올림하여 계산해주는 메소드
 	 */
 	public static String roundToString(String request) {
 		// m 값을 Core로 변환
-		double result = (double) Integer.parseInt(request) / 1000;
-		// 소수점 한 자리까지 표시
-		DecimalFormat df = new DecimalFormat("#.#");
-		return df.format(result);
+		double result = Double.parseDouble(request);
+		return String.format("%.2f", result);
 	}
 	public static double roundToNearestHalf(double number) {
 		double integerPart = Math.floor(number);
@@ -183,5 +223,58 @@ public class DataConverterUtil {
 	 */
 	public static int parseAndSum(String x, String y){
 		return Integer.parseInt(x.replaceAll("[^0-9]", "")) + Integer.parseInt(y.replaceAll("[^0-9]", ""));
+	}
+
+	public static String datetimeFormatter(long fewMinutesAgo) {
+		// 현재 시간
+		LocalDateTime now = LocalDateTime.now();
+
+		// 주어진 시간(fewMinutesAgo)만큼 현재 시간에서 빼기
+		LocalDateTime fewMinutesAgoTime = now.minusMinutes(fewMinutesAgo);
+
+		// AM/PM 형식으로 출력하기 위한 포매터 설정
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+
+		// 포맷 적용하여 문자열로 변환
+		return fewMinutesAgoTime.format(formatter);
+	}
+	public static long fewMinutesAgo(Instant now, String lastTimestamp){
+		// 몇분전 발생인지 계산
+		Instant eventTime = Instant.parse(lastTimestamp)
+			.truncatedTo(ChronoUnit.MINUTES);
+		return ChronoUnit.MINUTES.between(eventTime, now);
+	}
+	public static String getCurrentUnixTime(){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+		return DataConverterUtil.toUnixTime(LocalDateTime.now().format(formatter));
+	}
+	public static String subtractMinutesFromCurrentTime(long minutes){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+		return DataConverterUtil.toUnixTime(LocalDateTime.now().minusMinutes(minutes).format(formatter));
+	}
+	public static long getStep(String startDate, String endDate) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date start = sdf.parse(startDate);
+			Date end = sdf.parse(endDate);
+
+			// Date -> 밀리세컨즈
+			long timeMil1 = start.getTime();
+			long timeMil2 = end.getTime();
+			long setp = (timeMil2 - timeMil1)  / 40000;
+
+			return setp;
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	/**
+	 * 알림 발생시간 생성하는 메소드
+	 * @return 발생된 시간 "2월 24일 금요일 오후 4:21"
+	 */
+	public static String getCurrentTime(LocalDateTime realTime){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm ");
+		return realTime.format(formatter);
 	}
 }
