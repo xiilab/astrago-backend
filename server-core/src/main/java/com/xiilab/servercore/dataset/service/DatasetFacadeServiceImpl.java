@@ -319,7 +319,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 
 	@Override
 	public WorkloadResDTO.PageUsingDatasetDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId) {
-		return workloadModuleFacadeService.workloadsUsingDataset(pageInfo.getPage(), pageInfo.getPageSize(), datasetId);
+		return workloadModuleFacadeService.workloadsUsingDataset(pageInfo.getPageNo(), pageInfo.getPageSize(), datasetId);
 	}
 
 	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Dataset dataset) {

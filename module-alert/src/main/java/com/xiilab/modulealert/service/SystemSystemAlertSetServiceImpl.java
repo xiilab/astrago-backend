@@ -2,9 +2,9 @@ package com.xiilab.modulealert.service;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulealert.dto.AlertSetDTO;
-import com.xiilab.modulealert.entity.AlertSetEntity;
-import com.xiilab.modulealert.repository.AlertSetRepository;
+import com.xiilab.modulealert.dto.SystemAlertSetDTO;
+import com.xiilab.modulealert.entity.SystemAlertSetEntity;
+import com.xiilab.modulealert.repository.SystemAlertSetRepository;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
@@ -13,15 +13,15 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AlertSetServiceImpl implements AlertSetService {
+public class SystemSystemAlertSetServiceImpl implements SystemAlertSetService {
 
-	private final AlertSetRepository alertSetRepository;
+	private final SystemAlertSetRepository systemAlertSetRepository;
 
 	@Override
 	@Transactional
 	public void saveAlertSet(String workspaceName) {
 		try{
-			alertSetRepository.save(AlertSetEntity.builder()
+			systemAlertSetRepository.save(SystemAlertSetEntity.builder()
 					.workspaceName(workspaceName)
 					.workloadStartAlert(true)
 					.workloadEndAlert(true)
@@ -34,12 +34,12 @@ public class AlertSetServiceImpl implements AlertSetService {
 	}
 
 	@Override
-	public AlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName) {
+	public SystemAlertSetDTO.ResponseDTOSystem getWorkspaceAlertSet(String workspaceName) {
 		if(workspaceName.contains("ws")){
-			AlertSetEntity alertSetEntity = getAlertSetEntity(workspaceName);
-			return AlertSetDTO.ResponseDTO.convertResponseDTO(alertSetEntity);
+			SystemAlertSetEntity systemAlertSetEntity = getAlertSetEntity(workspaceName);
+			return SystemAlertSetDTO.ResponseDTOSystem.convertResponseDTO(systemAlertSetEntity);
 		}else {
-			return AlertSetDTO.ResponseDTO.builder()
+			return SystemAlertSetDTO.ResponseDTOSystem.builder()
 				.workloadEndAlert(false)
 				.workloadErrorAlert(false)
 				.workloadStartAlert(false)
@@ -51,13 +51,13 @@ public class AlertSetServiceImpl implements AlertSetService {
 
 	@Override
 	@Transactional
-	public AlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, AlertSetDTO alertSetDTO){
+	public SystemAlertSetDTO.ResponseDTOSystem updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO){
 		try{
-			AlertSetEntity alertSetEntity = getAlertSetEntity(workspaceName);
+			SystemAlertSetEntity systemAlertSetEntity = getAlertSetEntity(workspaceName);
 
-			AlertSetEntity updateAlertSet = alertSetEntity.updateAlertSet(alertSetDTO);
+			SystemAlertSetEntity updateAlertSet = systemAlertSetEntity.updateAlertSet(systemAlertSetDTO);
 
-			return AlertSetDTO.ResponseDTO.convertResponseDTO(updateAlertSet);
+			return SystemAlertSetDTO.ResponseDTOSystem.convertResponseDTO(updateAlertSet);
 		}catch (IllegalArgumentException e){
 			throw new RestApiException(CommonErrorCode.ALERT_SET_UPDATE_FAIL);
 		}
@@ -66,18 +66,18 @@ public class AlertSetServiceImpl implements AlertSetService {
 	@Transactional
 	public void deleteAlert(String workspaceName){
 		try{
-			AlertSetEntity alertSetEntity = getAlertSetEntity(workspaceName);
+			SystemAlertSetEntity systemAlertSetEntity = getAlertSetEntity(workspaceName);
 
-			alertSetRepository.deleteById(alertSetEntity.getId());
+			systemAlertSetRepository.deleteById(systemAlertSetEntity.getId());
 
 		}catch (IllegalArgumentException e){
 			throw new RestApiException(CommonErrorCode.ALERT_SET_DELETE_FAIL);
 		}
 	}
 
-	private AlertSetEntity getAlertSetEntity(String workspaceName){
+	private SystemAlertSetEntity getAlertSetEntity(String workspaceName){
 		try{
-			return alertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
+			return systemAlertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
 		}catch (RuntimeException e){
 			throw new RestApiException(CommonErrorCode.ALERT_NOT_FOUND_WORKSPACE_NAME);
 		}

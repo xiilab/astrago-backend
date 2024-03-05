@@ -81,7 +81,7 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	public ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserInfoDTO userInfoDTO) {
-		PageRequest pageRequest = PageRequest.of(pageInfo.getPage() - 1, pageInfo.getPageSize());
+		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth(), repositorySearchCondition);
 		List<Model> entities = models.getContent();
 		long totalCount = models.getTotalElements();

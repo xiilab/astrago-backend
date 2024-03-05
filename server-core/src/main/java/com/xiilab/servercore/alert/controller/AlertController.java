@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.xiilab.modulealert.dto.AlertDTO;
-import com.xiilab.modulealert.service.AlertService;
+import com.xiilab.modulealert.dto.SystemAlertDTO;
+import com.xiilab.modulealert.service.SystemAlertService;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,28 +22,28 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/alert")
 @RequiredArgsConstructor
 public class AlertController {
-	private final AlertService alertService;
+	private final SystemAlertService systemAlertService;
 
 	@GetMapping("/{id}")
 	@Operation(summary = "Alert 단일 조회")
-	public ResponseEntity<AlertDTO.ResponseDTO> getAlertById(@PathVariable(name = "id") long id){
-		return new ResponseEntity<>(alertService.getAlertById(id), HttpStatus.OK);
+	public ResponseEntity<SystemAlertDTO.ResponseDTOSystem> getAlertById(@PathVariable(name = "id") long id){
+		return new ResponseEntity<>(systemAlertService.getAlertById(id), HttpStatus.OK);
 	}
 	@GetMapping()
 	@Operation(summary = "Alert 리스트 조회")
-	public ResponseEntity<List<AlertDTO.ResponseDTO>> getAlertListByUserId(UserInfoDTO userInfoDTO){
-		return new ResponseEntity<>(alertService.getAlertListByUserId(userInfoDTO.getId()), HttpStatus.OK);
+	public ResponseEntity<List<SystemAlertDTO.ResponseDTOSystem>> getAlertListByUserId(UserInfoDTO userInfoDTO){
+		return new ResponseEntity<>(systemAlertService.getAlertListByUserId(userInfoDTO.getId()), HttpStatus.OK);
 	}
 	@PatchMapping("/{id}")
 	@Operation(summary = "Alert 읽음 처리")
 	public ResponseEntity<Void> readAlert(@PathVariable(name = "id") long id){
-		alertService.readAlert(id);
+		systemAlertService.readAlert(id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	@DeleteMapping("/{id}")
 	@Operation(summary = "Alert 단일 삭제")
 	public ResponseEntity<Void> deleteAlertById(@PathVariable(name = "id")long id){
-		alertService.deleteAlertById(id);
+		systemAlertService.deleteAlertById(id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
