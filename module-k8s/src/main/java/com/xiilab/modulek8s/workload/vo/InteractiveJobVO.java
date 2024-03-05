@@ -69,7 +69,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		Map<String, String> annotationMap = new HashMap<>();
 		annotationMap.put(AnnotationField.NAME.getField(), getName());
 		annotationMap.put(AnnotationField.DESCRIPTION.getField(), getDescription());
-		annotationMap.put(AnnotationField.WORKSPACE_NAME.getField(), getWorkspace());
+		annotationMap.put(AnnotationField.WORKSPACE_NAME.getField(), getWorkspaceName());
 		annotationMap.put(AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString());
 		annotationMap.put(AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName());
 		annotationMap.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName());

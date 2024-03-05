@@ -26,15 +26,13 @@ import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
 import com.xiilab.modulemonitor.service.PrometheusService;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-@RequiredArgsConstructor
-public class InteractiveResourceOptimizationJob extends QuartzJobBean {
+public class BatchOptimizationAlertJob extends QuartzJobBean {
 	private ApplicationContext applicationContext;
 	private WorkloadModuleService workloadModuleService;
 	private PrometheusService prometheusService;
@@ -51,7 +49,8 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 		} catch (SchedulerException e) {
 			throw new RuntimeException(e);
 		}
-		log.info("interactive resource optimization job start....");
+
+		log.info("batch resource optimization alert job start....");
 
 		JobDataMap jobDataMap = context.getMergedJobDataMap();
 		int cpuLimit = (int)jobDataMap.get("cpu");
@@ -63,13 +62,10 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 		log.info("gpuLimit : {}", gpuLimit);
 		log.info("hour : {}", hour);
 
-		//astra에서 생성한 실행중인 workload 조회
-		List<ModuleWorkloadResDTO> astraWorkloadList = new ArrayList<>();
-		List<ModuleWorkloadResDTO> astraInteractiveWorkloadList = workloadModuleService.getAstraInteractiveWorkloadList();
-		List<ModuleWorkloadResDTO> astraBatchWorkloadList = workloadModuleService.getAstraBatchWorkloadList();
-		astraWorkloadList.addAll(astraInteractiveWorkloadList);
-		astraWorkloadList.addAll(astraBatchWorkloadList);
+		//astra에서 생성한 실행중인 interactive workload 조회
+		List<ModuleWorkloadResDTO> astraWorkloadList = workloadModuleService.getAstraInteractiveWorkloadList();
 		log.info("astra에서 생성된 workload 총 개수 : {}", astraWorkloadList.size());
+
 		//통합을 위한 리스트 생성
 		List<ResponseDTO.RealTimeDTO> totalList = new ArrayList<>();
 		LocalDateTime now = LocalDateTime.now().minusHours(hour);
@@ -97,16 +93,15 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 			.toList();
 
 		log.info("over resource total pod list count : {}", list.size());
+
 		List<ModuleWorkloadResDTO> parentControllerList = workloadModuleService.getParentControllerList(list);
-		int resultCnt = workloadModuleService.optimizationInteractiveWorkload(list);
 
-		log.info("자원회수된 workload의 개수 : {}", resultCnt);
-
+		//삭제 될 리소스에 대한 알림
 		for (ModuleWorkloadResDTO moduleWorkloadResDTO : parentControllerList) {
 			alertService.sendAlert(AlertDTO.builder()
 				.recipientId(moduleWorkloadResDTO.getCreatorId())
 				.alertType(AlertType.WORKLOAD)
-				.message(String.format(AlertMessage.RESOURCE_OPTIMIZATION_RESULT.getMessage(),
+				.message(String.format(AlertMessage.RESOURCE_OPTIMIZATION_ALERT.getMessage(),
 					moduleWorkloadResDTO.getWorkspaceName(), moduleWorkloadResDTO.getName()))
 				.senderId("SYSTEM")
 				.build());

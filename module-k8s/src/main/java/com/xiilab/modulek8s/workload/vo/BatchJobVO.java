@@ -5,16 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
@@ -68,7 +67,7 @@ public class BatchJobVO extends WorkloadVO {
 		Map<String, String> annotationMap = new HashMap<>();
 		annotationMap.put(AnnotationField.NAME.getField(), getName());
 		annotationMap.put(AnnotationField.DESCRIPTION.getField(), getDescription());
-		annotationMap.put(AnnotationField.WORKSPACE_NAME.getField(), getWorkspace());
+		annotationMap.put(AnnotationField.WORKSPACE_NAME.getField(), getWorkspaceName());
 		annotationMap.put(AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString());
 		annotationMap.put(AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName());
 		annotationMap.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName());
