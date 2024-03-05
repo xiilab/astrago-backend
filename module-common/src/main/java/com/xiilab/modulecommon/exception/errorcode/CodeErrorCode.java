@@ -15,7 +15,9 @@ public enum CodeErrorCode implements ErrorCode {
 	CODE_INVALID_TOKEN_OR_URL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "유효하지 않은 URL 혹은 공유 레포지토리인경우 크레덴셜을 제거해주세요"),
 	CODE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "소스코드 저장에 실패하였습니다."),
 	UNSUPPORTED_REPOSITORY_ERROR_CODE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "지원하지 않는 소스코드 URL입니다."),
-	NOT_FOUND_BRANCH_LIST(HttpStatus.INTERNAL_SERVER_ERROR.value(), "지원하지 않는 소스코드 URL입니다.");
+	NOT_FOUND_BRANCH_LIST(HttpStatus.INTERNAL_SERVER_ERROR.value(), "지원하지 않는 소스코드 URL입니다."),
+	FAILED_SAVE_USER_CODE(HttpStatus.NOT_FOUND.value(), "사용자 코드 저장에 실패하였습니다.");
+
 
 	private final int code;
 	private final String message;

@@ -3,6 +3,7 @@ package com.xiilab.servercore.image.dto;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,20 +26,6 @@ public class ImageReqDTO {
 		private String thumbnailSavePath;
 		private String thumbnailSaveFileName;
 		private Long credentialId;
-
-		public SaveImage(String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
-			WorkloadType workloadType, String title, String description, String thumbnailSavePath,
-			String thumbnailSaveFileName, Long credentialId) {
-			this.imageName = imageName;
-			this.repositoryAuthType = repositoryAuthType;
-			this.imageType = imageType;
-			this.workloadType = workloadType;
-			this.title = title;
-			this.description = description;
-			this.thumbnailSavePath = thumbnailSavePath;
-			this.thumbnailSaveFileName = thumbnailSaveFileName;
-			this.credentialId = credentialId;
-		}
 
 		@Builder(builderClassName = "createCustomImageBuilder", builderMethodName = "createCustomImageBuilder")
 		public SaveImage(String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,

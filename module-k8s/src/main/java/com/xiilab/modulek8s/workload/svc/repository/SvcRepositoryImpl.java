@@ -19,6 +19,8 @@ public class SvcRepositoryImpl implements SvcRepository {
 	public void createNodePortService(NodeSvcVO nodeSvcVO) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			client.resource(nodeSvcVO.createResource()).create();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
