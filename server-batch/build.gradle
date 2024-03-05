@@ -4,9 +4,11 @@ dependencies {
     implementation project(':module-user')
     implementation project(':module-common')
     implementation project(':module-alert')
+    implementation project(':module-monitor')
     implementation 'io.fabric8:kubernetes-client:6.9.2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation "org.springframework.boot:spring-boot-starter-quartz"
+    implementation 'org.quartz-scheduler:quartz:2.3.2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 }
