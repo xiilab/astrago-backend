@@ -14,6 +14,7 @@ public class GroupSummaryDTO {
 	private String name;
 	private LocalDate createdDate;
 	private String createdBy;
+	private String description;
 
 	public GroupSummaryDTO(GroupRepresentation groupRep) {
 		Map<String, List<String>> attributes = groupRep.getAttributes();
@@ -24,6 +25,8 @@ public class GroupSummaryDTO {
 				attributes.get("createdDate") != null ? LocalDate.parse(attributes.get("createdDate").get(0)) : null;
 			this.createdBy =
 				attributes.get("createdBy") != null ? attributes.get("createdBy").get(0) : null;
+			this.description =
+				attributes.get("description") != null ? attributes.get("description").get(0) : null;
 		}
 	}
 }
