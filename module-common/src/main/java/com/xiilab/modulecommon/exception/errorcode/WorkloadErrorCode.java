@@ -21,7 +21,7 @@ public enum WorkloadErrorCode  implements ErrorCode {
 	FAILED_CREATE_WORKLOAD(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 생성에 실패하였습니다."),
 	FAILED_SAVE_WORKLOAD_HISTORY(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 등록에 실패하였습니다."),
 	FAILED_LOAD_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 등록에 실패하였습니다."),
-	WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR(HttpStatus.BAD_REQUEST.value(), "워크로드 최적화 정책 생성은 2시간 이상부터 가능합니다.")
+	WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR(HttpStatus.BAD_REQUEST.value(), "워크로드 최적화 정책 생성은 5시간 이상, 24시간 이하만 가능합니다.")
 	;
 
 	private final int code;

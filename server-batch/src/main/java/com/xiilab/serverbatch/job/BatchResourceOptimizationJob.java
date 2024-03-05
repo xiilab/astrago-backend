@@ -1,5 +1,7 @@
 package com.xiilab.serverbatch.job;
 
+import static com.xiilab.modulealert.enumeration.SystemAlertType.*;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.List;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
@@ -38,8 +41,9 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 	private SystemAlertService alertService;
 
 	@Override
-	public void executeInternal(JobExecutionContext context) {
+	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
 		try {
+			//quartz는 Spring bean 사용이 안되기에 수동으로 의존성을 주입한다.
 			applicationContext = (ApplicationContext)context.getScheduler().getContext().get("applicationContext");
 			workloadModuleService = applicationContext.getBean(WorkloadModuleService.class);
 			prometheusService = applicationContext.getBean(PrometheusService.class);
@@ -47,8 +51,7 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 		} catch (SchedulerException e) {
 			throw new RuntimeException(e);
 		}
-
-		log.info("batch resource optimization job start....");
+		log.info("batch resource optimization alert job start....");
 
 		JobDataMap jobDataMap = context.getMergedJobDataMap();
 		int cpuLimit = (int)jobDataMap.get("cpu");
@@ -60,42 +63,21 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 		log.info("gpuLimit : {}", gpuLimit);
 		log.info("hour : {}", hour);
 
-		//astra에서 생성한 실행중인 batch workload 조회
-		List<ModuleWorkloadResDTO> astraBatchWorkloadList = workloadModuleService.getAstraBatchWorkloadList();
-		log.info("astra에서 생성된 batch workload 총 개수 : {}", astraBatchWorkloadList.size());
-
-		//통합을 위한 리스트를 생성
-		List<ResponseDTO.RealTimeDTO> totalList = new ArrayList<>();
-		LocalDateTime now = LocalDateTime.now().minusHours(hour);
-		String unixTimeStamp = String.valueOf(now.atZone(ZoneId.systemDefault()).toEpochSecond());
-
-		//prometheus에서 기준치 이상을 넘은 워크로드를 조회
-		List<ResponseDTO.RealTimeDTO> overResourceCPUPodList = prometheusService.getRealTimeMetric(
-			Promql.RESOURCE_OPTIMIZATION_CPU, String.valueOf(hour), String.valueOf(cpuLimit), unixTimeStamp);
-		List<ResponseDTO.RealTimeDTO> overResourceGPUPodList = prometheusService.getRealTimeMetric(
-			Promql.RESOURCE_OPTIMIZATION_CPU, String.valueOf(hour), String.valueOf(gpuLimit), unixTimeStamp);
-		List<ResponseDTO.RealTimeDTO> overResourceMEMPodList = prometheusService.getRealTimeMetric(
-			Promql.RESOURCE_OPTIMIZATION_MEM, String.valueOf(hour), String.valueOf(memLimit), unixTimeStamp);
-		log.info("over resource cpu pod list count : {}", overResourceCPUPodList.size());
-		log.info("over resource gpu pod list count : {}", overResourceGPUPodList.size());
-		log.info("over resource mem pod list count : {}", overResourceMEMPodList.size());
-
-		totalList.addAll(overResourceCPUPodList);
-		totalList.addAll(overResourceGPUPodList);
-		totalList.addAll(overResourceMEMPodList);
+		List<ResponseDTO.RealTimeDTO> optimizationList = getOverResourcePodList(cpuLimit, memLimit, gpuLimit, hour);
+		List<ResponseDTO.RealTimeDTO> alarmList = getOverResourcePodList(cpuLimit, memLimit, gpuLimit, hour - 1);
 
 		//최적화 대상에 대한 distinct 처리 진행
-		List<ResourceOptimizationTargetDTO> list = totalList.stream()
+		List<ResourceOptimizationTargetDTO> alarmDistinctList = alarmList.stream()
 			.map(realTimeDTO -> new ResourceOptimizationTargetDTO(realTimeDTO.nameSpace(), realTimeDTO.podName()))
 			.distinct()
 			.toList();
 
-		log.info("over resource total pod list count : {}", list.size());
+		log.info("over resource total pod list count : {}", alarmDistinctList.size());
 
-		List<ModuleWorkloadResDTO> parentControllerList = workloadModuleService.getParentControllerList(list);
+		List<ModuleWorkloadResDTO> alarmParentList = workloadModuleService.getParentControllerList(alarmDistinctList);
 
-		//삭제 될 리소스에 대한 알림
-		for (ModuleWorkloadResDTO moduleWorkloadResDTO : parentControllerList) {
+		//alert message
+		for (ModuleWorkloadResDTO moduleWorkloadResDTO : alarmParentList) {
 			alertService.sendAlert(SystemAlertDTO.builder()
 				.recipientId(moduleWorkloadResDTO.getCreatorId())
 				.systemAlertType(SystemAlertType.WORKLOAD)
@@ -104,5 +86,52 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 				.senderId("SYSTEM")
 				.build());
 		}
+
+		//최적화 대상에 대한 distinct 처리 진행
+		List<ResourceOptimizationTargetDTO> optimizationDistinctList = optimizationList.stream()
+			.map(realTimeDTO -> new ResourceOptimizationTargetDTO(realTimeDTO.nameSpace(), realTimeDTO.podName()))
+			.distinct()
+			.toList();
+
+		log.info("over resource total pod list count : {}", optimizationDistinctList.size());
+		List<ModuleWorkloadResDTO> parentControllerList = workloadModuleService.getParentControllerList(optimizationDistinctList);
+		int resultCnt = workloadModuleService.optimizationInteractiveWorkload(optimizationDistinctList);
+
+		log.info("자원회수된 workload의 개수 : {}", resultCnt);
+
+		//resource optimization message
+		for (ModuleWorkloadResDTO moduleWorkloadResDTO : parentControllerList) {
+			alertService.sendAlert(SystemAlertDTO.builder()
+				.recipientId(moduleWorkloadResDTO.getCreatorId())
+				.systemAlertType(WORKLOAD)
+				.message(String.format(SystemAlertMessage.RESOURCE_OPTIMIZATION_RESULT.getMessage(),
+					moduleWorkloadResDTO.getWorkspaceName(), moduleWorkloadResDTO.getName()))
+				.senderId("SYSTEM")
+				.build());
+		}
+	}
+
+	private List<ResponseDTO.RealTimeDTO> getOverResourcePodList(int cpu, int mem, int gpu, int hour) {
+		//통합을 위한 리스트 생성
+		List<ResponseDTO.RealTimeDTO> totalList = new ArrayList<>();
+		LocalDateTime now = LocalDateTime.now().minusHours(hour);
+		String unixTimeStamp = String.valueOf(now.atZone(ZoneId.systemDefault()).toEpochSecond());
+
+		//prometheus에서 기준치 이상을 넘은 워크로드 조회
+		List<ResponseDTO.RealTimeDTO> overResourceCPUPodList = prometheusService.getRealTimeMetric(
+			Promql.RESOURCE_OPTIMIZATION_CPU, String.valueOf(hour), String.valueOf(cpu), unixTimeStamp);
+		List<ResponseDTO.RealTimeDTO> overResourceGPUPodList = prometheusService.getRealTimeMetric(
+			Promql.RESOURCE_OPTIMIZATION_CPU, String.valueOf(hour), String.valueOf(gpu), unixTimeStamp);
+		List<ResponseDTO.RealTimeDTO> overResourceMEMPodList = prometheusService.getRealTimeMetric(
+			Promql.RESOURCE_OPTIMIZATION_MEM, String.valueOf(hour), String.valueOf(mem), unixTimeStamp);
+		log.info("over resource cpu pod list count : {}", overResourceCPUPodList.size());
+		log.info("over resource gpu pod list count : {}", overResourceGPUPodList.size());
+		log.info("over resource mem pod list count : {}", overResourceMEMPodList.size());
+
+		totalList.addAll(overResourceCPUPodList);
+		totalList.addAll(overResourceGPUPodList);
+		totalList.addAll(overResourceMEMPodList);
+
+		return totalList;
 	}
 }

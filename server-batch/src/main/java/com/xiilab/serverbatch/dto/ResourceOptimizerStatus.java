@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ResourceOptimizerStatus {
-	private boolean batch;
-	private boolean interactive;
+	private ResourceOptimizationDTO batch;
+	private ResourceOptimizationDTO interactive;
 }

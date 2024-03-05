@@ -15,12 +15,19 @@ public class ResourceOptimizationDTO {
 	private int gpu;
 	private int hour;
 
-	public JobDataMap getJobDataMap() {
+	public JobDataMap convertToJobDataMap() {
 		JobDataMap jobDataMap = new JobDataMap();
 		jobDataMap.put("cpu", cpu);
 		jobDataMap.put("mem", mem);
 		jobDataMap.put("gpu", gpu);
 		jobDataMap.put("hour", hour);
 		return jobDataMap;
+	}
+
+	public ResourceOptimizationDTO(JobDataMap jobDataMap) {
+		this.cpu = (int)jobDataMap.get("cpu");
+		this.mem = (int)jobDataMap.get("mem");
+		this.gpu = (int)jobDataMap.get("gpu");
+		this.hour = (int)jobDataMap.get("hour");
 	}
 }
