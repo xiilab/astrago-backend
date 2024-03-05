@@ -3,4 +3,8 @@ dependencies {
     // github
     implementation 'org.kohsuke:github-api:1.301'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    // mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'com.github.jknack:handlebars:4.3.1'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 }
