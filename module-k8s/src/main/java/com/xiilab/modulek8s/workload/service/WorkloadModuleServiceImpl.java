@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
@@ -14,8 +16,8 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -29,13 +31,16 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	private final WorkloadRepository workloadRepository;
 
-	public ModuleJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName) {
+	public ModuleJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName) {
 		return workloadRepository.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toBatchJobVO(workspaceName));
 	}
 
 	@Override
-	public ModuleJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName) {
-		return workloadRepository.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO.toInteractiveJobVO(workspaceName));
+	public ModuleJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName) {
+		return workloadRepository.createInteractiveJobWorkload(
+			moduleCreateWorkloadReqDTO.toInteractiveJobVO(workspaceName));
 	}
 
 	@Override
@@ -72,7 +77,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId) {
 		if (workspaceName != null) {
 			return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
-		} else if (userId != null){
+		} else if (userId != null) {
 			return workloadRepository.getBatchWorkloadListByCreator(userId);
 		} else {
 			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
@@ -132,6 +137,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
 		workloadRepository.createDatasetDeployment(createDeployment);
 	}
+
 	@Override
 	public void createModelDeployment(CreateModelDeployment createDeployment) {
 		workloadRepository.createModelDeployment(createDeployment);
@@ -165,5 +171,35 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public boolean isUsedModel(Long modelId) {
 		return workloadRepository.isUsedModel(modelId);
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getAstraInteractiveWorkloadList() {
+		return workloadRepository.getAstraInteractiveWorkload();
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getAstraBatchWorkloadList() {
+		return workloadRepository.getAstraBatchWorkload();
+	}
+
+	@Override
+	public int optimizationInteractiveWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
+		int totalResultCnt = 0;
+		for (ResourceOptimizationTargetDTO resourceOptimizationTargetDTO : resourceOptimizationTargetList) {
+			boolean parentResource = workloadRepository.optimizationResource(resourceOptimizationTargetDTO.getPodName(),
+				resourceOptimizationTargetDTO.getNamespace());
+			if (parentResource) {
+				totalResultCnt += 1;
+			}
+		}
+		return totalResultCnt;
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getParentControllerList(
+		List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
+		return resourceOptimizationTargetList.stream().map(optimizationTarget -> workloadRepository.getParentController(
+			optimizationTarget.getPodName(), optimizationTarget.getNamespace())).toList();
 	}
 }

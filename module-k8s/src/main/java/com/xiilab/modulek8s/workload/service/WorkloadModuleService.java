@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
@@ -12,6 +13,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
 
@@ -76,6 +78,7 @@ public interface WorkloadModuleService {
 	List<WorkloadResDTO.UsingDatasetDTO> workloadsUsingDataset(Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
+
 	void createModelDeployment(CreateModelDeployment createDeployment);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
@@ -89,4 +92,12 @@ public interface WorkloadModuleService {
 	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
 	boolean isUsedModel(Long modelId);
+
+	List<ModuleWorkloadResDTO> getAstraInteractiveWorkloadList();
+
+	List<ModuleWorkloadResDTO> getAstraBatchWorkloadList();
+
+	int optimizationInteractiveWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList);
+
+	List<ModuleWorkloadResDTO> getParentControllerList(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList);
 }

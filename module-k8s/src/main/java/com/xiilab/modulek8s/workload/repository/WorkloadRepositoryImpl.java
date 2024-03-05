@@ -2,7 +2,9 @@ package com.xiilab.modulek8s.workload.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +22,7 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
@@ -28,6 +31,7 @@ import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
@@ -37,15 +41,20 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
+import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
+import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class WorkloadRepositoryImpl implements WorkloadRepository {
@@ -376,6 +385,106 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			}
 			return true;
 		}
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getAstraBatchWorkload() {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			List<Job> items = kubernetesClient.batch()
+				.v1()
+				.jobs()
+				.withLabels(Map.of(LabelField.CONTROL_BY.getField(), "astra"))
+				.list()
+				.getItems();
+			return items.stream().map(ModuleBatchJobResDTO::new).collect(Collectors.toList());
+		}
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getAstraInteractiveWorkload() {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			List<Deployment> items = kubernetesClient.apps()
+				.deployments()
+				.withLabels(Map.of(LabelField.CONTROL_BY.getField(), "astra"))
+				.list()
+				.getItems();
+			return items.stream().map(ModuleInteractiveJobResDTO::new).collect(Collectors.toList());
+		}
+	}
+
+	@Override
+	public boolean optimizationResource(String pod, String namespace) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Pod podResult = kubernetesClient.pods().inNamespace(namespace).withName(pod).get();
+
+			OwnerReference controllerUid = KubernetesResourceUtil.getControllerUid(podResult);
+
+			if (controllerUid != null) {
+				String ownerKind = controllerUid.getKind();
+				String ownerName = controllerUid.getName();
+				if ("ReplicaSet".equals(ownerKind)) {
+					ReplicaSet replicaSet = kubernetesClient.apps()
+						.replicaSets()
+						.inNamespace(namespace)
+						.withName(ownerName)
+						.get();
+					if (replicaSet != null) {
+						OwnerReference deployController = KubernetesResourceUtil.getControllerUid(replicaSet);
+						if ("Deployment".equals(deployController.getKind())) {
+							Deployment deployment = kubernetesClient.apps()
+								.deployments()
+								.inNamespace(namespace)
+								.withName(deployController.getName())
+								.get();
+							kubernetesClient.resource(deployment).delete();
+							log.info("deployment {}가 삭제되었습니다.", deployment.getMetadata().getName());
+						}
+					}
+				} else if ("Job".equals(ownerKind)) {
+					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
+					job.getMetadata();
+				}
+			}
+		} catch (KubernetesClientException e) {
+			log.error(e.getMessage());
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public ModuleWorkloadResDTO getParentController(String pod, String namespace) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Pod podResult = kubernetesClient.pods().inNamespace(namespace).withName(pod).get();
+
+			OwnerReference controllerUid = KubernetesResourceUtil.getControllerUid(podResult);
+			if (controllerUid != null) {
+				String ownerKind = controllerUid.getKind();
+				String ownerName = controllerUid.getName();
+				if ("ReplicaSet".equals(ownerKind)) {
+					ReplicaSet replicaSet = kubernetesClient.apps()
+						.replicaSets()
+						.inNamespace(namespace)
+						.withName(ownerName)
+						.get();
+					if (replicaSet != null) {
+						OwnerReference deployController = KubernetesResourceUtil.getControllerUid(replicaSet);
+						if ("Deployment".equals(deployController.getKind())) {
+							Deployment deployment = kubernetesClient.apps()
+								.deployments()
+								.inNamespace(namespace)
+								.withName(deployController.getName())
+								.get();
+							return new ModuleInteractiveJobResDTO(deployment);
+						}
+					}
+				} else if ("Job".equals(ownerKind)) {
+					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
+					return new ModuleBatchJobResDTO(job);
+				}
+			}
+		}
+		return null;
 	}
 
 	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads,

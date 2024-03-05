@@ -13,6 +13,7 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -125,4 +126,9 @@ public interface WorkloadRepository {
 	void modifyLocalModelDeployment(ModifyLocalModelDeploymentDTO modifyLocalModelDeploymentDTO);
 
 	boolean isUsedModel(Long modelId);
+
+	List<ModuleWorkloadResDTO> getAstraBatchWorkload();
+	List<ModuleWorkloadResDTO> getAstraInteractiveWorkload();
+	boolean optimizationResource(String pod, String namespace);
+	ModuleWorkloadResDTO getParentController(String pod, String namespace);
 }
