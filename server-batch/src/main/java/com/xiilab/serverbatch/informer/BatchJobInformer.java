@@ -135,7 +135,7 @@ public class BatchJobInformer {
 					workloadHistoryRepo.save(endJob);
 
 					/**
-					 * TODO DELETE_YN 업데이트 필요
+					 * TODO DELETE_YN 업데이트 필요, 서비스 삭제 필요
 					 * 모델, 데이터셋은 매핑 엔티티만 업데이트
 					 * 코드, 이미지는 커스텀이면 매핑, 원본 업데이트, 아니면 매핑만 업데이트
 					 */

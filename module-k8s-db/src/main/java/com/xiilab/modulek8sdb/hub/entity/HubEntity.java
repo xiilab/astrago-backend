@@ -39,9 +39,6 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "THUMBNAIL_SAVE_PATH")
 	private String thumbnailSavePath;
 
-	@Column(name = "IMAGE")
-	private String image;
-
 	@Column(name = "ENVS", length = 1000)
 	private String envs;
 
