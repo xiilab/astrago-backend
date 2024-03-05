@@ -11,7 +11,6 @@ import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
-import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.repository.UserRepository;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
@@ -33,8 +32,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<UserSummary> getWaitingApprovalUserList() {
-		return userRepository.getUserListSearchByAttribute("approvalYN");
+	public UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition) {
+		return userRepository.getWaitingApprovalUserList(pageNo, pageSize, searchCondition);
 	}
 
 	@Override
@@ -89,8 +88,8 @@ public class UserServiceImpl implements UserService {
 		return userRepository.getUserAndGroupBySearch(search);
 	}
 	@Override
-	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
-		return userRepository.updateUserInfoById(id, updateUserDTO);
+	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+		userRepository.updateUserInfoById(id, updateUserDTO);
 	}
 
 	@Override

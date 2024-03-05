@@ -3,6 +3,8 @@ package com.xiilab.modulek8sdb.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.SQLDelete;
+
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
@@ -31,6 +33,7 @@ import lombok.NoArgsConstructor;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name="DIVISION")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE TB_MODEL tm SET tm.DELETE_YN = 'Y' WHERE tm.MODEL_ID = ?")
 public abstract class Model extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

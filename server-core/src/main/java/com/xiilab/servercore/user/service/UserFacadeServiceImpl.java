@@ -11,7 +11,6 @@ import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
-import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
@@ -40,8 +39,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public List<UserSummary> getWaitingApprovalUserList() {
-		return userService.getWaitingApprovalUserList();
+	public UserDTO.PageUsersDTO getWaitingApprovalUserList(PageInfo pageInfo, UserSearchCondition searchCondition) {
+		return userService.getWaitingApprovalUserList(pageInfo.getPageNo(), pageInfo.getPageSize(), searchCondition);
 	}
 
 	@Override
@@ -89,7 +88,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
-		return userService.updateUserInfoById(id, updateUserDTO);
+	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+		userService.updateUserInfoById(id, updateUserDTO);
 	}
 }

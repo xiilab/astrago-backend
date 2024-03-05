@@ -2,12 +2,12 @@ package com.xiilab.servercore.hub.service;
 
 import org.springframework.data.domain.Pageable;
 
-import com.xiilab.modulek8sdb.hub.dto.HubDTO;
+import com.xiilab.modulek8sdb.hub.dto.HubResDTO;
 
 public interface HubService {
 	// 허브 목록
-	HubDTO.Response.HubsDto getHubList(String[] categoryNames, Pageable pageable);
+	HubResDTO.FindHubs getHubList(String[] categoryNames, Pageable pageable);
 
 	// 허브 상세 보기
-	HubDTO.Response.HubDetailDto getHubByHubId(Long hubId);
+	HubResDTO.FindHub getHubByHubId(Long hubId);
 }
