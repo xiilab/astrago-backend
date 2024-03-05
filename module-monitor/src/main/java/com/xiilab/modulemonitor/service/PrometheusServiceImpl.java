@@ -1,7 +1,6 @@
 package com.xiilab.modulemonitor.service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -52,6 +51,13 @@ public class PrometheusServiceImpl implements PrometheusService{
 	@Override
 	public String getHistoryMetricByQuery(String promql, String startDate, String endDate) {
 		return prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate);
+	}
+
+	@Override
+	public List<ResponseDTO.RealTimeDTO> getRealTimeMetric(Promql promql, String time, String limitResource, String unixTimeStamp) {
+		String realTimeMetricByQuery = prometheusRepository.getRealTimeMetricByQuery(
+			String.format(promql.getQuery(), time, limitResource, unixTimeStamp));
+		return extractMetrics(realTimeMetricByQuery, promql.name());
 	}
 
 	/**

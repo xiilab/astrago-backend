@@ -1,5 +1,8 @@
 package com.xiilab.serverbatch.schedulerService;
 
+import static com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode.*;
+
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,41 +21,48 @@ import org.springframework.stereotype.Service;
 import com.xiilab.serverbatch.common.BatchJob;
 import com.xiilab.serverbatch.dto.ResourceOptimizationDTO;
 import com.xiilab.serverbatch.dto.ResourceOptimizerStatus;
+import com.xiilab.serverbatch.job.BatchOptimizationAlertJob;
 import com.xiilab.serverbatch.job.BatchResourceOptimizationJob;
+import com.xiilab.serverbatch.job.InteractiveOptimizationAlertJob;
 import com.xiilab.serverbatch.job.InteractiveResourceOptimizationJob;
+import com.xiilab.serverbatch.job.OptimizationJobListener;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ResourceSchedulerService {
 	private final Scheduler scheduler;
+
+	public ResourceSchedulerService(Scheduler scheduler) throws SchedulerException {
+		this.scheduler = scheduler;
+		scheduler.getListenerManager().addJobListener(new OptimizationJobListener(scheduler));
+	}
+
 	private static final String ASTRA = "astra";
 
 	public void registerResourceScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob) throws
-		SchedulerException {
-		JobDetail job = createJob(batchJob, optimizationDTO);
-		Trigger trigger = createTrigger(job);
-		scheduler.scheduleJob(job, trigger);
+		Exception {
+		if (optimizationDTO.getHour() < 2) {
+			throw new Exception(WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR.getMessage());
+		}
+		//resource optimization alert job, trigger 생성
+		JobDetail resourceOptimizationAlertJob = createResourceOptimizationAlertJob(batchJob, optimizationDTO);
+		Trigger optimizationAlertTrigger = createTrigger(resourceOptimizationAlertJob, optimizationDTO.getHour() - 1);
+		//생성된 job과 trigger을 scheduler에 등록
+		scheduler.scheduleJob(resourceOptimizationAlertJob, optimizationAlertTrigger);
 	}
 
 	public void updateResourceOptimizationScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob) throws
-		SchedulerException {
+		Exception {
 		stopResourceScheduler(batchJob);
 		registerResourceScheduler(optimizationDTO, batchJob);
 	}
 
 	public void stopResourceScheduler(BatchJob batchJob) throws SchedulerException {
 		Set<JobKey> astra = scheduler.getJobKeys(GroupMatcher.groupEquals(ASTRA));
-		astra.stream().filter(jobKey -> jobKey.getName().equals(batchJob.name())).findFirst().ifPresent(job -> {
-			try {
-				scheduler.deleteJob(job);
-			} catch (SchedulerException e) {
-				throw new RuntimeException(e);
-			}
-		});
+		List<JobKey> list = astra.stream().filter(jobKey -> jobKey.getName().contains(batchJob.name())).toList();
+		scheduler.deleteJobs(list);
 	}
 
 	public ResourceOptimizerStatus getResourceOptimizerStatus() throws SchedulerException {
@@ -63,7 +73,7 @@ public class ResourceSchedulerService {
 		return new ResourceOptimizerStatus(batch, interactive);
 	}
 
-	private JobDetail createJob(BatchJob jobType, ResourceOptimizationDTO optimizationDTO) {
+	private JobDetail createResourceOptimizationJob(BatchJob jobType, ResourceOptimizationDTO optimizationDTO) {
 		if (jobType == BatchJob.BATCHJOBOPTIMIZATION) {
 			return JobBuilder.newJob(BatchResourceOptimizationJob.class)
 				.withIdentity(BatchJob.BATCHJOBOPTIMIZATION.name(), ASTRA)
@@ -77,9 +87,23 @@ public class ResourceSchedulerService {
 		}
 	}
 
-	private Trigger createTrigger(JobDetail job) {
+	private JobDetail createResourceOptimizationAlertJob(BatchJob jobType, ResourceOptimizationDTO optimizationDTO) {
+		if (jobType == BatchJob.BATCHJOBOPTIMIZATION) {
+			return JobBuilder.newJob(BatchOptimizationAlertJob.class)
+				.withIdentity(BatchJob.BATCHJOBOPTIMIZATION.name() + "ALERT", ASTRA)
+				.usingJobData(optimizationDTO.getJobDataMap())
+				.build();
+		} else {
+			return JobBuilder.newJob(InteractiveOptimizationAlertJob.class)
+				.withIdentity(BatchJob.INTERACTIVEJOBOPTIMIZATION.name() + "ALERT", ASTRA)
+				.usingJobData(optimizationDTO.getJobDataMap())
+				.build();
+		}
+	}
+
+	private Trigger createTrigger(JobDetail job, int hour) {
 		return TriggerBuilder.newTrigger()
-			.withSchedule(CronScheduleBuilder.cronSchedule("0/2 * * * * ?"))
+			.withSchedule(CronScheduleBuilder.cronSchedule(String.format("0 0/%s * * * ?", hour)))
 			.startNow()
 			.forJob(job)
 			.build();

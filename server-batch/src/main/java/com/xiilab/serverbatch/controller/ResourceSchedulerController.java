@@ -33,7 +33,7 @@ public class ResourceSchedulerController {
 	@PostMapping("/{jobType}")
 	public ResponseEntity<HttpStatus> registerResourceOptimizationScheduler(
 		@PathVariable("jobType") BatchJob batchJob,
-		@RequestBody ResourceOptimizationDTO resourceOptimizationDTO) throws SchedulerException {
+		@RequestBody ResourceOptimizationDTO resourceOptimizationDTO) throws Exception {
 		resourceSchedulerService.registerResourceScheduler(resourceOptimizationDTO, batchJob);
 		return ResponseEntity.ok().build();
 	}
@@ -42,7 +42,7 @@ public class ResourceSchedulerController {
 	public ResponseEntity<HttpStatus> updateResourceOptimizationValue(
 		@PathVariable("jobType") BatchJob batchJob,
 		@RequestBody ResourceOptimizationDTO resourceOptimizationDTO
-	) throws SchedulerException {
+	) throws Exception {
 		resourceSchedulerService.updateResourceOptimizationScheduler(resourceOptimizationDTO, batchJob);
 		return ResponseEntity.ok().build();
 	}
