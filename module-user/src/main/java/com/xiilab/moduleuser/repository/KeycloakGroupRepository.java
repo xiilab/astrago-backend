@@ -18,12 +18,10 @@ import com.xiilab.moduleuser.dto.GroupCategory;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.vo.GroupModiVO;
 import com.xiilab.moduleuser.vo.GroupReqVO;
 
 import io.micrometer.common.util.StringUtils;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,10 +33,9 @@ public class KeycloakGroupRepository implements GroupRepository {
 	private final UserRepository userRepository;
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList(FindDTO findDTO) {
+	public List<GroupSummaryDTO> getGroupList() {
 		GroupResource rootGroup = getGroupResourceByName(GroupCategory.ACCOUNT.getValue());
 		return rootGroup.toRepresentation().getSubGroups().stream()
-			.filter(group -> searchInfo(findDTO, group))
 			.map(GroupSummaryDTO::new).toList();
 	}
 
@@ -62,15 +59,15 @@ public class KeycloakGroupRepository implements GroupRepository {
 	@Override
 	public GroupInfoDTO getGroupById(String groupId) {
 		GroupResource group = keycloakConfig.getRealmClient().groups().group(groupId);
-		try {
-			List<UserInfo> groupUsers = group.members()
-				.stream()
-				.map(member -> userRepository.getUserInfoById(member.getId()))
-				.toList();
-			return new GroupInfoDTO(group, groupUsers);
-		} catch (NotFoundException e) {
-			throw new K8sException(WorkspaceErrorCode.NOT_FOUND_WORKSPACE);
-		}
+		// try {
+			// List<UserInfo> groupUsers = group.members()
+			// 	.stream()
+			// 	.map(member -> userRepository.getUserInfoById(member.getId()))
+			// 	.toList();
+		return new GroupInfoDTO(group);
+		// } catch (NotFoundException e) {
+		// 	throw new K8sException(WorkspaceErrorCode.NOT_FOUND_WORKSPACE);
+		// }
 	}
 
 	@Override
@@ -105,9 +102,12 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public List<GroupUserDTO> findUsersByGroupId(String groupId) {
+	public GroupUserDTO.SubGroupUserDto findUsersByGroupId(String groupId) {
 		GroupResource group = keycloakConfig.getRealmClient().groups().group(groupId);
-		return group.members().stream().map(GroupUserDTO::new).toList();
+		List<GroupRepresentation> subGroups = group.toRepresentation().getSubGroups();
+		List<UserRepresentation> members = group.members();
+
+		return new GroupUserDTO.SubGroupUserDto(subGroups, members);
 	}
 
 	@Override
@@ -156,11 +156,12 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public List<GroupUserDTO> getWorkspaceMember(String groupName) {
+	public List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName) {
 
 		GroupRepresentation subGroup = getWsSubGroupByGroupName(groupName);
+		GroupUserDTO.SubGroupUserDto usersByGroupId = findUsersByGroupId(subGroup.getId());
 
-		return findUsersByGroupId(subGroup.getId());
+		return usersByGroupId.getUsers();
 	}
 	@Override
 	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList){
@@ -182,7 +183,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		for(String userId : userIdList){
 			keycloakConfig.getRealmClient().users().get(userId).joinGroup(subgroup.getId());
 			// 워크스페이스 회원 추가 검사를 위한 GroupUser 조회
-			Optional<GroupUserDTO> group = findUsersByGroupId(subgroup.getId()).stream()
+			Optional<GroupUserDTO.UserDTO> group = findUsersByGroupId(subgroup.getId()).getUsers().stream()
 				.filter(groupUserDTO -> groupUserDTO.getId().equals(userId))
 				.findFirst();
 

@@ -4,13 +4,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.servercore.common.dto.SearchCondition;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,12 +28,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList(SearchCondition searchCondition) {
-		FindDTO findDTO = FindDTO.builder()
-			.option(searchCondition.getOption())
-			.keyword(searchCondition.getKeyword())
-			.build();
-		return groupService.getGroupList(findDTO);
+	public List<GroupSummaryDTO> getGroupList() {
+		return groupService.getGroupList();
 	}
 
 	@Override
@@ -49,7 +43,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<GroupUserDTO> getGroupUsers(String groupId) {
+	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId) {
 		return groupService.getGroupUsers(groupId);
 	}
 
@@ -59,7 +53,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<GroupUserDTO> getWorkspaceMember(String groupName) {
+	public List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName) {
 		return groupService.getWorkspaceMember(groupName);
 	}
 
