@@ -19,6 +19,7 @@ import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.user.service.UserFacadeService;
