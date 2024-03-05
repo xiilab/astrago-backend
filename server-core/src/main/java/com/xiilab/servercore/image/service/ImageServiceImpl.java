@@ -1,5 +1,10 @@
 package com.xiilab.servercore.image.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -50,6 +55,14 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
+	public ImageResDTO.FindImages findImages(int pageNo, int pageSize) {
+		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
+		// imageRepository.findByImageType();
+		Page<ImageEntity> images = imageRepository.findAll(pageRequest);
+		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements());
+	}
+
+	@Override
 	public void deleteImageById(Long id) {
 		imageRepository.deleteById(id);
 	}
@@ -65,7 +78,11 @@ public class ImageServiceImpl implements ImageService {
 			.thumbnailSaveFileName(saveImageDTO.getThumbnailSaveFileName())
 			.build();
 
-		return imageRepository.save(builtInImage);
+		try {
+			return imageRepository.save(builtInImage);
+		} catch (IllegalArgumentException e) {
+			throw new RestApiException(ImageErrorCode.FAILED_SAVE_BUILT_IN_IMAGE);
+		}
 	}
 
 	private ImageEntity saveCustomImage(ImageReqDTO.SaveImage saveImage) {
@@ -83,10 +100,11 @@ public class ImageServiceImpl implements ImageService {
 			.credentialEntity(credentialEntity)
 			.build();
 
-		return imageRepository.save(customImageEntity);
+		try {
+			return imageRepository.save(customImageEntity);
+		} catch (IllegalArgumentException e) {
+			throw new RestApiException(ImageErrorCode.FAILED_SAVE_CUSTOM_IMAGE);
+		}
 	}
 
-	// private void saveHubImage(ImageRequestDTO.CreateImage createImage) {
-	//
-	// }
 }

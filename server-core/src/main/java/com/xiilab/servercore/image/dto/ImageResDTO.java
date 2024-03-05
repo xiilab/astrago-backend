@@ -54,12 +54,12 @@ public class ImageResDTO {
 
 	@Getter
 	@Builder
-	public static class FindAllImages {
+	public static class FindImages {
 		private List<FindImage> findImages;
 		private long totalCount;
 
-		public static FindAllImages from(List<ImageEntity> imageEntities, Long totalCount) {
-			return FindAllImages.builder()
+		public static FindImages from(List<ImageEntity> imageEntities, Long totalCount) {
+			return FindImages.builder()
 				.findImages(imageEntities.stream().map(FindImage::from).toList())
 				.totalCount(totalCount)
 				.build();

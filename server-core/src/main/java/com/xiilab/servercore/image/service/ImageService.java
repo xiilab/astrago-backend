@@ -9,6 +9,8 @@ public interface ImageService {
 
 	ImageResDTO.FindImage findImageById(Long id);
 
+	ImageResDTO.FindImages findImages(int pageNo, int pageSize);
+
 	void deleteImageById(Long id);
 
 	// void saveHubImage(ImageRequestDTO.CreateHubImage createHubImage);

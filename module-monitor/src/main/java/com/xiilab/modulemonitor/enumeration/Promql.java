@@ -13,11 +13,11 @@ public enum Promql {
 	GPU_MEM_TEMP("avg(DCGM_FI_DEV_MEMORY_TEMP{%s})","GPU MEM 온도 조회","GPU"),
 	GPU_MEM_AVG_TEMP("avg(DCGM_FI_DEV_MEMORY_TEMP{%s})","GPU MEM 평균 온도 조회","GPU"),
 	GPU_COUNT("DCGM_FI_DEV_COUNT{%s}","GPU 개수 조회 및 GPU Name 조회","GPU"),
-	GPU_USAGE("DCGM_FI_DEV_GPU_UTIL{%s}", "GPU 사용량 조회", "GPU"),
+	GPU_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{%s}) by(gpu, kubernetes_node, modelName)", "GPU 사용률 조회", "GPU"),
 	GPU_AVG_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{%s})", "GPU 평균 사용량 조회", "GPU"),
-	GPU_MEM_USAGE("max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%s}[1m]))", "GPU MEM 사용량 조회", "GPU"),
+	GPU_MEM_USAGE("avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])) by(gpu, kubernetes_node, modelName))", "GPU MEM 사용률 조회", "GPU"),
 	GPU_MEM_AVG_USAGE("avg(max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%s}[1m])", "GPU MEM 평균 사용량 조회", "GPU"),
-	GPU_POWER_USAGE("DCGM_FI_DEV_POWER_USAGE{%s}","GPU 전력 사용량 조회","GPU"),
+	GPU_POWER_USAGE("avg(DCGM_FI_DEV_POWER_USAGE{%s}) by(gpu, kubernetes_node, modelName)","GPU 전력 사용률 조회","GPU"),
 	GPU_AVG_POWER_USAGE("DCGM_FI_DEV_POWER_USAGE{%s}","GPU 전력 사용량 조회","GPU"),
 	GPU_MEM_CLOCK_SPEED("DCGM_FI_DEV_MEM_CLOCK{%s}","GPU MEW 클럭 속도 조회","GPU"),
 
@@ -36,7 +36,9 @@ public enum Promql {
 		+ "/ max by (mountpoint) (label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}) * 100", "Node Disk 사용량", "NODE"),
 	TOTAL_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{mountpoint=\"/\"})", "전체 노드의 DISK SIZE(Bytes) 조회", "NODE"),
 	USAGE_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{mountpoint=\"/\"}) - sum(node_filesystem_avail_bytes{mountpoint=\"/\"})", "전체 노드의 DISK 사용중인 Bytes 조회", "NODE"),
-
+	NODE_LOAD1("avg(node_load1) by(nodename, job, instance, container,service)","1분 단위 GPU 평균 부하",""),
+	NODE_LOAD5("avg(node_load5) by(nodename, job, instance, container,service)","5분 단위 GPU 평균 부하",""),
+	NODE_LOAD15("avg(node_load15) by(nodename, job, instance, container,service)","15분 단위 GPU 평균 부하",""),
 	USAGE_NODE_CPU_CORE("sum(kube_pod_container_resource_requests{resource=\"cpu\",%s})by(node)", "특정 노드의 cpu 코어 수 조회", "NODE"),
 	USAGE_NODE_MEMORY_SIZE("sum(kube_pod_container_resource_requests{resource=\"memory\",%s})by(node)", "특정 노드의 memory size 조회", "NODE"),
 	USAGE_NODE_GPU_COUNT("sum(kube_pod_container_resource_requests{resource=\"nvidia_com_gpu\",%s})by(node)", "특정 노드의 gpu 개수 조회", "NODE"),
@@ -52,10 +54,12 @@ public enum Promql {
 	NODE_NETWORK_TRANSMIT("avg by(instance) (node_network_transmit_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{})","노드의 네트워크 송신","NODE"),
 	TOTAL_NODE_REQUEST_RESOURCE("sum(kube_pod_container_resource_requests{%s})by(resource)", "특정 노드의 request 리소스 사용량 조회", "NODE"),
 	TOTAL_NODE_LIMIT_RESOURCE("sum(kube_pod_container_resource_limits{%s})by(resource)", "특정 노드의 limit 리소스 사용량 조회", "NODE"),
-
-
-
-
+	NODE_DISK_READ("label_replace(avg(node_disk_read_bytes_total) by(instance), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "", "NODE"),
+	NODE_DISK_WRITTEN("label_replace(avg(node_disk_written_bytes_total) by(instance), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "", "NODE"),
+	NODE_MEMORY_BUFFERS("label_replace(node_memory_Buffers_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NODE MEM Buffer 조회", "NODE"),
+	NODE_MEMORY_CACHED("label_replace(node_memory_Cached_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NODE MEM Cached 조회", "NODE"),
+	NODE_MEMORY_MEM_TOTAL("label_replace(node_memory_MemTotal_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NODE MEM Total 조회", "NODE"),
+	NODE_MEMORY_MEM_FREE("label_replace(node_memory_MemFree_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NDOE MEM Free 조회", "NODE"),
 
 	// WORK SPACE
 	WS_GPU_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"request.*gpu\", %s}","WorkSpace GPU 할당량 조회", "WorkSpace"),

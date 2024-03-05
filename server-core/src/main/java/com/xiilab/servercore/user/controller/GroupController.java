@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +16,6 @@ import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
-import com.xiilab.servercore.common.dto.SearchCondition;
 import com.xiilab.servercore.user.service.GroupFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,13 +29,13 @@ public class GroupController {
 
 	@GetMapping()
 	@Operation(summary = "그룹 리스트 조회")
-	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(@ModelAttribute SearchCondition searchCondition) {
-		return ResponseEntity.ok(groupFacadeService.getGroupList(searchCondition));
+	public ResponseEntity<List<GroupSummaryDTO>> getGroupList() {
+		return ResponseEntity.ok(groupFacadeService.getGroupList());
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/{groupId}")
 	@Operation(summary = "그룹 상세 정보 조회")
-	public ResponseEntity<GroupInfoDTO> getGroupInfoById(@PathVariable(name = "id") String id) {
+	public ResponseEntity<GroupInfoDTO> getGroupInfoById(@PathVariable(name = "groupId") String id) {
 		return ResponseEntity.ok(groupFacadeService.getGroupInfoById(id));
 	}
 
@@ -56,22 +54,22 @@ public class GroupController {
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/{groupId}")
 	@Operation(summary = "그룹 삭제")
-	public ResponseEntity<HttpStatus> deleteGroupById(@PathVariable(name = "id") String id) {
+	public ResponseEntity<HttpStatus> deleteGroupById(@PathVariable(name = "groupId") String id) {
 		groupFacadeService.deleteGroupById(id);
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/{groupId}/users")
-	@Operation(summary = "그룹 멤버 조회")
-	public ResponseEntity<List<GroupUserDTO>> getGroupUsers(@PathVariable(name = "groupId") String groupId) {
+	@GetMapping("/{groupId}/subGroupAndUsers")
+	@Operation(summary = "그룹내 서브 그룹, 멤버 조회")
+	public ResponseEntity<GroupUserDTO.SubGroupUserDto> getGroupUsers(@PathVariable(name = "groupId") String groupId) {
 		return ResponseEntity.ok(groupFacadeService.getGroupUsers(groupId));
 	}
 
 	@GetMapping("/ws/{groupName}")
 	@Operation(summary = "워크스페이스 멤버 조회")
-	public ResponseEntity<List<GroupUserDTO>> getWorkspaceMember(@PathVariable(name = "groupName") String groupName) {
+	public ResponseEntity<List<GroupUserDTO.UserDTO>> getWorkspaceMember(@PathVariable(name = "groupName") String groupName) {
 		return ResponseEntity.ok(groupFacadeService.getWorkspaceMember(groupName));
 	}
 	@DeleteMapping("/ws/{groupName}")

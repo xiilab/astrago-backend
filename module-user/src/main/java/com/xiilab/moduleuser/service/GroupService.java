@@ -2,7 +2,6 @@ package com.xiilab.moduleuser.service;
 
 import java.util.List;
 
-import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -16,7 +15,7 @@ public interface GroupService {
 	void createWorkspaceGroup(GroupReqDTO groupReqDTO);
 
 	//그룹 전체 목록 조회
-	List<GroupSummaryDTO> getGroupList(FindDTO findDTO);
+	List<GroupSummaryDTO> getGroupList();
 
 	//그룹 상세 조회
 	GroupInfoDTO getGroupInfoById(String groupId);
@@ -25,7 +24,7 @@ public interface GroupService {
 	void addGroupMember(String groupId, List<String> userIdList);
 
 	//그룹 안의 유저 리스트 조회
-	List<GroupUserDTO> getGroupUsers(String groupId);
+	GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId);
 
 	//그룹 Id로 group을 삭제
 	void deleteGroupById(String groupId);
@@ -35,7 +34,7 @@ public interface GroupService {
 	void deleteAccountGroupByName(String groupName);
 
 	//그룹 안의 유저 리스트 조회
-	List<GroupUserDTO> getWorkspaceMember(String groupName);
+	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);
 
 	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
 	void addWorkspaceMemberByUserId(String groupName, List<String> userIdList);

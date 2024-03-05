@@ -5,13 +5,16 @@ import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.dto.RegexPatterns;
+import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.enums.CodeType;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
@@ -47,8 +50,9 @@ public class CodeServiceImpl implements CodeService {
 		// 사용자 Credential 조회
 		String token = "";
 		CredentialEntity credentialEntity = null;
-		if (codeReqDTO.getCredentialId() != 0) {
-			credentialEntity = credentialService.getCredentialEntity(codeReqDTO.getCredentialId());
+		if (codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE && codeReqDTO.getCredentialId() != null && codeReqDTO.getCredentialId() != 0) {
+			credentialEntity = Optional.ofNullable(credentialService.getCredentialEntity(codeReqDTO.getCredentialId()))
+					.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_CODE_CREDENTIAL_INFO));
 			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
 		}
 
@@ -73,8 +77,8 @@ public class CodeServiceImpl implements CodeService {
 					.repositoryType(codeReqDTO.getRepositoryType())
 					.build());
 			return new CodeResDTO(saveCode);
-		} catch (RuntimeException e) {
-			throw new RestApiException(CodeErrorCode.CODE_INVALID_TOKEN_OR_URL);
+		} catch (IllegalArgumentException e) {
+			throw new RestApiException(CodeErrorCode.FAILED_SAVE_USER_CODE);
 		}
 	}
 
