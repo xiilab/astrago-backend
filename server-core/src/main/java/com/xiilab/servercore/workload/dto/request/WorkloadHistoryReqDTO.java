@@ -35,6 +35,7 @@ public class WorkloadHistoryReqDTO {
 		private Integer gpuRequest;
 		private Float cpuRequest;
 		private Float memRequest;
+		private String creatorRealName;
 		private String creatorName;
 		private String creatorId;
 		private LocalDateTime createdAt;
@@ -66,11 +67,11 @@ public class WorkloadHistoryReqDTO {
 				.workspaceName(moduleJobResDTO.getWorkspaceName())
 				.workspaceResourceName(moduleJobResDTO.getWorkspaceResourceName())
 				.envs(convertEnvDtoToMap(moduleJobResDTO.getEnvs()))
-				//TODO 포트 추가필요
 				.ports(convertPortDtoToMap(moduleJobResDTO.getPorts()))
 				.gpuRequest(Integer.parseInt(moduleJobResDTO.getGpuRequest()))
 				.cpuRequest(Float.parseFloat(moduleJobResDTO.getCpuRequest()))
 				.memRequest(Float.parseFloat(moduleJobResDTO.getMemRequest()))
+				.creatorRealName(moduleJobResDTO.getCreatorFullName())
 				.creatorName(moduleJobResDTO.getCreatorUserName())
 				.creatorId(moduleJobResDTO.getCreatorId())
 				.workloadType(moduleJobResDTO.getType())

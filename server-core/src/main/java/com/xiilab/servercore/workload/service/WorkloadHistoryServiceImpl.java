@@ -1,7 +1,5 @@
 package com.xiilab.servercore.workload.service;
 
-import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,14 +21,16 @@ import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.common.enums.VolumeType;
+import com.xiilab.modulek8sdb.common.enums.EntityMappingType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
+import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
+import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
@@ -55,6 +55,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final ModelRepository modelRepository;
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
+	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
@@ -167,7 +168,6 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		long imageId = Long.parseLong(createWorkloadHistory.getImageId());
 		ImageEntity imageEntity = imageRepository.findById(imageId).orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_SAVE_WORKLOAD_HISTORY));
 
-		// TODO port 추가 필요
 		JobEntity jobEntity = JobEntity.jobBuilder()
 			.name(createWorkloadHistory.getName())
 			.description(createWorkloadHistory.getDescription())
@@ -181,6 +181,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			.gpuReq(createWorkloadHistory.getGpuRequest())
 			.workloadCmd(createWorkloadHistory.getCmd())
 			.createdAt(createWorkloadHistory.getCreatedAt())
+			.creatorRealName(createWorkloadHistory.getCreatorRealName())
 			.creatorName(createWorkloadHistory.getCreatorName())
 			.creatorId(createWorkloadHistory.getCreatorId())
 			.workloadType(WorkloadType.BATCH)
@@ -189,9 +190,10 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		JobEntity job = workloadHistoryRepo.save(jobEntity);
 
 		// Dataset Mapping 엔티티 추가
-		saveDataMapping(getSplitIds(createWorkloadHistory.getDatasetIds()), datasetRepository::findById, job, VolumeType.DATASET, createWorkloadHistory.getDatasetInfoMap());
-		saveDataMapping(getSplitIds(createWorkloadHistory.getModelIds()), modelRepository::findById, job, VolumeType.MODEL, createWorkloadHistory.getModelInfoMap());
-		saveDataMapping(getSplitIds(createWorkloadHistory.getCodeIds()), codeRepository::findById, job, VolumeType.CODE, createWorkloadHistory.getCodesInfoMap());
+		saveDataMapping(getSplitIds(createWorkloadHistory.getDatasetIds()), datasetRepository::findById, job, EntityMappingType.DATASET, createWorkloadHistory.getDatasetInfoMap());
+		saveDataMapping(getSplitIds(createWorkloadHistory.getModelIds()), modelRepository::findById, job, EntityMappingType.MODEL, createWorkloadHistory.getModelInfoMap());
+		saveDataMapping(getSplitIds(createWorkloadHistory.getCodeIds()), codeRepository::findById, job, EntityMappingType.CODE, createWorkloadHistory.getCodesInfoMap());
+		saveDataMapping(getSplitIds(createWorkloadHistory.getImageId()), imageRepository::findById, job, EntityMappingType.IMAGE, null);
 
 	}
 
@@ -200,13 +202,13 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	// 데이터셋 또는 모델 정보를 저장하는 메서드
-	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity, VolumeType type, Map<Long, Map<String, String>> infoMap) {
+	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity, EntityMappingType type, Map<Long, Map<String, String>> infoMap) {
 		if (ids != null) {
 			for (String id : ids) {
 				if (StringUtils.hasText(id)) {
 					Optional<?> optionalEntity = findByIdFunction.apply(Long.valueOf(id));
 					optionalEntity.ifPresent(entity -> {
-						if(type == VolumeType.DATASET){
+						if(type == EntityMappingType.DATASET){
 							Dataset dataset = (Dataset)entity;
 							Map<String, String> datasetInfoMap = infoMap.get(dataset.getDatasetId());
 							DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity = DatasetWorkLoadMappingEntity.builder()
@@ -215,7 +217,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 								.mountPath(datasetInfoMap.getOrDefault("mountPath", ""))
 								.build();
 							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
-						}else if(type == VolumeType.MODEL){
+						}else if(type == EntityMappingType.MODEL){
 							Model model = (Model)entity;
 							Map<String, String> modelInfoMap = infoMap.get(model.getModelId());
 
@@ -225,7 +227,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 								.mountPath(modelInfoMap.getOrDefault("mountPath", ""))
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
-						}else{
+						}else if(type == EntityMappingType.CODE){
 							CodeEntity code = (CodeEntity)entity;
 							Map<String, String> codeInfoMap = infoMap.get(code.getId());
 
@@ -236,6 +238,14 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 								.mountPath(codeInfoMap.getOrDefault("mountPath", ""))
 								.build();
 							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
+						} else if (type == EntityMappingType.IMAGE) {
+							ImageEntity image = (ImageEntity) entity;
+
+							ImageWorkloadMappingEntity imageWorkloadMappingEntity = ImageWorkloadMappingEntity.builder()
+								.workload(jobEntity)
+								.image(image)
+								.build();
+							imageWorkloadMappingRepository.save(imageWorkloadMappingEntity);
 						}
 					});
 				}
