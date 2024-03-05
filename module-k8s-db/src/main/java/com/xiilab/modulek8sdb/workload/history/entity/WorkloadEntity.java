@@ -10,6 +10,7 @@ import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
+import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -62,6 +63,8 @@ public abstract class WorkloadEntity {
 	protected BigDecimal memRequest;
 	@Column(name = "WORKLOAD_CREATOR")
 	protected String creatorName;
+	@Column(name = "WORKLOAD_CREATOR_REAL_NAME")
+	protected String creatorRealName;
 	@Column(name = "WORKLOAD_CREATOR_ID")
 	protected String creatorId;
 	@Column(name = "WORKLOAD_CREATED_AT")
@@ -93,4 +96,6 @@ public abstract class WorkloadEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = new ArrayList<>();
+	@OneToOne(mappedBy = "workload")
+	protected ImageWorkloadMappingEntity imageWorkloadMappingEntity;
 }

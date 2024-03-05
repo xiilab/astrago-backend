@@ -40,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KeycloakUserRepository implements UserRepository {
 	private final KeycloakConfig keycloakConfig;
+	private final String KEY_APPROVAL_YN = "approvalYN";
 
 	@Value("${admin.init-password}")
 	private String initPassword;
@@ -84,7 +85,7 @@ public class KeycloakUserRepository implements UserRepository {
 		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
 			.stream().filter(user
 				-> user.getAttributes() != null
-				&& user.getAttributes().containsKey("approvalYN")
+				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
 				&& searchName(searchCondition.getSearchText(), user)
 				&& enableEq(searchCondition.getUserEnable(), user)
 			)
@@ -106,20 +107,7 @@ public class KeycloakUserRepository implements UserRepository {
 				.toList();
 			return new UserSummary(userRepresentation, groups);
 		}).toList();
-		int totalCount = users.size();
-		int startIndex = (pageNo - 1) * pageSize;
-		int endIndex = Math.min(startIndex + pageSize, totalCount);
-		if (startIndex >= totalCount || endIndex <= startIndex) {
-			// 페이지 범위를 벗어나면 빈 리스트 반환
-			return UserDTO.PageUsersDTO.builder()
-				.users(null)
-				.totalCount(totalCount)
-				.build();
-		}
-		return UserDTO.PageUsersDTO.builder()
-			.users(userSummaries.subList(startIndex, endIndex))
-			.totalCount(totalCount)
-			.build();
+		return getPageUsersDTO(pageNo, pageSize, users, userSummaries);
 	}
 
 	private boolean enableEq(UserEnable userEnable, UserRepresentation user) {
@@ -173,6 +161,44 @@ public class KeycloakUserRepository implements UserRepository {
 		}
 		return new UserDTO.UserInfo(userRepresentation, groupList);
 	}
+
+	@Override
+	public UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition) {
+		RealmResource realmClient = keycloakConfig.getRealmClient();
+		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
+			.stream().filter(user
+				-> user.getAttributes() != null
+				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
+				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("false")
+			)
+			.sorted(
+				searchCondition.getCreatedAt() == UserCreatedAt.DESC ?
+					Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
+					Comparator.comparing(UserRepresentation::getCreatedTimestamp)
+			)
+			.toList();
+		List<UserSummary> userSummaries = users.stream().map(userRepresentation -> new UserSummary(userRepresentation)).toList();
+		return getPageUsersDTO(pageNo, pageSize, users, userSummaries);
+	}
+
+	private static UserDTO.PageUsersDTO getPageUsersDTO(Integer pageNo, Integer pageSize,
+		List<UserRepresentation> users, List<UserSummary> userSummaries) {
+		int totalCount = users.size();
+		int startIndex = (pageNo - 1) * pageSize;
+		int endIndex = Math.min(startIndex + pageSize, totalCount);
+		if (startIndex >= totalCount || endIndex <= startIndex) {
+			// 페이지 범위를 벗어나면 빈 리스트 반환
+			return UserDTO.PageUsersDTO.builder()
+				.users(null)
+				.totalCount(totalCount)
+				.build();
+		}
+		return UserDTO.PageUsersDTO.builder()
+			.users(userSummaries.subList(startIndex, endIndex))
+			.totalCount(totalCount)
+			.build();
+	}
+
 	@Override
 	public List<UserSummary> getUserListSearchByAttribute(String attribute) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
@@ -389,25 +415,28 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
-	public UserInfo updateUserInfoById(String id, UpdateUserDTO updateUserDTO) {
+	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO) {
 
-		UserResource userResource = keycloakConfig.getRealmClient().users().get(id);
+		UserResource userResource = getUserResourceById(id);
 
 		UserRepresentation representation = userResource.toRepresentation();
-
 		representation.setFirstName(updateUserDTO.getFirstName());
 		representation.setLastName(updateUserDTO.getLastName());
-		// 비밀번호 변경
-		if (!StringUtils.isEmpty(updateUserDTO.getPassword())) {
-			// 비밀번호 변경을 위해 credential 설정
-			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false,
-				updateUserDTO.getPassword());
-			//비밀번호 설정
-			userResource.resetPassword(authenticationSettings);
-		}
-		keycloakConfig.getRealmClient().users().get(id).update(representation);
 
-		return new UserInfo(userResource.toRepresentation());
+		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll()
+			.stream().filter(role -> role.getName().contains("ROLE_"))
+			.toList();
+		// 기존 ROLE 삭제
+		if (!roleRepresentations.isEmpty()) {
+			userResource.roles().realmLevel().remove(roleRepresentations);
+			RoleRepresentation roleRepresentation = getRolerepByName(updateUserDTO.getAuth().name());
+			userResource.roles().realmLevel().add(List.of(roleRepresentation));
+		}
+		// ROLE 추가
+		RoleRepresentation roleRepresentation = getRolerepByName(updateUserDTO.getAuth().name());
+		userResource.roles().realmLevel().add(List.of(roleRepresentation));
+
+		keycloakConfig.getRealmClient().users().get(id).update(representation);
 	}
 
 	@Override
