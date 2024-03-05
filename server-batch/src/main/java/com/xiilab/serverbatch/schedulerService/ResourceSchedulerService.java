@@ -90,7 +90,7 @@ public class ResourceSchedulerService {
 
 	private Trigger createTrigger(JobDetail job, int hour) {
 		return TriggerBuilder.newTrigger()
-			.withSchedule(CronScheduleBuilder.cronSchedule(String.format("0 0/2 * * * ?", hour)))
+			.withSchedule(CronScheduleBuilder.cronSchedule(String.format("0 0 0/1 * * ?", hour)))
 			.startNow()
 			.forJob(job)
 			.build();
