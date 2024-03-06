@@ -51,13 +51,13 @@ public class GroupUserDTO {
 
 	@Getter
 	public static class UserDTO{
-		private String id;
+		private String userId;
 		private String name;
 		private String email;
 		private String firstName;
 		private String lastName;
 		public UserDTO(UserRepresentation userRep) {
-			this.id = userRep.getId();
+			this.userId = userRep.getId();
 			this.name = userRep.getUsername();
 			this.email = userRep.getEmail();
 			this.firstName = userRep.getFirstName();

@@ -11,6 +11,7 @@ import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.GroupRepository;
 import com.xiilab.moduleuser.vo.GroupReqVO;
 
@@ -131,5 +132,10 @@ public class GroupServiceImpl implements GroupService {
 	public GroupUserDTO getWorkspaceOwner(String groupName){
 		groupRepository.getWorkspaceOwner(groupName);
 		return null;
+	}
+
+	@Override
+	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+		return groupRepository.getUserAndGroupBySearchText(searchText);
 	}
 }
