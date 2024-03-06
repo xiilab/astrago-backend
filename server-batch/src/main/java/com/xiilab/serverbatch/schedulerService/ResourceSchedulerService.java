@@ -63,10 +63,10 @@ public class ResourceSchedulerService {
 		ResourceOptimizationDTO interactiveOptimizationStatus = null;
 		for (JobKey jobKey : jobSet) {
 			String name = jobKey.getName();
-			if (name.equals(BatchJob.BATCHJOBOPTIMIZATION.name())) {
+			if (name.equals(BatchJob.BATCH_JOB_OPTIMIZATION.name())) {
 				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
 				batchOptimizationStatus = new ResourceOptimizationDTO(jobDetail.getJobDataMap());
-			} else if (name.equals(BatchJob.INTERACTIVEJOBOPTIMIZATION.name())) {
+			} else if (name.equals(BatchJob.INTERACTIVE_JOB_OPTIMIZATION.name())) {
 				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
 				interactiveOptimizationStatus = new ResourceOptimizationDTO(jobDetail.getJobDataMap());
 			}
@@ -75,14 +75,14 @@ public class ResourceSchedulerService {
 	}
 
 	private JobDetail createResourceOptimizationJob(BatchJob jobType, ResourceOptimizationDTO optimizationDTO) {
-		if (jobType == BatchJob.BATCHJOBOPTIMIZATION) {
+		if (jobType == BatchJob.BATCH_JOB_OPTIMIZATION) {
 			return JobBuilder.newJob(BatchResourceOptimizationJob.class)
-				.withIdentity(BatchJob.BATCHJOBOPTIMIZATION.name(), ASTRA)
+				.withIdentity(BatchJob.BATCH_JOB_OPTIMIZATION.name(), ASTRA)
 				.usingJobData(optimizationDTO.convertToJobDataMap())
 				.build();
 		} else {
 			return JobBuilder.newJob(InteractiveResourceOptimizationJob.class)
-				.withIdentity(BatchJob.INTERACTIVEJOBOPTIMIZATION.name(), ASTRA)
+				.withIdentity(BatchJob.INTERACTIVE_JOB_OPTIMIZATION.name(), ASTRA)
 				.usingJobData(optimizationDTO.convertToJobDataMap())
 				.build();
 		}
