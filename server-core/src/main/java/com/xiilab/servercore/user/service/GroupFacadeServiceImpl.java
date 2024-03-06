@@ -9,6 +9,8 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,8 +21,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final GroupService groupService;
 
 	@Override
-	public void createAccountGroup(GroupReqDTO groupReqDTO) {
-		groupService.createAccountGroup(groupReqDTO);
+	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
+		groupService.createAccountGroup(groupReqDTO, userInfo);
 	}
 
 	@Override
