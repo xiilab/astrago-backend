@@ -53,7 +53,7 @@ public class KeycloakUserRepository implements UserRepository {
 
 		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
 		if (response.getStatus() != 200 && response.getStatus() != 201) {
-			throw new IllegalArgumentException(response.getStatusInfo().getReasonPhrase());
+			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL);
 		}
 		log.info(response.getStatusInfo().getReasonPhrase());
 		UserRepresentation userRep = getUserByUsername(userReqVO.getUsername());

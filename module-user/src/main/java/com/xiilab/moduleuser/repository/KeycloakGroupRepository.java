@@ -266,8 +266,22 @@ public class KeycloakGroupRepository implements GroupRepository {
 			List<GroupRepresentation> groups = realmClient.users().get(userId).groups().stream()
 				.filter(groupRepresentation -> groupRepresentation.getPath().contains("account"))
 				.toList();
+
+			if(groups.size() == 1){
+				UserDTO.SearchUser searchUser = UserDTO.SearchUser.builder()
+					.userId(userId)
+					.userName(userName)
+					.group("none")
+					.build();
+				users.add(searchUser);
+				continue;
+			}
 			for (GroupRepresentation group : groups) {
+				if(group.getPath().equalsIgnoreCase("/account/default")){
+					continue;
+				}
 				String groupPath = group.getPath().replace("/account/", "").replace("/", " > ");
+
 				UserDTO.SearchUser searchUser = UserDTO.SearchUser.builder()
 					.userId(userId)
 					.userName(userName)
