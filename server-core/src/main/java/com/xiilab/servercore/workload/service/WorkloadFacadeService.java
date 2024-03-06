@@ -126,6 +126,7 @@ public class WorkloadFacadeService {
 			workloadHistoryService.saveWorkloadHistory(WorkloadHistoryReqDTO.CreateWorkloadHistory.from(jobWorkload));
 			systemAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
 		} catch (RestApiException e) {
+			e.printStackTrace();
 			throw e;
 		}
 
@@ -196,7 +197,6 @@ public class WorkloadFacadeService {
 	}
 
 	private void setImageCredentialReqDTO(ModuleImageReqDTO moduleImageReqDTO, UserInfoDTO userInfoDTO) {
-		// ModuleImageReqDTO imageReqDTO = moduleCreateWorkloadReqDTO.getImage();
 		CredentialResDTO.CredentialInfo findCredential = credentialService.findCredentialById(
 			moduleImageReqDTO.getCredentialId(),
 			userInfoDTO);
@@ -331,7 +331,6 @@ public class WorkloadFacadeService {
 		String path) throws IOException {
 		return getFileInfoInWorkloadContainer(workloadName, workspaceName,
 			workloadType, path);
-		// Resource resource = downloadFileFromWorkload(workloadName, workspaceName, workloadType, path);
 	}
 
 	public byte[] getWorkloadFilePreview(String workloadName, String workspaceName, WorkloadType workloadType,

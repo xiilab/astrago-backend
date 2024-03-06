@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,12 +37,12 @@ public class HubEntity extends BaseEntity {
 	
 	@Column(name = "THUMBNAIL_SAVE_PATH")
 	private String thumbnailSavePath;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "IMAGE_ID")
+	private HubImageEntity hubImageEntity;
 
-	@Column(name = "ENVS", length = 1000)
-	private String envs;
-
-	@Column(name = "PORTS", length = 1000)
-	private String ports;
+	@Column(name = "SOURCE_CODE_README_URL")
+	private String sourceCodeReadmeURL;
 
 	@Column(name = "SOURCE_CODE_URL")
 	private String sourceCodeUrl;
@@ -60,10 +59,12 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "MODEL_MOUNT_PATH")
 	private String modelMountPath;
 
+	@Column(name = "ENVS", length = 1000)
+	private String envs;
+
+	@Column(name = "PORTS", length = 1000)
+	private String ports;
+
 	@Column(name = "COMMAND")
 	private String command;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "IMAGE_ID")
-	private HubImageEntity hubImageEntity;
 }

@@ -2,7 +2,7 @@ package com.xiilab.servercore.hub.service;
 
 import org.springframework.data.domain.Pageable;
 
-import com.xiilab.modulek8sdb.hub.dto.HubResDTO;
+import com.xiilab.servercore.hub.dto.HubResDTO;
 
 public interface HubService {
 	// 허브 목록

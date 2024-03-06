@@ -1,10 +1,14 @@
 package com.xiilab.servercore.image.dto;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import org.hibernate.sql.Delete;
 
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
@@ -16,13 +20,18 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImageResDTO {
+	@Getter
 	@Builder
-	public static class FindImage{
+	public static class FindImage {
 		private Long id;
 		private String imageName;
 		private RepositoryAuthType repositoryAuthType;
 		private ImageType imageType;
 		private WorkloadType workloadType;
+		private DeleteYN deleteYN;
+		private String regUserId;
+		private String regUserName;
+		private String regDate;
 		// 빌트인 이미지 필드
 		private String title;
 		private String description;
@@ -37,18 +46,24 @@ public class ImageResDTO {
 					.repositoryAuthType(imageEntity.getRepositoryAuthType())
 					.imageType(imageEntity.getImageType())
 					.workloadType(imageEntity.getWorkloadType())
+					.deleteYN(imageEntity.getDeleteYN())
+					.regUserId(imageEntity.getRegUser().getRegUserId())
+					.regUserName(imageEntity.getRegUser().getRegUserName())
+					.regDate(imageEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 					.title(((BuiltInImageEntity)imageEntity).getTitle())
 					.description(((BuiltInImageEntity)imageEntity).getDescription())
 					.thumbnailSavePath(((BuiltInImageEntity)imageEntity).getThumbnailSavePath())
 					.thumbnailSaveFileName(((BuiltInImageEntity)imageEntity).getThumbnailSaveFileName())
 					.build();
-			} else if (imageEntity.isCustomImage()) {
-
-			} else if (imageEntity.isHubImage()) {
-
+			} else {
+				return FindImage.builder()
+					.id(imageEntity.getId())
+					.imageName(imageEntity.getImageName())
+					.repositoryAuthType(imageEntity.getRepositoryAuthType())
+					.imageType(imageEntity.getImageType())
+					.workloadType(imageEntity.getWorkloadType())
+					.build();
 			}
-
-			return null;
 		}
 	}
 

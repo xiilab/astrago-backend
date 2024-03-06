@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,8 +22,10 @@ public class HubCategoryMappingEntity {
 	private Long hubCategoryMappingId;
 
 	@ManyToOne
+	@JoinColumn(name = "HUB_ID")
 	private HubEntity hubEntity;
 
 	@ManyToOne
+	@JoinColumn(name = "HUB_CATEGORY_ID")
 	private HubCategoryEntity hubCategoryEntity;
 }

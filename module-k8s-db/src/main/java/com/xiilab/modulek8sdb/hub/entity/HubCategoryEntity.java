@@ -1,9 +1,12 @@
 package com.xiilab.modulek8sdb.hub.entity;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.hub.enums.HubLabelType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,6 +30,7 @@ public class HubCategoryEntity extends BaseEntity {
 	@Column(name = "DESCRIPTION")
 	private String description;
 
-	@Column(name = "LEVEL")
-	private Integer level;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "LABEL_TYPE")
+	private HubLabelType hubLabelType;
 }

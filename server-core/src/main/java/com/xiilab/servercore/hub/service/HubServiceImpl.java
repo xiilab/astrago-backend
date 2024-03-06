@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
-import com.xiilab.modulek8sdb.hub.dto.HubResDTO;
+import com.xiilab.servercore.hub.dto.HubResDTO;
 import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.modulek8sdb.hub.repository.HubCategoryMappingRepository;

@@ -3,15 +3,15 @@ package com.xiilab.servercore.image.dto;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class ImageReqDTO {
 	@Getter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -36,5 +36,14 @@ public class ImageReqDTO {
 			this.workloadType = workloadType;
 			this.credentialId = credentialId;
 		}
+	}
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class FindSearchCondition {
+		private WorkloadType workloadType;
+		private ImageType imageType;
+		private Integer pageNo;
+		private Integer pageSize;
 	}
 }

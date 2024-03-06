@@ -1,13 +1,17 @@
 package com.xiilab.modulek8sdb.credential.repository;
 
+import static com.xiilab.modulek8sdb.image.entity.QImageEntity.*;
+
 import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.entity.QCredentialEntity;
@@ -21,24 +25,19 @@ public class CredentialRepositoryImpl implements CredentialRepositoryCustom {
 
 	@Override
 	public Page<CredentialEntity> findByIdIn(Collection<Long> ids, Pageable pageable) {
-		List<CredentialEntity> result;
 
-		long totalCount = queryFactory.select(QCredentialEntity.credentialEntity.count())
-			.from(QCredentialEntity.credentialEntity)
-			.where(QCredentialEntity.credentialEntity.id.in(ids))
-			.fetchOne();
+		JPAQuery<CredentialEntity> query = queryFactory.selectFrom(QCredentialEntity.credentialEntity)
+			.where(QCredentialEntity.credentialEntity.id.in(ids));
+		long totalCount = query.fetch().size();
 
 		if (pageable != null) {
-			result = queryFactory.selectFrom(QCredentialEntity.credentialEntity)
-				.where(QCredentialEntity.credentialEntity.id.in(ids))
-				.offset(pageable.getOffset())
-				.limit(pageable.getPageSize())
-				.fetch();
+			query.offset(pageable.getOffset())
+				.limit(pageable.getPageSize());
 		} else {
-			result = queryFactory.selectFrom(QCredentialEntity.credentialEntity)
-				.where(QCredentialEntity.credentialEntity.id.in(ids))
-				.fetch();
+			pageable = PageRequest.of(0, Integer.MAX_VALUE);
 		}
+
+		List<CredentialEntity> result = query.fetch();
 
 		return new PageImpl<>(result, pageable, totalCount);
 	}
