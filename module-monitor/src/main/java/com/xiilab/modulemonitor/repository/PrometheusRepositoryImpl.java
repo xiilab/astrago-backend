@@ -1,9 +1,7 @@
 package com.xiilab.modulemonitor.repository;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 
@@ -37,17 +35,25 @@ public class PrometheusRepositoryImpl implements PrometheusRepository {
 	 * @return Prometheus에서 조회된 과거 값
 	 */
 	public String getHistoryMetricByQuery(String promql, String startDate, String endDate) {
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=2048", String.class,
-			promql, startDate, endDate);
-		return responseEntity.getBody();
+		WebClient webClient = WebClient.builder()
+			.baseUrl(prometheusURL)
+			.build();
+		return webClient
+			.get()
+			.uri("/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=2048", promql, startDate, endDate)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 	}
 	public String getHistoryMetricByQuery(String promql, String startDate, String endDate, long step) {
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-			prometheusURL + "/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step=" + step, String.class,
-			promql, startDate, endDate);
-		return responseEntity.getBody();
+		WebClient webClient = WebClient.builder()
+			.baseUrl(prometheusURL)
+			.build();
+		return webClient
+			.get()
+			.uri("/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step={step}", promql, startDate, endDate, step)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 	}
 }
