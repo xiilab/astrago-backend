@@ -34,9 +34,9 @@ public class ResourceSchedulerService {
 	private static final String ASTRA = "astra";
 
 	public void registerResourceScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob)
-		throws Exception {
+		throws SchedulerException {
 		if (optimizationDTO.getHour() < 5 || optimizationDTO.getHour() > 24) {
-			throw new Exception(WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR.getMessage());
+			throw new IllegalArgumentException(WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR.getMessage());
 		}
 		//resource optimization job, trigger 생성
 		JobDetail resourceOptimizationJob = createResourceOptimizationJob(batchJob, optimizationDTO);
