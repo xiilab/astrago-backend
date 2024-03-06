@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.user.service.GroupFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +48,13 @@ public class GroupController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("/{groupId}/members")
+	@GetMapping("/users")
+	@Operation(summary = "유저 검색")
+	public ResponseEntity<List<UserDTO.SearchUser>> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText) {
+		List<UserDTO.SearchUser> users = groupFacadeService.getUserAndGroupBySearchText(searchText);
+		return new ResponseEntity<>(users, HttpStatus.OK);
+	}
+	@PostMapping("/{groupId}/users")
 	@Operation(summary = "그룹 멤버 추가")
 	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId,
 		@RequestBody List<String> userIdList) {

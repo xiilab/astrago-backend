@@ -6,6 +6,7 @@ import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 
 public interface GroupService {
 	//사용자 그룹 생성
@@ -40,4 +41,6 @@ public interface GroupService {
 	void addWorkspaceMemberByUserId(String groupName, List<String> userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
+
+	List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText);
 }

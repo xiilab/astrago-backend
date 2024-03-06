@@ -31,6 +31,14 @@ public class UserDTO {
 	}
 
 	@Getter
+	@Builder
+	public static class SearchUser{
+		private String userId;
+		private String userName;
+		private String group;
+	}
+
+	@Getter
 	public static class UserInfo {
 		private String id;
 		private String userName;

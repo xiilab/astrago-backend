@@ -8,6 +8,7 @@ import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
 import lombok.RequiredArgsConstructor;
@@ -68,5 +69,10 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){
 		return groupService.getWorkspaceMemberBySearch(groupName, search);
+	}
+
+	@Override
+	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+		return groupService.getUserAndGroupBySearchText(searchText);
 	}
 }

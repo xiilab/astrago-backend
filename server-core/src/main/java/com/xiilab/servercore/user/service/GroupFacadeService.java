@@ -6,6 +6,7 @@ import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 
 public interface GroupFacadeService {
 	//사용자 그룹 생성
@@ -34,4 +35,6 @@ public interface GroupFacadeService {
 	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
 	void addWorkspaceMemberByUserId(String groupName, List<String> userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
+
+	List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText);
 }
