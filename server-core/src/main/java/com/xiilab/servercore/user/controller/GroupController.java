@@ -18,9 +18,12 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.user.service.GroupFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -43,8 +46,9 @@ public class GroupController {
 
 	@PostMapping()
 	@Operation(summary = "그룹 생성")
-	public ResponseEntity<HttpStatus> createAccountGroup(@RequestBody GroupReqDTO groupReqDTO) {
-		groupFacadeService.createAccountGroup(groupReqDTO);
+	public ResponseEntity<HttpStatus> createAccountGroup(@RequestBody GroupReqDTO groupReqDTO,
+		@Parameter(hidden = true) UserInfoDTO userInfo) {
+		groupFacadeService.createAccountGroup(groupReqDTO, userInfo);
 		return ResponseEntity.ok().build();
 	}
 
