@@ -8,11 +8,11 @@ import org.springframework.util.ObjectUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ResDTO {
 	private String regUserId;
 	private String regUserName;

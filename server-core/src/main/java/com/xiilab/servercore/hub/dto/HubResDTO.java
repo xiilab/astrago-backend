@@ -17,43 +17,44 @@ import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
 
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class HubResDTO {
+public class HubResDTO extends ResDTO {
+	private long id;
+	private String title;
+	private String sourceCodeUrl;
+	private String sourceCodeBranch;
+	private String sourceCodeMountPath;
+	private String datasetMountPath;
+	private String modelMountPath;
+	private String command;
+	private HubResDTO.HubImage hubImage;
+	private Map<String, String> envs;
+	private Map<String, Integer> ports;
+
 	@Getter
 	@SuperBuilder
-	public static class FindHub extends ResDTO {
-		private long id;
-		private String title;
+	public static class FindHub extends HubResDTO {
 		private String description;
-		private String thumbnailSavePath;
+		private String thumbnailUrl;
 		private String[] types;
 		private Map<String, String> envs;
 		private Map<String, Integer> ports;
 		private String sourceCodeReadmeUrl;
-		private String sourceCodeUrl;
-		private String sourceCodeBranch;
-		private String sourceCodeMountPath;
-		private String datasetMountPath;
-		private String modelMountPath;
-		private String command;
-		private HubResDTO.HubImage hubImage;
 
 		public static FindHub from(HubEntity hubEntity, Map<Long, Set<String>> typesMap) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
-				return HubResDTO.FindHub.builder()
+				return FindHub.builder()
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.description(hubEntity.getDescription())
-					.thumbnailSavePath(hubEntity.getThumbnailSavePath())
+					.thumbnailUrl(hubEntity.getThumbnailURL())
+					.sourceCodeReadmeUrl(hubEntity.getSourceCodeReadmeURL())
 					.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
 					.hubImage(new HubImage(hubEntity.getHubImageEntity()))
 					.sourceCodeUrl(hubEntity.getSourceCodeUrl())
@@ -86,6 +87,51 @@ public class HubResDTO {
 		public static FindHubs from(List<HubEntity> hubEntities, Long totalCount, Map<Long, Set<String>> typesMap) {
 			return FindHubs.builder()
 				.hubsDto(hubEntities.stream().map(hubEntity -> FindHub.from(hubEntity, typesMap)).toList())
+				.totalCount(totalCount)
+				.build();
+		}
+	}
+
+	@Getter
+	@SuperBuilder
+	public static class FindHubInWorkload extends HubResDTO {
+		public static FindHubInWorkload from(HubEntity hubEntity) {
+			ObjectMapper objectMapper = new ObjectMapper();
+			try {
+				return HubResDTO.FindHubInWorkload.builder()
+					.id(hubEntity.getHubId())
+					.title(hubEntity.getTitle())
+					.hubImage(new HubResDTO.HubImage(hubEntity.getHubImageEntity()))
+					.sourceCodeUrl(hubEntity.getSourceCodeUrl())
+					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
+					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
+					.datasetMountPath(hubEntity.getDatasetMountPath())
+					.modelMountPath(hubEntity.getModelMountPath())
+					.envs(objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
+					}))
+					.ports(objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
+					}))
+					.command(hubEntity.getCommand())
+					.regUserName(hubEntity.getRegUser().getRegUserName())
+					.regUserId(hubEntity.getRegUser().getRegUserId())
+					.regUserRealName(hubEntity.getRegUser().getRegUserRealName())
+					.regDate(hubEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+					.build();
+			} catch (JsonProcessingException e) {
+				throw new RuntimeException("JSON String 타입을 변환하는데 실패했습니다.");
+			}
+		}
+	}
+
+	@Getter
+	@Builder
+	public static class FindHubsInWorkload {
+		private List<HubResDTO.FindHubInWorkload> hubsDto;
+		private int totalCount;
+
+		public static FindHubsInWorkload from(List<HubEntity> hubEntities, int totalCount) {
+			return HubResDTO.FindHubsInWorkload.builder()
+				.hubsDto(hubEntities.stream().map(FindHubInWorkload::from).toList())
 				.totalCount(totalCount)
 				.build();
 		}

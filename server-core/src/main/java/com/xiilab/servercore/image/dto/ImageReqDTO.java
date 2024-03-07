@@ -38,7 +38,6 @@ public class ImageReqDTO {
 		}
 	}
 	@Getter
-	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class FindSearchCondition {
 		private WorkloadType workloadType;

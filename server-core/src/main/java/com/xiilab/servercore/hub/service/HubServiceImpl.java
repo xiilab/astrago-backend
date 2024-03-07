@@ -52,14 +52,22 @@ public class HubServiceImpl implements HubService {
 		return HubResDTO.FindHub.from(hubEntity, typesMap);
 	}
 
+	@Override
+	public HubResDTO.FindHubsInWorkload getHubListInWorkload() {
+		List<HubEntity> findAll = hubRepository.findAll();
+		return HubResDTO.FindHubsInWorkload.from(findAll, findAll.size());
+	}
+
 	/* 검색 조건 없을 때, List 반환 */
 	private HubResDTO.FindHubs getHubList(Pageable pageable) {
 		Page<HubEntity> findAll = hubRepository.findAll(pageable);
-		List<HubEntity> hubEntities = findAll.getContent();
-		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
-
 		long totalElements = findAll.getTotalElements();
+		List<HubEntity> hubEntities = findAll.getContent();
+
+		// 각 허브에 매핑되어 있는 타입 목록 조회
+		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
+
 		return HubResDTO.FindHubs.from(hubEntities, totalElements, typesMap);
 	}
 
