@@ -165,6 +165,7 @@ public record ResponseDTO() {
 	public record ClusterPendingDTO(String date,
 									String podName,
 									String nodeName,
+									String namespace,
 									String value){}
 	@Builder
 	public record ClusterPodInfo(String podName,

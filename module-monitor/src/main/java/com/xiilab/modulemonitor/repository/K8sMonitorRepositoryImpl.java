@@ -459,8 +459,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			return Objects.nonNull(kubernetesClient.pods().inNamespace(namespace).withName(podName).get())?
 				kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() != null ?
-					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() :
-					""
+					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() : ""
 				: "";
 		}
 	}
@@ -474,7 +473,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.podName(podName)
 				.nodeName(pod.getSpec().getNodeName())
 				.status(pod.getStatus().getPhase())
-				.reason(pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason())
+				.reason(!pod.getStatus().getContainerStatuses().isEmpty() ?pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason() : "none")
 				.build();
 		}
 	}
