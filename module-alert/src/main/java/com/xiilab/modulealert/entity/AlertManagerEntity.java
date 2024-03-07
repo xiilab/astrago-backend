@@ -95,4 +95,7 @@ public class AlertManagerEntity {
 		this.emailYN = requestDTO.isEmailYN();
 		this.systemYN = requestDTO.isSystemYN();
 	}
+	public void updateAlertEnable(boolean alertEnable){
+		this.alertEnable = alertEnable;
+	}
 }

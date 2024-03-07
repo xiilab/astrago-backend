@@ -237,7 +237,9 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	public void enableAlertManagerById(long id, boolean enable){
 		if(enable){
 			if(k8sAlertService.validationCheck(id)){
-				AlertManagerDTO.ResponseDTO findAlert = getAlertManagerById(id);
+				AlertManagerEntity alertManagerEntity = getAlertManagerEntityById(id);
+				alertManagerEntity.updateAlertEnable(enable);
+				AlertManagerDTO.ResponseDTO findAlert = AlertManagerDTO.ResponseDTO.toDTOBuilder().alertManager(alertManagerEntity).build();
 				List<String> expr = creatExpr(findAlert.getNodeDTOList(), findAlert.getCategoryDTOList());
 				// K8s Prometheus Rule 등록
 				k8sAlertService.createPrometheusRule(id, expr);
