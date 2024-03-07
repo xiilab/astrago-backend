@@ -41,9 +41,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		List<GroupRepresentation> subGroups = rootGroup.toRepresentation().getSubGroups();
 
 		for (GroupRepresentation subGroup : subGroups) {
-			String id = subGroup.getId();
-			GroupResource groupResourceById = getGroupResourceById(id);
-			groups.add(new GroupSummaryDTO(groupResourceById));
+			groups.add(new GroupSummaryDTO(subGroup));
 		}
 		return groups;
 	}
@@ -115,6 +113,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		GroupResource group = keycloakConfig.getRealmClient().groups().group(groupId);
 		List<GroupRepresentation> subGroups = group.toRepresentation().getSubGroups();
 		List<UserRepresentation> members = group.members();
+
 
 		return new GroupUserDTO.SubGroupUserDto(subGroups, members);
 	}
