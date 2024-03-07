@@ -41,6 +41,7 @@ public class AlertManagerDTO {
 				.alertName(this.getAlertName())
 				.emailYN(this.isEmailYN())
 				.systemYN(this.isSystemYN())
+				.alertEnable(true)
 				.build();
 		}
 	}
@@ -51,6 +52,7 @@ public class AlertManagerDTO {
 	@SuperBuilder
 	public static class ResponseDTO extends AlertManagerDTO{
 		private long id;
+		protected boolean alertEnable; // 알림 수신 여부
 		private List<AlertManagerDTO.UserDTO> userDTOList;
 		private List<AlertManagerReceiveDTO.ResponseDTO> alertManagerReceiveDTOList;
 		@Builder(builderClassName = "toDTOBuilder", builderMethodName = "toDTOBuilder")
@@ -59,6 +61,7 @@ public class AlertManagerDTO {
 			this.alertName = alertManager.getAlertName();
 			this.emailYN = alertManager.isEmailYN();
 			this.systemYN = alertManager.isSystemYN();
+			this.alertEnable = alertManager.isAlertEnable();
 			this.nodeDTOList = Objects.nonNull(alertManager.getAlertManagerNodeEntityList()) ?
 				alertManager.getAlertManagerNodeEntityList().stream().map(nodeEntity ->
 					AlertManagerDTO.NodeDTO.toDTOBuilder().nodeEntity(nodeEntity).build()).toList() : new ArrayList<>();

@@ -36,6 +36,8 @@ public class AlertManagerEntity {
 	private boolean emailYN;
 	@Column(name = "SYSTEM_YN")
 	private boolean systemYN;
+	@Column(name = "ALERT_ENABLE")
+	private boolean alertEnable;
 	@Builder.Default
 	@OneToMany(mappedBy = "alertManager", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<AlertManagerCategoryEntity> alertManagerCategoryEntityList = new ArrayList<>(); // 알림 받을 category List
