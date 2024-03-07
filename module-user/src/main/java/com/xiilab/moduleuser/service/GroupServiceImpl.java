@@ -7,11 +7,14 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.repository.GroupRepository;
 import com.xiilab.moduleuser.vo.GroupReqVO;
 
@@ -23,15 +26,15 @@ public class GroupServiceImpl implements GroupService {
 	private final GroupRepository groupRepository;
 
 	@Override
-	public void createAccountGroup(GroupReqDTO groupReqDTO) {
+	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
+		GroupReqVO groupReqVO = GroupReqVO.builder()
+			.name(groupReqDTO.getName())
+			.description(groupReqDTO.getDescription())
+			.groupCategory(ACCOUNT)
+			.build();
+		groupReqVO.setCreator(userInfo);
 		//group 생성
-		GroupSummaryDTO groupInfo = groupRepository.createGroup(
-			GroupReqVO.builder()
-				.name(groupReqDTO.getName())
-				.description(groupReqDTO.getDescription())
-				.groupCategory(ACCOUNT)
-				.createdBy(groupReqDTO.getCreatedBy())
-				.build());
+		GroupSummaryDTO groupInfo = groupRepository.createGroup(groupReqVO);
 
 		if(Objects.nonNull(groupReqDTO.getUsers())){
 			//group에 member join
@@ -121,8 +124,8 @@ public class GroupServiceImpl implements GroupService {
 		groupRepository.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
-		groupRepository.addWorkspaceMemberByUserId(groupName, userIdList);
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+		groupRepository.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 	}
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){

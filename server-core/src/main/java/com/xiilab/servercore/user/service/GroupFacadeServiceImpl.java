@@ -4,11 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,8 +22,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final GroupService groupService;
 
 	@Override
-	public void createAccountGroup(GroupReqDTO groupReqDTO) {
-		groupService.createAccountGroup(groupReqDTO);
+	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
+		groupService.createAccountGroup(groupReqDTO, userInfo);
 	}
 
 	@Override
@@ -63,8 +66,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		groupService.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
-		groupService.addWorkspaceMemberByUserId(groupName, userIdList);
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+		groupService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 	}
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){

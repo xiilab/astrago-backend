@@ -42,6 +42,7 @@ public class GroupUserDTO {
 	public static class GroupDTO{
 		private String id;
 		private String name;
+		private long userCount;
 
 		public GroupDTO(GroupRepresentation group) {
 			this.id = group.getId();

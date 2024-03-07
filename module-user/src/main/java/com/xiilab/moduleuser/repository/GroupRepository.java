@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupCategory;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -36,7 +37,7 @@ public interface GroupRepository {
 	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);
 
 	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
-	void addWorkspaceMemberByUserId(String groupName, List<String> userIdList);
+	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
 
