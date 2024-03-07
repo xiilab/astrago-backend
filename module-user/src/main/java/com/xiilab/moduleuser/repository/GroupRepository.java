@@ -15,7 +15,7 @@ import com.xiilab.moduleuser.vo.GroupReqVO;
 
 @Repository
 public interface GroupRepository {
-	List<GroupSummaryDTO> getGroupList();
+	List<GroupSummaryDTO> getGroupList(String searchText);
 
 	List<GroupSummaryDTO> getGroupListByCategory(GroupCategory groupCategory);
 

@@ -38,10 +38,11 @@ public class KeycloakGroupRepository implements GroupRepository {
 	private final UserRepository userRepository;
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
+	public List<GroupSummaryDTO> getGroupList(String searchText) {
 		List<GroupSummaryDTO> groups = new ArrayList<>();
 		GroupResource rootGroup = getGroupResourceByName(GroupCategory.ACCOUNT.getValue());
-		List<GroupRepresentation> subGroups = rootGroup.toRepresentation().getSubGroups();
+		List<GroupRepresentation> subGroups = rootGroup.toRepresentation().getSubGroups().stream()
+			.filter(groupRepresentation -> groupRepresentation.getName().toLowerCase().contains(searchText.toLowerCase())).toList();
 
 		for (GroupRepresentation subGroup : subGroups) {
 			groups.add(new GroupSummaryDTO(subGroup));

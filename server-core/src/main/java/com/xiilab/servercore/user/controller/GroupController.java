@@ -35,8 +35,8 @@ public class GroupController {
 
 	@GetMapping()
 	@Operation(summary = "그룹 리스트 조회")
-	public ResponseEntity<List<GroupSummaryDTO>> getGroupList() {
-		return ResponseEntity.ok(groupFacadeService.getGroupList());
+	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(@RequestParam(name = "searchText") String searchText) {
+		return ResponseEntity.ok(groupFacadeService.getGroupList(searchText));
 	}
 
 	@GetMapping("/{groupId}")

@@ -8,7 +8,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 public interface GroupFacadeService {
@@ -19,7 +18,7 @@ public interface GroupFacadeService {
 	void createWorkspaceGroup(GroupReqDTO groupReqDTO);
 
 	//그룹 전체 목록 조회
-	List<GroupSummaryDTO> getGroupList();
+	List<GroupSummaryDTO> getGroupList(String searchText);
 
 	//그룹 상세 조회
 	GroupInfoDTO getGroupInfoById(String groupId);
