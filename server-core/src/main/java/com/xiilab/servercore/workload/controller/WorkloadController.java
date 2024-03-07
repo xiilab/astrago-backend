@@ -136,8 +136,8 @@ public class WorkloadController {
 
 	@GetMapping("/hubs")
 	@Operation(summary = "워크로드 생성 시 hub 전체 조회")
-	public ResponseEntity<HubResDTO.FindHubsInWorkload> getHubs() {
-		return new ResponseEntity<>(hubService.getHubListInWorkload(), HttpStatus.OK);
+	public ResponseEntity<HubResDTO.FindHubsInWorkload> getHubs(@RequestParam("workloadType") WorkloadType workloadType) {
+		return new ResponseEntity<>(hubService.getHubListInWorkload(workloadType), HttpStatus.OK);
 	}
 
 	@GetMapping("/{workloadName}/files/list")

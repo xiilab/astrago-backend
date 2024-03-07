@@ -1,10 +1,13 @@
 package com.xiilab.modulek8sdb.hub.entity;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -64,4 +67,10 @@ public class HubEntity extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "IMAGE_ID")
 	private HubImageEntity hubImageEntity;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "WORKLOAD_TYPE")
+	private WorkloadType workloadType;
+
+
 }

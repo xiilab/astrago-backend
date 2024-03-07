@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
@@ -34,7 +35,7 @@ public class HubServiceImpl implements HubService {
 	@Override
 	public HubResDTO.FindHubs getHubList(String[] categoryNames, Pageable pageable) {
 		if (ObjectUtils.isEmpty(categoryNames)) {
-			return getHubList(pageable);
+			return getHubAllList(pageable);
 		} else {
 			// 카테고리 네임으로 조회한 허브 목록
 			return getHubListByCategoryNames(categoryNames, pageable);
@@ -53,13 +54,17 @@ public class HubServiceImpl implements HubService {
 	}
 
 	@Override
-	public HubResDTO.FindHubsInWorkload getHubListInWorkload() {
-		List<HubEntity> findAll = hubRepository.findAll();
+	public HubResDTO.FindHubsInWorkload getHubListInWorkload(WorkloadType workloadType) {
+		List<HubEntity> findAll = hubRepository.findByWorkloadType(workloadType);
 		return HubResDTO.FindHubsInWorkload.from(findAll, findAll.size());
 	}
 
+	@Override
+	public void saveHub() {
+	}
+
 	/* 검색 조건 없을 때, List 반환 */
-	private HubResDTO.FindHubs getHubList(Pageable pageable) {
+	private HubResDTO.FindHubs getHubAllList(Pageable pageable) {
 		Page<HubEntity> findAll = hubRepository.findAll(pageable);
 		long totalElements = findAll.getTotalElements();
 		List<HubEntity> hubEntities = findAll.getContent();
