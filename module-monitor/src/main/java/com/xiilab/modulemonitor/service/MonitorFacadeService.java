@@ -302,13 +302,14 @@ public class MonitorFacadeService {
 					.date(valueDTO.dateTime())
 					.value(valueDTO.value())
 					.podName(historyDTO.podName())
+					.namespace(historyDTO.nameSpace())
 					.build());
 			}
 		}
 
 		return clusterPendingDTOList.stream()
 			.collect(Collectors.groupingBy(ResponseDTO.ClusterPendingDTO::date,
-				Collectors.groupingBy(ResponseDTO.ClusterPendingDTO::podName, Collectors.counting())))
+				Collectors.groupingBy(ResponseDTO.ClusterPendingDTO::namespace, Collectors.counting())))
 			.entrySet().stream()
 			.sorted(Map.Entry.comparingByKey()) // 시간별로 정렬
 			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
