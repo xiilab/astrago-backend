@@ -37,9 +37,6 @@ public class HubEntity extends BaseEntity {
 	
 	@Column(name = "THUMBNAIL_SAVE_PATH")
 	private String thumbnailSavePath;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "IMAGE_ID")
-	private HubImageEntity hubImageEntity;
 
 	@Column(name = "SOURCE_CODE_README_URL")
 	private String sourceCodeReadmeURL;
@@ -67,4 +64,7 @@ public class HubEntity extends BaseEntity {
 
 	@Column(name = "COMMAND")
 	private String command;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "IMAGE_ID")
+	private HubImageEntity hubImageEntity;
 }

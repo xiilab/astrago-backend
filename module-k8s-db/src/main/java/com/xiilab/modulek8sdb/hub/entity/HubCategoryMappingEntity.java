@@ -22,10 +22,8 @@ public class HubCategoryMappingEntity {
 	private Long hubCategoryMappingId;
 
 	@ManyToOne
-	@JoinColumn(name = "HUB_ID")
 	private HubEntity hubEntity;
 
 	@ManyToOne
-	@JoinColumn(name = "HUB_CATEGORY_ID")
 	private HubCategoryEntity hubCategoryEntity;
 }

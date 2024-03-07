@@ -10,4 +10,5 @@ public interface HubService {
 
 	// 허브 상세 보기
 	HubResDTO.FindHub getHubByHubId(Long hubId);
+	// 허브
 }

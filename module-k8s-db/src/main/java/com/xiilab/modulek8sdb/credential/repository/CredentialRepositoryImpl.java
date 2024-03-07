@@ -1,7 +1,5 @@
 package com.xiilab.modulek8sdb.credential.repository;
 
-import static com.xiilab.modulek8sdb.image.entity.QImageEntity.*;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -25,10 +23,13 @@ public class CredentialRepositoryImpl implements CredentialRepositoryCustom {
 
 	@Override
 	public Page<CredentialEntity> findByIdIn(Collection<Long> ids, Pageable pageable) {
+		Long totalCount = queryFactory.select(QCredentialEntity.credentialEntity.count())
+			.from(QCredentialEntity.credentialEntity)
+			.where(QCredentialEntity.credentialEntity.id.in(ids))
+			.fetchOne();
 
 		JPAQuery<CredentialEntity> query = queryFactory.selectFrom(QCredentialEntity.credentialEntity)
 			.where(QCredentialEntity.credentialEntity.id.in(ids));
-		long totalCount = query.fetch().size();
 
 		if (pageable != null) {
 			query.offset(pageable.getOffset())

@@ -39,7 +39,6 @@ public class HubServiceImpl implements HubService {
 			// 카테고리 네임으로 조회한 허브 목록
 			return getHubListByCategoryNames(categoryNames, pageable);
 		}
-
 	}
 
 	@Override
@@ -47,8 +46,7 @@ public class HubServiceImpl implements HubService {
 		HubEntity hubEntity = hubRepository.findById(hubId)
 			.orElseThrow(() -> new RestApiException(CommonErrorCode.HUB_NOT_FOUND));
 
-		List<HubCategoryMappingEntity> hubCategoryMappingJoinFetchByHubId = hubCategoryMappingRepository.findHubCategoryMappingJoinFetchByHubId(
-			hubId);
+		List<HubCategoryMappingEntity> hubCategoryMappingJoinFetchByHubId = hubCategoryMappingRepository.findHubCategoryMappingJoinFetchByHubId(hubId);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingJoinFetchByHubId);
 
 		return HubResDTO.FindHub.from(hubEntity, typesMap);
@@ -67,31 +65,29 @@ public class HubServiceImpl implements HubService {
 
 	/* 카테고리 검색 List 반환 */
 	private HubResDTO.FindHubs getHubListByCategoryNames(String[] categoryNames, Pageable pageable) {
-		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.finByHubsByCategoryNames(
-				Arrays.stream(categoryNames).toList(), pageable);
+		// 카테고리 이름으로 hub 목록 조회
+		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.findHubs(
+			Arrays.stream(categoryNames).toList(), null, pageable);
 
 		List<HubCategoryMappingEntity> hubList = finByHubsByCategoryNames.getContent();
-
+		long totalElements = finByHubsByCategoryNames.getTotalElements();
+		// 각 허브에 등록되어 있는 모든 카테고리 목록 조회
 		List<HubEntity> hubEntities = hubList.stream().map(HubCategoryMappingEntity::getHubEntity).toList();
+
 		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
 
-		long totalElements = finByHubsByCategoryNames.getTotalElements();
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
 		return HubResDTO.FindHubs.from(hubEntities, totalElements, typesMap);
 	}
 
 	/* 허브 카테고리 매핑 테이블 전체 조회 */
 	private List<HubCategoryMappingEntity> getHubCategoryMappingEntityList(List<HubEntity> hubEntities) {
-		List<Long> hubIds = extractHubIds(hubEntities);
-		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = hubCategoryMappingRepository.findHcmJoinFetchByHubIds(hubIds);
-		return hubCategoryMappingEntityList;
-	}
-
-	/*HUB ID만 추출*/
-	private static List<Long> extractHubIds(List<HubEntity> hubList) {
-		return hubList.stream()
+		// hubID만 추출
+		List<Long> hubIds = hubEntities.stream()
 			.map(HubEntity::getHubId)
 			.toList();
+		Page<HubCategoryMappingEntity> hubs = hubCategoryMappingRepository.findHubs(null, hubIds, null);
+		return hubs.getContent();
 	}
 
 	/* 모델 타입 String으로 배열에 넣기(key: ID, value: [repositoryType, repositoryType]) */

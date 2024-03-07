@@ -27,13 +27,19 @@ public class ImageRepositoryImpl implements ImageRepositoryCustom {
 
 	@Override
 	public Page<ImageEntity> findByImages(ImageType imageType, WorkloadType workloadType, Pageable pageable) {
+		Long totalCount = queryFactory.select(imageEntity.count())
+			.from(imageEntity)
+			.where(
+				eqImageType(imageType),
+				eqWorkloadType(workloadType)
+			).fetchOne();
+
 		JPAQuery<ImageEntity> query = queryFactory.selectFrom(imageEntity)
 			.where(
 				eqImageType(imageType),
 				eqWorkloadType(workloadType)
 			);
 
-		long totalCount = query.fetch().size();
 		if (pageable != null) {
 			query.offset(pageable.getOffset())
 				.limit(pageable.getPageSize());

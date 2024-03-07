@@ -11,27 +11,26 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
+import com.xiilab.servercore.common.dto.ResDTO;
 
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImageResDTO {
 	@Getter
-	@Builder
-	public static class FindImage {
+	@SuperBuilder
+	public static class FindImage extends ResDTO {
 		private Long id;
 		private String imageName;
 		private RepositoryAuthType repositoryAuthType;
 		private ImageType imageType;
 		private WorkloadType workloadType;
 		private DeleteYN deleteYN;
-		private String regUserId;
-		private String regUserName;
-		private String regDate;
 		// 빌트인 이미지 필드
 		private String title;
 		private String description;
@@ -50,6 +49,8 @@ public class ImageResDTO {
 					.regUserId(imageEntity.getRegUser().getRegUserId())
 					.regUserName(imageEntity.getRegUser().getRegUserName())
 					.regDate(imageEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+					.regUserName(imageEntity.getRegUser().getRegUserName())
+					.regUserRealName(imageEntity.getRegUser().getRegUserRealName())
 					.title(((BuiltInImageEntity)imageEntity).getTitle())
 					.description(((BuiltInImageEntity)imageEntity).getDescription())
 					.thumbnailSavePath(((BuiltInImageEntity)imageEntity).getThumbnailSavePath())

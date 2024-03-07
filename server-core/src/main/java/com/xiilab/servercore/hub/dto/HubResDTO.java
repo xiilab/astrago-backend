@@ -1,6 +1,5 @@
 package com.xiilab.servercore.hub.dto;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +15,7 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
+import com.xiilab.servercore.common.dto.ResDTO;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -28,17 +28,16 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class HubResDTO {
 	@Getter
-	@Builder
-	public static class FindHub {
+	@SuperBuilder
+	public static class FindHub extends ResDTO {
 		private long id;
 		private String title;
 		private String description;
 		private String thumbnailSavePath;
 		private String[] types;
-		private String regUserName;
-		private String regDate;
 		private Map<String, String> envs;
 		private Map<String, Integer> ports;
+		private String sourceCodeReadmeUrl;
 		private String sourceCodeUrl;
 		private String sourceCodeBranch;
 		private String sourceCodeMountPath;
@@ -50,7 +49,7 @@ public class HubResDTO {
 		public static FindHub from(HubEntity hubEntity, Map<Long, Set<String>> typesMap) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
-				return FindHub.builder()
+				return HubResDTO.FindHub.builder()
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.description(hubEntity.getDescription())
@@ -68,6 +67,8 @@ public class HubResDTO {
 					}))
 					.command(hubEntity.getCommand())
 					.regUserName(hubEntity.getRegUser().getRegUserName())
+					.regUserId(hubEntity.getRegUser().getRegUserId())
+					.regUserRealName(hubEntity.getRegUser().getRegUserRealName())
 					.regDate(hubEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 					.build();
 			} catch (JsonProcessingException e) {
@@ -91,27 +92,20 @@ public class HubResDTO {
 	}
 
 	@Getter
-	public static class HubImage {
+	public static class HubImage extends ResDTO {
 		private Long id;
 		private ImageType imageType;
-		private LocalDateTime regDate;
-		private LocalDateTime modDate;
-		private String regUserId;
-		private String regUserName;
-		private String regUserRealName;
 		private DeleteYN deleteYN;
 		private String imageName;
 		private RepositoryAuthType repositoryAuthType;
 		private WorkloadType workloadType;
 
 		public HubImage(HubImageEntity hubImageEntity) {
+			super(hubImageEntity.getRegUser().getRegUserId(), hubImageEntity.getRegUser().getRegUserName(),
+				hubImageEntity.getRegUser().getRegUserRealName(), hubImageEntity.getRegDate(),
+				hubImageEntity.getModDate());
 			this.id = hubImageEntity.getId();
 			this.imageType = hubImageEntity.getImageType();
-			this.regDate = hubImageEntity.getRegDate();
-			this.modDate = hubImageEntity.getModDate();
-			this.regUserId = hubImageEntity.getRegUser().getRegUserId();
-			this.regUserName = hubImageEntity.getRegUser().getRegUserName();
-			this.regUserRealName = hubImageEntity.getRegUser().getRegUserRealName();
 			this.deleteYN = hubImageEntity.getDeleteYN();
 			this.imageName = hubImageEntity.getImageName();
 			this.repositoryAuthType = hubImageEntity.getRepositoryAuthType();
