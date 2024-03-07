@@ -36,9 +36,16 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 	@Override
 	public List<GroupSummaryDTO> getGroupList() {
+		List<GroupSummaryDTO> groups = new ArrayList<>();
 		GroupResource rootGroup = getGroupResourceByName(GroupCategory.ACCOUNT.getValue());
-		return rootGroup.toRepresentation().getSubGroups().stream()
-			.map(GroupSummaryDTO::new).toList();
+		List<GroupRepresentation> subGroups = rootGroup.toRepresentation().getSubGroups();
+
+		for (GroupRepresentation subGroup : subGroups) {
+			String id = subGroup.getId();
+			GroupResource groupResourceById = getGroupResourceById(id);
+			groups.add(new GroupSummaryDTO(groupResourceById));
+		}
+		return groups;
 	}
 
 	@Override
