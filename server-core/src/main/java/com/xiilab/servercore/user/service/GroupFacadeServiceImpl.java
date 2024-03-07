@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -65,8 +66,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		groupService.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
-		groupService.addWorkspaceMemberByUserId(groupName, userIdList);
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+		groupService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 	}
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){

@@ -1,8 +1,10 @@
 package com.xiilab.moduleuser.repository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -15,6 +17,7 @@ import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
 import com.xiilab.moduleuser.common.KeycloakConfig;
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupCategory;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -186,14 +189,20 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList) {
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO) {
+		GroupRepresentation workspace = getWsSubGroupByGroupName(groupName);
+		//그룹내 유저, 요청받은 유저 조회 후 중복 삭제
+		Set<String> userIds = new HashSet<>();
+		for (String userId : addWorkspaceUsersDTO.getUserIds()) {
+			userIds.add(userId);
+		}
+		List<String> groupIds = addWorkspaceUsersDTO.getGroupIds();
+		getAllGroupMembers(userIds, groupIds);
 
-		GroupRepresentation subgroup = getWsSubGroupByGroupName(groupName);
-
-		for (String userId : userIdList) {
-			keycloakConfig.getRealmClient().users().get(userId).joinGroup(subgroup.getId());
+		for (String userId : userIds) {
+			keycloakConfig.getRealmClient().users().get(userId).joinGroup(workspace.getId());
 			// 워크스페이스 회원 추가 검사를 위한 GroupUser 조회
-			Optional<GroupUserDTO.UserDTO> group = findUsersByGroupId(subgroup.getId()).getUsers().stream()
+			Optional<GroupUserDTO.UserDTO> group = findUsersByGroupId(workspace.getId()).getUsers().stream()
 				.filter(groupUserDTO -> groupUserDTO.getUserId().equals(userId))
 				.findFirst();
 
@@ -203,7 +212,23 @@ public class KeycloakGroupRepository implements GroupRepository {
 		}
 
 	}
-
+	public void getAllGroupMembers(Set<String> userIds, List<String> groupIds) {
+		for (String groupId : groupIds) {
+			retrieveGroupMembers(userIds, groupId);
+		}
+	}
+	private void retrieveGroupMembers(Set<String> userIds, String groupId) {
+		GroupResource groupResource = keycloakConfig.getRealmClient().groups().group(groupId);
+		List<UserRepresentation> members = groupResource.members();
+		for (UserRepresentation member : members) {
+			userIds.add(member.getId());
+		}
+		//sub group
+		List<GroupRepresentation> subGroups = groupResource.toRepresentation().getSubGroups();
+		for (GroupRepresentation subGroup : subGroups) {
+			retrieveGroupMembers(userIds, subGroup.getId());
+		}
+	}
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search) {
 

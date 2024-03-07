@@ -2,12 +2,12 @@ package com.xiilab.moduleuser.service;
 
 import java.util.List;
 
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 public interface GroupService {
@@ -40,7 +40,7 @@ public interface GroupService {
 	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);
 
 	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
-	void addWorkspaceMemberByUserId(String groupName, List<String> userIdList);
+	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
 

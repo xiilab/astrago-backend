@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -123,8 +124,8 @@ public class GroupServiceImpl implements GroupService {
 		groupRepository.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
-		groupRepository.addWorkspaceMemberByUserId(groupName, userIdList);
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+		groupRepository.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 	}
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){

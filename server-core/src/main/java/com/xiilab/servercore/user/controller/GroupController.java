@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
@@ -96,8 +97,8 @@ public class GroupController {
 	@Operation(summary = "워크스페이스 멤버 추가")
 	public ResponseEntity<HttpStatus> addWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
-		@RequestBody List<String> userIdList){
-		groupFacadeService.addWorkspaceMemberByUserId(groupName, userIdList);
+		@RequestBody AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+		groupFacadeService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 		return ResponseEntity.ok().build();
 	}
 
