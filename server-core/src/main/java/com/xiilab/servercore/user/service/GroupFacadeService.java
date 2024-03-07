@@ -40,4 +40,6 @@ public interface GroupFacadeService {
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 
 	List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText);
+
+	void deleteGroupMemberByUserId(String groupId, List<String> userIdList);
 }

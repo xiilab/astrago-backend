@@ -78,4 +78,9 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
 		return groupService.getUserAndGroupBySearchText(searchText);
 	}
+
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		groupService.deleteGroupMemberByUserId(groupId, userIdList);
+	}
 }

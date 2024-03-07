@@ -141,4 +141,9 @@ public class GroupServiceImpl implements GroupService {
 	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
 		return groupRepository.getUserAndGroupBySearchText(searchText);
 	}
+
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		groupRepository.deleteGroupMemberByUserId(groupId, userIdList);
+	}
 }

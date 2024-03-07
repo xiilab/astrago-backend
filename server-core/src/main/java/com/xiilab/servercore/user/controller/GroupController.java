@@ -67,6 +67,15 @@ public class GroupController {
 		return ResponseEntity.ok().build();
 	}
 
+	@DeleteMapping("/{groupId}/users")
+	@Operation(summary = "그룹 멤버 삭제")
+	public ResponseEntity<HttpStatus> deleteGroupMemberByUserId(
+		@PathVariable(name = "groupId") String groupId,
+		@RequestBody List<String> userIdList){
+		groupFacadeService.deleteGroupMemberByUserId(groupId, userIdList);
+		return ResponseEntity.ok().build();
+	}
+
 	@DeleteMapping("/{groupId}")
 	@Operation(summary = "그룹 삭제")
 	public ResponseEntity<HttpStatus> deleteGroupById(@PathVariable(name = "groupId") String id) {

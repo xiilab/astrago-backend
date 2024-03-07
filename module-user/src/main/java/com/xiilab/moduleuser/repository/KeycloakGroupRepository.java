@@ -324,6 +324,17 @@ public class KeycloakGroupRepository implements GroupRepository {
 		return users;
 	}
 
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		GroupRepresentation group = getGroupResourceById(groupId).toRepresentation();
+		for (String userId : userIdList) {
+			UserResource userResource = keycloakConfig.getRealmClient().users().get(userId);
+			userResource.toRepresentation();
+			// 회원 삭제
+			userResource.leaveGroup(group.getId());
+		}
+	}
+
 	private UserRepresentation getWorkspaceGroupOwner(String subGroupName) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
 		// ws 그룹 조회
