@@ -44,7 +44,7 @@ public class HubResDTO extends ResDTO {
 		private String[] types;
 		private Map<String, String> envs;
 		private Map<String, Integer> ports;
-		private String sourceCodeReadmeUrl;
+		private String readmeUrl;
 
 		public static FindHub from(HubEntity hubEntity, Map<Long, Set<String>> typesMap) {
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -54,7 +54,7 @@ public class HubResDTO extends ResDTO {
 					.title(hubEntity.getTitle())
 					.description(hubEntity.getDescription())
 					.thumbnailUrl(hubEntity.getThumbnailURL())
-					.sourceCodeReadmeUrl(hubEntity.getSourceCodeReadmeURL())
+					.readmeUrl(hubEntity.getReadmeURL())
 					.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
 					.hubImage(new HubImage(hubEntity.getHubImageEntity()))
 					.sourceCodeUrl(hubEntity.getSourceCodeUrl())

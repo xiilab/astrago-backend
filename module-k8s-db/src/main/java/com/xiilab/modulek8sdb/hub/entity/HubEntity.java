@@ -32,17 +32,11 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "DESCRIPTION")
 	private String description;
 
-	// @Column(name = "THUMBNAIL_SAVE_FILENAME")
-	// private String thumbnailSaveFileName;
-	//
-	// @Column(name = "THUMBNAIL_SAVE_PATH")
-	// private String thumbnailSavePath;
-
 	@Column(name = "THUMBNAIL_URL")
 	private String thumbnailURL;
 
-	@Column(name = "SOURCE_CODE_README_URL")
-	private String sourceCodeReadmeURL;
+	@Column(name = "README_URL")
+	private String readmeURL;
 
 	@Column(name = "SOURCE_CODE_URL")
 	private String sourceCodeUrl;
