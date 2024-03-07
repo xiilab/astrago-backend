@@ -1,9 +1,14 @@
 package com.xiilab.modulek8sdb.hub.entity;
 
+import java.time.LocalDateTime;
+
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
+import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,13 +21,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "TB_HUB")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class HubEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,7 +69,8 @@ public class HubEntity extends BaseEntity {
 
 	@Column(name = "COMMAND")
 	private String command;
-	@ManyToOne(fetch = FetchType.LAZY)
+
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "IMAGE_ID")
 	private HubImageEntity hubImageEntity;
 
@@ -72,5 +78,25 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "WORKLOAD_TYPE")
 	private WorkloadType workloadType;
 
-
+	@Builder(builderMethodName = "saveBuilder", builderClassName = "saveBuilder")
+	public HubEntity(String title, String description, String thumbnailURL,
+		String readmeURL, String sourceCodeUrl, String sourceCodeBranch, String sourceCodeMountPath,
+		String datasetMountPath, String modelMountPath, String envs, String command,
+		HubImageEntity hubImageEntity, WorkloadType workloadType) {
+		this.title = title;
+		this.description = description;
+		this.thumbnailURL = thumbnailURL;
+		this.readmeURL = readmeURL;
+		this.sourceCodeUrl = sourceCodeUrl;
+		this.sourceCodeBranch = sourceCodeBranch;
+		this.sourceCodeMountPath = sourceCodeMountPath;
+		this.datasetMountPath = datasetMountPath;
+		this.modelMountPath = modelMountPath;
+		this.envs = envs;
+		this.command = command;
+		this.hubImageEntity = hubImageEntity;
+		this.workloadType = workloadType;
+		// 연관관계 편의 메서드
+		this.hubImageEntity.getHubEntities().add(this);
+	}
 }

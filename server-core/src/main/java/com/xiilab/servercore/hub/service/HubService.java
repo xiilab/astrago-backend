@@ -3,6 +3,7 @@ package com.xiilab.servercore.hub.service;
 import org.springframework.data.domain.Pageable;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.servercore.hub.dto.HubReqDTO;
 import com.xiilab.servercore.hub.dto.HubResDTO;
 
 public interface HubService {
@@ -16,5 +17,5 @@ public interface HubService {
 	HubResDTO.FindHubsInWorkload getHubListInWorkload(WorkloadType workloadType);
 
 	// 허브 저장
-	void saveHub();
+	void saveHub(HubReqDTO.SaveHub saveHubDTO);
 }

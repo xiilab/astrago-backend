@@ -62,10 +62,12 @@ public class HubResDTO extends ResDTO {
 					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
-					.envs(objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
-					}))
-					.ports(objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
-					}))
+					.envs(hubEntity.getEnvs() != null ?
+						objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
+						}) : null)
+					.ports(hubEntity.getPorts() != null ?
+						objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
+						}) : null)
 					.command(hubEntity.getCommand())
 					.regUserName(hubEntity.getRegUser().getRegUserName())
 					.regUserId(hubEntity.getRegUser().getRegUserId())
@@ -75,6 +77,11 @@ public class HubResDTO extends ResDTO {
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException("JSON String 타입을 변환하는데 실패했습니다.");
 			}
+		}
+
+		private String serializeToJson(Map<String, String> envMap) throws JsonProcessingException {
+			ObjectMapper objectMapper = new ObjectMapper();
+			return envMap != null && !envMap.isEmpty() ? objectMapper.writeValueAsString(envMap) : "{}";
 		}
 	}
 
