@@ -39,4 +39,6 @@ public interface WorkspaceFacadeService {
 	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserInfoDTO userInfoDTO);
 	SystemAlertSetDTO.ResponseDTOSystem getWorkspaceAlertSet(String workspaceName);
 	SystemAlertSetDTO.ResponseDTOSystem updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO);
+
+	boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO);
 }

@@ -244,4 +244,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		return systemAlertSetService.updateWorkspaceAlertSet(workspaceName, systemAlertSetDTO);
 	}
 
+	@Override
+	public boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO) {
+		return userInfoDTO.isAccessAuthorityWorkspace(workspaceResourceName);
+	}
+
 }
