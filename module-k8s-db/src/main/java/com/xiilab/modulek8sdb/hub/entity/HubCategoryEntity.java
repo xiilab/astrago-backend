@@ -24,13 +24,7 @@ public class HubCategoryEntity extends BaseEntity {
 	@Column(name = "HUB_CATEGORY_ID")
 	private Long hubCategoryId;
 
-	@Column(name = "NAME")
-	private String name;
-
-	@Column(name = "DESCRIPTION")
-	private String description;
-
 	@Enumerated(EnumType.STRING)
-	@Column(name = "LABEL_TYPE")
+	@Column(name = "LABEL_TYPE", unique = true, nullable = false)
 	private HubLabelType hubLabelType;
 }
