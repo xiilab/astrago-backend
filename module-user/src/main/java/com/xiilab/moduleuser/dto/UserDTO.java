@@ -32,10 +32,22 @@ public class UserDTO {
 
 	@Getter
 	@Builder
+	public static class SearchGroupAndUser {
+		private List<SearchUser> users;
+		private List<SearchGroup> groups;
+	}
+	@Getter
+	@Builder
 	public static class SearchUser{
 		private String userId;
 		private String userName;
 		private String group;
+	}
+	@Getter
+	@Builder
+	public static class SearchGroup{
+		private String groupId;
+		private String groupName;
 	}
 
 	@Getter

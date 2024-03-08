@@ -74,7 +74,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText) {
 		return groupService.getUserAndGroupBySearchText(searchText);
 	}
 

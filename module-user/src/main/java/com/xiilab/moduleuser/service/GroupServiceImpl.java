@@ -137,7 +137,7 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText) {
 		return groupRepository.getUserAndGroupBySearchText(searchText);
 	}
 

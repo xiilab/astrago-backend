@@ -19,7 +19,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.user.service.GroupFacadeService;
 
@@ -54,10 +53,11 @@ public class GroupController {
 	}
 
 	@GetMapping("/users")
-	@Operation(summary = "유저 검색")
-	public ResponseEntity<List<UserDTO.SearchUser>> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText) {
-		List<UserDTO.SearchUser> users = groupFacadeService.getUserAndGroupBySearchText(searchText);
-		return new ResponseEntity<>(users, HttpStatus.OK);
+	@Operation(summary = "그룹, 유저 검색")
+	public ResponseEntity<UserDTO.SearchGroupAndUser> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText) {
+		UserDTO.SearchGroupAndUser searchResults = groupFacadeService.getUserAndGroupBySearchText(
+			searchText);
+		return new ResponseEntity<>(searchResults, HttpStatus.OK);
 	}
 	@PostMapping("/{groupId}/users")
 	@Operation(summary = "그룹 멤버 추가")

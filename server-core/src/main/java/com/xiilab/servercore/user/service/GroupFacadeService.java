@@ -38,7 +38,7 @@ public interface GroupFacadeService {
 	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 
-	List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText);
+	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText);
 
 	void deleteGroupMemberByUserId(String groupId, List<String> userIdList);
 }
