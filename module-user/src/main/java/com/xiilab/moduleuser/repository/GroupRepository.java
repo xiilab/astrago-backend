@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupCategory;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
+import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -29,7 +30,7 @@ public interface GroupRepository {
 
 	void deleteGroupById(String groupId);
 
-	void modiGroupById(String groupId, GroupModiVO groupModiVO);
+	void modiGroupById(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO);
 
 	GroupUserDTO.SubGroupUserDto findUsersByGroupId(String groupId);
 
