@@ -4,17 +4,18 @@ import org.springframework.data.domain.Pageable;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.servercore.hub.dto.HubReqDTO;
-import com.xiilab.servercore.hub.dto.HubResDTO;
+import com.xiilab.servercore.hub.dto.response.FindHubInWorkloadResDTO;
+import com.xiilab.servercore.hub.dto.response.FindHubResDTO;
 
 public interface HubService {
 	// 허브 목록
-	HubResDTO.FindHubs getHubList(String[] categoryNames, Pageable pageable);
+	FindHubResDTO.Hubs getHubList(String[] categoryNames, Pageable pageable);
 
 	// 허브 상세 보기
-	HubResDTO.FindHub getHubByHubId(Long hubId);
+	FindHubResDTO.HubDetail getHubByHubId(Long hubId);
 
 	// 허브 목록
-	HubResDTO.FindHubsInWorkload getHubListInWorkload(WorkloadType workloadType);
+	FindHubInWorkloadResDTO.Hubs getHubListInWorkload(WorkloadType workloadType);
 
 	// 허브 저장
 	void saveHub(HubReqDTO.SaveHub saveHubDTO);

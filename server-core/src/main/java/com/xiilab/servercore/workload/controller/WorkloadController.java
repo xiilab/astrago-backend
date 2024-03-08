@@ -31,7 +31,7 @@ import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
-import com.xiilab.servercore.hub.dto.HubResDTO;
+import com.xiilab.servercore.hub.dto.response.FindHubInWorkloadResDTO;
 import com.xiilab.servercore.hub.service.HubService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
@@ -136,7 +136,7 @@ public class WorkloadController {
 
 	@GetMapping("/hubs")
 	@Operation(summary = "워크로드 생성 시 hub 전체 조회")
-	public ResponseEntity<HubResDTO.FindHubsInWorkload> getHubs(@RequestParam("workloadType") WorkloadType workloadType) {
+	public ResponseEntity<FindHubInWorkloadResDTO.Hubs> getHubs(@RequestParam("workloadType") WorkloadType workloadType) {
 		return new ResponseEntity<>(hubService.getHubListInWorkload(workloadType), HttpStatus.OK);
 	}
 

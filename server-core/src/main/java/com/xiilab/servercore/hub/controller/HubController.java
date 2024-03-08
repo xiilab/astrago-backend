@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.servercore.hub.dto.HubReqDTO;
-import com.xiilab.servercore.hub.dto.HubResDTO;
+import com.xiilab.servercore.hub.dto.response.FindHubResDTO;
 import com.xiilab.servercore.hub.service.HubService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,13 +27,13 @@ public class HubController {
 	private final HubService hubService;
 
 	@GetMapping()
-	public ResponseEntity<HubResDTO.FindHubs> getHubList(@RequestParam(required = false) String[] categoryNames,
+	public ResponseEntity<FindHubResDTO.Hubs> getHubList(@RequestParam(required = false) String[] categoryNames,
 		Pageable pageable) {
 		return new ResponseEntity<>(hubService.getHubList(categoryNames, pageable), HttpStatus.OK);
 	}
 
 	@GetMapping("/{hubId}")
-	public ResponseEntity<HubResDTO.FindHub> getHubResDtoByHubId(@PathVariable("hubId") Long hubId) {
+	public ResponseEntity<FindHubResDTO.HubDetail> getHubResDtoByHubId(@PathVariable("hubId") Long hubId) {
 		return new ResponseEntity<>(hubService.getHubByHubId(hubId), HttpStatus.OK);
 	}
 

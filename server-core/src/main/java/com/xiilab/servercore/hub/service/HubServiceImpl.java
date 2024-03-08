@@ -23,18 +23,17 @@ import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
 import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
-import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.servercore.hub.dto.HubReqDTO;
-import com.xiilab.servercore.hub.dto.HubResDTO;
 import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.modulek8sdb.hub.repository.HubCategoryMappingRepository;
 import com.xiilab.modulek8sdb.hub.repository.HubRepository;
+import com.xiilab.servercore.hub.dto.response.FindHubInWorkloadResDTO;
+import com.xiilab.servercore.hub.dto.response.FindHubResDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import reactor.netty.internal.util.MapUtils;
 
 @Slf4j
 @Service
@@ -45,7 +44,7 @@ public class HubServiceImpl implements HubService {
 	private final ImageRepository imageRepository;
 
 	@Override
-	public HubResDTO.FindHubs getHubList(String[] categoryNames, Pageable pageable) {
+	public FindHubResDTO.Hubs getHubList(String[] categoryNames, Pageable pageable) {
 		if (ObjectUtils.isEmpty(categoryNames)) {
 			return getHubAllList(pageable);
 		} else {
@@ -55,20 +54,20 @@ public class HubServiceImpl implements HubService {
 	}
 
 	@Override
-	public HubResDTO.FindHub getHubByHubId(Long hubId) {
+	public FindHubResDTO.HubDetail getHubByHubId(Long hubId) {
 		HubEntity hubEntity = hubRepository.findById(hubId)
 			.orElseThrow(() -> new RestApiException(CommonErrorCode.HUB_NOT_FOUND));
 
 		List<HubCategoryMappingEntity> hubCategoryMappingJoinFetchByHubId = hubCategoryMappingRepository.findHubCategoryMappingJoinFetchByHubId(hubId);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingJoinFetchByHubId);
 
-		return HubResDTO.FindHub.from(hubEntity, typesMap);
+		return FindHubResDTO.HubDetail.from(hubEntity, typesMap);
 	}
 
 	@Override
-	public HubResDTO.FindHubsInWorkload getHubListInWorkload(WorkloadType workloadType) {
+	public FindHubInWorkloadResDTO.Hubs getHubListInWorkload(WorkloadType workloadType) {
 		List<HubEntity> findAll = hubRepository.findByWorkloadType(workloadType);
-		return HubResDTO.FindHubsInWorkload.from(findAll, findAll.size());
+		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size());
 	}
 
 	@Override
@@ -113,7 +112,7 @@ public class HubServiceImpl implements HubService {
 	}
 
 	/* 검색 조건 없을 때, List 반환 */
-	private HubResDTO.FindHubs getHubAllList(Pageable pageable) {
+	private FindHubResDTO.Hubs getHubAllList(Pageable pageable) {
 		Page<HubEntity> findAll = hubRepository.findAll(pageable);
 		long totalElements = findAll.getTotalElements();
 		List<HubEntity> hubEntities = findAll.getContent();
@@ -122,11 +121,11 @@ public class HubServiceImpl implements HubService {
 		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
 
-		return HubResDTO.FindHubs.from(hubEntities, totalElements, typesMap);
+		return FindHubResDTO.Hubs.from(hubEntities, totalElements, typesMap);
 	}
 
 	/* 카테고리 검색 List 반환 */
-	private HubResDTO.FindHubs getHubListByCategoryNames(String[] categoryNames, Pageable pageable) {
+	private FindHubResDTO.Hubs getHubListByCategoryNames(String[] categoryNames, Pageable pageable) {
 		// 카테고리 이름으로 hub 목록 조회
 		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.findHubs(
 			Arrays.stream(categoryNames).toList(), null, pageable);
@@ -139,7 +138,7 @@ public class HubServiceImpl implements HubService {
 		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
 
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
-		return HubResDTO.FindHubs.from(hubEntities, totalElements, typesMap);
+		return FindHubResDTO.Hubs.from(hubEntities, totalElements, typesMap);
 	}
 
 	/* 허브 카테고리 매핑 테이블 전체 조회 */
