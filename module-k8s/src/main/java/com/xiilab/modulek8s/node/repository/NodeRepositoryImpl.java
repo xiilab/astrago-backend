@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.K8sException;
@@ -16,6 +18,7 @@ import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
+import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
@@ -136,7 +139,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	@Override
-	public void updateMIGAllProfile(String nodeName, String option) {
+	public void updateMIGProfile(String nodeName, String option) {
 		Node node = getNode(nodeName);
 		//해당 node가 mig를 지원하는지 체크
 		if (!getMigCapable(node)) {
@@ -146,7 +149,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		if (nodeAssignWorkloadCount(nodeName) > 0) {
 			throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MIG);
 		}
-		updateMIGConfig(nodeName, "all-" + option);
+		updateMIGConfig(nodeName, option);
 
 	}
 
@@ -165,6 +168,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 	}
 
+	@Override
 	public Node getNode(String nodeName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Node node = client.nodes().withName(nodeName).get();
@@ -232,7 +236,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String version = null;
 			if (!(labels.get(GPU_DRIVER_VER_MAJOR) == null || labels.get(GPU_DRIVER_VER_MINOR) == null || labels.get(
 				GPU_DRIVER_VER_REV) == null)) {
-				version = labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(GPU_DRIVER_VER_REV);
+				version = labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(
+					GPU_DRIVER_VER_REV);
 			}
 
 			ResponseDTO.NodeResourceInfo nodeResourceInfo = ResponseDTO.NodeResourceInfo.builder()
@@ -337,6 +342,42 @@ public class NodeRepositoryImpl implements NodeRepository {
 		migConfig.put("nvidia.com/mig.config", profile);
 		node.edit(n ->
 			new NodeBuilder(n).editMetadata().addToLabels(migConfig).endMetadata().build());
+	}
+	@Override
+	public void updateMigProfile(NodeGpuDTO nodeGpuDTO) {
+		DumperOptions options = new DumperOptions();
+		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+		options.setPrettyFlow(true);
+		Yaml yaml = new Yaml(options);
+		Map<String, String> migConfigMapData = getMigConfigMapData();
+		String migConfigSTR = migConfigMapData.get("config.yaml");
+		Map<String, Object> convertResult = yaml.load(migConfigSTR);
+		Map<String, Object> migConfigs = (Map<String, Object>)convertResult.get("mig-configs");
+		migConfigs.put(nodeGpuDTO.getMigKey(),nodeGpuDTO.convertMap());
+		convertResult.put("mig-configs", migConfigs);
+		updateMigConfigMap(Map.of("config.yaml", yaml.dump(convertResult)));
+	}
+
+
+	private void updateMigConfigMap(Map<String, String> data) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.configMaps()
+				.inNamespace("default")
+				.withName("default-mig-parted-config")
+				.edit(config ->
+					config.edit()
+						.addToData(data).build());
+		}
+	}
+
+	private Map<String, String> getMigConfigMapData() {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.configMaps()
+				.inNamespace("default")
+				.withName("default-mig-parted-config")
+				.get()
+				.getData();
+		}
 	}
 
 	/**
