@@ -49,8 +49,28 @@ public class UserInfoDTO {
 	}
 
 	public boolean isMyWorkspace(String workspaceName){
+		if(auth == AuthType.ROLE_ADMIN){
+			return true;
+		}
+		if(workspaces == null){
+			return false;
+		}
 		List<String> workspaces = this.workspaces.stream()
 			.filter(ws -> ws.contains("/owner"))
+			.map(group -> group.split("/")[0])
+			.toList();
+		return workspaces.contains(workspaceName);
+	}
+	//workspace 접근권한 체크
+	public boolean isAccessAuthorityWorkspace(String workspaceName){
+		if(auth == AuthType.ROLE_ADMIN){
+			return true;
+		}
+		if(workspaces == null){
+			return false;
+		}
+		List<String> workspaces = this.workspaces.stream()
+			.filter(ws -> ws.contains("/owner") || ws.contains("/user"))
 			.map(group -> group.split("/")[0])
 			.toList();
 		return workspaces.contains(workspaceName);

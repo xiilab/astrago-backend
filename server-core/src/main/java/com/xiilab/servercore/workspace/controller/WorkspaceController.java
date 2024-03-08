@@ -207,4 +207,12 @@ public class WorkspaceController {
 		@RequestBody SystemAlertSetDTO updateDTO){
 		return new ResponseEntity<>(workspaceService.updateWorkspaceAlertSet(workspaceName, updateDTO), HttpStatus.OK);
 	}
+
+	@GetMapping("/{workspaceResourceName}/accessAuthority")
+	@Operation(summary = "워크스페이스 접근 권한 체크")
+	public ResponseEntity<Boolean> workspaceAccessAuthority(@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		UserInfoDTO userInfoDTO){
+		boolean accessAuthority = workspaceService.workspaceAccessAuthority(workspaceResourceName, userInfoDTO);
+		return new ResponseEntity<>(accessAuthority, HttpStatus.OK);
+	}
 }
