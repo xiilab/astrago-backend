@@ -38,10 +38,11 @@ public class KeycloakGroupRepository implements GroupRepository {
 	private final UserRepository userRepository;
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
+	public List<GroupSummaryDTO> getGroupList(String searchText) {
 		List<GroupSummaryDTO> groups = new ArrayList<>();
 		GroupResource rootGroup = getGroupResourceByName(GroupCategory.ACCOUNT.getValue());
-		List<GroupRepresentation> subGroups = rootGroup.toRepresentation().getSubGroups();
+		List<GroupRepresentation> subGroups = rootGroup.toRepresentation().getSubGroups().stream()
+			.filter(groupRepresentation -> groupRepresentation.getName().toLowerCase().contains(searchText.toLowerCase())).toList();
 
 		for (GroupRepresentation subGroup : subGroups) {
 			groups.add(new GroupSummaryDTO(subGroup));
@@ -277,7 +278,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
 
 		List<UserRepresentation> userList = realmClient.users()
@@ -290,7 +291,8 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.toList();
 
 		// 검색 조회된 사용자 정보 리스트
-		List<UserDTO.SearchUser> users = new ArrayList<>();
+		List<UserDTO.SearchUser> searchUsers = new ArrayList<>();
+		List<UserDTO.SearchGroup> searchGroups = new ArrayList<>();
 		for (UserRepresentation userRepresentation : userList) {
 			String userId = userRepresentation.getId();
 			String userName = userRepresentation.getLastName() + userRepresentation.getFirstName();
@@ -299,12 +301,12 @@ public class KeycloakGroupRepository implements GroupRepository {
 				.toList();
 
 			if(groups.size() == 1){
-				UserDTO.SearchUser searchUser = UserDTO.SearchUser.builder()
+				UserDTO.SearchUser searchGroupAndUser = UserDTO.SearchUser.builder()
 					.userId(userId)
 					.userName(userName)
 					.group("none")
 					.build();
-				users.add(searchUser);
+				searchUsers.add(searchGroupAndUser);
 				continue;
 			}
 			for (GroupRepresentation group : groups) {
@@ -313,15 +315,56 @@ public class KeycloakGroupRepository implements GroupRepository {
 				}
 				String groupPath = group.getPath().replace("/account/", "").replace("/", " > ");
 
-				UserDTO.SearchUser searchUser = UserDTO.SearchUser.builder()
+				UserDTO.SearchUser searchGroupAndUser = UserDTO.SearchUser.builder()
 					.userId(userId)
 					.userName(userName)
 					.group(groupPath)
 					.build();
-				users.add(searchUser);
+				searchUsers.add(searchGroupAndUser);
 			}
 		}
-		return users;
+
+		// 	그룹 검색 해야함 -> 하위 그룹 전체 다 검색하고 그 중 중복은 제거해야함
+		List<GroupRepresentation> targetGroups = realmClient.groups().groups().stream()
+		.filter(groupRepresentation ->
+			groupRepresentation.getPath().equalsIgnoreCase("/account")
+		).toList();
+
+		searchGroups(searchGroups, targetGroups, searchText);
+
+		return UserDTO.SearchGroupAndUser.builder()
+			.users(searchUsers)
+			.groups(searchGroups)
+			.build();
+	}
+
+	private void searchGroups(List<UserDTO.SearchGroup> resultGroups, List<GroupRepresentation> targetGroups, String searchText) {
+		for (GroupRepresentation targetGroup : targetGroups) {
+			if(!targetGroup.getName().equalsIgnoreCase("account")
+				&& !targetGroup.getName().equalsIgnoreCase("default")
+				&& targetGroup.getName().toLowerCase().contains(searchText.toLowerCase())){
+				UserDTO.SearchGroup searchGroup = UserDTO.SearchGroup.builder()
+					.groupName(targetGroup.getName())
+					.groupId(targetGroup.getId())
+					.build();
+				resultGroups.add(searchGroup);
+			}
+			if(targetGroup.getSubGroups().size() != 0){
+				List<GroupRepresentation> subGroups = targetGroup.getSubGroups();
+				searchGroups(resultGroups, subGroups, searchText);
+			}
+		}
+	}
+
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		GroupRepresentation group = getGroupResourceById(groupId).toRepresentation();
+		for (String userId : userIdList) {
+			UserResource userResource = keycloakConfig.getRealmClient().users().get(userId);
+			userResource.toRepresentation();
+			// 회원 삭제
+			userResource.leaveGroup(group.getId());
+		}
 	}
 
 	private UserRepresentation getWorkspaceGroupOwner(String subGroupName) {

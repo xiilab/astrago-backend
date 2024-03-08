@@ -13,7 +13,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.repository.GroupRepository;
 import com.xiilab.moduleuser.vo.GroupReqVO;
@@ -57,8 +56,8 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
-		return groupRepository.getGroupList();
+	public List<GroupSummaryDTO> getGroupList(String searchText) {
+		return groupRepository.getGroupList(searchText);
 	}
 
 	@Override
@@ -138,7 +137,12 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText) {
 		return groupRepository.getUserAndGroupBySearchText(searchText);
+	}
+
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		groupRepository.deleteGroupMemberByUserId(groupId, userIdList);
 	}
 }

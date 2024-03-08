@@ -18,7 +18,7 @@ public interface GroupService {
 	void createWorkspaceGroup(GroupReqDTO groupReqDTO);
 
 	//그룹 전체 목록 조회
-	List<GroupSummaryDTO> getGroupList();
+	List<GroupSummaryDTO> getGroupList(String searchText);
 
 	//그룹 상세 조회
 	GroupInfoDTO getGroupInfoById(String groupId);
@@ -44,5 +44,7 @@ public interface GroupService {
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
 
-	List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText);
+	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText);
+
+	void deleteGroupMemberByUserId(String groupId, List<String> userIdList);
 }

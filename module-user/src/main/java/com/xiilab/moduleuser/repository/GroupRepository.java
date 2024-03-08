@@ -15,7 +15,7 @@ import com.xiilab.moduleuser.vo.GroupReqVO;
 
 @Repository
 public interface GroupRepository {
-	List<GroupSummaryDTO> getGroupList();
+	List<GroupSummaryDTO> getGroupList(String searchText);
 
 	List<GroupSummaryDTO> getGroupListByCategory(GroupCategory groupCategory);
 
@@ -41,5 +41,7 @@ public interface GroupRepository {
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
 
-	List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText);
+	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText);
+
+	void deleteGroupMemberByUserId(String groupId, List<String> userIdList);
 }

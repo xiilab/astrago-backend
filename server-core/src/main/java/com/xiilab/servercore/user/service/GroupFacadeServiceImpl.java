@@ -10,7 +10,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
@@ -32,8 +31,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
-		return groupService.getGroupList();
+	public List<GroupSummaryDTO> getGroupList(String searchText) {
+		return groupService.getGroupList(searchText);
 	}
 
 	@Override
@@ -75,7 +74,12 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText) {
 		return groupService.getUserAndGroupBySearchText(searchText);
+	}
+
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		groupService.deleteGroupMemberByUserId(groupId, userIdList);
 	}
 }
