@@ -42,6 +42,7 @@ public class UserDTO {
 		private String userId;
 		private String userName;
 		private String group;
+		private String email;
 	}
 	@Getter
 	@Builder
