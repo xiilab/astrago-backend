@@ -74,8 +74,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.createdUserId(workspace.getCreatorId())
 				.description(workspace.getDescription())
 				.users(applicationForm.getUserIds())
-				.build()
-		);
+				.build(), userInfoDTO);
 		systemAlertSetService.saveAlertSet(workspace.getResourceName());
 	}
 
