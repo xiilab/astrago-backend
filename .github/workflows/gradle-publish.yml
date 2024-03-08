@@ -157,6 +157,8 @@ jobs:
           ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value }}
           ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
     
     ## Write for matrix outputs workaround 
     - uses: cloudposse/github-action-matrix-outputs-write@main
