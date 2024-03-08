@@ -295,6 +295,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		List<UserDTO.SearchGroup> searchGroups = new ArrayList<>();
 		for (UserRepresentation userRepresentation : userList) {
 			String userId = userRepresentation.getId();
+			String email = userRepresentation.getEmail();
 			String userName = userRepresentation.getLastName() + userRepresentation.getFirstName();
 			List<GroupRepresentation> groups = realmClient.users().get(userId).groups().stream()
 				.filter(groupRepresentation -> groupRepresentation.getPath().contains("account"))
@@ -305,6 +306,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 					.userId(userId)
 					.userName(userName)
 					.group("none")
+					.email(email)
 					.build();
 				searchUsers.add(searchGroupAndUser);
 				continue;
@@ -319,6 +321,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 					.userId(userId)
 					.userName(userName)
 					.group(groupPath)
+					.email(email)
 					.build();
 				searchUsers.add(searchGroupAndUser);
 			}
