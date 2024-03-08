@@ -1,7 +1,5 @@
 package com.xiilab.servercore.node.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
@@ -31,27 +30,47 @@ public class NodeController {
 
 	@GetMapping("")
 	@Operation(summary = "노드 전체 리스트 조회")
-	public ResponseEntity<ResponseDTO.PageNodeDTO> getNodeList(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
-		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize){
+	public ResponseEntity<ResponseDTO.PageNodeDTO> getNodeList(
+		@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
+		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize) {
 		return new ResponseEntity<>(nodeFacadeService.getNodeList(pageNo, pageSize), HttpStatus.OK);
 	}
+
 	@GetMapping("/{resourceName}")
 	@Operation(summary = "노드 상세 조회")
-	public ResponseEntity<ResponseDTO.NodeInfo> getNodeByResourceName(@PathVariable(name = "resourceName") String resourceName){
+	public ResponseEntity<ResponseDTO.NodeInfo> getNodeByResourceName(
+		@PathVariable(name = "resourceName") String resourceName) {
 		return new ResponseEntity<>(nodeFacadeService.getNodeByResourceName(resourceName), HttpStatus.OK);
 	}
+
 	@GetMapping("/{resourceName}/resources")
 	@Operation(summary = "노드 리소스 상세 조회")
-	public ResponseEntity<ResponseDTO.NodeResourceInfo> getNode(@PathVariable(name = "resourceName") String resourceName){
+	public ResponseEntity<ResponseDTO.NodeResourceInfo> getNode(
+		@PathVariable(name = "resourceName") String resourceName) {
 		return new ResponseEntity<>(nodeFacadeService.getNodeResourceByResourceName(resourceName), HttpStatus.OK);
 	}
+
 	@PostMapping("/{resourceName}/schedule")
 	@Operation(summary = "노드 스케줄 설정")
 	public ResponseEntity<HttpStatus> setSchedule(@RequestBody ScheduleDTO scheduleDTO,
-		@PathVariable String resourceName){
+		@PathVariable String resourceName) {
 		nodeFacadeService.setSchedule(resourceName, scheduleDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	// @GetMapping("/gpus")
+	// public ResponseEntity<> getGpuListByNodeName() {
+	//
+	// }
+
+	@PostMapping("/mig")
+	@Operation(summary = "node에 mig 설정")
+	public ResponseEntity<HttpStatus> setMigConfig(@RequestBody NodeGpuDTO nodeGpuDTO
+	) {
+		nodeFacadeService.updateMIGProfile(nodeGpuDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 	/**
 	 * 등록된 node의 mig 가능한 리스트를 리턴하는 API
 	 *
@@ -59,14 +78,16 @@ public class NodeController {
 	 * @return
 	 */
 	@GetMapping("/{nodeName}/mig/list")
-	public ResponseEntity<ResponseDTO.MIGProfile> getNodeEnableMIGProfileList(@PathVariable(name = "nodeName") String nodeName){
+	public ResponseEntity<ResponseDTO.MIGProfile> getNodeEnableMIGProfileList(
+		@PathVariable(name = "nodeName") String nodeName) {
 		return new ResponseEntity<>(nodeService.getNodeMIGProfiles(nodeName), HttpStatus.OK);
 	}
+
 	/**
 	 * 등록된 node의 mig 기능을 상태를 update하는 api
 	 *
 	 * @param nodeName 조회하려고 하는 node Name
-	 * @param option all, custom 두가지 요청 가능함.
+	 * @param option   all, custom 두가지 요청 가능함.
 	 * @return
 	 */
 	@GetMapping("/{nodeName}/mig/all")

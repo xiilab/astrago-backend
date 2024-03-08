@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.modulemonitor.dto.RequestDTO;
@@ -105,16 +106,6 @@ public class NodeFacadeService {
 		return nodeRepository.getNodeMIGProfiles(nodeName);
 	}
 
-	/**
-	 * mig profile을 update 하는 메소드
-	 *
-	 * @param nodeName 노드 Name
-	 * @param option mig 요청 profile
-	 */
-	public void updateMIGAllProfile(String nodeName, String option) {
-		nodeRepository.updateMIGAllProfile(nodeName, option);
-	}
-
 	public ResponseDTO.NodeInfo getNodeByResourceName(String resourceName) {
 		return nodeRepository.getNodeByResourceName(resourceName);
 
@@ -198,5 +189,12 @@ public class NodeFacadeService {
 
 	public void setSchedule(String resourceName, ScheduleDTO scheduleDTO) {
 		nodeRepository.setSchedule(resourceName, scheduleDTO.getScheduleType());
+	}
+
+	public void updateMIGProfile(NodeGpuDTO nodeGpuDTO) {
+		//mig parted configmap에 해당 노드의 프로파일 추가
+		nodeRepository.updateMigProfile(nodeGpuDTO);
+		//node의 라벨값 변경
+		nodeRepository.updateMIGProfile(nodeGpuDTO.getNodeName(), nodeGpuDTO.getMigKey());
 	}
 }
