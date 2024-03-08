@@ -15,7 +15,7 @@ public interface GroupFacadeService {
 	void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo);
 
 	//워크스페이스 그룹 생성
-	void createWorkspaceGroup(GroupReqDTO groupReqDTO);
+	void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO);
 
 	//그룹 전체 목록 조회
 	List<GroupSummaryDTO> getGroupList(String searchText);

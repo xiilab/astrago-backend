@@ -42,15 +42,16 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void createWorkspaceGroup(GroupReqDTO groupReqDTO) {
+	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
 		//group 생성
-		GroupSummaryDTO groupInfo = groupRepository.createGroup(
-			GroupReqVO.builder()
-				.name(groupReqDTO.getName())
-				.description(groupReqDTO.getDescription())
-				.groupCategory(WORKSPACE)
-				.createdBy(groupReqDTO.getCreatedBy())
-				.build());
+		GroupReqVO groupReqVO = GroupReqVO.builder()
+			.name(groupReqDTO.getName())
+			.description(groupReqDTO.getDescription())
+			.groupCategory(WORKSPACE)
+			.createdBy(groupReqDTO.getCreatedBy())
+			.build();
+		groupReqVO.setCreator(userInfoDTO);
+		GroupSummaryDTO groupInfo = groupRepository.createGroup(groupReqVO);
 		//workspace 그룹의 childGroup 생성 및 유저 추가
 		createWorkspaceChildGroup(groupInfo.getId(), groupReqDTO);
 	}

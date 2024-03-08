@@ -26,8 +26,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public void createWorkspaceGroup(GroupReqDTO groupReqDTO) {
-		groupService.createWorkspaceGroup(groupReqDTO);
+	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
+		groupService.createWorkspaceGroup(groupReqDTO, userInfoDTO);
 	}
 
 	@Override
