@@ -185,14 +185,6 @@ jobs:
           echo "tag=${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}" >> $GITHUB_OUTPUT
           echo "url=${{ steps.image-repo.outputs.value }}" >> $GITHUB_OUTPUT
 
-  build2:
-    needs: [ build ]
-    runs-on: [ self-hosted, linux ]
-    steps:
-      - name: output test
-        run: |
-          echo ${{ needs.build.outputs.tag }}
-          echo ${{ needs.build.outputs.url }}
   push_helm:
     needs: [ build ]
     runs-on: [ self-hosted, linux ]
