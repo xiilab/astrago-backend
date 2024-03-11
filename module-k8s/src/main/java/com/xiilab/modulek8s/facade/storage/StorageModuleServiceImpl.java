@@ -229,7 +229,11 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		int failCount = 0;
 
 		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
-
+		try {
+			Thread.sleep(10000);
+		}catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 		//connection 실패
 		if(!isAvailable){
 			while(failCount < 5){
