@@ -243,10 +243,9 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
-			}
-			if(!isAvailable){
+			}if(!isAvailable){
 				//pvc, pv, connect deployment 삭제
-				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+				// workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
 				volumeService.deletePVC(pvcName, namespace);
 				volumeService.deletePV(pvName);
 				//연결 실패 응답
@@ -255,7 +254,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		}
 		//connection 성공
 		//connect deployment 삭제, astrago deployment mount edit
-		workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+		// workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
 		EditAstragoDeployment editAstragoDeployment = EditAstragoDeployment.builder()
 			.hostPath(hostPath)
 			.pvcName(pvcName)
