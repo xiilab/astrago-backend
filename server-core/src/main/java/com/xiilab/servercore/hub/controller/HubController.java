@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.servercore.hub.dto.HubReqDTO;
+import com.xiilab.servercore.hub.dto.request.HubReqDTO;
 import com.xiilab.servercore.hub.dto.response.FindHubResDTO;
 import com.xiilab.servercore.hub.service.HubService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.ws.rs.PathParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,9 +30,11 @@ public class HubController {
 
 	@GetMapping()
 	@Operation(summary = "Hub 목록 조회")
-	public ResponseEntity<FindHubResDTO.Hubs> getHubList(@RequestParam(required = false) String[] categoryNames,
+	public ResponseEntity<FindHubResDTO.Hubs> getHubList(
+		@PathParam("searchText") String searchText,
+		@RequestParam(required = false) String[] categoryNames,
 		Pageable pageable) {
-		return new ResponseEntity<>(hubService.getHubList(categoryNames, pageable), HttpStatus.OK);
+		return new ResponseEntity<>(hubService.getHubList(searchText, categoryNames, pageable), HttpStatus.OK);
 	}
 
 	@GetMapping("/{hubId}")

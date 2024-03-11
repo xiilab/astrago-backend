@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
-@SuperBuilder
 public class FindHubCommonResDTO {
 	@Getter
 	public static class HubImage extends ResDTO {

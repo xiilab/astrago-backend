@@ -13,7 +13,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.repository.GroupRepository;
 import com.xiilab.moduleuser.vo.GroupReqVO;
@@ -43,22 +42,23 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void createWorkspaceGroup(GroupReqDTO groupReqDTO) {
+	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
 		//group 생성
-		GroupSummaryDTO groupInfo = groupRepository.createGroup(
-			GroupReqVO.builder()
-				.name(groupReqDTO.getName())
-				.description(groupReqDTO.getDescription())
-				.groupCategory(WORKSPACE)
-				.createdBy(groupReqDTO.getCreatedBy())
-				.build());
+		GroupReqVO groupReqVO = GroupReqVO.builder()
+			.name(groupReqDTO.getName())
+			.description(groupReqDTO.getDescription())
+			.groupCategory(WORKSPACE)
+			.createdBy(groupReqDTO.getCreatedBy())
+			.build();
+		groupReqVO.setCreator(userInfoDTO);
+		GroupSummaryDTO groupInfo = groupRepository.createGroup(groupReqVO);
 		//workspace 그룹의 childGroup 생성 및 유저 추가
 		createWorkspaceChildGroup(groupInfo.getId(), groupReqDTO);
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
-		return groupRepository.getGroupList();
+	public List<GroupSummaryDTO> getGroupList(String searchText) {
+		return groupRepository.getGroupList(searchText);
 	}
 
 	@Override
@@ -138,7 +138,17 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText) {
 		return groupRepository.getUserAndGroupBySearchText(searchText);
+	}
+
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		groupRepository.deleteGroupMemberByUserId(groupId, userIdList);
+	}
+
+	@Override
+	public void modifyAccountGroup(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO) {
+		groupRepository.modiGroupById(groupId, groupReqDTO);
 	}
 }

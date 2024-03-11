@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 @Repository
-public interface HubRepository extends JpaRepository<HubEntity, Long> {
+public interface HubRepository extends JpaRepository<HubEntity, Long>, HubRepositoryCustom {
 	@Query("select t from TB_HUB t where t.workloadType = ?1")
 	List<HubEntity> findByWorkloadType(WorkloadType workloadType);
 }

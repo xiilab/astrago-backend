@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.hub.repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.xiilab.modulek8sdb.hub.entity.QHubCategoryMappingEntity.*;
 
@@ -10,11 +11,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
+import com.xiilab.modulek8sdb.hub.enums.HubLabelType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,12 +27,14 @@ public class HubCategoryMappingRepositoryImpl implements HubCategoryMappingRepos
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<HubCategoryMappingEntity> findHubs(List<String> categoryNames, List<Long> hubIds, Pageable pageable) {
-		Long totalCount= queryFactory.select(hubCategoryMappingEntity.count())
+	public Page<HubCategoryMappingEntity> findHubCategoryMapping(String searchText, List<String> categoryNames,
+		List<Long> hubIds, Pageable pageable) {
+		Long totalCount = queryFactory.select(hubCategoryMappingEntity.count())
 			.from(hubCategoryMappingEntity)
 			.join(hubCategoryMappingEntity.hubCategoryEntity)
 			.join(hubCategoryMappingEntity.hubEntity)
 			.where(
+				likeSearchText(searchText),
 				eqCategoryNames(categoryNames),
 				eqHubIds(hubIds)
 			)
@@ -39,6 +44,7 @@ public class HubCategoryMappingRepositoryImpl implements HubCategoryMappingRepos
 			.join(hubCategoryMappingEntity.hubCategoryEntity).fetchJoin()
 			.join(hubCategoryMappingEntity.hubEntity).fetchJoin()
 			.where(
+				likeSearchText(searchText),
 				eqCategoryNames(categoryNames),
 				eqHubIds(hubIds)
 			);
@@ -56,10 +62,23 @@ public class HubCategoryMappingRepositoryImpl implements HubCategoryMappingRepos
 	}
 
 	private BooleanExpression eqCategoryNames(List<String> categoryNames) {
-		return !CollectionUtils.isEmpty(categoryNames) ? hubCategoryMappingEntity.hubCategoryEntity.name.in(categoryNames) : null;
+		if (!CollectionUtils.isEmpty(categoryNames)) {
+			List<HubLabelType> hubLabelTypes = categoryNames.stream()
+				.map(HubLabelType::valueOf) // Assuming HubLabelType is the enum class
+				.toList();
+			return hubCategoryMappingEntity.hubCategoryEntity.hubLabelType.in(hubLabelTypes);
+		} else {
+			return null;
+		}
 	}
 
 	private BooleanExpression eqHubIds(List<Long> hubIds) {
 		return !CollectionUtils.isEmpty(hubIds) ? hubCategoryMappingEntity.hubEntity.hubId.in(hubIds) : null;
+	}
+
+	private BooleanExpression likeSearchText(String searchText) {
+		return StringUtils.hasText(searchText) ? hubCategoryMappingEntity.hubEntity.title.like("%" + searchText)
+			.and(hubCategoryMappingEntity.hubEntity.description.like("%" + searchText))
+			: null;
 	}
 }

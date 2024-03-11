@@ -1,4 +1,4 @@
-package com.xiilab.servercore.hub.dto;
+package com.xiilab.servercore.hub.dto.request;
 
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +19,6 @@ public class HubReqDTO {
 		private String title;
 		private String description;
 		private Set<HubLabelType> hubLabelTypes;
-		// HubLabelType[] hubLabelTypes;
 		private String thumbnailURL;
 		private String imageName;
 		private String readmeURL;

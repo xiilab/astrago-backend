@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +20,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.user.service.GroupFacadeService;
 
@@ -35,8 +35,8 @@ public class GroupController {
 
 	@GetMapping()
 	@Operation(summary = "그룹 리스트 조회")
-	public ResponseEntity<List<GroupSummaryDTO>> getGroupList() {
-		return ResponseEntity.ok(groupFacadeService.getGroupList());
+	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(@RequestParam(required = false, name = "searchText") String searchText) {
+		return ResponseEntity.ok(groupFacadeService.getGroupList(searchText));
 	}
 
 	@GetMapping("/{groupId}")
@@ -53,17 +53,37 @@ public class GroupController {
 		return ResponseEntity.ok().build();
 	}
 
+
+	@PatchMapping("/{groupId}")
+	@Operation(summary = "그룹 수정")
+	public ResponseEntity<HttpStatus> modifyAccountGroup(
+		@PathVariable(name = "groupId") String groupId,
+		@RequestBody GroupReqDTO.ModifyGroupDTO groupReqDTO) {
+		groupFacadeService.modifyAccountGroup(groupId, groupReqDTO);
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping("/users")
-	@Operation(summary = "유저 검색")
-	public ResponseEntity<List<UserDTO.SearchUser>> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText) {
-		List<UserDTO.SearchUser> users = groupFacadeService.getUserAndGroupBySearchText(searchText);
-		return new ResponseEntity<>(users, HttpStatus.OK);
+	@Operation(summary = "그룹, 유저 검색")
+	public ResponseEntity<UserDTO.SearchGroupAndUser> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText) {
+		UserDTO.SearchGroupAndUser searchResults = groupFacadeService.getUserAndGroupBySearchText(
+			searchText);
+		return new ResponseEntity<>(searchResults, HttpStatus.OK);
 	}
 	@PostMapping("/{groupId}/users")
 	@Operation(summary = "그룹 멤버 추가")
 	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId,
 		@RequestBody List<String> userIdList) {
 		groupFacadeService.addGroupMember(groupId, userIdList);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping("/{groupId}/users")
+	@Operation(summary = "그룹 멤버 삭제")
+	public ResponseEntity<HttpStatus> deleteGroupMemberByUserId(
+		@PathVariable(name = "groupId") String groupId,
+		@RequestBody List<String> userIdList){
+		groupFacadeService.deleteGroupMemberByUserId(groupId, userIdList);
 		return ResponseEntity.ok().build();
 	}
 

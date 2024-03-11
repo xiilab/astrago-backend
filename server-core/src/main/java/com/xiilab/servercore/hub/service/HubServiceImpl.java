@@ -23,8 +23,7 @@ import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
 import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
-import com.xiilab.modulek8sdb.image.repository.ImageRepository;
-import com.xiilab.servercore.hub.dto.HubReqDTO;
+import com.xiilab.servercore.hub.dto.request.HubReqDTO;
 import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.modulek8sdb.hub.repository.HubCategoryMappingRepository;
@@ -41,15 +40,14 @@ import lombok.extern.slf4j.Slf4j;
 public class HubServiceImpl implements HubService {
 	private final HubCategoryMappingRepository hubCategoryMappingRepository;
 	private final HubRepository hubRepository;
-	private final ImageRepository imageRepository;
 
 	@Override
-	public FindHubResDTO.Hubs getHubList(String[] categoryNames, Pageable pageable) {
+	public FindHubResDTO.Hubs getHubList(String searchText, String[] categoryNames, Pageable pageable) {
 		if (ObjectUtils.isEmpty(categoryNames)) {
-			return getHubAllList(pageable);
+			return getHubAllList(searchText, pageable);
 		} else {
 			// 카테고리 네임으로 조회한 허브 목록
-			return getHubListByCategoryNames(categoryNames, pageable);
+			return getHubListByCategoryNames(searchText, categoryNames, pageable);
 		}
 	}
 
@@ -58,7 +56,8 @@ public class HubServiceImpl implements HubService {
 		HubEntity hubEntity = hubRepository.findById(hubId)
 			.orElseThrow(() -> new RestApiException(CommonErrorCode.HUB_NOT_FOUND));
 
-		List<HubCategoryMappingEntity> hubCategoryMappingJoinFetchByHubId = hubCategoryMappingRepository.findHubCategoryMappingJoinFetchByHubId(hubId);
+		List<HubCategoryMappingEntity> hubCategoryMappingJoinFetchByHubId = hubCategoryMappingRepository.findHubCategoryMappingJoinFetchByHubId(
+			hubId);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingJoinFetchByHubId);
 
 		return FindHubResDTO.HubDetail.from(hubEntity, typesMap);
@@ -112,10 +111,10 @@ public class HubServiceImpl implements HubService {
 	}
 
 	/* 검색 조건 없을 때, List 반환 */
-	private FindHubResDTO.Hubs getHubAllList(Pageable pageable) {
-		Page<HubEntity> findAll = hubRepository.findAll(pageable);
-		long totalElements = findAll.getTotalElements();
-		List<HubEntity> hubEntities = findAll.getContent();
+	private FindHubResDTO.Hubs getHubAllList(String searchText, Pageable pageable) {
+		Page<HubEntity> hubs = hubRepository.findHubs(searchText, pageable);
+		long totalElements = hubs.getTotalElements();
+		List<HubEntity> hubEntities = hubs.getContent();
 
 		// 각 허브에 매핑되어 있는 타입 목록 조회
 		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
@@ -125,9 +124,9 @@ public class HubServiceImpl implements HubService {
 	}
 
 	/* 카테고리 검색 List 반환 */
-	private FindHubResDTO.Hubs getHubListByCategoryNames(String[] categoryNames, Pageable pageable) {
+	private FindHubResDTO.Hubs getHubListByCategoryNames(String searchText, String[] categoryNames, Pageable pageable) {
 		// 카테고리 이름으로 hub 목록 조회
-		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.findHubs(
+		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.findHubCategoryMapping(searchText,
 			Arrays.stream(categoryNames).toList(), null, pageable);
 
 		List<HubCategoryMappingEntity> hubList = finByHubsByCategoryNames.getContent();
@@ -147,7 +146,7 @@ public class HubServiceImpl implements HubService {
 		List<Long> hubIds = hubEntities.stream()
 			.map(HubEntity::getHubId)
 			.toList();
-		Page<HubCategoryMappingEntity> hubs = hubCategoryMappingRepository.findHubs(null, hubIds, null);
+		Page<HubCategoryMappingEntity> hubs = hubCategoryMappingRepository.findHubCategoryMapping(null, null, hubIds, null);
 		return hubs.getContent();
 	}
 
@@ -156,7 +155,7 @@ public class HubServiceImpl implements HubService {
 		Map<Long, Set<String>> typesMap = new HashMap<>();
 		for (HubCategoryMappingEntity hubCategoryMappingEntity : hubCategoryMappingEntityList) {
 			Long hubId = hubCategoryMappingEntity.getHubEntity().getHubId();
-			String typeName = hubCategoryMappingEntity.getHubCategoryEntity().getName();
+			String typeName = hubCategoryMappingEntity.getHubCategoryEntity().getHubLabelType().name();
 			typesMap.computeIfAbsent(hubId, k -> new HashSet<>()).add(typeName);
 		}
 

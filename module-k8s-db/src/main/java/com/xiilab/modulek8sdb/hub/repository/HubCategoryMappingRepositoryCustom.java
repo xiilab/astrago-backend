@@ -10,5 +10,5 @@ import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
 
 @Repository
 public interface HubCategoryMappingRepositoryCustom {
-	Page<HubCategoryMappingEntity> findHubs(List<String> categoryNames, List<Long> hubIds, Pageable pageable);
+	Page<HubCategoryMappingEntity> findHubCategoryMapping(String searchText, List<String> categoryNames, List<Long> hubIds, Pageable pageable);
 }

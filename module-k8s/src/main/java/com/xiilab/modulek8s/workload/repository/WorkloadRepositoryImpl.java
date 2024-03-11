@@ -711,7 +711,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private JobList getBatchJobList(String workSpaceName) {
+	private JobList  getBatchJobList(String workSpaceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).list();
 		}

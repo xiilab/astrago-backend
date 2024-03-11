@@ -33,6 +33,7 @@ import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -206,5 +207,13 @@ public class WorkspaceController {
 		@PathVariable(name = "workspaceName") String workspaceName,
 		@RequestBody SystemAlertSetDTO updateDTO){
 		return new ResponseEntity<>(workspaceService.updateWorkspaceAlertSet(workspaceName, updateDTO), HttpStatus.OK);
+	}
+
+	@GetMapping("/{workspaceResourceName}/accessAuthority")
+	@Operation(summary = "워크스페이스 접근 권한 체크")
+	public ResponseEntity<Boolean> workspaceAccessAuthority(@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+		boolean accessAuthority = workspaceService.workspaceAccessAuthority(workspaceResourceName, userInfoDTO);
+		return new ResponseEntity<>(accessAuthority, HttpStatus.OK);
 	}
 }

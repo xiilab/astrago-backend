@@ -74,8 +74,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.createdUserId(workspace.getCreatorId())
 				.description(workspace.getDescription())
 				.users(applicationForm.getUserIds())
-				.build()
-		);
+				.build(), userInfoDTO);
 		systemAlertSetService.saveAlertSet(workspace.getResourceName());
 	}
 
@@ -242,6 +241,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public SystemAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO){
 		return systemAlertSetService.updateWorkspaceAlertSet(workspaceName, systemAlertSetDTO);
+	}
+
+	@Override
+	public boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO) {
+		return userInfoDTO.isAccessAuthorityWorkspace(workspaceResourceName);
 	}
 
 }
