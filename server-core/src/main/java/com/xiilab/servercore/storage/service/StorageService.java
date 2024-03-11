@@ -14,4 +14,6 @@ public interface StorageService {
 	StorageEntity findById(Long storageId);
 
 	void deleteById(Long storageId);
+
+	void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage);
 }
