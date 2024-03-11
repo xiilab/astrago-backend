@@ -72,16 +72,6 @@ public class BatchJobInformer {
 
 				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
 
-				SystemAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if(workspaceAlertSet.isWorkloadStartAlert()){
-					systemAlertRepository.save(SystemAlertEntity.builder()
-						.recipientId(batchWorkloadInfoFromResource.getCreatorId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(SystemAlertMessage.WORKSPACE_START.getMessage(), job.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
 			}
 
 			@Override

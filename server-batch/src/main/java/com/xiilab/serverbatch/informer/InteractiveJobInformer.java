@@ -55,19 +55,6 @@ public class InteractiveJobInformer {
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 
-				SystemAlertSetEntity workspaceAlertSet = systemAlertSetRepository.getAlertSetEntityByWorkspaceName(
-					deployment.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if(workspaceAlertSet.isWorkloadStartAlert()){
-					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					systemAlertRepository.save(SystemAlertEntity.builder()
-						.recipientId(workspaceOwner.getId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(
-							SystemAlertMessage.WORKSPACE_START.getMessage(), deployment.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
 			}
 
 			@Override
