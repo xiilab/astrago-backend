@@ -27,6 +27,7 @@ import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.enums.UserCreatedAt;
 import com.xiilab.moduleuser.enums.UserEnable;
+import com.xiilab.moduleuser.enums.UserSort;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
 import io.micrometer.common.util.StringUtils;
@@ -87,12 +88,15 @@ public class KeycloakUserRepository implements UserRepository {
 				-> user.getAttributes() != null
 				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
 				&& searchName(searchCondition.getSearchText(), user)
-				&& enableEq(searchCondition.getUserEnable(), user)
 			)
 			.sorted(
-				searchCondition.getCreatedAt() == UserCreatedAt.DESC ?
+				searchCondition.getUserSort() == UserSort.CREATED_AT_ASC ?
+					Comparator.comparing(UserRepresentation::getCreatedTimestamp) :
+					searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
-					Comparator.comparing(UserRepresentation::getCreatedTimestamp)
+						searchCondition.getUserSort() == UserSort.ENABLE_ASC ?
+							Comparator.comparing(UserRepresentation::isEnabled) :
+							Comparator.comparing(UserRepresentation::isEnabled).reversed()
 			)
 			.toList();
 
@@ -189,7 +193,7 @@ public class KeycloakUserRepository implements UserRepository {
 				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("false")
 			)
 			.sorted(
-				searchCondition.getCreatedAt() == UserCreatedAt.DESC ?
+				searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp)
 			)
