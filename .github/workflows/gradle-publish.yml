@@ -78,6 +78,16 @@ jobs:
           if_true: 'master'
           if_false: 'develop'
 
+      # 이미지 태그 지정
+      - name: 태그 지정시 버전을 태그에 명시
+        uses: haya14busa/action-cond@v1
+        id: image_tag
+        with:
+          cond: ${{ steps.tags.outputs.tag != '' }}
+          # if_true: "${{steps.tags.outputs.tag}}"
+          if_true: "${{steps.cond_branch.outputs.value}}"
+          if_false: "${{steps.cond_branch.outputs.value}}"
+
       # Image Tag 생성 위한 github sha 저장
       - name: Image Tag 생성 위한 github sha 저장
         id: vars
