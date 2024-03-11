@@ -225,7 +225,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(5000);
 		}catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -238,7 +238,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		if(!isAvailable){
 			while(failCount < 5){
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(2000);
 					failCount++;
 					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
 					if(isAvailable){
