@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -46,8 +47,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId) {
-		return groupService.getGroupUsers(groupId);
+	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId, AuthType authType) {
+		return groupService.getGroupUsers(groupId, authType);
 	}
 
 	@Override

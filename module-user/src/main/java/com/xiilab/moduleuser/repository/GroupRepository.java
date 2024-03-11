@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupCategory;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
@@ -11,7 +12,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.vo.GroupModiVO;
 import com.xiilab.moduleuser.vo.GroupReqVO;
 
 @Repository
@@ -32,7 +32,7 @@ public interface GroupRepository {
 
 	void modiGroupById(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO);
 
-	GroupUserDTO.SubGroupUserDto findUsersByGroupId(String groupId);
+	GroupUserDTO.SubGroupUserDto findUsersByGroupId(String groupId, AuthType authType);
 
 	void joinMembersIntoGroup(String groupId, List<String> userIds);
 	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);

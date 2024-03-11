@@ -2,6 +2,7 @@ package com.xiilab.servercore.user.service;
 
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -27,7 +28,7 @@ public interface GroupFacadeService {
 	void addGroupMember(String groupId, List<String> userIdList);
 
 	//그룹 안의 유저 리스트 조회
-	GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId);
+	GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId, AuthType authType);
 
 	//그룹 Id로 group을 삭제
 	void deleteGroupById(String groupId);
