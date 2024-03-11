@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -96,8 +97,9 @@ public class GroupController {
 
 	@GetMapping("/{groupId}/subGroupAndUsers")
 	@Operation(summary = "그룹내 서브 그룹, 멤버 조회")
-	public ResponseEntity<GroupUserDTO.SubGroupUserDto> getGroupUsers(@PathVariable(name = "groupId") String groupId) {
-		return ResponseEntity.ok(groupFacadeService.getGroupUsers(groupId));
+	public ResponseEntity<GroupUserDTO.SubGroupUserDto> getGroupUsers(@PathVariable(name = "groupId") String groupId,
+		@RequestParam(required = false, name = "authType") AuthType authType) {
+		return ResponseEntity.ok(groupFacadeService.getGroupUsers(groupId, authType));
 	}
 
 	@GetMapping("/ws/{groupName}")

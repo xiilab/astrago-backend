@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -72,8 +73,8 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId) {
-		return groupRepository.findUsersByGroupId(groupId);
+	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId, AuthType authType) {
+		return groupRepository.findUsersByGroupId(groupId, authType);
 	}
 
 	@Override
