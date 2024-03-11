@@ -6,11 +6,6 @@ on:
     tags:
       - v.**
 
-env:
-  CORE_IMAGE_URL: xiilab/uyuni-backend-core
-  BATCH_IMAGE_URL: xiilab/uyuni-backend-batch
-  MONITOR_IMAGE_URL: xiilab/uyuni-backend-monitor
-
 jobs:
   build:
     runs-on: [ self-hosted, linux ]
@@ -203,22 +198,22 @@ jobs:
         with:
           cmd: |
             yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
-            yq -i '.astrago.core.repository = "${{ needs.build.outputs.url }}/uyuni/server-core"' 'environments/default/values.yaml'
+#            yq -i '.astrago.core.repository = "${{ needs.build.outputs.url }}/uyuni/server-core"' 'environments/default/values.yaml'
             yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ needs.build.outputs.url }}/uyuni/server-batch"' 'environments/default/values.yaml'
+#            yq -i '.astrago.batch.repository = "${{ needs.build.outputs.url }}/uyuni/server-batch"' 'environments/default/values.yaml'
             yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ needs.build.outputs.url }}/uyuni/server-monitor"' 'environments/default/values.yaml'
+#            yq -i '.astrago.monitor.repository = "${{ needs.build.outputs.url }}/uyuni/server-monitor"' 'environments/default/values.yaml'
 
       - name: dev 이미지 정보 수정
         if: ${{ needs.read.outputs.branch != 'master' }}
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ needs.build.outputs.url }}/uyuni/server-core"' 'environments/dev/values.yaml'
+#            yq -i '.astrago.core.repository = "${{ needs.build.outputs.url }}/uyuni/server-core"' 'environments/dev/values.yaml'
             yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ needs.build.outputs.url }}/uyuni/server-batch"' 'environments/dev/values.yaml'
+#            yq -i '.astrago.batch.repository = "${{ needs.build.outputs.url }}/uyuni/server-batch"' 'environments/dev/values.yaml'
             yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ needs.build.outputs.url }}/uyuni/server-monitor"' 'environments/dev/values.yaml'
+#            yq -i '.astrago.monitor.repository = "${{ needs.build.outputs.url }}/uyuni/server-monitor"' 'environments/dev/values.yaml'
             yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
       - name: push monochart
         run: | #helmfile -e dev -l type=app template > monochart/monochart.yaml
