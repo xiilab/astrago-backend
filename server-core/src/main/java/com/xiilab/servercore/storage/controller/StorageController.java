@@ -30,7 +30,7 @@ public class StorageController {
 
 	@PostMapping()
 	@Operation(summary = "스토리지 생성")
-	public ResponseEntity insertStorage(@RequestBody StorageDTO storageDTO){
+	public ResponseEntity<HttpStatus> insertStorage(@RequestBody StorageDTO storageDTO){
 		storageFacadeService.insertStorage(storageDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
