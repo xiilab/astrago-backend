@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 public enum StorageErrorCode implements ErrorCode {
 
 	STORAGE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 스토리지 클래스가 존재하지 않습니다."),
-	STORAGE_CONNECTION_FAILED(HttpStatus.NO_CONTENT.value(), "NFS 스토리지 연결 실패"),
+	STORAGE_CONNECTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "NFS 스토리지 연결 실패"),
 	STORAGE_DIRECTORY_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "스토리지 전용 디렉토리 생성을 실패했습니다."),
 	;
 
