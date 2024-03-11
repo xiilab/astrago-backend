@@ -12,9 +12,11 @@ import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.moduleuser.common.FindDTO;
@@ -26,7 +28,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.vo.GroupModiVO;
 import com.xiilab.moduleuser.vo.GroupReqVO;
 
 import io.micrometer.common.util.StringUtils;
@@ -136,13 +137,27 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public GroupUserDTO.SubGroupUserDto findUsersByGroupId(String groupId) {
+	public GroupUserDTO.SubGroupUserDto findUsersByGroupId(String groupId, AuthType authType) {
 		GroupResource group = keycloakConfig.getRealmClient().groups().group(groupId);
 		List<GroupRepresentation> subGroups = group.toRepresentation().getSubGroups();
-		List<UserRepresentation> members = group.members();
+		List<UserRepresentation> groupMembers = new ArrayList<>();
+		List<UserRepresentation> members = group.members(0, Integer.MAX_VALUE);
 
+		if(authType == AuthType.ROLE_ADMIN){
+			for (UserRepresentation member : members) {
+				UserResource userResource = keycloakConfig.getRealmClient().users().get(member.getId());
+				List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
+				for (RoleRepresentation roleRepresentation : roleRepresentations) {
+					if(roleRepresentation.getName().equalsIgnoreCase("ROLE_ADMIN")){
+						groupMembers.add(member);
+					}
+				}
+			}
+		}else{
+			groupMembers = group.members(0,Integer.MAX_VALUE);
+		}
 
-		return new GroupUserDTO.SubGroupUserDto(subGroups, members);
+		return new GroupUserDTO.SubGroupUserDto(subGroups, groupMembers);
 	}
 
 	@Override
@@ -194,7 +209,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 	public List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName) {
 
 		GroupRepresentation subGroup = getWsSubGroupByGroupName(groupName);
-		GroupUserDTO.SubGroupUserDto usersByGroupId = findUsersByGroupId(subGroup.getId());
+		GroupUserDTO.SubGroupUserDto usersByGroupId = findUsersByGroupId(subGroup.getId(), null);
 
 		return usersByGroupId.getUsers();
 	}
@@ -226,7 +241,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		for (String userId : userIds) {
 			keycloakConfig.getRealmClient().users().get(userId).joinGroup(workspace.getId());
 			// 워크스페이스 회원 추가 검사를 위한 GroupUser 조회
-			Optional<GroupUserDTO.UserDTO> group = findUsersByGroupId(workspace.getId()).getUsers().stream()
+			Optional<GroupUserDTO.UserDTO> group = findUsersByGroupId(workspace.getId(), null).getUsers().stream()
 				.filter(groupUserDTO -> groupUserDTO.getUserId().equals(userId))
 				.findFirst();
 
@@ -243,7 +258,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 	private void retrieveGroupMembers(Set<String> userIds, String groupId) {
 		GroupResource groupResource = keycloakConfig.getRealmClient().groups().group(groupId);
-		List<UserRepresentation> members = groupResource.members();
+		List<UserRepresentation> members = groupResource.members(0, Integer.MAX_VALUE);
 		for (UserRepresentation member : members) {
 			userIds.add(member.getId());
 		}
@@ -260,7 +275,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 		GroupRepresentation wsSubGroupByGroupName = getWsSubGroupByGroupName(groupName);
 
-		List<UserRepresentation> members = realmClient.groups().group(wsSubGroupByGroupName.getId()).members();
+		List<UserRepresentation> members = realmClient.groups().group(wsSubGroupByGroupName.getId()).members(0, Integer.MAX_VALUE);
 
 		return members.stream().filter(
 				userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(
@@ -405,7 +420,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.orElseThrow(() -> new K8sException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
 		GroupRepresentation ownerGroup = subGroup.getSubGroups().stream()
 			.filter(groupRepresentation -> groupRepresentation.getName().equalsIgnoreCase("owner")).findFirst().get();
-		return realmClient.groups().group(ownerGroup.getId()).members().get(0);
+		return realmClient.groups().group(ownerGroup.getId()).members(0, Integer.MAX_VALUE).get(0);
 	}
 
 	private GroupRepresentation getParentGroup() {
