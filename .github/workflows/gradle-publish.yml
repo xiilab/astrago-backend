@@ -192,86 +192,83 @@ jobs:
       - name: output test
         run: |
           echo ${{ needs.build.outputs.tag }}
-          echo ${{ needs.build.outputs.image }}
-#  push_helm:
-#    needs: [ build ]
-#    runs-on: [ self-hosted, linux ]
-#    steps:
-#      - name: clone helmproject
-#        uses: actions/checkout@v3
-#        with:
-#          token: ${{ secrets.TOKEN }}
-#          repository: "xiilab/uyuni-infra"
-#      - name: debug
-#        run: echo "${{ needs.read.outputs.result }}"
-#
-#      - name: master 이미지 정보 수정
-#        if: ${{ needs.read.outputs.branch == 'master' }}
-#        uses: mikefarah/yq@master
-#        with:
-#          cmd: |
-#            yq -i '.astrago.core.imageTag = "${{ fromJson(needs.read.outputs.result).image.server-core }}"' 'environments/default/values.yaml'
-#            yq -i '.astrago.core.repository = "${{ fromJson(needs.read.outputs.result).tags.server-core }}"' 'environments/default/values.yaml'
-#            yq -i '.astrago.batch.imageTag = "${{ fromJson(needs.read.outputs.result).image.server-batch }}"' 'environments/default/values.yaml'
-#            yq -i '.astrago.batch.repository = "${{ fromJson(needs.read.outputs.result).tags.server-batch }}"' 'environments/default/values.yaml'
-#            yq -i '.astrago.monitor.repository = "${{ fromJson(needs.read.outputs.result).image.server-monitor }}"' 'environments/default/values.yaml'
-#            yq -i '.astrago.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-monitor }}"' 'environments/default/values.yaml'
-#
-#      - name: dev 이미지 정보 수정
-#        if: ${{ needs.read.outputs.branch != 'master' }}
-#        uses: mikefarah/yq@master
-#        with:
-#          cmd: |
-#            yq -i '.astrago.core.repository = "${{ fromJson(needs.read.outputs.result).image.server-core }}"' 'environments/dev/values.yaml'
-#            yq -i '.astrago.core.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-core }}"' 'environments/dev/values.yaml'
-#            yq -i '.astrago.batch.repository = "${{ fromJson(needs.read.outputs.result).image.server-batch }}"' 'environments/dev/values.yaml'
-#            yq -i '.astrago.batch.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-batch }}"' 'environments/dev/values.yaml'
-#            yq -i '.astrago.monitor.repository = "${{ fromJson(needs.read.outputs.result).image.server-monitor }}"' 'environments/dev/values.yaml'
-#            yq -i '.astrago.monitor.imageTag = "${{ fromJson(needs.read.outputs.result).tags.server-monitor }}"' 'environments/dev/values.yaml'
-#      - name: push monochart
-#        run: | #helmfile -e dev -l type=app template > monochart/monochart.yaml
-#          cat environments/dev/values.yaml
-#          echo "${{ fromJson(needs.read.outputs.result) }}"
-#          echo "${{ fromJson(needs.read.outputs.result) }}"
-#          echo "${{ fromJson(needs.read.outputs.result) }}"
-#
-#          git pull
-#          git config --global user.email "100milliongold@xiilab.com"
-#          git config --global user.name "100milliongold"
-#          git add .
-#          git commit -m "update monochart"
-#          git push
-#
-#
-#  notify_slack:
-#    needs: [ build, push_helm ]  # 이 작업이 의존하는 이전 작업의 이름 추가
-#    runs-on: [ self-hosted, linux ]
-#    steps:
-#      - name: 작업 상태 확인
-#        id: check_status
-#        run: 'echo "작업 상태: ${{ job.status }}"'
-#
-#      # 브랜치 네임이 마스터일 경우에만 docker.io 저장소로 보낸다
-#      - name: 작업결과에 따른 메세지 지정
-#        uses: haya14busa/action-cond@v1
-#        id: slack-message
-#        with:
-#          cond: ${{ needs.build.result  == 'success' }}
-#          if_true: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
-#          if_false: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
-#      - name: 작업결과에 따른 메세지 지정
-#        uses: haya14busa/action-cond@v1
-#        id: slack-status
-#        with:
-#          cond: ${{ needs.build.result  == 'success' }}
-#          if_true: 'success'
-#          if_false: 'failure'
-#
-#      - name: Slack 알림 전송
-#        if: ${{ job.status }} == 'failure'
-#        uses: 8398a7/action-slack@v3
-#        with:
-#          status: '${{ steps.slack-status.outputs.value }}'
-#          text: '${{ steps.slack-message.outputs.value }}'
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          echo ${{ needs.build.outputs.url }}
+  push_helm:
+    needs: [ build ]
+    runs-on: [ self-hosted, linux ]
+    steps:
+      - name: clone helmproject
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.TOKEN }}
+          repository: "xiilab/uyuni-infra"
+      - name: debug
+        run: echo "${{ needs.read.outputs.result }}"
+
+      - name: master 이미지 정보 수정
+        if: ${{ needs.read.outputs.branch == 'master' }}
+        uses: mikefarah/yq@master
+        with:
+          cmd: |
+            yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.core.repository = "${{ needs.build.outputs.url }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ needs.build.outputs.url }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ needs.build.outputs.url }}"' 'environments/default/values.yaml'
+
+      - name: dev 이미지 정보 수정
+        if: ${{ needs.read.outputs.branch != 'master' }}
+        uses: mikefarah/yq@master
+        with:
+          cmd: |
+            yq -i '.astrago.core.repository = "${{ needs.build.outputs.url }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ needs.build.outputs.url }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ needs.build.outputs.url }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+      - name: push monochart
+        run: | #helmfile -e dev -l type=app template > monochart/monochart.yaml
+          cat environments/dev/values.yaml
+
+          git pull
+          git config --global user.email "100milliongold@xiilab.com"
+          git config --global user.name "100milliongold"
+          git add .
+          git commit -m "update monochart"
+          git push
+
+
+  notify_slack:
+    needs: [ build, push_helm ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    runs-on: [ self-hosted, linux ]
+    steps:
+      - name: 작업 상태 확인
+        id: check_status
+        run: 'echo "작업 상태: ${{ job.status }}"'
+
+      # 브랜치 네임이 마스터일 경우에만 docker.io 저장소로 보낸다
+      - name: 작업결과에 따른 메세지 지정
+        uses: haya14busa/action-cond@v1
+        id: slack-message
+        with:
+          cond: ${{ needs.build.result  == 'success' }}
+          if_true: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
+          if_false: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
+      - name: 작업결과에 따른 메세지 지정
+        uses: haya14busa/action-cond@v1
+        id: slack-status
+        with:
+          cond: ${{ needs.build.result  == 'success' }}
+          if_true: 'success'
+          if_false: 'failure'
+
+      - name: Slack 알림 전송
+        if: ${{ job.status }} == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: '${{ steps.slack-status.outputs.value }}'
+          text: '${{ steps.slack-message.outputs.value }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
