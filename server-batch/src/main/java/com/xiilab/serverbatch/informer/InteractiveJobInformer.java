@@ -1,9 +1,7 @@
 package com.xiilab.serverbatch.informer;
 
-import java.util.Optional;
-import java.util.function.Function;
-
 import org.springframework.stereotype.Component;
+
 import com.xiilab.modulealert.dto.SystemAlertDTO;
 import com.xiilab.modulealert.dto.SystemAlertSetDTO;
 import com.xiilab.modulealert.enumeration.SystemAlertMessage;
@@ -87,7 +85,7 @@ public class InteractiveJobInformer {
 				// 		.name(metadataFromResource.getName())
 				// 		.description(metadataFromResource.getDescription())
 				// 		.resourceName(metadataFromResource.getResourceName())
-				// 		.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
+				// 		.workspaceResourceName(namespaceObject.getMetadata().getLabels().get(""))
 				// 		.workspaceResourceName(namespace)
 				// 		.envs(getEnvFromContainer(container))
 				// 		.cpuReq(metadataFromResource.getCpuReq())
