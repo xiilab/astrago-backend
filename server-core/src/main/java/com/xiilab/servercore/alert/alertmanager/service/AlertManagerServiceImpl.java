@@ -213,7 +213,11 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 
 		List<AlertManagerReceiveEntity> alertManagerReceiveList = alertManagerRepoCustom.getAlertManagerReceiveList(categoryType, search, DataConverterUtil.dataFormatterByStr(startDate), DataConverterUtil.dataFormatterByStr(endDate), userInfoDTO.getId());
 
-		return null;
+		return alertManagerReceiveList.stream().map(alertManagerReceiveEntity ->
+			AlertManagerReceiveDTO.ResponseDTO.responseDTOBuilder().alertManagerReceiveEntity(alertManagerReceiveEntity)
+				.alertManagerEntity(alertManagerReceiveEntity.getAlertManager())
+				.build()).toList();
+
 	}
 
 	@Override
