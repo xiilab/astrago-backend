@@ -226,25 +226,35 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
 
 		//deployment 상태 조회 - 컨테이너 실행 시간 대기
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+		int failCount = 0;
+
 		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
 
 		//connection 실패
 		if(!isAvailable){
-			//pvc, pv, connect deployment 삭제
-			workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
-			volumeService.deletePVC(pvcName, namespace);
-			volumeService.deletePV(pvName);
-			//연결 실패 응답
-			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			while(failCount < 5){
+				try {
+					Thread.sleep(5000);
+					failCount++;
+					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
+					if(isAvailable){
+						break;
+					}
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+			}if(!isAvailable){
+				//pvc, pv, connect deployment 삭제
+				// workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+				volumeService.deletePVC(pvcName, namespace);
+				volumeService.deletePV(pvName);
+				//연결 실패 응답
+				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			}
 		}
 		//connection 성공
 		//connect deployment 삭제, astrago deployment mount edit
-		workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+		// workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
 		EditAstragoDeployment editAstragoDeployment = EditAstragoDeployment.builder()
 			.hostPath(hostPath)
 			.pvcName(pvcName)

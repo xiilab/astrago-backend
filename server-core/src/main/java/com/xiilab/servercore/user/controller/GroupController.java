@@ -66,9 +66,9 @@ public class GroupController {
 
 	@GetMapping("/users")
 	@Operation(summary = "그룹, 유저 검색")
-	public ResponseEntity<UserDTO.SearchGroupAndUser> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText) {
-		UserDTO.SearchGroupAndUser searchResults = groupFacadeService.getUserAndGroupBySearchText(
-			searchText);
+	public ResponseEntity<UserDTO.SearchGroupAndUser> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText,
+		@RequestParam(required = false, name = "authType") AuthType authType) {
+		UserDTO.SearchGroupAndUser searchResults = groupFacadeService.getUserAndGroupBySearchText(searchText, authType);
 		return new ResponseEntity<>(searchResults, HttpStatus.OK);
 	}
 	@PostMapping("/{groupId}/users")

@@ -19,16 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.enumeration.SystemAlertType;
-import com.xiilab.modulealert.service.SystemAlertService;
-import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -48,10 +41,16 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -432,7 +431,7 @@ public class WorkloadFacadeService {
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 
-		SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+		SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
 			workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
 		if (workspaceAlertSet.isWorkloadEndAlert()) {
@@ -452,8 +451,7 @@ public class WorkloadFacadeService {
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
-
-		SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+		SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
 			workloadName);
 		if (workspaceAlertSet.isWorkloadEndAlert()) {
 			systemAlertService.sendAlert(SystemAlertDTO.builder()

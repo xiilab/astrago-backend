@@ -2,10 +2,10 @@ package com.xiilab.servercore.workspace.service;
 
 import java.util.List;
 
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
@@ -37,8 +37,8 @@ public interface WorkspaceFacadeService {
 
 	void deleteResourceQuota(long id);
 	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserInfoDTO userInfoDTO);
-	SystemAlertSetDTO.ResponseDTOSystem getWorkspaceAlertSet(String workspaceName);
-	SystemAlertSetDTO.ResponseDTOSystem updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO);
+	SystemAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName);
+	SystemAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO);
 
 	boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO);
 }

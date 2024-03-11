@@ -70,4 +70,7 @@ public class StorageEntity extends BaseEntity {
 		this.pvName = pvName;
 		this.pvcName = pvcName;
 	}
+	public void changeStorageName(String storageName){
+		this.storageName = storageName;
+	}
 }

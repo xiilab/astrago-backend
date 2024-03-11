@@ -7,12 +7,6 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.enumeration.SystemAlertType;
-import com.xiilab.modulealert.service.SystemAlertService;
-import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -23,6 +17,10 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
@@ -32,6 +30,8 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
+import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
@@ -205,7 +205,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				resourceQuotaEntity.getGpuReq()
 			);
 
-			SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
+			SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
 			if(workspaceAlertSet.isResourceApprovalAlert()){
 
 				systemAlertService.sendAlert(SystemAlertDTO.builder()
@@ -235,11 +235,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.toList();
 	}
 	@Override
-	public SystemAlertSetDTO.ResponseDTOSystem getWorkspaceAlertSet(String workspaceName){
+	public SystemAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName){
 		return systemAlertSetService.getWorkspaceAlertSet(workspaceName);
 	}
 	@Override
-	public SystemAlertSetDTO.ResponseDTOSystem updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO){
+	public SystemAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO){
 		return systemAlertSetService.updateWorkspaceAlertSet(workspaceName, systemAlertSetDTO);
 	}
 

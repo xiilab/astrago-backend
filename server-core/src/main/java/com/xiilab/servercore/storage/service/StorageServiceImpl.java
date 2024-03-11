@@ -59,4 +59,14 @@ public class StorageServiceImpl implements StorageService {
 	public void deleteById(Long storageId) {
 		storageRepository.deleteById(storageId);
 	}
+
+	@Override
+	@Transactional
+	public void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage) {
+		StorageEntity storageEntity = storageRepository.findById(storageId)
+			.orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
+
+		storageEntity.changeStorageName(modifyStorage.getStorageName());
+	}
+
 }

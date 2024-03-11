@@ -45,7 +45,7 @@ public interface GroupService {
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
 
-	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText);
+	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText, AuthType authType);
 
 	void deleteGroupMemberByUserId(String groupId, List<String> userIdList);
 

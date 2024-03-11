@@ -36,7 +36,7 @@ public enum CommonErrorCode implements ErrorCode {
 	ALERT_MANAGER_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ALERT MANAGER 삭제 실패하였습니다."),
 	ALERT_MANAGER_K8S_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "PrometheusRule 삭제 실패하였습니다."),
 	ALERT_MANAGER_NOTFOUND(HttpStatus.NOT_FOUND.value(), "해당 ID의 Alert Manager 없습니다."),
-	ALERT_MANAGER_EMAIL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Email 수신 선택시 사용자 정보값은 필수입니다."),
+	ALERT_MANAGER_EMAIL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Email, System 수신 선택시 사용자 정보값은 필수입니다."),
 	ALERT_MANAGER_JSON_PARSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ALERT MANAGER JSON PARSE ERROR"),
 	ALERT_MANAGER_RULE_READY(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 ALERT은 이미 사용중입니다."),
 	ALERT_MANAGER_TIME_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 시간의 알림이 존재하지 않습니다."),
@@ -48,7 +48,9 @@ public enum CommonErrorCode implements ErrorCode {
 	MONITOR_METRIC_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 메트릭이 존재하지 않습니다."),
 	// credential
 	CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 크레덴셜이 존재하지 않습니다."),
-	IMAGE_CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "이미지 크레덴셜이 존재하지 않습니다.")
+	IMAGE_CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "이미지 크레덴셜이 존재하지 않습니다."),
+	// Mail
+	MAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "메일 발송을 실패하였습니다.")
 	;
 	private final int code;
 	private final String message;

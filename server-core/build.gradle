@@ -34,6 +34,8 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 //    implementation 'org.hibernate:hibernate-core:5.5.6.Final'
+    // simple json
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 }
 
 def querydslSrcDir = "src/main/generated"

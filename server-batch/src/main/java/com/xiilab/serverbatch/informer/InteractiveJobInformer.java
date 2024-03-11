@@ -2,13 +2,13 @@ package com.xiilab.serverbatch.informer;
 
 import org.springframework.stereotype.Component;
 
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.enumeration.SystemAlertType;
-import com.xiilab.modulealert.service.SystemAlertService;
-import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertSetEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertSetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
@@ -37,8 +37,8 @@ public class InteractiveJobInformer {
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final GroupService groupService;
-	private final SystemAlertService systemAlertService;
-	private final SystemAlertSetService systemAlertSetService;
+	private final SystemAlertRepository systemAlertRepository;
+	private final SystemAlertSetRepository systemAlertSetRepository;
 
 	@PostConstruct
 	void doInformer() {
@@ -55,18 +55,6 @@ public class InteractiveJobInformer {
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if(workspaceAlertSet.isWorkloadStartAlert()){
-					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					systemAlertService.sendAlert(SystemAlertDTO.builder()
-						.recipientId(workspaceOwner.getId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(
-							SystemAlertMessage.WORKSPACE_START.getMessage(), deployment.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
 			}
 
 			@Override
@@ -85,7 +73,7 @@ public class InteractiveJobInformer {
 				// 		.name(metadataFromResource.getName())
 				// 		.description(metadataFromResource.getDescription())
 				// 		.resourceName(metadataFromResource.getResourceName())
-				// 		.workspaceResourceName(namespaceObject.getMetadata().getLabels().get(""))
+				// 		.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
 				// 		.workspaceResourceName(namespace)
 				// 		.envs(getEnvFromContainer(container))
 				// 		.cpuReq(metadataFromResource.getCpuReq())
@@ -109,11 +97,12 @@ public class InteractiveJobInformer {
 				// 	saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
 				// }
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
+				SystemAlertSetEntity workspaceAlertSet = systemAlertSetRepository.getAlertSetEntityByWorkspaceName(
+					deployment.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
 				if(workspaceAlertSet.isWorkloadEndAlert()){
 					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					systemAlertService.sendAlert(SystemAlertDTO.builder()
+					systemAlertRepository.save(SystemAlertEntity.builder()
 						.recipientId(workspaceOwner.getId())
 						.systemAlertType(SystemAlertType.WORKLOAD)
 						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))

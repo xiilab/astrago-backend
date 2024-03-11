@@ -1,5 +1,6 @@
 package com.xiilab.servercore.storage.dto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
@@ -61,6 +62,8 @@ public class StorageDTO {
 		private String storagePath;
 		private String hostPath;
 		private int requestVolume;
+		private LocalDate createdAt;
+		private String creatorName;
 
 		public static ResStorage toDto(StorageEntity storageEntity){
 			return ResStorage.builder()
@@ -71,6 +74,8 @@ public class StorageDTO {
 				.storagePath(storageEntity.getStoragePath())
 				.hostPath(storageEntity.getHostPath())
 				.requestVolume(storageEntity.getRequestVolume())
+				.createdAt(storageEntity.getRegDate().toLocalDate())
+				.creatorName(storageEntity.getRegUser().getRegUserRealName())
 				.build();
 		}
 	}
@@ -86,5 +91,10 @@ public class StorageDTO {
 				.totalCount(totalCount)
 				.build();
 		}
+	}
+
+	@Getter
+	public static class ModifyStorage{
+		private String storageName;
 	}
 }

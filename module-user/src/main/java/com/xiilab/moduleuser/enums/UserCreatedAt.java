@@ -7,7 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum UserCreatedAt {
 	ASC,
-	DESC,
-	FILE_SIZE
+	DESC
 	;
 }

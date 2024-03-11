@@ -1,7 +1,5 @@
 package com.xiilab.serverbatch.job;
 
-import static com.xiilab.modulealert.enumeration.SystemAlertType.*;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -17,9 +15,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.service.SystemAlertService;
 import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
@@ -39,7 +34,6 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 	private ApplicationContext applicationContext;
 	private WorkloadModuleService workloadModuleService;
 	private PrometheusService prometheusService;
-	private SystemAlertService alertService;
 
 	@Override
 	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
@@ -48,7 +42,6 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 			applicationContext = (ApplicationContext)context.getScheduler().getContext().get("applicationContext");
 			workloadModuleService = applicationContext.getBean(WorkloadModuleService.class);
 			prometheusService = applicationContext.getBean(PrometheusService.class);
-			alertService = applicationContext.getBean(SystemAlertService.class);
 		} catch (SchedulerException e) {
 			throw new RuntimeException(e);
 		}
@@ -77,16 +70,6 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 		List<ModuleWorkloadResDTO> alarmParentList = workloadModuleService.getParentControllerList(
 			alarmDistinctList);
 
-		//alert message
-		for (ModuleWorkloadResDTO moduleWorkloadResDTO : alarmParentList) {
-			alertService.sendAlert(SystemAlertDTO.builder()
-				.recipientId(moduleWorkloadResDTO.getCreatorId())
-				.systemAlertType(WORKLOAD)
-				.message(String.format(SystemAlertMessage.RESOURCE_OPTIMIZATION_ALERT.getMessage(),
-					moduleWorkloadResDTO.getWorkspaceName(), moduleWorkloadResDTO.getName()))
-				.senderId("SYSTEM")
-				.build());
-		}
 
 		//최적화 대상에 대한 distinct 처리 진행
 		List<ResourceOptimizationTargetDTO> list = totalList.stream()
@@ -100,16 +83,6 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 
 		log.info("자원회수된 workload의 개수 : {}", resultCnt);
 
-		//resource optimization message
-		for (ModuleWorkloadResDTO moduleWorkloadResDTO : parentControllerList) {
-			alertService.sendAlert(SystemAlertDTO.builder()
-				.recipientId(moduleWorkloadResDTO.getCreatorId())
-				.systemAlertType(WORKLOAD)
-				.message(String.format(SystemAlertMessage.RESOURCE_OPTIMIZATION_RESULT.getMessage(),
-					moduleWorkloadResDTO.getWorkspaceName(), moduleWorkloadResDTO.getName()))
-				.senderId("SYSTEM")
-				.build());
-		}
 	}
 
 	private List<ResponseDTO.RealTimeDTO> getOverResourcePodList(int cpu, int mem, int gpu, int hour) {
