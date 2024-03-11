@@ -4,12 +4,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+
+import com.xiilab.modulecommon.enums.AuthType;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class UserSummary{
 	private final String enable;
 	private final String approval;
 	private final List<UserGroupDTO> userGroupDTOList;
+	private AuthType authType;
 
 	public UserSummary(UserRepresentation userRepresentation, List<GroupRepresentation> groupRepresentationList) {
 		this.uid = userRepresentation.getId();
@@ -57,6 +59,9 @@ public class UserSummary{
 		this.enable = String.valueOf(userRepresentation.isEnabled());
 		this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
 		this.userGroupDTOList = null;
+	}
+	public void setAuthType(AuthType authType){
+		this.authType = authType;
 	}
 
 	@Builder
