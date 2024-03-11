@@ -129,7 +129,6 @@ jobs:
 
       # core image build & push
       - name: Build and push Core Docker images
-        id: build_push_image
         uses: docker/build-push-action@v5.1.0
         with:
           context: ./server-core
@@ -144,7 +143,6 @@ jobs:
 
       # batch image build & push
       - name: Build and push Batch Docker images
-        id: build
         uses: docker/build-push-action@v5.1.0
         with:
           context: ./server-batch
@@ -159,7 +157,6 @@ jobs:
 
       # monitor image build & push
       - name: Build and push Monitor Docker images
-        id: build
         uses: docker/build-push-action@v5.1.0
         with:
           context: ./server-monitor
