@@ -27,6 +27,7 @@ import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.enums.UserCreatedAt;
 import com.xiilab.moduleuser.enums.UserEnable;
+import com.xiilab.moduleuser.enums.UserSort;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
 import io.micrometer.common.util.StringUtils;
@@ -87,31 +88,49 @@ public class KeycloakUserRepository implements UserRepository {
 				-> user.getAttributes() != null
 				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
 				&& searchName(searchCondition.getSearchText(), user)
-				&& enableEq(searchCondition.getUserEnable(), user)
 			)
 			.sorted(
-				searchCondition.getCreatedAt() == UserCreatedAt.DESC ?
-				Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
-					Comparator.comparing(UserRepresentation::getCreatedTimestamp)
+				searchCondition.getUserSort() == UserSort.CREATED_AT_ASC ?
+					Comparator.comparing(UserRepresentation::getCreatedTimestamp) :
+					searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
+					Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
+						searchCondition.getUserSort() == UserSort.ENABLE_ASC ?
+							Comparator.comparing(UserRepresentation::isEnabled) :
+							Comparator.comparing(UserRepresentation::isEnabled).reversed()
 			)
 			.toList();
+
 		List<UserSummary> userSummaries = users.stream().map(userRepresentation -> {
-			// 워크스페이스 관련 그룹 제외
-			List<GroupRepresentation> groups = realmClient.users()
-				.get(userRepresentation.getId())
-				.groups(0, Integer.MAX_VALUE)
-				.stream()
-				.filter(
-					groupRepresentation -> !groupRepresentation.getName().equals("ws") && !groupRepresentation.getName()
-						.equals("owner") && !groupRepresentation.getName().equals("user"))
-				.toList();
-			return new UserSummary(userRepresentation, groups);
-		}).toList();
+				// 워크스페이스 관련 그룹 제외
+				List<GroupRepresentation> groups = realmClient.users()
+					.get(userRepresentation.getId())
+					.groups(0, Integer.MAX_VALUE)
+					.stream()
+					.filter(
+						groupRepresentation -> !groupRepresentation.getName().equals("ws") && !groupRepresentation.getName()
+							.equals("owner") && !groupRepresentation.getName().equals("user"))
+					.toList();
+				return new UserSummary(userRepresentation, groups);
+			})
+			.map(userSummary -> {
+					UserResource userResource = realmClient.users().get(userSummary.getUid());
+					List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
+				List<RoleRepresentation> roles = roleRepresentations.stream()
+					.filter(role -> role.getName().contains("ROLE_"))
+					.toList();
+				if(roles != null && roles.size() > 0){
+					userSummary.setAuthType(AuthType.valueOf(roles.get(0).getName()));
+				}
+					return userSummary;
+				}
+			)
+			.toList();
+
 		return getPageUsersDTO(pageNo, pageSize, users, userSummaries);
 	}
 
 	private boolean enableEq(UserEnable userEnable, UserRepresentation user) {
-		if(userEnable == null){
+		if (userEnable == null) {
 			return true;
 		}
 		return userEnable.isEnable() == user.isEnabled();
@@ -139,6 +158,7 @@ public class KeycloakUserRepository implements UserRepository {
 		}
 		return new UserInfo(userRepresentation, groupList);
 	}
+
 	@Override
 	public UserDTO.UserInfo getUserById(String userId) {
 		UserResource userResource = getUserResourceById(userId);
@@ -163,7 +183,8 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
-	public UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition) {
+	public UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize,
+		UserSearchCondition searchCondition) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
 		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
 			.stream().filter(user
@@ -172,12 +193,14 @@ public class KeycloakUserRepository implements UserRepository {
 				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("false")
 			)
 			.sorted(
-				searchCondition.getCreatedAt() == UserCreatedAt.DESC ?
+				searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp)
 			)
 			.toList();
-		List<UserSummary> userSummaries = users.stream().map(userRepresentation -> new UserSummary(userRepresentation)).toList();
+		List<UserSummary> userSummaries = users.stream()
+			.map(userRepresentation -> new UserSummary(userRepresentation))
+			.toList();
 		return getPageUsersDTO(pageNo, pageSize, users, userSummaries);
 	}
 
@@ -375,7 +398,7 @@ public class KeycloakUserRepository implements UserRepository {
 				.groupYN(false)
 				.userGroupDTOS(
 					realmClient.users().get(user.getId())
-						.groups(0, 100)
+						.groups(0, Integer.MAX_VALUE)
 						.stream()
 						.filter(groupRepresentation -> !groupRepresentation.getName().equals("owner")
 							&& !groupRepresentation.getName().equals("ws") &&
@@ -441,18 +464,18 @@ public class KeycloakUserRepository implements UserRepository {
 
 	@Override
 	public void updateUserEnable(String id, boolean enable) {
-		try{
+		try {
 			UserResource userResource = getUserResourceById(id);
 			UserRepresentation representation = userResource.toRepresentation();
 			representation.setEnabled(enable);
 			userResource.update(representation);
-		}catch (NotFoundException e){
+		} catch (NotFoundException e) {
 			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_BY_ID);
 		}
 	}
 
 	@Override
-	public List<UserInfo> getAdminList(){
+	public List<UserInfo> getAdminList() {
 		List<UserRepresentation> adminList = keycloakConfig.getRealmClient().roles().get("ROLE_ADMIN").getUserMembers();
 		return adminList.stream().map(userRepresentation ->
 			new UserInfo(userRepresentation, null)).toList();
