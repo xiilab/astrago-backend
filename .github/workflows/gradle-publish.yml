@@ -16,8 +16,8 @@ jobs:
     runs-on: [ self-hosted, linux ]
     outputs:
       branch: "${{ steps.extract_branch.outputs.branch }}"
-      image: "${{ steps.steps.out_image}}"
-      tag: ${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+      tag: ${{ steps.out_image.outputs.tag }}
+      url: ${{ steps.out_image.outputs.url }}
 
     permissions:
       contents: write
@@ -175,14 +175,17 @@ jobs:
       ## Write for matrix outputs workaround
       - id: out_image
         run: |
-          echo "tag=${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}"
-          echo "url=${{ steps.image-repo.outputs.value }}"
+          echo "tag=${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}" >> $GITHUB_OUTPUT
+          echo "url=${{ steps.image-repo.outputs.value }}" >> $GITHUB_OUTPUT
 
-      - name: ouput_test
+  build2:
+    needs: [ build ]
+    runs-on: [ self-hosted, linux ]
+    steps:
+      - name: output test
         run: |
-          echo "${{ build.outputs.tag}}"
-          echo "${{ build.outputs.image}}"
-
+          echo ${{ needs.build.outputs.tag }}
+          echo ${{ needs.build.outputs.image }}
 #  push_helm:
 #    needs: [ build ]
 #    runs-on: [ self-hosted, linux ]
