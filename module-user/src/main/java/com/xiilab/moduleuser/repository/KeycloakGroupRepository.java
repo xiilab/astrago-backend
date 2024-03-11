@@ -3,6 +3,8 @@ package com.xiilab.moduleuser.repository;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,6 +22,7 @@ import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupCategory;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
+import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -107,11 +110,29 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public void modiGroupById(String groupId, GroupModiVO groupModiVO) {
+	public void modiGroupById(String groupId, GroupReqDTO.ModifyGroupDTO groupModiVO) {
 		GroupResource groupResource = keycloakConfig.getRealmClient().groups().group(groupId);
 		GroupRepresentation groupRep = groupResource.toRepresentation();
-		groupModiVO.modiGroupRep(groupRep);
+		groupRep.setName(groupModiVO.getGroupName());
+		Map<String, List<String>> attributes = groupRep.getAttributes();
+		if (attributes != null) {
+			attributes.put("description",List.of(groupModiVO.getDescription()));
+		} else {
+			groupRep.setAttributes(Map.of("description", List.of(groupModiVO.getDescription())));
+		}
 		groupResource.update(groupRep);
+
+		//user 추가하기 전 기존 멤버 삭제
+		List<UserRepresentation> members = groupResource.members(0, Integer.MAX_VALUE);
+		for (UserRepresentation member : members) {
+			String memberId = member.getId();
+			keycloakConfig.getRealmClient().users().get(memberId).leaveGroup(groupId);
+		}
+
+		if(Objects.nonNull(groupModiVO.getUsers())){
+			//group에 member join
+			joinMembersIntoGroup(groupId, groupModiVO.getUsers());
+		}
 	}
 
 	@Override

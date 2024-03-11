@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,6 +50,16 @@ public class GroupController {
 	public ResponseEntity<HttpStatus> createAccountGroup(@RequestBody GroupReqDTO groupReqDTO,
 		@Parameter(hidden = true) UserInfoDTO userInfo) {
 		groupFacadeService.createAccountGroup(groupReqDTO, userInfo);
+		return ResponseEntity.ok().build();
+	}
+
+
+	@PatchMapping("/{groupId}")
+	@Operation(summary = "그룹 수정")
+	public ResponseEntity<HttpStatus> modifyAccountGroup(
+		@PathVariable(name = "groupId") String groupId,
+		@RequestBody GroupReqDTO.ModifyGroupDTO groupReqDTO) {
+		groupFacadeService.modifyAccountGroup(groupId, groupReqDTO);
 		return ResponseEntity.ok().build();
 	}
 

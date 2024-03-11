@@ -82,4 +82,9 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
 		groupService.deleteGroupMemberByUserId(groupId, userIdList);
 	}
+
+	@Override
+	public void modifyAccountGroup(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO) {
+		groupService.modifyAccountGroup(groupId, groupReqDTO);
+	}
 }

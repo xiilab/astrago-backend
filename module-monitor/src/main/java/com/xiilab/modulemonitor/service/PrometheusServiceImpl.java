@@ -56,6 +56,13 @@ public class PrometheusServiceImpl implements PrometheusService{
 		return extractHistoryMetrics(historyMetricByQuery, "");
 	}
 
+	@Override
+	public List<ResponseDTO.RealTimeDTO> getRealTimeMetric(Promql promql, String time, String limitResource, String unixTimeStamp) {
+		String realTimeMetricByQuery = prometheusRepository.getRealTimeMetricByQuery(
+			String.format(promql.getQuery(), time, limitResource, unixTimeStamp));
+		return extractMetrics(realTimeMetricByQuery, promql.name());
+	}
+
 	/**
 	 * 조회된 Prometheus Metrics 추출하여 ResponseDTO List 반환하는 메소드
 	 *

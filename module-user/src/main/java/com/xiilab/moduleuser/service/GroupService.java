@@ -47,4 +47,6 @@ public interface GroupService {
 	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText);
 
 	void deleteGroupMemberByUserId(String groupId, List<String> userIdList);
+
+	void modifyAccountGroup(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO);
 }

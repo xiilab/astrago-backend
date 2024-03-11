@@ -128,7 +128,13 @@ public enum Promql {
 	CONTAINER_IMAGE_PULL_BACK_OFF_COUNT("count(kube_pod_container_status_waiting_reason{reason=\"ImagePullBackOff\"})", "Container imagePullBackOff Count", "CONTAINER"),
 	CONTAINER_RESTART("kube_pod_container_status_restarts_total != 0", "컨테이너 재시작 조회", "CONTAINER"),
 
-
+	// RESOURCE OPTIMIZATION
+	// CPU
+	RESOURCE_OPTIMIZATION_CPU("sum(max_over_time(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{pod =~ \"wl-.*\"}[%sh])) by (namespace, pod) > %s and on (namespace, pod) (kube_pod_created < %s)","n시간 동안 최대 CPU 사용량이 일정 수준을 넘은 워크로드 조회","CPU"),
+	// MEM
+	RESOURCE_OPTIMIZATION_MEM("((sum(max_over_time(container_memory_working_set_bytes{pod=~\"wl-.*\"}[%1$sh])) by(namespace, pod)/sum(max_over_time(kube_pod_container_resource_limits{pod=~\"wl-.*\", resource = \"memory\"}[%1$sh])) by (namespace, pod) != 0)* 100) > %2$s and on (pod,namespace) (kube_pod_created < %3$s)","n시간 동안 최대 MEM 사용량이 일정 수준을 넘은 워크로드 조회","MEM"),
+	// GPU
+	RESOURCE_OPTIMIZATION_GPU("(max_over_time(DCGM_FI_DEV_GPU_UTIL{pod=~\"wl-.*\"}[%sh]) > %s and on (namespace, pod) (kube_pod_created < %s)) > %s","n시간 동안 최대 GPU 사용량이 일정 수준을 넘은 워크로드 조회","GPU"),
 	;
 // GPU 사용량, GPU Limit, GPU Request
 	private final String query;

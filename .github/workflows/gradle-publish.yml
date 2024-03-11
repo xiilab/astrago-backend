@@ -36,6 +36,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'zulu'
+        cache: 'gradle'
 
     # 
     - name: 브랜치 네임 저장
@@ -141,6 +142,16 @@ jobs:
         echo "해당 이미지는 \"${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value }}\" 입니다."
         echo "${{ steps.meta.outputs.json }}"
 
+    - name: Gradle Caching
+      uses: actions/cache@v3
+      with:
+        path: |  
+             ~/.gradle/caches
+             ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+             ${{ runner.os }}-gradle-
+    
     # Gradle build
     - name: Build with Gradle
       run: ./gradlew ${{ matrix.path }}:bootjar
@@ -157,6 +168,8 @@ jobs:
           ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value }}
           ${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
     
     ## Write for matrix outputs workaround 
     - uses: cloudposse/github-action-matrix-outputs-write@main

@@ -146,4 +146,9 @@ public class GroupServiceImpl implements GroupService {
 	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
 		groupRepository.deleteGroupMemberByUserId(groupId, userIdList);
 	}
+
+	@Override
+	public void modifyAccountGroup(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO) {
+		groupRepository.modiGroupById(groupId, groupReqDTO);
+	}
 }
