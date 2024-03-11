@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,6 +48,13 @@ public class StorageController {
 	public ResponseEntity<StorageDTO.ResStorage> getStorages(@PathVariable(name = "storageId") Long storageId){
 		StorageDTO.ResStorage storage = storageService.getStorage(storageId);
 		return new ResponseEntity<>(storage, HttpStatus.OK);
+	}
+	@PatchMapping("/{storageId}")
+	@Operation(summary = "스토리지 수정")
+	public ResponseEntity<HttpStatus> modifyStorage(@PathVariable(name = "storageId") Long storageId,
+		@RequestBody StorageDTO.ModifyStorage modifyStorage){
+		storageFacadeService.modifyStorage(storageId, modifyStorage);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{storageId}")
