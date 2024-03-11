@@ -15,6 +15,7 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -130,6 +131,7 @@ public interface WorkloadRepository {
 	boolean isUsedModel(Long modelId);
 
 	List<String> getFileListInWorkloadContainer(String podName, String namespace, String path) throws IOException;
+
 	List<String> getFileInfoInWorkloadContainer(String podName, String namespace, String path) throws IOException;
 
 	int getDirectoryFileCount(String podName, String namespace, String path) throws IOException;
@@ -141,5 +143,14 @@ public interface WorkloadRepository {
 	void deleteFileFromPod(String podName, String namespace, String filePath);
 
 	Boolean uploadFileToPod(String podName, String namespace, String path, File file);
+
 	boolean mkdirToPod(String podName, String namespace, String path);
+
+	List<ModuleWorkloadResDTO> getAstraBatchWorkload();
+
+	List<ModuleWorkloadResDTO> getAstraInteractiveWorkload();
+
+	boolean optimizationResource(String pod, String namespace);
+
+	ModuleWorkloadResDTO getParentController(String pod, String namespace);
 }
