@@ -224,17 +224,21 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.build();
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
+		try {
+			Thread.sleep(5000);
+		}catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 
 		//deployment 상태 조회 - 컨테이너 실행 시간 대기
 		int failCount = 0;
 
 		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
-
 		//connection 실패
 		if(!isAvailable){
 			while(failCount < 5){
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(2000);
 					failCount++;
 					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
 					if(isAvailable){
@@ -245,7 +249,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 				}
 			}if(!isAvailable){
 				//pvc, pv, connect deployment 삭제
-				// workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
 				volumeService.deletePVC(pvcName, namespace);
 				volumeService.deletePV(pvName);
 				//연결 실패 응답
@@ -254,7 +258,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		}
 		//connection 성공
 		//connect deployment 삭제, astrago deployment mount edit
-		// workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+		workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
 		EditAstragoDeployment editAstragoDeployment = EditAstragoDeployment.builder()
 			.hostPath(hostPath)
 			.pvcName(pvcName)
