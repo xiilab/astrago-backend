@@ -3,33 +3,28 @@ package com.xiilab.serverbatch.informer;
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.enumeration.SystemAlertType;
-import com.xiilab.modulealert.service.SystemAlertService;
-import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertSetEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertSetRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
@@ -57,8 +52,8 @@ public class BatchJobInformer {
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
-	private final SystemAlertService systemAlertService;
-	private final SystemAlertSetService systemAlertSetService;
+	private final SystemAlertRepository systemAlertRepository;
+	private final SystemAlertSetRepository systemAlertSetRepository;
 
 	@PostConstruct
 	void doInformer() {
@@ -77,10 +72,10 @@ public class BatchJobInformer {
 
 				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+				SystemAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
 				if(workspaceAlertSet.isWorkloadStartAlert()){
-					systemAlertService.sendAlert(SystemAlertDTO.builder()
+					systemAlertRepository.save(SystemAlertEntity.builder()
 						.recipientId(batchWorkloadInfoFromResource.getCreatorId())
 						.systemAlertType(SystemAlertType.WORKLOAD)
 						.message(String.format(SystemAlertMessage.WORKSPACE_START.getMessage(), job.getMetadata().getName()))
@@ -145,10 +140,10 @@ public class BatchJobInformer {
 					// List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = endJob.getCodeWorkloadMappingList();
 					// ImageWorkloadMappingEntity imageWorkloadMappingEntity = endJob.getImageWorkloadMappingEntity();
 
-					SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+					SystemAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 					// 해당 워크스페이스 알림 설정이 True인 경우
 					if(workspaceAlertSet.isWorkloadEndAlert()){
-						systemAlertService.sendAlert(SystemAlertDTO.builder()
+						systemAlertRepository.save(SystemAlertEntity.builder()
 							.recipientId(metadataFromResource.getCreatorId())
 							.systemAlertType(SystemAlertType.WORKLOAD)
 							.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
@@ -163,7 +158,7 @@ public class BatchJobInformer {
 		informers.startAllRegisteredInformers();
 	}
 
-	private SystemAlertSetDTO.ResponseDTOSystem getAlertSet(String workspaceName){
-		return systemAlertSetService.getWorkspaceAlertSet(workspaceName);
+	private SystemAlertSetEntity getAlertSet(String workspaceName){
+		return systemAlertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
 	}
 }
