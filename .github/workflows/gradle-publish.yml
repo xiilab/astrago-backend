@@ -30,15 +30,7 @@ jobs:
     # 원격머신에 repo checkout
     - name: Checkout
       uses: actions/checkout@v4
-    # JDK 설정
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'zulu'
-        cache: 'gradle'
-
-    #
+    # 브랜치 이름 저장
     - name: 브랜치 네임 저장
       shell: bash
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
@@ -142,12 +134,20 @@ jobs:
         echo "해당 이미지는 \"${{ steps.image-repo.outputs.value }}/${{ matrix.path }}:${{ steps.image_tag.outputs.value }}\" 입니다."
         echo "${{ steps.meta.outputs.json }}"
 
+    # JDK 설정
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+        cache: 'gradle'
+    
     - name: Gradle Caching
       uses: actions/cache@v3
       with:
         path: |  
-             /.gradle/caches
-             /.gradle/wrapper
+             ./.gradle/caches
+             ./.gradle/wrapper
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
              ${{ runner.os }}-gradle-
