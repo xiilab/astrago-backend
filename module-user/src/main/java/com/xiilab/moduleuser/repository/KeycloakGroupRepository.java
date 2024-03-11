@@ -148,7 +148,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				UserResource userResource = keycloakConfig.getRealmClient().users().get(member.getId());
 				List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
 				for (RoleRepresentation roleRepresentation : roleRepresentations) {
-					if(roleRepresentation.getName().equalsIgnoreCase("ROLE_ADMIN")){
+					if(roleRepresentation.getName().equalsIgnoreCase(AuthType.ROLE_ADMIN.name())){
 						groupMembers.add(member);
 					}
 				}
