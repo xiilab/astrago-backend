@@ -28,6 +28,7 @@ import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
+import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
@@ -75,6 +76,20 @@ public class WorkspaceController {
 		UserInfoDTO userInfoDTO) {
 		return ResponseEntity.ok(
 			workspaceService.getWorkspaceList(isMyWorkspace, searchCondition, pageNum, userInfoDTO));
+	}
+
+	@GetMapping("/admin")
+	@Operation(summary = "관리자용 워크스페이스 리스트 조회")
+	public ResponseEntity<PageDTO<WorkspaceDTO.AdminResponseDTO>> getAdminWorkspaceList(
+		@RequestParam(value = "searchCondition", required = false) String searchCondition,
+		@RequestParam(value = "sortCondition", required = false) WorkspaceSortCondition sortCondition,
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "pageSize") int pageSize,
+		UserInfoDTO userInfoDTO
+	) {
+		return ResponseEntity.ok(
+			workspaceService.getAdminWorkspaceList(searchCondition,sortCondition, pageNum, pageSize, userInfoDTO)
+		);
 	}
 
 	@PatchMapping("/{workspaceName}")

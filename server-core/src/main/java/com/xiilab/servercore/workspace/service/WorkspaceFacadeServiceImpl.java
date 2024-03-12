@@ -3,11 +3,14 @@ package com.xiilab.servercore.workspace.service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -34,6 +37,7 @@ import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 
@@ -172,7 +176,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				workspaceResourceReqDTO.getCpuReq(),
 				workspaceResourceReqDTO.getMemReq(),
 				workspaceResourceReqDTO.getGpuReq());
-		//관리자 외의 유저의 경우는 승인 프로세스 진행
+			//관리자 외의 유저의 경우는 승인 프로세스 진행
 		} else {
 			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
 		}
@@ -262,6 +266,36 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO) {
 		return userInfoDTO.isAccessAuthorityWorkspace(workspaceResourceName);
+	}
+
+	@Override
+	public PageDTO<WorkspaceDTO.AdminResponseDTO> getAdminWorkspaceList(String searchCondition,
+		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserInfoDTO userInfoDTO) {
+		//권한 체크
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
+		}
+		//검색 조건으로 전체 조회
+		Stream<WorkspaceDTO.AdminResponseDTO> workspaceStream = workspaceModuleFacadeService.getAdminWorkspaceList(
+			searchCondition).stream();
+		if (sortCondition != null) {
+			workspaceStream = switch (sortCondition) {
+				case CPU_ASSIGN_ASC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu));
+				case CPU_ASSIGN_DESC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu).reversed());
+				case MEM_ASSIGN_ASC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem));
+				case MEM_ASSIGN_DESC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem).reversed());
+				case GPU_ASSIGN_ASC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu));
+				case GPU_ASSIGN_DESC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed());
+			};
+		}
+
+		return new PageDTO<>(workspaceStream.toList(), pageNum, pageSize);
 	}
 
 }

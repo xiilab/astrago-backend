@@ -41,7 +41,7 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 	public List<WorkspaceVO.ResponseVO> getWorkspaceList() {
 		List<Namespace> items;
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			items = kubernetesClient.namespaces().list().getItems();
+			items = kubernetesClient.namespaces().withLabels(Map.of("control-by","astra")).list().getItems();
 		}
 		return items.stream().map(WorkspaceVO.ResponseVO::new).toList();
 	}

@@ -15,4 +15,5 @@ public interface WorkspaceModuleFacadeService {
 	void updateWorkspaceResourceQuota(String workspace, int cpuReq, int memReq, int gpuReq);
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceName);
 	ResourceQuotaResDTO getWorkspaceResourceQuota(String workspaceResourceName);
+	List<WorkspaceDTO.AdminResponseDTO> getAdminWorkspaceList(String searchCondition);
 }
