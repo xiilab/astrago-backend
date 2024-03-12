@@ -227,7 +227,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		try {
 			Thread.sleep(5000);
 		}catch (InterruptedException e) {
-			throw new RuntimeException(e);
+			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
 		}
 
 		//deployment 상태 조회 - 컨테이너 실행 시간 대기
@@ -245,7 +245,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 						break;
 					}
 				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
+					throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
 				}
 			}if(!isAvailable){
 				//pvc, pv, connect deployment 삭제
