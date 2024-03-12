@@ -149,6 +149,16 @@ public class WorkspaceController {
 		return ResponseEntity.ok(workspaceService.getResourceQuotaRequests(workspace, pageNum, userInfoDTO));
 	}
 
+	@GetMapping("/admin/resource")
+	@Operation(summary = "관리자용 워크스페이스 resource 신청 리스트 조회")
+	public ResponseEntity<PageDTO<ResourceQuotaFormDTO>> getAdminResourceQuotaList(
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "pageSize") int pageSize,
+		UserInfoDTO userInfoDTO
+	) {
+		return ResponseEntity.ok(workspaceService.getAdminResourceQuotaRequests(pageNum, pageSize, userInfoDTO));
+	}
+
 	@PatchMapping("/resource/{id}")
 	@Operation(summary = "워크스페이스 resource 요청 승인/반려")
 	public ResponseEntity<HttpStatus> updateResourceQuota(

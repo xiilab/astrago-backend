@@ -298,4 +298,28 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		return new PageDTO<>(workspaceStream.toList(), pageNum, pageSize);
 	}
 
+	@Override
+	public PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserInfoDTO userInfoDTO) {
+		List<ResourceQuotaEntity> resourceQuotaEntityList = resourceQuotaRepository.findAll();
+
+		List<ResourceQuotaFormDTO> list = resourceQuotaEntityList.stream()
+			.map(resourceQuotaEntity ->
+				ResourceQuotaFormDTO.builder()
+					.id(resourceQuotaEntity.getId())
+					.workspace(resourceQuotaEntity.getWorkspace())
+					.requestReason(resourceQuotaEntity.getRequestReason())
+					.rejectReason(resourceQuotaEntity.getRejectReason())
+					.status(resourceQuotaEntity.getStatus())
+					.modDate(resourceQuotaEntity.getModDate())
+					.regDate(resourceQuotaEntity.getRegDate())
+					.cpuReq(resourceQuotaEntity.getCpuReq())
+					.gpuReq(resourceQuotaEntity.getGpuReq())
+					.memReq(resourceQuotaEntity.getMemReq())
+					.requester(resourceQuotaEntity.getRegUser().getRegUserRealName())
+					.build())
+			.toList();
+
+		return new PageDTO<>(list, pageNum, pageSize);
+	}
+
 }
