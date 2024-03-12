@@ -191,6 +191,7 @@ public class KeycloakUserRepository implements UserRepository {
 				-> user.getAttributes() != null
 				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
 				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("false")
+				&& searchName(searchCondition.getSearchText(), user)
 			)
 			.sorted(
 				searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
