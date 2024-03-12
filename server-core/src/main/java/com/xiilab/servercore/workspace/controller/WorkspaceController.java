@@ -59,6 +59,12 @@ public class WorkspaceController {
 		return ResponseEntity.ok(workspaceService.getWorkspaceInfoByName(name));
 	}
 
+	@GetMapping("/admin/{name}")
+	@Operation(summary = "관리자용 워크스페이스 정보 조회")
+	public ResponseEntity<WorkspaceDTO.AdminInfoDTO> getAdminWorkspaceInfo(@PathVariable(name = "name") String name){
+		return ResponseEntity.ok(workspaceService.getAdminWorkspaceInfo(name));
+	}
+
 	@GetMapping("/resourceStatus")
 	@Operation(summary = "내가 속한 워크스페이스의 resource 현황 조회")
 	public ResponseEntity<List<WorkspaceDTO.WorkspaceResourceStatus>> getWorkspaceResourceStatus(
@@ -88,7 +94,7 @@ public class WorkspaceController {
 		UserInfoDTO userInfoDTO
 	) {
 		return ResponseEntity.ok(
-			workspaceService.getAdminWorkspaceList(searchCondition,sortCondition, pageNum, pageSize, userInfoDTO)
+			workspaceService.getAdminWorkspaceList(searchCondition, sortCondition, pageNum, pageSize, userInfoDTO)
 		);
 	}
 
@@ -223,21 +229,23 @@ public class WorkspaceController {
 	@GetMapping("/alert/{workspaceName}")
 	@Operation(summary = "워크스페이스 Alert Setting 조회 메소드")
 	public ResponseEntity<SystemAlertSetDTO.ResponseDTO> getWorkspaceAlertSet(
-		@PathVariable(name = "workspaceName") String workspaceName){
+		@PathVariable(name = "workspaceName") String workspaceName) {
 		return new ResponseEntity<>(workspaceService.getWorkspaceAlertSet(workspaceName), HttpStatus.OK);
 	}
+
 	@PatchMapping("/alert/{workspaceName}")
 	@Operation(summary = "워크스페이스 Alert Setting 수정 메소드")
 	public ResponseEntity<SystemAlertSetDTO.ResponseDTO> updateWorkspaceAlertSet(
 		@PathVariable(name = "workspaceName") String workspaceName,
-		@RequestBody SystemAlertSetDTO updateDTO){
+		@RequestBody SystemAlertSetDTO updateDTO) {
 		return new ResponseEntity<>(workspaceService.updateWorkspaceAlertSet(workspaceName, updateDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("/{workspaceResourceName}/accessAuthority")
 	@Operation(summary = "워크스페이스 접근 권한 체크")
-	public ResponseEntity<Boolean> workspaceAccessAuthority(@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+	public ResponseEntity<Boolean> workspaceAccessAuthority(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		boolean accessAuthority = workspaceService.workspaceAccessAuthority(workspaceResourceName, userInfoDTO);
 		return new ResponseEntity<>(accessAuthority, HttpStatus.OK);
 	}

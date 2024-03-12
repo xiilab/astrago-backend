@@ -114,10 +114,27 @@ public class WorkspaceDTO {
 			this.description = workspace.getDescription();
 			this.creator = workspace.getCreatorFullName();
 			this.createdAt = workspace.getCreatedAt();
-			this.cpu = 0;
-			this.mem = 0;
-			this.gpu = 0;
 		}
+	}
+
+	@Getter
+	@Builder
+	public static class AdminInfoDTO {
+		private String id;
+		private String name;
+		private String resourceName;
+		private String description;
+		private String creator;
+		private LocalDateTime createdAt;
+		private int reqCPU;
+		private int reqMEM;
+		private int reqGPU;
+		private int useCPU;
+		private int useMEM;
+		private int useGPU;
+		private int allocCPU;
+		private int allocMEM;
+		private int allocGPU;
 	}
 
 	@Getter
@@ -139,6 +156,7 @@ public class WorkspaceDTO {
 			this.resourceStatus = new ResourceStatus(resourceStatus);
 		}
 	}
+
 	@Getter
 	@Builder
 	@NoArgsConstructor
@@ -151,7 +169,7 @@ public class WorkspaceDTO {
 		private String memLimit;
 		private String memUsed;
 
-		public ResourceStatus (ResourceQuotaStatus resourceQuota) {
+		public ResourceStatus(ResourceQuotaStatus resourceQuota) {
 			this.cpuLimit = resourceQuota.getHard().get("requests.cpu").getAmount();
 			this.cpuUsed = resourceQuota.getUsed().get("requests.cpu").getAmount();
 			this.gpuLimit = resourceQuota.getHard().get("requests.nvidia.com/gpu").getAmount();

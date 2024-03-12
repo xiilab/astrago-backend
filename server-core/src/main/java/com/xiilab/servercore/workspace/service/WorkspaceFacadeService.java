@@ -51,4 +51,6 @@ public interface WorkspaceFacadeService {
 		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserInfoDTO userInfoDTO);
 
 	PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserInfoDTO userInfoDTO);
+
+	WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name);
 }

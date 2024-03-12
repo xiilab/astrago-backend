@@ -30,6 +30,7 @@ import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
+import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaCustomRepository;
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
@@ -51,6 +52,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final ResourceQuotaRepository resourceQuotaRepository;
+	private final ResourceQuotaCustomRepository resourceQuotaCustomRepository;
 	private final PinService pinService;
 	private final GroupService groupService;
 	private final ClusterService clusterService;
@@ -320,6 +322,28 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.toList();
 
 		return new PageDTO<>(list, pageNum, pageSize);
+	}
+
+	@Override
+	public WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name) {
+		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(name);
+		ResourceQuotaEntity byWorkspaceRecently = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
+		return WorkspaceDTO.AdminInfoDTO
+			.builder()
+			.id(workspaceInfoByName.getUid())
+			.name(workspaceInfoByName.getName())
+			.resourceName(workspaceInfoByName.getResourceName())
+			.description(workspaceInfoByName.getDescription())
+			.createdAt(workspaceInfoByName.getCreateAt())
+			.creator(workspaceInfoByName.getCreatorName())
+			.reqCPU(byWorkspaceRecently.getCpuReq())
+			.reqMEM(byWorkspaceRecently.getMemReq())
+			.reqGPU(byWorkspaceRecently.getGpuReq())
+			.useCPU(workspaceInfoByName.getLimitCPU())
+			.useMEM(workspaceInfoByName.getLimitMEM())
+			.useGPU(workspaceInfoByName.getLimitGPU())
+			// .allocCPU(workspaceInfoByName)
+			.build();
 	}
 
 }
