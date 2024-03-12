@@ -24,4 +24,5 @@ public class ResourceQuotaFormDTO {
 	private int cpuReq;
 	private int gpuReq;
 	private int memReq;
+	private String requester;
 }

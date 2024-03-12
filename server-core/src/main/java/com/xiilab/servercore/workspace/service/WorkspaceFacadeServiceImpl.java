@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -164,7 +165,17 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	@Transactional
 	public void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO) {
-		resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
+		//관리자가 요청 했을 경우 승인 프로세스를 건너뛰고 바로 적용
+		if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN) {
+			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
+				workspaceResourceReqDTO.getWorkspace(),
+				workspaceResourceReqDTO.getCpuReq(),
+				workspaceResourceReqDTO.getMemReq(),
+				workspaceResourceReqDTO.getGpuReq());
+		//관리자 외의 유저의 경우는 승인 프로세스 진행
+		} else {
+			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
+		}
 	}
 
 	@Override
@@ -186,6 +197,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					.cpuReq(resourceQuotaEntity.getCpuReq())
 					.gpuReq(resourceQuotaEntity.getGpuReq())
 					.memReq(resourceQuotaEntity.getMemReq())
+					.requester(resourceQuotaEntity.getRegUser().getRegUserRealName())
 					.build())
 			.toList();
 
@@ -205,8 +217,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				resourceQuotaEntity.getGpuReq()
 			);
 
-			SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
-			if(workspaceAlertSet.isResourceApprovalAlert()){
+			SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+				resourceQuotaEntity.getWorkspace());
+			if (workspaceAlertSet.isResourceApprovalAlert()) {
 
 				systemAlertService.sendAlert(SystemAlertDTO.builder()
 					.recipientId(resourceQuotaEntity.getRegUser().getRegUserId())
@@ -234,12 +247,15 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.filter(workspace -> workspaceName == null || workspace.getName().contains(workspaceName))
 			.toList();
 	}
+
 	@Override
-	public SystemAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName){
+	public SystemAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName) {
 		return systemAlertSetService.getWorkspaceAlertSet(workspaceName);
 	}
+
 	@Override
-	public SystemAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, SystemAlertSetDTO systemAlertSetDTO){
+	public SystemAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName,
+		SystemAlertSetDTO systemAlertSetDTO) {
 		return systemAlertSetService.updateWorkspaceAlertSet(workspaceName, systemAlertSetDTO);
 	}
 
