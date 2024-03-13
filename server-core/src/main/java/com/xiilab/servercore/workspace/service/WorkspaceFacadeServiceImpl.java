@@ -327,7 +327,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name) {
 		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(name);
-		ResourceQuotaEntity byWorkspaceRecently = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
+		ResourceQuotaEntity recentlyResourceRequest = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
 		return WorkspaceDTO.AdminInfoDTO
 			.builder()
 			.id(workspaceInfoByName.getUid())
@@ -336,9 +336,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.description(workspaceInfoByName.getDescription())
 			.createdAt(workspaceInfoByName.getCreateAt())
 			.creator(workspaceInfoByName.getCreatorName())
-			.reqCPU(byWorkspaceRecently.getCpuReq())
-			.reqMEM(byWorkspaceRecently.getMemReq())
-			.reqGPU(byWorkspaceRecently.getGpuReq())
+			.reqCPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getCpuReq())
+			.reqMEM(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getMemReq())
+			.reqGPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getGpuReq())
 			.useCPU(workspaceInfoByName.getLimitCPU())
 			.useMEM(workspaceInfoByName.getLimitMEM())
 			.useGPU(workspaceInfoByName.getLimitGPU())
