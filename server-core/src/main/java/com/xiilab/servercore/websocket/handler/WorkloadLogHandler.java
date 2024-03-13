@@ -13,10 +13,10 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
@@ -63,7 +63,7 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 		sendLogMessage(session, workspaceName, podName);
 		// executorService = Executors.newSingleThreadScheduledExecutor();
 		// executorService.scheduleAtFixedRate(() -> {
-		// 	sendLogMessage(session, workspaceName, podName);
+		// 	sendLogMessage(session, workspaceResourceName, podName);
 		// }, 0, 1, TimeUnit.SECONDS);
 	}
 

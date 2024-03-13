@@ -9,5 +9,5 @@ import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
 
 @Repository
 public interface ResourceQuotaRepository extends JpaRepository<ResourceQuotaEntity, Long> {
-	List<ResourceQuotaEntity> findByWorkspace(String workspace);
+	List<ResourceQuotaEntity> findByWorkspaceResourceName(String workspace);
 }

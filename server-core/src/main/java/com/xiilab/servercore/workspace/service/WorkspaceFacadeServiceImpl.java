@@ -21,10 +21,7 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
@@ -129,8 +126,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
-		// 워크스페이스 알림 설정 삭제
-		systemAlertSetService.deleteAlert(workspaceName);
+		// // 워크스페이스 알림 설정 삭제
+		// systemAlertSetService.deleteAlert(workspaceName);
 	}
 
 	@Override
@@ -180,7 +177,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				workspaceResourceReqDTO.getGpuReq());
 			//관리자 외의 유저의 경우는 승인 프로세스 진행
 		} else {
-			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
+			WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(
+				workspaceResourceReqDTO.getWorkspace());
+			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO, workspaceInfo.getName()));
 		}
 	}
 
@@ -188,13 +187,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Transactional(readOnly = true)
 	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum,
 		UserInfoDTO userInfoDTO) {
-		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
+		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspaceResourceName(workspace);
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaReqList.stream()
 			.map(resourceQuotaEntity ->
 				ResourceQuotaFormDTO.builder()
 					.id(resourceQuotaEntity.getId())
-					.workspace(resourceQuotaEntity.getWorkspace())
+					.workspaceName(resourceQuotaEntity.getWorkspaceName())
+					.workspaceResourceName(resourceQuotaEntity.getWorkspaceResourceName())
 					.requestReason(resourceQuotaEntity.getRequestReason())
 					.rejectReason(resourceQuotaEntity.getRejectReason())
 					.status(resourceQuotaEntity.getStatus())
@@ -217,23 +217,23 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
-				resourceQuotaEntity.getWorkspace(),
+				resourceQuotaEntity.getWorkspaceResourceName(),
 				resourceQuotaEntity.getCpuReq(),
 				resourceQuotaEntity.getMemReq(),
 				resourceQuotaEntity.getGpuReq()
 			);
 
-			SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-				resourceQuotaEntity.getWorkspace());
-			if (workspaceAlertSet.isResourceApprovalAlert()) {
-
-				systemAlertService.sendAlert(SystemAlertDTO.builder()
-					.recipientId(resourceQuotaEntity.getRegUser().getRegUserId())
-					.systemAlertType(SystemAlertType.WORKLOAD)
-					.message(SystemAlertMessage.RESOURCE_APPROVAL.getMessage())
-					.senderId("SYSTEM")
-					.build());
-			}
+			// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+			// 	resourceQuotaEntity.getWorkspaceResourceName());
+			// if (workspaceAlertSet.isResourceApprovalAlert()) {
+			//
+			// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
+			// 		.recipientId(resourceQuotaEntity.getRegUser().getRegUserId())
+			// 		.systemAlertType(SystemAlertType.WORKLOAD)
+			// 		.message(SystemAlertMessage.RESOURCE_APPROVAL.getMessage())
+			// 		.senderId("SYSTEM")
+			// 		.build());
+			// }
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
 		}
@@ -294,6 +294,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu));
 				case GPU_ASSIGN_DESC ->
 					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed());
+				case CREATOR_ASC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator));
+				case CREATOR_DESC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed());
+				case CREATED_AT_ASC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt));
+				case CREATED_AT_DESC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed());
 			};
 		}
 
@@ -308,7 +316,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.map(resourceQuotaEntity ->
 				ResourceQuotaFormDTO.builder()
 					.id(resourceQuotaEntity.getId())
-					.workspace(resourceQuotaEntity.getWorkspace())
+					.workspaceName(resourceQuotaEntity.getWorkspaceName())
+					.workspaceResourceName(resourceQuotaEntity.getWorkspaceResourceName())
 					.requestReason(resourceQuotaEntity.getRequestReason())
 					.rejectReason(resourceQuotaEntity.getRejectReason())
 					.status(resourceQuotaEntity.getStatus())

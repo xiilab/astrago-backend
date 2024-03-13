@@ -191,6 +191,7 @@ public class KeycloakUserRepository implements UserRepository {
 				-> user.getAttributes() != null
 				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
 				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("false")
+				&& searchName(searchCondition.getSearchText(), user)
 			)
 			.sorted(
 				searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
@@ -313,7 +314,7 @@ public class KeycloakUserRepository implements UserRepository {
 			// userId 유효 체크
 			userResource.toRepresentation();
 			// 비밀번호 변경을 위해 credential 설정
-			CredentialRepresentation authenticationSettings = getAuthenticationSettings(true, "astrago");
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false, "astrago");
 			//비밀번호 리셋
 			userResource.resetPassword(authenticationSettings);
 		} catch (NotFoundException e) {
@@ -367,9 +368,9 @@ public class KeycloakUserRepository implements UserRepository {
 		String userRealName = user.getLastName() + user.getFirstName();
 		String userName = user.getUsername();
 
-		search = user.getEmail().contains(searchText) ||
-			userRealName.contains(searchText) ||
-			userName.contains(searchText);
+		search = (user.getEmail() != null && user.getEmail().contains(searchText)) ||
+			(userRealName != null && userRealName.contains(searchText)) ||
+			(userName != null && userName.contains(searchText));
 		return search;
 	}
 

@@ -66,9 +66,9 @@ public class SystemAlertSetServiceImpl implements SystemAlertSetService {
 	public void deleteAlert(String workspaceName){
 		try{
 			SystemAlertSetEntity systemAlertSetEntity = getAlertSetEntity(workspaceName);
-
-			systemAlertSetRepository.deleteById(systemAlertSetEntity.getId());
-
+			if (systemAlertSetEntity != null) {
+				systemAlertSetRepository.deleteById(systemAlertSetEntity.getId());
+			}
 		}catch (IllegalArgumentException e){
 			throw new RestApiException(CommonErrorCode.ALERT_SET_DELETE_FAIL);
 		}

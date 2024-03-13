@@ -3,10 +3,6 @@ package com.xiilab.serverbatch.informer;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertSetEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertSetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
@@ -14,7 +10,6 @@ import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepositor
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
-import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -97,18 +92,18 @@ public class InteractiveJobInformer {
 				// 	saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
 				// }
 
-				SystemAlertSetEntity workspaceAlertSet = systemAlertSetRepository.getAlertSetEntityByWorkspaceName(
-					deployment.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if(workspaceAlertSet.isWorkloadEndAlert()){
-					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					systemAlertRepository.save(SystemAlertEntity.builder()
-						.recipientId(workspaceOwner.getId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
+				// SystemAlertSetEntity workspaceAlertSet = systemAlertSetRepository.getAlertSetEntityByWorkspaceName(
+				// 	deployment.getMetadata().getName());
+				// // 해당 워크스페이스 알림 설정이 True인 경우
+				// if(workspaceAlertSet.isWorkloadEndAlert()){
+				// 	GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
+				// 	systemAlertRepository.save(SystemAlertEntity.builder()
+				// 		.recipientId(workspaceOwner.getId())
+				// 		.systemAlertType(SystemAlertType.WORKLOAD)
+				// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
+				// 		.senderId("SYSTEM")
+				// 		.build());
+				// }
 			}
 		});
 

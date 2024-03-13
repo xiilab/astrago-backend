@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ResourceQuotaFormDTO {
 	private Long id;
-	private String workspace;
+	private String workspaceName;
+	private String workspaceResourceName;
 	private String requestReason;
 	private String rejectReason;
 	private ResourceQuotaStatus status;

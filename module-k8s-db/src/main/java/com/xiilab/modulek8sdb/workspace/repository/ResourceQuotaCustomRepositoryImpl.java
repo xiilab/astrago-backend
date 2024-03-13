@@ -18,7 +18,7 @@ public class ResourceQuotaCustomRepositoryImpl implements ResourceQuotaCustomRep
 	public ResourceQuotaEntity findByWorkspaceRecently(String name) {
 		return jpaQueryFactory
 			.selectFrom(resourceQuotaEntity)
-			.where(resourceQuotaEntity.workspace.eq(name))
+			.where(resourceQuotaEntity.workspaceResourceName.eq(name))
 			.orderBy(resourceQuotaEntity.regDate.desc())
 			.limit(1)
 			.fetchOne();

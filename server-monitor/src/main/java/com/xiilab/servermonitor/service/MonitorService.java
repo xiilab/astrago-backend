@@ -81,11 +81,6 @@ public class MonitorService {
 		return monitorFacadeService.getWorkspaceResourceList();
 	}
 
-	/**
-	 * 노드별 GPU, CPU, DISK, MEM 사용량 조회하는 메소드
-	 * @param nodeName 조회될 nodeName
-	 * @return 조회된 GPU, DISK, CPU, MEM 사용량
-	 */
 	public ResponseDTO.NodeResourceDTO getNodeResource(String nodeName){
 		return monitorFacadeService.getNodeResource(nodeName);
 	}

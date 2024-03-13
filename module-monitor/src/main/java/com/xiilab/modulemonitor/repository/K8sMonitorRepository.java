@@ -21,4 +21,5 @@ public interface K8sMonitorRepository {
 	Map<String, Map<String, Long>> getClusterReason(long minute);
 	String getNodeName(String podName, String namespace);
 	ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace);
+	String getWorkspaceName(String workspaceName);
 }

@@ -66,11 +66,15 @@ public class KeycloakGroupRepository implements GroupRepository {
 	@Override
 	public GroupInfoDTO getGroupInfoByCategoryAndName(GroupCategory groupCategory, String groupName) {
 		List<GroupRepresentation> subGroups = getGroupByName(groupCategory.getValue()).getSubGroups();
-		GroupRepresentation groupRepresentation = subGroups.stream()
+		Optional<GroupRepresentation> optinalGroupRepresentation = subGroups.stream()
 			.filter(subGroup -> subGroup.getName().equals(groupName))
-			.findFirst()
-			.orElseThrow();
-		return getGroupById(groupRepresentation.getId());
+			.findFirst();
+		if (optinalGroupRepresentation.isPresent()) {
+			GroupRepresentation groupRepresentation1 = optinalGroupRepresentation.get();
+			return getGroupById(groupRepresentation1.getId());
+		} else {
+			return null;
+		}
 	}
 
 	@Override
