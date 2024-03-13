@@ -1,6 +1,8 @@
 package com.xiilab.modulek8sdb.version.entity;
 
 
+import java.time.LocalDateTime;
+
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -18,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "TB_MAX_CUDA_VERSION")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class MaxCudaVersionEntity extends BaseEntity {
+public class MaxCudaVersionEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MAX_CUDA_VERSION_ID")
@@ -32,6 +34,10 @@ public class MaxCudaVersionEntity extends BaseEntity {
 	@Column(name = "REV")
 	private String rev;
 
+	@Column(name = "REG_DATE")
+	private LocalDateTime regDate;
+	@Column(name = "MOD_DATE")
+	private LocalDateTime modeDate;
 
 	@Builder
 	public MaxCudaVersionEntity(String cudaVersion, String majorVersion, String minorVersion,
@@ -40,5 +46,7 @@ public class MaxCudaVersionEntity extends BaseEntity {
 		this.majorVersion = majorVersion;
 		this.minorVersion = minorVersion;
 		this.rev = rev;
+		this.regDate = LocalDateTime.now();
+		this.modeDate = LocalDateTime.now();
 	}
 }
