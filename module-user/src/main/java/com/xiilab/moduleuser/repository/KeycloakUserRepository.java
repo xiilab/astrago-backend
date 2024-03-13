@@ -368,9 +368,9 @@ public class KeycloakUserRepository implements UserRepository {
 		String userRealName = user.getLastName() + user.getFirstName();
 		String userName = user.getUsername();
 
-		search = user.getEmail().contains(searchText) ||
-			userRealName.contains(searchText) ||
-			userName.contains(searchText);
+		search = (user.getEmail() != null && user.getEmail().contains(searchText)) ||
+			(userRealName != null && userRealName.contains(searchText)) ||
+			(userName != null && userName.contains(searchText));
 		return search;
 	}
 
