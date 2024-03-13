@@ -294,6 +294,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu));
 				case GPU_ASSIGN_DESC ->
 					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed());
+				case CREATOR_ASC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator));
+				case CREATOR_DESC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed());
+				case CREATED_AT_ASC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt));
+				case CREATED_AT_DESC ->
+					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed());
 			};
 		}
 
