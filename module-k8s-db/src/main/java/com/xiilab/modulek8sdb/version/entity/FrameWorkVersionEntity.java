@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.version.entity;
 
 import java.awt.*;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
@@ -24,7 +25,7 @@ import lombok.Setter;
 @Table(name = "TB_FRAMEWORK_VERSION")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class FrameWorkVersionEntity extends BaseEntity {
+public class FrameWorkVersionEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "FRAMEWORK_VERSION_ID")
@@ -37,12 +38,20 @@ public class FrameWorkVersionEntity extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private FrameWorkType frameworkType;
 
+	@Column(name = "REG_DATE")
+	private LocalDateTime regDate;
+	@Column(name = "MOD_DATE")
+	private LocalDateTime modeDate;
+
+
 	@Builder
 	public FrameWorkVersionEntity( String frameworkVersion, String cudaVersion,
 		FrameWorkType frameworkType) {
 		this.frameworkVersion = frameworkVersion;
 		this.cudaVersion = cudaVersion;
 		this.frameworkType = frameworkType;
+		this.regDate = LocalDateTime.now();
+		this.modeDate = LocalDateTime.now();
 	}
 	@Override
 	public boolean equals(Object o) {

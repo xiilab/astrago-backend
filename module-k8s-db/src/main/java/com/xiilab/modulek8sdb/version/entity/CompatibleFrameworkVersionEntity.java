@@ -1,5 +1,7 @@
 package com.xiilab.modulek8sdb.version.entity;
 
+import java.time.LocalDateTime;
+
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -20,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "TB_COMPATIBLE_FRAMEWORK_VERSION")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class CompatibleFrameworkVersionEntity extends BaseEntity {
+public class CompatibleFrameworkVersionEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "COMPATIBLE_FRAMEWORK_VERSION_ID")
@@ -30,8 +32,15 @@ public class CompatibleFrameworkVersionEntity extends BaseEntity {
 	@JoinColumn(name = "FRAMEWORK_VERSION_ID")
 	private FrameWorkVersionEntity frameWorkVersionEntity;
 
+	@Column(name = "REG_DATE")
+	private LocalDateTime regDate;
+	@Column(name = "MOD_DATE")
+	private LocalDateTime modeDate;
+
 	@Builder
 	public CompatibleFrameworkVersionEntity(FrameWorkVersionEntity frameWorkVersionEntity) {
 		this.frameWorkVersionEntity = frameWorkVersionEntity;
+		this.regDate = LocalDateTime.now();
+		this.modeDate = LocalDateTime.now();
 	}
 }
