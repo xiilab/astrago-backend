@@ -4,7 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum SystemAlertType {
-	WORKLOAD,
+	USER,
 	WORKSPACE,
-	ALERT_MANAGER
+	WORKLOAD,
+	LICENSE,
+	NODE
 }
