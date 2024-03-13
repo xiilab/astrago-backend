@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.resource_quota.repository;
 
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.resource_quota.vo.ResourceQuotaReqVO;
@@ -14,4 +16,6 @@ public interface ResourceQuotaRepo {
 	ResourceQuotaResVO getResourceQuotas(String namespace);
 
 	void updateResourceQuota(String workspace, int cpuReq, int memReq, int gpuReq);
+	List<ResourceQuotaResVO> getResourceQuotasList();
+
 }
