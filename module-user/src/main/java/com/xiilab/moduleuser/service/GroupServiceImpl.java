@@ -86,13 +86,17 @@ public class GroupServiceImpl implements GroupService {
 	public void deleteWorkspaceGroupByName(String groupName) {
 		GroupInfoDTO groupInfo = groupRepository.getGroupInfoByCategoryAndName(WORKSPACE,
 			groupName);
-		groupRepository.deleteGroupById(groupInfo.getUid());
+		if (groupInfo != null) {
+			groupRepository.deleteGroupById(groupInfo.getUid());
+		}
 	}
 
 	@Override
 	public void deleteAccountGroupByName(String groupName) {
 		GroupInfoDTO groupInfo = groupRepository.getGroupInfoByCategoryAndName(ACCOUNT, groupName);
-		groupRepository.deleteGroupById(groupInfo.getUid());
+		if (groupInfo != null) {
+			groupRepository.deleteGroupById(groupInfo.getUid());
+		}
 	}
 
 	private void createWorkspaceChildGroup(String parentId, GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
