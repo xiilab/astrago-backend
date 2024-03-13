@@ -389,5 +389,36 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.build())
 			.toList();
 	}
+
+	/**
+	 * worker node들의 gpu 드라이버 버전 정보 조회
+	 */
+	@Override
+	public List<ResponseDTO.WorkerNodeDriverInfo> getWorkerNodeDriverInfos(){
+		List<ResponseDTO.WorkerNodeDriverInfo> workerNodeDriverInfos = new ArrayList<>();
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			List<Node> items = client.nodes().list().getItems();
+			for (Node item : items) {
+				boolean isWorkerNode = item.getMetadata().getLabels().containsKey(ROLE);
+				if(!isWorkerNode){
+					String driverMajor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.major");
+					String driverMinor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.minor");
+					String driverRev = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.rev");
+					String computeMajor = item.getMetadata().getLabels().get("nvidia.com/gpu.compute.major");
+					String computeMinor = item.getMetadata().getLabels().get("nvidia.com/gpu.compute.minor");
+					ResponseDTO.WorkerNodeDriverInfo workerNodeDriverInfo = ResponseDTO.WorkerNodeDriverInfo.builder()
+						.driverMajor(driverMajor)
+						.driverMinor(driverMinor)
+						.driverRev(driverRev)
+						.computeMajor(computeMajor)
+						.computeMinor(computeMinor)
+						.build();
+					workerNodeDriverInfos.add(workerNodeDriverInfo);
+				}
+			}
+		}
+		return workerNodeDriverInfos;
+	}
+
 }
 
