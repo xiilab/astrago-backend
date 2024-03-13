@@ -275,6 +275,31 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.build();
 		}
 	}
+
+	@Override
+	public int getClusterCPU() {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			List<Node> items = kubernetesClient.nodes().list().getItems();
+			return totalCapacity(items,"CPU");
+		}
+	}
+
+	@Override
+	public int getClusterGPU() {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			List<Node> items = kubernetesClient.nodes().list().getItems();
+			return totalCapacity(items,"GPU");
+		}
+	}
+
+	@Override
+	public int getClusterMEM() {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			List<Node> items = kubernetesClient.nodes().list().getItems();
+			return totalCapacity(items,"MEM");
+		}
+	}
+
 	private List<Node> getNodeList(String nodeName){
 		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			if (!StringUtils.isEmpty(nodeName)) {

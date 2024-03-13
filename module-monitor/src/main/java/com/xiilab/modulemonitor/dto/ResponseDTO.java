@@ -135,6 +135,11 @@ public record ResponseDTO() {
 									 String usage){
 	}
 	@Builder
+	public record ResponseClusterResourceDTO(String total,
+											 String request,
+											 String usage){
+	}
+	@Builder
 	public record ClusterResourceDTO(String nodeCount,
 									 String daemonsetCount,
 									 String podCount,
