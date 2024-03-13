@@ -314,7 +314,7 @@ public class KeycloakUserRepository implements UserRepository {
 			// userId 유효 체크
 			userResource.toRepresentation();
 			// 비밀번호 변경을 위해 credential 설정
-			CredentialRepresentation authenticationSettings = getAuthenticationSettings(true, "astrago");
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false, "astrago");
 			//비밀번호 리셋
 			userResource.resetPassword(authenticationSettings);
 		} catch (NotFoundException e) {
