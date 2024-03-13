@@ -330,6 +330,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
 			name);
 		ResourceQuotaEntity recentlyResourceRequest = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
+		ClusterResourceDTO clusterResource = clusterService.getClusterResource();
 		return WorkspaceDTO.AdminInfoDTO
 			.builder()
 			.id(workspaceInfo.getId())
@@ -347,6 +348,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.allocCPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getCpuLimit()))
 			.allocMEM(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getMemLimit()))
 			.allocGPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getGpuLimit()))
+			.totalCPU(clusterResource.getCpu())
+			.totalMEM(clusterResource.getMem())
+			.totalGPU(clusterResource.getGpu())
 			.build();
 	}
 
