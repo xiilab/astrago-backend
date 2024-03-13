@@ -135,9 +135,9 @@ public record ResponseDTO() {
 									 String usage){
 	}
 	@Builder
-	public record ResponseClusterResourceDTO(String total,
-											 String request,
-											 String usage){
+	public record ResponseClusterResourceDTO(int cpu,
+											 int mem,
+											 int gpu){
 	}
 	@Builder
 	public record ClusterResourceDTO(String nodeCount,

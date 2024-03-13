@@ -277,26 +277,17 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	}
 
 	@Override
-	public int getClusterCPU() {
+	public ResponseDTO.ResponseClusterResourceDTO getClusterTotalResource() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			List<Node> items = kubernetesClient.nodes().list().getItems();
-			return totalCapacity(items,"CPU");
-		}
-	}
-
-	@Override
-	public int getClusterGPU() {
-		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			List<Node> items = kubernetesClient.nodes().list().getItems();
-			return totalCapacity(items,"GPU");
-		}
-	}
-
-	@Override
-	public int getClusterMEM() {
-		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			List<Node> items = kubernetesClient.nodes().list().getItems();
-			return totalCapacity(items,"MEM");
+			List<Node> nodeList = kubernetesClient.nodes().list().getItems();
+			List<Pod> podList = kubernetesClient.pods().list().getItems();
+			int cpu = totalCapacity(nodeList, "CPU");
+			int mem = totalCapacity(nodeList, "MEM");
+			int gpu = totalCapacity(nodeList, "GPU");
+			String totalCpuRequests = totalRequests(nodeList, podList, "CPU");
+			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
+			String totalGpuRequests = totalRequests(nodeList, podList, "GPU");
+			return new ResponseDTO.ResponseClusterResourceDTO(cpu, mem, gpu);
 		}
 	}
 
