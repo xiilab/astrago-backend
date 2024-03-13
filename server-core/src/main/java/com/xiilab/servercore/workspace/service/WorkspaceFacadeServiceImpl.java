@@ -126,8 +126,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
-		// 워크스페이스 알림 설정 삭제
-		systemAlertSetService.deleteAlert(workspaceName);
+		// // 워크스페이스 알림 설정 삭제
+		// systemAlertSetService.deleteAlert(workspaceName);
 	}
 
 	@Override
