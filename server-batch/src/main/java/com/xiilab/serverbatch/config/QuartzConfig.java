@@ -26,6 +26,10 @@ public class QuartzConfig {
 	@Bean
 	public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource) {
 		SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
+		AutoWiringSpringBeanJobFactory autoWiringSpringBeanJobFactory = new AutoWiringSpringBeanJobFactory();
+		autoWiringSpringBeanJobFactory.setApplicationContext(applicationContext);
+
+		schedulerFactoryBean.setJobFactory(autoWiringSpringBeanJobFactory);
 		schedulerFactoryBean.setOverwriteExistingJobs(true);
 		schedulerFactoryBean.setAutoStartup(true);
 		schedulerFactoryBean.setTransactionManager(platformTransactionManager);
