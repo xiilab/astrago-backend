@@ -180,7 +180,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				workspaceResourceReqDTO.getGpuReq());
 			//관리자 외의 유저의 경우는 승인 프로세스 진행
 		} else {
-			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO));
+			WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(
+				workspaceResourceReqDTO.getWorkspace());
+			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO, workspaceInfo.getName()));
 		}
 	}
 
@@ -194,7 +196,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.map(resourceQuotaEntity ->
 				ResourceQuotaFormDTO.builder()
 					.id(resourceQuotaEntity.getId())
-					.workspace(resourceQuotaEntity.getWorkspace())
+					.workspaceName(resourceQuotaEntity.getWorkspaceName())
+					.workspaceResourceName(resourceQuotaEntity.getWorkspaceResourceName())
 					.requestReason(resourceQuotaEntity.getRequestReason())
 					.rejectReason(resourceQuotaEntity.getRejectReason())
 					.status(resourceQuotaEntity.getStatus())
@@ -217,14 +220,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
-				resourceQuotaEntity.getWorkspace(),
+				resourceQuotaEntity.getWorkspaceResourceName(),
 				resourceQuotaEntity.getCpuReq(),
 				resourceQuotaEntity.getMemReq(),
 				resourceQuotaEntity.getGpuReq()
 			);
 
 			SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-				resourceQuotaEntity.getWorkspace());
+				resourceQuotaEntity.getWorkspaceResourceName());
 			if (workspaceAlertSet.isResourceApprovalAlert()) {
 
 				systemAlertService.sendAlert(SystemAlertDTO.builder()
@@ -316,7 +319,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.map(resourceQuotaEntity ->
 				ResourceQuotaFormDTO.builder()
 					.id(resourceQuotaEntity.getId())
-					.workspace(resourceQuotaEntity.getWorkspace())
+					.workspaceName(resourceQuotaEntity.getWorkspaceName())
+					.workspaceResourceName(resourceQuotaEntity.getWorkspaceResourceName())
 					.requestReason(resourceQuotaEntity.getRequestReason())
 					.rejectReason(resourceQuotaEntity.getRejectReason())
 					.status(resourceQuotaEntity.getStatus())
