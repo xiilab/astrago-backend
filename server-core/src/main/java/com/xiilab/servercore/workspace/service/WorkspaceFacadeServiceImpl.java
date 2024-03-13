@@ -190,7 +190,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Transactional(readOnly = true)
 	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum,
 		UserInfoDTO userInfoDTO) {
-		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspace(workspace);
+		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspaceResourceName(workspace);
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaReqList.stream()
 			.map(resourceQuotaEntity ->
