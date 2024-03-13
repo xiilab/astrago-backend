@@ -15,10 +15,7 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertSetEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertSetRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -130,16 +127,16 @@ public class BatchJobInformer {
 					// List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = endJob.getCodeWorkloadMappingList();
 					// ImageWorkloadMappingEntity imageWorkloadMappingEntity = endJob.getImageWorkloadMappingEntity();
 
-					SystemAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
-					// 해당 워크스페이스 알림 설정이 True인 경우
-					if(workspaceAlertSet.isWorkloadEndAlert()){
-						systemAlertRepository.save(SystemAlertEntity.builder()
-							.recipientId(metadataFromResource.getCreatorId())
-							.systemAlertType(SystemAlertType.WORKLOAD)
-							.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
-							.senderId("SYSTEM")
-							.build());
-					}
+					// SystemAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+					// // 해당 워크스페이스 알림 설정이 True인 경우
+					// if(workspaceAlertSet.isWorkloadEndAlert()){
+					// 	systemAlertRepository.save(SystemAlertEntity.builder()
+					// 		.recipientId(metadataFromResource.getCreatorId())
+					// 		.systemAlertType(SystemAlertType.WORKLOAD)
+					// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
+					// 		.senderId("SYSTEM")
+					// 		.build());
+					// }
 				}
 			}
 		});

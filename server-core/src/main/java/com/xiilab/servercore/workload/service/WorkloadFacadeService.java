@@ -41,10 +41,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
@@ -431,17 +427,17 @@ public class WorkloadFacadeService {
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 
-		SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-			workloadName);
-		// 해당 워크스페이스 알림 설정이 True인 경우
-		if (workspaceAlertSet.isWorkloadEndAlert()) {
-			systemAlertService.sendAlert(SystemAlertDTO.builder()
-				.recipientId(userInfoDTO.getId())
-				.senderId("SYSTEM")
-				.systemAlertType(SystemAlertType.WORKLOAD)
-				.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
-				.build());
-		}
+		// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+		// 	workloadName);
+		// // 해당 워크스페이스 알림 설정이 True인 경우
+		// if (workspaceAlertSet.isWorkloadEndAlert()) {
+		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
+		// 		.recipientId(userInfoDTO.getId())
+		// 		.senderId("SYSTEM")
+		// 		.systemAlertType(SystemAlertType.WORKLOAD)
+		// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
+		// 		.build());
+		// }
 	}
 
 	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
@@ -450,17 +446,17 @@ public class WorkloadFacadeService {
 			WorkloadType.INTERACTIVE);
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
-		// 해당 워크스페이스 알림 설정이 True인 경우
-		SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-			workloadName);
-		if (workspaceAlertSet.isWorkloadEndAlert()) {
-			systemAlertService.sendAlert(SystemAlertDTO.builder()
-				.recipientId(userInfoDTO.getId())
-				.senderId("SYSTEM")
-				.systemAlertType(SystemAlertType.WORKLOAD)
-				.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
-				.build());
-		}
+		// // 해당 워크스페이스 알림 설정이 True인 경우
+		// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+		// 	workloadName);
+		// if (workspaceAlertSet.isWorkloadEndAlert()) {
+		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
+		// 		.recipientId(userInfoDTO.getId())
+		// 		.senderId("SYSTEM")
+		// 		.systemAlertType(SystemAlertType.WORKLOAD)
+		// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
+		// 		.build());
+		// }
 	}
 
 	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {

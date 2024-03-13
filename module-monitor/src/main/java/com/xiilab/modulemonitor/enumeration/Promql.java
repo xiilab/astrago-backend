@@ -68,7 +68,7 @@ public enum Promql {
 
 	// WORK SPACE
 	WS_GPU_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"cpuRequest.*gpu\", %s}","WorkSpace GPU 할당량 조회", "WorkSpace"),
-	WS_GPU_USAGE("kube_resourcequota{type=\"used\", resource=~\"cpuRequest.*gpu\", %s}","WorkSpace GPU 사용량 조회","WorkSpace"),
+	WS_GPU_USAGE("kube_resourcequota{type=\"used\", resource=~\"requests.nvidia.com/gpu\", %s}","WorkSpace GPU 사용량 조회","WorkSpace"),
 	WS_CPU_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"requests.*cpu\", %s}","WorkSpace CPU 할당량 조회","WorkSpace"),
 	WS_CPU_USAGE("kube_resourcequota{type=\"used\", resource=~\"requests.*cpu\", %s}","WorkSpace CPU 사용량 조회","WorkSpace"),
 	WS_MEM_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"requests.*memory\", %s}","WorkSpace MEM 할당량 조회","WorkSpace"),
@@ -99,7 +99,10 @@ public enum Promql {
 	POD_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\"} != 0)", "POD Pending Count", "POD"),
 	POD_PENDING("kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Pending 조회", "POD"),
 	POD_PENDING_FAIL_INFO("(kube_pod_status_phase{phase=\"Failed\"} != 0 ) or kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Fail, Pending List 조회", "POD"),
-
+	POD_MEM_USAGE_BYTE("container_memory_working_set_bytes{container != \"\", %s}", "POD Mem 사용량 조회 ", "POD"),
+	POD_CPU_USAGE_BYTE("container_cpu_usage_seconds_total{container != \"\", %s}", "POD CPU 사용량 조회 ", "POD"),
+	POD_GPU_UTIL("DCGM_FI_DEV_GPU_UTIL{%s}","POD GPU 사용량 조회","POD"),
+	POD_DUSK_USAGE("container_fs_usage_bytes{}","POD DISK 사용량 조회","POD"),
 	// VOLUME
 	VOLUME_COUNT("count(kube_persistentvolume_info)", "Volume 총 개수 조회", "VOLUME"),
 

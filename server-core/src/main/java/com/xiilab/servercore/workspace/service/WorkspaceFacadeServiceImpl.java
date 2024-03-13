@@ -21,10 +21,7 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
@@ -226,17 +223,17 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				resourceQuotaEntity.getGpuReq()
 			);
 
-			SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-				resourceQuotaEntity.getWorkspaceResourceName());
-			if (workspaceAlertSet.isResourceApprovalAlert()) {
-
-				systemAlertService.sendAlert(SystemAlertDTO.builder()
-					.recipientId(resourceQuotaEntity.getRegUser().getRegUserId())
-					.systemAlertType(SystemAlertType.WORKLOAD)
-					.message(SystemAlertMessage.RESOURCE_APPROVAL.getMessage())
-					.senderId("SYSTEM")
-					.build());
-			}
+			// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+			// 	resourceQuotaEntity.getWorkspaceResourceName());
+			// if (workspaceAlertSet.isResourceApprovalAlert()) {
+			//
+			// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
+			// 		.recipientId(resourceQuotaEntity.getRegUser().getRegUserId())
+			// 		.systemAlertType(SystemAlertType.WORKLOAD)
+			// 		.message(SystemAlertMessage.RESOURCE_APPROVAL.getMessage())
+			// 		.senderId("SYSTEM")
+			// 		.build());
+			// }
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
 		}
