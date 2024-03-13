@@ -326,23 +326,27 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name) {
-		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(name);
-		ResourceQuotaEntity byWorkspaceRecently = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
+		WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(name);
+		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
+			name);
+		ResourceQuotaEntity recentlyResourceRequest = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
 		return WorkspaceDTO.AdminInfoDTO
 			.builder()
-			.id(workspaceInfoByName.getUid())
-			.name(workspaceInfoByName.getName())
-			.resourceName(workspaceInfoByName.getResourceName())
-			.description(workspaceInfoByName.getDescription())
-			.createdAt(workspaceInfoByName.getCreateAt())
-			.creator(workspaceInfoByName.getCreatorName())
-			.reqCPU(byWorkspaceRecently.getCpuReq())
-			.reqMEM(byWorkspaceRecently.getMemReq())
-			.reqGPU(byWorkspaceRecently.getGpuReq())
-			.useCPU(workspaceInfoByName.getLimitCPU())
-			.useMEM(workspaceInfoByName.getLimitMEM())
-			.useGPU(workspaceInfoByName.getLimitGPU())
-			// .allocCPU(workspaceInfoByName)
+			.id(workspaceInfo.getId())
+			.name(workspaceInfo.getName())
+			.resourceName(workspaceInfo.getResourceName())
+			.description(workspaceInfo.getDescription())
+			.createdAt(workspaceInfo.getCreatedAt())
+			.creator(workspaceInfo.getCreatorFullName())
+			.reqCPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getCpuReq())
+			.reqMEM(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getMemReq())
+			.reqGPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getGpuReq())
+			.useCPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getCpuUsed()))
+			.useMEM(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getMemUsed()))
+			.useGPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getGpuUsed()))
+			.allocCPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getCpuLimit()))
+			.allocMEM(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getMemLimit()))
+			.allocGPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getGpuLimit()))
 			.build();
 	}
 
