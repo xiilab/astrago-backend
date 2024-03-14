@@ -69,6 +69,15 @@ public abstract class ImageEntity extends BaseEntity {
 		this.workloadType = workloadType;
 	}
 
+	protected ImageEntity(RegUser regUser, String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
+		WorkloadType workloadType) {
+		super.regUser = regUser;
+		this.imageName = imageName;
+		this.repositoryAuthType = repositoryAuthType;
+		this.imageType = imageType;
+		this.workloadType = workloadType;
+	}
+
 	public abstract boolean isBuiltInImage();
 	public abstract boolean isCustomImage();
 	public abstract boolean isHubImage();

@@ -3,6 +3,7 @@ package com.xiilab.serverbatch.informer;
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -18,15 +19,25 @@ import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertSetEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
+import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
+import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
+import com.xiilab.modulek8sdb.image.repository.ImageRepository;
+import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
+import com.xiilab.moduleuser.service.GroupService;
 
+import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -38,19 +49,29 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
-public class BatchJobInformer {
+public class BatchJobInformer extends JobInformer{
 	private final K8sAdapter k8sAdapter;
-	private final WorkloadHistoryRepo workloadHistoryRepo;
-	private final DatasetRepository datasetRepository;
-	private final ModelRepository modelRepository;
-	private final CodeRepository codeRepository;
-	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
-	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
-	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
+	private final GroupService groupService;
 	private final SystemAlertRepository systemAlertRepository;
 	private final WorkspaceAlertSetRepository workspaceAlertSetRepository;
+
+	public BatchJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
+		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
+		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
+		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
+		ImageWorkloadMappingRepository imageWorkloadMappingRepository, K8sAdapter k8sAdapter,
+		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
+		ImageRepository imageRepository, CredentialRepository credentialRepository,
+		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository) {
+		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
+			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
+			codeRepository, imageRepository, credentialRepository);
+		this.k8sAdapter = k8sAdapter;
+		this.groupService = groupService;
+		this.systemAlertRepository = systemAlertRepository;
+		this.workspaceAlertSetRepository = workspaceAlertSetRepository;
+	}
 
 	@PostConstruct
 	void doInformer() {
@@ -80,7 +101,7 @@ public class BatchJobInformer {
 						K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job2);
 						Pod pod = kubernetesClient.pods()
 							.inNamespace(namespace)
-							.withLabels(Map.of(LabelField.APP.getField(), metadataFromResource.getResourceName()))
+							.withLabels(Map.of(LabelField.APP.getField(), metadataFromResource.getWorkloadResourceName()))
 							.list()
 							.getItems()
 							.get(0);
@@ -92,7 +113,7 @@ public class BatchJobInformer {
 							metadataFromResource.getCreatorId() != null ? metadataFromResource.getCreatorId() :
 								"SYSTEM";
 						try {
-							FileUtils.saveLogFile(logResult, metadataFromResource.getResourceName(), creator);
+							FileUtils.saveLogFile(logResult, metadataFromResource.getWorkloadResourceName(), creator);
 						} catch (IOException e) {
 							log.error("로그 파일 저장 중 에러가 발생하였습니다.\n" + e.getMessage());
 						}
@@ -104,40 +125,25 @@ public class BatchJobInformer {
 			@Override
 			public void onDelete(Job job, boolean b) {
 				log.info("batch job {}가 삭제되었습니다.", job.getMetadata().getName());
-				// Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
-				// Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
+				String namespace = job.getMetadata().getNamespace();
+				Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
+				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
 
 				if (metadataFromResource != null) {
-					JobEntity endJob = workloadHistoryRepo.findByResourceName(job.getMetadata().getName())
-						.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_UPDATE_END_WORKLOAD_INFO));
-
-					// 워크로드 종료될 때, deleteAt 업데이트
-					endJob.updateDeletedAt(metadataFromResource.getDeletedAt());
-					workloadHistoryRepo.save(endJob);
-
-					/**
-					 * TODO DELETE_YN 업데이트 필요, 서비스 삭제 필요
-					 * 모델, 데이터셋은 매핑 엔티티만 업데이트
-					 * 코드, 이미지는 커스텀이면 매핑, 원본 업데이트, 아니면 매핑만 업데이트
-					 */
-
-					// List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = endJob.getModelWorkloadMappingList();
-					// List<DatasetWorkLoadMappingEntity> datasetWorkloadMappingList = endJob.getDatasetWorkloadMappingList();
-					// List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = endJob.getCodeWorkloadMappingList();
-					// ImageWorkloadMappingEntity imageWorkloadMappingEntity = endJob.getImageWorkloadMappingEntity();
-
-					// WorkspaceAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
-					// // 해당 워크스페이스 알림 설정이 True인 경우
-					// if(workspaceAlertSet.isWorkloadEndAlert()){
-					// 	systemAlertRepository.save(SystemAlertEntity.builder()
-					// 		.recipientId(metadataFromResource.getCreatorId())
-					// 		.systemAlertType(SystemAlertType.WORKLOAD)
-					// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
-					// 		.senderId("SYSTEM")
-					// 		.build());
-					// }
+					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
 				}
+
+				// WorkspaceAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+				// // 해당 워크스페이스 알림 설정이 True인 경우
+				// if(workspaceAlertSet.isWorkloadEndAlert()){
+				// 	systemAlertRepository.save(SystemAlertEntity.builder()
+				// 		.recipientId(metadataFromResource.getCreatorId())
+				// 		.systemAlertType(SystemAlertType.WORKLOAD)
+				// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
+				// 		.senderId("SYSTEM")
+				// 		.build());
+				// }
 			}
 		});
 

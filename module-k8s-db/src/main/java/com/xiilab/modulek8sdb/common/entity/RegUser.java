@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
+// @AllArgsConstructor
 @Embeddable
 public class RegUser {
 	@Column(name = "REG_USER_ID")
@@ -17,4 +17,10 @@ public class RegUser {
 	protected String regUserName;
 	@Column(name = "REG_USER_REAL_NAME")
 	protected String regUserRealName;
+
+	public RegUser(String regUserId, String regUserName, String regUserRealName) {
+		this.regUserId = regUserId;
+		this.regUserName = regUserName;
+		this.regUserRealName = regUserRealName;
+	}
 }

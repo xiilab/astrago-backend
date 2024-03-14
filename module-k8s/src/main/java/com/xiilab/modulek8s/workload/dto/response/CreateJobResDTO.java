@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -19,13 +20,14 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class ModuleJobResDTO extends ModuleWorkloadResDTO {
+public class CreateJobResDTO extends ModuleWorkloadResDTO {
 	private WorkloadStatus status;
 	private Map<Long, Map<String, String>> codesInfoMap;
 	private Map<Long, Map<String, String>> datasetInfoMap;
+	// TODO 지워야 될수도?
 	private Map<Long, Map<String, String>> modelInfoMap;
 
-	public ModuleJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
+	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
 		super(deployment);
 		initializeFromContainer(deployment.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = getWorkloadStatus(deployment.getStatus());
@@ -34,7 +36,7 @@ public class ModuleJobResDTO extends ModuleWorkloadResDTO {
 		this.modelInfoMap = modelInfoMap;
 	}
 
-	public ModuleJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
+	public CreateJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
 		super(job);
 		initializeFromContainer(job.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = getWorkloadStatus(job.getStatus());
