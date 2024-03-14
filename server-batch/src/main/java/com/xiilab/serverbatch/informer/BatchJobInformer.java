@@ -15,9 +15,9 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertSetEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertSetEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
-import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertSetRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
@@ -50,7 +50,7 @@ public class BatchJobInformer {
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 	private final SystemAlertRepository systemAlertRepository;
-	private final SystemAlertSetRepository systemAlertSetRepository;
+	private final WorkspaceAlertSetRepository workspaceAlertSetRepository;
 
 	@PostConstruct
 	void doInformer() {
@@ -127,7 +127,7 @@ public class BatchJobInformer {
 					// List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = endJob.getCodeWorkloadMappingList();
 					// ImageWorkloadMappingEntity imageWorkloadMappingEntity = endJob.getImageWorkloadMappingEntity();
 
-					// SystemAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+					// WorkspaceAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 					// // 해당 워크스페이스 알림 설정이 True인 경우
 					// if(workspaceAlertSet.isWorkloadEndAlert()){
 					// 	systemAlertRepository.save(SystemAlertEntity.builder()
@@ -145,7 +145,7 @@ public class BatchJobInformer {
 		informers.startAllRegisteredInformers();
 	}
 
-	private SystemAlertSetEntity getAlertSet(String workspaceName){
-		return systemAlertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
+	private WorkspaceAlertSetEntity getAlertSet(String workspaceName){
+		return workspaceAlertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
 	}
 }

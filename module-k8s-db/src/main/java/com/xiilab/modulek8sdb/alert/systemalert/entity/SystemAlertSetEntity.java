@@ -21,24 +21,46 @@ import lombok.NoArgsConstructor;
 public class SystemAlertSetEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "ALERT_SETTING_ID")
+	@Column(name = "ID")
 	private Long id;
-	@Column(name = "WORKSPACE_NAME")
-	private String workspaceName;
-	@Column(name = "WORKLOAD_START_ALERT")
-	private boolean workloadStartAlert;
-	@Column(name = "WORKLOAD_END_ALERT")
-	private boolean workloadEndAlert;
-	@Column(name = "WORKLOAD_ERROR_ALERT")
-	private boolean workloadErrorAlert;
-	@Column(name = "RESOURCE_APPROVAL_ALERT")
-	private boolean resourceApprovalAlert;
+	@Column(name = "LICENSE_SYSTEM_YN")
+	private boolean licenseSystemYN;
+	@Column(name = "LICENSE_EMAIL_YN")
+	private boolean licenseEmailYN;
+	@Column(name = "USER_SYSTEM_YN")
+	private boolean userSystemYN;
+	@Column(name = "USER_EMAIL_YN")
+	private boolean userEmailYN;
+	@Column(name = "NODE_SYSTEM_YN")
+	private boolean nodeSystemYN;
+	@Column(name = "NODE_EMAIL_YN")
+	private boolean nodeEmailYN;
+	@Column(name = "WORKSPACE_PRODUCE_SYSTEM_YN")
+	private boolean wsProduceSystemYN;
+	@Column(name = "WORKSPACE_PRODUCE_EMAIL_YN")
+	private boolean wsProduceEmailYN;
+	@Column(name = "RESOURCE_OVER_SYSTEM_YN")
+	private boolean resourceOverSystemYN;
+	@Column(name = "RESOURCE_OVER_EMAIL_YN")
+	private boolean resourceOverEmailYN;
+	@Column(name = "WORKSPACE_RESOURCE_SYSTEM_YN")
+	private boolean wsResourceSystemYN;
+	@Column(name = "WORKSPACE_RESOURCE_EMAIL_YN")
+	private boolean wsResourceEmailYN;
 
-	public SystemAlertSetEntity updateAlertSet(SystemAlertSetDTO systemAlertSetDTO){
-		this.workloadStartAlert = systemAlertSetDTO.isWorkloadStartAlert();
-		this.workloadEndAlert = systemAlertSetDTO.isWorkloadEndAlert();
-		this.workloadErrorAlert = systemAlertSetDTO.isWorkloadErrorAlert();
-		this.resourceApprovalAlert = systemAlertSetDTO.isResourceApprovalAlert();
-		return this;
+
+	public void updateSystemAlertSet(SystemAlertSetDTO alertSetDTO){
+		this.licenseSystemYN = alertSetDTO.isLicenseSystemYN();
+		this.licenseEmailYN = alertSetDTO.isLicenseEmailYN();
+		this.userSystemYN = alertSetDTO.isUserSystemYN();
+		this.userEmailYN = alertSetDTO.isUserEmailYN();
+		this.nodeSystemYN = alertSetDTO.isNodeSystemYN();
+		this.nodeEmailYN = alertSetDTO.isNodeEmailYN();
+		this.wsProduceSystemYN = alertSetDTO.isWsProduceSystemYN();
+		this.wsProduceEmailYN = alertSetDTO.isWsProduceEmailYN();
+		this.resourceOverSystemYN = alertSetDTO.isResourceOverSystemYN();
+		this.resourceOverEmailYN = alertSetDTO.isResourceOverEmailYN();
+		this.wsResourceSystemYN = alertSetDTO.isWsResourceSystemYN();
+		this.wsResourceEmailYN = alertSetDTO.isWsResourceEmailYN();
 	}
 }

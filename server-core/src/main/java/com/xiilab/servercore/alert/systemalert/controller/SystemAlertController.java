@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/api/v1/core/system")
+@RequestMapping("/api/v1/core/systemAlert")
 @RequiredArgsConstructor
 public class SystemAlertController {
 
@@ -48,5 +48,6 @@ public class SystemAlertController {
 		systemAlertService.deleteAlertById(id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 
 }
