@@ -24,7 +24,7 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
@@ -40,13 +40,13 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	private final WorkloadRepository workloadRepository;
 
-	public ModuleJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+	public CreateJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
 		String workspaceName) {
 		return workloadRepository.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toBatchJobVO(workspaceName));
 	}
 
 	@Override
-	public ModuleJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+	public CreateJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
 		String workspaceName) {
 		return workloadRepository.createInteractiveJobWorkload(
 			moduleCreateWorkloadReqDTO.toInteractiveJobVO(workspaceName));

@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulealert.dto.SystemAlertDTO;
@@ -35,6 +36,7 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
@@ -43,13 +45,19 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
+import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
+import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
+import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
@@ -62,11 +70,13 @@ import com.xiilab.servercore.credential.service.CredentialService;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.image.dto.ImageReqDTO;
+import com.xiilab.servercore.image.dto.ImageResDTO;
 import com.xiilab.servercore.image.service.ImageService;
+import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
-import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
+import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
@@ -79,6 +89,7 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final PinService pinService;
+	private final ModelService modelService;
 	private final DatasetService datasetService;
 	private final WorkloadHistoryService workloadHistoryService;
 	private final CredentialService credentialService;
@@ -115,15 +126,9 @@ public class WorkloadFacadeService {
 
 		try {
 			// 커스텀 이미지일 때만 이미지 데이터 저장
-			if (moduleCreateWorkloadReqDTO.getImage().getType() == ImageType.CUSTOM && ObjectUtils.isEmpty(
-				moduleCreateWorkloadReqDTO.getImage().getId())) {
-				saveCustomImageAndRequestSetImageId(moduleCreateWorkloadReqDTO);
-			}
-			saveCodeAndRequestSetCodeId(moduleCreateWorkloadReqDTO);
-			ModuleJobResDTO jobWorkload = workloadModuleFacadeService.createJobWorkload(
+			CreateJobResDTO jobWorkload = workloadModuleFacadeService.createJobWorkload(
 				moduleCreateWorkloadReqDTO.toModuleDTO());
 			// 워크로드 엔티티에 데이터 추가
-			workloadHistoryService.saveWorkloadHistory(WorkloadHistoryReqDTO.CreateWorkloadHistory.from(jobWorkload));
 			systemAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
 		} catch (RestApiException e) {
 			e.printStackTrace();
@@ -137,14 +142,14 @@ public class WorkloadFacadeService {
 		if (imageDTO.getType() == ImageType.CUSTOM && ObjectUtils.isEmpty(imageDTO.getId())) {
 			// Image ID가 없으면 커스텀 이미지로 등록
 			ImageReqDTO.SaveImage saveImageReqDTO = ImageReqDTO.SaveImage.createCustomImageBuilder()
-				.imageName(moduleCreateWorkloadReqDTO.getImage().getName())
-				.repositoryAuthType(moduleCreateWorkloadReqDTO.getImage().getRepositoryAuthType())
-				.imageType(moduleCreateWorkloadReqDTO.getImage().getType())
+				.imageName(imageDTO.getName())
+				.repositoryAuthType(imageDTO.getRepositoryAuthType())
+				.imageType(imageDTO.getType())
 				.workloadType(moduleCreateWorkloadReqDTO.getWorkloadType())
 				.credentialId(moduleCreateWorkloadReqDTO.getImage().getCredentialId())
 				.build();
-			ImageEntity imageEntity = imageService.saveImage(saveImageReqDTO);
-			moduleCreateWorkloadReqDTO.getImage().setId(imageEntity.getId());
+			Long saveImageId = imageService.saveImage(saveImageReqDTO);
+			moduleCreateWorkloadReqDTO.getImage().setId(saveImageId);
 		}
 	}
 
@@ -203,10 +208,53 @@ public class WorkloadFacadeService {
 		moduleImageReqDTO.setCredentialReqDTO(findCredential.toModuleCredentialReqDTO());
 	}
 
-	public WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName,
-		String workloadResourceName) {
-		return workloadHistoryService.getWorkloadInfoByResourceName(
-			workspaceName, workloadResourceName);
+	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(
+		WorkloadType workloadType,
+		String workspaceName,
+		String workloadResourceName,
+		WorkloadStatus workloadStatus) {
+		// 실행중일 떄
+		if (workloadType == WorkloadType.BATCH && workloadStatus != WorkloadStatus.END) {
+			ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+				workloadResourceName);
+			return getActiveWorkloadDetail(moduleBatchJobResDTO);
+		} else if (workloadType == WorkloadType.INTERACTIVE && workloadStatus != WorkloadStatus.END) {
+			ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+				workspaceName, workloadResourceName);
+			return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+			// if (moduleInteractiveJobResDTO.getStatus() != WorkloadStatus.END) {
+			// 	return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+			// } else {
+			// 	return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
+			// }
+		} else {
+			return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
+		}
+	}
+
+	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail getActiveWorkloadDetail(
+		T moduleJobResDTO) {
+		// 이미지 DTO 세팅
+		FindWorkloadResDTO.Image image = generateImageResDTO(moduleJobResDTO);
+		// 모델 세팅
+		List<FindWorkloadResDTO.Volume> models = generateModelResDTO(moduleJobResDTO.getModelIds(),
+			moduleJobResDTO.getModelMountPathMap());
+		// 데이터셋 세팅
+		List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
+			moduleJobResDTO.getDatasetMountPathMap());
+		// 코드 세팅
+		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
+		// PORT 세팅
+		List<FindWorkloadResDTO.Port> ports = moduleJobResDTO.getPorts().stream()
+			.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort()))
+			.toList();
+		// ENV 세팅
+		List<FindWorkloadResDTO.Env> envs = moduleJobResDTO.getEnvs().stream()
+			.map(env -> new FindWorkloadResDTO.Env(env.variable(), env.value()))
+			.toList();
+
+		return FindWorkloadResDTO.WorkloadDetail.from(moduleJobResDTO, image, models, datasets, codes,
+			ports, envs);
 	}
 
 	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {
@@ -506,4 +554,167 @@ public class WorkloadFacadeService {
 		return workloadModuleService.mkdirToWorkload(workloadName, workspaceName, workloadType, path);
 	}
 
+	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.Image generateImageResDTO(T moduleJobResDTO) {
+		if (StringUtils.hasText(moduleJobResDTO.getImageType())) {
+			if (!StringUtils.hasText(moduleJobResDTO.getImageId()) && moduleJobResDTO.getImageType()
+				.equals(ImageType.CUSTOM.name())) {
+				return createCustomTypeImageDTO(moduleJobResDTO);
+			} else {
+				return createOtherTypeImageDTO(moduleJobResDTO);
+			}
+		} else {
+			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_IMAGE_INFO);
+		}
+	}
+
+	private CredentialResDTO.CredentialInfo getCredentialInfoDTO(Long credentialId) {
+		if (!NumberValidUtils.isNullOrZero(credentialId)) {
+			return credentialService.findCredentialById(credentialId, null);
+		} else {
+			return null;
+		}
+	}
+
+	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.Image createCustomTypeImageDTO(T moduleJobResDTO) {
+		CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(
+			moduleJobResDTO.getImageCredentialId());
+
+		return FindWorkloadResDTO.Image.customTypeImageResDTO()
+			.regUserId(moduleJobResDTO.getCreatorId())
+			.regUserName(moduleJobResDTO.getCreatorUserName())
+			.regUserRealName(moduleJobResDTO.getCreatorFullName())
+			.regDate(moduleJobResDTO.getCreatedAt())
+			.title(moduleJobResDTO.getImage())
+			.name(moduleJobResDTO.getImage())
+			.type(ImageType.valueOf(moduleJobResDTO.getImageType()))
+			.repositoryAuthType(RepositoryAuthType.PUBLIC)
+			.credentialId(findCredential != null ? findCredential.getId() : null)
+			.credentialName(findCredential != null ? findCredential.getName() : null)
+			.build();
+	}
+
+	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.Image createOtherTypeImageDTO(T moduleJobResDTO) {
+		ImageResDTO.FindImage findImage = imageService.findImageById(
+			Long.parseLong(moduleJobResDTO.getImageId()));
+		return FindWorkloadResDTO.Image.otherTypeImageResDTO()
+			.regUserId(findImage.getRegUserId())
+			.regUserName(findImage.getRegUserName())
+			.regUserRealName(findImage.getRegUserRealName())
+			.regDate(findImage.getRegDate())
+			.title(StringUtils.hasText(findImage.getTitle())? findImage.getTitle() : findImage.getImageName())
+			.id(findImage.getId())
+			.name(findImage.getImageName())
+			.type(findImage.getImageType())
+			.repositoryAuthType(findImage.getRepositoryAuthType())
+			.build();
+	}
+
+	private List<FindWorkloadResDTO.Volume> generateModelResDTO(String ids, Map<Long, String> mountMap) {
+		List<FindWorkloadResDTO.Volume> models = new ArrayList<>();
+		if (StringUtils.hasText(ids)) {
+			String[] splitIds = ids.split(",");
+			for (String s : splitIds) {
+				long modelId = Long.parseLong(s);
+				Model findModel = modelService.findById(modelId);
+				FindWorkloadResDTO.Volume modelVol = new FindWorkloadResDTO.Volume(
+					findModel.getRegUser().getRegUserId(),
+					findModel.getRegUser().getRegUserName(),
+					findModel.getRegUser().getRegUserRealName(),
+					findModel.getRegDate(),
+					findModel.getModDate(),
+					findModel.getModelId(),
+					findModel.getModelName(),
+					mountMap.get(findModel.getModelId()),
+					findModel.getModelSize(),
+					findModel.getDivision(),
+					findModel.isAstragoModel() ?
+						((AstragoModelEntity)findModel).getStorageEntity().getStorageType()
+						:
+						((LocalModelEntity)findModel).getStorageType()
+				);
+				models.add(modelVol);
+			}
+		}
+
+		return models;
+	}
+
+	private List<FindWorkloadResDTO.Volume> generateDatasetResDTO(String ids, Map<Long, String> mountMap) {
+		List<FindWorkloadResDTO.Volume> datasets = new ArrayList<>();
+		if (StringUtils.hasText(ids)) {
+			String[] splitIds = ids.split(",");
+			for (String s : splitIds) {
+				long datasetId = Long.parseLong(s);
+				Dataset findDataset = datasetService.findById(datasetId);
+				FindWorkloadResDTO.Volume datasetVol = FindWorkloadResDTO.Volume.volumeResDTO()
+					.regUserId(findDataset.getRegUser().getRegUserId())
+					.regUserName(findDataset.getRegUser().getRegUserName())
+					.regUserRealName(findDataset.getRegUser().getRegUserRealName())
+					.regDate(findDataset.getRegDate())
+					.modDate(findDataset.getModDate())
+					.id(findDataset.getDatasetId())
+					.name(findDataset.getDatasetName())
+					.mountPath(mountMap.get(findDataset.getDatasetId()))
+					.size(findDataset.getDatasetSize())
+					.division(findDataset.getDivision())
+					.storageType(findDataset.isAstragoDataset() ?
+						((AstragoDatasetEntity)findDataset).getStorageEntity().getStorageType()
+						:
+						((LocalDatasetEntity)findDataset).getStorageType())
+					.build();
+				datasets.add(datasetVol);
+			}
+		}
+		return datasets;
+	}
+
+	private <T extends ModuleWorkloadResDTO> List<FindWorkloadResDTO.Code> generateCodeResDTO(T moduleJobResDTO) {
+		List<FindWorkloadResDTO.Code> codes = new ArrayList<>();
+		for (ModuleCodeResDTO code : moduleJobResDTO.getCodes()) {
+			FindWorkloadResDTO.Code addCode = null;
+			CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(code.getCredentialId());
+			// 커스텀 코드일 경우
+			if (NumberValidUtils.isNullOrZero(code.getSourceCodeId())
+				&& code.getRepositoryType() == RepositoryType.USER) {
+				addCode = FindWorkloadResDTO.Code.codeResDTO()
+					.id(null)
+					.regUserId(moduleJobResDTO.getCreatorId())
+					.regUserName(moduleJobResDTO.getCreatorUserName())
+					.regUserRealName(moduleJobResDTO.getCreatorFullName())
+					.regDate(moduleJobResDTO.getCreatedAt())
+					.title(code.getRepositoryUrl())
+					.repositoryURL(code.getRepositoryUrl())
+					.branch(code.getBranch())
+					.mountPath(code.getMountPath())
+					.codeType(code.getCodeType())
+					.repositoryAuthType(code.getRepositoryAuthType())
+					.credentialId(findCredential != null ? findCredential.getId() : null)
+					.credentialName(findCredential != null ? findCredential.getName() : null)
+					.repositoryType(code.getRepositoryType())
+					.build();
+			} else {    // 공유 코드일 경우
+				CodeResDTO findCode = codeService.getCodeById(code.getSourceCodeId());
+				addCode = FindWorkloadResDTO.Code.codeResDTO()
+					.id(findCode.getId())
+					.regUserId(findCode.getRegUser().getRegUserId())
+					.regUserName(findCode.getRegUser().getRegUserName())
+					.regUserRealName(findCode.getRegUser().getRegUserRealName())
+					.regDate(findCode.getRegDate())
+					.title(code.getRepositoryUrl())
+					.repositoryURL(code.getRepositoryUrl())
+					.branch(code.getBranch())
+					.mountPath(code.getMountPath())
+					.codeType(code.getCodeType())
+					.repositoryAuthType(code.getRepositoryAuthType())
+					.credentialId(findCredential != null ? findCredential.getId() : null)
+					.credentialName(findCredential != null ? findCredential.getName() : null)
+					.repositoryType(code.getRepositoryType())
+					.build();
+			}
+
+			codes.add(addCode);
+		}
+
+		return codes;
+	}
 }

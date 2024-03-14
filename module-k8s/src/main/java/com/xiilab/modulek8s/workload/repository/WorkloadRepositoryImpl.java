@@ -27,7 +27,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
@@ -36,7 +36,6 @@ import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
-import com.xiilab.modulek8s.workload.vo.WorkloadVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
@@ -65,21 +64,21 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
+	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 		Job resource = (Job)createResource(batchJobVO.createResource());
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
-		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
-	public ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
+	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
 		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVOJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getModels());
-		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
@@ -711,7 +710,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private JobList  getBatchJobList(String workSpaceName) {
+	private JobList getBatchJobList(String workSpaceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).list();
 		}

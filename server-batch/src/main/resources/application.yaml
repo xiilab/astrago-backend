@@ -59,3 +59,5 @@ admin:
   secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
 
 mig-profile-path: src/main/resources/MigProfile.json
+prometheus:
+  url: http://10.61.3.8:30090/

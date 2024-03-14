@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,6 +10,8 @@ import java.util.stream.Collectors;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.GitEnvType;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -113,7 +116,8 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	// 요청된 워크로드 리소스 MAP로 반환
 	public Map<String, Quantity> getWorkloadResourceMap() {
 		// 소수점 한자리로 변환
-		String strCpuRequest = String.format("%.1f", cpuRequest) + ResourcesUnit.CPU_UNIT.getUnit();
+		//String strCpuRequest = String.format("%.1f", cpuRequest * 1000) + ResourcesUnit.CPU_UNIT.getUnit();
+		String strCpuRequest = String.valueOf(cpuRequest);
 		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
 
 		// gpu 요청여부에 따라 다른 결과 반환
@@ -124,18 +128,26 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 
 	private List<EnvVar> getGithubEnvVarList(JobCodeVO codeVO) {
 		List<EnvVar> result = new ArrayList<>();
-		result.add(new EnvVarBuilder().withName("GIT_SYNC_REPO").withValue(codeVO.repositoryURL()).build());
-		result.add(new EnvVarBuilder().withName("GIT_SYNC_BRANCH").withValue(codeVO.branch()).build());
-		result.add(new EnvVarBuilder().withName("GIT_SYNC_ROOT").withValue(codeVO.mountPath()).build());
-		result.add(new EnvVarBuilder().withName("GIT_SYNC_PERMISSIONS").withValue("0777").build());
-		result.add(new EnvVarBuilder().withName("GIT_SYNC_ONE_TIME").withValue("true").build());
-		result.add(new EnvVarBuilder().withName("GIT_SYNC_TIMEOUT").withValue("600").build());
-		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialName())
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_REPO.name()).withValue(codeVO.repositoryURL()).build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_BRANCH.name()).withValue(codeVO.branch()).build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue(codeVO.mountPath()).build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_PERMISSIONS.name()).withValue("0777").build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ONE_TIME.name()).withValue("true").build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
+		// 공유 코드면 ID 환경변수로 저장
+		if (!NumberValidUtils.isNullOrZero(codeVO.id())) {
+			result.add(new EnvVarBuilder().withName(GitEnvType.SOURCE_CODE_ID.name()).withValue(String.valueOf(codeVO.id())).build());
+		}
+		// GITHUB 크레덴셜 정보 환경변수로 저장
+		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialLoginId())
 			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
-			result.add(new EnvVarBuilder().withName("GIT_SYNC_USERNAME")
-				.withValue(codeVO.credentialVO().credentialName())
+			result.add(new EnvVarBuilder().withName(GitEnvType.CREDENTIAL_ID.name())
+				.withValue(NumberValidUtils.isNullOrZero(codeVO.credentialVO().credentialId())? "": String.valueOf(codeVO.credentialVO().credentialId()))
 				.build());
-			result.add(new EnvVarBuilder().withName("GIT_SYNC_PASSWORD")
+			result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_USERNAME.name())
+				.withValue(codeVO.credentialVO().credentialLoginId())
+				.build());
+			result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_PASSWORD.name())
 				.withValue(codeVO.credentialVO().credentialLoginPw())
 				.build());
 		}
@@ -161,6 +173,15 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		return list.stream()
 			.map(jobCodeVO -> String.valueOf(jobCodeVO.id()))
 			.collect(Collectors.joining(","));
+	}
+
+	protected Map<String, String> getPodAnnotationMap() {
+		Map<String, String> map = new HashMap<>();
+		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
+		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
+		this.codes.forEach(code -> map.put("cd-" + code.id(), code.mountPath()));
+
+		return map;
 	}
 
 	public abstract KubernetesResource createSpec();

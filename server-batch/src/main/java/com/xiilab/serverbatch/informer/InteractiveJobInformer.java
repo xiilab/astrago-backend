@@ -1,24 +1,36 @@
 package com.xiilab.serverbatch.informer;
 
+import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
+
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import com.xiilab.modulealert.dto.SystemAlertDTO;
 import com.xiilab.modulealert.dto.SystemAlertSetDTO;
 import com.xiilab.modulealert.enumeration.SystemAlertMessage;
 import com.xiilab.modulealert.enumeration.SystemAlertType;
 import com.xiilab.modulealert.service.SystemAlertService;
 import com.xiilab.modulealert.service.SystemAlertSetService;
+import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8sdb.code.repository.CodeRepository;
+import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.image.repository.ImageRepository;
+import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
+import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
@@ -29,18 +41,29 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
-public class InteractiveJobInformer {
+public class InteractiveJobInformer extends JobInformer {
 	private final K8sAdapter k8sAdapter;
-	private final WorkloadHistoryRepo workloadHistoryRepo;
-	private final DatasetRepository datasetRepository;
-	private final ModelRepository modelRepository;
-	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
-	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final GroupService groupService;
 	private final SystemAlertService systemAlertService;
 	private final SystemAlertSetService systemAlertSetService;
+
+	public InteractiveJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
+		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
+		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
+		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
+		ImageWorkloadMappingRepository imageWorkloadMappingRepository, K8sAdapter k8sAdapter,
+		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
+		ImageRepository imageRepository, CredentialRepository credentialRepository,
+		GroupService groupService, SystemAlertService systemAlertService, SystemAlertSetService systemAlertSetService) {
+		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
+			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
+			codeRepository, imageRepository, credentialRepository);
+		this.k8sAdapter = k8sAdapter;
+		this.groupService = groupService;
+		this.systemAlertService = systemAlertService;
+		this.systemAlertSetService = systemAlertSetService;
+	}
 
 	@PostConstruct
 	void doInformer() {
@@ -57,9 +80,10 @@ public class InteractiveJobInformer {
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
+				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+					deployment.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
-				if(workspaceAlertSet.isWorkloadStartAlert()){
+				if (workspaceAlertSet.isWorkloadStartAlert()) {
 					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
 					systemAlertService.sendAlert(SystemAlertDTO.builder()
 						.recipientId(workspaceOwner.getId())
@@ -77,48 +101,25 @@ public class InteractiveJobInformer {
 
 			@Override
 			public void onDelete(Deployment deployment, boolean b) {
-				// log.info("interactive job {}가 삭제되었습니다.", deployment.getMetadata().getName());
-				// String namespace = deployment.getMetadata().getNamespace();
-				// Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
-				// Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
-				// K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
-				// if (metadataFromResource != null) {
-				// 	JobEntity jobEntity = JobEntity.jobBuilder()
-				// 		.name(metadataFromResource.getName())
-				// 		.description(metadataFromResource.getDescription())
-				// 		.resourceName(metadataFromResource.getResourceName())
-				// 		.workspaceName(namespaceObject.getMetadata().getLabels().get(""))
-				// 		.workspaceResourceName(namespace)
-				// 		.envs(getEnvFromContainer(container))
-				// 		.cpuReq(metadataFromResource.getCpuReq())
-				// 		.memReq(metadataFromResource.getMemReq())
-				// 		.gpuReq(metadataFromResource.getGpuReq())
-				// 		.cmd(String.join(" ", container.getCommand()))
-				// 		.createdAt(metadataFromResource.getCreatedAt())
-				// 		.deletedAt(metadataFromResource.getDeletedAt())
-				// 		.creatorName(metadataFromResource.getCreatorUserName())
-				// 		.creatorId(metadataFromResource.getCreatorId())
-				// 		.workloadType(WorkloadType.INTERACTIVE)
-				// 		.build();
-				// 	workloadHistoryRepo.save(jobEntity);
-				// 	// dataset, model mapping insert
-				// 	String datasetIds = metadataFromResource.getDatasetIds();
-				// 	String[] datasetIdList = datasetIds != null ? datasetIds.split(",") : null;
-				// 	saveDataMapping(datasetIdList, datasetRepository::findById, jobEntity, VolumeType.DATASET);
-				//
-				// 	String modelIds = metadataFromResource.getModelIds();
-				// 	String[] modelIdList = modelIds != null ? modelIds.split(",") : null;
-				// 	saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
-				// }
+				log.info("interactive job {}가 삭제되었습니다.", deployment.getMetadata().getName());
+				String namespace = deployment.getMetadata().getNamespace();
+				Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
+				Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
+				K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
+				if (metadataFromResource != null) {
+					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
+				}
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(deployment.getMetadata().getName());
+				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+					deployment.getMetadata().getName());
 				// 해당 워크스페이스 알림 설정이 True인 경우
-				if(workspaceAlertSet.isWorkloadEndAlert()){
+				if (workspaceAlertSet.isWorkloadEndAlert()) {
 					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
 					systemAlertService.sendAlert(SystemAlertDTO.builder()
 						.recipientId(workspaceOwner.getId())
 						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
+						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(),
+							deployment.getMetadata().getName()))
 						.senderId("SYSTEM")
 						.build());
 				}

@@ -10,9 +10,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleEnvResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
-import com.xiilab.modulek8sdb.workload.history.dto.PortDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,31 +57,31 @@ public class WorkloadHistoryReqDTO {
 		@JsonIgnore
 		private Map<Long, Map<String, String>> modelInfoMap;
 
-		public static CreateWorkloadHistory from(ModuleJobResDTO moduleJobResDTO) {
+		public static CreateWorkloadHistory from(CreateJobResDTO createJobResDTO) {
 			return CreateWorkloadHistory.builder()
-				.imageId(moduleJobResDTO.getImageId())
-				.name(moduleJobResDTO.getName())
-				.description(moduleJobResDTO.getDescription())
-				.resourceName(moduleJobResDTO.getResourceName())
-				.workspaceName(moduleJobResDTO.getWorkspaceName())
-				.workspaceResourceName(moduleJobResDTO.getWorkspaceResourceName())
-				.envs(convertEnvDtoToMap(moduleJobResDTO.getEnvs()))
-				.ports(convertPortDtoToMap(moduleJobResDTO.getPorts()))
-				.gpuRequest(Integer.parseInt(moduleJobResDTO.getGpuRequest()))
-				.cpuRequest(Float.parseFloat(moduleJobResDTO.getCpuRequest()))
-				.memRequest(Float.parseFloat(moduleJobResDTO.getMemRequest()))
-				.creatorRealName(moduleJobResDTO.getCreatorFullName())
-				.creatorName(moduleJobResDTO.getCreatorUserName())
-				.creatorId(moduleJobResDTO.getCreatorId())
-				.workloadType(moduleJobResDTO.getType())
-				.cmd(moduleJobResDTO.getCommand())
-				.createdAt(moduleJobResDTO.getCreatedAt())
-				.datasetIds(moduleJobResDTO.getDatasetIds())
-				.modelIds(moduleJobResDTO.getModelIds())
-				.codeIds(moduleJobResDTO.getCodeIds())
-				.codesInfoMap(moduleJobResDTO.getCodesInfoMap())
-				.datasetInfoMap(moduleJobResDTO.getDatasetInfoMap())
-				.modelInfoMap(moduleJobResDTO.getModelInfoMap())
+				.imageId(createJobResDTO.getImageId())
+				.name(createJobResDTO.getName())
+				.description(createJobResDTO.getDescription())
+				.resourceName(createJobResDTO.getResourceName())
+				.workspaceName(createJobResDTO.getWorkspaceName())
+				.workspaceResourceName(createJobResDTO.getWorkspaceResourceName())
+				.envs(convertEnvDtoToMap(createJobResDTO.getEnvs()))
+				.ports(convertPortDtoToMap(createJobResDTO.getPorts()))
+				.gpuRequest(Integer.parseInt(createJobResDTO.getGpuRequest()))
+				.cpuRequest(Float.parseFloat(createJobResDTO.getCpuRequest()))
+				.memRequest(Float.parseFloat(createJobResDTO.getMemRequest()))
+				.creatorRealName(createJobResDTO.getCreatorFullName())
+				.creatorName(createJobResDTO.getCreatorUserName())
+				.creatorId(createJobResDTO.getCreatorId())
+				.workloadType(createJobResDTO.getType())
+				.cmd(createJobResDTO.getCommand())
+				.createdAt(createJobResDTO.getCreatedAt())
+				.datasetIds(createJobResDTO.getDatasetIds())
+				.modelIds(createJobResDTO.getModelIds())
+				.codeIds(createJobResDTO.getCodeIds())
+				.codesInfoMap(createJobResDTO.getCodesInfoMap())
+				.datasetInfoMap(createJobResDTO.getDatasetInfoMap())
+				.modelInfoMap(createJobResDTO.getModelInfoMap())
 				.build();
 		}
 
