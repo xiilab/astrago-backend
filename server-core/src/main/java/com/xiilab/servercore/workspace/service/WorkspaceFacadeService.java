@@ -10,6 +10,7 @@ import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 
@@ -36,9 +37,19 @@ public interface WorkspaceFacadeService {
 	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO);
 
 	void deleteResourceQuota(long id);
+
 	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserInfoDTO userInfoDTO);
+
 	WorkspaceAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName);
+
 	WorkspaceAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, WorkspaceAlertSetDTO workspaceAlertSetDTO);
 
 	boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO);
+
+	PageDTO<WorkspaceDTO.AdminResponseDTO> getAdminWorkspaceList(String searchCondition,
+		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserInfoDTO userInfoDTO);
+
+	PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserInfoDTO userInfoDTO);
+
+	WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name);
 }

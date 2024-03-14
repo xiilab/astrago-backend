@@ -428,8 +428,8 @@ public class WorkloadFacadeService {
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 
-		WorkspaceAlertSetDTO.ResponseDTO workspaceAlertSet = workspaceAlertSetService.getWorkspaceAlertSet(
-			workloadName);
+		// WorkspaceAlertSetDTO.ResponseDTO workspaceAlertSet = workspaceAlertSetService.getWorkspaceAlertSet(
+		// 	workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
 		// if (workspaceAlertSet.isWorkloadEndAlert()) {
 		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()

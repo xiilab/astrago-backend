@@ -97,18 +97,18 @@ public class InteractiveJobInformer {
 				// 	saveDataMapping(modelIdList, modelRepository::findById, jobEntity, VolumeType.MODEL);
 				// }
 
-				WorkspaceAlertSetEntity workspaceAlertSet = workspaceAlertSetRepository.getAlertSetEntityByWorkspaceName(
-					deployment.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if(workspaceAlertSet.isWorkloadEndAlert()){
-					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					systemAlertRepository.save(SystemAlertEntity.builder()
-						.recipientId(workspaceOwner.getId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
+				// WorkspaceAlertSetEntity workspaceAlertSet = workspaceAlertSetRepository.getAlertSetEntityByWorkspaceName(
+				// 	deployment.getMetadata().getName());
+				// // 해당 워크스페이스 알림 설정이 True인 경우
+				// if(workspaceAlertSet.isWorkloadEndAlert()){
+				// 	GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
+				// 	systemAlertRepository.save(SystemAlertEntity.builder()
+				// 		.recipientId(workspaceOwner.getId())
+				// 		.systemAlertType(SystemAlertType.WORKLOAD)
+				// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
+				// 		.senderId("SYSTEM")
+				// 		.build());
+				// }
 			}
 		});
 
