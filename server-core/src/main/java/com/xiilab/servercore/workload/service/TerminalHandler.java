@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xiilab.servercore.workload.dto.TerminalMessage;
+import com.xiilab.servercore.workload.dto.request.TerminalMessage;
 
 import lombok.extern.slf4j.Slf4j;
 
