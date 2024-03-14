@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
 
 @Repository
-public interface ResourceQuotaRepository extends JpaRepository<ResourceQuotaEntity, Long> {
+public interface ResourceQuotaHistoryRepository extends JpaRepository<ResourceQuotaEntity, Long> {
 	List<ResourceQuotaEntity> findByWorkspaceResourceName(String workspace);
 
 	@Transactional

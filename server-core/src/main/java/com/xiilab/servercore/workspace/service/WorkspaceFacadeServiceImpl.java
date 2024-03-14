@@ -19,6 +19,8 @@ import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
+import com.xiilab.modulek8s.resource_quota.dto.TotalResourceQuotaDTO;
+import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
@@ -28,7 +30,7 @@ import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaCustomRepository;
-import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
+import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaHistoryRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
@@ -36,6 +38,7 @@ import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
+import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 
@@ -48,7 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
-	private final ResourceQuotaRepository resourceQuotaRepository;
+	private final ResourceQuotaService resourceQuotaService;
+	private final ResourceQuotaHistoryRepository resourceQuotaHistoryRepository;
 	private final ResourceQuotaCustomRepository resourceQuotaCustomRepository;
 	private final PinService pinService;
 	private final GroupService groupService;
@@ -125,7 +129,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//워크스페이스 삭제
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
 		//리소스 요청 목록 삭제
-		resourceQuotaRepository.deleteByWorkspaceResourceName(workspaceName);
+		int deleteResult = resourceQuotaHistoryRepository.deleteByWorkspaceResourceName(workspaceName);
+		log.info("리소스 요청 목록 {}건 삭제", deleteResult);
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
@@ -182,7 +187,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		} else {
 			WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(
 				workspaceResourceReqDTO.getWorkspace());
-			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO, workspaceInfo.getName()));
+			resourceQuotaHistoryRepository.save(
+				new ResourceQuotaEntity(workspaceResourceReqDTO, workspaceInfo.getName()));
 		}
 	}
 
@@ -190,7 +196,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Transactional(readOnly = true)
 	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum,
 		UserInfoDTO userInfoDTO) {
-		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspaceResourceName(workspace);
+		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaHistoryRepository.findByWorkspaceResourceName(
+			workspace);
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaReqList.stream()
 			.map(resourceQuotaEntity ->
@@ -216,7 +223,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	@Transactional
 	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO) {
-		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaRepository.findById(id).orElseThrow();
+		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaHistoryRepository.findById(id).orElseThrow();
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
@@ -244,7 +251,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public void deleteResourceQuota(long id) {
-		resourceQuotaRepository.deleteById(id);
+		resourceQuotaHistoryRepository.deleteById(id);
 	}
 
 	@Override
@@ -303,8 +310,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed());
 				case CREATED_AT_ASC ->
 					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt));
-				case CREATED_AT_DESC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed());
+				case CREATED_AT_DESC -> workspaceStream.sorted(
+					Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed());
 			};
 		}
 
@@ -312,8 +319,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserInfoDTO userInfoDTO) {
-		List<ResourceQuotaEntity> resourceQuotaEntityList = resourceQuotaRepository.findAll();
+	public PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize,
+		UserInfoDTO userInfoDTO) {
+		List<ResourceQuotaEntity> resourceQuotaEntityList = resourceQuotaHistoryRepository.findAll();
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaEntityList.stream()
 			.map(resourceQuotaEntity ->
@@ -364,6 +372,21 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.totalMEM(clusterResource.getMem())
 			.totalGPU(clusterResource.getGpu())
 			.build();
+	}
+
+	@Override
+	public ClusterResourceCompareDTO requestResourceComparedClusterResource() {
+		//cluster의 총 리소스 조회
+		ClusterResourceDTO clusterResource = clusterService.getClusterResource();
+		//리소스 할당량 조회
+		TotalResourceQuotaDTO totalResourceQuota = resourceQuotaService.getTotalResourceQuota();
+		return new ClusterResourceCompareDTO(
+			clusterResource.getCpu(),
+			clusterResource.getMem(),
+			clusterResource.getGpu(),
+			totalResourceQuota.getCpu(),
+			totalResourceQuota.getMem(),
+			totalResourceQuota.getGpu());
 	}
 
 }

@@ -11,6 +11,7 @@ import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
+import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 
@@ -53,4 +54,5 @@ public interface WorkspaceFacadeService {
 	PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserInfoDTO userInfoDTO);
 
 	WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name);
+	ClusterResourceCompareDTO requestResourceComparedClusterResource();
 }
