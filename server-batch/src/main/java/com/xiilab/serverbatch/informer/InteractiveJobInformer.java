@@ -5,17 +5,11 @@ import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.enumeration.SystemAlertType;
-import com.xiilab.modulealert.service.SystemAlertService;
-import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
@@ -26,7 +20,6 @@ import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
-import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
 import io.fabric8.kubernetes.api.model.Container;
@@ -42,11 +35,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class InteractiveJobInformer extends JobInformer {
+public class InteractiveJobInformer extends JobInformer{
 	private final K8sAdapter k8sAdapter;
 	private final GroupService groupService;
-	private final SystemAlertService systemAlertService;
-	private final SystemAlertSetService systemAlertSetService;
+	private final SystemAlertRepository systemAlertRepository;
+	private final WorkspaceAlertSetRepository workspaceAlertSetRepository;
 
 	public InteractiveJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
@@ -55,14 +48,14 @@ public class InteractiveJobInformer extends JobInformer {
 		ImageWorkloadMappingRepository imageWorkloadMappingRepository, K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
 		ImageRepository imageRepository, CredentialRepository credentialRepository,
-		GroupService groupService, SystemAlertService systemAlertService, SystemAlertSetService systemAlertSetService) {
+		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
 			codeRepository, imageRepository, credentialRepository);
 		this.k8sAdapter = k8sAdapter;
 		this.groupService = groupService;
-		this.systemAlertService = systemAlertService;
-		this.systemAlertSetService = systemAlertSetService;
+		this.systemAlertRepository = systemAlertRepository;
+		this.workspaceAlertSetRepository = workspaceAlertSetRepository;
 	}
 
 	@PostConstruct
@@ -80,19 +73,6 @@ public class InteractiveJobInformer extends JobInformer {
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-					deployment.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if (workspaceAlertSet.isWorkloadStartAlert()) {
-					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					systemAlertService.sendAlert(SystemAlertDTO.builder()
-						.recipientId(workspaceOwner.getId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(
-							SystemAlertMessage.WORKSPACE_START.getMessage(), deployment.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
 			}
 
 			@Override
@@ -110,19 +90,18 @@ public class InteractiveJobInformer extends JobInformer {
 					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
 				}
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-					deployment.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if (workspaceAlertSet.isWorkloadEndAlert()) {
-					GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-					systemAlertService.sendAlert(SystemAlertDTO.builder()
-						.recipientId(workspaceOwner.getId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(),
-							deployment.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
+				// WorkspaceAlertSetEntity workspaceAlertSet = workspaceAlertSetRepository.getAlertSetEntityByWorkspaceName(
+				// 	deployment.getMetadata().getName());
+				// // 해당 워크스페이스 알림 설정이 True인 경우
+				// if(workspaceAlertSet.isWorkloadEndAlert()){
+				// 	GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
+				// 	systemAlertRepository.save(SystemAlertEntity.builder()
+				// 		.recipientId(workspaceOwner.getId())
+				// 		.systemAlertType(SystemAlertType.WORKLOAD)
+				// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
+				// 		.senderId("SYSTEM")
+				// 		.build());
+				// }
 			}
 		});
 

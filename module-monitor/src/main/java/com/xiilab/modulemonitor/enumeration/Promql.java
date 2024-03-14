@@ -26,7 +26,7 @@ public enum Promql {
 	NODE_INFO("sum(kube_pod_info{%s}) by(node)","노드 정보 조회", "NODE"),
 	NODE_COUNT("sum(kube_node_info)","총 노드 개수 조회", "NODE"),
 	NODE_MEM_USAGE("label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","Node 메모리 사용률 조회","NODE"),
-	NODE_MEM_USAGE_KI("(node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes + node_memory_Slab_bytes)) / 1024", "NODE의 Mem 사용량 조회", "NODE"),
+	NODE_MEM_USAGE_KI("sum((node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes + node_memory_Slab_bytes)) / 1024)", "NODE의 Mem 사용량 조회", "NODE"),
 	NODE_DISK_SIZE("max by (mountpoint) (label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint!=\"\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s})","Node의 Disk Size 조회","NODE"),
 	NODE_DISK_USAGE_SIZE("max by (mountpoint) (label_replace(node_filesystem_avail_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint!=\"\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s})","Node Disk 사용량 조회","NODE"),
 	NODE_ROOT_DISK_SIZE("max by (mountpoint, node) (label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s})","Node의 Disk Size 조회","NODE"),
@@ -52,7 +52,7 @@ public enum Promql {
 	NODE_CPU_TEMP("label_replace(avg(node_hwmon_temp_celsius) by(instance),  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}", "노드 CPU TEMP 조회", "NODE"),
 	NODE_NETWORK_RECEIVE("avg by(instance) (label_replace(node_network_receive_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{%s})", "노드의 네트워크 수신", "NODE"),
 	NODE_NETWORK_TRANSMIT("avg by(instance) (node_network_transmit_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{})","노드의 네트워크 송신","NODE"),
-	TOTAL_NODE_REQUEST_RESOURCE("sum(kube_pod_container_resource_requests{%s})by(resource)", "특정 노드의 request 리소스 사용량 조회", "NODE"),
+	TOTAL_NODE_REQUEST_RESOURCE("sum(kube_pod_container_resource_requests{%s})by(resource)", "특정 노드의 cpuRequest 리소스 사용량 조회", "NODE"),
 	TOTAL_NODE_LIMIT_RESOURCE("sum(kube_pod_container_resource_limits{%s})by(resource)", "특정 노드의 limit 리소스 사용량 조회", "NODE"),
 	NODE_DISK_READ("label_replace(avg(node_disk_read_bytes_total) by(instance), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "", "NODE"),
 	NODE_DISK_WRITTEN("label_replace(avg(node_disk_written_bytes_total) by(instance), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "", "NODE"),
@@ -60,10 +60,15 @@ public enum Promql {
 	NODE_MEMORY_CACHED("label_replace(node_memory_Cached_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NODE MEM Cached 조회", "NODE"),
 	NODE_MEMORY_MEM_TOTAL("label_replace(node_memory_MemTotal_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NODE MEM Total 조회", "NODE"),
 	NODE_MEMORY_MEM_FREE("label_replace(node_memory_MemFree_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NDOE MEM Free 조회", "NODE"),
+	NODE_CPU_TOTAL_BY_NODE_NAME("sum(kube_node_status_capacity{resource=\"cpu\", %s})", "", "NODE"),
+	NODE_TOTAL_DISK_SIZE_BYTE("label_replace(node_filesystem_size_bytes{mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s}", "", "NODE"),
+	NODE_USAGE_DISK_SIZE_BYTE("label_replace(node_filesystem_size_bytes{mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} - label_replace(node_filesystem_avail_bytes{mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}","","NODE"),
+
+
 
 	// WORK SPACE
-	WS_GPU_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"request.*gpu\", %s}","WorkSpace GPU 할당량 조회", "WorkSpace"),
-	WS_GPU_USAGE("kube_resourcequota{type=\"used\", resource=~\"request.*gpu\", %s}","WorkSpace GPU 사용량 조회","WorkSpace"),
+	WS_GPU_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"cpuRequest.*gpu\", %s}","WorkSpace GPU 할당량 조회", "WorkSpace"),
+	WS_GPU_USAGE("kube_resourcequota{type=\"used\", resource=~\"requests.nvidia.com/gpu\", %s}","WorkSpace GPU 사용량 조회","WorkSpace"),
 	WS_CPU_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"requests.*cpu\", %s}","WorkSpace CPU 할당량 조회","WorkSpace"),
 	WS_CPU_USAGE("kube_resourcequota{type=\"used\", resource=~\"requests.*cpu\", %s}","WorkSpace CPU 사용량 조회","WorkSpace"),
 	WS_MEM_QUOTA("kube_resourcequota{type=\"hard\", resource=~\"requests.*memory\", %s}","WorkSpace MEM 할당량 조회","WorkSpace"),
@@ -94,7 +99,10 @@ public enum Promql {
 	POD_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\"} != 0)", "POD Pending Count", "POD"),
 	POD_PENDING("kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Pending 조회", "POD"),
 	POD_PENDING_FAIL_INFO("(kube_pod_status_phase{phase=\"Failed\"} != 0 ) or kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Fail, Pending List 조회", "POD"),
-
+	POD_MEM_USAGE_BYTE("container_memory_working_set_bytes{container != \"\", %s}", "POD Mem 사용량 조회 ", "POD"),
+	POD_CPU_USAGE_BYTE("container_cpu_usage_seconds_total{container != \"\", %s}", "POD CPU 사용량 조회 ", "POD"),
+	POD_GPU_UTIL("DCGM_FI_DEV_GPU_UTIL{%s}","POD GPU 사용량 조회","POD"),
+	POD_DUSK_USAGE("container_fs_usage_bytes{}","POD DISK 사용량 조회","POD"),
 	// VOLUME
 	VOLUME_COUNT("count(kube_persistentvolume_info)", "Volume 총 개수 조회", "VOLUME"),
 
@@ -128,7 +136,13 @@ public enum Promql {
 	CONTAINER_IMAGE_PULL_BACK_OFF_COUNT("count(kube_pod_container_status_waiting_reason{reason=\"ImagePullBackOff\"})", "Container imagePullBackOff Count", "CONTAINER"),
 	CONTAINER_RESTART("kube_pod_container_status_restarts_total != 0", "컨테이너 재시작 조회", "CONTAINER"),
 
-
+	// RESOURCE OPTIMIZATION
+	// CPU
+	RESOURCE_OPTIMIZATION_CPU("sum(max_over_time(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{pod =~ \"wl-.*\"}[%sh])) by (namespace, pod) > %s and on (namespace, pod) (kube_pod_created < %s)","n시간 동안 최대 CPU 사용량이 일정 수준을 넘은 워크로드 조회","CPU"),
+	// MEM
+	RESOURCE_OPTIMIZATION_MEM("((sum(max_over_time(container_memory_working_set_bytes{pod=~\"wl-.*\"}[%1$sh])) by(namespace, pod)/sum(max_over_time(kube_pod_container_resource_limits{pod=~\"wl-.*\", resource = \"memory\"}[%1$sh])) by (namespace, pod) != 0)* 100) > %2$s and on (pod,namespace) (kube_pod_created < %3$s)","n시간 동안 최대 MEM 사용량이 일정 수준을 넘은 워크로드 조회","MEM"),
+	// GPU
+	RESOURCE_OPTIMIZATION_GPU("(max_over_time(DCGM_FI_DEV_GPU_UTIL{pod=~\"wl-.*\"}[%sh]) > %s and on (namespace, pod) (kube_pod_created < %s)) > %s","n시간 동안 최대 GPU 사용량이 일정 수준을 넘은 워크로드 조회","GPU"),
 	;
 // GPU 사용량, GPU Limit, GPU Request
 	private final String query;

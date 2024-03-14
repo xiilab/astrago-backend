@@ -1,4 +1,6 @@
 spring:
+  quartz:
+    job-store-type: memory
   servlet:
     multipart:
       max-request-size: 10MB
@@ -60,4 +62,4 @@ admin:
 
 mig-profile-path: src/main/resources/MigProfile.json
 prometheus:
-  url: http://10.61.3.8:30090/
+  url: http://10.61.3.12:30090/

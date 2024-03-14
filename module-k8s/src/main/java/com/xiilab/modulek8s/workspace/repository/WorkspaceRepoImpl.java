@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -30,18 +32,20 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 
 	@Override
 	public WorkspaceVO.ResponseVO getWorkspaceByName(String name) {
-		Namespace namespace;
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			namespace = kubernetesClient.namespaces().withName(name).get();
+			Namespace namespace = kubernetesClient.namespaces().withName(name).get();
+			if (namespace == null) {
+				throw new K8sException(WorkspaceErrorCode.NOT_FOUND_WORKSPACE);
+			}
+			return new WorkspaceVO.ResponseVO(namespace);
 		}
-		return new WorkspaceVO.ResponseVO(namespace);
 	}
 
 	@Override
 	public List<WorkspaceVO.ResponseVO> getWorkspaceList() {
 		List<Namespace> items;
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			items = kubernetesClient.namespaces().list().getItems();
+			items = kubernetesClient.namespaces().withLabels(Map.of("control-by","astra")).list().getItems();
 		}
 		return items.stream().map(WorkspaceVO.ResponseVO::new).toList();
 	}
@@ -49,7 +53,7 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 	@Override
 	public void deleteWorkspaceByName(String name) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			kubernetesClient.namespaces().withName(name).delete();
+			kubernetesClient.namespaces().withName(name).withGracePeriod(0).delete();
 		}
 	}
 

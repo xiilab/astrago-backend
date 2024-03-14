@@ -20,12 +20,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.enumeration.SystemAlertType;
-import com.xiilab.modulealert.service.SystemAlertService;
-import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.ImageType;
@@ -44,22 +38,23 @@ import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
-import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -77,6 +72,7 @@ import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
+import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
@@ -89,13 +85,13 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final PinService pinService;
-	private final ModelService modelService;
 	private final DatasetService datasetService;
+	private final ModelService modelService;
 	private final WorkloadHistoryService workloadHistoryService;
 	private final CredentialService credentialService;
 	private final CodeService codeService;
 	private final ImageService imageService;
-	private final SystemAlertSetService systemAlertSetService;
+	private final WorkspaceAlertSetService workspaceAlertSetService;
 	private final SystemAlertService systemAlertService;
 
 	@Transactional
@@ -129,7 +125,7 @@ public class WorkloadFacadeService {
 			CreateJobResDTO jobWorkload = workloadModuleFacadeService.createJobWorkload(
 				moduleCreateWorkloadReqDTO.toModuleDTO());
 			// 워크로드 엔티티에 데이터 추가
-			systemAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
+			workspaceAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
 		} catch (RestApiException e) {
 			e.printStackTrace();
 			throw e;
@@ -480,17 +476,17 @@ public class WorkloadFacadeService {
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 
-		SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-			workloadName);
+		// WorkspaceAlertSetDTO.ResponseDTO workspaceAlertSet = workspaceAlertSetService.getWorkspaceAlertSet(
+		// 	workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
-		if (workspaceAlertSet.isWorkloadEndAlert()) {
-			systemAlertService.sendAlert(SystemAlertDTO.builder()
-				.recipientId(userInfoDTO.getId())
-				.senderId("SYSTEM")
-				.systemAlertType(SystemAlertType.WORKLOAD)
-				.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
-				.build());
-		}
+		// if (workspaceAlertSet.isWorkloadEndAlert()) {
+		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
+		// 		.recipientId(userInfoDTO.getId())
+		// 		.senderId("SYSTEM")
+		// 		.systemAlertType(SystemAlertType.WORKLOAD)
+		// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
+		// 		.build());
+		// }
 	}
 
 	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
@@ -500,17 +496,16 @@ public class WorkloadFacadeService {
 		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
-
-		SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-			workloadName);
-		if (workspaceAlertSet.isWorkloadEndAlert()) {
-			systemAlertService.sendAlert(SystemAlertDTO.builder()
-				.recipientId(userInfoDTO.getId())
-				.senderId("SYSTEM")
-				.systemAlertType(SystemAlertType.WORKLOAD)
-				.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
-				.build());
-		}
+		// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
+		// 	workloadName);
+		// if (workspaceAlertSet.isWorkloadEndAlert()) {
+		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
+		// 		.recipientId(userInfoDTO.getId())
+		// 		.senderId("SYSTEM")
+		// 		.systemAlertType(SystemAlertType.WORKLOAD)
+		// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
+		// 		.build());
+		// }
 	}
 
 	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {

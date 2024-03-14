@@ -73,10 +73,12 @@ public record ResponseDTO() {
 	 * 대시보드 워크스페이스 DTO
 	 */
 	@Builder
-	public record WorkspaceDTO(String workspaceName,
+	public record WorkspaceDTO(String workspaceResourceName,
+							   String workspaceName,
 							   double gpuUsage,
 							   double cpuUsage,
 							   double memUsage,
+							   long wlRunningCount,
 							   long wlCount,
 							   long pendingCount,
 							   long errorCount) {
@@ -87,14 +89,16 @@ public record ResponseDTO() {
 	 */
 	@Builder
 	public record NodeResourceDTO(String nodeName,
-								  String cpuTotal,
-								  String cpuRequest,
+								  long cpuTotal,
+								  double cpuRequest,
 								  double cpuUsage,
-								  String memTotal,
-								  String memRequest,
-								  double memUsage,
-								  double gpuUsage,
-								  double diskUsage) {
+								  long memTotal,
+								  long memRequest,
+								  long memUsage,
+								  long gpuTotal,
+								  long gpuUsage,
+								  long diskTotal,
+								  long diskUsage) {
 	}
 
 	/**
@@ -130,9 +134,16 @@ public record ResponseDTO() {
 	}
 	@Builder
 	public record ResponseClusterDTO(String name,
-									 String total,
-									 String request,
-									 String usage){
+									 long total,
+									 double cpuRequest,
+									 long request,
+									 double cpuUsage,
+									 long usage){
+	}
+	@Builder
+	public record ResponseClusterResourceDTO(int cpu,
+											 int mem,
+											 int gpu){
 	}
 	@Builder
 	public record ClusterResourceDTO(String nodeCount,

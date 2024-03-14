@@ -23,7 +23,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
@@ -33,6 +33,10 @@ spring:
     show_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
   messages:
     basename: messages
     encoding: utf-8
@@ -57,6 +61,7 @@ admin:
   password: xiirocks
   init-password: xiirocks
   secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
+  id: 3810cb0d-0c82-4258-9e43-2d00f7a1d0b9
 
 astrago:
   namespace: astrago

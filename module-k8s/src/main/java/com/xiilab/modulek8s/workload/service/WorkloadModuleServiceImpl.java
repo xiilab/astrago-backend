@@ -17,14 +17,17 @@ import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
+
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
@@ -297,4 +300,34 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	// 	ZipInputStream zipInputStream2 = new ZipInputStream(inputStream3);
 	// 	return new InputStreamResource(zipInputStream2);
 	// }
+
+	@Override
+	public List<ModuleWorkloadResDTO> getAstraInteractiveWorkloadList() {
+		return workloadRepository.getAstraInteractiveWorkload();
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getAstraBatchWorkloadList() {
+		return workloadRepository.getAstraBatchWorkload();
+	}
+
+	@Override
+	public int optimizationInteractiveWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
+		int totalResultCnt = 0;
+		for (ResourceOptimizationTargetDTO resourceOptimizationTargetDTO : resourceOptimizationTargetList) {
+			boolean parentResource = workloadRepository.optimizationResource(resourceOptimizationTargetDTO.getPodName(),
+				resourceOptimizationTargetDTO.getNamespace());
+			if (parentResource) {
+				totalResultCnt += 1;
+			}
+		}
+		return totalResultCnt;
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getParentControllerList(
+		List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
+		return resourceOptimizationTargetList.stream().map(optimizationTarget -> workloadRepository.getParentController(
+			optimizationTarget.getPodName(), optimizationTarget.getNamespace())).toList();
+	}
 }

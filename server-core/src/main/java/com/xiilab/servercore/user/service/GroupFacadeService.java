@@ -2,6 +2,7 @@ package com.xiilab.servercore.user.service;
 
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -15,7 +16,7 @@ public interface GroupFacadeService {
 	void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo);
 
 	//워크스페이스 그룹 생성
-	void createWorkspaceGroup(GroupReqDTO groupReqDTO);
+	void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO);
 
 	//그룹 전체 목록 조회
 	List<GroupSummaryDTO> getGroupList(String searchText);
@@ -27,7 +28,7 @@ public interface GroupFacadeService {
 	void addGroupMember(String groupId, List<String> userIdList);
 
 	//그룹 안의 유저 리스트 조회
-	GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId);
+	GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId, AuthType authType);
 
 	//그룹 Id로 group을 삭제
 	void deleteGroupById(String groupId);
@@ -38,7 +39,9 @@ public interface GroupFacadeService {
 	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 
-	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText);
+	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText, AuthType authType);
 
 	void deleteGroupMemberByUserId(String groupId, List<String> userIdList);
+
+	void modifyAccountGroup(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO);
 }

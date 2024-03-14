@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.resource_quota.repository;
 
 import static com.xiilab.modulek8s.resource_quota.enumeration.ResourceQuotaKey.*;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Repository;
@@ -39,8 +40,10 @@ public class ResourceQuotaRepoImpl implements ResourceQuotaRepo {
 		ResourceQuota resourceQuota;
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			resourceQuota = kubernetesClient.resourceQuotas().inNamespace(namespace).list().getItems().get(0);
+			return new ResourceQuotaResVO(resourceQuota);
+		} catch (Exception e) {
+			return null;
 		}
-		return new ResourceQuotaResVO(resourceQuota);
 	}
 
 	@Override
@@ -62,6 +65,13 @@ public class ResourceQuotaRepoImpl implements ResourceQuotaRepo {
 				LIMITS_GPU_KEY.getKey(), new Quantity(String.valueOf(gpuReq), "Gi")
 			)).build());
 			kubernetesClient.resource(resourceQuota).replace();
+		}
+	}
+
+	@Override
+	public List<ResourceQuotaResVO> getResourceQuotasList() {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.resourceQuotas().list().getItems().stream().map(ResourceQuotaResVO::new).toList();
 		}
 	}
 }

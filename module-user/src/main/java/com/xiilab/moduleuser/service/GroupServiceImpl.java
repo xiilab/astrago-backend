@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -35,24 +36,25 @@ public class GroupServiceImpl implements GroupService {
 		//group 생성
 		GroupSummaryDTO groupInfo = groupRepository.createGroup(groupReqVO);
 
-		if(Objects.nonNull(groupReqDTO.getUsers())){
+		if (Objects.nonNull(groupReqDTO.getUsers())) {
 			//group에 member join
 			groupRepository.joinMembersIntoGroup(groupInfo.getId(), groupReqDTO.getUsers());
 		}
 	}
 
 	@Override
-	public void createWorkspaceGroup(GroupReqDTO groupReqDTO) {
+	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
 		//group 생성
-		GroupSummaryDTO groupInfo = groupRepository.createGroup(
-			GroupReqVO.builder()
-				.name(groupReqDTO.getName())
-				.description(groupReqDTO.getDescription())
-				.groupCategory(WORKSPACE)
-				.createdBy(groupReqDTO.getCreatedBy())
-				.build());
+		GroupReqVO groupReqVO = GroupReqVO.builder()
+			.name(groupReqDTO.getName())
+			.description(groupReqDTO.getDescription())
+			.groupCategory(WORKSPACE)
+			.createdBy(groupReqDTO.getCreatedBy())
+			.build();
+		groupReqVO.setCreator(userInfoDTO);
+		GroupSummaryDTO groupInfo = groupRepository.createGroup(groupReqVO);
 		//workspace 그룹의 childGroup 생성 및 유저 추가
-		createWorkspaceChildGroup(groupInfo.getId(), groupReqDTO);
+		createWorkspaceChildGroup(groupInfo.getId(), groupReqDTO, userInfoDTO);
 	}
 
 	@Override
@@ -71,8 +73,8 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId) {
-		return groupRepository.findUsersByGroupId(groupId);
+	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId, AuthType authType) {
+		return groupRepository.findUsersByGroupId(groupId, authType);
 	}
 
 	@Override
@@ -84,22 +86,27 @@ public class GroupServiceImpl implements GroupService {
 	public void deleteWorkspaceGroupByName(String groupName) {
 		GroupInfoDTO groupInfo = groupRepository.getGroupInfoByCategoryAndName(WORKSPACE,
 			groupName);
-		groupRepository.deleteGroupById(groupInfo.getUid());
+		if (groupInfo != null) {
+			groupRepository.deleteGroupById(groupInfo.getUid());
+		}
 	}
 
 	@Override
 	public void deleteAccountGroupByName(String groupName) {
 		GroupInfoDTO groupInfo = groupRepository.getGroupInfoByCategoryAndName(ACCOUNT, groupName);
-		groupRepository.deleteGroupById(groupInfo.getUid());
+		if (groupInfo != null) {
+			groupRepository.deleteGroupById(groupInfo.getUid());
+		}
 	}
 
-	private void createWorkspaceChildGroup(String parentId, GroupReqDTO groupReqDTO) {
+	private void createWorkspaceChildGroup(String parentId, GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
 		//owner 그룹 생성
 		GroupSummaryDTO ownerGroup = groupRepository.createChildGroup(GroupReqVO.ChildGroupReqVO.builder()
 			.name("owner")
 			.description(groupReqDTO.getDescription())
 			.parentGroupId(parentId)
 			.createdBy(groupReqDTO.getCreatedBy())
+			.creatorEmail(userInfoDTO.getEmail())
 			.build());
 		//user 그룹 생성
 		GroupSummaryDTO userGroup = groupRepository.createChildGroup(GroupReqVO.ChildGroupReqVO.builder()
@@ -107,6 +114,7 @@ public class GroupServiceImpl implements GroupService {
 			.description(groupReqDTO.getDescription())
 			.parentGroupId(parentId)
 			.createdBy(groupReqDTO.getCreatedBy())
+			.creatorEmail(userInfoDTO.getEmail())
 			.build());
 		//생성한 owner group에 유저 추가
 		groupRepository.joinMembersIntoGroup(ownerGroup.getId(), groupReqDTO.getUsers());
@@ -118,31 +126,40 @@ public class GroupServiceImpl implements GroupService {
 	public List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName) {
 		return groupRepository.getWorkspaceMember(groupName);
 	}
+
 	@Override
-	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList){
+	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList) {
 		groupRepository.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
+
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO) {
 		groupRepository.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 	}
+
 	@Override
-	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){
+	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search) {
 		return groupRepository.getWorkspaceMemberBySearch(groupName, search);
 	}
+
 	@Override
-	public GroupUserDTO getWorkspaceOwner(String groupName){
+	public GroupUserDTO getWorkspaceOwner(String groupName) {
 		groupRepository.getWorkspaceOwner(groupName);
 		return null;
 	}
 
 	@Override
-	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText) {
-		return groupRepository.getUserAndGroupBySearchText(searchText);
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText, AuthType authType) {
+		return groupRepository.getUserAndGroupBySearchText(searchText, authType);
 	}
 
 	@Override
 	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
 		groupRepository.deleteGroupMemberByUserId(groupId, userIdList);
+	}
+
+	@Override
+	public void modifyAccountGroup(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO) {
+		groupRepository.modiGroupById(groupId, groupReqDTO);
 	}
 }

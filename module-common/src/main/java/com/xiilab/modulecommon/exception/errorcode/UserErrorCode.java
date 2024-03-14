@@ -17,7 +17,7 @@ public enum UserErrorCode implements ErrorCode {
 	USER_NOT_FOUND_BY_ID(HttpStatus.NOT_FOUND.value(), "해당 ID의 사용자가 없습니다."),
 	USER_NOT_FOUND_BY_NAME(HttpStatus.NOT_FOUND.value(), "해당 이름의 사용자가 없습니다."),
 	USER_NOT_FOUND_INFO(HttpStatus.NOT_FOUND.value(), "일치하는 정보가 없습니다."),
-
+	USER_AUTH_FAIL(HttpStatus.UNAUTHORIZED.value(), "해당 유저는 권한이 없습니다.")
 	;
 
 	private final int code;

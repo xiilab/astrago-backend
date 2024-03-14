@@ -7,22 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.xiilab.modulealert.dto.SystemAlertDTO;
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
-import com.xiilab.modulealert.enumeration.SystemAlertMessage;
-import com.xiilab.modulealert.enumeration.SystemAlertType;
-import com.xiilab.modulealert.service.SystemAlertService;
-import com.xiilab.modulealert.service.SystemAlertSetService;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertSetEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
@@ -53,30 +49,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-// @RequiredArgsConstructor
 @Slf4j
-public class BatchJobInformer extends JobInformer {
+public class BatchJobInformer extends JobInformer{
 	private final K8sAdapter k8sAdapter;
 	private final GroupService groupService;
-	private final SystemAlertService systemAlertService;
-	private final SystemAlertSetService systemAlertSetService;
+	private final SystemAlertRepository systemAlertRepository;
+	private final WorkspaceAlertSetRepository workspaceAlertSetRepository;
 
-	@Autowired
 	public BatchJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
 		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
 		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
 		ImageWorkloadMappingRepository imageWorkloadMappingRepository, K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
-		ImageRepository imageRepository, CredentialRepository credentialRepository, GroupService groupService,
-		SystemAlertService systemAlertService, SystemAlertSetService systemAlertSetService) {
+		ImageRepository imageRepository, CredentialRepository credentialRepository,
+		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
 			codeRepository, imageRepository, credentialRepository);
 		this.k8sAdapter = k8sAdapter;
 		this.groupService = groupService;
-		this.systemAlertService = systemAlertService;
-		this.systemAlertSetService = systemAlertSetService;
+		this.systemAlertRepository = systemAlertRepository;
+		this.workspaceAlertSetRepository = workspaceAlertSetRepository;
 	}
 
 	@PostConstruct
@@ -87,7 +81,8 @@ public class BatchJobInformer extends JobInformer {
 	public void jobInformer() {
 		KubernetesClient kubernetesClient = k8sAdapter.configServer();
 		SharedInformerFactory informers = kubernetesClient.informers();
-		SharedIndexInformer<Job> jobSharedIndexInformer = informers.sharedIndexInformerFor(Job.class, 30 * 60 * 1000L);
+		SharedIndexInformer<Job> jobSharedIndexInformer = informers.sharedIndexInformerFor(
+			Job.class, 30 * 60 * 1000L);
 		jobSharedIndexInformer.addEventHandler(new ResourceEventHandler<>() {
 			@Override
 			public void onAdd(Job job) {
@@ -95,17 +90,6 @@ public class BatchJobInformer extends JobInformer {
 
 				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
 
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = getAlertSet(job.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if (workspaceAlertSet.isWorkloadStartAlert()) {
-					systemAlertService.sendAlert(SystemAlertDTO.builder()
-						.recipientId(batchWorkloadInfoFromResource.getCreatorId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(
-							String.format(SystemAlertMessage.WORKSPACE_START.getMessage(), job.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
 			}
 
 			@Override
@@ -150,25 +134,24 @@ public class BatchJobInformer extends JobInformer {
 					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
 				}
 
-
-				SystemAlertSetDTO.ResponseDTOSystem workspaceAlertSet = getAlertSet(job.getMetadata().getName());
-				// 해당 워크스페이스 알림 설정이 True인 경우
-				if (workspaceAlertSet.isWorkloadEndAlert()) {
-					systemAlertService.sendAlert(SystemAlertDTO.builder()
-						.recipientId(metadataFromResource.getCreatorId())
-						.systemAlertType(SystemAlertType.WORKLOAD)
-						.message(
-							String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
-						.senderId("SYSTEM")
-						.build());
-				}
+				// WorkspaceAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
+				// // 해당 워크스페이스 알림 설정이 True인 경우
+				// if(workspaceAlertSet.isWorkloadEndAlert()){
+				// 	systemAlertRepository.save(SystemAlertEntity.builder()
+				// 		.recipientId(metadataFromResource.getCreatorId())
+				// 		.systemAlertType(SystemAlertType.WORKLOAD)
+				// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
+				// 		.senderId("SYSTEM")
+				// 		.build());
+				// }
 			}
 		});
+
 		log.info("Starting all registered batch job informers");
 		informers.startAllRegisteredInformers();
 	}
 
-	private SystemAlertSetDTO.ResponseDTOSystem getAlertSet(String workspaceName) {
-		return systemAlertSetService.getWorkspaceAlertSet(workspaceName);
+	private WorkspaceAlertSetEntity getAlertSet(String workspaceName){
+		return workspaceAlertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
 	}
 }

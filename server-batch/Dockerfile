@@ -1,4 +1,4 @@
-FROM openjdk:17
+FROM amazoncorretto:17
 
 ENV LC_ALL=C.UTF-8
 

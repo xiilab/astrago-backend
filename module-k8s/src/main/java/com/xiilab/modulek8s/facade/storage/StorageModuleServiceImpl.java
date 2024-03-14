@@ -224,23 +224,37 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.build();
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
+		try {
+			Thread.sleep(5000);
+		}catch (InterruptedException e) {
+			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+		}
 
 		//deployment 상태 조회 - 컨테이너 실행 시간 대기
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
+		int failCount = 0;
 
+		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
 		//connection 실패
 		if(!isAvailable){
-			//pvc, pv, connect deployment 삭제
-			workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
-			volumeService.deletePVC(pvcName, namespace);
-			volumeService.deletePV(pvName);
-			//연결 실패 응답
-			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			while(failCount < 5){
+				try {
+					Thread.sleep(2000);
+					failCount++;
+					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, namespace);
+					if(isAvailable){
+						break;
+					}
+				} catch (InterruptedException e) {
+					throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+				}
+			}if(!isAvailable){
+				//pvc, pv, connect deployment 삭제
+				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
+				volumeService.deletePVC(pvcName, namespace);
+				volumeService.deletePV(pvName);
+				//연결 실패 응답
+				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			}
 		}
 		//connection 성공
 		//connect deployment 삭제, astrago deployment mount edit
