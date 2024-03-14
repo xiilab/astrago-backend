@@ -10,7 +10,6 @@ import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerEntity;
 import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerNodeEntity;
 import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerReceiveEntity;
 import com.xiilab.modulek8sdb.alert.alertmanager.enumeration.AlertManagerCategoryType;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -84,29 +83,4 @@ public class AlertManagerReceiveDTO {
 				.findFirst().orElse(AlertManagerDTO.CategoryDTO.builder().build());
 		}
 	}
-
-	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class historyDTO extends ResponseDTO {
-		private AlertManagerDTO.CategoryDTO categoryDTO;
-		private AlertManagerDTO.NodeDTO nodeDTO;
-		private SystemAlertDTO systemAlertDTO;
-		@Builder(builderMethodName = "historyDTOBuilder", builderClassName = "historyDTOBuilder")
-		public historyDTO(AlertManagerEntity alertManagerEntity, AlertManagerReceiveEntity alertManagerReceiveEntity, SystemAlertDTO systemAlertDTO){
-			this.currentTime = alertManagerReceiveEntity.getCurrentTime();
-			this.nodeDTO = alertManagerEntity.getAlertManagerNodeEntityList().stream()
-				.filter(nodeEntity -> nodeEntity.getNodeName().equals(alertManagerReceiveEntity.getNodeName()))
-				.map(nodeEntity -> AlertManagerDTO.NodeDTO.toDTOBuilder().nodeEntity(nodeEntity).build())
-				.findFirst().orElse(AlertManagerDTO.NodeDTO.builder().build());
-			this.categoryDTO = alertManagerEntity.getAlertManagerCategoryEntityList().stream()
-				.filter(categoryEntity -> categoryEntity.getAlertManagerCategoryType().equals(alertManagerReceiveEntity.getCategoryType()))
-				.map(categoryEntity -> AlertManagerDTO.CategoryDTO.toDTOBuilder().alertManagerCategoryEntity(categoryEntity).build())
-				.findFirst().orElse(AlertManagerDTO.CategoryDTO.builder().build());
-			this.value = alertManagerReceiveEntity.getThreshold();
-			this.systemAlertDTO = systemAlertDTO;
-
-		}
-	}
-
 }
