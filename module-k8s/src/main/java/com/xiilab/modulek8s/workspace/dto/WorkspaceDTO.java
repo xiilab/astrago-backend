@@ -135,6 +135,9 @@ public class WorkspaceDTO {
 		private int allocCPU;
 		private int allocMEM;
 		private int allocGPU;
+		private int totalCPU;
+		private int totalMEM;
+		private int totalGPU;
 	}
 
 	@Getter

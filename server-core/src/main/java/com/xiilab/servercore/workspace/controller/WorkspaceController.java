@@ -29,6 +29,7 @@ import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
+import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
@@ -163,6 +164,12 @@ public class WorkspaceController {
 		UserInfoDTO userInfoDTO
 	) {
 		return ResponseEntity.ok(workspaceService.getAdminResourceQuotaRequests(pageNum, pageSize, userInfoDTO));
+	}
+
+	@GetMapping("/clusterResourceUsage")
+	@Operation(summary = "클러스터 자원량 대비 리소스 요청량")
+	public ResponseEntity<ClusterResourceCompareDTO> requestResourceComparedClusterResource() {
+		return ResponseEntity.ok(workspaceService.requestResourceComparedClusterResource());
 	}
 
 	@PatchMapping("/resource/{id}")

@@ -275,6 +275,22 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.build();
 		}
 	}
+
+	@Override
+	public ResponseDTO.ResponseClusterResourceDTO getClusterTotalResource() {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			List<Node> nodeList = kubernetesClient.nodes().list().getItems();
+			List<Pod> podList = kubernetesClient.pods().list().getItems();
+			int cpu = (int)totalCapacity(nodeList, "CPU");
+			int mem = (int)totalCapacity(nodeList, "MEM");
+			int gpu = (int)totalCapacity(nodeList, "GPU");
+			String totalCpuRequests = totalRequests(nodeList, podList, "CPU");
+			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
+			String totalGpuRequests = totalRequests(nodeList, podList, "GPU");
+			return new ResponseDTO.ResponseClusterResourceDTO(cpu, mem, gpu);
+		}
+	}
+
 	private List<Node> getNodeList(String nodeName){
 		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			if (!StringUtils.isEmpty(nodeName)) {
