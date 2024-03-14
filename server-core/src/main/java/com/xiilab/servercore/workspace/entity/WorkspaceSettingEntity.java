@@ -1,9 +1,5 @@
 package com.xiilab.servercore.workspace.entity;
 
-import java.time.LocalDateTime;
-
-import org.springframework.data.annotation.CreatedDate;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,8 +20,6 @@ public class WorkspaceSettingEntity {
 	private double cpu;
 	private double mem;
 	private int gpu;
-	@CreatedDate
-	protected LocalDateTime regDate;
 
 	public void updateResource(double cpu, double mem, int gpu) {
 		this.cpu = cpu;
