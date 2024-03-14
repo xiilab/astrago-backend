@@ -32,6 +32,7 @@ import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -255,5 +256,20 @@ public class WorkspaceController {
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		boolean accessAuthority = workspaceService.workspaceAccessAuthority(workspaceResourceName, userInfoDTO);
 		return new ResponseEntity<>(accessAuthority, HttpStatus.OK);
+	}
+
+	@GetMapping("/resource/setting")
+	@Operation(summary = "워크스페이스 리소스 디폴트 세팅 값 조회")
+	public ResponseEntity<WorkspaceResourceSettingDTO> getWorkspaceResourceSetting(UserInfoDTO userInfoDTO) {
+		return new ResponseEntity<>(workspaceService.getWorkspaceResourceSetting(userInfoDTO),HttpStatus.OK);
+	}
+
+	@PatchMapping("/resource/setting")
+	@Operation(summary = "워크스페이스 리소스 세팅 값 수정")
+	public ResponseEntity<HttpStatus> updateWorkspaceResourceSetting(
+		@RequestBody WorkspaceResourceSettingDTO workspaceResourceSettingDTO,
+		UserInfoDTO userInfoDTO){
+		workspaceService.updateWorkspaceResourceSetting(workspaceResourceSettingDTO, userInfoDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

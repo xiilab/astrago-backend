@@ -11,3 +11,5 @@ VALUES
     (1, false, false, false, false, false, false, false, false, false, false, false, false)
     ON DUPLICATE
         key update id =1;
+
+INSERT INTO TB_WORKSPACE_SETTING (cpu, gpu, mem) values (2, 2, 2);

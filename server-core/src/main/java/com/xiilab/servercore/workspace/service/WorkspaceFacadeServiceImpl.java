@@ -41,6 +41,9 @@ import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
+import com.xiilab.servercore.workspace.entity.WorkspaceSettingEntity;
+import com.xiilab.servercore.workspace.repository.WorkspaceSettingRepo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +62,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
+	private final WorkspaceSettingRepo workspaceSettingRepo;
 	private final SystemAlertService systemAlertService;
 
 	@Override
@@ -263,12 +267,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public WorkspaceAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName){
+	public WorkspaceAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName) {
 		return workspaceAlertSetService.getWorkspaceAlertSet(workspaceName);
 	}
 
 	@Override
-	public WorkspaceAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, WorkspaceAlertSetDTO workspaceAlertSetDTO){
+	public WorkspaceAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName,
+		WorkspaceAlertSetDTO workspaceAlertSetDTO) {
 		return workspaceAlertSetService.updateWorkspaceAlertSet(workspaceName, workspaceAlertSetDTO);
 	}
 
@@ -384,6 +389,33 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			totalResourceQuota.getCpu(),
 			totalResourceQuota.getMem(),
 			totalResourceQuota.getGpu());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public WorkspaceResourceSettingDTO getWorkspaceResourceSetting(UserInfoDTO userInfoDTO) {
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
+		}
+		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
+		return new WorkspaceResourceSettingDTO(
+			workspaceSettingEntity.getCpu(),
+			workspaceSettingEntity.getMem(),
+			workspaceSettingEntity.getGpu()
+		);
+	}
+
+	@Override
+	@Transactional
+	public void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO,
+		UserInfoDTO userInfoDTO) {
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
+		}
+		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
+		workspaceSettingEntity.updateResource(workspaceResourceSettingDTO.getCpu(),
+			workspaceResourceSettingDTO.getMem(),
+			workspaceResourceSettingDTO.getGpu());
 	}
 
 }
