@@ -122,7 +122,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO) {
+		//워크스페이스 삭제
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
+		//리소스 요청 목록 삭제
+		resourceQuotaRepository.deleteByWorkspaceResourceName(workspaceName);
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
