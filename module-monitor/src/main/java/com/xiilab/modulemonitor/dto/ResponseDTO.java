@@ -141,6 +141,11 @@ public record ResponseDTO() {
 									 long usage){
 	}
 	@Builder
+	public record ResponseClusterResourceDTO(int cpu,
+											 int mem,
+											 int gpu){
+	}
+	@Builder
 	public record ClusterResourceDTO(String nodeCount,
 									 String daemonsetCount,
 									 String podCount,
