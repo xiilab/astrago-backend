@@ -17,7 +17,9 @@ public interface K8sMonitorRepository {
 	ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage);
 	ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage);
 	ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName);
+	ResponseDTO.ResponseClusterResourceDTO getClusterTotalResource();
 	Map<String, Map<String, Long>> getClusterReason(long minute);
 	String getNodeName(String podName, String namespace);
 	ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace);
+	String getWorkspaceName(String workspaceName);
 }

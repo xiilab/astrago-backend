@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.image.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.ImageType;
@@ -7,6 +8,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,16 +27,14 @@ import lombok.experimental.SuperBuilder;
 @DiscriminatorValue("HUB")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class HubImageEntity extends ImageEntity{
+public class HubImageEntity extends ImageEntity {
 	@OneToMany(mappedBy = "hubImageEntity", fetch = FetchType.LAZY)
-	private List<HubEntity> hubEntities;
+	private List<HubEntity> hubEntities = new ArrayList<>();
 
 	@Builder
 	public HubImageEntity(String imageName, RepositoryAuthType repositoryAuthType,
-		ImageType imageType, WorkloadType workloadType,
-		List<HubEntity> hubEntities) {
+		ImageType imageType, WorkloadType workloadType) {
 		super(imageName, repositoryAuthType, imageType, workloadType);
-		this.hubEntities = hubEntities;
 	}
 
 	@Override

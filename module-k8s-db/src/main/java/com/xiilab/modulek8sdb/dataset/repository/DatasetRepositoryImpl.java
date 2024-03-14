@@ -55,7 +55,8 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 			.where(
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
-				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText())
+				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
+				dataset.deleteYn.eq(DeleteYN.N)
 			)
 			.fetchOne();
 		return new PageImpl<>(datasets, pageRequest, count);

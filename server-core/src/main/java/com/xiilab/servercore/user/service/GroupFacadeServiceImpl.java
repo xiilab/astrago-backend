@@ -4,11 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,18 +22,18 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final GroupService groupService;
 
 	@Override
-	public void createAccountGroup(GroupReqDTO groupReqDTO) {
-		groupService.createAccountGroup(groupReqDTO);
+	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
+		groupService.createAccountGroup(groupReqDTO, userInfo);
 	}
 
 	@Override
-	public void createWorkspaceGroup(GroupReqDTO groupReqDTO) {
-		groupService.createWorkspaceGroup(groupReqDTO);
+	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
+		groupService.createWorkspaceGroup(groupReqDTO, userInfoDTO);
 	}
 
 	@Override
-	public List<GroupSummaryDTO> getGroupList() {
-		return groupService.getGroupList();
+	public List<GroupSummaryDTO> getGroupList(String searchText) {
+		return groupService.getGroupList(searchText);
 	}
 
 	@Override
@@ -44,8 +47,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId) {
-		return groupService.getGroupUsers(groupId);
+	public GroupUserDTO.SubGroupUserDto getGroupUsers(String groupId, AuthType authType) {
+		return groupService.getGroupUsers(groupId, authType);
 	}
 
 	@Override
@@ -63,8 +66,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		groupService.deleteWorkspaceMemberByUserId(groupName, userIdList);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, List<String> userIdList){
-		groupService.addWorkspaceMemberByUserId(groupName, userIdList);
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+		groupService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 	}
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){
@@ -72,7 +75,17 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public List<UserDTO.SearchUser> getUserAndGroupBySearchText(String searchText) {
-		return groupService.getUserAndGroupBySearchText(searchText);
+	public UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText, AuthType authType) {
+		return groupService.getUserAndGroupBySearchText(searchText, authType);
+	}
+
+	@Override
+	public void deleteGroupMemberByUserId(String groupId, List<String> userIdList) {
+		groupService.deleteGroupMemberByUserId(groupId, userIdList);
+	}
+
+	@Override
+	public void modifyAccountGroup(String groupId, GroupReqDTO.ModifyGroupDTO groupReqDTO) {
+		groupService.modifyAccountGroup(groupId, groupReqDTO);
 	}
 }

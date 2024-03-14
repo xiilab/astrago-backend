@@ -34,5 +34,6 @@ public interface NodeRepository {
 	ResponseDTO.NodeResourceInfo getNodeResourceByResourceName(String resourceName);
 
 	void setSchedule(String resourceName, ScheduleType scheduleType);
+	List<ResponseDTO.WorkerNodeDriverInfo> getWorkerNodeDriverInfos();
 	void updateMigProfile(NodeGpuDTO nodeGpuDTO);
 }

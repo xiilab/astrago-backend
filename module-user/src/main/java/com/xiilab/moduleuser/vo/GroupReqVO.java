@@ -7,6 +7,7 @@ import java.util.Map;
 import org.keycloak.representations.idm.GroupRepresentation;
 
 import com.xiilab.moduleuser.dto.GroupCategory;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -14,11 +15,16 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public class GroupReqVO {
-	private String name;
-	private String description;
-	private GroupCategory groupCategory;
-	private String createdBy;
+	protected String name;
+	protected String description;
+	protected GroupCategory groupCategory;
+	protected String createdBy;
+	protected String creatorEmail;
 
+	public void setCreator(UserInfoDTO userInfo){
+		this.createdBy = userInfo.getUserFullName();
+		this.creatorEmail = userInfo.getEmail();
+	}
 	public GroupRepresentation createGroupRep() {
 		GroupRepresentation groupRepresentation = new GroupRepresentation();
 		groupRepresentation.setName(name);
@@ -26,6 +32,7 @@ public class GroupReqVO {
 			Map.of(
 				"description", List.of(description),
 				"createdBy", List.of(createdBy),
+				"creatorEmail", List.of(creatorEmail),
 				"createdDate", List.of(LocalDate.now().toString())
 			));
 		if (groupCategory == GroupCategory.WORKSPACE) {

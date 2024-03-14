@@ -221,17 +221,17 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
-			int totalCpuCapacity = totalCapacity(nodeList, "CPU");
+			long totalCpuCapacity = totalCapacity(nodeList, "CPU");
 
-			// 모든 노드의 request 값을 합산
+			// 모든 노드의 cpuRequest 값을 합산
 			String totalCpuRequests = totalRequests(nodeList, podList, "CPU");
 			String request = DataConverterUtil.roundToString(totalCpuRequests);
 
 			return ResponseDTO.ResponseClusterDTO.builder()
 				.name("CPU")
-				.total(totalCpuCapacity + " CORE")
-				.request(DataConverterUtil.roundToNearestHalf(Double.parseDouble(request)) + " CORE")
-				.usage(DataConverterUtil.roundToNearestHalf((totalCpuCapacity * cpuUsage) / 100) + " CORE")
+				.total(totalCpuCapacity)
+				.cpuRequest(DataConverterUtil.roundToNearestHalf(Double.parseDouble(request)) / 1000)
+				.cpuUsage(DataConverterUtil.roundToNearestHalf((totalCpuCapacity * cpuUsage) / 100))
 				.build();
 		}
 	}
@@ -243,16 +243,16 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
-			int totalMemCapacity = totalCapacity(nodeList, "MEM");
+			long totalMemCapacity = totalCapacity(nodeList, "MEM");
 
-			// 모든 노드의 request 값을 합산
+			// 모든 노드의 cpuRequest 값을 합산
 			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
 
 			return ResponseDTO.ResponseClusterDTO.builder()
 				.name("MEMORY")
-				.total(totalMemCapacity + " Ki")
-				.request(totalMemRequests+ " Ki")
-				.usage(memUsage + " Ki")
+				.total(totalMemCapacity * 1024)
+				.request(Long.parseLong(totalMemRequests)  * 1024)
+				.usage(Long.parseLong(memUsage)  * 1024)
 				.build();
 		}
 	}
@@ -263,18 +263,34 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 GPU total 값을 합산
-			int totalGpuCapacity = totalCapacity(nodeList, "GPU");
+			long totalGpuCapacity = totalCapacity(nodeList, "GPU");
 
-			// 모든 노드의 request 값을 합산
+			// 모든 노드의 cpuRequest 값을 합산
 			String totalGpuRequests = totalRequests(nodeList, podList, "GPU");
 
 			return ResponseDTO.ResponseClusterDTO.builder()
 				.name("GPU")
-				.total(String.valueOf(totalGpuCapacity))
-				.usage(totalGpuRequests)
+				.total(totalGpuCapacity)
+				.usage(Long.parseLong(totalGpuRequests))
 				.build();
 		}
 	}
+
+	@Override
+	public ResponseDTO.ResponseClusterResourceDTO getClusterTotalResource() {
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			List<Node> nodeList = kubernetesClient.nodes().list().getItems();
+			List<Pod> podList = kubernetesClient.pods().list().getItems();
+			int cpu = (int)totalCapacity(nodeList, "CPU");
+			int mem = (int)totalCapacity(nodeList, "MEM");
+			int gpu = (int)totalCapacity(nodeList, "GPU");
+			String totalCpuRequests = totalRequests(nodeList, podList, "CPU");
+			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
+			String totalGpuRequests = totalRequests(nodeList, podList, "GPU");
+			return new ResponseDTO.ResponseClusterResourceDTO(cpu, mem, gpu);
+		}
+	}
+
 	private List<Node> getNodeList(String nodeName){
 		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			if (!StringUtils.isEmpty(nodeName)) {
@@ -285,7 +301,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		}
 	}
 
-	private int totalCapacity(List<Node> nodeList, String resourceName){
+	private long totalCapacity(List<Node> nodeList, String resourceName){
 		return switch (resourceName) {
 			case "CPU" ->
 				nodeList.stream()
@@ -293,7 +309,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 					.sum();
 			case "MEM" ->
 				nodeList.stream()
-					.mapToInt(node ->
+					.mapToLong(node ->
 						Integer.parseInt(node.getStatus().getCapacity().get("memory").toString().replace("Ki", "")))
 					.sum();
 			case "GPU" ->
@@ -394,7 +410,6 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			.map(container -> {
 				String memAmount = container.getResources().getRequests().get("memory").getAmount();
 				String memFormat = container.getResources().getRequests().get("memory").getFormat();
-				// 메모리 요청의 단위를 킬로바이트(KiB)로 변환하여 합산
 				long memInKiB = DataConverterUtil.convertToKiB(memAmount, memFormat);
 				return String.valueOf(memInKiB);
 			})
@@ -406,7 +421,6 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			.map(container -> {
 				String memAmount = container.getResources().getRequests().get("memory").getAmount();
 				String memFormat = container.getResources().getRequests().get("memory").getFormat();
-				// 메모리 요청의 단위를 킬로바이트(KiB)로 변환하여 합산
 				long memInKiB = DataConverterUtil.convertToKiB(memAmount, memFormat);
 				return String.valueOf(memInKiB);
 			})
@@ -459,8 +473,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			return Objects.nonNull(kubernetesClient.pods().inNamespace(namespace).withName(podName).get())?
 				kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() != null ?
-					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() :
-					""
+					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() : ""
 				: "";
 		}
 	}
@@ -474,8 +487,15 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.podName(podName)
 				.nodeName(pod.getSpec().getNodeName())
 				.status(pod.getStatus().getPhase())
-				.reason(pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason())
+				.reason(!pod.getStatus().getContainerStatuses().isEmpty() ?pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason() : "none")
 				.build();
+		}
+	}
+
+	@Override
+	public String getWorkspaceName(String workspaceName){
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			return kubernetesClient.namespaces().withName(workspaceName).get().getMetadata().getAnnotations().get("name");
 		}
 	}
 

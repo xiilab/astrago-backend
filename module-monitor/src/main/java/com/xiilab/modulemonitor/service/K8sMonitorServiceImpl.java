@@ -80,4 +80,8 @@ public class K8sMonitorServiceImpl implements K8sMonitorService{
 	public ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace){
 		return k8sMonitorRepository.getClusterPendingAndFailPod(podName, namespace);
 	}
+	@Override
+	public String getWorkspaceName(String workspaceName){
+		return k8sMonitorRepository.getWorkspaceName(workspaceName);
+	}
 }

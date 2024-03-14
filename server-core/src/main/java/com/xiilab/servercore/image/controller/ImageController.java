@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/images")
 public class ImageController {
 	private final ImageService imageService;
+
 	@PostMapping("/{imageType}")
 	@Operation(summary = "이미지 저장 API")
 	public ResponseEntity<HttpStatus> saveImage(@RequestBody ImageReqDTO.SaveImage saveImageDTO) {
@@ -33,6 +34,12 @@ public class ImageController {
 	@Operation(summary = "이미지 조회 API")
 	public ResponseEntity<ImageResDTO.FindImage> findImageById(@PathVariable(name = "imageId") Long id) {
 		return new ResponseEntity<>(imageService.findImageById(id), HttpStatus.OK);
+	}
+
+	@GetMapping("")
+	@Operation(summary = "이미지 목록 조회 API")
+	public ResponseEntity<ImageResDTO.FindImages> findImages(ImageReqDTO.FindSearchCondition findSearchCondition) {
+		return new ResponseEntity<>(imageService.findImages(findSearchCondition), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{imageId}")

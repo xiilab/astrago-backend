@@ -9,13 +9,8 @@ public interface ImageService {
 
 	ImageResDTO.FindImage findImageById(Long id);
 
-	ImageResDTO.FindImages findImages(int pageNo, int pageSize);
+	ImageResDTO.FindImages findImages(ImageReqDTO.FindSearchCondition findSearchCondition);
 
 	void deleteImageById(Long id);
 
-	// void saveHubImage(ImageRequestDTO.CreateHubImage createHubImage);
-	// 빌트인, 허브, 커스텀...
-	// ImageDTO.ResDTO getImageById(long id);
-	// List<ImageDTO.ResDTO> getImageList();
-	// void deleteImageById(long id);
 }

@@ -98,4 +98,11 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.build();
 		storageModuleService.deleteStorage(deleteStorageReqDTO);
 	}
+
+	@Override
+	@Transactional
+	public void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage) {
+		//스토리지 테이블 수정
+		storageService.modifyStorage(storageId, modifyStorage);
+	}
 }

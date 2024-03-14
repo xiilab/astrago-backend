@@ -2,6 +2,7 @@ package com.xiilab.moduleuser.dto;
 
 import com.xiilab.moduleuser.enums.UserCreatedAt;
 import com.xiilab.moduleuser.enums.UserEnable;
+import com.xiilab.moduleuser.enums.UserSort;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
@@ -9,12 +10,11 @@ import lombok.Getter;
 @Getter
 public class UserSearchCondition {
 	private String searchText;
-	private UserCreatedAt createdAt;
-	private UserEnable userEnable;
+	private UserSort userSort;
 
-	public UserSearchCondition(String searchText, UserCreatedAt createdAt, UserEnable userEnable) {
+	public UserSearchCondition(String searchText, UserSort userSort) {
 		this.searchText = StringUtils.isBlank(searchText) ? null : searchText.replace(" ", "");
-		this.createdAt = createdAt == null ? UserCreatedAt.DESC : createdAt;
-		this.userEnable =  userEnable == null ? null : userEnable;
+		this.userSort = userSort == null ? UserSort.CREATED_AT_ASC : userSort;
+
 	}
 }

@@ -1,7 +1,5 @@
 package com.xiilab.servercore.image.service;
 
-import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +9,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
+import com.xiilab.modulecommon.util.NumberUtils;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
@@ -38,7 +37,6 @@ public class ImageServiceImpl implements ImageService {
 			case CUSTOM:
 				return saveCustomImage(saveImageDTO);
 			case HUB:
-				// saveHubImage();
 				break;
 			default:
 				return null;
@@ -55,10 +53,15 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public ImageResDTO.FindImages findImages(int pageNo, int pageSize) {
-		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
-		// imageRepository.findByImageType();
-		Page<ImageEntity> images = imageRepository.findAll(pageRequest);
+	public ImageResDTO.FindImages findImages(ImageReqDTO.FindSearchCondition findSearchCondition) {
+		PageRequest pageRequest = null;
+		if (!NumberUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberUtils.isNullOrZero(findSearchCondition.getPageSize())) {
+			pageRequest = PageRequest.of(findSearchCondition.getPageNo() - 1, findSearchCondition.getPageSize());
+		}
+
+		Page<ImageEntity> images = imageRepository.findByImages(findSearchCondition.getImageType(),
+			findSearchCondition.getWorkloadType(), pageRequest);
+
 		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements());
 	}
 

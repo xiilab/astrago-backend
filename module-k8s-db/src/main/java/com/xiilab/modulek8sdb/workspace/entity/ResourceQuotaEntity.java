@@ -23,8 +23,10 @@ public class ResourceQuotaEntity extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "RESOURCE_QUOTA_ID")
 	private Long id;
-	@Column(name = "WORKSPACE")
-	private String workspace;
+	@Column(name = "WORKSPACE_NAME")
+	private String workspaceName;
+	@Column(name = "WORKSPACE_RESOURCE_NAME")
+	private String workspaceResourceName;
 	@Column(name = "RESOURCE_QUOTA_REQUEST_REASON")
 	private String requestReason;
 	@Column(name = "RESOURCE_QUOTA_REJECT_REASON")
@@ -39,8 +41,9 @@ public class ResourceQuotaEntity extends BaseEntity {
 	@Column(name = "RESOURCE_QUOTA_MEM_REQ")
 	private int memReq;
 
-	public ResourceQuotaEntity(WorkspaceResourceReqDTO workspaceResourceReqDTO) {
-		this.workspace = workspaceResourceReqDTO.getWorkspace();
+	public ResourceQuotaEntity(WorkspaceResourceReqDTO workspaceResourceReqDTO, String workspaceName) {
+		this.workspaceName = workspaceName;
+		this.workspaceResourceName = workspaceResourceReqDTO.getWorkspace();
 		this.requestReason = workspaceResourceReqDTO.getRequestReason();
 		this.status = ResourceQuotaStatus.WAITING;
 		this.cpuReq = workspaceResourceReqDTO.getCpuReq();

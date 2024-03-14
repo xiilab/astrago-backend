@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 
 import lombok.Getter;
@@ -15,7 +16,6 @@ public class GroupSummaryDTO {
 	private LocalDate createdDate;
 	private String createdBy;
 	private String description;
-
 	public GroupSummaryDTO(GroupRepresentation groupRep) {
 		Map<String, List<String>> attributes = groupRep.getAttributes();
 		this.id = groupRep.getId();

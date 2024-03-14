@@ -93,8 +93,17 @@ public class ResponseDTO {
 		private String creationTimestamp;
 		private List<NodeCondition>  nodeCondition;
 		private NodeSystemInfo nodeSystemInfo;
-
 	}
+	@Builder
+	@Getter
+	public static class WorkerNodeDriverInfo{
+		private String driverMajor;
+		private String driverMinor;
+		private String driverRev ;
+		private String computeMajor;
+		private String computeMinor;
+	}
+
 	@Builder
 	@Getter
 	public static class NodeResourceInfo{

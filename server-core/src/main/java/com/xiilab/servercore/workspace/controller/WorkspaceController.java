@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.modulealert.dto.SystemAlertSetDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
@@ -28,11 +28,14 @@ import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
+import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
+import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -57,6 +60,12 @@ public class WorkspaceController {
 		return ResponseEntity.ok(workspaceService.getWorkspaceInfoByName(name));
 	}
 
+	@GetMapping("/admin/{name}")
+	@Operation(summary = "관리자용 워크스페이스 정보 조회")
+	public ResponseEntity<WorkspaceDTO.AdminInfoDTO> getAdminWorkspaceInfo(@PathVariable(name = "name") String name){
+		return ResponseEntity.ok(workspaceService.getAdminWorkspaceInfo(name));
+	}
+
 	@GetMapping("/resourceStatus")
 	@Operation(summary = "내가 속한 워크스페이스의 resource 현황 조회")
 	public ResponseEntity<List<WorkspaceDTO.WorkspaceResourceStatus>> getWorkspaceResourceStatus(
@@ -74,6 +83,20 @@ public class WorkspaceController {
 		UserInfoDTO userInfoDTO) {
 		return ResponseEntity.ok(
 			workspaceService.getWorkspaceList(isMyWorkspace, searchCondition, pageNum, userInfoDTO));
+	}
+
+	@GetMapping("/admin")
+	@Operation(summary = "관리자용 워크스페이스 리스트 조회")
+	public ResponseEntity<PageDTO<WorkspaceDTO.AdminResponseDTO>> getAdminWorkspaceList(
+		@RequestParam(value = "searchCondition", required = false) String searchCondition,
+		@RequestParam(value = "sortCondition", required = false) WorkspaceSortCondition sortCondition,
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "pageSize") int pageSize,
+		UserInfoDTO userInfoDTO
+	) {
+		return ResponseEntity.ok(
+			workspaceService.getAdminWorkspaceList(searchCondition, sortCondition, pageNum, pageSize, userInfoDTO)
+		);
 	}
 
 	@PatchMapping("/{workspaceName}")
@@ -131,6 +154,22 @@ public class WorkspaceController {
 		UserInfoDTO userInfoDTO
 	) {
 		return ResponseEntity.ok(workspaceService.getResourceQuotaRequests(workspace, pageNum, userInfoDTO));
+	}
+
+	@GetMapping("/admin/resource")
+	@Operation(summary = "관리자용 워크스페이스 resource 신청 리스트 조회")
+	public ResponseEntity<PageDTO<ResourceQuotaFormDTO>> getAdminResourceQuotaList(
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "pageSize") int pageSize,
+		UserInfoDTO userInfoDTO
+	) {
+		return ResponseEntity.ok(workspaceService.getAdminResourceQuotaRequests(pageNum, pageSize, userInfoDTO));
+	}
+
+	@GetMapping("/clusterResourceUsage")
+	@Operation(summary = "클러스터 자원량 대비 리소스 요청량")
+	public ResponseEntity<ClusterResourceCompareDTO> requestResourceComparedClusterResource() {
+		return ResponseEntity.ok(workspaceService.requestResourceComparedClusterResource());
 	}
 
 	@PatchMapping("/resource/{id}")
@@ -196,15 +235,25 @@ public class WorkspaceController {
 
 	@GetMapping("/alert/{workspaceName}")
 	@Operation(summary = "워크스페이스 Alert Setting 조회 메소드")
-	public ResponseEntity<SystemAlertSetDTO.ResponseDTOSystem> getWorkspaceAlertSet(
+	public ResponseEntity<WorkspaceAlertSetDTO.ResponseDTO> getWorkspaceAlertSet(
 		@PathVariable(name = "workspaceName") String workspaceName){
 		return new ResponseEntity<>(workspaceService.getWorkspaceAlertSet(workspaceName), HttpStatus.OK);
 	}
+
 	@PatchMapping("/alert/{workspaceName}")
 	@Operation(summary = "워크스페이스 Alert Setting 수정 메소드")
-	public ResponseEntity<SystemAlertSetDTO.ResponseDTOSystem> updateWorkspaceAlertSet(
+	public ResponseEntity<WorkspaceAlertSetDTO.ResponseDTO> updateWorkspaceAlertSet(
 		@PathVariable(name = "workspaceName") String workspaceName,
-		@RequestBody SystemAlertSetDTO updateDTO){
+		@RequestBody WorkspaceAlertSetDTO updateDTO){
 		return new ResponseEntity<>(workspaceService.updateWorkspaceAlertSet(workspaceName, updateDTO), HttpStatus.OK);
+	}
+
+	@GetMapping("/{workspaceResourceName}/accessAuthority")
+	@Operation(summary = "워크스페이스 접근 권한 체크")
+	public ResponseEntity<Boolean> workspaceAccessAuthority(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
+		boolean accessAuthority = workspaceService.workspaceAccessAuthority(workspaceResourceName, userInfoDTO);
+		return new ResponseEntity<>(accessAuthority, HttpStatus.OK);
 	}
 }

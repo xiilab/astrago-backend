@@ -274,7 +274,12 @@ public class DataConverterUtil {
 	 * @return 발생된 시간 "2월 24일 금요일 오후 4:21"
 	 */
 	public static String getCurrentTime(LocalDateTime realTime){
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm ");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		return realTime.format(formatter);
+	}
+
+	public static LocalDateTime dataFormatterByStr(String date){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		return LocalDateTime.parse(date, formatter);
 	}
 }

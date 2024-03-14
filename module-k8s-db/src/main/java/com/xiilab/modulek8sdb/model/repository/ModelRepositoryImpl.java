@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
@@ -43,7 +44,8 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 			.where(
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
-				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText())
+				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
+				model.deleteYn.eq(DeleteYN.N)
 			)
 			.orderBy(sort)
 			.offset(pageRequest.getOffset())
@@ -55,7 +57,8 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 			.where(
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
-				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText())
+				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
+				model.deleteYn.eq(DeleteYN.N)
 			)
 			.fetchOne();
 		return new PageImpl<>(models, pageRequest, count);

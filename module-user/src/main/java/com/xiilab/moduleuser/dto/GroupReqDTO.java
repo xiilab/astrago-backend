@@ -17,4 +17,11 @@ public class GroupReqDTO {
 	private String createdBy;
 	private String createdUserId;
 	private List<String> users;
+
+	@Getter
+	public static class ModifyGroupDTO{
+		private String description;
+		private String groupName;
+		private List<String> users;
+	}
 }

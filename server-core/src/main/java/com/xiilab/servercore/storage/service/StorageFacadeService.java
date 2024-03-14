@@ -6,4 +6,6 @@ public interface StorageFacadeService {
 	void insertStorage(StorageDTO storageDTO);
 
 	void deleteStorage(Long storageId);
+
+	void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage);
 }
