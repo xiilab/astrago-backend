@@ -53,7 +53,7 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 	@Override
 	public void deleteWorkspaceByName(String name) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			kubernetesClient.namespaces().withName(name).delete();
+			kubernetesClient.namespaces().withName(name).withGracePeriod(0).delete();
 		}
 	}
 
