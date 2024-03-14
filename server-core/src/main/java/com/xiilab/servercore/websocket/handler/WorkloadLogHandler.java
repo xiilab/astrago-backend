@@ -43,6 +43,7 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
 		String[] splitMessage = message.getPayload().toString()
 			.replaceAll(" ", "")
+			.replaceAll("\"","")
 			.split(",");
 		if (splitMessage.length != 3) {
 			log.error("Websocket Message: {}", message);
