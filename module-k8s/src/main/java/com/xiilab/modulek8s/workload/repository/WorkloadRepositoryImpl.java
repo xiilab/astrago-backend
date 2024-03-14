@@ -38,7 +38,6 @@ import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
-import com.xiilab.modulek8s.workload.vo.WorkloadVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.OwnerReference;
@@ -61,8 +60,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
-import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
+import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -256,7 +255,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String app = job.getMetadata().getLabels().get("app");
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
-		} catch (NullPointerException e) {
+		} catch (Exception e) {
 			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
@@ -272,7 +271,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String app = deployment.getMetadata().getLabels().get("app");
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
-		} catch (NullPointerException e) {
+		} catch (Exception e) {
 			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
