@@ -1,4 +1,4 @@
-package com.xiilab.servercore.workload.dto;
+package com.xiilab.servercore.workload.dto.request;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.servercore.workload.enumeration.TerminalMessageType;
