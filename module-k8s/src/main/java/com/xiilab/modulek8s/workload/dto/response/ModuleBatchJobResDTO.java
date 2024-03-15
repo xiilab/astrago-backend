@@ -49,7 +49,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			return WorkloadStatus.ERROR;
 		} else if (!NumberValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.RUNNING;
-		} else if (!NumberValidUtils.isNullOrZero(active)) {
+		} else if (NumberValidUtils.isNullOrZero(active) && NumberValidUtils.isNullOrZero(failed) && NumberValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.PENDING;
 		} else {
 			return WorkloadStatus.END;
