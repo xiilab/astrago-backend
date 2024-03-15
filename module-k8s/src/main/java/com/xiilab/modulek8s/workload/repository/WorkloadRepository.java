@@ -12,9 +12,9 @@ import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
@@ -32,7 +32,7 @@ public interface WorkloadRepository {
 	 * @param batchJobVO
 	 * @return BatchJobResDTO
 	 */
-	ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO);
+	CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO);
 
 	/**
 	 * 워크로드 - IDE 잡 타입 생성
@@ -40,7 +40,7 @@ public interface WorkloadRepository {
 	 * @param interactiveJobVO
 	 * @return InteractiveJobResDTO
 	 */
-	ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO);
+	CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO);
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 

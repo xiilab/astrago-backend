@@ -21,7 +21,7 @@ import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.common.enums.EntityMappingType;
+import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
@@ -39,6 +39,7 @@ import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCusotm;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
+import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -51,11 +52,11 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
+	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
 	private final DatasetRepository datasetRepository;
 	private final ModelRepository modelRepository;
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
-	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
@@ -146,10 +147,10 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public WorkloadHistoryResDTO.FindWorkload getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName) {
+	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName) {
 		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
 			workspaceName, workloadResourceName).orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
-		return WorkloadHistoryResDTO.FindWorkload.from(jobEntity);
+		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}
 
 	@Override
@@ -252,4 +253,5 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			}
 		}
 	}
+
 }

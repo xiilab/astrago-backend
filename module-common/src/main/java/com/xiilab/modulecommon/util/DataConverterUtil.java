@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -280,8 +281,12 @@ public class DataConverterUtil {
 	}
 
 	public static LocalDateTime dataFormatterByStr(String date){
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-		return LocalDateTime.parse(date, formatter);
+		if(!StringUtils.isEmpty(date)){
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+			return LocalDateTime.parse(date, formatter);
+		}else {
+			return null;
+		}
 	}
 
 	public static String getEndDateUnixTime(String startDate, String reportType){

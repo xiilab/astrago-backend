@@ -34,6 +34,7 @@ public class AlertManagerReceiveEntity {
 	private LocalDateTime realTime; // 발생 시간 localDateTime
 	private String currentTime; // 발생 시간 ex) 3월 7 화요일 오후 12:18
 	private String nodeIp;
+	private boolean result;
 	@ManyToOne
 	private AlertManagerEntity alertManager;
 

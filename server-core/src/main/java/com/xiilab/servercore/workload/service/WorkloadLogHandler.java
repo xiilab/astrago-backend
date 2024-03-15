@@ -1,4 +1,4 @@
-package com.xiilab.servercore.websocket.handler;
+package com.xiilab.servercore.workload.service;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -13,10 +13,13 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
+import com.xiilab.servercore.workload.dto.request.WorkloadLogMessage;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
@@ -26,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class WorkloadLogHandler extends TextWebSocketHandler {
-	// private ScheduledExecutorService executorService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	// 특정 세션만 저장
 	private final Map<String, WebSocketSession> workloadLogWebSocketSessionMap;
@@ -40,31 +42,16 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 
 	// 클라이언트로부터 넘어온 메시지 처리
 	@Override
-	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
-		String[] splitMessage = message.getPayload().toString()
-			.replaceAll(" ", "")
-			.split(",");
-		if (splitMessage.length != 3) {
-			log.error("Websocket Message: {}", message);
-			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
-		}
-
-		// BATCH, INTERACTIVE
-		WorkloadType workloadType = WorkloadType.valueOf(splitMessage[0]);
-		String workspaceName = splitMessage[1];
-		String workloadName = splitMessage[2];
-		String podName = getPodNameByWorkloadType(workspaceName, workloadName, workloadType)
+	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws JsonProcessingException {
+		WorkloadLogMessage logReqMessage = getMessageMap(message.getPayload().toString());
+		String podName = getPodNameByWorkloadType(logReqMessage.getWorkspaceName(), logReqMessage.getWorkloadName(), logReqMessage.getWorkloadType())
 			.map(pod -> pod.getMetadata().getName())
 			.orElseThrow(() -> new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD));
 		if (!StringUtils.hasText(podName)) {
 			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}
 
-		sendLogMessage(session, workspaceName, podName);
-		// executorService = Executors.newSingleThreadScheduledExecutor();
-		// executorService.scheduleAtFixedRate(() -> {
-		// 	sendLogMessage(session, workspaceResourceName, podName);
-		// }, 0, 1, TimeUnit.SECONDS);
+		sendLogMessage(session, logReqMessage.getWorkspaceName(), podName);
 	}
 
 	private void sendLogMessage(WebSocketSession session, String workspaceName, String podName) {
@@ -102,10 +89,18 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 		// 	stopSendingMessages();
 		// }
 	}
-
-	/*private void stopSendingMessages() {
-		if (executorService != null) {
-			executorService.shutdown();
+	/**
+	 * JSON Text 을 Class 으로 파싱
+	 *
+	 * @param message
+	 * @return
+	 */
+	private WorkloadLogMessage getMessageMap(String message) throws JsonProcessingException {
+		try {
+			return new ObjectMapper().readValue(message, WorkloadLogMessage.class);
+		} catch (JsonProcessingException e) {
+			log.error("{}", e);
+			throw e;
 		}
-	}*/
+	}
 }

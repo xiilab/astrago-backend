@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,14 +12,20 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Node;
@@ -55,11 +62,28 @@ public class K8sInfoPicker {
 	}
 
 	/**
+	 * k8s container에서 환경변수를 조회하는 메소드
+	 *
+	 * @param container
+	 * @return
+	 */
+	public static Map<String, Integer> getPortFromContainer(Container container) {
+		try {
+			Map<String, Integer> map = new HashMap<>();
+			List<ContainerPort> ports = container.getPorts();
+			ports.forEach(port -> map.put(port.getName(), port.getContainerPort()));
+			return map;
+		} catch (NullPointerException e) {
+			log.debug("{} container env 출력 중 npe", container.getName());
+			return Collections.emptyMap();
+		}
+	}
+
+	/**
 	 * batch 워크로드 정보 조회 메소드
 	 * astra에서 생성 여부에 대해서 분기 처리
 	 *
 	 * @param job
-	 * @return
 	 */
 	public static K8SResourceMetadataDTO getBatchWorkloadInfoFromResource(Job job) {
 		K8SResourceMetadataDTO k8SResourceMetadataDTO;
@@ -117,30 +141,44 @@ public class K8sInfoPicker {
 			Map<String, String> annotations = metadata.getAnnotations();
 			Container container = getContainerFromHasMetadata(job);
 			ResourceDTO containerResourceReq = getContainerResourceReq(container);
+			List<Container> initContainers = job.getSpec().getTemplate().getSpec().getInitContainers();
+			Map<String, String> mountAnnotationMap = job.getSpec().getTemplate().getMetadata().getAnnotations();
+			List<K8SResourceMetadataDTO.Code> codes = initializeCodesInfo(initContainers);
 			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
-				.name(AnnotationField.NAME.getField())
-				.description(AnnotationField.DESCRIPTION.getField())
-				.resourceName(metadata.getName())
-				.creatorId(annotations.get(LabelField.CREATOR_ID.getField()))
-				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
-				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
-				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
-				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
-				.workspaceName(AnnotationField.WORKSPACE_NAME.getField())
+				.workloadName(annotations.get(AnnotationField.NAME.getField()))
+				.workloadResourceName(metadata.getName())
+				.workspaceName(annotations.get(AnnotationField.WORKSPACE_NAME.getField()))
 				.workspaceResourceName(metadata.getNamespace())
-				.cpuReq(containerResourceReq.getCpuReq())
-				.memReq(containerResourceReq.getMemReq())
-				.gpuReq(containerResourceReq.getGpuReq())
-				.imgName(AnnotationField.IMAGE_NAME.getField())
-				.imgTag(AnnotationField.IMAGE_TAG.getField())
-				.codeIds(annotations.get(AnnotationField.CODE_IDS.getField()))
-				// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
-				// .deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
+				.description(annotations.get(AnnotationField.DESCRIPTION.getField()))
+				.workloadType(WorkloadType.BATCH)
+				.imageId(StringUtils.hasText(annotations.get(AnnotationField.IMAGE_ID.getField())) ?
+					Long.parseLong(annotations.get(AnnotationField.IMAGE_ID.getField())) : null)
+				.imageType(ImageType.valueOf(annotations.get(AnnotationField.IMAGE_TYPE.getField())))
+				.imageName(annotations.get(AnnotationField.IMAGE_NAME.getField()))
+				.imageCredentialId(
+					StringUtils.hasText(annotations.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField())) ?
+						Long.parseLong(annotations.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField())) : null)
 				.createdAt(createTime)
 				.deletedAt(deleteTime)
+				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
+				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
+				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
+				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? 0.0f :  containerResourceReq.getCpuReq() / 1000.0f)
+				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq())? 0 : containerResourceReq.getGpuReq())
+				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? 0.0f :  containerResourceReq.getMemReq() / 1000.0f)
+				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
+				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
+				.envs(getEnvs(container.getEnv()))
+				.ports(getPorts(container.getPorts()))
+				.codes(codes)
+				.datasetMountPathMap(getDatasetAndModelMountMap("ds-", mountAnnotationMap))
+				.modelMountPathMap(getDatasetAndModelMountMap("md-", mountAnnotationMap))
+				.codeMountPathMap(getCodeMountMap(codes))
+				.command(CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2))
 				.build();
+
 		} catch (NullPointerException e) {
 			return null;
 		}
@@ -157,16 +195,12 @@ public class K8sInfoPicker {
 		Container container = getContainerFromHasMetadata(job);
 		ResourceDTO containerResourceReq = getContainerResourceReq(container);
 		return K8SResourceMetadataDTO.builder()
-			.name(metadata.getName())
-			.resourceName(metadata.getLabels().get("app"))
-			.workspaceName(metadata.getNamespace())
+			.workloadResourceName(metadata.getName())
 			.workspaceResourceName(metadata.getNamespace())
-			.cpuReq(containerResourceReq.getCpuReq())
-			.memReq(containerResourceReq.getMemReq())
+			.cpuReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? Float.valueOf(containerResourceReq.getCpuReq()) : null)
+			.memReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? Float.valueOf(containerResourceReq.getMemReq()) : null)
 			.gpuReq(containerResourceReq.getGpuReq())
-			.imgName(container.getImage().split(":")[0])
-			.imgTag(container.getImage().split(":")[1])
-			// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+			.imageName(container.getImage())
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
 			.deletedAt(LocalDateTime.now())
 			.build();
@@ -185,28 +219,42 @@ public class K8sInfoPicker {
 			Map<String, String> annotations = metadata.getAnnotations();
 			Container container = getContainerFromHasMetadata(deployment);
 			ResourceDTO containerResourceReq = getContainerResourceReq(container);
+			List<Container> initContainers = deployment.getSpec().getTemplate().getSpec().getInitContainers();
+			Map<String, String> mountAnnotationMap = deployment.getSpec().getTemplate().getMetadata().getAnnotations();
+			List<K8SResourceMetadataDTO.Code> codes = initializeCodesInfo(initContainers);
 			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
-				.name(AnnotationField.NAME.getField())
-				.description(AnnotationField.DESCRIPTION.getField())
-				.resourceName(metadata.getName())
+				.workloadName(annotations.get(AnnotationField.NAME.getField()))
+				.workloadResourceName(metadata.getName())
+				.workspaceName(annotations.get(AnnotationField.WORKSPACE_NAME.getField()))
+				.workspaceResourceName(metadata.getNamespace())
+				.description(annotations.get(AnnotationField.DESCRIPTION.getField()))
+				.workloadType(WorkloadType.INTERACTIVE)
+				.imageId(StringUtils.hasText(annotations.get(AnnotationField.IMAGE_ID.getField())) ?
+					Long.parseLong(annotations.get(AnnotationField.IMAGE_ID.getField())) : null)
+				.imageType(ImageType.valueOf(annotations.get(AnnotationField.IMAGE_TYPE.getField())))
+				.imageName(annotations.get(AnnotationField.IMAGE_NAME.getField()))
+				.imageCredentialId(
+					StringUtils.hasText(annotations.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField())) ?
+						Long.parseLong(annotations.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField())) : null)
+				.createdAt(createTime)
+				.deletedAt(deleteTime)
 				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
-				.workspaceName(AnnotationField.WORKSPACE_NAME.getField())
-				.workspaceResourceName(metadata.getNamespace())
-				.cpuReq(containerResourceReq.getCpuReq())
-				.memReq(containerResourceReq.getMemReq())
-				.gpuReq(containerResourceReq.getGpuReq())
-				.imgName(AnnotationField.IMAGE_NAME.getField())
-				.imgTag(AnnotationField.IMAGE_TAG.getField())
+				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? 0.0f :  containerResourceReq.getCpuReq() / 1000.0f)
+				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq())? 0 : containerResourceReq.getGpuReq())
+				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? 0.0f :  containerResourceReq.getMemReq() / 1000.0f)
 				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
-				// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
-				// .deletedAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getDeletionTimestamp())))
-				.createdAt(createTime)
-				.deletedAt(deleteTime)
+				.envs(getEnvs(container.getEnv()))
+				.ports(getPorts(container.getPorts()))
+				.codes(codes)
+				.datasetMountPathMap(getDatasetAndModelMountMap("ds-", mountAnnotationMap))
+				.modelMountPathMap(getDatasetAndModelMountMap("md-", mountAnnotationMap))
+				.codeMountPathMap(getCodeMountMap(codes))
+				.command(CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2))
 				.build();
 		} catch (NullPointerException e) {
 			return null;
@@ -224,16 +272,12 @@ public class K8sInfoPicker {
 		Container container = getContainerFromHasMetadata(deployment);
 		ResourceDTO containerResourceReq = getContainerResourceReq(container);
 		return K8SResourceMetadataDTO.builder()
-			.name(metadata.getName())
-			.resourceName(metadata.getLabels().get("app"))
-			.workspaceName(metadata.getNamespace())
+			.workloadResourceName(metadata.getName())
 			.workspaceResourceName(metadata.getNamespace())
-			.cpuReq(containerResourceReq.getCpuReq())
-			.memReq(containerResourceReq.getMemReq())
+			.cpuReq(Float.valueOf(containerResourceReq.getCpuReq()))
+			.memReq(Float.valueOf(containerResourceReq.getMemReq()))
 			.gpuReq(containerResourceReq.getGpuReq())
-			.imgName(container.getImage().split(":")[0])
-			.imgTag(container.getImage().split(":")[1])
-			// .createdAt(convertUnixTimestampToLocalDateTime(Long.parseLong(metadata.getCreationTimestamp())))
+			.imageName(container.getImage())
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
 			.deletedAt(LocalDateTime.now())
 			.build();
@@ -324,5 +368,59 @@ public class K8sInfoPicker {
 		} else {
 			throw new IllegalArgumentException(format + " format은 확인되지 않은 format입니다.");
 		}
+	}
+
+	private static List<K8SResourceMetadataDTO.Env> getEnvs(List<EnvVar> envs) {
+		if (!CollectionUtils.isEmpty(envs)) {
+			return envs.stream()
+				.map(env -> new K8SResourceMetadataDTO.Env(env.getName(), env.getValue()))
+				.toList();
+		} else {
+			return new ArrayList<>();
+		}
+	}
+
+	private static List<K8SResourceMetadataDTO.Port> getPorts(List<ContainerPort> ports) {
+		if (!CollectionUtils.isEmpty(ports)) {
+			return ports.stream()
+				.map(port -> new K8SResourceMetadataDTO.Port(port.getName(), port.getContainerPort()))
+				.toList();
+		} else {
+			return new ArrayList<>();
+		}
+	}
+
+	private static List<K8SResourceMetadataDTO.Code> initializeCodesInfo(List<Container> initContainers) {
+		if (!CollectionUtils.isEmpty(initContainers)) {
+			return initContainers.stream()
+				.map(initContainer -> new K8SResourceMetadataDTO.Code(initContainer.getEnv())).toList();
+		} else {
+			return new ArrayList<>();
+		}
+	}
+
+	private static Map<Long, String> getDatasetAndModelMountMap(String startsWithName,
+		Map<String, String> annotations) {
+		Map<Long, String> result = new HashMap<>();
+		annotations.entrySet().forEach(entry -> {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (key.startsWith(startsWithName)) {
+				result.put(Long.parseLong(key.split("-")[1]), value);
+			}
+		});
+		return result;
+	}
+
+	private static Map<String, Map<String, String>> getCodeMountMap(List<K8SResourceMetadataDTO.Code> codes) {
+		Map<String, Map<String, String>> codesMap = new HashMap<>();
+		for (K8SResourceMetadataDTO.Code code : codes) {
+			String mountPath = code.getMountPath();
+			String branch = code.getBranch();
+			codesMap.computeIfAbsent(code.getRepositoryUrl(), k -> new HashMap<>()).put("mountPath", mountPath);
+			codesMap.get(code.getRepositoryUrl()).put("branch", branch);
+		}
+
+		return codesMap;
 	}
 }
