@@ -31,6 +31,8 @@ public class SystemAlertEntity {
 	private String senderId;
 	@Column(name = "ALERT_TYPE")
 	private SystemAlertType systemAlertType;
+	@Column(name = "ALERT_TITLE")
+	private String title;
 	@Column(name = "ALERT_MESSAGE")
 	private String message;
 	@Column(name = "ALERT_DATE")
