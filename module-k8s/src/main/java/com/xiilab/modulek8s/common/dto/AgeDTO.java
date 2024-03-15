@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.common.dto;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ public class AgeDTO {
 	 */
 	public AgeDTO(LocalDateTime startTime) {
 		// Duration을 사용하여 시간 차이 계산
-		Duration duration = Duration.between(startTime, LocalDateTime.now());
+		Duration duration = Duration.between(startTime, LocalDateTime.now(ZoneId.of("Asia/Seoul")));
 		days = duration.toDays();
 		hour = duration.toHours() % 24;
 		minutes = duration.toMinutes() % 60;
