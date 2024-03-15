@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiilab.modulecommon.dto.ReportType;
 import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
@@ -281,5 +282,39 @@ public class DataConverterUtil {
 	public static LocalDateTime dataFormatterByStr(String date){
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		return LocalDateTime.parse(date, formatter);
+	}
+
+	public static String getEndDateUnixTime(String startDate, String reportType){
+		LocalDateTime dateTime = LocalDateTime.parse(startDate, DateTimeFormatter.ofPattern(dateFormat));
+		LocalDateTime endDate;
+		ReportType type = ReportType.valueOf(reportType);
+		if(type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)){
+			endDate = dateTime.minusWeeks(1);
+		}else{
+			endDate= dateTime.minusMonths(1);
+		}
+		return String.valueOf(endDate.atZone(ZoneId.systemDefault()).toEpochSecond());
+	}
+
+	public static String getEndDate(String startDate, String reportType){
+		LocalDateTime dateTime = LocalDateTime.parse(startDate, DateTimeFormatter.ofPattern(dateFormat));
+		LocalDateTime endDate;
+		ReportType type = ReportType.valueOf(reportType);
+		if(type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)){
+			endDate = dateTime.minusWeeks(1);
+		}else{
+			endDate= dateTime.minusMonths(1);
+		}
+
+		return endDate.toString().replace("T", " ")+":00";
+	}
+
+	public static long getReportStep(String reportType){
+		ReportType type = ReportType.valueOf(reportType);
+		if(type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)){
+			return 4000L;
+		}else{
+			return 16000L;
+		}
 	}
 }

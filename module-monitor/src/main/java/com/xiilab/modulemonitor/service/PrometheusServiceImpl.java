@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulemonitor.dto.ReportDTO;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
@@ -61,6 +62,66 @@ public class PrometheusServiceImpl implements PrometheusService{
 		String realTimeMetricByQuery = prometheusRepository.getRealTimeMetricByQuery(
 			String.format(promql.getQuery(), time, limitResource, unixTimeStamp));
 		return extractMetrics(realTimeMetricByQuery, promql.name());
+	}
+
+	@Override
+	public long getHistoryMetricByReport(String promql, String startDate, String endDateUnixTime, long step) {
+
+		// 검색시간 UnixTime로 변환
+		String startDateUnixTime = DataConverterUtil.toUnixTime(startDate);
+
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
+			endDateUnixTime, startDateUnixTime, 4000L);
+		return getAvgHistoryMetric(historyMetric);
+	}
+
+	@Override
+	public ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate, String resourceName) {
+		long step = DataConverterUtil.getStep(endDate, startDate);
+		// 검색시간 UnixTime로 변환
+		String startDateUnix = DataConverterUtil.toUnixTime(startDate);
+		String endDateUnix = DataConverterUtil.toUnixTime(endDate);
+
+		String historyMetricByQuery = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
+			endDateUnix, startDateUnix, step);
+
+
+		return extractResourceMetrics(historyMetricByQuery, resourceName);
+	}
+
+	private ReportDTO.ResourceDTO extractResourceMetrics(String metric, String resourceName){
+		try {
+			// JSON 파싱을 위한 ObjectMapper 생성
+			JsonNode jsonparser = DataConverterUtil.jsonparser(metric);
+			// result 필드 추출
+			JsonNode result = jsonparser.path("data").path("result");
+
+			return createResourceDTO(result, resourceName);
+
+		} catch (Exception e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
+	}
+
+	private long getAvgHistoryMetric(String historyMetric){
+		long total = 0;
+		try {
+			// JSON 파싱을 위한 ObjectMapper 생성
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(historyMetric);
+			// result 필드 추출
+			JsonNode results = jsonNode.path("data").path("result");
+
+
+			JsonNode values = results.get(0).get("values");
+			for (JsonNode value : values) {
+				// 리스트에 추가
+				total = total + Long.parseLong(value.get(1).textValue());
+			}
+			return total / values.size();
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
 	}
 
 	/**
@@ -116,6 +177,17 @@ public class PrometheusServiceImpl implements PrometheusService{
 			String.valueOf(value)
 		);
 	}
+
+	private ReportDTO.ResourceDTO createResourceDTO(JsonNode result, String resourceName) {
+		// 결과 값 추출
+		JsonNode values = result.get(0).path("values");
+
+		return new ReportDTO.ResourceDTO().builder()
+			.resourceName(resourceName)
+			.valueDTOS(createReportValue(values))
+			.build();
+	}
+
 	/**
 	 * 조회될 Promql 조회하는 메소드
 	 * @param requestDTO pod, node, namespace 정보가 담긴 객체
@@ -191,6 +263,19 @@ public class PrometheusServiceImpl implements PrometheusService{
 			for (JsonNode node : values) {
 				// values DTO List에 추가
 				valueDTOList.add(ResponseDTO.ValueDTO.builder()
+					.dateTime(DataConverterUtil.formatDateTime(node.get(0).asDouble()))
+					.value(node.get(1).textValue())
+					.build());
+			}
+		}
+		return valueDTOList;
+	}
+	private List<ReportDTO.ValueDTO> createReportValue(JsonNode values) {
+		List<ReportDTO.ValueDTO> valueDTOList = new ArrayList<>();
+		if (values.isArray()) {
+			for (JsonNode node : values) {
+				// values DTO List에 추가
+				valueDTOList.add(ReportDTO.ValueDTO.builder()
 					.dateTime(DataConverterUtil.formatDateTime(node.get(0).asDouble()))
 					.value(node.get(1).textValue())
 					.build());

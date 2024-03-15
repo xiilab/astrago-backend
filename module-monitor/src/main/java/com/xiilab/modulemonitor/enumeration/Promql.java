@@ -101,8 +101,9 @@ public enum Promql {
 	POD_PENDING_FAIL_INFO("(kube_pod_status_phase{phase=\"Failed\"} != 0 ) or kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Fail, Pending List 조회", "POD"),
 	POD_MEM_USAGE_BYTE("container_memory_working_set_bytes{container != \"\", %s}", "POD Mem 사용량 조회 ", "POD"),
 	POD_CPU_USAGE_BYTE("container_cpu_usage_seconds_total{container != \"\", %s}", "POD CPU 사용량 조회 ", "POD"),
-	POD_GPU_UTIL("DCGM_FI_DEV_GPU_UTIL{%s}","POD GPU 사용량 조회","POD"),
-	POD_DUSK_USAGE("container_fs_usage_bytes{}","POD DISK 사용량 조회","POD"),
+	POD_GPU_UTIL("DCGM_FI_DEV_GPU_UTIL{%s}","POD GPU 사용률 조회","POD"),
+	POD_DISK_USAGE("container_fs_usage_bytes{}","POD DISK 사용량 조회","POD"),
+
 	// VOLUME
 	VOLUME_COUNT("count(kube_persistentvolume_info)", "Volume 총 개수 조회", "VOLUME"),
 
@@ -143,6 +144,15 @@ public enum Promql {
 	RESOURCE_OPTIMIZATION_MEM("((sum(max_over_time(container_memory_working_set_bytes{pod=~\"wl-.*\"}[%1$sh])) by(namespace, pod)/sum(max_over_time(kube_pod_container_resource_limits{pod=~\"wl-.*\", resource = \"memory\"}[%1$sh])) by (namespace, pod) != 0)* 100) > %2$s and on (pod,namespace) (kube_pod_created < %3$s)","n시간 동안 최대 MEM 사용량이 일정 수준을 넘은 워크로드 조회","MEM"),
 	// GPU
 	RESOURCE_OPTIMIZATION_GPU("(max_over_time(DCGM_FI_DEV_GPU_UTIL{pod=~\"wl-.*\"}[%sh]) > %s and on (namespace, pod) (kube_pod_created < %s)) > %s","n시간 동안 최대 GPU 사용량이 일정 수준을 넘은 워크로드 조회","GPU"),
+
+
+	// REPORT
+	REPORT_CLUSTER_GPU_UTIL("round(avg(DCGM_FI_DEV_GPU_UTIL))","GPU 사용률","REPORT"),
+	REPORT_CLUSTER_CPU_UTIL("round(100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100))","CPU 사용률","REPORT"),
+	REPORT_CLUSTER_MEM_UTIL("round(avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100))","MEM 사용률","REPORT"),
+	REPORT_RESOURCE_TOTAL("round(sum(kube_node_status_capacity{resource=\"nvidia_com_gpu\"}))", "GPU 총량", "REPORT"),
+	REPORT_RESOURCE_REQUEST("round(avg(kube_resourcequota{resource=\"requests.nvidia.com/gpu\", type=\"hard\"} < 10))", "GPU 요청량", "REPORT"),
+	REPORT_RESOURCE_USAGE("round(avg(DCGM_FI_DEV_GPU_UTIL{}))", "GPU 사용량", "REPORT"),
 	;
 // GPU 사용량, GPU Limit, GPU Request
 	private final String query;
