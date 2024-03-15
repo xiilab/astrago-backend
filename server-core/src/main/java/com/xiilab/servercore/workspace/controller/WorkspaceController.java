@@ -176,9 +176,10 @@ public class WorkspaceController {
 	@Operation(summary = "워크스페이스 resource 요청 승인/반려")
 	public ResponseEntity<HttpStatus> updateResourceQuota(
 		@PathVariable(value = "id") long id,
-		@RequestBody ResourceQuotaApproveDTO resourceQuotaApproveDTO
+		@RequestBody ResourceQuotaApproveDTO resourceQuotaApproveDTO,
+		UserInfoDTO userInfoDTO
 	) {
-		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO);
+		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
