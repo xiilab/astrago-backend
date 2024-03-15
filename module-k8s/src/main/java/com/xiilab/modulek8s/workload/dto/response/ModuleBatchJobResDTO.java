@@ -1,15 +1,12 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-import java.util.Map;
-
 import org.springframework.util.CollectionUtils;
 
-import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import lombok.Getter;
@@ -22,26 +19,21 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
 		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
-		Map<String, Quantity> resourceRequests = container.getResources().getLimits();
-		Quantity getGpuRequest = resourceRequests.get("nvidia.com/gpu");
-		Quantity getCpuRequest = resourceRequests.get("cpu");
-		Quantity getMemory = resourceRequests.get("memory");
-		resourceName = getResourceName();
-		image = container.getImage();
-		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() + ResourcesUnit.GPU_UNIT.getUnit() :
-			"0" + ResourcesUnit.GPU_UNIT.getUnit();
-		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() :
-			"0" + ResourcesUnit.CPU_UNIT.getUnit();
-		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() :
-			"0" + ResourcesUnit.MEM_UNIT.getUnit();
-		envs = container.getEnv().stream()
+		// 리소스 정보
+		super.initializeResources(container.getResources().getLimits());
+		// 데이터셋, 모델 마운트 패스 정보
+		super.initializeVolumeMountPath(job.getSpec().getTemplate().getMetadata().getAnnotations());
+		// 코드 정보
+		super.codes = initializeCodesInfo(job.getSpec().getTemplate().getSpec().getInitContainers());
+		super.image = container.getImage();
+		super.envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
-		ports = container.getPorts().stream()
+		super.ports = container.getPorts().stream()
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
-		command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(0);
-		status = getWorkloadStatus(job.getStatus());
+		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
+		super.status = getWorkloadStatus(job.getStatus());
 	}
 
 	@Override
@@ -53,11 +45,11 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		Integer active = jobStatus.getActive();
 		Integer failed = jobStatus.getFailed();
 		Integer ready = jobStatus.getReady();
-		if (failed != null && failed > 0) {
+		if (!NumberValidUtils.isNullOrZero(failed)) {
 			return WorkloadStatus.ERROR;
-		} else if (ready != null && ready > 0) {
+		} else if (!NumberValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.RUNNING;
-		} else if (active != null && active > 0) {
+		} else if (!NumberValidUtils.isNullOrZero(active)) {
 			return WorkloadStatus.PENDING;
 		} else {
 			return WorkloadStatus.END;

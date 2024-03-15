@@ -60,7 +60,11 @@ json으로 다음과 같은 객체를 담아 요청
 
 ## 사용방법
 접속정보를 서버로 전달
-```
-<job-type>, <workspace-name>, <workload-name>
+```json
+{
+    "workloadType": "INTERACTIVE",
+    "workspaceName": "ws-32bc5e61-8c81-416c-9c3a-72ad34f45701",
+    "workloadName" : "wl-7ef74e09-1e7b-41bb-a2f9-a45d1f21ab7d"
+}
 ```
 

@@ -24,7 +24,7 @@ import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.servercore.common.utils.ThreadHelper;
-import com.xiilab.servercore.workload.dto.TerminalMessage;
+import com.xiilab.servercore.workload.dto.request.TerminalMessage;
 
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;

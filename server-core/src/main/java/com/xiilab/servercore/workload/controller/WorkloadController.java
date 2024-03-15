@@ -36,6 +36,7 @@ import com.xiilab.servercore.hub.service.HubService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
@@ -64,11 +65,13 @@ public class WorkloadController {
 
 	@GetMapping("/{type}")
 	@Operation(summary = "워크로드 상세 조회")
-	public ResponseEntity<WorkloadHistoryResDTO.FindWorkload> getWorkloadInfo(
+	public ResponseEntity<FindWorkloadResDTO.WorkloadDetail> getWorkloadInfo(
+		@PathVariable("type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
-		@RequestParam("workloadResourceName") String workloadResourceName) {
+		@RequestParam("workloadResourceName") String workloadResourceName,
+		@RequestParam("workloadStatus") WorkloadStatus workloadStatus) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadInfoByResourceName(workspaceResourceName, workloadResourceName),
+			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, workloadStatus),
 			HttpStatus.OK);
 	}
 

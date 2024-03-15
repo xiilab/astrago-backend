@@ -17,9 +17,9 @@ import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 
@@ -27,9 +27,9 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 
 public interface WorkloadModuleService {
-	ModuleJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName);
+	CreateJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName);
 
-	ModuleJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName);
+	CreateJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName);
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 

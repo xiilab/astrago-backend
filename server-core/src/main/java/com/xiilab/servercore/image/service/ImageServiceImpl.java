@@ -9,7 +9,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
-import com.xiilab.modulecommon.util.NumberUtils;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
@@ -29,7 +29,7 @@ public class ImageServiceImpl implements ImageService {
 
 	@Override
 	@Transactional
-	public ImageEntity saveImage(ImageReqDTO.SaveImage saveImageDTO) {
+	public Long saveImage(ImageReqDTO.SaveImage saveImageDTO) {
 		// image의 타입에 따라 저장 로직 분기처리
 		switch (saveImageDTO.getImageType()) {
 			case BUILT:
@@ -55,7 +55,7 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public ImageResDTO.FindImages findImages(ImageReqDTO.FindSearchCondition findSearchCondition) {
 		PageRequest pageRequest = null;
-		if (!NumberUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberUtils.isNullOrZero(findSearchCondition.getPageSize())) {
+		if (!NumberValidUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberValidUtils.isNullOrZero(findSearchCondition.getPageSize())) {
 			pageRequest = PageRequest.of(findSearchCondition.getPageNo() - 1, findSearchCondition.getPageSize());
 		}
 
@@ -70,7 +70,7 @@ public class ImageServiceImpl implements ImageService {
 		imageRepository.deleteById(id);
 	}
 
-	private ImageEntity saveBuiltInImage(ImageReqDTO.SaveImage saveImageDTO) {
+	private Long saveBuiltInImage(ImageReqDTO.SaveImage saveImageDTO) {
 		BuiltInImageEntity builtInImage = BuiltInImageEntity.builder()
 			.imageName(saveImageDTO.getImageName())
 			.repositoryAuthType(saveImageDTO.getRepositoryAuthType())
@@ -82,13 +82,14 @@ public class ImageServiceImpl implements ImageService {
 			.build();
 
 		try {
-			return imageRepository.save(builtInImage);
+			BuiltInImageEntity saveBuiltInImage = imageRepository.save(builtInImage);
+			return saveBuiltInImage.getId();
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ImageErrorCode.FAILED_SAVE_BUILT_IN_IMAGE);
 		}
 	}
 
-	private ImageEntity saveCustomImage(ImageReqDTO.SaveImage saveImage) {
+	private Long saveCustomImage(ImageReqDTO.SaveImage saveImage) {
 		CredentialEntity credentialEntity = null;
 		if (!ObjectUtils.isEmpty(saveImage.getCredentialId())) {
 			credentialEntity = credentialRepository.findById(saveImage.getCredentialId())
@@ -104,7 +105,8 @@ public class ImageServiceImpl implements ImageService {
 			.build();
 
 		try {
-			return imageRepository.save(customImageEntity);
+			CustomImageEntity customImage = imageRepository.save(customImageEntity);
+			return customImage.getId();
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ImageErrorCode.FAILED_SAVE_CUSTOM_IMAGE);
 		}

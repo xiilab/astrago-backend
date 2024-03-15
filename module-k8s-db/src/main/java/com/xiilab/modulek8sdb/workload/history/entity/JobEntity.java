@@ -46,7 +46,8 @@ public class JobEntity extends WorkloadEntity {
 		this.image = image;
 	}
 
-	public void updateDeletedAt(LocalDateTime endDateTime) {
-		this.deletedAt = endDateTime;
+	public void updateImage(ImageEntity image) {
+		this.image = image;
 	}
+
 }

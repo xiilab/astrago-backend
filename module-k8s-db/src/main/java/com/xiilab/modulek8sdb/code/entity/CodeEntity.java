@@ -1,10 +1,13 @@
 package com.xiilab.modulek8sdb.code.entity;
 
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.SQLDelete;
 
 import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.modulek8sdb.code.enums.CodeType;
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 
@@ -66,5 +69,28 @@ public class CodeEntity extends BaseEntity {
 		this.credentialEntity = credentialEntity;
 		this.workspaceResourceName = workspaceResourceName;
 		this.repositoryType = repositoryType;
+	}
+
+	public CodeEntity(String title, CodeType codeType, RepositoryType repositoryType, String codeURL,
+		CredentialEntity credentialEntity, String workspaceResourceName, DeleteYN deleteYn) {
+		this.title = title;
+		this.codeType = codeType;
+		this.repositoryType = repositoryType;
+		this.codeURL = codeURL;
+		this.credentialEntity = credentialEntity;
+		this.workspaceResourceName = workspaceResourceName;
+		this.deleteYn = deleteYn;
+	}
+
+	public CodeEntity(RegUser regUser, String title, CodeType codeType, RepositoryType repositoryType, String codeURL,
+		CredentialEntity credentialEntity, String workspaceResourceName, DeleteYN deleteYn) {
+		super.regUser = regUser;
+		this.title = title;
+		this.codeType = codeType;
+		this.repositoryType = repositoryType;
+		this.codeURL = codeURL;
+		this.credentialEntity = credentialEntity;
+		this.workspaceResourceName = workspaceResourceName;
+		this.deleteYn = deleteYn;
 	}
 }

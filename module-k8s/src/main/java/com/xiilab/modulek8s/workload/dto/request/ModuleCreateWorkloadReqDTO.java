@@ -61,6 +61,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.cpuRequest(this.cpuRequest)
 			.gpuRequest(this.gpuRequest)
 			.memRequest(this.memRequest)
+			.secretName(this.imageSecretName)
 			.build();
 	}
 
@@ -86,6 +87,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.cpuRequest(this.cpuRequest)
 			.gpuRequest(this.gpuRequest)
 			.memRequest(this.memRequest)
+			.secretName(this.imageSecretName)
 			.build();
 	}
 
