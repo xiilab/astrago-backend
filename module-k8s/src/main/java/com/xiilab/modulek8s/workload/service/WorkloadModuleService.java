@@ -124,4 +124,8 @@ public interface WorkloadModuleService {
 	int optimizationInteractiveWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList);
 
 	List<ModuleWorkloadResDTO> getParentControllerList(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList);
+
+	void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description);
+
+	void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description);
 }

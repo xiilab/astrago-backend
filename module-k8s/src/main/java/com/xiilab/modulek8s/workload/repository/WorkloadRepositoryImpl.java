@@ -54,6 +54,7 @@ import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -155,6 +156,35 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 					.endTemplate()
 					.endSpec()
 					.build());
+		}
+	}
+
+	@Override
+	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			// kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get()
+			kubernetesClient.batch().v1().jobs().inNamespace(workspaceResourceName)
+				.withName(workloadResourceName).edit(
+					job -> new JobBuilder(job).editMetadata()
+						.addToAnnotations(AnnotationField.NAME.getField(), name)
+						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), description)
+						.endMetadata()
+						.build()
+				);
+		}
+	}
+
+	@Override
+	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.apps().deployments().inNamespace(workspaceResourceName)
+				.withName(workloadResourceName).edit(
+					deployment -> new DeploymentBuilder(deployment).editMetadata()
+						.addToAnnotations(AnnotationField.NAME.getField(), name)
+						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), description)
+						.endMetadata()
+						.build()
+				);
 		}
 	}
 

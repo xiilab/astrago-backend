@@ -10,10 +10,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +38,7 @@ import com.xiilab.servercore.hub.service.HubService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
@@ -60,6 +63,15 @@ public class WorkloadController {
 		@PathVariable(value = "type") WorkloadType workloadType,
 		UserInfoDTO userInfoDTO) {
 		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
+		return ResponseEntity.ok().build();
+	}
+
+	@PatchMapping("/{workloadType}")
+	@Operation(summary = "워크로드 수정")
+	public ResponseEntity<HttpStatus> updateWorkload(
+		@PathVariable("workloadType") WorkloadType workloadType,
+		@RequestBody WorkloadUpdateDTO workloadUpdateDTO) {
+		workloadFacadeService.editWorkload(workloadType, workloadUpdateDTO);
 		return ResponseEntity.ok().build();
 	}
 

@@ -402,6 +402,18 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
+	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadModuleService.editBatchJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
+	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadModuleService.editInteractiveJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
 	public Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType) {
 		return workloadModuleService.getJobPod(workspaceName, workloadName, workloadType);
 	}

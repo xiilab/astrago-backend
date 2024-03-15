@@ -71,6 +71,7 @@ import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
+import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
@@ -380,6 +381,14 @@ public class WorkloadFacadeService {
 	public byte[] getWorkloadFilePreview(String workloadName, String workspaceName, WorkloadType workloadType,
 		String path) throws IOException {
 		return downloadFileFromWorkload(workloadName, workspaceName, workloadType, path).getContentAsByteArray();
+	}
+
+	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
+		if (workloadType == WorkloadType.BATCH) {
+			workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(), workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(), workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
+		}
 	}
 
 	private List<ModuleWorkloadResDTO> filterNormalWorkloads(List<ModuleWorkloadResDTO> workloadList, String searchName,
