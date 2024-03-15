@@ -1,11 +1,14 @@
 package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
-import java.time.LocalDateTime;
-
+import com.xiilab.modulecommon.enums.ReadYN;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,27 +23,30 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class SystemAlertEntity {
+public class SystemAlertEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ALERT_ID")
 	private Long id;
-	@Column(name = "RECIPIENT")
+	@Column(name = "TITLE")
+	private String title;
+	@Column(name = "MESSAGE")
+	private String message;
+	@Column(name = "RECIPIENT_ID")
 	private String recipientId;
-	@Column(name = "SENDER")
+	@Column(name = "SENDER_ID")
 	private String senderId;
+	@Enumerated(EnumType.STRING)
 	@Column(name = "ALERT_TYPE")
 	private SystemAlertType systemAlertType;
-	@Column(name = "ALERT_TITLE")
-	private String title;
-	@Column(name = "ALERT_MESSAGE")
-	private String message;
-	@Column(name = "ALERT_DATE")
-	private LocalDateTime alertDate;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "ALERT_EVENT_TYPE")
+	private SystemAlertEventType systemAlertEventType;
+	@Enumerated(EnumType.STRING)
 	@Column(name = "READ_YN")
-	private boolean readYN;
+	private ReadYN readYN = ReadYN.N;
 
 	public void readAlert(){
-		this.readYN = true;
+		this.readYN = ReadYN.Y;
 	}
 }

@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.service.MailService;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
+// import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
@@ -20,6 +21,7 @@ import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
+import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 
@@ -49,18 +51,17 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
 
 		if(systemAlertSet.isUserSystemYN()){
-			alertService.sendAlert(SystemAlertDTO.builder()
-					.recipientId(adminId)
-					.senderId("SYSTEM")
+			alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
 					.title(SystemAlertMessage.USER_CREATE.getTitle())
-					.systemAlertType(SystemAlertType.USER)
-					.message(
-						String.format(
+					.message(String.format(
 							SystemAlertMessage.USER_CREATE.getMessage(),
 							userInfo.getLastName() + userInfo.getFirstName(),
-							userInfo.getEmail()
-						)
-					).build());
+							userInfo.getEmail()))
+					.recipientId(adminId)
+					.senderId("SYSTEM")
+					.systemAlertType(SystemAlertType.USER)
+					.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
+					.build());
 		}
 		if(systemAlertSet.isUserEmailYN()){
 			UserInfo adminInfo = getUserInfoById(adminId);
@@ -136,17 +137,17 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
 
 		if(systemAlertSet.isUserSystemYN()){
-			alertService.sendAlert(SystemAlertDTO.builder()
+			alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
+				.title(SystemAlertMessage.USER_UPDATE.getTitle())
+				.message(String.format(
+					SystemAlertMessage.USER_UPDATE.getMessage(),
+					userInfo.getLastName() + userInfo.getFirstName(),
+					userInfo.getEmail()))
 				.recipientId(adminId)
 				.senderId("SYSTEM")
-				.title(SystemAlertMessage.USER_UPDATE.getTitle())
 				.systemAlertType(SystemAlertType.USER)
-				.message(
-					String.format(
-						SystemAlertMessage.USER_UPDATE.getMessage(),
-						userInfo.getLastName() + userInfo.getFirstName()
-					)
-				).build());
+				.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
+				.build());
 		}
 		if(systemAlertSet.isUserEmailYN()){
 			mailService.sendMail(MailDTO.builder()

@@ -1,13 +1,16 @@
 package com.xiilab.servercore.alert.systemalert.service;
 
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
+import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
+import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
 
 public interface SystemAlertService {
-	void sendAlert(SystemAlertDTO systemAlertDTO);
-	SystemAlertDTO.ResponseDTO getAlertById(long id);
-	List<SystemAlertDTO.ResponseDTO> getAlertListByUserId(String recipientId);
-	void readAlert(long id);
-	void deleteAlertById(long id);
+	Long saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert saveSystemAlertReqDTO);
+	FindSystemAlertResDTO.SystemAlertDetail getSystemAlertById(Long id);
+	FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String recipientId, Pageable pageable);
+	void readSystemAlert(Long id);
+	void deleteSystemAlertById(Long id);
+
+
 }
