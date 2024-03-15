@@ -27,6 +27,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
@@ -70,9 +71,7 @@ import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
-import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import lombok.RequiredArgsConstructor;
@@ -471,9 +470,13 @@ public class WorkloadFacadeService {
 
 	private void stopBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
-		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
-			WorkloadType.BATCH);
-		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
+		try {
+			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
+				WorkloadType.BATCH);
+			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
+		} catch (K8sException ignored) {
+
+		}
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
 
 		// WorkspaceAlertSetDTO.ResponseDTO workspaceAlertSet = workspaceAlertSetService.getWorkspaceAlertSet(
@@ -491,9 +494,13 @@ public class WorkloadFacadeService {
 
 	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
 		IOException {
-		String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
-			WorkloadType.INTERACTIVE);
-		FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
+		try {
+			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
+				WorkloadType.INTERACTIVE);
+			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
+		} catch (K8sException ignored) {
+
+		}
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 		// 해당 워크스페이스 알림 설정이 True인 경우
 		// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
