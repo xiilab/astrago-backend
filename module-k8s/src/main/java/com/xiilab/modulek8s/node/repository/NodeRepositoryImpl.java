@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -17,10 +17,10 @@ import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
-import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
@@ -60,8 +60,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String DISK_PRESSURE = "DiskPressure";
 	private final String PID_PRESSURE = "PIDPressure";
 	private final String READY = "Ready";
-	@Value("${mig-profile-path}")
-	private String migProfilePath;
 
 	@Override
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
@@ -136,7 +134,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	@Override
-	public ResponseDTO.MIGProfile getNodeMIGProfiles(String nodeName) {
+	public MIGProfileDTO getNodeMIGProfiles(String nodeName, int giCount) {
 		Node node = getNode(nodeName);
 		if (!getMigCapable(node)) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
@@ -144,7 +142,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		//node의 gpu productName을 조회한다.
 		String gpuProductName = getGPUProductName(node);
 		//해당 node에 장착된 gpu가 가능한 mig profile을 리턴한다.
-		return getNodeMIGProfileFromJson(gpuProductName);
+		return getNodeMIGProfileFromJson(gpuProductName, giCount);
 	}
 
 	@Override
@@ -318,21 +316,28 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 * @return
 	 * @throws IOException
 	 */
-	public ResponseDTO.MIGProfile getNodeMIGProfileFromJson(String productName) {
+	@Override
+	public MIGProfileDTO getNodeMIGProfileFromJson(String productName, int giCount) {
 		try {
+			String chipset = extractGpuChipset(productName);
+			List<Map<String, Integer>> resProfile = new ArrayList<>();
 			//MIGProfile.json을 읽어온다.
-			File file = new File(migProfilePath);
+			File file = new File(String.format("server-core/src/main/resources/migProfile/%s.json",chipset));
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
 				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
 			}
 			//json 파일을 읽어옴
-			ResponseDTO.MIGProfileList migProfileList = objectMapper.readValue(file, ResponseDTO.MIGProfileList.class);
-			//리스트에서 productName으로 검색하여 해당하는 profile을 리턴한다.
-			return migProfileList.migProfiles().stream().filter(mig ->
-					mig.migProduct().equals(MIGProduct.getGpuProduct(productName)))
-				.findFirst()
-				.orElseThrow(() -> new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU));
+			MIGProfileDTO migProfileList = objectMapper.readValue(file, MIGProfileDTO.class);
+
+			List<Map<String, Integer>> profiles = migProfileList.getProfile();
+			for (Map<String, Integer> profile : profiles) {
+				int sum = profile.values().stream().toList().stream().mapToInt(Integer::intValue).sum();
+				if (sum == giCount) {
+					resProfile.add(profile);
+				}
+			}
+			return new MIGProfileDTO(productName, resProfile);
 		} catch (IOException e) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
@@ -352,6 +357,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		node.edit(n ->
 			new NodeBuilder(n).editMetadata().addToLabels(migConfig).endMetadata().build());
 	}
+
 	@Override
 	public void updateMigProfile(NodeGpuDTO nodeGpuDTO) {
 		DumperOptions options = new DumperOptions();
@@ -438,6 +444,21 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.memory(labels.get(profile + ".memory"))
 					.build())
 			.toList();
+	}
+
+	private String extractGpuChipset(String value) {
+		StringBuilder chipset = null;
+		String[] split = value.split("-");
+		Set<String> strings = Set.of("A30","A100","H100");
+		for (String s : split) {
+			if (strings.contains(s)) {
+				chipset = new StringBuilder(s);
+			}
+			if (s.contains("GB")) {
+				chipset.append("-").append(s);
+			}
+		}
+		return chipset.toString();
 	}
 
 	/**

@@ -4,17 +4,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
-import com.xiilab.servercore.node.service.NodeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/core/nodes")
 public class NodeController {
-	private final NodeService nodeService;
 	private final NodeFacadeService nodeFacadeService;
 
 	@GetMapping("")
@@ -58,18 +58,21 @@ public class NodeController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	// @GetMapping("/gpus")
-	// public ResponseEntity<> getGpuListByNodeName() {
-	//
-	// }
-
-	@PostMapping("/mig")
+	@PatchMapping("/mig")
 	@Operation(summary = "node에 mig 설정")
 	public ResponseEntity<HttpStatus> setMigConfig(@RequestBody NodeGpuDTO nodeGpuDTO
 	) {
 		nodeFacadeService.updateMIGProfile(nodeGpuDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	@PatchMapping("/mig/disable/{nodeName}")
+	@Operation(summary = "node mig 비활성화")
+	public ResponseEntity<HttpStatus> setMigDisable(@PathVariable(value = "nodeName") String nodeName) {
+		nodeFacadeService.disableMIG(nodeName);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 
 	/**
 	 * 등록된 node의 mig 가능한 리스트를 리턴하는 API
@@ -78,22 +81,9 @@ public class NodeController {
 	 * @return
 	 */
 	@GetMapping("/{nodeName}/mig/list")
-	public ResponseEntity<ResponseDTO.MIGProfile> getNodeEnableMIGProfileList(
-		@PathVariable(name = "nodeName") String nodeName) {
-		return new ResponseEntity<>(nodeService.getNodeMIGProfiles(nodeName), HttpStatus.OK);
-	}
-
-	/**
-	 * 등록된 node의 mig 기능을 상태를 update하는 api
-	 *
-	 * @param nodeName 조회하려고 하는 node Name
-	 * @param option   all, custom 두가지 요청 가능함.
-	 * @return
-	 */
-	@GetMapping("/{nodeName}/mig/all")
-	public ResponseEntity<HttpStatus> updateMIGProfile(@PathVariable(name = "nodeName") String nodeName,
-		@RequestParam String option) {
-		nodeService.updateMIGAllProfile(nodeName, option);
-		return new ResponseEntity<>(HttpStatus.OK);
+	public ResponseEntity<MIGProfileDTO> getNodeEnableMIGProfileList(
+		@PathVariable(name = "nodeName") String nodeName,
+		@RequestParam(name = "giCount") int giCount) {
+		return new ResponseEntity<>(nodeFacadeService.getNodeMIGProfiles(nodeName, giCount), HttpStatus.OK);
 	}
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
@@ -102,8 +103,8 @@ public class NodeFacadeService {
 	 * @param nodeName 노드의 Name
 	 * @return
 	 */
-	public ResponseDTO.MIGProfile getNodeMIGProfiles(String nodeName) {
-		return nodeRepository.getNodeMIGProfiles(nodeName);
+	public MIGProfileDTO getNodeMIGProfiles(String nodeName, int giCount) {
+		return nodeRepository.getNodeMIGProfiles(nodeName, giCount);
 	}
 
 	public ResponseDTO.NodeInfo getNodeByResourceName(String resourceName) {
@@ -196,5 +197,9 @@ public class NodeFacadeService {
 		nodeRepository.updateMigProfile(nodeGpuDTO);
 		//node의 라벨값 변경
 		nodeRepository.updateMIGProfile(nodeGpuDTO.getNodeName(), nodeGpuDTO.getMigKey());
+	}
+
+	public void disableMIG(String nodeName) {
+		nodeRepository.updateMIGProfile(nodeName, "all-disabled");
 	}
 }

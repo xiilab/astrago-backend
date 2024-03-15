@@ -1,9 +1,9 @@
 package com.xiilab.modulek8s.node.repository;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
@@ -15,7 +15,7 @@ import io.fabric8.kubernetes.api.model.Node;
 public interface NodeRepository {
 	ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize);
 
-	ResponseDTO.MIGProfile getNodeMIGProfiles(String nodeName);
+	MIGProfileDTO getNodeMIGProfiles(String nodeName, int giCount);
 
 	void updateMIGProfile(String nodeName, String option);
 
@@ -23,7 +23,7 @@ public interface NodeRepository {
 
 	MIGStrategy getNodeMIGOnOffYN(Map<String, String> nodeLabels);
 
-	ResponseDTO.MIGProfile getNodeMIGProfileFromJson(String productName) throws FileNotFoundException;
+	MIGProfileDTO getNodeMIGProfileFromJson(String productName, int giCount);
 
 	List<MigMixedDTO> getMigMixedInfo(Node node);
 
