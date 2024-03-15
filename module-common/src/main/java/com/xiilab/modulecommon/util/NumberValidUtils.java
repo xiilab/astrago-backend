@@ -3,7 +3,7 @@ package com.xiilab.modulecommon.util;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class NumberUtils {
+public class NumberValidUtils {
 	public static boolean isNullOrZero(Integer value) {
 		return value == null || value == 0;
 	}

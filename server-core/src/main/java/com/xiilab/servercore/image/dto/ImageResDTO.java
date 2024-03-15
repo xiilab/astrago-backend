@@ -63,6 +63,12 @@ public class ImageResDTO {
 					.repositoryAuthType(imageEntity.getRepositoryAuthType())
 					.imageType(imageEntity.getImageType())
 					.workloadType(imageEntity.getWorkloadType())
+					.deleteYN(imageEntity.getDeleteYN())
+					.regUserId(imageEntity.getRegUser().getRegUserId())
+					.regUserName(imageEntity.getRegUser().getRegUserName())
+					.regDate(imageEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+					.regUserName(imageEntity.getRegUser().getRegUserName())
+					.regUserRealName(imageEntity.getRegUser().getRegUserRealName())
 					.build();
 			}
 		}

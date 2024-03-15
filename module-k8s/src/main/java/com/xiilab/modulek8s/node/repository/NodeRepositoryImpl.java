@@ -45,6 +45,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String GPU_DRIVER_VER_REV = "nvidia.com/cuda.driver.rev";
 	private final String GPU_MEMORY = "nvidia.com/gpu.memory";
 	private final String GPU = "nvidia.com/gpu";
+
+	private final String MIG_CONFIG = "nvidia.com/mig.config";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
 	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
@@ -69,6 +71,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 			for (Node node : nodes) {
 				boolean migCapable = getMigCapable(node);
+				boolean isActiveMIG = isActiveMIG(node);
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
@@ -82,6 +85,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 						node.getSpec().getUnschedulable() == null || node.getSpec().getUnschedulable() == false ? true :
 							false)
 					.migCapable(migCapable)
+					.isActiveMIG(isActiveMIG)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -101,6 +105,11 @@ public class NodeRepositoryImpl implements NodeRepository {
 			.nodes(nodeDtos.subList(startIndex, endIndex))
 			.totalCount(totalCount)
 			.build();
+	}
+
+	private boolean isActiveMIG(Node node) {
+		String migConfig = node.getMetadata().getLabels().get(MIG_CONFIG);
+		return migConfig != null ? !migConfig.equalsIgnoreCase("all-disabled") : false;
 	}
 
 	private boolean isStatus(List<NodeCondition> conditions) {

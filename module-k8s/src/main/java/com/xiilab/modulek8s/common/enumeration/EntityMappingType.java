@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.common.enums;
+package com.xiilab.modulek8s.common.enumeration;
 
 import lombok.Getter;
 
@@ -8,5 +8,4 @@ public enum EntityMappingType {
 	MODEL,
 	CODE,
 	IMAGE
-
 }

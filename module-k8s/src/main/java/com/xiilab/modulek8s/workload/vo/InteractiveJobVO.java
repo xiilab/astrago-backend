@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
@@ -69,7 +70,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	private Map<String, String> getAnnotationMap() {
 		String imageCredentialId = "";
 		if (getImage() != null && getImage().credentialVO() != null && !ObjectUtils.isEmpty(
-			getImage().credentialVO().credentialLoginId())) {
+			getImage().credentialVO().credentialId())) {
 			imageCredentialId = String.valueOf(getImage().credentialVO().credentialId());
 		}
 
@@ -80,14 +81,15 @@ public class InteractiveJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.CREATED_AT.getField(), LocalDateTime.now().toString());
 		annotationMap.put(AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName());
 		annotationMap.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName());
-		annotationMap.put(AnnotationField.TYPE.getField(), getWorkloadType().getType());
+		annotationMap.put(AnnotationField.TYPE.getField(), getWorkloadType().name());
 		annotationMap.put(AnnotationField.IMAGE_NAME.getField(), getImage().name());
-		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().getType());
+		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().name());
 		annotationMap.put(AnnotationField.IMAGE_CREDENTIAL_ID.getField(), imageCredentialId);
 		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
-		annotationMap.put(AnnotationField.IMAGE_ID.getField(), String.valueOf(getImage().id()));
+		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
+			"" : String.valueOf(getImage().id()));
 
 		return annotationMap;
 	}
@@ -114,6 +116,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			.withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
 			.withTemplate(new PodTemplateSpecBuilder()
 				.withNewMetadata()
+				.withAnnotations(getPodAnnotationMap())
 				.withLabels(Collections.singletonMap(LabelField.APP.getField(), jobName))
 				.endMetadata()
 				.withSpec(createPodSpec())
@@ -128,6 +131,9 @@ public class InteractiveJobVO extends WorkloadVO {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
+		if (!ObjectUtils.isEmpty(this.secretName)) {
+			podSpecBuilder.addNewImagePullSecret(this.secretName);
+		}
 		cloneGitRepo(podSpecBuilder, codes);
 		addVolumes(podSpecBuilder, datasets);
 		addVolumes(podSpecBuilder, models);
