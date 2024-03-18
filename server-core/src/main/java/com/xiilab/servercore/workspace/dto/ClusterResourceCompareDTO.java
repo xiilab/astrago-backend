@@ -9,7 +9,7 @@ public class ClusterResourceCompareDTO {
 	private int clusterCPU;
 	private int clusterMEM;
 	private int clusterGPU;
-	private int reqCPU;
-	private int reqMEM;
-	private int reqGPU;
+	private int allocCPU;
+	private int allocMEM;
+	private int allocGPU;
 }
