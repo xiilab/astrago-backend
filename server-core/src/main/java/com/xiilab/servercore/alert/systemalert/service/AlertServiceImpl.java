@@ -6,14 +6,10 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
-import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulecommon.util.NumberValidUtils;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
@@ -23,9 +19,6 @@ import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
-import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
@@ -106,7 +99,7 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
-	public void saveAdminAlertMapping(List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
+	public void saveAdminAlertMapping(String adminId, List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
 		for (SystemAlertReqDTO.SaveAdminAlertMappings saveAdminAlertMapping : saveAdminAlertMappings) {
 			// getAdminAlertMappingId 없으면 새로 등록
 			if (NumberValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId()) &&
@@ -115,7 +108,8 @@ public class AlertServiceImpl implements AlertService {
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
 				AdminAlertMappingEntity newAdminAlertMappingEntity = AdminAlertMappingEntity.saveBuilder()
 					.alert(alertEntity)
-					.adminId(saveAdminAlertMapping.getAdminId())
+					// .adminId(saveAdminAlertMapping.getAdminId())
+					.adminId(adminId)
 					.emailAlertStatus(saveAdminAlertMapping.getEmailAlertStatus())
 					.systemAlertStatus(saveAdminAlertMapping.getSystemAlertStatus())
 					.build();
