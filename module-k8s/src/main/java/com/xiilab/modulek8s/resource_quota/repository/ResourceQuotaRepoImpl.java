@@ -71,7 +71,13 @@ public class ResourceQuotaRepoImpl implements ResourceQuotaRepo {
 	@Override
 	public List<ResourceQuotaResVO> getResourceQuotasList() {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.resourceQuotas().list().getItems().stream().map(ResourceQuotaResVO::new).toList();
+			return kubernetesClient.resourceQuotas()
+				.inAnyNamespace()
+				.list()
+				.getItems()
+				.stream()
+				.map(ResourceQuotaResVO::new)
+				.toList();
 		}
 	}
 }
