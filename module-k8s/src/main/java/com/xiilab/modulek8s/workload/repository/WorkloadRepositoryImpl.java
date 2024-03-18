@@ -26,9 +26,9 @@ import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
@@ -38,7 +38,6 @@ import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
-import com.xiilab.modulek8s.workload.vo.WorkloadVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.OwnerReference;
@@ -55,14 +54,15 @@ import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
-import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
+import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -73,21 +73,21 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
-	public ModuleJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
+	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 		Job resource = (Job)createResource(batchJobVO.createResource());
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
-		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
-	public ModuleJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
+	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
 		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVOJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getModels());
-		return new ModuleJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
@@ -156,6 +156,35 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 					.endTemplate()
 					.endSpec()
 					.build());
+		}
+	}
+
+	@Override
+	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			// kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get()
+			kubernetesClient.batch().v1().jobs().inNamespace(workspaceResourceName)
+				.withName(workloadResourceName).edit(
+					job -> new JobBuilder(job).editMetadata()
+						.addToAnnotations(AnnotationField.NAME.getField(), name)
+						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), description)
+						.endMetadata()
+						.build()
+				);
+		}
+	}
+
+	@Override
+	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.apps().deployments().inNamespace(workspaceResourceName)
+				.withName(workloadResourceName).edit(
+					deployment -> new DeploymentBuilder(deployment).editMetadata()
+						.addToAnnotations(AnnotationField.NAME.getField(), name)
+						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), description)
+						.endMetadata()
+						.build()
+				);
 		}
 	}
 
@@ -256,7 +285,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String app = job.getMetadata().getLabels().get("app");
 			String namespace = job.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
-		} catch (NullPointerException e) {
+		} catch (Exception e) {
 			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
@@ -272,7 +301,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String app = deployment.getMetadata().getLabels().get("app");
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
-		} catch (NullPointerException e) {
+		} catch (Exception e) {
 			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
 	}
@@ -819,7 +848,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private JobList  getBatchJobList(String workSpaceName) {
+	private JobList getBatchJobList(String workSpaceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).list();
 		}

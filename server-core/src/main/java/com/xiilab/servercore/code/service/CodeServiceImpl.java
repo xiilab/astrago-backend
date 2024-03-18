@@ -2,7 +2,6 @@ package com.xiilab.servercore.code.service;
 
 import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +15,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.GithubApi;
-import com.xiilab.modulek8sdb.code.enums.CodeType;
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;

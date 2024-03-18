@@ -3,6 +3,7 @@ package com.xiilab.modulek8sdb.image.entity;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 
 import jakarta.persistence.DiscriminatorValue;
@@ -30,6 +31,13 @@ public class CustomImageEntity extends ImageEntity {
 	public CustomImageEntity(String imageName, RepositoryAuthType repositoryAuthType,
 		ImageType imageType, WorkloadType workloadType, CredentialEntity credentialEntity) {
 		super(imageName, repositoryAuthType, imageType, workloadType);
+		this.credentialEntity = credentialEntity;
+	}
+
+	@Builder(builderMethodName = "informerBuilder", builderClassName = "informerBuilder")
+	public CustomImageEntity(RegUser regUser, String imageName, RepositoryAuthType repositoryAuthType,
+		ImageType imageType, WorkloadType workloadType, CredentialEntity credentialEntity) {
+		super(regUser, imageName, repositoryAuthType, imageType, workloadType);
 		this.credentialEntity = credentialEntity;
 	}
 

@@ -64,13 +64,15 @@ public class AlertManagerReceiveDTO {
 	public static class ResponseDTO extends AlertManagerReceiveDTO {
 		private AlertManagerDTO.CategoryDTO categoryDTO;  // 설정 값 DTO List
 		private AlertManagerDTO.NodeDTO nodeDTO;
+		private boolean result;
 		@Builder(builderMethodName = "responseDTOBuilder", builderClassName = "responseDTOBuilder")
 		public ResponseDTO(AlertManagerEntity alertManagerEntity, AlertManagerReceiveEntity alertManagerReceiveEntity) {
-			this.id = alertManagerEntity.getId();
+			this.id = alertManagerReceiveEntity.getId();
 			this.alertManagerId = alertManagerReceiveEntity.getAlertManager().getId();
 			this.value = alertManagerReceiveEntity.getThreshold();
 			this.currentTime = alertManagerReceiveEntity.getCurrentTime();
 			this.realTime = alertManagerReceiveEntity.getRealTime();
+			this.result = alertManagerReceiveEntity.isResult();
 			this.nodeDTO = alertManagerEntity.getAlertManagerNodeEntityList().stream()
 				.filter(nodeEntity -> nodeEntity.getNodeName().equals(alertManagerReceiveEntity.getNodeName()))
 				.map(nodeEntity -> AlertManagerDTO.NodeDTO.toDTOBuilder().nodeEntity(nodeEntity).build())
@@ -81,5 +83,4 @@ public class AlertManagerReceiveDTO {
 				.findFirst().orElse(AlertManagerDTO.CategoryDTO.builder().build());
 		}
 	}
-
 }

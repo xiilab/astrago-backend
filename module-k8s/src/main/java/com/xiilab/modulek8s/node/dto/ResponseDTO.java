@@ -42,7 +42,10 @@ public class ResponseDTO {
 		private int gpuCount;
 		private boolean status;
 		private boolean schedulable;
+		//mig 사용가능 유무
 		private boolean migCapable;
+		//mig 적용 유무
+		private boolean isActiveMIG;
 
 		public void setTotalGPU(double totalGPU){
 			this.totalGPU = roundToFirstDecimalPlace(totalGPU);

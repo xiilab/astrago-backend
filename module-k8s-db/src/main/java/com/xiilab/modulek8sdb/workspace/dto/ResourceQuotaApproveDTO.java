@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResourceQuotaApproveDTO {
+	private Integer cpu;
+	private Integer mem;
+	private Integer gpu;
 	private boolean approvalYN;
 	private String rejectReason;
 }

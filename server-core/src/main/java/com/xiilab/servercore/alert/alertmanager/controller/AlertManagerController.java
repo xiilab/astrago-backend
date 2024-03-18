@@ -2,6 +2,8 @@ package com.xiilab.servercore.alert.alertmanager.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -79,13 +81,19 @@ public class AlertManagerController {
 
 	@GetMapping("/receive")
 	@Operation(summary = "Alert Manager를 통하여 전달받은 알림 리스트 조회")
-	public ResponseEntity<List<AlertManagerReceiveDTO.ResponseDTO>> getAlertManagerReceiveList(
+	public ResponseEntity<Page<AlertManagerReceiveDTO.ResponseDTO>> getAlertManagerReceiveList(
 		@RequestParam(value = "categoryType", required = false) String categoryType,
 		@RequestParam(value = "startDate", required = false) String startDate,
 		@RequestParam(value = "endDate", required = false) String endDate,
 		@RequestParam(value = "search", required = false) String search,
+		Pageable pageable,
 		UserInfoDTO userInfoDTO){
-		return new ResponseEntity<>(alertManagerService.getAlertManagerReceiveList(categoryType, startDate, endDate, search, userInfoDTO), HttpStatus.OK);
+		return new ResponseEntity<>(alertManagerService.getAlertManagerReceiveList(categoryType, startDate, endDate, search, userInfoDTO, pageable), HttpStatus.OK);
 	}
 
+	@GetMapping("/receive/{receiveId}")
+	@Operation(summary = "Alert receive ID를 사용한 단일 조회")
+	public ResponseEntity<AlertManagerReceiveDTO.ResponseDTO> getAlertManagerReceiveById(@PathVariable(name = "receiveId") Long receiveId){
+		return new ResponseEntity<>(alertManagerService.getAlertManagerReceiveByReceiveId(receiveId), HttpStatus.OK);
+	}
 }

@@ -225,15 +225,25 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional
-	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO) {
+	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO, UserInfoDTO userInfoDTO) {
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
+		}
 		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaHistoryRepository.findById(id).orElseThrow();
+
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
+			int cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
+				resourceQuotaEntity.getCpuReq();
+			int mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getCpu() :
+				resourceQuotaEntity.getCpuReq();
+			int gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getCpu() :
+				resourceQuotaEntity.getCpuReq();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
 				resourceQuotaEntity.getWorkspaceResourceName(),
-				resourceQuotaEntity.getCpuReq(),
-				resourceQuotaEntity.getMemReq(),
-				resourceQuotaEntity.getGpuReq()
+				cpu,
+				mem,
+				gpu
 			);
 
 			// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());

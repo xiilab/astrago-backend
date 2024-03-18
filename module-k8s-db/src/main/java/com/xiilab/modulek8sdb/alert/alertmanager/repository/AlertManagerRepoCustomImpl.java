@@ -7,6 +7,9 @@ import static com.xiilab.modulek8sdb.alert.alertmanager.entity.QAlertManagerUser
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -22,8 +25,10 @@ public class AlertManagerRepoCustomImpl implements AlertManagerRepoCustom{
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<AlertManagerReceiveEntity> getAlertManagerReceiveList(String categoryType, String search, LocalDateTime startDate, LocalDateTime endDate, String userId){
-		return queryFactory
+	public Page<AlertManagerReceiveEntity> getAlertManagerReceiveList(String categoryType, String search,
+		LocalDateTime startDate, LocalDateTime endDate, String userId, Pageable pageable){
+
+		List<AlertManagerReceiveEntity> receiveEntityList = queryFactory
 			.selectFrom(alertManagerReceiveEntity)
 			.leftJoin(alertManagerEntity)
 			.on(alertManagerEntity.id.eq(alertManagerReceiveEntity.alertManager.id))
@@ -33,7 +38,26 @@ public class AlertManagerRepoCustomImpl implements AlertManagerRepoCustom{
 				eqSearch(search),
 				eqCategoryType(categoryType),
 				ltStartDate(endDate), gtEndDate(startDate)
-			).fetch();
+			)
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
+
+		//count를 위한 쿼리
+		Long count = queryFactory
+			.select(alertManagerReceiveEntity.countDistinct())
+			.from(alertManagerReceiveEntity)
+			.leftJoin(alertManagerEntity)
+			.on(alertManagerEntity.id.eq(alertManagerReceiveEntity.alertManager.id))
+			.leftJoin(alertManagerUserEntity)
+			.on(alertManagerUserEntity.alertManager.id.eq(alertManagerEntity.id))
+			.where(alertManagerUserEntity.userId.eq(userId),
+				eqSearch(search),
+				eqCategoryType(categoryType),
+				ltStartDate(endDate), gtEndDate(startDate)
+			).fetchOne();
+
+		return new PageImpl<>(receiveEntityList, pageable, count);
 	}
 
 	private BooleanExpression eqSearch(String search) {

@@ -32,7 +32,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -61,7 +61,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final SecretService secretService;
 
 	@Override
-	public ModuleJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+	public CreateJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		//생성 요청한 workspace가 존재하는지 확인
 		WorkspaceDTO.ResponseDTO workspaceByName = workspaceService.getWorkspaceByName(
 			moduleCreateWorkloadReqDTO.getWorkspace());
@@ -72,7 +72,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			createAndSetImageSecret(moduleCreateWorkloadReqDTO);
 		}
 
-		ModuleJobResDTO moduleJobResDTO = null;
+		CreateJobResDTO createJobResDTO = null;
 		try {
 			// Dataset PV 생성
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
@@ -80,21 +80,22 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
 
 			if (workloadType == WorkloadType.BATCH) {
-				moduleJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO,
+				createJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
-				moduleJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO,
+				createJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			}
 
 			if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getPorts())) {
 				CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-					moduleCreateWorkloadReqDTO, moduleJobResDTO.getName());
+					moduleCreateWorkloadReqDTO, createJobResDTO.getName());
 
 				// 노드포트 연결
 				svcService.createNodePortService(createSvcReqDTO);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
@@ -113,7 +114,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			throw new RestApiException(WorkloadErrorCode.FAILED_CREATE_WORKLOAD);
 		}
 
-		return moduleJobResDTO;
+		return createJobResDTO;
 	}
 
 	private void createPVAndPVC(List<ModuleVolumeReqDTO> list) {
@@ -398,6 +399,18 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		volumeService.deletePVC(pvcName, namespace);
 		//pv 삭제
 		volumeService.deletePV(pvName);
+	}
+
+	@Override
+	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadModuleService.editBatchJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
+	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadModuleService.editInteractiveJob(workspaceResourceName, workloadResourceName, name, description);
 	}
 
 	@Override
