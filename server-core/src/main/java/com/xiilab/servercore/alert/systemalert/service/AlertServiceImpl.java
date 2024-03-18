@@ -19,6 +19,7 @@ import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
@@ -98,7 +99,7 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
-	public void saveAdminAlertMapping(List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
+	public void saveAdminAlertMapping(String adminId, List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
 		for (SystemAlertReqDTO.SaveAdminAlertMappings saveAdminAlertMapping : saveAdminAlertMappings) {
 			// getAdminAlertMappingId 없으면 새로 등록
 			if (NumberValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId()) &&
@@ -107,7 +108,8 @@ public class AlertServiceImpl implements AlertService {
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
 				AdminAlertMappingEntity newAdminAlertMappingEntity = AdminAlertMappingEntity.saveBuilder()
 					.alert(alertEntity)
-					.adminId(saveAdminAlertMapping.getAdminId())
+					// .adminId(saveAdminAlertMapping.getAdminId())
+					.adminId(adminId)
 					.emailAlertStatus(saveAdminAlertMapping.getEmailAlertStatus())
 					.systemAlertStatus(saveAdminAlertMapping.getSystemAlertStatus())
 					.build();

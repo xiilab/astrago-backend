@@ -43,7 +43,7 @@ public class SystemAlertReqDTO {
 	public static class SaveAdminAlertMappings {
 		private Long alertId;
 		private Long adminAlertMappingId;
-		private String adminId;
+		// private String adminId;
 		private AlertStatus emailAlertStatus;
 		private AlertStatus systemAlertStatus;
 	}
