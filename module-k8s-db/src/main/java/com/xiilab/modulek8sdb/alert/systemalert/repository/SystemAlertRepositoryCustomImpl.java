@@ -10,12 +10,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 // import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 
@@ -27,7 +29,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<SystemAlertEntity> findAlerts(String recipientId, Pageable pageable) {
+	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, Pageable pageable) {
 		Long totalCount = queryFactory.select(systemAlertEntity.count())
 			.from(systemAlertEntity)
 			.where(
@@ -37,7 +39,8 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 
 		JPAQuery<SystemAlertEntity> query = queryFactory.selectFrom(systemAlertEntity)
 			.where(
-				eqRecipientId(recipientId)
+				eqRecipientId(recipientId),
+				eqSystemAlertType(systemAlertType)
 			);
 
 		if (pageable != null) {
@@ -54,5 +57,9 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 
 	private BooleanExpression eqRecipientId(String recipientId) {
 		return !StringUtils.hasText(recipientId)? systemAlertEntity.recipientId.eq(recipientId) : null;
+	}
+
+	private BooleanExpression eqSystemAlertType(SystemAlertType systemAlertType) {
+		return !ObjectUtils.isEmpty(systemAlertType)? systemAlertEntity.systemAlertType.eq(systemAlertType) : null;
 	}
 }

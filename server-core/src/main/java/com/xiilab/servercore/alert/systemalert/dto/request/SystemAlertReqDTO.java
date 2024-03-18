@@ -1,6 +1,7 @@
 package com.xiilab.servercore.alert.systemalert.dto.request;
 
 import com.xiilab.modulecommon.enums.ReadYN;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 
@@ -36,4 +37,15 @@ public class SystemAlertReqDTO {
 			}
 		}
 	}
+
+	@Getter
+	@NoArgsConstructor
+	public static class SaveAdminAlertMappings {
+		private Long alertId;
+		private Long adminAlertMappingId;
+		private String adminId;
+		private AlertStatus emailAlertStatus;
+		private AlertStatus systemAlertStatus;
+	}
+
 }

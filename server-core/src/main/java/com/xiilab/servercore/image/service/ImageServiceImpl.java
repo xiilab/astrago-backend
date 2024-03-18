@@ -9,7 +9,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
-import com.xiilab.modulecommon.util.NumberUtils;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
@@ -55,7 +55,7 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public ImageResDTO.FindImages findImages(ImageReqDTO.FindSearchCondition findSearchCondition) {
 		PageRequest pageRequest = null;
-		if (!NumberUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberUtils.isNullOrZero(findSearchCondition.getPageSize())) {
+		if (!NumberValidUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberValidUtils.isNullOrZero(findSearchCondition.getPageSize())) {
 			pageRequest = PageRequest.of(findSearchCondition.getPageNo() - 1, findSearchCondition.getPageSize());
 		}
 
