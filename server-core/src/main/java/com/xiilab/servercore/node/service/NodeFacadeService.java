@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
-import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
+import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.modulemonitor.dto.RequestDTO;
@@ -192,14 +192,18 @@ public class NodeFacadeService {
 		nodeRepository.setSchedule(resourceName, scheduleDTO.getScheduleType());
 	}
 
-	public void updateMIGProfile(NodeGpuDTO nodeGpuDTO) {
+	public void updateMIGProfile(MIGGpuDTO MIGGpuDTO) {
 		//mig parted configmap에 해당 노드의 프로파일 추가
-		nodeRepository.updateMigProfile(nodeGpuDTO);
+		nodeRepository.updateMigProfile(MIGGpuDTO);
 		//node의 라벨값 변경
-		nodeRepository.updateMIGProfile(nodeGpuDTO.getNodeName(), nodeGpuDTO.getMigKey());
+		nodeRepository.updateMIGProfile(MIGGpuDTO.getNodeName(), MIGGpuDTO.getMigKey());
 	}
 
 	public void disableMIG(String nodeName) {
 		nodeRepository.updateMIGProfile(nodeName, "all-disabled");
+	}
+
+	public MIGGpuDTO.MIGInfoStatus getNodeMigStatus(String nodeName) {
+		return nodeRepository.getNodeMigStatus(nodeName);
 	}
 }

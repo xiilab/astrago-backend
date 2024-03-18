@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
-import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
+import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
@@ -58,15 +58,21 @@ public class NodeController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@GetMapping("{nodeName}/mig/status")
+	@Operation(summary = "노드의 mig profile 및 status 조회")
+	public ResponseEntity<MIGGpuDTO.MIGInfoStatus> getNodeMigStatus(@PathVariable(value = "nodeName") String nodeName) {
+		return new ResponseEntity<>(nodeFacadeService.getNodeMigStatus(nodeName), HttpStatus.OK);
+	}
+
 	@PatchMapping("/mig")
 	@Operation(summary = "node에 mig 설정")
-	public ResponseEntity<HttpStatus> setMigConfig(@RequestBody NodeGpuDTO nodeGpuDTO
+	public ResponseEntity<HttpStatus> setMigConfig(@RequestBody MIGGpuDTO MIGGpuDTO
 	) {
-		nodeFacadeService.updateMIGProfile(nodeGpuDTO);
+		nodeFacadeService.updateMIGProfile(MIGGpuDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PatchMapping("/mig/disable/{nodeName}")
+	@PatchMapping("{nodeName}/mig/disable")
 	@Operation(summary = "node mig 비활성화")
 	public ResponseEntity<HttpStatus> setMigDisable(@PathVariable(value = "nodeName") String nodeName) {
 		nodeFacadeService.disableMIG(nodeName);

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
-import com.xiilab.modulek8s.node.dto.NodeGpuDTO;
+import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
@@ -35,5 +35,6 @@ public interface NodeRepository {
 
 	void setSchedule(String resourceName, ScheduleType scheduleType);
 	List<ResponseDTO.WorkerNodeDriverInfo> getWorkerNodeDriverInfos();
-	void updateMigProfile(NodeGpuDTO nodeGpuDTO);
+	void updateMigProfile(MIGGpuDTO MIGGpuDTO);
+	MIGGpuDTO.MIGInfoStatus getNodeMigStatus(String nodeName);
 }

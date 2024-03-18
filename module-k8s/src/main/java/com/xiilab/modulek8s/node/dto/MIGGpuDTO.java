@@ -5,31 +5,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.MigStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class NodeGpuDTO {
-	private String nodeName;
-	private List<MIGRequestDTO> migRequests;
+@SuperBuilder
+public class MIGGpuDTO {
+	protected String nodeName;
+	protected List<MIGInfoDTO> migInfos;
 
 	@Getter
+	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class MIGRequestDTO {
-		private List<Integer> gpuIndexs;
-		private boolean migEnable;
-		private Map<String, Integer> profile;
+	public static class MIGInfoDTO {
+		protected List<Integer> gpuIndexs;
+		protected boolean migEnable;
+		protected Map<String, Integer> profile;
+	}
+	@Getter
+	@AllArgsConstructor
+	@SuperBuilder
+	public static class MIGInfoStatus extends MIGGpuDTO{
+		private MigStatus status;
 	}
 
-	public List<Object> convertMap() {
+
+	public List<Object> convertToMap() {
 		List<Object> migReqList = new ArrayList<>();
-		for (MIGRequestDTO migRequest : migRequests) {
+		for (MIGInfoDTO migRequest : migInfos) {
 			HashMap<String, Object> migReqInfo = new HashMap<>();
 			migReqInfo.put("devices", migRequest.gpuIndexs);
 			if (migRequest.migEnable) {
