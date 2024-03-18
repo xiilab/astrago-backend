@@ -14,7 +14,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -220,17 +219,13 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	public Page<AlertManagerReceiveDTO.ResponseDTO> getAlertManagerReceiveList(String categoryType, String startDate,
 		String endDate, String search, UserInfoDTO userInfoDTO, Pageable pageable) {
 
-		List<AlertManagerReceiveEntity> alertManagerReceiveList = alertManagerRepoCustom.getAlertManagerReceiveList(categoryType, search, DataConverterUtil.dataFormatterByStr(startDate), DataConverterUtil.dataFormatterByStr(endDate), userInfoDTO.getId());
+		Page<AlertManagerReceiveEntity> alertManagerReceiveList = alertManagerRepoCustom.getAlertManagerReceiveList(categoryType, search, DataConverterUtil.dataFormatterByStr(startDate), DataConverterUtil.dataFormatterByStr(endDate), userInfoDTO.getId(), pageable);
 
-		List<AlertManagerReceiveDTO.ResponseDTO> result = alertManagerReceiveList.stream()
-			.map(alertManagerReceiveEntity ->
+		return alertManagerReceiveList.map(alertManagerReceiveEntity ->
 				AlertManagerReceiveDTO.ResponseDTO.responseDTOBuilder()
 					.alertManagerReceiveEntity(alertManagerReceiveEntity)
 					.alertManagerEntity(alertManagerReceiveEntity.getAlertManager())
-					.build())
-			.toList();
-
-		return new PageImpl<>(result);
+					.build());
 	}
 
 	@Override
