@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkloadUpdateDTO {
+	private String workspaceResourceName;
+	private String workloadResourceName;
 	private String name;
 	private String description;
 }

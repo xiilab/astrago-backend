@@ -330,4 +330,16 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		return resourceOptimizationTargetList.stream().map(optimizationTarget -> workloadRepository.getParentController(
 			optimizationTarget.getPodName(), optimizationTarget.getNamespace())).toList();
 	}
+
+	@Override
+	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadRepository.editBatchJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
+	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadRepository.editInteractiveJob(workspaceResourceName, workloadResourceName, name, description);
+	}
 }
