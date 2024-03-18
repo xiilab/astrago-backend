@@ -4,6 +4,7 @@ import static com.xiilab.moduleuser.dto.GroupCategory.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -117,7 +118,7 @@ public class GroupServiceImpl implements GroupService {
 			.creatorEmail(userInfoDTO.getEmail())
 			.build());
 		//생성한 owner group에 유저 추가
-		groupRepository.joinMembersIntoGroup(ownerGroup.getId(), groupReqDTO.getUsers());
+		groupRepository.joinMembersIntoGroup(ownerGroup.getId(), List.of(userInfoDTO.getId()));
 		//생성한 user group에 유저 추가
 		groupRepository.joinMembersIntoGroup(userGroup.getId(), groupReqDTO.getUsers());
 	}
@@ -133,8 +134,8 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO) {
-		groupRepository.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
+	public Set<String> addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO) {
+		return groupRepository.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 	}
 
 	@Override

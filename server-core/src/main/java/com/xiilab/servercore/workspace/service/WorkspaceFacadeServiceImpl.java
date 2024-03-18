@@ -22,6 +22,8 @@ import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
+import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
@@ -56,8 +58,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceService workspaceService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
 	private final SystemAlertService systemAlertService;
+	private final WorkspaceAlertService workspaceAlertService;
 
 	@Override
+	@Transactional
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
 		//워크스페이스 생성
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
@@ -80,6 +84,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.users(applicationForm.getUserIds())
 				.build(), userInfoDTO);
 		workspaceAlertSetService.saveAlertSet(workspace.getResourceName());
+
+		//오너, 초대받은 유저들의 알림 초기 세팅
+		String ownerId = userInfoDTO.getId();
+		workspaceAlertService.initWorkspaceAlertMapping(AlertRole.OWNER, ownerId, workspace.getResourceName());
+		List<String> invitedUserIds = applicationForm.getUserIds();
+		for (String invitedUserId : invitedUserIds) {
+			workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, invitedUserId, workspace.getResourceName());
+		}
 	}
 
 	@Override
@@ -127,7 +139,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
 		// 워크스페이스 알림 설정 삭제
-		// workspaceAlertSetService.deleteAlert(workspaceName);
+		workspaceAlertService.deleteWorkspaceAlertMappingByWorkspaceName(workspaceName);
 	}
 
 	@Override

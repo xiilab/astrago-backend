@@ -1,10 +1,13 @@
 package com.xiilab.servercore.user.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
+import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final GroupService groupService;
+	private final WorkspaceAlertService workspaceAlertService;
 
 	@Override
 	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
@@ -64,10 +68,21 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	@Override
 	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList){
 		groupService.deleteWorkspaceMemberByUserId(groupName, userIdList);
+
+		//삭제 된 멤버들 알람 매핑 데이터 삭제
+		for (String userId : userIdList) {
+			workspaceAlertService.deleteWorkspaceAlertMappingByUserIdAndWorkspaceName(userId, groupName);
+		}
+
 	}
 	@Override
 	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
-		groupService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
+		Set<String> addUserIds = groupService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
+
+		//추가 된 멤버들 알람 매핑 데이터 저장
+		for (String userId : addUserIds) {
+			workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, userId, groupName);
+		}
 	}
 	@Override
 	public List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search){

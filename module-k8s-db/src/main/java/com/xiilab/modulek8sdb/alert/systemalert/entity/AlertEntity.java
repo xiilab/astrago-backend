@@ -2,6 +2,7 @@ package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 
 import jakarta.persistence.Column;
@@ -11,13 +12,15 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_ALERT")
+@Entity
+@Table(name = "TB_ALERT")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class AlertEntity {
@@ -34,12 +37,17 @@ public class AlertEntity {
 	@Enumerated(EnumType.STRING)
 	private AlertRole alertRole;
 
+	@Column(name = "ALERT_EVENT_TYPE")
+	@Enumerated(EnumType.STRING)
+	private SystemAlertEventType systemAlertEventType;
+
 	@Builder
-	public AlertEntity(String alertName, SystemAlertType alertType, String alertTitle,
-		String alertContent,
-		AlertRole alertRole) {
+	public AlertEntity(String alertName, SystemAlertType alertType,
+		AlertRole alertRole,
+		SystemAlertEventType systemAlertEventType) {
 		this.alertName = alertName;
 		this.alertType = alertType;
 		this.alertRole = alertRole;
+		this.systemAlertEventType = systemAlertEventType;
 	}
 }

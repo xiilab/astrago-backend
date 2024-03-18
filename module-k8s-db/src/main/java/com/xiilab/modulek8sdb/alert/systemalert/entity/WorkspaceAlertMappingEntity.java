@@ -12,16 +12,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_WORKSPACE_ALERT_MAPPING")
-@Builder
+@Entity
+@Table(name = "TB_WORKSPACE_ALERT_MAPPING")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Getter
 public class WorkspaceAlertMappingEntity {
 	@Id
