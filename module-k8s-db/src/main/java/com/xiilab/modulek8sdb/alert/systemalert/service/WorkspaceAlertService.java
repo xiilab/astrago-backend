@@ -5,6 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.AlertSendType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
@@ -69,5 +73,26 @@ public class WorkspaceAlertService {
 	@Transactional
 	public void deleteWorkspaceAlertMappingByWorkspaceName(String workspaceResourceName){
 		workspaceAlertMappingRepository.deleteWorkspaceAlertMappingByWorkspaceName(workspaceResourceName);
+	}
+
+	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(String userId, String workspaceResourceName, AlertRole alertRole){
+		List<WorkspaceAlertMappingEntity> alerts = workspaceAlertMappingRepository.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(
+			workspaceResourceName, userId, alertRole);
+
+		return alerts.stream().map(WorkspaceAlertMappingDTO::new).toList();
+	}
+
+	@Transactional
+	public void modifyWorkspaceAlertMapping(String alertId, AlertRole alertRole, AlertSendType alertSendType, AlertStatus alertStatus,
+		String userId) {
+		WorkspaceAlertMappingEntity workspaceAlertMappingEntity = workspaceAlertMappingRepository.findById(
+			Long.valueOf(alertId)).orElseThrow(() -> new RestApiException(
+			SystemAlertErrorCode.NOT_FOUND_ALERT));
+
+		if(!workspaceAlertMappingEntity.getUserId().equals(userId) || workspaceAlertMappingEntity.getAlert().getAlertRole() == AlertRole.OWNER && alertRole == AlertRole.USER){
+			throw new RestApiException(SystemAlertErrorCode.ALERT_FORBIDDEN);
+		}
+
+		workspaceAlertMappingEntity.modifyAlertStatus(alertSendType, alertStatus);
 	}
 }

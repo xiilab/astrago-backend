@@ -15,13 +15,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.xiilab.modulecommon.enums.AlertSendType;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -83,6 +90,25 @@ public class SystemAlertController {
 	@Operation(summary = "관리자 알림관리 설정 목록 조회")
 	public ResponseEntity<Void> saveAdminAlertMapping(@RequestBody List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
 		alertService.saveAdminAlertMapping(saveAdminAlertMappings);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/users/ws/{workspaceResourceName}/alerts")
+	@Operation(summary = "사용자 워크스페이스 알림 설정 목록 조회")
+	public ResponseEntity<List<WorkspaceAlertMappingDTO>> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+		List<WorkspaceAlertMappingDTO> alerts = alertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(
+			workspaceResourceName, userInfoDTO);
+		return new ResponseEntity<>(alerts, HttpStatus.OK);
+	}
+	@PatchMapping("/users/ws/{workspaceResourceName}/alerts/{alertId}")
+	@Operation(summary = "사용자 워크스페이스 알림 ON/OFF")
+	public ResponseEntity<HttpStatus> modifyWorkspaceAlertMapping(@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(name = "alertId") String alertId,
+		ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO
+		){
+		alertService.modifyWorkspaceAlertMapping(alertId, workspaceResourceName, modifyWorkspaceAlertMapping, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

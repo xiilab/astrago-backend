@@ -34,7 +34,6 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
@@ -57,9 +56,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
-	private final SystemAlertService systemAlertService;
 	private final WorkspaceAlertService workspaceAlertService;
-	private final AlertService alertService;
 
 	@Override
 	@Transactional
@@ -82,7 +79,6 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.createdBy(workspace.getCreatorUserName())
 				.createdUserId(workspace.getCreatorId())
 				.description(workspace.getDescription())
-				.users(applicationForm.getUserIds())
 				.build(), userInfoDTO);
 		workspaceAlertSetService.saveAlertSet(workspace.getResourceName());
 
@@ -90,8 +86,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		String ownerId = userInfoDTO.getId();
 		workspaceAlertService.initWorkspaceAlertMapping(AlertRole.OWNER, ownerId, workspace.getResourceName());
 		List<String> invitedUserIds = applicationForm.getUserIds();
-		for (String invitedUserId : invitedUserIds) {
-			workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, invitedUserId, workspace.getResourceName());
+		if(applicationForm.getUserIds() != null){
+			for (String invitedUserId : invitedUserIds) {
+				workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, invitedUserId, workspace.getResourceName());
+			}
 		}
 	}
 

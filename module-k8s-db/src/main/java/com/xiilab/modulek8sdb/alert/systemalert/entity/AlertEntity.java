@@ -23,7 +23,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Entity(name = "TB_ALERT")
 @Table(name = "TB_ALERT")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter

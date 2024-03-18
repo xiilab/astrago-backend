@@ -120,7 +120,9 @@ public class GroupServiceImpl implements GroupService {
 		//생성한 owner group에 유저 추가
 		groupRepository.joinMembersIntoGroup(ownerGroup.getId(), List.of(userInfoDTO.getId()));
 		//생성한 user group에 유저 추가
-		groupRepository.joinMembersIntoGroup(userGroup.getId(), groupReqDTO.getUsers());
+		if(groupReqDTO.getUsers() != null){
+			groupRepository.joinMembersIntoGroup(userGroup.getId(), groupReqDTO.getUsers());
+		}
 	}
 
 	@Override

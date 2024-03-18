@@ -450,16 +450,19 @@ public class KeycloakUserRepository implements UserRepository {
 		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll()
 			.stream().filter(role -> role.getName().contains("ROLE_"))
 			.toList();
-		// 기존 ROLE 삭제
+		// 기존 ROLE 삭제 - user -> admin 변경일 경우 user, admin 권한 가지고있어야하고, admin -> user 변경이면 user 권한만 가지고있어야함
 		if (!roleRepresentations.isEmpty()) {
 			userResource.roles().realmLevel().remove(roleRepresentations);
-			RoleRepresentation roleRepresentation = getRolerepByName(updateUserDTO.getAuth().name());
+		}
+		if (updateUserDTO.getAuth() == AuthType.ROLE_ADMIN) {
+			RoleRepresentation adminRole = getRolerepByName(AuthType.ROLE_ADMIN.name());
+			RoleRepresentation userRole = getRolerepByName(AuthType.ROLE_USER.name());
+			userResource.roles().realmLevel().add(List.of(adminRole, userRole));
+		} else {
+			// ROLE 추가
+			RoleRepresentation roleRepresentation = getRolerepByName(AuthType.ROLE_USER.name());
 			userResource.roles().realmLevel().add(List.of(roleRepresentation));
 		}
-		// ROLE 추가
-		RoleRepresentation roleRepresentation = getRolerepByName(updateUserDTO.getAuth().name());
-		userResource.roles().realmLevel().add(List.of(roleRepresentation));
-
 		keycloakConfig.getRealmClient().users().get(id).update(representation);
 	}
 

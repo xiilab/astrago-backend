@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 
+import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
@@ -23,6 +26,8 @@ public interface AlertService {
 	FindAdminAlertMappingResDTO.AdminAlertMappings findAdminAlertMappings(String adminId);
 	// Admin Alert 매핑 값 수정
 	void saveAdminAlertMapping(List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings);
+	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(String workspaceResourceName, UserInfoDTO userInfoDTO);
 
-
+	void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName, ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
+		UserInfoDTO userInfoDTO);
 }

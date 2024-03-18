@@ -1,15 +1,19 @@
 package com.xiilab.servercore.alert.systemalert.service;
 
+
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
@@ -19,6 +23,9 @@ import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
@@ -32,6 +39,7 @@ public class AlertServiceImpl implements AlertService {
 	private final AlertRepository alertRepository;
 	private final SystemAlertRepository systemAlertRepository;
 	private final AdminAlertMappingRepository adminAlertMappingRepository;
+	private final WorkspaceAlertService workspaceAlertService;
 
 	@Override
 	public Long saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert saveSystemAlertReqDTO) {
@@ -121,5 +129,40 @@ public class AlertServiceImpl implements AlertService {
 				adminAlertMappingRepository.save(findAdminAlertMappingEntity);
 			}
 		}
+	}
+	@Override
+	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(String workspaceResourceName, UserInfoDTO userInfoDTO){
+		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(
+			workspaceResourceName);
+		//워크스페이스 접근 권한 없음
+		if(!accessAuthorityWorkspace){
+			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
+		}
+		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
+		return workspaceAlertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(userInfoDTO.getId(), workspaceResourceName,
+			workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER);
+	}
+
+	/**
+	 * 워크스페이스 매핑 알림 설정 ON/OFF 수정
+	 * @param alertId
+	 * @param workspaceResourceName
+	 * @param modifyWorkspaceAlertMapping
+	 * @param userInfoDTO
+	 */
+	@Override
+	@Transactional
+	public void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName, ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
+		UserInfoDTO userInfoDTO) {
+		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(
+			workspaceResourceName);
+		//워크스페이스 접근 권한 없음
+		if(!accessAuthorityWorkspace){
+			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
+		}
+		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
+		AlertRole alertRole = workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER;
+		workspaceAlertService.modifyWorkspaceAlertMapping(alertId, alertRole, modifyWorkspaceAlertMapping.getAlertSendType(),
+			modifyWorkspaceAlertMapping.getAlertStatus(), userInfoDTO.getId());
 	}
 }

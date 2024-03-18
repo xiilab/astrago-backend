@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
+import com.xiilab.modulecommon.enums.AlertSendType;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
 
 import jakarta.persistence.Column;
@@ -26,8 +27,8 @@ import lombok.NoArgsConstructor;
 public class WorkspaceAlertMappingEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "WORKSPACE_ALERT_SETTING_ID")
-	private Long workspaceAlertSetId;
+	@Column(name = "WORKSPACE_ALERT_MAPPING_ID")
+	private Long workspaceAlertMappingId;
 
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
@@ -56,5 +57,12 @@ public class WorkspaceAlertMappingEntity {
 		this.alert = alert;
 		this.systemAlertStatus = systemAlertStatus;
 		this.emailAlertStatus = emailAlertStatus;
+	}
+	public void modifyAlertStatus(AlertSendType alertSendType, AlertStatus alertStatus){
+		if(alertSendType == AlertSendType.EMAIL){
+			this.emailAlertStatus = alertStatus;
+		}else{
+			this.systemAlertStatus = alertStatus;
+		}
 	}
 }
