@@ -67,7 +67,7 @@ public class AlertManagerReceiveDTO {
 		private boolean result;
 		@Builder(builderMethodName = "responseDTOBuilder", builderClassName = "responseDTOBuilder")
 		public ResponseDTO(AlertManagerEntity alertManagerEntity, AlertManagerReceiveEntity alertManagerReceiveEntity) {
-			this.id = alertManagerEntity.getId();
+			this.id = alertManagerReceiveEntity.getId();
 			this.alertManagerId = alertManagerReceiveEntity.getAlertManager().getId();
 			this.value = alertManagerReceiveEntity.getThreshold();
 			this.currentTime = alertManagerReceiveEntity.getCurrentTime();
