@@ -8,7 +8,8 @@ public enum SystemAlertType {
 	WORKSPACE,
 	WORKLOAD,
 	LICENSE,
+	NODE,
+	ALL,
 	RESOURCE,
-	MEMBER,
-	NODE
+	MEMBER
 }

@@ -44,7 +44,9 @@ public class SystemAlertEntity extends BaseEntity {
 	private SystemAlertEventType systemAlertEventType;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "READ_YN")
-	private ReadYN readYN = ReadYN.N;
+	private ReadYN readYN;
+
+
 
 	public void readAlert(){
 		this.readYN = ReadYN.Y;

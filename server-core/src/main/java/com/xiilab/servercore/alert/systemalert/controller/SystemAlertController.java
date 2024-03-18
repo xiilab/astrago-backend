@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,7 +53,7 @@ public class SystemAlertController {
 	@GetMapping()
 	@Operation(summary = "System Alert 리스트 조회")
 	public ResponseEntity<FindSystemAlertResDTO.SystemAlerts> getSystemAlerts(
-		@RequestParam(value = "recipientId") String recipientId, @RequestParam(value = "systemAlertType") SystemAlertType systemAlertType, Pageable pageable) {
+		@RequestParam(value = "recipientId") String recipientId, @RequestParam(value = "systemAlertType", required = false) SystemAlertType systemAlertType, Pageable pageable) {
 		return new ResponseEntity<>(alertService.getSystemAlerts(recipientId, systemAlertType, pageable), HttpStatus.OK);
 	}
 
@@ -72,7 +73,6 @@ public class SystemAlertController {
 
 	@GetMapping("/init")
 	@Operation(summary = "관리자 알림 설정 초기값 세팅")
-	// public ResponseEntity<Void> initializeAdminAlertMappingSettings(@RequestParam(name = "adminId") String adminId) {
 	public ResponseEntity<Void> initializeAdminAlertMappingSettings(UserInfoDTO userInfoDTO) {
 		alertService.initializeAdminAlertMappingSettings(userInfoDTO.getId());
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -80,12 +80,11 @@ public class SystemAlertController {
 
 	@GetMapping("/admin")
 	@Operation(summary = "관리자 알림관리 설정 목록 조회")
-	// public ResponseEntity<FindAdminAlertMappingResDTO.AdminAlertMappings> findAdminAlertMappings(@RequestParam(name = "adminId") String adminId) {
 	public ResponseEntity<FindAdminAlertMappingResDTO.AdminAlertMappings> findAdminAlertMappings(UserInfoDTO userInfoDTO) {
 		return new ResponseEntity<>(alertService.findAdminAlertMappings(userInfoDTO.getId()), HttpStatus.OK);
 	}
 
-	@PostMapping("/admin")
+	@PutMapping("/admin")
 	@Operation(summary = "관리자 알림관리 설정 목록 저장")
 	public ResponseEntity<Void> saveAdminAlertMapping(UserInfoDTO userInfoDTO, @RequestBody List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
 		alertService.saveAdminAlertMapping(userInfoDTO.getId(), saveAdminAlertMappings);

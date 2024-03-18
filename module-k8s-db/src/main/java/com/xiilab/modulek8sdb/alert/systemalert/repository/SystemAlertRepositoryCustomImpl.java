@@ -18,8 +18,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
-import com.xiilab.modulek8sdb.hub.entity.HubEntity;
-// import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +31,8 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 		Long totalCount = queryFactory.select(systemAlertEntity.count())
 			.from(systemAlertEntity)
 			.where(
-				eqRecipientId(recipientId)
+				eqRecipientId(recipientId),
+				eqSystemAlertType(systemAlertType)
 			)
 			.fetchOne();
 
@@ -60,6 +59,6 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	}
 
 	private BooleanExpression eqSystemAlertType(SystemAlertType systemAlertType) {
-		return !ObjectUtils.isEmpty(systemAlertType)? systemAlertEntity.systemAlertType.eq(systemAlertType) : null;
+		return !ObjectUtils.isEmpty(systemAlertType) && systemAlertType != SystemAlertType.ALL? systemAlertEntity.systemAlertType.eq(systemAlertType) : null;
 	}
 }
