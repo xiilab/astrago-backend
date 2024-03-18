@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
+import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
-import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.service.AlertService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.ws.rs.PathParam;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -29,12 +29,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SystemAlertController {
 
-	private final SystemAlertService systemAlertService;
+	private final AlertService alertService;
 
 	@PostMapping()
 	@Operation(summary = "System Alert 등록")
 	public ResponseEntity<Void> saveSystemAlert(@RequestBody SystemAlertReqDTO.SaveSystemAlert saveSystemAlertReqDTO) {
-		systemAlertService.saveSystemAlert(saveSystemAlertReqDTO);
+		alertService.saveSystemAlert(saveSystemAlertReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -42,53 +42,47 @@ public class SystemAlertController {
 	@Operation(summary = "System Alert 단일 조회")
 	public ResponseEntity<FindSystemAlertResDTO.SystemAlertDetail> getSystemAlertByID(
 		@PathVariable(name = "id") long id) {
-		return new ResponseEntity<>(systemAlertService.getSystemAlertById(id), HttpStatus.OK);
+		return new ResponseEntity<>(alertService.getSystemAlertById(id), HttpStatus.OK);
 	}
 
 	@GetMapping()
 	@Operation(summary = "System Alert 리스트 조회")
 	public ResponseEntity<FindSystemAlertResDTO.SystemAlerts> getSystemAlerts(
-		@RequestParam(value = "recipientId") String recipientId, Pageable pageable) {
-		return new ResponseEntity<>(systemAlertService.getSystemAlerts(recipientId, pageable), HttpStatus.OK);
+		@RequestParam(value = "recipientId") String recipientId, @RequestParam(value = "systemAlertType") SystemAlertType systemAlertType, Pageable pageable) {
+		return new ResponseEntity<>(alertService.getSystemAlerts(recipientId, systemAlertType, pageable), HttpStatus.OK);
 	}
 
 	@PatchMapping("/read/{id}")
 	@Operation(summary = "System Alert 읽기여부 변경")
 	public ResponseEntity<Void> readSystemAlert(@PathVariable(name = "id") long id) {
-		systemAlertService.readSystemAlert(id);
+		alertService.readSystemAlert(id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "System Alert 단일 삭제")
 	public ResponseEntity<Void> deleteSystemAlertById(@PathVariable(name = "id") long id) {
-		systemAlertService.deleteSystemAlertById(id);
+		alertService.deleteSystemAlertById(id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	// @GetMapping("/{id}")
-	// @Operation(summary = "Alert 단일 조회")
-	// public ResponseEntity<SystemAlertDTO.ResponseDTO> getAlertById(@PathVariable(name = "id") long id){
-	//
-	// 	return new ResponseEntity<>(systemAlertService.getAlertById(id), HttpStatus.OK);
-	// }
-	// @GetMapping()
-	// @Operation(summary = "Alert 리스트 조회")
-	// public ResponseEntity<List<SystemAlertDTO.ResponseDTO>> getAlertList(UserInfoDTO userInfoDTO){
-	// 	return new ResponseEntity<>(systemAlertService.getAlertListByUserId(userInfoDTO.getId()), HttpStatus.OK);
-	// }
-	//
-	// @PatchMapping("/{id}")
-	// @Operation(summary = "Alert 읽음 처리")
-	// public ResponseEntity<Void> readAlert(@PathVariable(name = "id") long id){
-	// 	systemAlertService.readAlert(id);
-	// 	return new ResponseEntity<>(HttpStatus.OK);
-	// }
-	// @DeleteMapping("/{id}")
-	// @Operation(summary = "Alert 단일 삭제")
-	// public ResponseEntity<Void> deleteAlertById(@PathVariable(name = "id")long id){
-	// 	systemAlertService.deleteAlertById(id);
-	// 	return new ResponseEntity<>(HttpStatus.OK);
-	// }
+	@GetMapping("/init")
+	@Operation(summary = "관리자 알림 설정 초기값 세팅")
+	public ResponseEntity<Void> initializeAdminAlertMappingSettings(@RequestParam(name = "adminId") String adminId) {
+		alertService.initializeAdminAlertMappingSettings(adminId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 
+	@GetMapping("/admin")
+	@Operation(summary = "관리자 알림관리 설정 목록 조회")
+	public ResponseEntity<FindAdminAlertMappingResDTO.AdminAlertMappings> findAdminAlertMappings(@RequestParam(name = "adminId") String adminId) {
+		return new ResponseEntity<>(alertService.findAdminAlertMappings(adminId), HttpStatus.OK);
+	}
+
+	@PostMapping("/admin")
+	@Operation(summary = "관리자 알림관리 설정 목록 조회")
+	public ResponseEntity<Void> saveAdminAlertMapping(@RequestBody List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
+		alertService.saveAdminAlertMapping(saveAdminAlertMappings);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }

@@ -24,17 +24,6 @@ public class FindSystemAlertResDTO extends ResDTO {
 	private SystemAlertEventType systemAlertEventType;
 	private ReadYN readYN;
 
-	// protected FindSystemAlertResDTO(String regUserId, String regUserName, String regUserRealName, LocalDateTime regDate, LocalDateTime modDate
-	// , Long id, String title, String message, SystemAlertType systemAlertType, SystemAlertEventType systemAlertEventType, ReadYN readYN){
-	// 	super(regUserId, regUserName, regUserRealName, regDate, modDate);
-	// 	this.id = id;
-	// 	this.title = title;
-	// 	this.message = message;
-	// 	this.systemAlertType = systemAlertType;
-	// 	this.systemAlertEventType = systemAlertEventType;
-	// 	this.readYN = readYN;
-	// }
-
 	public static FindSystemAlertResDTO of(SystemAlertEntity systemAlertEntity) {
 		return FindSystemAlertResDTO.builder()
 			.id(systemAlertEntity.getId())

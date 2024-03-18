@@ -22,7 +22,7 @@ import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
-import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 
 import io.micrometer.common.util.StringUtils;
@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class UserFacadeServiceImpl implements UserFacadeService {
 	private final UserService userService;
 	private final SystemAlertSetService alertSetService;
-	private final SystemAlertService alertService;
+	private final AlertService alertService;
 	private final MailService mailService;
 	@Value("${admin.id}")
 	private String adminId;
@@ -108,6 +108,10 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void updateUserRole(String userId, AuthType authType) {
 		userService.updateUserRole(userId, authType);
+		// ADMIN 으로 권한 변경시, 설정 초기값 세팅
+		if (authType == AuthType.ROLE_ADMIN) {
+			alertService.initializeAdminAlertMappingSettings(userId);
+		}
 	}
 
 	@Override

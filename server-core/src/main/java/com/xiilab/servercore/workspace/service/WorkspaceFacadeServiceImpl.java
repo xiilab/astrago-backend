@@ -32,7 +32,7 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
@@ -55,7 +55,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
-	private final SystemAlertService systemAlertService;
+	private final AlertService alertService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
