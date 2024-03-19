@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.ImageType;
@@ -95,6 +100,7 @@ public class WorkloadFacadeService {
 	private final ImageService imageService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
 	private final AlertService alertService;
+	private final ApplicationEventPublisher publisher;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -270,6 +276,16 @@ public class WorkloadFacadeService {
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
 			stopInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
 		}
+
+		//워크로드 종료 알림 발송
+		String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
+		String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
+		String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+		UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
+			emailTitle, title, message, workspaceName);
+
+		publisher.publishEvent(userAlertEvent);
+
 	}
 
 	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {

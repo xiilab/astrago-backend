@@ -3,15 +3,17 @@ package com.xiilab.serverbatch.informer;
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -19,20 +21,15 @@ import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertSetEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
-import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
-import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.GroupService;
 
@@ -45,7 +42,6 @@ import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.informers.SharedInformerFactory;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -55,6 +51,7 @@ public class BatchJobInformer extends JobInformer{
 	private final GroupService groupService;
 	private final SystemAlertRepository systemAlertRepository;
 	private final WorkspaceAlertSetRepository workspaceAlertSetRepository;
+	private final ApplicationEventPublisher publisher;
 
 	public BatchJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
@@ -63,7 +60,8 @@ public class BatchJobInformer extends JobInformer{
 		ImageWorkloadMappingRepository imageWorkloadMappingRepository, K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
 		ImageRepository imageRepository, CredentialRepository credentialRepository,
-		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository) {
+		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository,
+		ApplicationEventPublisher publisher) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
 			codeRepository, imageRepository, credentialRepository);
@@ -71,6 +69,7 @@ public class BatchJobInformer extends JobInformer{
 		this.groupService = groupService;
 		this.systemAlertRepository = systemAlertRepository;
 		this.workspaceAlertSetRepository = workspaceAlertSetRepository;
+		this.publisher = publisher;
 	}
 
 	@PostConstruct
@@ -90,6 +89,15 @@ public class BatchJobInformer extends JobInformer{
 
 				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
 
+				//워크로드 생성 알림 발송
+				String workloadName = batchWorkloadInfoFromResource.getWorkloadName();
+				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
+				String title = SystemAlertMessage.WORKLOAD_START_CREATOR.getTitle();
+				String message = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
+				UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
+					emailTitle, title, message, batchWorkloadInfoFromResource.getWorkspaceResourceName());
+
+				publisher.publishEvent(userAlertEvent);
 			}
 
 			@Override
@@ -112,6 +120,15 @@ public class BatchJobInformer extends JobInformer{
 						String creator =
 							metadataFromResource.getCreatorId() != null ? metadataFromResource.getCreatorId() :
 								"SYSTEM";
+						//워크로드 종료 알림 발송
+						String workloadName = metadataFromResource.getWorkloadName();
+						String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
+						String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
+						String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+						UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
+							emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
+
+						publisher.publishEvent(userAlertEvent);
 						try {
 							FileUtils.saveLogFile(logResult, metadataFromResource.getWorkloadResourceName(), creator);
 						} catch (IOException e) {
@@ -133,7 +150,15 @@ public class BatchJobInformer extends JobInformer{
 				if (metadataFromResource != null) {
 					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
 				}
+				//워크로드 삭제 알림 발송
+				String workloadName = metadataFromResource.getWorkloadName();
+				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
+				String title = SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
+				String message = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
+				UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
 
+				publisher.publishEvent(userAlertEvent);
 				// WorkspaceAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 				// // 해당 워크스페이스 알림 설정이 True인 경우
 				// if(workspaceAlertSet.isWorkloadEndAlert()){
