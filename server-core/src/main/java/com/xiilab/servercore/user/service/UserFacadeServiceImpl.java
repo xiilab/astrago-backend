@@ -50,26 +50,26 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 
 		SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
 
-		if(systemAlertSet.isUserSystemYN()){
-			alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
-					.title(SystemAlertMessage.USER_CREATE.getTitle())
-					.message(String.format(
-							SystemAlertMessage.USER_CREATE.getMessage(),
-							userInfo.getLastName() + userInfo.getFirstName(),
-							userInfo.getEmail()))
-					.recipientId(adminId)
-					.senderId("SYSTEM")
-					.systemAlertType(SystemAlertType.USER)
-					.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
-					.build());
-		}
-		if(systemAlertSet.isUserEmailYN()){
-			UserInfo adminInfo = getUserInfoById(adminId);
-			mailService.sendMail(MailDTO.builder()
-					.title(SystemAlertMessage.USER_CREATE.getMailTitle())
-					.receiverEmail(userInfo.getEmail())
-				.build());
-		}
+		// if(systemAlertSet.isUserSystemYN()){
+		// 	alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
+		// 			.title(SystemAlertMessage.USER_CREATE.getTitle())
+		// 			.message(String.format(
+		// 					SystemAlertMessage.USER_CREATE.getMessage(),
+		// 					userInfo.getLastName() + userInfo.getFirstName(),
+		// 					userInfo.getEmail()))
+		// 			.recipientId(adminId)
+		// 			.senderId("SYSTEM")
+		// 			.systemAlertType(SystemAlertType.USER)
+		// 			.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
+		// 			.build());
+		// }
+		// if(systemAlertSet.isUserEmailYN()){
+		// 	UserInfo adminInfo = getUserInfoById(adminId);
+		// 	mailService.sendMail(MailDTO.builder()
+		// 			.title(SystemAlertMessage.USER_CREATE.getMailTitle())
+		// 			.receiverEmail(userInfo.getEmail())
+		// 		.build());
+		// }
 
 		// return userService.getUserInfoById(userInfo.getId());
 		return userService.getUserInfoById(adminId);

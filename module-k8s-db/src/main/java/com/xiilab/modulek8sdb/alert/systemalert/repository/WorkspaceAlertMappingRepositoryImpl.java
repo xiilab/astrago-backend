@@ -30,6 +30,14 @@ public class WorkspaceAlertMappingRepositoryImpl implements WorkspaceAlertMappin
 			.fetch();
 	}
 
+	@Override
+	public List<WorkspaceAlertMappingEntity> getWorkspaceAlertMappingByAlertId(Long alertId, String workspaceResourceName) {
+		return queryFactory.selectFrom(workspaceAlertMappingEntity)
+			.where(workspaceAlertMappingEntity.alert.alertId.eq(alertId),
+				workspaceAlertMappingEntity.workspaceResourceName.eq(workspaceResourceName))
+			.fetch();
+	}
+
 	private static BooleanExpression alertRoleEq(AlertRole alertRole) {
 		if(alertRole == AlertRole.OWNER){
 			return alertEntity.alertRole.eq(AlertRole.OWNER).or(alertEntity.alertRole.eq(AlertRole.USER));

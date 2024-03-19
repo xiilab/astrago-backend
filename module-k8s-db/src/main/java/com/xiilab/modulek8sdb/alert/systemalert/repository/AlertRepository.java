@@ -25,4 +25,9 @@ public interface AlertRepository extends JpaRepository<AlertEntity, Long>, Alert
 		"WHERE ta.alertRole = :alertRole ")
 	// "WHERE ta.alertRole = 'ADMIN'")
 	List<AlertEntity> findAdminAlertMappingsByAdminId(@Param("adminId") String adminId, @Param("alertRole") AlertRole alertRole);
+
+	@Query("select t from TB_ALERT t "
+		+ "where t.alertName = :alertName "
+		+ "and t.alertRole = :alertRole")
+	Optional<AlertEntity> findByAlertNameAndAlertRole(@Param("alertName") String alertName, @Param("alertRole") AlertRole alertRole);
 }

@@ -32,7 +32,7 @@ public class MailServiceImpl implements MailService {
 			MailUtils sendMail = new MailUtils(mailSender);
 			sendMail.setSubject(mailDTO.getTitle());
 			sendMail.setText(mailDTO.getContent());
-			sendMail.setTo(mailDTO.getSenderEmail());
+			sendMail.setTo(mailDTO.getReceiverEmail());
 			sendMail.setFrom(adminEmailAddr, SYSTEM);
 			sendMail.send();
 		} catch (MessagingException | UnsupportedEncodingException e) {

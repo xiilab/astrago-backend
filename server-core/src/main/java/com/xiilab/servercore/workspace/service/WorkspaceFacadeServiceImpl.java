@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,9 @@ import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
@@ -34,6 +37,7 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
+import com.xiilab.servercore.alert.systemalert.event.UserAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
@@ -46,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
@@ -57,6 +62,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceService workspaceService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
 	private final WorkspaceAlertService workspaceAlertService;
+	private final ApplicationEventPublisher publisher;
 
 	@Override
 	@Transactional
@@ -137,8 +143,27 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
-		// 워크스페이스 알림 설정 삭제
-		workspaceAlertService.deleteWorkspaceAlertMappingByWorkspaceName(workspaceName);
+		//워크스페이스 삭제 알림 전송
+		AuthType auth = userInfoDTO.getAuth();
+		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
+		String workspaceNm = workspace.getName();
+		UserAlertEvent userAlertEvent = null;
+		if(auth == AuthType.ROLE_ADMIN){
+			//관리자가 삭제할 때
+			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getMailTitle(), workspaceNm);
+			String title = SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getTitle();
+			String message = String.format(SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getMessage(), userInfoDTO.getUserFullName(),workspaceNm);
+			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_DELETE,
+				emailTitle, title, message, workspaceName);
+		}else{
+			//사용자가 삭제할 때
+			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_DELETE_OWNER.getMailTitle(), workspaceNm);
+			String title = SystemAlertMessage.WORKSPACE_DELETE_OWNER.getTitle();
+			String message = String.format(SystemAlertMessage.WORKSPACE_DELETE_OWNER.getMessage(), workspaceNm);
+			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_DELETE,
+				emailTitle, title, message, workspaceName);
+		}
+		publisher.publishEvent(userAlertEvent);
 	}
 
 	@Override
