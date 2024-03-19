@@ -1,6 +1,7 @@
 package com.xiilab.moduleuser.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
@@ -38,7 +39,7 @@ public interface GroupRepository {
 	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);
 
 	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
-	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
+	Set<String> addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
 

@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 
-public interface SystemAlertRepository extends JpaRepository<SystemAlertEntity, Long> {
+public interface SystemAlertRepository extends JpaRepository<SystemAlertEntity, Long>, SystemAlertRepositoryCustom {
 	List<SystemAlertEntity> getAlertEntitiesByRecipientId(String recipientId);
 }

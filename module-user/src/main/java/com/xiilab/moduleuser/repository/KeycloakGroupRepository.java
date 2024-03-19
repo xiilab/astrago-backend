@@ -264,7 +264,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO) {
+	public Set<String> addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO) {
 		GroupRepresentation workspace = getWsSubGroupByGroupName(groupName);
 		//그룹내 유저, 요청받은 유저 조회 후 중복 삭제
 		Set<String> userIds = new HashSet<>();
@@ -285,7 +285,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 				throw new K8sException(WorkspaceErrorCode.WORKSPACE_USER_ADD_FAIL);
 			}
 		}
-
+		return userIds;
 	}
 
 	public void getAllGroupMembers(Set<String> userIds, List<String> groupIds) {

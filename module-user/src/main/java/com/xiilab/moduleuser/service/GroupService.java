@@ -1,6 +1,7 @@
 package com.xiilab.moduleuser.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
@@ -41,7 +42,7 @@ public interface GroupService {
 	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);
 
 	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
-	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
+	Set<String> addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 	GroupUserDTO getWorkspaceOwner(String groupName);
 
