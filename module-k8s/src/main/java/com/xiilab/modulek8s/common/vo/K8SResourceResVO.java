@@ -1,13 +1,12 @@
 package com.xiilab.modulek8s.common.vo;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
+import com.xiilab.modulek8s.common.utils.DateUtils;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import lombok.Getter;
@@ -40,8 +39,7 @@ public abstract class K8SResourceResVO {
 			this.resourceName = hasMetadata.getMetadata().getName();
 			this.name = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
 			this.description = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.DESCRIPTION.getField());
-			this.createdAt = LocalDateTime.parse(
-				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()));
+			this.createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 			this.creatorUserName = hasMetadata.getMetadata()
 				.getAnnotations()
 				.get(AnnotationField.CREATOR_USER_NAME.getField());
@@ -54,7 +52,7 @@ public abstract class K8SResourceResVO {
 			this.resourceName = hasMetadata.getMetadata().getName();
 			this.name = hasMetadata.getMetadata().getName();
 			this.description = null;
-			this.createdAt = convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
+			this.createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 		}
 
 	}
@@ -64,12 +62,5 @@ public abstract class K8SResourceResVO {
 
 	private boolean isControlledByAstra(Map<String, String> map) {
 		return map != null && "astra".equals(map.get("control-by"));
-	}
-
-	private LocalDateTime convertK8sUtcTimeString(String utcTimeStr) {
-		// UTC 문자열을 ZonedDateTime 객체로 변환
-		ZonedDateTime utcTime = ZonedDateTime.parse(utcTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX"));
-		// ZonedDateTime 객체를 LocalDateTime으로 변환
-		return utcTime.toLocalDateTime();
 	}
 }

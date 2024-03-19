@@ -29,8 +29,10 @@ import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
+import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
 import com.xiilab.servercore.workspace.service.WorkspaceFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -165,13 +167,20 @@ public class WorkspaceController {
 		return ResponseEntity.ok(workspaceService.getAdminResourceQuotaRequests(pageNum, pageSize, userInfoDTO));
 	}
 
+	@GetMapping("/clusterResourceUsage")
+	@Operation(summary = "클러스터 자원량 대비 리소스 요청량")
+	public ResponseEntity<ClusterResourceCompareDTO> requestResourceComparedClusterResource() {
+		return ResponseEntity.ok(workspaceService.requestResourceComparedClusterResource());
+	}
+
 	@PatchMapping("/resource/{id}")
 	@Operation(summary = "워크스페이스 resource 요청 승인/반려")
 	public ResponseEntity<HttpStatus> updateResourceQuota(
 		@PathVariable(value = "id") long id,
-		@RequestBody ResourceQuotaApproveDTO resourceQuotaApproveDTO
+		@RequestBody ResourceQuotaApproveDTO resourceQuotaApproveDTO,
+		UserInfoDTO userInfoDTO
 	) {
-		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO);
+		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -248,5 +257,20 @@ public class WorkspaceController {
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		boolean accessAuthority = workspaceService.workspaceAccessAuthority(workspaceResourceName, userInfoDTO);
 		return new ResponseEntity<>(accessAuthority, HttpStatus.OK);
+	}
+
+	@GetMapping("/resource/setting")
+	@Operation(summary = "워크스페이스 리소스 디폴트 세팅 값 조회")
+	public ResponseEntity<WorkspaceResourceSettingDTO> getWorkspaceResourceSetting() {
+		return new ResponseEntity<>(workspaceService.getWorkspaceResourceSetting(),HttpStatus.OK);
+	}
+
+	@PatchMapping("/resource/setting")
+	@Operation(summary = "워크스페이스 리소스 세팅 값 수정")
+	public ResponseEntity<HttpStatus> updateWorkspaceResourceSetting(
+		@RequestBody WorkspaceResourceSettingDTO workspaceResourceSettingDTO,
+		UserInfoDTO userInfoDTO){
+		workspaceService.updateWorkspaceResourceSetting(workspaceResourceSettingDTO, userInfoDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

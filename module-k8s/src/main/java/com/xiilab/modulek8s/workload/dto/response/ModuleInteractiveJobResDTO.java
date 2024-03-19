@@ -1,14 +1,14 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-import java.util.Map;
 import java.util.Objects;
 
-import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
+import org.springframework.util.CollectionUtils;
+
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import lombok.experimental.SuperBuilder;
@@ -18,26 +18,21 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 	public ModuleInteractiveJobResDTO(Deployment deployment) {
 		super(deployment);
 		Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
-		resourceName = getResourceName();
-		Map<String, Quantity> resourceRequests = container.getResources().getLimits();
-		image = container.getImage();
-		Quantity getGpuRequest = resourceRequests.get("nvidia.com/gpu");
-		Quantity getCpuRequest = resourceRequests.get("cpu");
-		Quantity getMemory = resourceRequests.get("memory");
-		gpuRequest = getGpuRequest != null ? getGpuRequest.getAmount() + ResourcesUnit.GPU_UNIT.getUnit() :
-			"0" + ResourcesUnit.GPU_UNIT.getUnit();
-		cpuRequest = getCpuRequest != null ? getCpuRequest.getAmount() + ResourcesUnit.CPU_UNIT.getUnit() :
-			"0" + ResourcesUnit.CPU_UNIT.getUnit();
-		memRequest = getMemory != null ? getMemory.getAmount() + ResourcesUnit.MEM_UNIT.getUnit() :
-			"0" + ResourcesUnit.MEM_UNIT.getUnit();
-		envs = container.getEnv().stream()
+		// 리소스 정보
+		super.initializeResources(container.getResources().getLimits());
+		// 데이터셋, 모델 마운트 패스 정보
+		super.initializeVolumeMountPath(deployment.getSpec().getTemplate().getMetadata().getAnnotations());
+		// 코드 정보
+		super.codes = initializeCodesInfo(deployment.getSpec().getTemplate().getSpec().getInitContainers());
+		super.image = container.getImage();
+		super.envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
-		ports = container.getPorts().stream()
+		super.ports = container.getPorts().stream()
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
 			.toList();
-		command = container.getCommand() != null ? null : container.getCommand().get(0);
-		status = getWorkloadStatus(deployment.getStatus());
+		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
+		super.status = getWorkloadStatus(deployment.getStatus());
 	}
 
 	@Override
@@ -49,7 +44,7 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 		Integer replicas = deploymentStatus.getReplicas();
 		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
 		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
-		if (unavailableReplicas != null && unavailableReplicas > 0) {
+		if (!NumberValidUtils.isNullOrZero(unavailableReplicas)) {
 			return WorkloadStatus.ERROR;
 		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
 			return WorkloadStatus.RUNNING;

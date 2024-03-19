@@ -14,7 +14,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
-import com.xiilab.servercore.websocket.handler.WorkloadLogHandler;
+import com.xiilab.servercore.workload.service.WorkloadLogHandler;
 import com.xiilab.servercore.workload.service.TerminalWebSocketHandler;
 
 import lombok.RequiredArgsConstructor;

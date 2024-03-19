@@ -143,6 +143,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 	@Override
 	public GroupUserDTO.SubGroupUserDto findUsersByGroupId(String groupId, AuthType authType) {
 		GroupResource group = keycloakConfig.getRealmClient().groups().group(groupId);
+		GroupRepresentation groupRepresentation = group.toRepresentation();
 		List<GroupRepresentation> subGroups = group.toRepresentation().getSubGroups();
 		List<UserRepresentation> groupMembers = new ArrayList<>();
 		List<UserRepresentation> members = group.members(0, Integer.MAX_VALUE);
@@ -153,15 +154,46 @@ public class KeycloakGroupRepository implements GroupRepository {
 				List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
 				for (RoleRepresentation roleRepresentation : roleRepresentations) {
 					if (roleRepresentation.getName().equalsIgnoreCase(AuthType.ROLE_ADMIN.name())) {
-						groupMembers.add(member);
+						if (isDefaultGroup(groupRepresentation)) {
+							if (hasOneGroup(userResource)) {
+								groupMembers.add(member);
+							}
+						} else {
+							groupMembers.add(member);
+						}
+						break;
 					}
 				}
 			}
 		} else {
-			groupMembers = group.members(0, Integer.MAX_VALUE);
+			if (isDefaultGroup(groupRepresentation)) {
+				groupMembers.addAll(getMembersWithSingleGroup(group));
+				return new GroupUserDTO.SubGroupUserDto(subGroups, groupMembers);
+			} else {
+				groupMembers = group.members(0, Integer.MAX_VALUE);
+			}
 		}
 
 		return new GroupUserDTO.SubGroupUserDto(subGroups, groupMembers);
+	}
+	private boolean isDefaultGroup(GroupRepresentation groupRepresentation) {
+		return groupRepresentation.getName().equalsIgnoreCase("default") &&
+			groupRepresentation.getPath().equalsIgnoreCase("/account/default");
+	}
+
+	private boolean hasOneGroup(UserResource userResource) {
+		return userResource.groups().size() == 1;
+	}
+	private List<UserRepresentation> getMembersWithSingleGroup(GroupResource groupResource) {
+		List<UserRepresentation> groupMembers = new ArrayList<>();
+		List<UserRepresentation> memberList = groupResource.members();
+		for (UserRepresentation member : memberList) {
+			UserResource userResource = keycloakConfig.getRealmClient().users().get(member.getId());
+			if (hasOneGroup(userResource)) {
+				groupMembers.add(member);
+			}
+		}
+		return groupMembers;
 	}
 
 	@Override

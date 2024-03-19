@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaReqDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
+import com.xiilab.modulek8s.resource_quota.dto.TotalResourceQuotaDTO;
 import com.xiilab.modulek8s.resource_quota.repository.ResourceQuotaRepo;
 import com.xiilab.modulek8s.resource_quota.vo.ResourceQuotaResVO;
 
@@ -63,5 +64,14 @@ public class ResourceQuotaServiceImpl implements ResourceQuotaService {
 			.limitMEM(resourceQuotas.getLimitMEM())
 			.limitGPU(resourceQuotas.getLimitGPU())
 			.build()).collect(Collectors.toList());
+	}
+
+	@Override
+	public TotalResourceQuotaDTO getTotalResourceQuota() {
+		List<ResourceQuotaResDTO> resourceQuotasList = getResourceQuotasList();
+		int reqCpuTotal = resourceQuotasList.stream().mapToInt(ResourceQuotaResDTO::getReqCPU).sum();
+		int reqMemTotal = resourceQuotasList.stream().mapToInt(ResourceQuotaResDTO::getReqMEM).sum();
+		int reqGpuTotal = resourceQuotasList.stream().mapToInt(ResourceQuotaResDTO::getReqGPU).sum();
+		return new TotalResourceQuotaDTO(reqCpuTotal,reqMemTotal,reqGpuTotal);
 	}
 }

@@ -98,4 +98,5 @@ public class AlertManagerEntity {
 	public void updateAlertEnable(boolean alertEnable){
 		this.alertEnable = alertEnable;
 	}
+
 }

@@ -55,9 +55,9 @@ public abstract class WorkloadEntity {
 	protected String workspaceName;
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	protected String workspaceResourceName;
-	@Column(name = "WORKLOAD_REQ_GPU", precision = 10, scale = 1)
+	@Column(name = "WORKLOAD_REQ_GPU")
 	protected Integer gpuRequest;
-	@Column(name = "WORKLOAD_REQ_CPU")
+	@Column(name = "WORKLOAD_REQ_CPU", precision = 10, scale = 1)
 	protected BigDecimal cpuRequest;
 	@Column(name = "WORKLOAD_REQ_MEM", precision = 10, scale = 1)
 	protected BigDecimal memRequest;

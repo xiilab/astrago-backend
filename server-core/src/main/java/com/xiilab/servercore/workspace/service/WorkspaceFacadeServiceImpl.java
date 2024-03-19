@@ -20,6 +20,8 @@ import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
+import com.xiilab.modulek8s.resource_quota.dto.TotalResourceQuotaDTO;
+import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
@@ -33,7 +35,7 @@ import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaCustomRepository;
-import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaRepository;
+import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaHistoryRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
@@ -42,8 +44,12 @@ import com.xiilab.servercore.alert.systemalert.event.UserAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
+import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
+import com.xiilab.servercore.workspace.entity.WorkspaceSettingEntity;
+import com.xiilab.servercore.workspace.repository.WorkspaceSettingRepo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,18 +61,19 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
-	private final ResourceQuotaRepository resourceQuotaRepository;
+	private final ResourceQuotaService resourceQuotaService;
+	private final ResourceQuotaHistoryRepository resourceQuotaHistoryRepository;
 	private final ResourceQuotaCustomRepository resourceQuotaCustomRepository;
 	private final PinService pinService;
 	private final GroupService groupService;
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
+	private final WorkspaceSettingRepo workspaceSettingRepo;
 	private final WorkspaceAlertService workspaceAlertService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
-	@Transactional
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
 		//워크스페이스 생성
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
@@ -86,6 +93,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.createdBy(workspace.getCreatorUserName())
 				.createdUserId(workspace.getCreatorId())
 				.description(workspace.getDescription())
+				.users(applicationForm.getUserIds())
 				.build(), userInfoDTO);
 		workspaceAlertSetService.saveAlertSet(workspace.getResourceName());
 
@@ -151,7 +159,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO) {
+		//워크스페이스 삭제
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
+		//리소스 요청 목록 삭제
+		int deleteResult = resourceQuotaHistoryRepository.deleteByWorkspaceResourceName(workspaceName);
+		log.info("리소스 요청 목록 {}건 삭제", deleteResult);
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
@@ -227,10 +239,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		} else {
 			WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(
 				workspaceResourceReqDTO.getWorkspace());
-			resourceQuotaRepository.save(new ResourceQuotaEntity(workspaceResourceReqDTO, workspaceInfo.getName()));
+			resourceQuotaHistoryRepository.save(
+				new ResourceQuotaEntity(workspaceResourceReqDTO, workspaceInfo.getName()));
 		}
 
-		// TODO 여기부터 진행, 메일 발송시 메인 타이틀 제목으로 전송
 		SystemAlertMessage workspaceResourceRequestAdmin = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_ADMIN;
 		String mailTitle = String.format(workspaceResourceRequestAdmin.getTitle(),
 			workspaceResourceReqDTO.getWorkspace());
@@ -249,7 +261,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Transactional(readOnly = true)
 	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum,
 		UserInfoDTO userInfoDTO) {
-		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaRepository.findByWorkspaceResourceName(workspace);
+		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaHistoryRepository.findByWorkspaceResourceName(
+			workspace);
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaReqList.stream()
 			.map(resourceQuotaEntity ->
@@ -273,15 +286,25 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional
-	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO) {
-		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaRepository.findById(id).orElseThrow();
+	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO, UserInfoDTO userInfoDTO) {
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
+		}
+		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaHistoryRepository.findById(id).orElseThrow();
+
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
+			int cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
+				resourceQuotaEntity.getCpuReq();
+			int mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getCpu() :
+				resourceQuotaEntity.getCpuReq();
+			int gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getCpu() :
+				resourceQuotaEntity.getCpuReq();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
 				resourceQuotaEntity.getWorkspaceResourceName(),
-				resourceQuotaEntity.getCpuReq(),
-				resourceQuotaEntity.getMemReq(),
-				resourceQuotaEntity.getGpuReq()
+				cpu,
+				mem,
+				gpu
 			);
 
 			// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
@@ -301,7 +324,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public void deleteResourceQuota(long id) {
-		resourceQuotaRepository.deleteById(id);
+		resourceQuotaHistoryRepository.deleteById(id);
 	}
 
 	@Override
@@ -371,7 +394,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize,
 		UserInfoDTO userInfoDTO) {
-		List<ResourceQuotaEntity> resourceQuotaEntityList = resourceQuotaRepository.findAll();
+		List<ResourceQuotaEntity> resourceQuotaEntityList = resourceQuotaHistoryRepository.findAll();
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaEntityList.stream()
 			.map(resourceQuotaEntity ->
@@ -396,24 +419,71 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name) {
-		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(name);
+		WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(name);
+		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
+			name);
 		ResourceQuotaEntity recentlyResourceRequest = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
+		ClusterResourceDTO clusterResource = clusterService.getClusterResource();
 		return WorkspaceDTO.AdminInfoDTO
 			.builder()
-			.id(workspaceInfoByName.getUid())
-			.name(workspaceInfoByName.getName())
-			.resourceName(workspaceInfoByName.getResourceName())
-			.description(workspaceInfoByName.getDescription())
-			.createdAt(workspaceInfoByName.getCreateAt())
-			.creator(workspaceInfoByName.getCreatorName())
+			.id(workspaceInfo.getId())
+			.name(workspaceInfo.getName())
+			.resourceName(workspaceInfo.getResourceName())
+			.description(workspaceInfo.getDescription())
+			.createdAt(workspaceInfo.getCreatedAt())
+			.creator(workspaceInfo.getCreatorFullName())
 			.reqCPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getCpuReq())
 			.reqMEM(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getMemReq())
 			.reqGPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getGpuReq())
-			.useCPU(workspaceInfoByName.getLimitCPU())
-			.useMEM(workspaceInfoByName.getLimitMEM())
-			.useGPU(workspaceInfoByName.getLimitGPU())
-			// .allocCPU(workspaceInfoByName)
+			.useCPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getCpuUsed()))
+			.useMEM(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getMemUsed()))
+			.useGPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getGpuUsed()))
+			.allocCPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getCpuLimit()))
+			.allocMEM(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getMemLimit()))
+			.allocGPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getGpuLimit()))
+			.totalCPU(clusterResource.getCpu())
+			.totalMEM(clusterResource.getMem())
+			.totalGPU(clusterResource.getGpu())
 			.build();
+	}
+
+	@Override
+	public ClusterResourceCompareDTO requestResourceComparedClusterResource() {
+		//cluster의 총 리소스 조회
+		ClusterResourceDTO clusterResource = clusterService.getClusterResource();
+		//리소스 할당량 조회
+		TotalResourceQuotaDTO totalResourceQuota = resourceQuotaService.getTotalResourceQuota();
+		return new ClusterResourceCompareDTO(
+			clusterResource.getCpu(),
+			clusterResource.getMem(),
+			clusterResource.getGpu(),
+			totalResourceQuota.getCpu(),
+			totalResourceQuota.getMem(),
+			totalResourceQuota.getGpu());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public WorkspaceResourceSettingDTO getWorkspaceResourceSetting() {
+		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
+		return new WorkspaceResourceSettingDTO(
+			workspaceSettingEntity.getCpu(),
+			workspaceSettingEntity.getMem(),
+			workspaceSettingEntity.getGpu()
+		);
+	}
+
+	@Override
+	@Transactional
+	public void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO,
+		UserInfoDTO userInfoDTO) {
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
+		}
+		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
+		workspaceSettingEntity.updateResource(workspaceResourceSettingDTO.getCpu(),
+			workspaceResourceSettingDTO.getMem(),
+			workspaceResourceSettingDTO.getGpu());
 	}
 
 }

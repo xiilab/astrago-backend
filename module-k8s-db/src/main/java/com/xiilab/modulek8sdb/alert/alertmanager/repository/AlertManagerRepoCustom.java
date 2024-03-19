@@ -1,10 +1,12 @@
 package com.xiilab.modulek8sdb.alert.alertmanager.repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerReceiveEntity;
 
 public interface AlertManagerRepoCustom {
-	List<AlertManagerReceiveEntity> getAlertManagerReceiveList(String categoryType, String search, LocalDateTime start, LocalDateTime end, String userId);
+	Page<AlertManagerReceiveEntity> getAlertManagerReceiveList(String categoryType, String search, LocalDateTime start, LocalDateTime end, String userId, Pageable pageable);
 }

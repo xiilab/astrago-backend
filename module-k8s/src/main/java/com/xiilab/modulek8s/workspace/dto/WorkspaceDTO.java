@@ -97,7 +97,7 @@ public class WorkspaceDTO {
 
 		public AdminResponseDTO(WorkspaceDTO.ResponseDTO workspace, ResourceQuotaResDTO resourceQuotaResDTO) {
 			this.id = workspace.getId();
-			this.name = workspace.getDescription();
+			this.name = workspace.getName();
 			this.resourceName = workspace.getResourceName();
 			this.description = workspace.getDescription();
 			this.creator = workspace.getCreatorFullName();
@@ -135,6 +135,9 @@ public class WorkspaceDTO {
 		private int allocCPU;
 		private int allocMEM;
 		private int allocGPU;
+		private int totalCPU;
+		private int totalMEM;
+		private int totalGPU;
 	}
 
 	@Getter

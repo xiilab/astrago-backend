@@ -11,7 +11,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.FileType;
@@ -24,9 +23,10 @@ import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleJobResDTO;
+
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
@@ -43,13 +43,13 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	private final WorkloadRepository workloadRepository;
 
-	public ModuleJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+	public CreateJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
 		String workspaceName) {
 		return workloadRepository.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toBatchJobVO(workspaceName));
 	}
 
 	@Override
-	public ModuleJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+	public CreateJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
 		String workspaceName) {
 		return workloadRepository.createInteractiveJobWorkload(
 			moduleCreateWorkloadReqDTO.toInteractiveJobVO(workspaceName));
@@ -329,5 +329,17 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
 		return resourceOptimizationTargetList.stream().map(optimizationTarget -> workloadRepository.getParentController(
 			optimizationTarget.getPodName(), optimizationTarget.getNamespace())).toList();
+	}
+
+	@Override
+	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadRepository.editBatchJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
+	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
+		workloadRepository.editInteractiveJob(workspaceResourceName, workloadResourceName, name, description);
 	}
 }
