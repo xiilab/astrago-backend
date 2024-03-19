@@ -261,8 +261,8 @@ public class WorkspaceController {
 
 	@GetMapping("/resource/setting")
 	@Operation(summary = "워크스페이스 리소스 디폴트 세팅 값 조회")
-	public ResponseEntity<WorkspaceResourceSettingDTO> getWorkspaceResourceSetting(UserInfoDTO userInfoDTO) {
-		return new ResponseEntity<>(workspaceService.getWorkspaceResourceSetting(userInfoDTO),HttpStatus.OK);
+	public ResponseEntity<WorkspaceResourceSettingDTO> getWorkspaceResourceSetting() {
+		return new ResponseEntity<>(workspaceService.getWorkspaceResourceSetting(),HttpStatus.OK);
 	}
 
 	@PatchMapping("/resource/setting")
