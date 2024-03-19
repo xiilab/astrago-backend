@@ -49,7 +49,6 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	private final AlertManagerReceiveRepository receiveRepository;
 	private final AlertManagerRepository repository;
 	private final AlertManagerRepoCustom alertManagerRepoCustom;
-	private final SystemAlertService systemAlertService;
 	private final UserService userService;
 	private final ApplicationEventPublisher eventPublisher;
 	@Override
