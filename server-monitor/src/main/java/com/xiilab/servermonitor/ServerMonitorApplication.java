@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @EnableAsync
-@SpringBootApplication(scanBasePackages = {"com.xiilab.modulemonitor", "com.xiilab.servermonitor", "com.xiilab.modulecommon"})
+@SpringBootApplication(scanBasePackages = {"com.xiilab.modulemonitor", "com.xiilab.servermonitor", "com.xiilab.modulecommon", "com.xiilab.modulek8sdb", "com.xiilab.moduleuser"})
 public class ServerMonitorApplication {
 
 	public static void main(String[] args) {

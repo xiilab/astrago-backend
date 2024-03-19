@@ -57,6 +57,6 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCusotm 
 		if (workspaceName == null) {
 			return null;
 		}
-		return jobEntity.workspaceName.eq(workspaceName);
+		return jobEntity.workspaceResourceName.eq(workspaceName);
 	}
 }

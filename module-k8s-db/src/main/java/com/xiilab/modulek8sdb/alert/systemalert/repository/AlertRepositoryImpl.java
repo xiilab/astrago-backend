@@ -22,7 +22,7 @@ public class AlertRepositoryImpl implements AlertRepositoryCustom {
 		return queryFactory.selectFrom(alertEntity)
 			.where(
 				alertEntity.alertRole.eq(AlertRole.OWNER).or(alertEntity.alertRole.eq(AlertRole.USER)),
-				alertEntity.alertType.eq(SystemAlertType.WORKSPACE).or(alertEntity.alertType.eq(SystemAlertType.WORKLOAD))
+				alertEntity.alertType.eq(SystemAlertType.WORKSPACE).or(alertEntity.alertType.eq(SystemAlertType.WORKLOAD)).or(alertEntity.alertType.eq(SystemAlertType.RESOURCE))
 			).fetch();
 	}
 }

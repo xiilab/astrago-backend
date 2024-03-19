@@ -5,3 +5,46 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+  datasource:
+    url: jdbc:mariadb://localhost:3306/astrago
+    #    url: jdbc:mariadb://10.61.3.138:30756/astrago
+    username: root
+    password: root
+    hikari:
+      max-lifetime: 57000
+      maximum-pool-size: 24
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+    show_sql: true
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true
+
+# keycloak server의 admin 정보
+admin:
+  realm: master
+  client: admin-cli
+  name: admin
+  password: xiirocks
+  init-password: xiirocks
+  secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
+  id: 3810cb0d-0c82-4258-9e43-2d00f7a1d0b9
+
+# 연결할 keycloak server 정보
+keycloak:
+  realm: myrealm
+  auth-server-url: http://10.61.3.8:30001/
+  ssl-required: external
+  resource: kubernetes-client
+  use-resource-role-mappings: true
+  bearer-only: true
+  public-client: false
+  principal-attribute: preferred_username
