@@ -157,7 +157,8 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					String categoryType = labels.get("alertname").toString();
 					// 해당 ID 조회
 					long id = Long.parseLong(labels.get("ruleName").toString().split("-")[1]);
-					AlertManagerEntity alertManagerEntity = getAlertManagerEntityById(id);
+
+					AlertManagerEntity alertManagerEntity = repository.findById(id).orElse(null);
 
 					// 임계값 소수점 2자까지
 					double value = Double.parseDouble(annotations.get("value").toString());
@@ -165,22 +166,25 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					// 발생한 node Name
 					String nodeName = labels.get("nodeName").toString();
 
-					String nodeIp = alertManagerEntity.getAlertManagerNodeEntityList().stream()
-						.filter(alertManagerNodeEntity -> alertManagerNodeEntity.getNodeName().equals(nodeName))
-						.map(AlertManagerNodeEntity::getNodeIp).findFirst().orElse("");
+					if(alertManagerEntity != null){
 
-					receiveRepository.save(
-						AlertManagerReceiveEntity.builder()
-							.threshold(val)
-							.alertName(alertManagerEntity.getAlertName())
-							.categoryType(AlertManagerCategoryType.valueOf(categoryType))
-							.nodeName(nodeName)
-							.realTime(localDateTime)
-							.nodeIp(nodeIp)
-							.currentTime(currentTime)
-							.alertManager(alertManagerEntity)
-							.result(true)
-							.build());
+						String nodeIp = alertManagerEntity.getAlertManagerNodeEntityList().stream()
+							.filter(alertManagerNodeEntity -> alertManagerNodeEntity.getNodeName().equals(nodeName))
+							.map(AlertManagerNodeEntity::getNodeIp).findFirst().orElse("");
+
+						receiveRepository.save(
+							AlertManagerReceiveEntity.builder()
+								.threshold(val)
+								.alertName(alertManagerEntity.getAlertName())
+								.categoryType(AlertManagerCategoryType.valueOf(categoryType))
+								.nodeName(nodeName)
+								.realTime(localDateTime)
+								.nodeIp(nodeIp)
+								.currentTime(currentTime)
+								.alertManager(alertManagerEntity)
+								.result(true)
+								.build());
+					}
 				}
 				// 저장된 AlertList 조회
 				Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceiveDTOList = getAlertReceiveDTOList(currentTime);

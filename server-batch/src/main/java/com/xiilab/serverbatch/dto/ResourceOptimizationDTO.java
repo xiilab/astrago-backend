@@ -14,6 +14,7 @@ public class ResourceOptimizationDTO {
 	private int mem;
 	private int gpu;
 	private int hour;
+	private boolean running;
 
 	public JobDataMap convertToJobDataMap() {
 		JobDataMap jobDataMap = new JobDataMap();

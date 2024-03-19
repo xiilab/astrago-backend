@@ -78,4 +78,8 @@ public interface WorkloadModuleFacadeService {
 	boolean isUsedModel(Long modelId);
 
 	void deleteLocalModel(DeleteLocalModelDTO deleteLocalModelDTO);
+
+	void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description);
+
+	void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description);
 }

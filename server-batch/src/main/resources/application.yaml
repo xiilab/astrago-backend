@@ -1,4 +1,7 @@
 spring:
+  sql:
+    init:
+      mode: always
   quartz:
     job-store-type: memory
   servlet:
@@ -34,6 +37,7 @@ spring:
     show_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true
   messages:
     basename: messages
     encoding: utf-8

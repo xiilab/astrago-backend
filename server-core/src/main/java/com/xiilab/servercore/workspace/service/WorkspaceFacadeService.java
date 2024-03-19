@@ -14,6 +14,7 @@ import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
 
 public interface WorkspaceFacadeService {
 	void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO);
@@ -54,4 +55,6 @@ public interface WorkspaceFacadeService {
 
 	WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name);
 	ClusterResourceCompareDTO requestResourceComparedClusterResource();
+	WorkspaceResourceSettingDTO getWorkspaceResourceSetting(UserInfoDTO userInfoDTO);
+	void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO, UserInfoDTO userInfoDTO);
 }
