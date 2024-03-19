@@ -6,18 +6,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
-import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
@@ -57,8 +62,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String DISK_PRESSURE = "DiskPressure";
 	private final String PID_PRESSURE = "PIDPressure";
 	private final String READY = "Ready";
-	@Value("${mig-profile-path}")
-	private String migProfilePath;
 
 	@Override
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
@@ -133,7 +136,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	@Override
-	public ResponseDTO.MIGProfile getNodeMIGProfiles(String nodeName) {
+	public MIGProfileDTO getNodeMIGProfiles(String nodeName, int giCount) {
 		Node node = getNode(nodeName);
 		if (!getMigCapable(node)) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
@@ -141,21 +144,21 @@ public class NodeRepositoryImpl implements NodeRepository {
 		//node의 gpu productName을 조회한다.
 		String gpuProductName = getGPUProductName(node);
 		//해당 node에 장착된 gpu가 가능한 mig profile을 리턴한다.
-		return getNodeMIGProfileFromJson(gpuProductName);
+		return getNodeMIGProfileFromJson(gpuProductName, giCount);
 	}
 
 	@Override
-	public void updateMIGAllProfile(String nodeName, String option) {
+	public void updateMIGProfile(String nodeName, String option) {
 		Node node = getNode(nodeName);
 		//해당 node가 mig를 지원하는지 체크
 		if (!getMigCapable(node)) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
 		//할당된 프로젝트가 존재하는지 체크한다.
-		if (nodeAssignWorkloadCount(nodeName) > 0) {
-			throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MIG);
-		}
-		updateMIGConfig(nodeName, "all-" + option);
+		// if (nodeAssignWorkloadCount(nodeName) > 0) {
+		// 	throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MIG);
+		// }
+		updateMIGConfig(nodeName, option);
 
 	}
 
@@ -174,6 +177,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 	}
 
+	@Override
 	public Node getNode(String nodeName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Node node = client.nodes().withName(nodeName).get();
@@ -241,7 +245,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String version = null;
 			if (!(labels.get(GPU_DRIVER_VER_MAJOR) == null || labels.get(GPU_DRIVER_VER_MINOR) == null || labels.get(
 				GPU_DRIVER_VER_REV) == null)) {
-				version = labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(GPU_DRIVER_VER_REV);
+				version = labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(
+					GPU_DRIVER_VER_REV);
 			}
 
 			ResponseDTO.NodeResourceInfo nodeResourceInfo = ResponseDTO.NodeResourceInfo.builder()
@@ -292,6 +297,10 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 */
 	private boolean getMigCapable(Node node) {
 		String capable = node.getMetadata().getLabels().get("nvidia.com/mig.capable");
+		if (!Objects.nonNull(capable)) {
+			String migState = node.getMetadata().getLabels().get("nvidia.com/mig.config.state");
+			return migState != null;
+		}
 		return Boolean.parseBoolean(capable);
 	}
 
@@ -313,21 +322,28 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 * @return
 	 * @throws IOException
 	 */
-	public ResponseDTO.MIGProfile getNodeMIGProfileFromJson(String productName) {
+	@Override
+	public MIGProfileDTO getNodeMIGProfileFromJson(String productName, int giCount) {
 		try {
+			String chipset = extractGpuChipset(productName);
+			List<Map<String, Integer>> resProfile = new ArrayList<>();
 			//MIGProfile.json을 읽어온다.
-			File file = new File(migProfilePath);
+			File file = new File(String.format("server-core/src/main/resources/migProfile/%s.json", chipset));
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
 				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
 			}
 			//json 파일을 읽어옴
-			ResponseDTO.MIGProfileList migProfileList = objectMapper.readValue(file, ResponseDTO.MIGProfileList.class);
-			//리스트에서 productName으로 검색하여 해당하는 profile을 리턴한다.
-			return migProfileList.migProfiles().stream().filter(mig ->
-					mig.migProduct().equals(MIGProduct.getGpuProduct(productName)))
-				.findFirst()
-				.orElseThrow(() -> new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU));
+			MIGProfileDTO migProfileList = objectMapper.readValue(file, MIGProfileDTO.class);
+
+			List<Map<String, Integer>> profiles = migProfileList.getProfile();
+			for (Map<String, Integer> profile : profiles) {
+				int sum = profile.values().stream().toList().stream().mapToInt(Integer::intValue).sum();
+				if (sum == giCount) {
+					resProfile.add(profile);
+				}
+			}
+			return new MIGProfileDTO(productName, resProfile);
 		} catch (IOException e) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
@@ -341,11 +357,106 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 */
 	private void updateMIGConfig(String nodeName, String profile) {
 		//적용할 node를 불러온다.
-		Resource<Node> node = getNodeResource(nodeName);
-		HashMap<String, String> migConfig = new HashMap<>();
-		migConfig.put("nvidia.com/mig.config", profile);
-		node.edit(n ->
-			new NodeBuilder(n).editMetadata().addToLabels(migConfig).endMetadata().build());
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Resource<Node> node = kubernetesClient.nodes().withName(nodeName);
+			HashMap<String, String> migConfig = new HashMap<>();
+			migConfig.put("nvidia.com/mig.config", profile);
+			node.edit(n ->
+				new NodeBuilder(n).editMetadata().addToLabels(migConfig).endMetadata().build());
+		}
+	}
+
+	@Override
+	public void updateMigProfile(MIGGpuDTO MIGGpuDTO) {
+		DumperOptions options = new DumperOptions();
+		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+		options.setPrettyFlow(true);
+		Yaml yaml = new Yaml(options);
+		Map<String, String> migConfigMapData = getMigConfigMapData();
+		String migConfigSTR = migConfigMapData.get("config.yaml");
+		Map<String, Object> convertResult = yaml.load(migConfigSTR);
+		Map<String, Object> migConfigs = (Map<String, Object>)convertResult.get("mig-configs");
+		migConfigs.put(MIGGpuDTO.getMigKey(), MIGGpuDTO.convertToMap());
+		convertResult.put("mig-configs", migConfigs);
+		updateMigConfigMap(Map.of("config.yaml", yaml.dump(convertResult)));
+	}
+
+	@Override
+	public MIGGpuDTO.MIGInfoStatus getNodeMigStatus(String nodeName) {
+		Node node = getNode(nodeName);
+		if (!getMigCapable(node)) {
+			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
+		}
+		String migProfile = node.getMetadata().getLabels().get("nvidia.com/mig.config");
+		String migProfileStatus = node.getMetadata().getLabels().get("nvidia.com/mig.config.state");
+		if (migProfile.equals("all-disabled")) {
+			return MIGGpuDTO.MIGInfoStatus.builder()
+				.nodeName(node.getMetadata().getName())
+				.migInfos(null)
+				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
+				.build();
+		} else {
+			Map<String, Object> migConfigMap = getMigConfigMap();
+			List<Map<String, Object>> rawMIGInfo = (List<Map<String, Object>>)migConfigMap.get(migProfile);
+			return MIGGpuDTO.MIGInfoStatus.builder()
+				.nodeName(node.getMetadata().getName())
+				.migInfos(convertMapToMIGInfo(rawMIGInfo))
+				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
+				.build();
+		}
+	}
+
+	private List<MIGGpuDTO.MIGInfoDTO> convertMapToMIGInfo(List<Map<String, Object>> migInfoList) {
+		return migInfoList.stream().map(migInfo -> {
+			boolean migEnabled = (boolean)migInfo.get("mig-enabled");
+			List<Integer> devices = (List<Integer>)migInfo.get("devices");
+			if (migEnabled == false) {
+				return MIGGpuDTO.MIGInfoDTO.builder()
+					.migEnable(migEnabled)
+					.gpuIndexs(devices)
+					.build();
+			} else {
+				Map<String,Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
+				return MIGGpuDTO.MIGInfoDTO.builder()
+					.migEnable(migEnabled)
+					.gpuIndexs(devices)
+					.profile(migProfiles)
+					.build();
+			}
+		}).toList();
+	}
+
+	private void updateMigConfigMap(Map<String, String> data) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.configMaps()
+				.inNamespace("gpu-operator")
+				.withName("custom-mig-parted-config")
+				.edit(config ->
+					config.edit()
+						.addToData(data).build());
+		}
+	}
+
+	private Map<String, String> getMigConfigMapData() {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.configMaps()
+				.inNamespace("gpu-operator")
+				.withName("custom-mig-parted-config")
+				.get()
+				.getData();
+		}
+	}
+
+	public Map<String, Object> getMigConfigMap() {
+		DumperOptions options = new DumperOptions();
+		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+		options.setPrettyFlow(true);
+		Yaml yaml = new Yaml(options);
+		Map<String, String> migConfigMapData = getMigConfigMapData();
+		String migConfigSTR = migConfigMapData.get("config.yaml");
+		Map<String, Object> convertResult = yaml.load(migConfigSTR);
+		Map<String, Object> migConfigs = (Map<String, Object>)convertResult.get("mig-configs");
+		return migConfigs;
 	}
 
 	/**
@@ -399,17 +510,32 @@ public class NodeRepositoryImpl implements NodeRepository {
 			.toList();
 	}
 
+	private String extractGpuChipset(String value) {
+		StringBuilder chipset = null;
+		String[] split = value.split("-");
+		Set<String> strings = Set.of("A30", "A100", "H100");
+		for (String s : split) {
+			if (strings.contains(s)) {
+				chipset = new StringBuilder(s);
+			}
+			if (s.contains("GB")) {
+				chipset.append("-").append(s);
+			}
+		}
+		return chipset.toString();
+	}
+
 	/**
 	 * worker node들의 gpu 드라이버 버전 정보 조회
 	 */
 	@Override
-	public List<ResponseDTO.WorkerNodeDriverInfo> getWorkerNodeDriverInfos(){
+	public List<ResponseDTO.WorkerNodeDriverInfo> getWorkerNodeDriverInfos() {
 		List<ResponseDTO.WorkerNodeDriverInfo> workerNodeDriverInfos = new ArrayList<>();
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Node> items = client.nodes().list().getItems();
 			for (Node item : items) {
 				boolean isWorkerNode = item.getMetadata().getLabels().containsKey(ROLE);
-				if(!isWorkerNode){
+				if (!isWorkerNode) {
 					String driverMajor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.major");
 					String driverMinor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.minor");
 					String driverRev = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.rev");
