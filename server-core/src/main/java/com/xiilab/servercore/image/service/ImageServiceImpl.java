@@ -79,6 +79,9 @@ public class ImageServiceImpl implements ImageService {
 			.title(saveImageDTO.getTitle())
 			.thumbnailSavePath(saveImageDTO.getThumbnailSavePath())
 			.thumbnailSaveFileName(saveImageDTO.getThumbnailSaveFileName())
+			.frameworkType(saveImageDTO.getFrameWorkType())
+			.frameworkVersion(saveImageDTO.getFrameworkVersion())
+			.cudaVersion(saveImageDTO.getCudaVersion())
 			.build();
 
 		try {

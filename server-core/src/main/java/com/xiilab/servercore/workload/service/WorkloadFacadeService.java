@@ -133,7 +133,6 @@ public class WorkloadFacadeService {
 		}
 
 		try {
-
 			// 커스텀 이미지일 때만 이미지 데이터 저장
 			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 			// 리소스 초과 알림
@@ -144,6 +143,7 @@ public class WorkloadFacadeService {
 			e.printStackTrace();
 			throw e;
 		}
+
 	}
 
 	private void checkAndSendWorkspaceResourceOverAlert(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -225,20 +225,27 @@ public class WorkloadFacadeService {
 	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(
 		WorkloadType workloadType,
 		String workspaceName,
-		String workloadResourceName,
-		WorkloadStatus workloadStatus) {
+		String workloadResourceName) {
 		// 실행중일 떄
-		if (workloadType == WorkloadType.BATCH && workloadStatus != WorkloadStatus.END) {
-			ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
-				workloadResourceName);
-			return getActiveWorkloadDetail(moduleBatchJobResDTO);
-		} else if (workloadType == WorkloadType.INTERACTIVE && workloadStatus != WorkloadStatus.END) {
-			ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
-				workspaceName, workloadResourceName);
-			return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-		} else {
-			return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
+		try {
+			if (workloadType == WorkloadType.BATCH) {
+				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+					workloadResourceName);
+				return getActiveWorkloadDetail(moduleBatchJobResDTO);
+			} else if (workloadType == WorkloadType.INTERACTIVE) {
+				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+					workspaceName, workloadResourceName);
+				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+			}
+		} catch (Exception e) {
+			try {
+				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
+			} catch (Exception e2) {
+				throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
+			}
 		}
+
+		return null;
 	}
 
 	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail getActiveWorkloadDetail(

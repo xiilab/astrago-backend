@@ -3,6 +3,7 @@ package com.xiilab.servercore.image.dto;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,9 +26,12 @@ public class ImageReqDTO {
 		private String description;
 		private String thumbnailSavePath;
 		private String thumbnailSaveFileName;
+		private FrameWorkType frameWorkType;
+		private String cudaVersion;
+		private String frameworkVersion;
 		private Long credentialId;
 
-		@Builder(builderClassName = "createCustomImageBuilder", builderMethodName = "createCustomImageBuilder")
+		@Builder(builderClassName = "saveCustomImageBuilder", builderMethodName = "saveCustomImageBuilder")
 		public SaveImage(String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
 			WorkloadType workloadType, Long credentialId) {
 			this.imageName = imageName;
@@ -36,7 +40,25 @@ public class ImageReqDTO {
 			this.workloadType = workloadType;
 			this.credentialId = credentialId;
 		}
+
+		@Builder(builderClassName = "saveBuiltInImageBuilder", builderMethodName = "saveBuiltInImageBuilder")
+		public SaveImage(String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
+			WorkloadType workloadType, String title, String description, String thumbnailSavePath, String thumbnailSaveFileName,
+			FrameWorkType frameWorkType, String cudaVersion, String frameworkVersion) {
+			this.imageName = imageName;
+			this.repositoryAuthType = repositoryAuthType;
+			this.imageType = imageType;
+			this.workloadType = workloadType;
+			this.title = title;
+			this.description = description;
+			this.thumbnailSavePath = thumbnailSavePath;
+			this.thumbnailSaveFileName = thumbnailSaveFileName;
+			this.frameWorkType = frameWorkType;
+			this.cudaVersion = cudaVersion;
+			this.frameworkVersion = frameworkVersion;
+		}
 	}
+
 	@Getter
 	@AllArgsConstructor
 	public static class FindSearchCondition {
