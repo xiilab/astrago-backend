@@ -21,10 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NodeInformer {
 	private final K8sAdapter k8sAdapter;
-
 	@PostConstruct
 	void doInformer() {
-
+		nodeInformer();
 	}
 
 	private void nodeInformer() {
@@ -48,8 +47,15 @@ public class NodeInformer {
 						if (Objects.nonNull(migCapable) && migCapable.equals("true")) {
 							String node1MIGStatus = node1.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 							String node2MIGStatus = node2.getMetadata().getLabels().get("nvidia.com/mig.config.state");
-							if (!node1MIGStatus.equals(node2MIGStatus) && node2MIGStatus.equals("success")) {
-								log.info("MIG 설정이 완료되었습니다.");
+							if (!node1MIGStatus.equals(node2MIGStatus)) {
+								String message = switch (node2MIGStatus) {
+									case "success" -> String.format("node %S의 MIG 설정이 완료되었습니다.", node2.getMetadata().getName());
+									case "pending" -> String.format("node %S이 MIG 설정을 위해 대기중입니다.", node2.getMetadata().getName());
+									case "rebooting" -> String.format("node %S이 MIG 설정을 위해 재부팅중입니다.", node2.getMetadata().getName());
+									case "failed" -> String.format("node %S의 MIG 설정이 실패하였습니다.", node2.getMetadata().getName());
+									default -> null;
+								};
+								log.info(message);
 							}
 						}
 					}
