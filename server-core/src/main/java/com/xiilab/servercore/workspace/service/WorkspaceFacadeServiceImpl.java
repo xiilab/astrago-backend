@@ -108,12 +108,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			}
 		}
 
+		// 워크스페이스 생성 알림메시지 발송
 		SystemAlertMessage workspaceCreateAdmin = SystemAlertMessage.WORKSPACE_CREATE_ADMIN;
 		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());
 		String title = workspaceCreateAdmin.getTitle();
 		String message = String.format(workspaceCreateAdmin.getMessage(), userInfoDTO.getUserFullName(),
 			applicationForm.getName());
-		// 워크스페이스 생성 알림메시지 발송
 		eventPublisher.publishEvent(
 			new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_CREATE, userInfoDTO.getId(), userInfoDTO.getUserName(),
 				userInfoDTO.getUserFullName(), mailTitle, title, message));
