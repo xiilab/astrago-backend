@@ -1,4 +1,4 @@
-package com.xiilab.serverbatch.schedulerService;
+package com.xiilab.serverbatch.service;
 
 import static com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode.*;
 
@@ -15,12 +15,15 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.serverbatch.common.BatchJob;
 import com.xiilab.serverbatch.dto.ResourceOptimizationDTO;
 import com.xiilab.serverbatch.dto.ResourceOptimizerStatus;
+import com.xiilab.serverbatch.entity.ResourceSchedulerEntity;
 import com.xiilab.serverbatch.job.BatchResourceOptimizationJob;
 import com.xiilab.serverbatch.job.InteractiveResourceOptimizationJob;
+import com.xiilab.serverbatch.repository.ResourceSchedulerRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResourceSchedulerService {
 	private final Scheduler scheduler;
-
+	private final ResourceSchedulerRepository resourceSchedulerRepository;
 	private static final String ASTRA = "astra";
 
 	public void registerResourceScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob)
@@ -38,17 +41,26 @@ public class ResourceSchedulerService {
 		if (optimizationDTO.getHour() < 5 || optimizationDTO.getHour() > 24) {
 			throw new IllegalArgumentException(WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR.getMessage());
 		}
-		//resource optimization job, trigger 생성
-		JobDetail resourceOptimizationJob = createResourceOptimizationJob(batchJob, optimizationDTO);
-		Trigger optimizationTrigger = createTrigger(resourceOptimizationJob, optimizationDTO.getHour());
-		//생성된 job과 trigger을 scheduler에 등록
-		scheduler.scheduleJob(resourceOptimizationJob, optimizationTrigger);
+		if (optimizationDTO.isRunning()) {
+			//resource optimization job, trigger 생성
+			JobDetail resourceOptimizationJob = createResourceOptimizationJob(batchJob, optimizationDTO);
+			Trigger optimizationTrigger = createTrigger(resourceOptimizationJob, optimizationDTO.getHour());
+			//생성된 job과 trigger을 scheduler에 등록
+			scheduler.scheduleJob(resourceOptimizationJob, optimizationTrigger);
+		}
 	}
 
+	@Transactional
 	public void updateResourceOptimizationScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob) throws
 		Exception {
-		stopResourceScheduler(batchJob);
-		registerResourceScheduler(optimizationDTO, batchJob);
+		ResourceSchedulerEntity resourceSchedulerEntity = resourceSchedulerRepository.findByJobType(batchJob);
+		if (optimizationDTO.isRunning()) {
+			stopResourceScheduler(batchJob);
+			registerResourceScheduler(optimizationDTO, batchJob);
+		} else if (!optimizationDTO.isRunning() && resourceSchedulerEntity.isRunning()) {
+			stopResourceScheduler(batchJob);
+		}
+		resourceSchedulerEntity.updateValue(optimizationDTO);
 	}
 
 	public void stopResourceScheduler(BatchJob batchJob) throws SchedulerException {
@@ -57,7 +69,34 @@ public class ResourceSchedulerService {
 		scheduler.deleteJobs(list);
 	}
 
-	public ResourceOptimizerStatus getResourceOptimizerStatus() throws SchedulerException {
+	public ResourceOptimizerStatus getResourceSchedulerStatus() throws SchedulerException {
+		ResourceOptimizerStatus resourceOptimizerStatus = new ResourceOptimizerStatus();
+		List<ResourceSchedulerEntity> schedulerList = resourceSchedulerRepository.findAll();
+		ResourceOptimizerStatus resourceOptimizerRealStatus = getResourceOptimizerStatus();
+		schedulerList.stream().forEach(scheduler -> {
+			if (scheduler.getJobType() == BatchJob.BATCH_JOB_OPTIMIZATION) {
+				resourceOptimizerStatus.setBatch(new ResourceOptimizationDTO(
+					scheduler.getCpu(),
+					scheduler.getMem(),
+					scheduler.getGpu(),
+					scheduler.getHour(),
+					resourceOptimizerStatus.getBatch() == null ? scheduler.isRunning() :
+						resourceOptimizerRealStatus.getBatch().isRunning()));
+			} else {
+				resourceOptimizerStatus.setInteractive(new ResourceOptimizationDTO(
+					scheduler.getCpu(),
+					scheduler.getMem(),
+					scheduler.getGpu(),
+					scheduler.getHour(),
+					resourceOptimizerStatus.getInteractive() == null ? scheduler.isRunning() :
+						resourceOptimizerRealStatus.getInteractive()
+							.isRunning()));
+			}
+		});
+		return resourceOptimizerStatus;
+	}
+
+	private ResourceOptimizerStatus getResourceOptimizerStatus() throws SchedulerException {
 		Set<JobKey> jobSet = scheduler.getJobKeys(GroupMatcher.groupEquals(ASTRA));
 		ResourceOptimizationDTO batchOptimizationStatus = null;
 		ResourceOptimizationDTO interactiveOptimizationStatus = null;
@@ -90,7 +129,7 @@ public class ResourceSchedulerService {
 
 	private Trigger createTrigger(JobDetail job, int hour) {
 		return TriggerBuilder.newTrigger()
-			.withSchedule(CronScheduleBuilder.cronSchedule(String.format("0 0 0/1 * * ?", hour)))
+			.withSchedule(CronScheduleBuilder.cronSchedule(String.format("0 0 0/%s * * ?", hour)))
 			.startNow()
 			.forJob(job)
 			.build();

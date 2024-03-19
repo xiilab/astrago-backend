@@ -50,6 +50,9 @@ public interface WorkloadRepository {
 
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
 
+	void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description);
+	void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description);
+
 	/**
 	 * batch job workload 조회
 	 *

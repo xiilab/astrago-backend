@@ -10,8 +10,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.PersistJobDataAfterExecution;
-import org.quartz.SchedulerException;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
@@ -31,20 +30,13 @@ import lombok.extern.slf4j.Slf4j;
 @PersistJobDataAfterExecution
 @RequiredArgsConstructor
 public class InteractiveResourceOptimizationJob extends QuartzJobBean {
-	private ApplicationContext applicationContext;
+	@Autowired
 	private WorkloadModuleService workloadModuleService;
+	@Autowired
 	private PrometheusService prometheusService;
 
 	@Override
 	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-		try {
-			//quartz는 Spring bean 사용이 안되기에 수동으로 의존성을 주입한다.
-			applicationContext = (ApplicationContext)context.getScheduler().getContext().get("applicationContext");
-			workloadModuleService = applicationContext.getBean(WorkloadModuleService.class);
-			prometheusService = applicationContext.getBean(PrometheusService.class);
-		} catch (SchedulerException e) {
-			throw new RuntimeException(e);
-		}
 		log.info("interactive resource optimization job start....");
 
 		JobDataMap jobDataMap = context.getMergedJobDataMap();
