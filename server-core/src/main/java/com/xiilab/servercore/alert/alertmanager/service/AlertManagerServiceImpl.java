@@ -31,13 +31,12 @@ import com.xiilab.modulek8sdb.alert.alertmanager.enumeration.AlertManagerCategor
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerReceiveRepository;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepoCustom;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepository;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.UserService;
-import com.xiilab.servercore.alert.systemalert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

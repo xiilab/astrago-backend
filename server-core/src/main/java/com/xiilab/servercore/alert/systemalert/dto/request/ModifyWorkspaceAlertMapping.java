@@ -1,7 +1,7 @@
 package com.xiilab.servercore.alert.systemalert.dto.request;
 
 import com.xiilab.modulecommon.enums.AlertSendType;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

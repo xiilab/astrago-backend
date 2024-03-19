@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 
 import lombok.RequiredArgsConstructor;
 

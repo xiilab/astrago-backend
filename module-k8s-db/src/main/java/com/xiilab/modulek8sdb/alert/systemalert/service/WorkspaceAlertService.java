@@ -11,8 +11,8 @@ import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertMappingRepository;
 

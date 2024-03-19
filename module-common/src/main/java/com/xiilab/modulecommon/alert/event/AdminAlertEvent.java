@@ -1,6 +1,6 @@
-package com.xiilab.servercore.alert.systemalert.event;
+package com.xiilab.modulecommon.alert.event;
 
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertName;
 
 public record AdminAlertEvent(AlertName alertName,
 							  String senderId,

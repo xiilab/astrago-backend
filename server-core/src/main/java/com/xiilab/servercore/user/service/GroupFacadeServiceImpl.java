@@ -7,12 +7,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
@@ -22,7 +21,7 @@ import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.servercore.alert.systemalert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 
 import lombok.RequiredArgsConstructor;
 

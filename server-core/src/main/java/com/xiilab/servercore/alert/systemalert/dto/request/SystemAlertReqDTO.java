@@ -1,9 +1,9 @@
 package com.xiilab.servercore.alert.systemalert.dto.request;
 
 import com.xiilab.modulecommon.enums.ReadYN;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
+import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;

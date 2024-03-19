@@ -17,7 +17,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 
 import lombok.RequiredArgsConstructor;
 

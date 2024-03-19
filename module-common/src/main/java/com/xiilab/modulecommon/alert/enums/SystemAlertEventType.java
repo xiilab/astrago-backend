@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.alert.systemalert.enumeration;
+package com.xiilab.modulecommon.alert.enums;
 
 import lombok.Getter;
 

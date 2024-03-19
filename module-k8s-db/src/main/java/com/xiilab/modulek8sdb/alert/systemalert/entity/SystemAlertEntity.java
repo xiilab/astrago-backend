@@ -3,8 +3,8 @@ package com.xiilab.modulek8sdb.alert.systemalert.entity;
 import java.time.LocalDateTime;
 
 import com.xiilab.modulecommon.enums.ReadYN;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 
@@ -16,7 +16,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
