@@ -51,6 +51,8 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
+import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
@@ -100,7 +102,8 @@ public class WorkloadFacadeService {
 	private final ImageService imageService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
 	private final AlertService alertService;
-	private final ApplicationEventPublisher publisher;
+	private final WorkspaceService workspaceService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -129,41 +132,48 @@ public class WorkloadFacadeService {
 		}
 
 		try {
+
 			// 커스텀 이미지일 때만 이미지 데이터 저장
 			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+			// 리소스 초과 알림
+			checkAndSendWorkspaceResourceOverAlert(moduleCreateWorkloadReqDTO, userInfoDTO);
 			// 워크로드 엔티티에 데이터 추가
-			workspaceAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
+			// workspaceAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
 		} catch (RestApiException e) {
 			e.printStackTrace();
 			throw e;
 		}
-
 	}
 
-	private void saveCustomImageAndRequestSetImageId(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO) {
-		ModuleImageReqDTO imageDTO = moduleCreateWorkloadReqDTO.getImage();
-		if (imageDTO.getType() == ImageType.CUSTOM && ObjectUtils.isEmpty(imageDTO.getId())) {
-			// Image ID가 없으면 커스텀 이미지로 등록
-			ImageReqDTO.SaveImage saveImageReqDTO = ImageReqDTO.SaveImage.createCustomImageBuilder()
-				.imageName(imageDTO.getName())
-				.repositoryAuthType(imageDTO.getRepositoryAuthType())
-				.imageType(imageDTO.getType())
-				.workloadType(moduleCreateWorkloadReqDTO.getWorkloadType())
-				.credentialId(moduleCreateWorkloadReqDTO.getImage().getCredentialId())
-				.build();
-			Long saveImageId = imageService.saveImage(saveImageReqDTO);
-			moduleCreateWorkloadReqDTO.getImage().setId(saveImageId);
+	private void checkAndSendWorkspaceResourceOverAlert(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
+			moduleCreateWorkloadReqDTO.getWorkspace());
+		// CPU
+		float cpuUsed = Float.parseFloat(workspaceResourceStatus.getResourceStatus().getCpuUsed());
+		if (cpuUsed != 0.0f) {
+			cpuUsed = cpuUsed / 1000.0f;
 		}
-	}
+		boolean isCpuOverResource = isOverResource(String.valueOf(cpuUsed),
+			moduleCreateWorkloadReqDTO.getCpuRequest(), workspaceResourceStatus.getResourceStatus().getCpuLimit());
+		// GPU
+		boolean isGpuOverResource = isOverResource(workspaceResourceStatus.getResourceStatus().getGpuUsed(),
+			moduleCreateWorkloadReqDTO.getGpuRequest(), workspaceResourceStatus.getResourceStatus().getGpuLimit());
+		// MEM
+		float memUsed = Float.parseFloat(workspaceResourceStatus.getResourceStatus().getMemUsed());
+		if (memUsed != 0.0f) {
+			memUsed = memUsed / 1000.0f;
+		}
+		boolean isMemOverResource = isOverResource(String.valueOf(memUsed), moduleCreateWorkloadReqDTO.getMemRequest(), workspaceResourceStatus.getResourceStatus().getMemLimit());
 
-	/* 코드 엔티티에 데이터 추가 & 추가된 엔티티 ID request에 set */
-	private void saveCodeAndRequestSetCodeId(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO) {
-		for (ModuleCodeReqDTO moduleCodeReqDTO : moduleCreateWorkloadReqDTO.getCodes()) {
-			if (moduleCodeReqDTO.getRepositoryType() == RepositoryType.USER) {
-				CodeReqDTO codeReqDTO = new CodeReqDTO(moduleCodeReqDTO);
-				CodeResDTO codeResDTO = codeService.saveCode(codeReqDTO);
-				moduleCodeReqDTO.setCodeId(codeResDTO.getId());
-			}
+		if (isCpuOverResource || isGpuOverResource || isMemOverResource) {
+			SystemAlertMessage workspaceResourceOverAdmin = SystemAlertMessage.WORKSPACE_RESOURCE_OVER_ADMIN;
+			String mailTitle = String.format(workspaceResourceOverAdmin.getMailTitle(), workspaceResourceStatus.getName());
+			String title = workspaceResourceOverAdmin.getTitle();
+			String message = String.format(workspaceResourceOverAdmin.getMessage(), workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getName());
+
+			eventPublisher.publishEvent(
+				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), userInfoDTO.getUserName(),
+					userInfoDTO.getUserFullName(), mailTitle, title, message));
 		}
 	}
 
@@ -225,11 +235,6 @@ public class WorkloadFacadeService {
 			ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 				workspaceName, workloadResourceName);
 			return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-			// if (moduleInteractiveJobResDTO.getStatus() != WorkloadStatus.END) {
-			// 	return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-			// } else {
-			// 	return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
-			// }
 		} else {
 			return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
 		}
@@ -284,7 +289,7 @@ public class WorkloadFacadeService {
 		UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
 			emailTitle, title, message, workspaceName);
 
-		publisher.publishEvent(userAlertEvent);
+		eventPublisher.publishEvent(userAlertEvent);
 
 	}
 
@@ -401,9 +406,13 @@ public class WorkloadFacadeService {
 
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
 		if (workloadType == WorkloadType.BATCH) {
-			workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(), workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
+			workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
+				workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+				workloadUpdateDTO.getDescription());
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(), workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
+			workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
+				workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+				workloadUpdateDTO.getDescription());
 		}
 	}
 
@@ -629,7 +638,7 @@ public class WorkloadFacadeService {
 			.regUserName(findImage.getRegUserName())
 			.regUserRealName(findImage.getRegUserRealName())
 			.regDate(findImage.getRegDate())
-			.title(StringUtils.hasText(findImage.getTitle())? findImage.getTitle() : findImage.getImageName())
+			.title(StringUtils.hasText(findImage.getTitle()) ? findImage.getTitle() : findImage.getImageName())
 			.id(findImage.getId())
 			.name(findImage.getImageName())
 			.type(findImage.getImageType())
@@ -744,5 +753,11 @@ public class WorkloadFacadeService {
 		}
 
 		return codes;
+	}
+
+	private boolean isOverResource(String workspaceResourceUsed, float createWorkloadResourceUsed, String workspaceResourceLimit) {
+		float totalUsed = Float.parseFloat(workspaceResourceUsed) + createWorkloadResourceUsed;
+		float resourceLimit = Float.parseFloat(workspaceResourceLimit);
+		return totalUsed > resourceLimit;
 	}
 }

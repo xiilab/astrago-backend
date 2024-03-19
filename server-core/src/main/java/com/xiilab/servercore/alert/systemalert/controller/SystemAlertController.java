@@ -57,7 +57,7 @@ public class SystemAlertController {
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO,
 		@RequestParam(value = "systemAlertType", required = false) SystemAlertType systemAlertType,
 		@RequestParam(value = "readYn", required = false) ReadYN readYN,
-		Pageable pageable) {
+		@RequestParam(required = false) Pageable pageable) {
 		return new ResponseEntity<>(alertService.getSystemAlerts(userInfoDTO.getId(), systemAlertType, readYN, pageable),
 			HttpStatus.OK);
 	}
