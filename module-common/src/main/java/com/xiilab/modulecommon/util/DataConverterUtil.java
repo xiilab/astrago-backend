@@ -129,35 +129,13 @@ public class DataConverterUtil {
 
 	// 메모리 요청의 단위를 킬로바이트(KiB)로 변환하는 메서드
 	public static long convertToKiB(String amount, String format) {
-		switch (format) {
-			case "Gi":
-				return Long.parseLong(amount) * 1024 * 1024; // GiB -> KiB
-			case "G":
-				return Long.parseLong(amount) * 1024 * 1024; // GB -> KiB
-			case "Mi":
-				return Long.parseLong(amount) * 1024; // MiB -> KiB
-			case "M":
-				return Long.parseLong(amount) * 1024; // MB -> KiB
-			default:
-				return Long.parseLong(amount); // 기본적으로 KiB로 가정
-		}
-	}
-	// 메모리의 단위를 변환하는 메서드
-	public static String convertToMemorySize(String amount) {
-		double doubleValue = Double.parseDouble(amount); // 부동 소수점으로 파싱
-		long size = (long) doubleValue;
-		long target = (long) doubleValue;
-		if (size >= TERA_BYTE) {
-			return String.format("%.2f GB", (double) target / TERA_BYTE);
-		} else if (size >= GIGA_BYTE) {
-			return String.format("%.2f GB", (double) target / GIGA_BYTE);
-		} else if (size >= MEGA_BYTE) {
-			return String.format("%.2f MB", (double) target / MEGA_BYTE);
-		} else if (size >= KILO_BYTE) {
-			return String.format("%.2f KB", (double) target / KILO_BYTE);
-		} else {
-			return size + " Bytes";
-		}
+		return switch (format) {
+			case "Gi" -> Long.parseLong(amount) * 1024 * 1024; // GiB -> KiB
+			case "G" -> Long.parseLong(amount) * 1024 * 1024; // GB -> KiB
+			case "Mi" -> Long.parseLong(amount) * 1024; // MiB -> KiB
+			case "M" -> Long.parseLong(amount) * 1024; // MB -> KiB
+			default -> Long.parseLong(amount); // 기본적으로 KiB로 가정
+		};
 	}
 	// 메모리의 단위를 변환하는 메서드
 	public static double convertToGBMemorySize(String amount) {
@@ -165,25 +143,6 @@ public class DataConverterUtil {
 		return doubleValue / GIGA_BYTE;
 	}
 
-	/**
-	 * DISK 사이즈 계산하는 메소드
-	 * @param bytes 계산될 Bytes
-	 */
-	public static String formatDiskSize(String bytes) {
-		double doubleValue = Double.parseDouble(bytes); // 부동 소수점으로 파싱
-		long size = (long) doubleValue;
-		if (size >= TERA_BYTE) {
-			return String.format("%.2f TB", (double) size / TERA_BYTE);
-		} else if (size >= GIGA_BYTE) {
-			return String.format("%.2f GB", (double) size / GIGA_BYTE);
-		} else if (size >= MEGA_BYTE) {
-			return String.format("%.2f MB", (double) size / MEGA_BYTE);
-		} else if (size >= KILO_BYTE) {
-			return String.format("%.2f KB", (double) size / KILO_BYTE);
-		} else {
-			return size + " Bytes";
-		}
-	}
 	/**
 	 * DISK 사이즈 계산하는 메소드
 	 * @param bytes 계산될 Bytes
@@ -271,6 +230,24 @@ public class DataConverterUtil {
 			throw new RuntimeException(e);
 		}
 	}
+	public static long getSystemStep(String startDate, String endDate) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+		try {
+			Date start = sdf.parse(startDate);
+			Date end = sdf.parse(endDate);
+
+			// Date -> 밀리세컨즈
+			long timeMil1 = start.getTime();
+			long timeMil2 = end.getTime();
+			long setp = (timeMil2 - timeMil1)  / 100;
+
+			return setp;
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * 알림 발생시간 생성하는 메소드
 	 * @return 발생된 시간 "2월 24일 금요일 오후 4:21"
@@ -283,6 +260,14 @@ public class DataConverterUtil {
 	public static LocalDateTime dataFormatterByStr(String date){
 		if(!StringUtils.isEmpty(date)){
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+			return LocalDateTime.parse(date, formatter);
+		}else {
+			return null;
+		}
+	}
+	public static LocalDateTime dataFormatterBy16Str(String date){
+		if(!StringUtils.isEmpty(date)){
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
 			return LocalDateTime.parse(date, formatter);
 		}else {
 			return null;
@@ -306,7 +291,7 @@ public class DataConverterUtil {
 		LocalDateTime endDate;
 		ReportType type = ReportType.valueOf(reportType);
 		if(type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)){
-			endDate = dateTime.minusWeeks(1);
+			endDate = dateTime.minusDays(6);
 		}else{
 			endDate= dateTime.minusMonths(1);
 		}
@@ -321,5 +306,18 @@ public class DataConverterUtil {
 		}else{
 			return 16000L;
 		}
+	}
+
+	public static String dateFormatMMDD(String dateString){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date date = sdf.parse(dateString);
+			SimpleDateFormat monthDayFormat = new SimpleDateFormat("MM-dd");
+			return monthDayFormat.format(date);
+		} catch (ParseException e) {
+			throw new RuntimeException("날짜 형식이 올바르지 않습니다.", e);
+		}
+
 	}
 }

@@ -65,15 +65,39 @@ public class PrometheusServiceImpl implements PrometheusService{
 	}
 
 	@Override
-	public long getHistoryMetricByReport(String promql, String startDate, String endDateUnixTime, long step) {
+	public long getHistoryMetricByReport(String promql, String startDateUnixTime, String endDate, long step) {
 
 		// 검색시간 UnixTime로 변환
-		String startDateUnixTime = DataConverterUtil.toUnixTime(startDate);
+		String endDateUnixTime = DataConverterUtil.toUnixTime(endDate);
 
 		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
-			endDateUnixTime, startDateUnixTime, 4000L);
+			startDateUnixTime, endDateUnixTime, 4000L);
 		return getAvgHistoryMetric(historyMetric);
 	}
+
+	@Override
+	public List<ResponseDTO.HistoryDTO> getHistoryMetricBySystem(String promql, String startDate, String endDate) {
+
+		long systemStep = DataConverterUtil.getSystemStep(startDate, endDate);
+		// 2024.02.03(start) ~ 2024.02.15(end)
+		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
+		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
+
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(), startUnixTime, endUnixTime, systemStep);
+
+		return extractHistoryMetrics(historyMetric, promql);
+	}
+
+	@Override
+	public List<ResponseDTO.HistoryDTO> getHistoryMetricByWarning(String promql, String startDate, String endDate) {
+		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
+		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
+
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(), startUnixTime, endUnixTime, 86400L);
+
+		return extractHistoryMetrics(historyMetric, promql);
+	}
+
 
 	@Override
 	public ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate, String resourceName) {
@@ -249,6 +273,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			.modelName(DataConverterUtil.getStringOrNull(metricData, "modelName"))
 			.podName(DataConverterUtil.getStringOrNull(metricData, "pod"))
 			.nodeName(DataConverterUtil.getStringOrNull(metricData, "node"))
+			.prettyName(DataConverterUtil.getStringOrNull(metricData, "pretty_name"))
 			.valueDTOS(createHistoryValue(values))
 			.build();
 	}
@@ -309,7 +334,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			}
 		}
 		if (requestDTO.podName() != null && !requestDTO.podName().isBlank()) {
-			result = result + "pod=\"" + requestDTO.podName() + "\"";
+			result = result + "pod=~\"" + requestDTO.podName() + "\"";
 		}
 		return String.format(promql.getQuery(), result.toLowerCase());
 	}

@@ -35,6 +35,7 @@ public record ResponseDTO() {
 							 String modelName,
 							 String gpuIndex,
 							 String instance,
+							 String prettyName,
 							 List<ValueDTO> valueDTOS
 	) {
 
