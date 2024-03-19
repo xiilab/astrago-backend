@@ -157,6 +157,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					String categoryType = labels.get("alertname").toString();
 					// 해당 ID 조회
 					long id = Long.parseLong(labels.get("ruleName").toString().split("-")[1]);
+
 					AlertManagerEntity alertManagerEntity = repository.findById(id).orElse(null);
 
 					// 임계값 소수점 2자까지
