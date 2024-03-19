@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
+import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulek8s.config.K8sAdapter;
 
 import io.fabric8.kubernetes.api.model.Node;
@@ -48,12 +49,12 @@ public class NodeInformer {
 							String node1MIGStatus = node1.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 							String node2MIGStatus = node2.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 							if (!node1MIGStatus.equals(node2MIGStatus)) {
-								String message = switch (node2MIGStatus) {
-									case "success" -> String.format("node %S의 MIG 설정이 완료되었습니다.", node2.getMetadata().getName());
-									case "pending" -> String.format("node %S이 MIG 설정을 위해 대기중입니다.", node2.getMetadata().getName());
-									case "rebooting" -> String.format("node %S이 MIG 설정을 위해 재부팅중입니다.", node2.getMetadata().getName());
-									case "failed" -> String.format("node %S의 MIG 설정이 실패하였습니다.", node2.getMetadata().getName());
-									default -> null;
+								MigStatus migStatus = MigStatus.valueOf(node2MIGStatus.toUpperCase());
+								String message = switch (migStatus) {
+									case SUCCESS -> String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
+									case PENDING -> String.format("node %S이 MIG 적용이 시작되었습니다.", node2.getMetadata().getName());
+									case FAILED -> String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
+									case REBOOTING -> String.format("node %S의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.", node2.getMetadata().getName());
 								};
 								log.info(message);
 							}
