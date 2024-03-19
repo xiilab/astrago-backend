@@ -403,10 +403,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public WorkspaceResourceSettingDTO getWorkspaceResourceSetting(UserInfoDTO userInfoDTO) {
-		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
-			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
-		}
+	public WorkspaceResourceSettingDTO getWorkspaceResourceSetting() {
 		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
 		return new WorkspaceResourceSettingDTO(
 			workspaceSettingEntity.getCpu(),

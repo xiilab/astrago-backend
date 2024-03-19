@@ -55,6 +55,6 @@ public interface WorkspaceFacadeService {
 
 	WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name);
 	ClusterResourceCompareDTO requestResourceComparedClusterResource();
-	WorkspaceResourceSettingDTO getWorkspaceResourceSetting(UserInfoDTO userInfoDTO);
+	WorkspaceResourceSettingDTO getWorkspaceResourceSetting();
 	void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO, UserInfoDTO userInfoDTO);
 }
