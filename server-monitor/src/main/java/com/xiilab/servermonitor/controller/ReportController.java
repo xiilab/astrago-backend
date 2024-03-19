@@ -133,4 +133,21 @@ public class ReportController {
 		return new ResponseEntity<>(reportFacadeService.getSystemDiskUsage(endDate, reportType), HttpStatus.OK);
 	}
 
+	@GetMapping("/system/nodeSystemUsage")
+	@Operation(summary = "노드별 시스템 사용 현황")
+	public ResponseEntity<List<ReportDTO.SystemResDTO>> getNodeSystemUsage(
+		@RequestParam(name = "endDate") String endDate,
+		@RequestParam(name = "reportType") String reportType) {
+
+		return new ResponseEntity<>(reportFacadeService.getNodeSystemUsage(endDate, reportType), HttpStatus.OK);
+	}
+
+	@GetMapping("/system/nodeGpuUsage")
+	@Operation(summary = "노드별 GPU 사용 현황")
+	public ResponseEntity<List<ReportDTO.SystemGpuDTO>> getNodeGpuUsage(
+		@RequestParam(name = "endDate") String endDate,
+		@RequestParam(name = "reportType") String reportType) {
+
+		return new ResponseEntity<>(reportFacadeService.getNodeGpuUsage(endDate, reportType), HttpStatus.OK);
+	}
 }

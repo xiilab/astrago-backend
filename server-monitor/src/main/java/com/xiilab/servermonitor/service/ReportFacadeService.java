@@ -31,4 +31,8 @@ public interface ReportFacadeService {
 
 	List<ReportDTO.SystemResDTO> getSystemDiskUsage(String endDate, String reportType);
 
+	List<ReportDTO.SystemResDTO> getNodeSystemUsage(String endDate, String reportType);
+
+	List<ReportDTO.SystemGpuDTO> getNodeGpuUsage(String endDate, String reportType);
+
 }

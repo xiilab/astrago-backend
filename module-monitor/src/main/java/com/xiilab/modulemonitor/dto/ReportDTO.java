@@ -119,6 +119,7 @@ public class ReportDTO {
 	@AllArgsConstructor
 	public static class SystemResDTO {
 		private String serverName;
+		private String ip;
 		private List<SystemCategoryDTO> categoryDTOS;
 	}
 
