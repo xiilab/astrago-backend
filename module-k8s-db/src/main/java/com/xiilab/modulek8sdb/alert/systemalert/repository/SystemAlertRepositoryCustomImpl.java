@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 
@@ -27,19 +28,21 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, Pageable pageable) {
+	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN, Pageable pageable) {
 		Long totalCount = queryFactory.select(systemAlertEntity.count())
 			.from(systemAlertEntity)
 			.where(
 				eqRecipientId(recipientId),
-				eqSystemAlertType(systemAlertType)
+				eqSystemAlertType(systemAlertType),
+				eqReadYn(readYN)
 			)
 			.fetchOne();
 
 		JPAQuery<SystemAlertEntity> query = queryFactory.selectFrom(systemAlertEntity)
 			.where(
 				eqRecipientId(recipientId),
-				eqSystemAlertType(systemAlertType)
+				eqSystemAlertType(systemAlertType),
+				eqReadYn(readYN)
 			);
 
 		if (pageable != null) {
@@ -55,10 +58,14 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	}
 
 	private BooleanExpression eqRecipientId(String recipientId) {
-		return !StringUtils.hasText(recipientId)? systemAlertEntity.recipientId.eq(recipientId) : null;
+		return StringUtils.hasText(recipientId)? systemAlertEntity.recipientId.eq(recipientId) : null;
 	}
 
 	private BooleanExpression eqSystemAlertType(SystemAlertType systemAlertType) {
 		return !ObjectUtils.isEmpty(systemAlertType) && systemAlertType != SystemAlertType.ALL? systemAlertEntity.systemAlertType.eq(systemAlertType) : null;
+	}
+
+	private BooleanExpression eqReadYn(ReadYN readYN) {
+		return !ObjectUtils.isEmpty(readYN)? systemAlertEntity.readYN.eq(readYN) : null;
 	}
 }

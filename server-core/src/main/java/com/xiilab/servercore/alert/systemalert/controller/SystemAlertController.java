@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
@@ -51,10 +52,14 @@ public class SystemAlertController {
 	}
 
 	@GetMapping()
-	@Operation(summary = "System Alert 리스트 조회")
+	@Operation(summary = "헤더 알림 목록 조회")
 	public ResponseEntity<FindSystemAlertResDTO.SystemAlerts> getSystemAlerts(
-		@RequestParam(value = "recipientId") String recipientId, @RequestParam(value = "systemAlertType", required = false) SystemAlertType systemAlertType, Pageable pageable) {
-		return new ResponseEntity<>(alertService.getSystemAlerts(recipientId, systemAlertType, pageable), HttpStatus.OK);
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO,
+		@RequestParam(value = "systemAlertType") SystemAlertType systemAlertType,
+		@RequestParam(value = "readYn") ReadYN readYN,
+		Pageable pageable) {
+		return new ResponseEntity<>(alertService.getSystemAlerts(userInfoDTO.getId(), systemAlertType, readYN, pageable),
+			HttpStatus.OK);
 	}
 
 	@PatchMapping("/read/{id}")
@@ -73,40 +78,46 @@ public class SystemAlertController {
 
 	@GetMapping("/init")
 	@Operation(summary = "관리자 알림 설정 초기값 세팅")
-	public ResponseEntity<Void> initializeAdminAlertMappingSettings(UserInfoDTO userInfoDTO) {
+	public ResponseEntity<Void> initializeAdminAlertMappingSettings(@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		alertService.initializeAdminAlertMappingSettings(userInfoDTO.getId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/admin")
 	@Operation(summary = "관리자 알림관리 설정 목록 조회")
-	public ResponseEntity<FindAdminAlertMappingResDTO.AdminAlertMappings> findAdminAlertMappings(UserInfoDTO userInfoDTO) {
+	public ResponseEntity<FindAdminAlertMappingResDTO.AdminAlertMappings> findAdminAlertMappings(
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		return new ResponseEntity<>(alertService.findAdminAlertMappings(userInfoDTO.getId()), HttpStatus.OK);
 	}
 
 	@PutMapping("/admin")
 	@Operation(summary = "관리자 알림관리 설정 목록 저장")
-	public ResponseEntity<Void> saveAdminAlertMapping(UserInfoDTO userInfoDTO, @RequestBody List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
+	public ResponseEntity<Void> saveAdminAlertMapping(@Parameter(hidden = true) UserInfoDTO userInfoDTO,
+		@RequestBody List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
 		alertService.saveAdminAlertMapping(userInfoDTO.getId(), saveAdminAlertMappings);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/users/ws/{workspaceResourceName}/alerts")
 	@Operation(summary = "사용자 워크스페이스 알림 설정 목록 조회")
-	public ResponseEntity<List<WorkspaceAlertMappingDTO>> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+	public ResponseEntity<List<WorkspaceAlertMappingDTO>> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		List<WorkspaceAlertMappingDTO> alerts = alertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(
 			workspaceResourceName, userInfoDTO);
 		return new ResponseEntity<>(alerts, HttpStatus.OK);
 	}
+
 	@PatchMapping("/users/ws/{workspaceResourceName}/alerts/{alertId}")
 	@Operation(summary = "사용자 워크스페이스 알림 ON/OFF")
-	public ResponseEntity<HttpStatus> modifyWorkspaceAlertMapping(@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+	public ResponseEntity<HttpStatus> modifyWorkspaceAlertMapping(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
 		@PathVariable(name = "alertId") String alertId,
 		ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO
-		){
-		alertService.modifyWorkspaceAlertMapping(alertId, workspaceResourceName, modifyWorkspaceAlertMapping, userInfoDTO);
+	) {
+		alertService.modifyWorkspaceAlertMapping(alertId, workspaceResourceName, modifyWorkspaceAlertMapping,
+			userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

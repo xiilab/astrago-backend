@@ -1,12 +1,16 @@
 package com.xiilab.servercore.alert.systemalert.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
@@ -65,11 +69,45 @@ public class AlertServiceImpl implements AlertService {
 
 	@Override
 	public FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String recipientId, SystemAlertType systemAlertType,
-		Pageable pageable) {
+		ReadYN readYN, Pageable pageable) {
+		// 각 타입 카운트를 저장할 map
+		Map<SystemAlertType, Long> allAlertTypeCountMap = new HashMap<>();
+		SystemAlertType[] values = SystemAlertType.values();
+		for (int i = 0; i < values.length; i++) {
+			if (values[i] != SystemAlertType.ALL) {
+				allAlertTypeCountMap.put(values[i], 0L);
+			}
+		}
+
+		// 전체 목록 조회 AlterType별 카운팅
+		Page<SystemAlertEntity> allSystemAlertEntities = systemAlertRepository.findAlerts(recipientId,
+			SystemAlertType.ALL, readYN, null);
+		for (SystemAlertEntity allSystemAlertEntity : allSystemAlertEntities.getContent()) {
+			// 각 알람 타입별로 카운트 증가
+			allAlertTypeCountMap.merge(allSystemAlertEntity.getSystemAlertType(), 1L, Long::sum);
+		}
+
+		// 페이징 처리
+		PageRequest pageRequest = null;
+		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
+			pageable.getPageSize())) {
+			pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize());
+		}
+
+		// 항목별 조회 API
 		Page<SystemAlertEntity> systemAlertEntities = systemAlertRepository.findAlerts(recipientId, systemAlertType,
-			pageable);
+			readYN,
+			pageRequest);
 		return FindSystemAlertResDTO.SystemAlerts.from(systemAlertEntities.getContent(),
-			systemAlertEntities.getTotalElements());
+			allSystemAlertEntities.getTotalElements(),
+			allAlertTypeCountMap.get(SystemAlertType.USER),
+			allAlertTypeCountMap.get(SystemAlertType.WORKSPACE),
+			allAlertTypeCountMap.get(SystemAlertType.WORKLOAD),
+			allAlertTypeCountMap.get(SystemAlertType.LICENSE),
+			allAlertTypeCountMap.get(SystemAlertType.NODE),
+			allAlertTypeCountMap.get(SystemAlertType.MEMBER),
+			allAlertTypeCountMap.get(SystemAlertType.RESOURCE)
+		);
 	}
 
 	@Override
@@ -142,15 +180,17 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
-	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(String workspaceResourceName, UserInfoDTO userInfoDTO){
+	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(
+		String workspaceResourceName, UserInfoDTO userInfoDTO) {
 		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(
 			workspaceResourceName);
 		//워크스페이스 접근 권한 없음
-		if(!accessAuthorityWorkspace){
+		if (!accessAuthorityWorkspace) {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
 		}
 		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
-		return workspaceAlertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(userInfoDTO.getId(), workspaceResourceName,
+		return workspaceAlertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(userInfoDTO.getId(),
+			workspaceResourceName,
 			workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER);
 	}
 
@@ -163,17 +203,19 @@ public class AlertServiceImpl implements AlertService {
 	 */
 	@Override
 	@Transactional
-	public void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName, ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
+	public void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName,
+		ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
 		UserInfoDTO userInfoDTO) {
 		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(
 			workspaceResourceName);
 		//워크스페이스 접근 권한 없음
-		if(!accessAuthorityWorkspace){
+		if (!accessAuthorityWorkspace) {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
 		}
 		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
 		AlertRole alertRole = workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER;
-		workspaceAlertService.modifyWorkspaceAlertMapping(alertId, alertRole, modifyWorkspaceAlertMapping.getAlertSendType(),
+		workspaceAlertService.modifyWorkspaceAlertMapping(alertId, alertRole,
+			modifyWorkspaceAlertMapping.getAlertSendType(),
 			modifyWorkspaceAlertMapping.getAlertStatus(), userInfoDTO.getId());
 	}
 }

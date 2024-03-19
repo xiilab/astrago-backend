@@ -1,9 +1,12 @@
 package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
+import java.time.LocalDateTime;
+
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,9 +22,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "TB_SYSTEM_ALERT")
-@Builder
+// @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+// @AllArgsConstructor
 @Getter
 public class SystemAlertEntity extends BaseEntity {
 	@Id
@@ -46,7 +49,20 @@ public class SystemAlertEntity extends BaseEntity {
 	@Column(name = "READ_YN")
 	private ReadYN readYN;
 
-
+	@Builder
+	public SystemAlertEntity(RegUser regUser, LocalDateTime regDate,
+		LocalDateTime modDate, Long id, String title, String message, String recipientId, String senderId,
+		SystemAlertType systemAlertType, SystemAlertEventType systemAlertEventType, ReadYN readYN) {
+		super(regUser, regDate, modDate);
+		this.id = id;
+		this.title = title;
+		this.message = message;
+		this.recipientId = recipientId;
+		this.senderId = senderId;
+		this.systemAlertType = systemAlertType;
+		this.systemAlertEventType = systemAlertEventType;
+		this.readYN = readYN;
+	}
 
 	public void readAlert(){
 		this.readYN = ReadYN.Y;

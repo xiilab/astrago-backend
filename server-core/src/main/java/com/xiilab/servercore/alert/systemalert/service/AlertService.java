@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 
+import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
@@ -15,7 +16,7 @@ import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDT
 public interface AlertService {
 	Long saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert saveSystemAlertReqDTO);
 	FindSystemAlertResDTO.SystemAlertDetail getSystemAlertById(Long id);
-	FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String recipientId, SystemAlertType systemAlertType, Pageable pageable);
+	FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN, Pageable pageable);
 	// 시스템 알림 읽기여부(N -> Y)로 변경
 	void readSystemAlert(Long id);
 	void deleteSystemAlertById(Long id);

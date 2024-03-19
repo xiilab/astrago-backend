@@ -6,5 +6,6 @@ import lombok.Getter;
 public enum SystemAlertEventType {
 	NOTIFICATION,
 	ERROR,
-	DELETE
+	DELETE,
+	USER
 }

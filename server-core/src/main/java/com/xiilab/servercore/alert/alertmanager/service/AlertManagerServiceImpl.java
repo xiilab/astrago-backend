@@ -13,6 +13,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,9 +29,13 @@ import com.xiilab.modulek8sdb.alert.alertmanager.enumeration.AlertManagerCategor
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerReceiveRepository;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepoCustom;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.UserService;
+import com.xiilab.servercore.alert.systemalert.event.AdminAlertEvent;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +48,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	private final AlertManagerRepository repository;
 	private final AlertManagerRepoCustom alertManagerRepoCustom;
 	private final UserService userService;
-
+	private final ApplicationEventPublisher eventPublisher;
 	@Override
 	@Transactional
 	public AlertManagerDTO.ResponseDTO saveAlertManager(AlertManagerDTO.RequestDTO requestDTO) {
@@ -182,6 +187,14 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(alertReceive.getKey());
 
 					// // 사용자 수신 설정에 따른 Email, System 분기
+					SystemAlertMessage nodeError = SystemAlertMessage.NODE_ERROR;
+					String mailTitle = nodeError.getMailTitle();
+					String title = nodeError.getTitle();
+					for(AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()){
+						String message = String.format(nodeError.getMessage(), alertManagerReceiveDTO.getNodeName());
+						// 노드 장애 알림 발송
+						eventPublisher.publishEvent(new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, null, null, mailTitle, title, message));
+					}
 					// if(findAlertManagerDTO.isEmailYN()){
 					// 	emailService.sendEmail(findAlertManagerDTO, alertReceive.getValue());
 					// }
