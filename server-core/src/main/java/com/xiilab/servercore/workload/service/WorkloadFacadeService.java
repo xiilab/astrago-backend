@@ -54,7 +54,7 @@ import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -94,7 +94,7 @@ public class WorkloadFacadeService {
 	private final CodeService codeService;
 	private final ImageService imageService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
-	private final SystemAlertService systemAlertService;
+	private final AlertService alertService;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -124,8 +124,7 @@ public class WorkloadFacadeService {
 
 		try {
 			// 커스텀 이미지일 때만 이미지 데이터 저장
-			CreateJobResDTO jobWorkload = workloadModuleFacadeService.createJobWorkload(
-				moduleCreateWorkloadReqDTO.toModuleDTO());
+			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 			// 워크로드 엔티티에 데이터 추가
 			workspaceAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
 		} catch (RestApiException e) {

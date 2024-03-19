@@ -3,12 +3,8 @@ package com.xiilab.modulek8sdb.alert.systemalert.enumeration;
 import lombok.Getter;
 
 @Getter
-public enum SystemAlertType {
+public enum AlertRole {
 	USER,
-	WORKSPACE,
-	WORKLOAD,
-	LICENSE,
-	NODE,
-	RESOURCE,
-	MEMBER
+	ADMIN,
+	OWNER,
 }
