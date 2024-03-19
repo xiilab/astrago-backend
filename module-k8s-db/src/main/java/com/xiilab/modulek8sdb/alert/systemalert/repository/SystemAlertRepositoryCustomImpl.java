@@ -1,7 +1,6 @@
 package com.xiilab.modulek8sdb.alert.systemalert.repository;
 
 import static com.xiilab.modulek8sdb.alert.systemalert.entity.QSystemAlertEntity.*;
-import static com.xiilab.modulek8sdb.hub.entity.QHubEntity.*;
 
 import java.util.List;
 
@@ -62,7 +61,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	}
 
 	private BooleanExpression eqSystemAlertType(SystemAlertType systemAlertType) {
-		return !ObjectUtils.isEmpty(systemAlertType) && systemAlertType != SystemAlertType.ALL? systemAlertEntity.systemAlertType.eq(systemAlertType) : null;
+		return !ObjectUtils.isEmpty(systemAlertType) ? systemAlertEntity.systemAlertType.eq(systemAlertType) : null;
 	}
 
 	private BooleanExpression eqReadYn(ReadYN readYN) {

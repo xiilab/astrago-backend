@@ -3,6 +3,8 @@ package com.xiilab.servercore.alert.systemalert.listener;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -10,18 +12,28 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
+import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertMappingRepository;
+import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.UserRepository;
 import com.xiilab.servercore.alert.systemalert.event.AdminAlertEvent;
+import com.xiilab.servercore.alert.systemalert.event.UserAlertEvent;
+import com.xiilab.servercore.alert.systemalert.event.WorkspaceAlertMappingDeleteEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

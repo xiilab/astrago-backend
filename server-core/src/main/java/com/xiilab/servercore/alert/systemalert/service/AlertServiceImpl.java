@@ -74,14 +74,12 @@ public class AlertServiceImpl implements AlertService {
 		Map<SystemAlertType, Long> allAlertTypeCountMap = new HashMap<>();
 		SystemAlertType[] values = SystemAlertType.values();
 		for (int i = 0; i < values.length; i++) {
-			if (values[i] != SystemAlertType.ALL) {
-				allAlertTypeCountMap.put(values[i], 0L);
-			}
+			allAlertTypeCountMap.put(values[i], 0L);
 		}
 
 		// 전체 목록 조회 AlterType별 카운팅
 		Page<SystemAlertEntity> allSystemAlertEntities = systemAlertRepository.findAlerts(recipientId,
-			SystemAlertType.ALL, readYN, null);
+			null, readYN, null);
 		for (SystemAlertEntity allSystemAlertEntity : allSystemAlertEntities.getContent()) {
 			// 각 알람 타입별로 카운트 증가
 			allAlertTypeCountMap.merge(allSystemAlertEntity.getSystemAlertType(), 1L, Long::sum);

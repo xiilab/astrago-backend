@@ -55,8 +55,8 @@ public class SystemAlertController {
 	@Operation(summary = "헤더 알림 목록 조회")
 	public ResponseEntity<FindSystemAlertResDTO.SystemAlerts> getSystemAlerts(
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO,
-		@RequestParam(value = "systemAlertType") SystemAlertType systemAlertType,
-		@RequestParam(value = "readYn") ReadYN readYN,
+		@RequestParam(value = "systemAlertType", required = false) SystemAlertType systemAlertType,
+		@RequestParam(value = "readYn", required = false) ReadYN readYN,
 		Pageable pageable) {
 		return new ResponseEntity<>(alertService.getSystemAlerts(userInfoDTO.getId(), systemAlertType, readYN, pageable),
 			HttpStatus.OK);
