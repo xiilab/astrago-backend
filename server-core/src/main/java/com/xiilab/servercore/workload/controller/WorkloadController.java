@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,13 +22,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
-import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -38,9 +38,9 @@ import com.xiilab.servercore.hub.service.HubService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
@@ -85,6 +85,18 @@ public class WorkloadController {
 		return new ResponseEntity<>(
 			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, workloadStatus),
 			HttpStatus.OK);
+	}
+
+	@GetMapping("/{type}/event")
+	@Operation(summary = "워크로드 이벤트 리스트 조회")
+	public ResponseEntity<PageDTO<WorkloadEventDTO>> getWorkloadEventList(
+		@PathVariable("type") WorkloadType workloadType,
+		@RequestBody WorkloadEventReqDTO workloadEventDTO
+	) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadEvent(workloadType, workloadEventDTO),
+			HttpStatus.OK
+		);
 	}
 
 	@GetMapping("/jobList")
