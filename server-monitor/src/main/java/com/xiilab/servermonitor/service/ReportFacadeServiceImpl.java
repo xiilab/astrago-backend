@@ -203,10 +203,10 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 		List<ReportDTO.SystemGpuDTO> result = new ArrayList<>();
 
 		List<ResponseDTO.HistoryDTO> avgTemp = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_AVG_TEMP", startDate, endDate);
+			"REPORT_SYSTEM_AVG_GPU_TEMP", startDate, endDate);
 
 		List<ResponseDTO.HistoryDTO> maxTemp = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_MAX_TEMP", startDate, endDate);
+			"REPORT_SYSTEM_MAX_GPU_TEMP", startDate, endDate);
 
 		avgTemp.addAll(maxTemp);
 

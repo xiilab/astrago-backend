@@ -93,25 +93,25 @@ public class DbMonitorServiceImpl implements DbMonitorService{
 
 			for (Map.Entry<ResourceQuotaStatus, List<ResourceQuotaEntity>> entry2 : entry.getValue().entrySet()) {
 				List<ResourceQuotaEntity> value = entry2.getValue();
-				for (ResourceQuotaEntity tt : value) {
+				for (ResourceQuotaEntity resourceQuotaEntity : value) {
 					switch (entry2.getKey()) {
 						case REJECT -> {
-							gpuRefuseCount = gpuRefuseCount + tt.getGpuReq();
-							cpuRefuseCount = cpuRefuseCount + tt.getCpuReq();
-							memRefuseCount = memRefuseCount + tt.getMemReq();
+							gpuRefuseCount = gpuRefuseCount + resourceQuotaEntity.getGpuReq();
+							cpuRefuseCount = cpuRefuseCount + resourceQuotaEntity.getCpuReq();
+							memRefuseCount = memRefuseCount + resourceQuotaEntity.getMemReq();
 						}
 						case APPROVE -> {
-							gpuApproval = gpuApproval + tt.getGpuReq();
-							cpuApproval = cpuApproval + tt.getCpuReq();
-							memApproval = memApproval + tt.getMemReq();
+							gpuApproval = gpuApproval + resourceQuotaEntity.getGpuReq();
+							cpuApproval = cpuApproval + resourceQuotaEntity.getCpuReq();
+							memApproval = memApproval + resourceQuotaEntity.getMemReq();
 						}
 						case WAITING -> {
-							gpuRequest = gpuRequest + tt.getGpuReq();
-							cpuRequest = cpuRequest + tt.getCpuReq();
-							memRequest = memRequest + tt.getMemReq();
+							gpuRequest = gpuRequest + resourceQuotaEntity.getGpuReq();
+							cpuRequest = cpuRequest + resourceQuotaEntity.getCpuReq();
+							memRequest = memRequest + resourceQuotaEntity.getMemReq();
 						}
 					}
-					userName = tt.getRegUser().getRegUserName();
+					userName = resourceQuotaEntity.getRegUser().getRegUserName() + resourceQuotaEntity.getRegUser().getRegUserRealName();
 				}
 			}
 
