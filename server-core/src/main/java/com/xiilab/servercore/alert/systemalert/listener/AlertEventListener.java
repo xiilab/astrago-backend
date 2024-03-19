@@ -53,15 +53,15 @@ public class AlertEventListener {
 	private final ApplicationEventPublisher publisher;
 
 	@Async
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
 	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
 		log.info("관리자[{}] 알림 발송!", adminAlertEvent.title());
 		try {
-			String REG_USER_ID = "SYSTEM";
-			String REG_USER_NAME = "시스템";
-			RegUser regUser = new RegUser(adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : REG_USER_ID,
-				adminAlertEvent.senderUserName() != null? adminAlertEvent.senderUserName() : REG_USER_NAME,
-				adminAlertEvent.senderUserRealName() != null? adminAlertEvent.senderUserRealName() : REG_USER_NAME);
+			String regUserID = adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : "SYSTEM";
+			String regUserName = "시스템";
+			RegUser regUser = new RegUser(regUserID,
+				adminAlertEvent.senderUserName() != null? adminAlertEvent.senderUserName() : regUserName,
+				adminAlertEvent.senderUserRealName() != null? adminAlertEvent.senderUserRealName() : regUserName);
 
 			// AlertRole, Alert 이름으로 ID 조회
 			AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(), AlertRole.ADMIN).orElseThrow();
@@ -80,7 +80,7 @@ public class AlertEventListener {
 						.title(adminAlertEvent.title())
 						.message(adminAlertEvent.message())
 						.recipientId(findUser.getId())
-						.senderId(adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : REG_USER_ID)
+						.senderId(regUserID)
 						.systemAlertType(findAlert.getAlertType())
 						.systemAlertEventType(findAlert.getSystemAlertEventType())
 						.readYN(ReadYN.N)
