@@ -26,6 +26,7 @@ import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
@@ -37,6 +38,7 @@ import com.xiilab.servercore.hub.service.HubService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
@@ -82,6 +84,18 @@ public class WorkloadController {
 		return new ResponseEntity<>(
 			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName),
 			HttpStatus.OK);
+	}
+
+	@GetMapping("/{type}/event")
+	@Operation(summary = "워크로드 이벤트 리스트 조회")
+	public ResponseEntity<PageDTO<WorkloadEventDTO>> getWorkloadEventList(
+		@PathVariable("type") WorkloadType workloadType,
+		@RequestBody WorkloadEventReqDTO workloadEventDTO
+	) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadEvent(workloadType, workloadEventDTO),
+			HttpStatus.OK
+		);
 	}
 
 	@GetMapping("/jobList")

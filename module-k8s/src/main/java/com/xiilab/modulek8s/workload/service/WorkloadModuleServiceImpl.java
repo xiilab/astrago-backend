@@ -26,12 +26,12 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
 import lombok.RequiredArgsConstructor;
@@ -341,5 +341,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
 		String description) {
 		workloadRepository.editInteractiveJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
+	public List<Event> getWorkloadEventList(String workloadName, String workspace, WorkloadType workloadType) {
+		Pod jobPod = getJobPod(workspace, workloadName, workloadType);
+		return workloadRepository.getWorkloadEventList(jobPod.getMetadata().getName(), workspace);
 	}
 }
