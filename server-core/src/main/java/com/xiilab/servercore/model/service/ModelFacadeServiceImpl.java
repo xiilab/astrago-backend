@@ -210,10 +210,10 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 					case "png":
 						break;
 					default:
-						throw new RestApiException(ModelErrorCode.MODEL_PREVIEW_FAIL);
+						throw new RestApiException(ModelErrorCode.MODEL_NOT_SUPPORT_PREVIEW);
 				}
 			} else {
-				throw new RestApiException(ModelErrorCode.MODEL_PREVIEW_FAIL);
+				throw new RestApiException(ModelErrorCode.MODEL_NOT_SUPPORT_PREVIEW);
 			}
 			ByteArrayResource resource = new ByteArrayResource(fileContent);
 			MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(fileName);
@@ -309,10 +309,10 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 					.mediaType(contentType)
 					.build();
 			} else {
-				throw new RestApiException(ModelErrorCode.MODEL_PREVIEW_FAIL);
+				throw new RestApiException(ModelErrorCode.MODEL_NOT_SUPPORT_PREVIEW);
 			}
 		} else {
-			throw new RestApiException(ModelErrorCode.MODEL_PREVIEW_FAIL);
+			throw new RestApiException(ModelErrorCode.MODEL_NOT_SUPPORT_PREVIEW);
 		}
 	}
 

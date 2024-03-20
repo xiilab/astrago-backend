@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 // import com.xiilab.moduleuser.dto.SignUpMethod;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.WorkspaceRole;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -74,5 +75,23 @@ public class UserInfoDTO {
 			.map(group -> group.split("/")[0])
 			.toList();
 		return workspaces.contains(workspaceName);
+	}
+	// 일반 유저의 workspace 접근권한 체크
+	public boolean isAccessAuthorityWorkspaceNotAdmin(String workspaceName){
+		if(workspaces == null){
+			return false;
+		}
+		List<String> workspaces = this.workspaces.stream()
+			.filter(ws -> ws.contains("/owner") || ws.contains("/user"))
+			.map(group -> group.split("/")[0])
+			.toList();
+		return workspaces.contains(workspaceName);
+	}
+	public WorkspaceRole getWorkspaceAuthority(String workspaceName){
+		List<String> workspaces = this.workspaces.stream()
+			.filter(ws -> ws.contains("/owner"))
+			.map(group -> group.split("/")[0])
+			.toList();
+		return workspaces.contains(workspaceName) ? WorkspaceRole.ROLE_OWNER : WorkspaceRole.ROLE_USER;
 	}
 }

@@ -934,4 +934,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		return volumesMap;
 	}
 
+	// private InputStream copyFiles(String podName, String namespaceName, String dir) {
+	//
+	// }
+
 }

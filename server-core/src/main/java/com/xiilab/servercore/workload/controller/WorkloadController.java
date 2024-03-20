@@ -80,10 +80,9 @@ public class WorkloadController {
 	public ResponseEntity<FindWorkloadResDTO.WorkloadDetail> getWorkloadInfo(
 		@PathVariable("type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
-		@RequestParam("workloadResourceName") String workloadResourceName,
-		@RequestParam("workloadStatus") WorkloadStatus workloadStatus) {
+		@RequestParam("workloadResourceName") String workloadResourceName) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, workloadStatus),
+			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName),
 			HttpStatus.OK);
 	}
 

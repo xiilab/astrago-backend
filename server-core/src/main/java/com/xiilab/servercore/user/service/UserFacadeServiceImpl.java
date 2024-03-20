@@ -3,15 +3,18 @@ package com.xiilab.servercore.user.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.service.MailService;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
+// import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
@@ -20,7 +23,9 @@ import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
-import com.xiilab.servercore.alert.systemalert.service.SystemAlertService;
+import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 
 import io.micrometer.common.util.StringUtils;
@@ -31,47 +36,32 @@ import lombok.RequiredArgsConstructor;
 public class UserFacadeServiceImpl implements UserFacadeService {
 	private final UserService userService;
 	private final SystemAlertSetService alertSetService;
-	private final SystemAlertService alertService;
+	private final AlertService alertService;
 	private final MailService mailService;
 	@Value("${admin.id}")
 	private String adminId;
-
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
-	public UserInfo joinUser(UserReqVO userReqVO, String groupId) {
+	public void joinUser(UserReqVO userReqVO, String groupId) {
 		UserInfo userInfo = userService.joinUser(userReqVO);
 		if (StringUtils.isNotBlank(groupId)) {
 			userService.joinGroup(groupId, userInfo.getId());
-		}else {
+		} else {
 			userService.joinDefaultGroup(userInfo.getId());
 		}
 
-		SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
+		SystemAlertMessage userCreate = SystemAlertMessage.USER_CREATE;
+		String mailTitle = userCreate.getMailTitle();
+		String title = userCreate.getTitle();
+		String message = String.format(userCreate.getMessage(), userReqVO.getLastName() + userReqVO.getFirstName(),
+			userReqVO.getEmail());
+		// 회원가입 알림 메시지 발송
+		eventPublisher.publishEvent(
+			new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), userInfo.getUserName(),
+				userInfo.getLastName() + userInfo.getFirstName(), mailTitle, title, message));
 
-		if(systemAlertSet.isUserSystemYN()){
-			alertService.sendAlert(SystemAlertDTO.builder()
-					.recipientId(adminId)
-					.senderId("SYSTEM")
-					.title(SystemAlertMessage.USER_CREATE.getTitle())
-					.systemAlertType(SystemAlertType.USER)
-					.message(
-						String.format(
-							SystemAlertMessage.USER_CREATE.getMessage(),
-							userInfo.getLastName() + userInfo.getFirstName(),
-							userInfo.getEmail()
-						)
-					).build());
-		}
-		if(systemAlertSet.isUserEmailYN()){
-			UserInfo adminInfo = getUserInfoById(adminId);
-			mailService.sendMail(MailDTO.builder()
-					.title(SystemAlertMessage.USER_CREATE.getMailTitle())
-					.receiverEmail(userInfo.getEmail())
-				.build());
-		}
-
-		// return userService.getUserInfoById(userInfo.getId());
-		return userService.getUserInfoById(adminId);
+		// return userService.getUserInfoById(adminId);
 	}
 
 	@Override
@@ -107,14 +97,19 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void updateUserRole(String userId, AuthType authType) {
 		userService.updateUserRole(userId, authType);
+		// ADMIN 으로 권한 변경시, 설정 초기값 세팅
+		if (authType == AuthType.ROLE_ADMIN) {
+			alertService.initializeAdminAlertMappingSettings(userId);
+		}
 	}
 
 	@Override
 	public void deleteUserById(List<String> userIdList) {
 		userService.deleteUserById(userIdList);
 	}
+
 	@Override
-	public List<SearchDTO> getUserAndGroupBySearch(String search){
+	public List<SearchDTO> getUserAndGroupBySearch(String search) {
 		return userService.getUserAndGroupBySearch(search);
 	}
 
@@ -129,26 +124,26 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO) {
 		userService.updateUserInfoById(id, updateUserDTO);
 		UserInfo userInfo = userService.getUserInfoById(id);
 
 		SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
 
-		if(systemAlertSet.isUserSystemYN()){
-			alertService.sendAlert(SystemAlertDTO.builder()
+		if (systemAlertSet.isUserSystemYN()) {
+			alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
+				.title(SystemAlertMessage.USER_UPDATE.getTitle())
+				.message(String.format(
+					SystemAlertMessage.USER_UPDATE.getMessage(),
+					userInfo.getLastName() + userInfo.getFirstName(),
+					userInfo.getEmail()))
 				.recipientId(adminId)
 				.senderId("SYSTEM")
-				.title(SystemAlertMessage.USER_UPDATE.getTitle())
 				.systemAlertType(SystemAlertType.USER)
-				.message(
-					String.format(
-						SystemAlertMessage.USER_UPDATE.getMessage(),
-						userInfo.getLastName() + userInfo.getFirstName()
-					)
-				).build());
+				.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
+				.build());
 		}
-		if(systemAlertSet.isUserEmailYN()){
+		if (systemAlertSet.isUserEmailYN()) {
 			mailService.sendMail(MailDTO.builder()
 				.title(SystemAlertMessage.USER_CREATE.getMailTitle())
 				.receiverEmail(userInfo.getEmail())

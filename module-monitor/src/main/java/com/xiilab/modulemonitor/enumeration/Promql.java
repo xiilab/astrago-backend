@@ -101,8 +101,9 @@ public enum Promql {
 	POD_PENDING_FAIL_INFO("(kube_pod_status_phase{phase=\"Failed\"} != 0 ) or kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Fail, Pending List 조회", "POD"),
 	POD_MEM_USAGE_BYTE("container_memory_working_set_bytes{container != \"\", %s}", "POD Mem 사용량 조회 ", "POD"),
 	POD_CPU_USAGE_BYTE("container_cpu_usage_seconds_total{container != \"\", %s}", "POD CPU 사용량 조회 ", "POD"),
-	POD_GPU_UTIL("DCGM_FI_DEV_GPU_UTIL{%s}","POD GPU 사용량 조회","POD"),
-	POD_DUSK_USAGE("container_fs_usage_bytes{}","POD DISK 사용량 조회","POD"),
+	POD_GPU_UTIL("DCGM_FI_DEV_GPU_UTIL{%s}","POD GPU 사용률 조회","POD"),
+	POD_DISK_USAGE("container_fs_usage_bytes{}","POD DISK 사용량 조회","POD"),
+
 	// VOLUME
 	VOLUME_COUNT("count(kube_persistentvolume_info)", "Volume 총 개수 조회", "VOLUME"),
 
@@ -143,6 +144,45 @@ public enum Promql {
 	RESOURCE_OPTIMIZATION_MEM("((sum(max_over_time(container_memory_working_set_bytes{pod=~\"wl-.*\"}[%1$sh])) by(namespace, pod)/sum(max_over_time(kube_pod_container_resource_limits{pod=~\"wl-.*\", resource = \"memory\"}[%1$sh])) by (namespace, pod) != 0)* 100) > %2$s and on (pod,namespace) (kube_pod_created < %3$s)","n시간 동안 최대 MEM 사용량이 일정 수준을 넘은 워크로드 조회","MEM"),
 	// GPU
 	RESOURCE_OPTIMIZATION_GPU("(max_over_time(DCGM_FI_DEV_GPU_UTIL{pod=~\"wl-.*\"}[%sh]) > %s and on (namespace, pod) (kube_pod_created < %s)) > %s","n시간 동안 최대 GPU 사용량이 일정 수준을 넘은 워크로드 조회","GPU"),
+
+
+	// REPORT
+	REPORT_CLUSTER_GPU_UTIL("round(avg(DCGM_FI_DEV_GPU_UTIL))","GPU 사용률","REPORT"),
+	REPORT_CLUSTER_CPU_UTIL("round(100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100))","CPU 사용률","REPORT"),
+	REPORT_CLUSTER_MEM_UTIL("round(avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100))","MEM 사용률","REPORT"),
+	REPORT_GPU_RESOURCE_TOTAL("round(sum(kube_node_status_capacity{resource=\"nvidia_com_gpu\"}))", "GPU 총량", "REPORT"),
+	REPORT_GPU_RESOURCE_REQUEST("round(avg(kube_resourcequota{resource=\"requests.nvidia.com/gpu\", type=\"hard\"}))", "GPU 요청량", "REPORT"),
+	REPORT_GPU_RESOURCE_USAGE("round(avg(DCGM_FI_DEV_GPU_UTIL{}))", "GPU 사용량", "REPORT"),
+	REPORT_CPU_RESOURCE_TOTAL("round(sum(kube_node_status_capacity{resource=\"cpu\"}))", "CPU 총량", "REPORT"),
+	REPORT_CPU_RESOURCE_REQUEST("round(avg(kube_resourcequota{resource=\"requests.cpu\", type=\"hard\"}))", "CPU 요청량", "REPORT"),
+	REPORT_CPU_RESOURCE_USAGE("round(round(sum(kube_node_status_capacity{resource=\"cpu\"})) * (round(100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)) / 100))", "CPU 사용량", "REPORT"),
+	REPORT_MEM_RESOURCE_TOTAL("round(sum(kube_node_status_capacity{resource=\"memory\"}))", "MEM 총량", "REPORT"),
+	REPORT_MEM_RESOURCE_REQUEST("round(avg(kube_resourcequota{resource=\"requests.memory\", type=\"hard\"}))", "MEM 요청량", "REPORT"),
+	REPORT_MEM_RESOURCE_USAGE("round(round(sum(kube_node_status_capacity{resource=\"memory\"})) * avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes)))", "MEM 사용량", "REPORT"),
+	REPORT_TOTAL_SCORE("round((avg(DCGM_FI_DEV_GPU_UTIL) * 0.4) * ((100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)) * 0.3) * (avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100) * 0.3))", "REPORT 활용 점수", "REPORT"),
+	REPORT_STATISTICS_GPU_REQUEST("avg(kube_resourcequota{resource=\"requests.nvidia.com/gpu\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 GPU 요청량", "REPORT"),
+	REPORT_STATISTICS_CPU_REQUEST("avg(kube_resourcequota{resource=\"requests.cpu\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 CPU 요청량", "REPORT"),
+	REPORT_STATISTICS_MEM_REQUEST("avg(kube_resourcequota{resource=\"requests.memory\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 MEM 요청량", "REPORT"),
+	REPORT_SYSTEM_INFO_CPU("avg(kube_node_status_capacity{resource=\"cpu\"}) by(node, instance)", "", ""),
+	REPORT_SYSTEM_INFO_MEM("avg(kube_node_status_capacity{resource=\"memory\"}) by(node, instance)", "", ""),
+	REPORT_SYSTEM_INFO_DISK ("max by (node) (label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint!=\"\", mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{})", "", ""),
+	REPORT_SYSTEM_INFO_GPU("avg(kube_node_status_capacity{resource=\"nvidia_com_gpu\"}) by(node, instance)", "", ""),
+	REPORT_SYSTEM_INFO_OS("label_replace(node_os_info,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}", "", ""),
+	REPORT_SYSTEM_AVG_CPU("label_replace(100 * (1 - avg by (instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))), \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}", "", ""),
+	REPORT_SYSTEM_MAX_CPU("label_replace(100 * (1 - min by (instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))), \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}", "", ""),
+	REPORT_SYSTEM_AVG_MEM("label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}", "", ""),
+	REPORT_SYSTEM_MAX_MEM("max(label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}) by(node)", "", ""),
+	REPORT_SYSTEM_DISK_USAGE_90("label_replace((node_filesystem_size_bytes{mountpoint=\"/\"} - node_filesystem_avail_bytes{mountpoint=\"/\"}) / (node_filesystem_size_bytes{mountpoint=\"/\"}) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{} > 90","",""),
+	REPORT_SYSTEM_DISK_USAGE("label_replace((node_filesystem_size_bytes{mountpoint=\"/\"} - node_filesystem_avail_bytes{mountpoint=\"/\"}) / (node_filesystem_size_bytes{mountpoint=\"/\"}) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}","",""),
+	REPORT_SYSTEM_INFO_GPU_MODEL("avg(label_replace(DCGM_FI_DEV_GPU_TEMP, \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * on(node) group_left kube_node_info{}) by(node, modelName)", "", ""),
+	REPORT_SYSTEM_AVG_GPU_TEMP("avg(DCGM_FI_DEV_GPU_TEMP) by(kubernetes_node, gpu)","",""),
+	REPORT_SYSTEM_MAX_GPU_TEMP("max(DCGM_FI_DEV_GPU_TEMP) by(kubernetes_node, gpu)","",""),
+	REPORT_SYSTEM_AVG_GPU_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{}) by(gpu, kubernetes_node, modelName, instance)", "", ""),
+	REPORT_SYSTEM_MAX_GPU_USAGE("max(DCGM_FI_DEV_GPU_UTIL{}) by(gpu, kubernetes_node, modelName, instance)", "", ""),
+	REPORT_SYSTEM_AVG_GPU_MEM("avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName, instance))", "", ""),
+	REPORT_SYSTEM_MAX_GPU_MEM("max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) / (max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) + max(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName, instance))", "", ""),
+
+
 	;
 // GPU 사용량, GPU Limit, GPU Request
 	private final String query;

@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -53,10 +54,16 @@ public class ImageRepositoryImpl implements ImageRepositoryCustom {
 	}
 
 	private BooleanExpression eqImageType(ImageType imageType) {
-		return !ObjectUtils.isEmpty(imageType)? imageEntity.imageType.eq(imageType) : null;
+		return !ObjectUtils.isEmpty(imageType) ? imageEntity.imageType.eq(imageType) : null;
 	}
 
 	private BooleanExpression eqWorkloadType(WorkloadType workloadType) {
-		return !ObjectUtils.isEmpty(workloadType)? imageEntity.workloadType.eq(workloadType) : null;
+		return !ObjectUtils.isEmpty(workloadType) ? imageEntity.workloadType.eq(workloadType) : null;
 	}
+
+	// private BooleanExpression berweenCudaVersion(String minCudaVersiom, String maxCudaVersion) {
+	// 	// return !ObjectUtils.isEmpty(workloadType) ? imageEntity.workloadType.eq(workloadType) : null;
+	// 	return StringUtils.hasText(minCudaVersiom) && StringUtils.hasText(maxCudaVersion)?
+	// 		imageEntity.
+	// }
 }

@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.alert.systemalert.enumeration;
+package com.xiilab.modulecommon.alert.enums;
 
 import lombok.Getter;
 
@@ -8,5 +8,7 @@ public enum SystemAlertType {
 	WORKSPACE,
 	WORKLOAD,
 	LICENSE,
-	NODE
+	NODE,
+	RESOURCE,
+	MEMBER
 }

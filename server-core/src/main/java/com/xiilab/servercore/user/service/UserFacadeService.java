@@ -13,7 +13,8 @@ import com.xiilab.moduleuser.vo.UserReqVO;
 
 public interface UserFacadeService {
 	//회원가입
-	UserInfo joinUser(UserReqVO userReqVO, String groupId);
+	// UserInfo joinUser(UserReqVO userReqVO, String groupId);
+	void joinUser(UserReqVO userReqVO, String groupId);
 
 	//사용자 리스트 조회
 	UserDTO.PageUsersDTO getUserList(PageInfo pageInfo, UserSearchCondition searchCondition);
