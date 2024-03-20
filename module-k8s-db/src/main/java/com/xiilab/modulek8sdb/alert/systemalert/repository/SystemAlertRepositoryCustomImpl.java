@@ -2,6 +2,8 @@ package com.xiilab.modulek8sdb.alert.systemalert.repository;
 
 import static com.xiilab.modulek8sdb.alert.systemalert.entity.QSystemAlertEntity.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -27,13 +29,15 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN, Pageable pageable) {
+	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN,
+		LocalDateTime searchStartDate, LocalDateTime searchEndDate, Pageable pageable) {
 		Long totalCount = queryFactory.select(systemAlertEntity.count())
 			.from(systemAlertEntity)
 			.where(
 				eqRecipientId(recipientId),
 				eqSystemAlertType(systemAlertType),
-				eqReadYn(readYN)
+				eqReadYn(readYN),
+				betweenRegDate(searchStartDate, searchEndDate)
 			)
 			.fetchOne();
 
@@ -41,7 +45,8 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 			.where(
 				eqRecipientId(recipientId),
 				eqSystemAlertType(systemAlertType),
-				eqReadYn(readYN)
+				eqReadYn(readYN),
+				betweenRegDate(searchStartDate, searchEndDate)
 			);
 
 		if (pageable != null) {
@@ -57,7 +62,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	}
 
 	private BooleanExpression eqRecipientId(String recipientId) {
-		return StringUtils.hasText(recipientId)? systemAlertEntity.recipientId.eq(recipientId) : null;
+		return StringUtils.hasText(recipientId) ? systemAlertEntity.recipientId.eq(recipientId) : null;
 	}
 
 	private BooleanExpression eqSystemAlertType(SystemAlertType systemAlertType) {
@@ -65,6 +70,11 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	}
 
 	private BooleanExpression eqReadYn(ReadYN readYN) {
-		return !ObjectUtils.isEmpty(readYN)? systemAlertEntity.readYN.eq(readYN) : null;
+		return !ObjectUtils.isEmpty(readYN) ? systemAlertEntity.readYN.eq(readYN) : null;
+	}
+
+	private BooleanExpression betweenRegDate(LocalDateTime searchStartDate, LocalDateTime searchEndDate) {
+		return !ObjectUtils.isEmpty(searchStartDate) && !ObjectUtils.isEmpty(searchEndDate) ?
+			systemAlertEntity.regDate.between(searchStartDate, searchEndDate) : null;
 	}
 }

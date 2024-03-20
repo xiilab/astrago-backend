@@ -1,15 +1,16 @@
 package com.xiilab.modulek8s.common.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 public class Pageable {
-	private int pageNumber;
-	private int pageSize;
+	private Integer pageNumber;
+	private Integer pageSize;
 
 	@Builder
-	public Pageable(int pageNumber, int pageSize) {
+	public Pageable(Integer pageNumber, Integer pageSize) {
 		this.pageNumber = pageNumber;
 		this.pageSize = pageSize;
 	}
