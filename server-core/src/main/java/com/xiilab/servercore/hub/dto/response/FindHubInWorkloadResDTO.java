@@ -46,10 +46,10 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
-					.envs(objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
-					}))
-					.ports(objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
-					}))
+					.envs(hubEntity.getEnvs() != null? objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
+					}) : null)
+					.ports(hubEntity.getPorts() != null? objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
+					}) : null)
 					.command(hubEntity.getCommand())
 					.regUserName(hubEntity.getRegUser().getRegUserName())
 					.regUserId(hubEntity.getRegUser().getRegUserId())
