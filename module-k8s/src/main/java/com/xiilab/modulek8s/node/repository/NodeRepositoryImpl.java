@@ -48,7 +48,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String GPU_MEMORY = "nvidia.com/gpu.memory";
 	private final String GPU = "nvidia.com/gpu";
 
-	private final String MIG_CONFIG = "nvidia.com/mig.config";
+	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
 	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
@@ -108,8 +108,15 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	private boolean isActiveMIG(Node node) {
-		String migConfig = node.getMetadata().getLabels().get(MIG_CONFIG);
-		return migConfig != null ? !migConfig.equalsIgnoreCase("all-disabled") : false;
+		String migConfigStatus = node.getMetadata().getLabels().get(MIG_CONFIG);
+		if (Objects.isNull(migConfigStatus)) {
+			return false;
+		}
+		MigStatus migStatus = MigStatus.valueOf(migConfigStatus.toUpperCase());
+		return switch (migStatus){
+			case SUCCESS,FAILED -> false;
+			case PENDING,REBOOTING -> true;
+		};
 	}
 
 	private boolean isStatus(List<NodeCondition> conditions) {
