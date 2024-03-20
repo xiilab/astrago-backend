@@ -71,6 +71,7 @@ public abstract class ImageEntity extends BaseEntity {
 
 	protected ImageEntity(RegUser regUser, String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
 		WorkloadType workloadType) {
+		super.regDate = LocalDateTime.now();
 		super.regUser = regUser;
 		this.imageName = imageName;
 		this.repositoryAuthType = repositoryAuthType;
