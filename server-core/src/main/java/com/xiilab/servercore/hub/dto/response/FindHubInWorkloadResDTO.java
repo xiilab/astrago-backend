@@ -4,6 +4,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.util.StringUtils;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,9 +48,9 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
-					.envs(hubEntity.getEnvs() != null? objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
+					.envs(StringUtils.hasText(hubEntity.getEnvs())? objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
 					}) : null)
-					.ports(hubEntity.getPorts() != null? objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
+					.ports(StringUtils.hasText(hubEntity.getPorts())? objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
 					}) : null)
 					.command(hubEntity.getCommand())
 					.regUserName(hubEntity.getRegUser().getRegUserName())
