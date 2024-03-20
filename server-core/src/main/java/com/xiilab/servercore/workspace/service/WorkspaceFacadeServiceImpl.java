@@ -150,7 +150,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
 					userInfoDTO.getUserName())))
 			.toList();
-		return new PageDTO<>(resultList, pageNum, 9);
+		return new PageDTO<>(pageDTO.getTotalSize(), pageDTO.getTotalPageNum(), pageDTO.getCurrentPage(), resultList);
 	}
 
 	@Override
