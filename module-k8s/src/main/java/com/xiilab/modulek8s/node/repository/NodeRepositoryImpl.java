@@ -163,21 +163,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	@Override
-	public int getGPUCount(Node node) {
-		try {
-			return node.getMetadata()
-				.getLabels()
-				.entrySet()
-				.stream()
-				.filter(entry -> entry.getKey().contains("gpu.count"))
-				.mapToInt(map -> Integer.parseInt(map.getValue()))
-				.sum();
-		} catch (Exception e) {
-			return 0;
-		}
-	}
-
-	@Override
 	public Node getNode(String nodeName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Node node = client.nodes().withName(nodeName).get();
@@ -349,6 +334,27 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 	}
 
+	@Override
+	public int getMIGProfileGICount(String productName, String profileName) throws IOException {
+		try {
+			String chipset = extractGpuChipset(productName);
+			List<Map<String, Integer>> resProfile = new ArrayList<>();
+			//MIGProfile.json을 읽어온다.
+			File file = new File(String.format("server-core/src/main/resources/migProfile/%s.json", chipset));
+			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
+			if (!file.exists()) {
+				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
+			}
+			//json 파일을 읽어옴
+			MIGProfileDTO migProfileList = objectMapper.readValue(file, MIGProfileDTO.class);
+			List<Map<String, Integer>> profiles = migProfileList.getProfile();
+
+		} catch (IOException e) {
+			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
+		}
+		return 0;
+	}
+
 	/**
 	 * 해당 노드에 선택한 mig profile을 적용하는 메소드
 	 *
@@ -406,6 +412,18 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 	}
 
+	@Override
+	public void updateNodeLabel(String nodeName, Map<String, String> labels) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.nodes().withName(nodeName).edit(node ->
+				new NodeBuilder(node)
+					.editMetadata()
+					.addToLabels(labels)
+					.endMetadata()
+					.build());
+		}
+	}
+
 	private List<MIGGpuDTO.MIGInfoDTO> convertMapToMIGInfo(List<Map<String, Object>> migInfoList) {
 		return migInfoList.stream().map(migInfo -> {
 			boolean migEnabled = (boolean)migInfo.get("mig-enabled");
@@ -416,7 +434,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.gpuIndexs(devices)
 					.build();
 			} else {
-				Map<String,Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
+				Map<String, Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
 				return MIGGpuDTO.MIGInfoDTO.builder()
 					.migEnable(migEnabled)
 					.gpuIndexs(devices)

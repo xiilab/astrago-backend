@@ -2,6 +2,7 @@ package com.xiilab.servercore.workspace.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -347,7 +348,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		UserInfoDTO userInfoDTO) {
 		Set<String> workspaceList = userInfoDTO.getWorkspaceList(false);
 		return workspaceList.stream()
-			.map(workspaceService::getWorkspaceResourceStatus)
+			.map(this::safeGetWorkspaceResourceStatus)
+			.filter(Optional::isPresent) // Optional이 존재하는 경우만 필터링
+			.map(Optional::get) // Optional에서 값을 추출
 			.filter(workspace -> workspaceName == null || workspace.getName().contains(workspaceName))
 			.toList();
 	}
@@ -499,6 +502,17 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		workspaceSettingEntity.updateResource(workspaceResourceSettingDTO.getCpu(),
 			workspaceResourceSettingDTO.getMem(),
 			workspaceResourceSettingDTO.getGpu());
+	}
+
+	// 예외를 처리하는 별도의 메소드
+	private Optional<WorkspaceDTO.WorkspaceResourceStatus> safeGetWorkspaceResourceStatus(String workspaceId) {
+		try {
+			// 성공적으로 값을 가져올 경우, Optional로 감싸 반환
+			return Optional.ofNullable(workspaceService.getWorkspaceResourceStatus(workspaceId));
+		} catch (Exception e) {
+			// 예외 발생 시, 빈 Optional 반환
+			return Optional.empty();
+		}
 	}
 
 }
