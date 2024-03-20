@@ -300,9 +300,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			resourceQuotaEntity.approval();
 			int cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
 				resourceQuotaEntity.getCpuReq();
-			int mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getCpu() :
+			int mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getMem() :
 				resourceQuotaEntity.getCpuReq();
-			int gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getCpu() :
+			int gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getGpu() :
 				resourceQuotaEntity.getCpuReq();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
 				resourceQuotaEntity.getWorkspaceResourceName(),
