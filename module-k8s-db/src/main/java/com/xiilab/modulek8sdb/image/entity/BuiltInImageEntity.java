@@ -11,10 +11,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "TB_BUILT_IN_IMAGE")
@@ -46,6 +48,11 @@ public class BuiltInImageEntity extends ImageEntity {
 	@Column(name = "FRAMEWORK_VERSION")
 	private String frameworkVersion;
 
+	@Transient
+	private boolean availableStatus = false;
+
+	@Transient
+	private boolean recommendStatus = false;	// 라이브러리 버전 추천 STATUS
 
 
 	@Builder
@@ -77,4 +84,15 @@ public class BuiltInImageEntity extends ImageEntity {
 	public boolean isHubImage() {
 		return false;
 	}
+
+	public void setAvailableStatus(boolean availableStatus) {
+		this.availableStatus = availableStatus;
+	}
+
+	public void setRecommendStatus(boolean recommendStatus) {
+		this.recommendStatus = recommendStatus;
+	}
+
+	public boolean getAvailableStatus(){ return this.availableStatus; }
+	public boolean getRecommendStatus() {return this.recommendStatus; }
 }

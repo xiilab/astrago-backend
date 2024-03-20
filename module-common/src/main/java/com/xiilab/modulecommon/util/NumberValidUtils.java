@@ -11,4 +11,8 @@ public class NumberValidUtils {
 	public static boolean isNullOrZero(Long value) {
 		return value == null || value == 0L;
 	}
+
+	public static boolean isNullOrZero(Float value) {
+		return value == null || value == 0.0f;
+	}
 }
