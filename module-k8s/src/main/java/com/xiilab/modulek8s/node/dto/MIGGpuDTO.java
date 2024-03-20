@@ -34,6 +34,7 @@ public class MIGGpuDTO {
 	@AllArgsConstructor
 	@SuperBuilder
 	public static class MIGInfoStatus extends MIGGpuDTO{
+		private String gpuProduct;
 		private MigStatus status;
 	}
 
