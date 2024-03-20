@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -49,8 +50,8 @@ public class NodeInformer {
 					node2.getMetadata().getResourceVersion())) {
 					Map<String, String> labels = node2.getMetadata().getLabels();
 					if (Objects.nonNull(labels)) {
-						String migCapable = labels.get("mig-capable");
-						if (Objects.nonNull(migCapable) && migCapable.equals("true")) {
+						String migCapable = labels.get("nvidia.com/mig.config.state");
+						if (Objects.nonNull(migCapable)) {
 							String node1MIGStatus = node1.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 							String node2MIGStatus = node2.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 							if (!node1MIGStatus.equals(node2MIGStatus)) {
@@ -95,6 +96,9 @@ public class NodeInformer {
 	private int getMIGGiCount(String nodeName) {
 		int giCount = 0;
 		MIGGpuDTO.MIGInfoStatus nodeMigStatus = nodeRepository.getNodeMigStatus(nodeName);
+		if (CollectionUtils.isEmpty(nodeMigStatus.getMigInfos())) {
+			return 0;
+		}
 		for (MIGGpuDTO.MIGInfoDTO migInfo : nodeMigStatus.getMigInfos()) {
 			int gpus = migInfo.getGpuIndexs().size();
 			int profileCnt = migInfo.getProfile().values().stream().mapToInt(Integer::intValue).sum();

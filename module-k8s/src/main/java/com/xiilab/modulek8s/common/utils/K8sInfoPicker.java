@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -143,8 +142,10 @@ public class K8sInfoPicker {
 			List<Container> initContainers = job.getSpec().getTemplate().getSpec().getInitContainers();
 			Map<String, String> mountAnnotationMap = job.getSpec().getTemplate().getMetadata().getAnnotations();
 			List<K8SResourceMetadataDTO.Code> codes = initializeCodesInfo(initContainers);
-			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
-			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() :
+				LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
+				LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
 				.workloadResourceName(metadata.getName())
@@ -164,9 +165,12 @@ public class K8sInfoPicker {
 				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
-				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? 0.0f :  containerResourceReq.getCpuReq() / 1000.0f)
-				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq())? 0 : containerResourceReq.getGpuReq())
-				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? 0.0f :  containerResourceReq.getMemReq() / 1000.0f)
+				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ? 0.0f :
+					containerResourceReq.getCpuReq() / 1000.0f)
+				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq()) ? 0 :
+					containerResourceReq.getGpuReq())
+				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ? 0.0f :
+					containerResourceReq.getMemReq() / 1000.0f)
 				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.envs(getEnvs(container.getEnv()))
@@ -196,8 +200,10 @@ public class K8sInfoPicker {
 		return K8SResourceMetadataDTO.builder()
 			.workloadResourceName(metadata.getName())
 			.workspaceResourceName(metadata.getNamespace())
-			.cpuReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? Float.valueOf(containerResourceReq.getCpuReq()) : null)
-			.memReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? Float.valueOf(containerResourceReq.getMemReq()) : null)
+			.cpuReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ?
+				Float.valueOf(containerResourceReq.getCpuReq()) : null)
+			.memReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ?
+				Float.valueOf(containerResourceReq.getMemReq()) : null)
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imageName(container.getImage())
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
@@ -221,8 +227,10 @@ public class K8sInfoPicker {
 			List<Container> initContainers = deployment.getSpec().getTemplate().getSpec().getInitContainers();
 			Map<String, String> mountAnnotationMap = deployment.getSpec().getTemplate().getMetadata().getAnnotations();
 			List<K8SResourceMetadataDTO.Code> codes = initializeCodesInfo(initContainers);
-			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
-			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() : LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() :
+				LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
+				LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
 				.workloadResourceName(metadata.getName())
@@ -242,9 +250,12 @@ public class K8sInfoPicker {
 				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
-				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? 0.0f :  containerResourceReq.getCpuReq() / 1000.0f)
-				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq())? 0 : containerResourceReq.getGpuReq())
-				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? 0.0f :  containerResourceReq.getMemReq() / 1000.0f)
+				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ? 0.0f :
+					containerResourceReq.getCpuReq() / 1000.0f)
+				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq()) ? 0 :
+					containerResourceReq.getGpuReq())
+				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ? 0.0f :
+					containerResourceReq.getMemReq() / 1000.0f)
 				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.envs(getEnvs(container.getEnv()))
@@ -336,23 +347,33 @@ public class K8sInfoPicker {
 	}
 
 	public static ClusterResourceDTO getClusterResource(NodeList nodeList) {
+		int cpu = 0;
+		int mem = 0;
+		int gpu = 0;
 		List<Node> items = nodeList.getItems();
 		if (CollectionUtils.isEmpty(items)) {
 			throw new IllegalStateException("해당 클러스터에 등록된 node가 존재하지 않습니다.");
 		}
-		int cpu = items.stream()
-			.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("cpu").getAmount()))
-			.sum();
 
-		int mem = (int)items.stream()
-			.mapToDouble(node -> convertQuantity(node.getStatus().getCapacity().get("memory")))
-			.sum();
-
-		int gpu = items.stream()
-			.map(node -> node.getStatus().getCapacity().get("nvidia.com/gpu"))
-			.flatMapToInt(
-				capacity -> capacity != null ? IntStream.of(Integer.parseInt(capacity.getAmount())) : IntStream.empty())
-			.sum();
+		for (Node node : items) {
+			cpu += Integer.parseInt(node.getStatus().getCapacity().get("cpu").getAmount());
+			mem += convertQuantity(node.getStatus().getCapacity().get("memory"));
+			//MIG가 설정된 경우
+			if (node.getMetadata().getLabels().containsKey("nvidia.com/mig.config")) {
+				int capacityGPU = node.getStatus().getCapacity().get("nvidia.com/gpu") == null ?
+					0 : Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").getAmount());
+				if (capacityGPU == 0) {
+					int migCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/mig-count"));
+					gpu += migCount;
+				} else {
+					gpu += capacityGPU;
+				}
+			//MIG이 불가능한 GPU이거나 GPU가 없는 경우
+			} else {
+				gpu += node.getStatus().getCapacity().get("nvidia.com/gpu") == null ?
+					0 : Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").getAmount());
+			}
+		}
 
 		return new ClusterResourceDTO(cpu, mem, gpu);
 	}
