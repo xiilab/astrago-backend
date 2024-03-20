@@ -396,9 +396,17 @@ public class NodeRepositoryImpl implements NodeRepository {
 		String migProfile = node.getMetadata().getLabels().get("nvidia.com/mig.config");
 		String migProfileStatus = node.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 		if (migProfile.equals("all-disabled")) {
+			int gpuCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count"));
+			List<Integer> gpuIndex = new ArrayList<>();
+			for (int i = 0; i < gpuCount; i++) {
+				gpuIndex.add(i);
+			}
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
-				.migInfos(null)
+				.migInfos(List.of(MIGGpuDTO.MIGInfoDTO.builder()
+					.gpuIndexs(gpuIndex)
+					.migEnable(false)
+					.build()))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		} else {
