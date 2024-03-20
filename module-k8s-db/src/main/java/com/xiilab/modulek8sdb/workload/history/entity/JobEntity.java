@@ -5,7 +5,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.annotations.SQLDelete;
+
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.workload.history.dto.PortDTO;
 
@@ -24,7 +27,7 @@ public class JobEntity extends WorkloadEntity {
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	JobEntity(String uid, String name, String description, String resourceName, String workspaceName, String workspaceResourceName, Float cpuReq, Integer gpuReq, Float memReq,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId, Map<String, String> envs,
-		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd, ImageEntity image) {
+		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd, ImageEntity image, DeleteYN deleteYN) {
 		this.uid = uid;
 		this.name = name;
 		this.description = description;
@@ -45,6 +48,7 @@ public class JobEntity extends WorkloadEntity {
 		this.workloadType = workloadType;
 		this.workloadCMD = workloadCmd;
 		this.image = image;
+		this.deleteYN = deleteYN;
 	}
 
 	public void updateImage(ImageEntity image) {

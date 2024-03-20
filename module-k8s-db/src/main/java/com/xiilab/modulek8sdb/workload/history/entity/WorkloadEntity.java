@@ -5,8 +5,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.SQLDelete;
+
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
@@ -40,6 +43,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE TB_WORKLOAD tw SET tw.DELETE_YN = 'Y' WHERE tw.WORKLOAD_ID = ?")
 public abstract class WorkloadEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -80,6 +84,10 @@ public abstract class WorkloadEntity {
 	protected String workloadCMD;
 	@ManyToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
+
+	@Column(name = "DELETE_YN")
+	@Enumerated(EnumType.STRING)
+	protected DeleteYN deleteYN;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();

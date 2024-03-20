@@ -2,6 +2,7 @@ package com.xiilab.servercore.workload.service;
 
 import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -163,7 +164,13 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	@Override
 	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
 		JobEntity jobEntity = workloadHistoryRepo.findById(id).orElseThrow();
-		if (!jobEntity.getCreatorId().equals(userInfoDTO.getId())) {
+		// owner 권한인 워크스페이스 목록 가져옴
+		List<String> loginUserOwnerWorkspaceList = userInfoDTO.getWorkspaces()
+			.stream()
+			.filter(workspace -> workspace.contains("/owner"))
+			.toList();
+		// 잡 생성자 ID와 같거나 잡이 생성된 워크스페이스 owner면 삭제
+		if (jobEntity.getCreatorId().equals(userInfoDTO.getId()) || Arrays.asList(loginUserOwnerWorkspaceList).contains(jobEntity.getWorkspaceResourceName())) {
 			workloadHistoryRepo.deleteById(id);
 		} else {
 			throw new IllegalArgumentException("해당 유저는 워크스페이스 삭제 권한이 없습니다.");

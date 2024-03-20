@@ -45,6 +45,7 @@ public class FindWorkloadResDTO extends ResDTO {
 	@Getter
 	@SuperBuilder
 	public static class WorkloadDetail extends FindWorkloadResDTO {
+		private Long id;
 		private String uid;
 		private String workloadName;
 		private String workloadResourceName;
@@ -102,6 +103,7 @@ public class FindWorkloadResDTO extends ResDTO {
 
 		public static FindWorkloadResDTO.WorkloadDetail from(JobEntity jobEntity) {
 			return WorkloadDetail.builder()
+				.id(jobEntity.getId())
 				.uid(jobEntity.getUid())
 				.workloadName(jobEntity.getName())
 				.workloadResourceName(jobEntity.getResourceName())

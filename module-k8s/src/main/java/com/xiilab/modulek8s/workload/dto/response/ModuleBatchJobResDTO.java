@@ -15,7 +15,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Getter
 public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
-
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
 		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);

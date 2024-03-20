@@ -111,6 +111,7 @@ public abstract class JobInformer {
 			.creatorRealName(metadataFromResource.getCreatorFullName())
 			.workloadType(metadataFromResource.getWorkloadType())
 			.workspaceName(metadataFromResource.getWorkspaceName())
+			.deleteYN(DeleteYN.N)
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
