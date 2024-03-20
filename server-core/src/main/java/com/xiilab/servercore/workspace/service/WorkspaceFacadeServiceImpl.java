@@ -327,7 +327,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			// 		.build());
 			// }
 		} else {
-			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
+			resourceQuotaEntity.denied(resourceQuotaApproveDTO.getRejectReason());
 			//리소스 반려 알림 발송
 			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(), workspaceNm);
 			String title = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getTitle();
