@@ -45,6 +45,7 @@ public class FindWorkloadResDTO extends ResDTO {
 	@Getter
 	@SuperBuilder
 	public static class WorkloadDetail extends FindWorkloadResDTO {
+		private String uid;
 		private String workloadName;
 		private String workloadResourceName;
 		private String workspaceName;
@@ -72,7 +73,8 @@ public class FindWorkloadResDTO extends ResDTO {
 			, List<FindWorkloadResDTO.Code> codes
 			, List<FindWorkloadResDTO.Port> ports
 			, List<FindWorkloadResDTO.Env> envs) {
-			return FindWorkloadResDTO.WorkloadDetail.builder()
+			return WorkloadDetail.builder()
+				.uid(moduleJobResDTO.getUid())
 				.workloadName(moduleJobResDTO.getName())
 				.workloadResourceName(moduleJobResDTO.getResourceName())
 				.workspaceName(moduleJobResDTO.getWorkspaceName())
@@ -99,7 +101,8 @@ public class FindWorkloadResDTO extends ResDTO {
 		}
 
 		public static FindWorkloadResDTO.WorkloadDetail from(JobEntity jobEntity) {
-			return FindWorkloadResDTO.WorkloadDetail.builder()
+			return WorkloadDetail.builder()
+				.uid(jobEntity.getUid())
 				.workloadName(jobEntity.getName())
 				.workloadResourceName(jobEntity.getResourceName())
 				.workspaceName(jobEntity.getWorkspaceName())

@@ -147,6 +147,7 @@ public class K8sInfoPicker {
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
 				LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
+				.uid(metadata.getUid())
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
 				.workloadResourceName(metadata.getName())
 				.workspaceName(annotations.get(AnnotationField.WORKSPACE_NAME.getField()))
@@ -232,6 +233,7 @@ public class K8sInfoPicker {
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
 				LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
 			return K8SResourceMetadataDTO.builder()
+				.uid(metadata.getUid())
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
 				.workloadResourceName(metadata.getName())
 				.workspaceName(annotations.get(AnnotationField.WORKSPACE_NAME.getField()))

@@ -25,6 +25,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class K8SResourceMetadataDTO {
+	private String uid;
 	private String workloadName;
 	private String workloadResourceName;
 	private String workspaceName;

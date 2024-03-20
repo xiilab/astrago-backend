@@ -45,6 +45,8 @@ public abstract class WorkloadEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "WORKLOAD_ID")
 	protected Long id;
+	@Column(name = "WORKLOAD_UID")
+	protected String uid;
 	@Column(name = "WORKLOAD_NAME")
 	protected String name;
 	@Column(name = "WORKLOAD_DESCRIPTION")

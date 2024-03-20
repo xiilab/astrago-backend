@@ -63,6 +63,7 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ImageResDTO.FindImages findImages(ImageReqDTO.FindSearchCondition findSearchCondition) {
 		PageRequest pageRequest = null;
 		if (!NumberValidUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberValidUtils.isNullOrZero(findSearchCondition.getPageSize())) {
