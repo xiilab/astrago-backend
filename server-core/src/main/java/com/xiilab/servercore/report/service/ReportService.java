@@ -17,4 +17,8 @@ public interface ReportService {
 	void updateReportReservationById(long id, ReportReservationDTO.RequestDTO reservationDTO);
 
 	Page<ReportReservationDTO.ResponseDTO> getReportReservationList(Pageable pageable, UserInfoDTO userInfoDTO);
+
+	Page<ReportReservationDTO.ReceiveDTO> getReportReceiveList(Pageable pageable, UserInfoDTO userInfoDTO);
+
+	ReportReservationDTO.DetailDTO getReportReceiveListById(long id, UserInfoDTO userInfoDTO);
 }

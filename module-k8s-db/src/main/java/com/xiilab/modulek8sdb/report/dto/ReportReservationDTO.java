@@ -89,5 +89,36 @@ public class ReportReservationDTO {
 		}
 	}
 
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class ReceiveDTO{
+		private long reportId;
+		private String reportName;
+		private long receiverCount;
+		private String transferDate;
+		private boolean result;
+	}
 
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class DetailDTO{
+		private ReportType reportType;
+		private String reportName;
+		private String explanation;
+		private List<HistoryDTO> historyDTOList;
+	}
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class HistoryDTO{
+		private String transferDate;
+		private String userName;
+		private String userEmail;
+		private boolean result;
+	}
 }

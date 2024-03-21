@@ -114,6 +114,38 @@ public class ReportServiceImpl implements ReportService{
 			ReportReservationDTO.ResponseDTO.toDTOBuilder().reportReservation(reportReservation).build());
 	}
 
+	@Override
+	public Page<ReportReservationDTO.ReceiveDTO> getReportReceiveList(Pageable pageable, UserInfoDTO userInfoDTO) {
+		PageRequest pageRequest = null;
+		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
+			pageable.getPageSize())) {
+			pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize());
+		}
+
+		return repositoryCustom.getReportReceiveList(userInfoDTO.getId(), pageRequest);
+	}
+
+	@Override
+	public ReportReservationDTO.DetailDTO getReportReceiveListById(long id, UserInfoDTO userInfoDTO) {
+
+		ReportReservationEntity reportReservationEntity = repositoryCustom.getReportReceiveListById(id, userInfoDTO.getId());
+		return ReportReservationDTO.DetailDTO.builder()
+			.reportType(reportReservationEntity.getReportType())
+			.reportName(reportReservationEntity.getName())
+			.explanation(reportReservationEntity.getExplanation())
+			.historyDTOList(
+				reportReservationEntity.getReportReservationHistoryEntityList()
+					.stream().map(history ->
+						ReportReservationDTO.HistoryDTO.builder()
+							.transferDate(DataConverterUtil.getCurrentTime(history.getTransferDate()))
+							.userName(history.getUserName())
+							.userEmail(history.getEmail())
+							.result(history.isResult())
+							.build()
+					).toList())
+			.build();
+	}
+
 	private ReportReservationEntity getReportReservationEntityById(long id){
 		return repository.findById(id).orElseThrow(() ->
 			new RestApiException(CommonErrorCode.REPORT_NOT_FOUND));

@@ -61,4 +61,20 @@ public class ReportController {
 		UserInfoDTO userInfoDTO){
 		return new ResponseEntity<>(reportService.getReportReservationList(pageable, userInfoDTO), HttpStatus.OK);
 	}
+
+	@GetMapping("/receive")
+	@Operation(summary = "Report 발송 내역")
+	public ResponseEntity<Page<ReportReservationDTO.ReceiveDTO>> getReportReceiveList(
+		Pageable pageable,
+		UserInfoDTO userInfoDTO){
+		return new ResponseEntity<>(reportService.getReportReceiveList(pageable, userInfoDTO), HttpStatus.OK);
+	}
+
+	@GetMapping("/receive/{id}")
+	@Operation(summary = "Report 발송 내역 상세조회")
+	public ResponseEntity<ReportReservationDTO.DetailDTO> getReportReceiveListById(
+		@PathVariable(name = "id") Long id,
+		UserInfoDTO userInfoDTO){
+		return new ResponseEntity<>(reportService.getReportReceiveListById(id, userInfoDTO), HttpStatus.OK);
+	}
 }
