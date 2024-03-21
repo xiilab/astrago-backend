@@ -4,9 +4,12 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
+import com.xiilab.modulek8s.node.repository.NodeRepository;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -22,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NodeInformer {
 	private final K8sAdapter k8sAdapter;
+	private final NodeRepository nodeRepository;
+
 	@PostConstruct
 	void doInformer() {
 		nodeInformer();
@@ -41,20 +46,29 @@ public class NodeInformer {
 
 			@Override
 			public void onUpdate(Node node1, Node node2) {
-				if (!Objects.equals(node1.getMetadata().getResourceVersion(), node2.getMetadata().getResourceVersion())) {
+				if (!Objects.equals(node1.getMetadata().getResourceVersion(),
+					node2.getMetadata().getResourceVersion())) {
 					Map<String, String> labels = node2.getMetadata().getLabels();
 					if (Objects.nonNull(labels)) {
-						String migCapable = labels.get("mig-capable");
-						if (Objects.nonNull(migCapable) && migCapable.equals("true")) {
+						String migCapable = labels.get("nvidia.com/mig.config.state");
+						if (Objects.nonNull(migCapable)) {
 							String node1MIGStatus = node1.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 							String node2MIGStatus = node2.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 							if (!node1MIGStatus.equals(node2MIGStatus)) {
 								MigStatus migStatus = MigStatus.valueOf(node2MIGStatus.toUpperCase());
+								//성공적으로 변경 시 label에 gi개수 추가
+								if (migStatus == MigStatus.SUCCESS) {
+									updateNodeInfo(node2.getMetadata().getName());
+								}
 								String message = switch (migStatus) {
-									case SUCCESS -> String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
-									case PENDING -> String.format("node %S이 MIG 적용이 시작되었습니다.", node2.getMetadata().getName());
-									case FAILED -> String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
-									case REBOOTING -> String.format("node %S의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.", node2.getMetadata().getName());
+									case SUCCESS ->
+										String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
+									case PENDING ->
+										String.format("node %S이 MIG 적용이 시작되었습니다.", node2.getMetadata().getName());
+									case FAILED ->
+										String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
+									case REBOOTING -> String.format("node %S의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.",
+										node2.getMetadata().getName());
 								};
 								log.info(message);
 							}
@@ -72,6 +86,25 @@ public class NodeInformer {
 
 		log.info("Starting all regisetered node informer");
 		informers.startAllRegisteredInformers();
+	}
+
+	private void updateNodeInfo(String nodeName) {
+		int migGiCount = getMIGGiCount(nodeName);
+		nodeRepository.updateNodeLabel(nodeName, Map.of("nvidia.com/mig-count", String.valueOf(migGiCount)));
+	}
+
+	private int getMIGGiCount(String nodeName) {
+		int giCount = 0;
+		MIGGpuDTO.MIGInfoStatus nodeMigStatus = nodeRepository.getNodeMigStatus(nodeName);
+		if (CollectionUtils.isEmpty(nodeMigStatus.getMigInfos())) {
+			return 0;
+		}
+		for (MIGGpuDTO.MIGInfoDTO migInfo : nodeMigStatus.getMigInfos()) {
+			int gpus = migInfo.getGpuIndexs().size();
+			int profileCnt = migInfo.getProfile().values().stream().mapToInt(Integer::intValue).sum();
+			giCount += gpus * profileCnt;
+		}
+		return giCount;
 	}
 
 }

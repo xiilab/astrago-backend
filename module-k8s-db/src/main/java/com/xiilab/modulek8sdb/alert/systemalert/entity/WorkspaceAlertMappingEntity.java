@@ -1,7 +1,7 @@
 package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
 import com.xiilab.modulecommon.enums.AlertSendType;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

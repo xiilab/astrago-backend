@@ -57,6 +57,8 @@ import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
+import io.fabric8.kubernetes.api.model.events.v1.Event;
+import io.fabric8.kubernetes.api.model.events.v1.EventList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
@@ -160,7 +162,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description) {
+	public void editBatchJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			// kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get()
 			kubernetesClient.batch().v1().jobs().inNamespace(workspaceResourceName)
@@ -175,7 +178,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description) {
+	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
+		String description) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			kubernetesClient.apps().deployments().inNamespace(workspaceResourceName)
 				.withName(workloadResourceName).edit(
@@ -711,6 +715,21 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		return null;
 	}
 
+	@Override
+	public List<Event> getWorkloadEventList(String pod, String namespace) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			EventList list = kubernetesClient.events().v1().events().inNamespace(namespace).list();
+			List<Event> items = list.getItems();
+			if (Objects.nonNull(items)) {
+				return items.stream()
+					.filter(item -> item.getRegarding().getKind().equals("Pod") &&
+							item.getRegarding().getName().equals(pod))
+					.toList();
+			}
+			return new ArrayList<>();
+		}
+	}
+
 	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads,
 		HasMetadata hasMetadata,
 		WorkloadResourceType resourceType) {
@@ -914,5 +933,9 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 		return volumesMap;
 	}
+
+	// private InputStream copyFiles(String podName, String namespaceName, String dir) {
+	//
+	// }
 
 }

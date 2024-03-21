@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.alert.systemalert.enumeration;
+package com.xiilab.modulecommon.alert.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,13 +6,14 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AlertName {
-	USER_RESOURCE_APPROVAL("리소스 승인 알림"),
 	USER_WORKSPACE_DELETE("워크스페이스 삭제 알림"),
 	USER_WORKSPACE_MEMBER_UPDATE("워크스페이스 회원 변경 알림"),
+	USER_RESOURCE_REQUEST_RESULT("리소스 승인 알림"),
 	USER_WORKLOAD_START("워크로드 시작 알림"),
 	USER_WORKLOAD_END("워크로드 종료 알림"),
 	USER_WORKLOAD_ERROR("워크로드 에러 알림"),
 	USER_WORKLOAD_DELETE("워크로드 삭제 알림"),
+
 	ADMIN_LICENSE_EXPIRATION("라이센스 만료 경고 알림"),
 	ADMIN_USER_JOIN("유저 회원가입 알림"),
 	ADMIN_NODE_ERROR("노드 장애 알림"),

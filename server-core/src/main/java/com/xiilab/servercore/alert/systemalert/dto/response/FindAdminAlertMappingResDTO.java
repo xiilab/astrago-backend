@@ -5,10 +5,9 @@ import java.util.List;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
-import com.xiilab.servercore.common.dto.ResDTO;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

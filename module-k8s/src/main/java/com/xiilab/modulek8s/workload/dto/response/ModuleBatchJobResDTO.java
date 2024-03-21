@@ -15,7 +15,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Getter
 public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
-
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
 		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
@@ -49,7 +48,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			return WorkloadStatus.ERROR;
 		} else if (!NumberValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.RUNNING;
-		} else if (NumberValidUtils.isNullOrZero(active) && NumberValidUtils.isNullOrZero(failed) && NumberValidUtils.isNullOrZero(ready)) {
+		} else if (ready == 0 || NumberValidUtils.isNullOrZero(active) && NumberValidUtils.isNullOrZero(failed) && NumberValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.PENDING;
 		} else {
 			return WorkloadStatus.END;

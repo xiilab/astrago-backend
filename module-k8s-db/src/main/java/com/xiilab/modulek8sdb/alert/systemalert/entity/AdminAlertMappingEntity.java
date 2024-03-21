@@ -1,12 +1,9 @@
 package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
-import java.time.LocalDateTime;
-
 import org.hibernate.annotations.DynamicUpdate;
 
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.modulek8sdb.common.entity.RegUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,7 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

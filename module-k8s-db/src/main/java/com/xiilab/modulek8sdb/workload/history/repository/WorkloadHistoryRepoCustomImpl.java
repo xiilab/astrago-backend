@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,8 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCusotm 
 				eqWorkspaceName(workspaceName),
 				eqName(searchName),
 				eqUserId(userId),
-				eqWorkloadType(workloadType)
+				eqWorkloadType(workloadType),
+				jobEntity.deleteYN.eq(DeleteYN.N)
 			).fetch();
 	}
 
@@ -57,6 +59,6 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCusotm 
 		if (workspaceName == null) {
 			return null;
 		}
-		return jobEntity.workspaceName.eq(workspaceName);
+		return jobEntity.workspaceResourceName.eq(workspaceName);
 	}
 }

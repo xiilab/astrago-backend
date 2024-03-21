@@ -1,13 +1,12 @@
 package com.xiilab.servercore.alert.systemalert.dto.response;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertEventType;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 import com.xiilab.servercore.common.dto.ResDTO;
 
 import lombok.Builder;

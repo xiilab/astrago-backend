@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 
 public interface AlertRepository extends JpaRepository<AlertEntity, Long>, AlertRepositoryCustom {
 	@Query("select t from TB_ALERT t where t.alertRole = ?1")

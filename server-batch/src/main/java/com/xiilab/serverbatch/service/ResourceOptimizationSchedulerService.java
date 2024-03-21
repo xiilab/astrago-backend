@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ResourceSchedulerService {
+public class ResourceOptimizationSchedulerService {
 	private final Scheduler scheduler;
 	private final ResourceSchedulerRepository resourceSchedulerRepository;
 	private static final String ASTRA = "astra";

@@ -1,8 +1,8 @@
 package com.xiilab.modulek8sdb.alert.systemalert.dto;
 
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
+import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 
 import lombok.Getter;
 

@@ -2,6 +2,7 @@ package com.xiilab.servercore.workspace.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -25,9 +26,9 @@ import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
@@ -39,8 +40,8 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaHistoryRepositor
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.servercore.alert.systemalert.event.AdminAlertEvent;
-import com.xiilab.servercore.alert.systemalert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
@@ -108,12 +109,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			}
 		}
 
+		// 워크스페이스 생성 알림메시지 발송
 		SystemAlertMessage workspaceCreateAdmin = SystemAlertMessage.WORKSPACE_CREATE_ADMIN;
 		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());
 		String title = workspaceCreateAdmin.getTitle();
 		String message = String.format(workspaceCreateAdmin.getMessage(), userInfoDTO.getUserFullName(),
 			applicationForm.getName());
-		// 워크스페이스 생성 알림메시지 발송
 		eventPublisher.publishEvent(
 			new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_CREATE, userInfoDTO.getId(), userInfoDTO.getUserName(),
 				userInfoDTO.getUserFullName(), mailTitle, title, message));
@@ -149,7 +150,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
 					userInfoDTO.getUserName())))
 			.toList();
-		return new PageDTO<>(resultList, pageNum, 9);
+		return new PageDTO<>(pageDTO.getTotalSize(), pageDTO.getTotalPageNum(), pageDTO.getCurrentPage(), resultList);
 	}
 
 	@Override
@@ -292,21 +293,29 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		}
 		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaHistoryRepository.findById(id).orElseThrow();
 
+		String workspaceNm = resourceQuotaEntity.getWorkspaceName();
+		UserAlertEvent userAlertEvent = null;
+
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
 			int cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
 				resourceQuotaEntity.getCpuReq();
-			int mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getCpu() :
-				resourceQuotaEntity.getCpuReq();
-			int gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getCpu() :
-				resourceQuotaEntity.getCpuReq();
+			int mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getMem() :
+				resourceQuotaEntity.getMemReq();
+			int gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getGpu() :
+				resourceQuotaEntity.getGpuReq();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(
 				resourceQuotaEntity.getWorkspaceResourceName(),
 				cpu,
 				mem,
 				gpu
 			);
-
+			//리소스 승인 알림 발송
+			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(), workspaceNm);
+			String title = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getTitle();
+			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(), userInfoDTO.getUserFullName(),workspaceNm, "승인");
+			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
+				emailTitle, title, message, resourceQuotaEntity.getWorkspaceResourceName());
 			// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
 			// if(workspaceAlertSet.isResourceApprovalAlert()){
 			//
@@ -318,8 +327,15 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			// 		.build());
 			// }
 		} else {
-			resourceQuotaEntity.denied(resourceQuotaEntity.getRejectReason());
+			resourceQuotaEntity.denied(resourceQuotaApproveDTO.getRejectReason());
+			//리소스 반려 알림 발송
+			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(), workspaceNm);
+			String title = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getTitle();
+			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(), userInfoDTO.getUserFullName(),workspaceNm, "반려");
+			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
+				emailTitle, title, message, resourceQuotaEntity.getWorkspaceResourceName());
 		}
+		eventPublisher.publishEvent(userAlertEvent);
 	}
 
 	@Override
@@ -332,7 +348,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		UserInfoDTO userInfoDTO) {
 		Set<String> workspaceList = userInfoDTO.getWorkspaceList(false);
 		return workspaceList.stream()
-			.map(workspaceService::getWorkspaceResourceStatus)
+			.map(this::safeGetWorkspaceResourceStatus)
+			.filter(Optional::isPresent) // Optional이 존재하는 경우만 필터링
+			.map(Optional::get) // Optional에서 값을 추출
 			.filter(workspace -> workspaceName == null || workspace.getName().contains(workspaceName))
 			.toList();
 	}
@@ -484,6 +502,17 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		workspaceSettingEntity.updateResource(workspaceResourceSettingDTO.getCpu(),
 			workspaceResourceSettingDTO.getMem(),
 			workspaceResourceSettingDTO.getGpu());
+	}
+
+	// 예외를 처리하는 별도의 메소드
+	private Optional<WorkspaceDTO.WorkspaceResourceStatus> safeGetWorkspaceResourceStatus(String workspaceId) {
+		try {
+			// 성공적으로 값을 가져올 경우, Optional로 감싸 반환
+			return Optional.ofNullable(workspaceService.getWorkspaceResourceStatus(workspaceId));
+		} catch (Exception e) {
+			// 예외 발생 시, 빈 Optional 반환
+			return Optional.empty();
+		}
 	}
 
 }

@@ -15,9 +15,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
@@ -31,13 +33,12 @@ import com.xiilab.modulek8sdb.alert.alertmanager.enumeration.AlertManagerCategor
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerReceiveRepository;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepoCustom;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepository;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.UserService;
-import com.xiilab.servercore.alert.systemalert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -231,8 +232,13 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	@Override
 	public Page<AlertManagerReceiveDTO.ResponseDTO> getAlertManagerReceiveList(String categoryType, String startDate,
 		String endDate, String search, UserInfoDTO userInfoDTO, Pageable pageable) {
-
-		Page<AlertManagerReceiveEntity> alertManagerReceiveList = alertManagerRepoCustom.getAlertManagerReceiveList(categoryType, search, DataConverterUtil.dataFormatterByStr(startDate), DataConverterUtil.dataFormatterByStr(endDate), userInfoDTO.getId(), pageable);
+		PageRequest pageRequest = null;
+		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
+			pageable.getPageSize())) {
+			pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize());
+		}
+		Page<AlertManagerReceiveEntity> alertManagerReceiveList = alertManagerRepoCustom.getAlertManagerReceiveList(categoryType, search,
+			DataConverterUtil.dataFormatterByStr(startDate), DataConverterUtil.dataFormatterByStr(endDate), userInfoDTO.getId(), pageRequest);
 
 		return alertManagerReceiveList.map(alertManagerReceiveEntity ->
 				AlertManagerReceiveDTO.ResponseDTO.responseDTOBuilder()

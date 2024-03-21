@@ -84,6 +84,7 @@ public class CodeEntity extends BaseEntity {
 
 	public CodeEntity(RegUser regUser, String title, CodeType codeType, RepositoryType repositoryType, String codeURL,
 		CredentialEntity credentialEntity, String workspaceResourceName, DeleteYN deleteYn) {
+		super.regDate = LocalDateTime.now();
 		super.regUser = regUser;
 		this.title = title;
 		this.codeType = codeType;

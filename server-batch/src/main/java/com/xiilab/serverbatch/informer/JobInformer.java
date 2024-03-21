@@ -92,6 +92,7 @@ public abstract class JobInformer {
 		K8SResourceMetadataDTO metadataFromResource) {
 		// TODO metadataFromResource.getCpuReq() 확인 필요
 		JobEntity jobEntity = JobEntity.jobBuilder()
+			.uid(metadataFromResource.getUid())
 			.name(metadataFromResource.getWorkloadName())
 			.description(metadataFromResource.getDescription())
 			.resourceName(metadataFromResource.getWorkloadResourceName())
@@ -110,6 +111,7 @@ public abstract class JobInformer {
 			.creatorRealName(metadataFromResource.getCreatorFullName())
 			.workloadType(metadataFromResource.getWorkloadType())
 			.workspaceName(metadataFromResource.getWorkspaceName())
+			.deleteYN(DeleteYN.N)
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);

@@ -226,6 +226,7 @@ public class DatasetServiceImpl implements DatasetService {
 			List<Dataset> datasetsByAuthority = datasetRepository.findByAuthority(userInfoDTO.getId(), userInfoDTO.getAuth());
 			return DatasetDTO.DatasetsInWorkspace.entitiesToDtos(datasetsByAuthority);
 		}
+
 		return null;
 	}
 

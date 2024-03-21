@@ -19,10 +19,9 @@ import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertName;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertRole;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.AlertStatus;
-import com.xiilab.modulek8sdb.alert.systemalert.enumeration.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
@@ -31,9 +30,9 @@ import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.UserRepository;
-import com.xiilab.servercore.alert.systemalert.event.AdminAlertEvent;
-import com.xiilab.servercore.alert.systemalert.event.UserAlertEvent;
-import com.xiilab.servercore.alert.systemalert.event.WorkspaceAlertMappingDeleteEvent;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceAlertMappingDeleteEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,15 +53,15 @@ public class AlertEventListener {
 	private final ApplicationEventPublisher publisher;
 
 	@Async
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
 	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
 		log.info("관리자[{}] 알림 발송!", adminAlertEvent.title());
 		try {
-			String REG_USER_ID = "SYSTEM";
-			String REG_USER_NAME = "시스템";
-			RegUser regUser = new RegUser(adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : REG_USER_ID,
-				adminAlertEvent.senderUserName() != null? adminAlertEvent.senderUserName() : REG_USER_NAME,
-				adminAlertEvent.senderUserRealName() != null? adminAlertEvent.senderUserRealName() : REG_USER_NAME);
+			String regUserID = adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : "SYSTEM";
+			String regUserName = "시스템";
+			RegUser regUser = new RegUser(regUserID,
+				adminAlertEvent.senderUserName() != null? adminAlertEvent.senderUserName() : regUserName,
+				adminAlertEvent.senderUserRealName() != null? adminAlertEvent.senderUserRealName() : regUserName);
 
 			// AlertRole, Alert 이름으로 ID 조회
 			AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(), AlertRole.ADMIN).orElseThrow();
@@ -81,7 +80,7 @@ public class AlertEventListener {
 						.title(adminAlertEvent.title())
 						.message(adminAlertEvent.message())
 						.recipientId(findUser.getId())
-						.senderId(adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : REG_USER_ID)
+						.senderId(regUserID)
 						.systemAlertType(findAlert.getAlertType())
 						.systemAlertEventType(findAlert.getSystemAlertEventType())
 						.readYN(ReadYN.N)

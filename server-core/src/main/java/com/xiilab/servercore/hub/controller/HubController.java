@@ -31,7 +31,7 @@ public class HubController {
 	@GetMapping()
 	@Operation(summary = "Hub 목록 조회")
 	public ResponseEntity<FindHubResDTO.Hubs> getHubList(
-		@PathParam("searchText") String searchText,
+		@RequestParam(value = "searchText") String searchText,
 		@RequestParam(required = false) String[] categoryNames,
 		Pageable pageable) {
 		return new ResponseEntity<>(hubService.getHubList(searchText, categoryNames, pageable), HttpStatus.OK);

@@ -26,6 +26,8 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     defer-datasource-initialization: true
+
+# keycloak server의 admin 정보
 admin:
   realm: master
   client: admin-cli
@@ -34,6 +36,7 @@ admin:
   init-password: xiirocks
   secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
   id: 3810cb0d-0c82-4258-9e43-2d00f7a1d0b9
+
 # 연결할 keycloak server 정보
 keycloak:
   realm: myrealm

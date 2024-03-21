@@ -48,7 +48,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String GPU_MEMORY = "nvidia.com/gpu.memory";
 	private final String GPU = "nvidia.com/gpu";
 
-	private final String MIG_CONFIG = "nvidia.com/mig.config";
+	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
 	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
@@ -108,8 +108,15 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	private boolean isActiveMIG(Node node) {
-		String migConfig = node.getMetadata().getLabels().get(MIG_CONFIG);
-		return migConfig != null ? !migConfig.equalsIgnoreCase("all-disabled") : false;
+		String migConfigStatus = node.getMetadata().getLabels().get(MIG_CONFIG);
+		if (Objects.isNull(migConfigStatus)) {
+			return false;
+		}
+		MigStatus migStatus = MigStatus.valueOf(migConfigStatus.toUpperCase());
+		return switch (migStatus){
+			case SUCCESS,FAILED -> false;
+			case PENDING,REBOOTING -> true;
+		};
 	}
 
 	private boolean isStatus(List<NodeCondition> conditions) {
@@ -160,21 +167,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 		// }
 		updateMIGConfig(nodeName, option);
 
-	}
-
-	@Override
-	public int getGPUCount(Node node) {
-		try {
-			return node.getMetadata()
-				.getLabels()
-				.entrySet()
-				.stream()
-				.filter(entry -> entry.getKey().contains("gpu.count"))
-				.mapToInt(map -> Integer.parseInt(map.getValue()))
-				.sum();
-		} catch (Exception e) {
-			return 0;
-		}
 	}
 
 	@Override
@@ -349,6 +341,27 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 	}
 
+	@Override
+	public int getMIGProfileGICount(String productName, String profileName) throws IOException {
+		try {
+			String chipset = extractGpuChipset(productName);
+			List<Map<String, Integer>> resProfile = new ArrayList<>();
+			//MIGProfile.json을 읽어온다.
+			File file = new File(String.format("server-core/src/main/resources/migProfile/%s.json", chipset));
+			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
+			if (!file.exists()) {
+				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
+			}
+			//json 파일을 읽어옴
+			MIGProfileDTO migProfileList = objectMapper.readValue(file, MIGProfileDTO.class);
+			List<Map<String, Integer>> profiles = migProfileList.getProfile();
+
+		} catch (IOException e) {
+			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
+		}
+		return 0;
+	}
+
 	/**
 	 * 해당 노드에 선택한 mig profile을 적용하는 메소드
 	 *
@@ -390,9 +403,18 @@ public class NodeRepositoryImpl implements NodeRepository {
 		String migProfile = node.getMetadata().getLabels().get("nvidia.com/mig.config");
 		String migProfileStatus = node.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 		if (migProfile.equals("all-disabled")) {
+			int gpuCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count"));
+			List<Integer> gpuIndex = new ArrayList<>();
+			for (int i = 0; i < gpuCount; i++) {
+				gpuIndex.add(i);
+			}
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
-				.migInfos(null)
+				.migInfos(List.of(MIGGpuDTO.MIGInfoDTO.builder()
+					.gpuIndexs(gpuIndex)
+					.migEnable(false)
+					.build()))
+				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get("nvidia.com/gpu.product")))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		} else {
@@ -401,8 +423,21 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
 				.migInfos(convertMapToMIGInfo(rawMIGInfo))
+				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get("nvidia.com/gpu.product")))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
+		}
+	}
+
+	@Override
+	public void updateNodeLabel(String nodeName, Map<String, String> labels) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.nodes().withName(nodeName).edit(node ->
+				new NodeBuilder(node)
+					.editMetadata()
+					.addToLabels(labels)
+					.endMetadata()
+					.build());
 		}
 	}
 
@@ -416,7 +451,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.gpuIndexs(devices)
 					.build();
 			} else {
-				Map<String,Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
+				Map<String, Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
 				return MIGGpuDTO.MIGInfoDTO.builder()
 					.migEnable(migEnabled)
 					.gpuIndexs(devices)
