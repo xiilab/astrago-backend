@@ -100,6 +100,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		// ADMIN 으로 권한 변경시, 설정 초기값 세팅
 		if (authType == AuthType.ROLE_ADMIN) {
 			alertService.initializeAdminAlertMappingSettings(userId);
+		} else if (authType == AuthType.ROLE_USER) {
+			alertService.deleteAdminAlertMappings(userId);
 		}
 	}
 

@@ -19,7 +19,9 @@ public enum AlertName {
 	ADMIN_NODE_ERROR("노드 장애 알림"),
 	ADMIN_WORKSPACE_CREATE("워크스페이스 생성 알림"),
 	ADMIN_USER_RESOURCE_REQUEST("유저 리소스 요청 알림"),
-	ADMIN_WORKSPACE_RESOURCE_OVER("워크스페이스 리소스 초과 알림")
+	ADMIN_WORKSPACE_RESOURCE_OVER("워크스페이스 리소스 초과 알림"),
+	ADMIN_NODE_MIG_APPLY("MIG 적용 알림"),
+	ADMIN_NODE_MIG_ERROR("MIG 장애 알림")
 	;
 	private String name;
 }

@@ -3,9 +3,13 @@ package com.xiilab.serverbatch.informer;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
@@ -26,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NodeInformer {
 	private final K8sAdapter k8sAdapter;
 	private final NodeRepository nodeRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@PostConstruct
 	void doInformer() {
@@ -49,6 +54,7 @@ public class NodeInformer {
 				if (!Objects.equals(node1.getMetadata().getResourceVersion(),
 					node2.getMetadata().getResourceVersion())) {
 					Map<String, String> labels = node2.getMetadata().getLabels();
+					String nodeName = node2.getMetadata().getName();
 					if (Objects.nonNull(labels)) {
 						String migCapable = labels.get("nvidia.com/mig.config.state");
 						if (Objects.nonNull(migCapable)) {
@@ -60,17 +66,37 @@ public class NodeInformer {
 								if (migStatus == MigStatus.SUCCESS) {
 									updateNodeInfo(node2.getMetadata().getName());
 								}
-								String message = switch (migStatus) {
-									case SUCCESS ->
-										String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
+								switch (migStatus) {
+									case SUCCESS -> {
+										SystemAlertMessage nodeMigApply = SystemAlertMessage.NODE_MIG_APPLY;
+										String mailTitle = nodeMigApply.getMailTitle();
+										String title = nodeMigApply.getTitle();
+										String message = String.format(nodeMigApply.getMessage(), nodeName);
+										eventPublisher.publishEvent(
+											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_APPLY, null,
+												null,
+												null, mailTitle, title, message));
+									}
+									// String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
 									case PENDING ->
-										String.format("node %S이 MIG 적용이 시작되었습니다.", node2.getMetadata().getName());
-									case FAILED ->
-										String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
-									case REBOOTING -> String.format("node %S의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.",
+										log.info("node {}이 MIG 적용이 시작되었습니다.", node2.getMetadata().getName());
+									case FAILED -> {
+										SystemAlertMessage nodeMigError = SystemAlertMessage.NODE_MIG_ERROR;
+										String mailTitle = nodeMigError.getMailTitle();
+										String title = nodeMigError.getTitle();
+										String message = String.format(nodeMigError.getMessage(), nodeName);
+										eventPublisher.publishEvent(
+											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_ERROR, null,
+												null,
+												null, mailTitle, title, message));
+									}
+									// String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
+									case REBOOTING -> log.info("node {}의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.",
 										node2.getMetadata().getName());
-								};
-								log.info(message);
+								}
+								;
+								// log.info(message);
+								// TODO MIG 알림 이벤트 추가
 							}
 						}
 					}

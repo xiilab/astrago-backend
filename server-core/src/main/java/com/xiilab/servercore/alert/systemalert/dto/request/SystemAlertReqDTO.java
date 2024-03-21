@@ -62,6 +62,7 @@ public class SystemAlertReqDTO {
 	public static class FindSearchCondition {
 		private SystemAlertType systemAlertType;
 		private ReadYN readYN;
+		private String searchText;
 		@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 		private LocalDateTime searchStartDate;
 		@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
