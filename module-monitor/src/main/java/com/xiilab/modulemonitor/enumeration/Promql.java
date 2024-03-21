@@ -51,7 +51,7 @@ public enum Promql {
 	NODE_READY_PERCENT("count(kube_node_status_condition{status=\"true\", condition=\"Ready\"}) / count(kube_node_info) * 100", "", "" ),
 	NODE_CPU_TEMP("label_replace(avg(node_hwmon_temp_celsius) by(instance),  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}", "노드 CPU TEMP 조회", "NODE"),
 	NODE_NETWORK_RECEIVE("avg by(instance) (label_replace(node_network_receive_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{%s})", "노드의 네트워크 수신", "NODE"),
-	NODE_NETWORK_TRANSMIT("avg by(instance) (node_network_transmit_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{})","노드의 네트워크 송신","NODE"),
+	NODE_NETWORK_TRANSMIT("avg by(instance) (label_replace(node_network_transmit_bytes_total, \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{%s})","노드의 네트워크 송신","NODE"),
 	TOTAL_NODE_REQUEST_RESOURCE("sum(kube_pod_container_resource_requests{%s})by(resource)", "특정 노드의 cpuRequest 리소스 사용량 조회", "NODE"),
 	TOTAL_NODE_LIMIT_RESOURCE("sum(kube_pod_container_resource_limits{%s})by(resource)", "특정 노드의 limit 리소스 사용량 조회", "NODE"),
 	NODE_DISK_READ("label_replace(avg(node_disk_read_bytes_total) by(instance), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "", "NODE"),

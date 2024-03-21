@@ -36,7 +36,6 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
@@ -94,6 +93,7 @@ import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
 import io.fabric8.kubernetes.api.model.events.v1.Event;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -355,7 +355,12 @@ public class WorkloadFacadeService {
 		//일반 워크로드 목록 필터링
 		List<ModuleWorkloadResDTO> normalWorkloadList = filterNormalWorkloads(workloadResDTOList,
 			searchName, workloadStatus, workloadSortCondition, userInfoDTO.getId());
-		return new PageDTO<>(pinWorkloadList, normalWorkloadList, pageNum, 10);
+		PageDTO<ModuleWorkloadResDTO> moduleWorkloadResDTOPageDTO = new PageDTO<>(pinWorkloadList, normalWorkloadList,
+			pageNum, 10);
+		moduleWorkloadResDTOPageDTO.getContent()
+			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(),
+				userInfoDTO.getWorkspaceList(true)));
+		return moduleWorkloadResDTOPageDTO;
 	}
 
 	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
@@ -588,7 +593,7 @@ public class WorkloadFacadeService {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 				WorkloadType.BATCH);
 			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
-		} catch (K8sException ignored) {
+		} catch (KubernetesClientException ignored) {
 
 		}
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
@@ -612,7 +617,7 @@ public class WorkloadFacadeService {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 				WorkloadType.INTERACTIVE);
 			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
-		} catch (K8sException ignored) {
+		} catch (KubernetesClientException ignored) {
 
 		}
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);

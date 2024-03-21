@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum WorkloadErrorCode  implements ErrorCode {
+public enum WorkloadErrorCode implements ErrorCode {
 	NOT_FOUND_WORKLOAD_POD(HttpStatus.NOT_FOUND.value(), "해당하는 워크로드의 pod를 조회 할 수 없습니다. 해당 워크로드가 종료되었거나, 실행되지 않았는지 확인바랍니다."),
 	NOT_FOUND_BATCH_JOB_LOG(HttpStatus.NOT_FOUND.value(), "해당하는 배치 잡 로그를 조회할 수 없습니다."),
 	NOT_FOUND_INTERACTIVE_JOB_LOG(HttpStatus.NOT_FOUND.value(), "해당하는 인터렉티브 잡 로그를 조회할 수 없습니다."),

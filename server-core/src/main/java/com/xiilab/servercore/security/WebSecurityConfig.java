@@ -8,18 +8,20 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.xiilab.servercore.common.filter.LicenseFilter;
 
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
-
 	public static final String ADMIN = "admin";
 	public static final String USER = "user";
 	private final JwtAuthConverter jwtAuthConverter;
-
+	private final LicenseFilter licenseFilter;
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable);
@@ -41,6 +43,7 @@ public class WebSecurityConfig {
 		http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
 			.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+		http.addFilterBefore(licenseFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 }

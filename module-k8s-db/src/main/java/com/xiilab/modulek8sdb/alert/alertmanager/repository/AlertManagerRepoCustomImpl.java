@@ -64,7 +64,7 @@ public class AlertManagerRepoCustomImpl implements AlertManagerRepoCustom{
 		if (search == null) {
 			return null;
 		}
-		return alertManagerEntity.alertName.contains(search);
+		return alertManagerReceiveEntity.nodeName.contains(search).or(alertManagerReceiveEntity.nodeIp.contains(search));
 	}
 
 	private BooleanExpression eqCategoryType(String categoryType) {
