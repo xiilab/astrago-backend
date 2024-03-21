@@ -13,14 +13,16 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class CreateSvcReqDTO extends K8SResourceReqDTO {
 	private String workspace;
+	private String workloadResourceName;
 	private SvcType svcType;
 	private String jobName;
 	private List<CreateSvcPortReqDTO> ports;
 
 	public static CreateSvcReqDTO createWorkloadReqDTOToCreateServiceDto(
-		ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String jobName) {
+		ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String jobName, String workloadResourceName) {
 		return CreateSvcReqDTO.builder()
 			.name(moduleCreateWorkloadReqDTO.getName())
+// 			.workloadResourceName(moduleCreateWorkloadReqDTO.get)
 			.description(moduleCreateWorkloadReqDTO.getDescription())
 			.creatorId(moduleCreateWorkloadReqDTO.getCreatorId())
 			.creatorUserName(moduleCreateWorkloadReqDTO.getCreatorUserName())
@@ -28,6 +30,7 @@ public class CreateSvcReqDTO extends K8SResourceReqDTO {
 			.workspace(moduleCreateWorkloadReqDTO.getWorkspace())
 			.svcType(SvcType.NODE_PORT)
 			.jobName(jobName)
+			.workloadResourceName(workloadResourceName)
 			.ports(moduleCreateWorkloadReqDTO.getPorts().stream().map(port -> new CreateSvcPortReqDTO(port.name(), port.port())).toList())
 			.build();
 	}

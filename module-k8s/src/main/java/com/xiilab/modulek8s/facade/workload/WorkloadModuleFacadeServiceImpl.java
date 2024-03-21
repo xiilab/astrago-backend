@@ -89,7 +89,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 			if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getPorts())) {
 				CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createWorkloadReqDTOToCreateServiceDto(
-					moduleCreateWorkloadReqDTO, createJobResDTO.getName());
+					moduleCreateWorkloadReqDTO, createJobResDTO.getName(), createJobResDTO.getResourceName());
 
 				// 노드포트 연결
 				svcService.createNodePortService(createSvcReqDTO);

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ImageErrorCode implements ErrorCode {
+	NOT_FOUND_IMAGE_PORT(HttpStatus.NOT_FOUND.value(), "이미지 포트를 조회할 수 없습니다."),
 	NOT_FOUND_IMAGE(HttpStatus.NOT_FOUND.value(), "해당하는 이미지를 조회할 수 없습니다."),
 	NOT_FOUND_CREDENTIAL(HttpStatus.NOT_FOUND.value(), "해당하는 크레덴셜을 조회할 수 없습니다."),
 	FAILED_SAVE_BUILT_IN_IMAGE(HttpStatus.NOT_FOUND.value(), "빌트인 이미지 저장에 실패하였습니다."),

@@ -12,6 +12,7 @@ public enum LabelField {
 	CODES("codes"),
 	STORAGE_TYPE("storage-type"),
 	RESOURCE_NAME("resource-name"),
+	WORKLOAD_RESOURCE_NAME("workload-resource-name"),
 	STORAGE_NAME("storage-name"),
 	CONTROL_BY("control-by"),
 	JOB_NAME("job-name"),

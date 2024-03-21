@@ -7,5 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum FrameWorkType {
 	PYTORCH,
-	TENSORFLOW
+	TENSORFLOW,
+	JUPYTER,
+	VSCODE
 }

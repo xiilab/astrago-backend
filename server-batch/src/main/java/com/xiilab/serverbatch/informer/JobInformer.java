@@ -90,7 +90,6 @@ public abstract class JobInformer {
 	@Transactional
 	protected void saveJobHistory(String namespace, Namespace namespaceObject, Container container,
 		K8SResourceMetadataDTO metadataFromResource) {
-		// TODO metadataFromResource.getCpuReq() 확인 필요
 		JobEntity jobEntity = JobEntity.jobBuilder()
 			.uid(metadataFromResource.getUid())
 			.name(metadataFromResource.getWorkloadName())

@@ -83,47 +83,48 @@
 // 		Assertions.assertThat(list.getItems()).hasSize(1);
 // 	}
 //
-// 	private ModuleCreateWorkloadReqDTO createModuleWorkloadReqDTO() {
-// 		List<ModuleEnvReqDTO> envList = new ArrayList<>();
-// 		envList.add(new ModuleEnvReqDTO("TEST", "TEST"));
 //
-// 		List<ModulePortReqDTO> portList = new ArrayList<>();
-// 		portList.add(new ModulePortReqDTO("port1", 8080));
-// 		portList.add(new ModulePortReqDTO("port3", 8089));
-//
-// 		List<ModuleVolumeReqDTO> volumeList = new ArrayList<>();
-// 		volumeList.add(
-// 			new ModuleVolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume1", "test", 5, "/usr/local/etc",
-// 				"nfs-csi")
-// 		);
-// 		volumeList.add(
-// 			new ModuleVolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume2", "test", 5,
-// 				"/usr/local/src/code", "nfs-csi")
-// 		);
-//
-// 		List<ModuleCodeReqDTO> codeReqs = new ArrayList<>();
-// 		codeReqs.add(
-// 			new ModuleCodeReqDTO(CodeRepositoryType.PUBLIC, "https://github.com/mfvanek/spring5-mvc-opentracing.git",
-// 				"master", "/mnt"));
-//
-// 		ModuleCreateWorkloadReqDTO createWorkloadReqDTO = ModuleCreateWorkloadReqDTO.builder()
-// 			.name("사용자 지정 이름")
-// 			.description("Hello world!")
-// 			.workloadType(WorkloadType.BATCH)
-// 			.creatorName("SJO")
-// 			.workspace("test")
-// 			.creator("test1234")
-// 			.image(new ModuleImageReqDTO("ubuntu", "latest"))
-// 			//.image("ubuntu")
-// 			.ports(portList)
-// 			.envs(envList)
-// 			.command("while true; do echo hello; sleep 10;done")
-// 			.volumes(volumeList)
-// 			.cpuRequest(0.5123312132f)
-// 			.gpuRequest(1)
-// 			.memRequest(0.5123312132132f)
-// 			.codes(codeReqs)
-// 			.build();
-// 		return createWorkloadReqDTO;
-// 	}
+// 	// private ModuleCreateWorkloadReqDTO createModuleWorkloadReqDTO() {
+// 	// 	List<ModuleEnvReqDTO> envList = new ArrayList<>();
+// 	// 	envList.add(new ModuleEnvReqDTO("TEST", "TEST"));
+// 	//
+// 	// 	List<ModulePortReqDTO> portList = new ArrayList<>();
+// 	// 	portList.add(new ModulePortReqDTO("port1", 8080));
+// 	// 	portList.add(new ModulePortReqDTO("port3", 8089));
+// 	//
+// 	// 	List<ModuleVolumeReqDTO> volumeList = new ArrayList<>();
+// 	// 	volumeList.add(
+// 	// 		new ModuleVolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume1", "test", 5, "/usr/local/etc",
+// 	// 			"nfs-csi")
+// 	// 	);
+// 	// 	volumeList.add(
+// 	// 		new ModuleVolumeReqDTO(StorageType.NFS, VolumeSelectionType.NEW, "volume2", "test", 5,
+// 	// 			"/usr/local/src/code", "nfs-csi")
+// 	// 	);
+// 	//
+// 	// 	List<ModuleCodeReqDTO> codeReqs = new ArrayList<>();
+// 	// 	codeReqs.add(
+// 	// 		new ModuleCodeReqDTO(CodeRepositoryType.PUBLIC, "https://github.com/mfvanek/spring5-mvc-opentracing.git",
+// 	// 			"master", "/mnt"));
+// 	//
+// 	// 	ModuleCreateWorkloadReqDTO createWorkloadReqDTO = ModuleCreateWorkloadReqDTO.builder()
+// 	// 		.name("사용자 지정 이름")
+// 	// 		.description("Hello world!")
+// 	// 		.workloadType(WorkloadType.BATCH)
+// 	// 		.creatorName("SJO")
+// 	// 		.workspace("test")
+// 	// 		.creator("test1234")
+// 	// 		.image(new ModuleImageReqDTO("ubuntu", "latest"))
+// 	// 		//.image("ubuntu")
+// 	// 		.ports(portList)
+// 	// 		.envs(envList)
+// 	// 		.command("while true; do echo hello; sleep 10;done")
+// 	// 		.volumes(volumeList)
+// 	// 		.cpuRequest(0.5123312132f)
+// 	// 		.gpuRequest(1)
+// 	// 		.memRequest(0.5123312132132f)
+// 	// 		.codes(codeReqs)
+// 	// 		.build();
+// 	// 	return createWorkloadReqDTO;
+// 	// }
 // }

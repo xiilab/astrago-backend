@@ -186,15 +186,17 @@ public class FindWorkloadResDTO extends ResDTO {
 	public static class Port {
 		private String name;
 		private Integer port;
+		private String url;
 
 		public Port(PortEntity port) {
 			this.name = port.getName();
 			this.port = port.getPortNum();
 		}
 
-		public Port(String name, Integer port) {
+		public Port(String name, Integer port, String url) {
 			this.name = name;
 			this.port = port;
+			this.url = url;
 		}
 	}
 

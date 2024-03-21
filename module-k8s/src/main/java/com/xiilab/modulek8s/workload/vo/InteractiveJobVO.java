@@ -194,6 +194,8 @@ public class InteractiveJobVO extends WorkloadVO {
 	private void addContainerCommand(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		if (StringUtils.isNotBlank(command)) {
 			podSpecContainer.addAllToCommand(convertCmd());
+		} else {
+			podSpecContainer.withTty(true);
 		}
 	}
 

@@ -2,7 +2,6 @@ package com.xiilab.servercore.image.service;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -23,7 +22,6 @@ import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.version.entity.CompatibleFrameworkVersionEntity;
-import com.xiilab.modulek8sdb.version.entity.FrameWorkVersionEntity;
 import com.xiilab.modulek8sdb.version.repository.CompatibleFrameWorkVersionRepository;
 import com.xiilab.servercore.image.dto.ImageReqDTO;
 import com.xiilab.servercore.image.dto.ImageResDTO;
@@ -74,7 +72,7 @@ public class ImageServiceImpl implements ImageService {
 			findSearchCondition.getWorkloadType(), pageRequest);
 
 		if (findSearchCondition.getImageType() == ImageType.BUILT) {
-			setRecommendedAndAvailableBuiltInImages(images.getContent());
+			getRecommendAndSetAvailableBuiltInImages(images.getContent());
 		}
 
 		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements());
@@ -130,7 +128,7 @@ public class ImageServiceImpl implements ImageService {
 		}
 	}
 
-	private void setRecommendedAndAvailableBuiltInImages(List<ImageEntity> images) {
+	private void getRecommendAndSetAvailableBuiltInImages(List<ImageEntity> images) {
 		List<CompatibleFrameworkVersionEntity> findComFrameworkVersionEntities = compatibleFrameWorkVersionRepository.findAll();
 
 		// 사용가능한 쿠다 maximum 버전
@@ -146,17 +144,20 @@ public class ImageServiceImpl implements ImageService {
 			return Float.parseFloat(builtInImageEntity.getCudaVersion());
 		}).reversed());
 
+		int totalCount = 0;
 		int count = 0;
-		for (ImageEntity imageEntity : sortImages) {
-			BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)imageEntity;
+		for(int i = 0; i < sortImages.size(); i++) {
+		// for (ImageEntity imageEntity : sortImages) {
+			BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity) sortImages.get(i);
 			Float imageCudaVersion = Float.parseFloat(builtInImageEntity.getCudaVersion());
 			if (!NumberValidUtils.isNullOrZero(imageCudaVersion)) {
-				// maxCudaVersion보다 낮은것만 사용 가능
+				// maxCudaVersion보다 낮거나 같은 것만 사용
 				if (imageCudaVersion.compareTo(maxCudaVersion) <= 0) {
 					builtInImageEntity.setAvailableStatus(true);
+					totalCount++;
 					count++;
+					// 상위 4개의 엔티티만 버전 추천
 					if (count <= 4) {
-						// 상위 4개의 엔티티만 추천버전
 						builtInImageEntity.setRecommendStatus(true);
 					}
 				}
