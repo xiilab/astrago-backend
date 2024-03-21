@@ -414,7 +414,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.gpuIndexs(gpuIndex)
 					.migEnable(false)
 					.build()))
-				.gpuProduct(node.getMetadata().getLabels().get("nvidia.com/gpu.product"))
+				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get("nvidia.com/gpu.product")))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		} else {
@@ -423,7 +423,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
 				.migInfos(convertMapToMIGInfo(rawMIGInfo))
-				.gpuProduct(node.getMetadata().getLabels().get("nvidia.com/gpu.product"))
+				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get("nvidia.com/gpu.product")))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		}
