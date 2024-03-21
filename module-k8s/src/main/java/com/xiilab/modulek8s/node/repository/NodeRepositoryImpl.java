@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Repository;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -62,7 +63,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String DISK_PRESSURE = "DiskPressure";
 	private final String PID_PRESSURE = "PIDPressure";
 	private final String READY = "Ready";
-
+	private final ResourceLoader resourceLoader;
 	@Override
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
 		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
@@ -320,7 +321,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String chipset = extractGpuChipset(productName);
 			List<Map<String, Integer>> resProfile = new ArrayList<>();
 			//MIGProfile.json을 읽어온다.
-			File file = new File(String.format("server-core/src/main/resources/migProfile/%s.json", chipset));
+			org.springframework.core.io.Resource resource = resourceLoader.getResource(
+				String.format("classpath:migProfile/%s.json", chipset));
+			File file = resource.getFile();
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
 				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
@@ -345,9 +348,10 @@ public class NodeRepositoryImpl implements NodeRepository {
 	public int getMIGProfileGICount(String productName, String profileName) throws IOException {
 		try {
 			String chipset = extractGpuChipset(productName);
-			List<Map<String, Integer>> resProfile = new ArrayList<>();
 			//MIGProfile.json을 읽어온다.
-			File file = new File(String.format("server-core/src/main/resources/migProfile/%s.json", chipset));
+			org.springframework.core.io.Resource resource = resourceLoader.getResource(
+				String.format("classpath:migProfile/%s.json", chipset));
+			File file = resource.getFile();
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
 				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
