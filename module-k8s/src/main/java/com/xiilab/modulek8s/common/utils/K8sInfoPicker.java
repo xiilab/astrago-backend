@@ -143,9 +143,9 @@ public class K8sInfoPicker {
 			Map<String, String> mountAnnotationMap = job.getSpec().getTemplate().getMetadata().getAnnotations();
 			List<K8SResourceMetadataDTO.Code> codes = initializeCodesInfo(initContainers);
 			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() :
-				LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+				DateUtils.convertK8sUtcTimeString(metadata.getCreationTimestamp());
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
-				LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+				DateUtils.convertK8sUtcTimeString(metadata.getDeletionTimestamp());
 			return K8SResourceMetadataDTO.builder()
 				.uid(metadata.getUid())
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
@@ -229,9 +229,9 @@ public class K8sInfoPicker {
 			Map<String, String> mountAnnotationMap = deployment.getSpec().getTemplate().getMetadata().getAnnotations();
 			List<K8SResourceMetadataDTO.Code> codes = initializeCodesInfo(initContainers);
 			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() :
-				LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+				DateUtils.convertK8sUtcTimeString(metadata.getCreationTimestamp());
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
-				LocalDateTime.parse(metadata.getDeletionTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
+				DateUtils.convertK8sUtcTimeString(metadata.getDeletionTimestamp());
 			return K8SResourceMetadataDTO.builder()
 				.uid(metadata.getUid())
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
@@ -370,7 +370,7 @@ public class K8sInfoPicker {
 				} else {
 					gpu += capacityGPU;
 				}
-			//MIG이 불가능한 GPU이거나 GPU가 없는 경우
+				//MIG이 불가능한 GPU이거나 GPU가 없는 경우
 			} else {
 				gpu += node.getStatus().getCapacity().get("nvidia.com/gpu") == null ?
 					0 : Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").getAmount());
