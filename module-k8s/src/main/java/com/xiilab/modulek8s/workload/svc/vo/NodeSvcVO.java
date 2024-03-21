@@ -32,7 +32,8 @@ import lombok.experimental.SuperBuilder;
 public class NodeSvcVO extends K8SResourceReqVO {
 	private String workspace;        //워크스페이스
 	private SvcType svcType;        // 서비스 타입
-	private String jobName;	// 잡 메타데이터 이름 (selector로 검색하기 위해 추가)
+	// private String jobName;	// 잡 메타데이터 이름 (selector로 검색하기 위해 추가)
+	private String workloadResourceName;
 	private List<SvcPortVO> ports; // 연결할 포트 목록
 
 	@Override
@@ -43,26 +44,13 @@ public class NodeSvcVO extends K8SResourceReqVO {
 			.build();
 	}
 
-	public static NodeSvcVO createServiceDtoToServiceVO(CreateSvcReqDTO createSvcReqDTO) {
-		return NodeSvcVO.builder()
-			.name(createSvcReqDTO.getName())
-			.description(createSvcReqDTO.getDescription())
-			.creatorUserName(createSvcReqDTO.getCreatorUserName())
-			.creatorFullName(createSvcReqDTO.getCreatorFullName())
-			.creatorId(createSvcReqDTO.getCreatorId())
-			.workspace(createSvcReqDTO.getWorkspace())
-			.svcType(createSvcReqDTO.getSvcType())
-			.jobName(createSvcReqDTO.getJobName())
-			.ports(createSvcReqDTO.getPorts().stream().map(port -> new SvcPortVO(port.name(), port.port())).toList())
-			.build();
-	}
-
 	protected ResourceType getType() {
 		return ResourceType.SERVICE;
 	}
 
 	@Override
 	protected ObjectMeta createMeta() {
+		String svcName = getUniqueResourceName();
 		return new ObjectMetaBuilder()
 			.withName(getUniqueResourceName())
 			.withNamespace(workspace)
@@ -76,8 +64,8 @@ public class NodeSvcVO extends K8SResourceReqVO {
 			))
 			.withLabels(Map.of(
 				LabelField.CONTROL_BY.getField(), "astra",
-				LabelField.JOB_NAME.getField(), jobName,
-				LabelField.APP.getField(), jobName
+				LabelField.APP.getField(), svcName,
+				LabelField.WORKLOAD_RESOURCE_NAME.getField(), workloadResourceName
 			))
 			.build();
 	}
@@ -86,7 +74,7 @@ public class NodeSvcVO extends K8SResourceReqVO {
 		ServiceSpecBuilder serviceSpecBuilder = new ServiceSpecBuilder()
 			.withType(SvcType.NODE_PORT.getType())
 			.withSelector(Map.of(
-				LabelField.APP.getField(), jobName
+				LabelField.APP.getField(), workloadResourceName
 			));
 
 		if (!CollectionUtils.isEmpty(ports)) {
@@ -104,5 +92,20 @@ public class NodeSvcVO extends K8SResourceReqVO {
 				.withTargetPort(new IntOrString(port.port()))
 				.build()
 			).toList();
+	}
+
+	public static NodeSvcVO createServiceDtoToServiceVO(CreateSvcReqDTO createSvcReqDTO) {
+		return NodeSvcVO.builder()
+			.name(createSvcReqDTO.getName())
+			.description(createSvcReqDTO.getDescription())
+			.creatorUserName(createSvcReqDTO.getCreatorUserName())
+			.creatorFullName(createSvcReqDTO.getCreatorFullName())
+			.creatorId(createSvcReqDTO.getCreatorId())
+			.workspace(createSvcReqDTO.getWorkspace())
+			.svcType(createSvcReqDTO.getSvcType())
+			// .jobName(createSvcReqDTO.getJobName())
+			.workloadResourceName(createSvcReqDTO.getWorkloadResourceName())
+			.ports(createSvcReqDTO.getPorts().stream().map(port -> new SvcPortVO(port.name(), port.port())).toList())
+			.build();
 	}
 }

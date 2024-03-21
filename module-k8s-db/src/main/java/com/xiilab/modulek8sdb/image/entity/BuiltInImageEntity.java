@@ -48,6 +48,12 @@ public class BuiltInImageEntity extends ImageEntity {
 	@Column(name = "FRAMEWORK_VERSION")
 	private String frameworkVersion;
 
+	@Column(name = "PORTS")
+	private String ports;
+
+	@Column(name = "COMMAND")
+	private String command;
+
 	@Transient
 	private boolean availableStatus = false;
 

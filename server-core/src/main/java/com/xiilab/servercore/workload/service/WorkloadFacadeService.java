@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,7 +44,9 @@ import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.common.utils.DateUtils;
+import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
+import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
@@ -56,6 +59,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
@@ -68,7 +72,6 @@ import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
-import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
@@ -77,10 +80,10 @@ import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
-import com.xiilab.servercore.image.dto.ImageReqDTO;
 import com.xiilab.servercore.image.dto.ImageResDTO;
 import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.model.service.ModelService;
+import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
@@ -100,6 +103,8 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final SvcModuleFacadeService svcModuleFacadeService;
+	private final NodeFacadeService nodeFacadeService;
 	private final PinService pinService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
@@ -152,7 +157,8 @@ public class WorkloadFacadeService {
 
 	}
 
-	private void checkAndSendWorkspaceResourceOverAlert(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+	private void checkAndSendWorkspaceResourceOverAlert(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO,
+		UserInfoDTO userInfoDTO) {
 		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
 			moduleCreateWorkloadReqDTO.getWorkspace());
 		// CPU
@@ -170,16 +176,20 @@ public class WorkloadFacadeService {
 		if (memUsed != 0.0f) {
 			memUsed = memUsed / 1000.0f;
 		}
-		boolean isMemOverResource = isOverResource(String.valueOf(memUsed), moduleCreateWorkloadReqDTO.getMemRequest(), workspaceResourceStatus.getResourceStatus().getMemLimit());
+		boolean isMemOverResource = isOverResource(String.valueOf(memUsed), moduleCreateWorkloadReqDTO.getMemRequest(),
+			workspaceResourceStatus.getResourceStatus().getMemLimit());
 
 		if (isCpuOverResource || isGpuOverResource || isMemOverResource) {
 			SystemAlertMessage workspaceResourceOverAdmin = SystemAlertMessage.WORKSPACE_RESOURCE_OVER_ADMIN;
-			String mailTitle = String.format(workspaceResourceOverAdmin.getMailTitle(), workspaceResourceStatus.getName());
+			String mailTitle = String.format(workspaceResourceOverAdmin.getMailTitle(),
+				workspaceResourceStatus.getName());
 			String title = workspaceResourceOverAdmin.getTitle();
-			String message = String.format(workspaceResourceOverAdmin.getMessage(), workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getName());
+			String message = String.format(workspaceResourceOverAdmin.getMessage(),
+				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getName());
 
 			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), userInfoDTO.getUserName(),
+				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(),
+					userInfoDTO.getUserName(),
 					userInfoDTO.getUserFullName(), mailTitle, title, message));
 		}
 	}
@@ -244,6 +254,7 @@ public class WorkloadFacadeService {
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			try {
 				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
 			} catch (Exception e2) {
@@ -267,9 +278,7 @@ public class WorkloadFacadeService {
 		// 코드 세팅
 		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
 		// PORT 세팅
-		List<FindWorkloadResDTO.Port> ports = moduleJobResDTO.getPorts().stream()
-			.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort()))
-			.toList();
+		List<FindWorkloadResDTO.Port> ports = generatePortResDTO(moduleJobResDTO);
 		// ENV 세팅
 		List<FindWorkloadResDTO.Env> envs = moduleJobResDTO.getEnvs().stream()
 			.map(env -> new FindWorkloadResDTO.Env(env.variable(), env.value()))
@@ -430,7 +439,8 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public PageDTO<WorkloadEventDTO> getWorkloadEvent(WorkloadType workloadType, WorkloadEventReqDTO workloadEventReqDTO) {
+	public PageDTO<WorkloadEventDTO> getWorkloadEvent(WorkloadType workloadType,
+		WorkloadEventReqDTO workloadEventReqDTO) {
 		List<Event> workloadEventList = workloadModuleService.getWorkloadEventList(workloadEventReqDTO.getWorkload(),
 			workloadEventReqDTO.getWorkspace(), workloadType);
 
@@ -444,7 +454,8 @@ public class WorkloadFacadeService {
 
 		if (Objects.nonNull(workloadEventReqDTO.getK8SReasonType())) {
 			eventStream = workloadEventList.stream()
-				.filter(workloadEvent -> workloadEvent.getReason().equals(workloadEventReqDTO.getK8SReasonType().name()));
+				.filter(
+					workloadEvent -> workloadEvent.getReason().equals(workloadEventReqDTO.getK8SReasonType().name()));
 		}
 
 		Comparator<Event> comparator = null;
@@ -823,9 +834,43 @@ public class WorkloadFacadeService {
 		return codes;
 	}
 
-	private boolean isOverResource(String workspaceResourceUsed, float createWorkloadResourceUsed, String workspaceResourceLimit) {
+	private boolean isOverResource(String workspaceResourceUsed, float createWorkloadResourceUsed,
+		String workspaceResourceLimit) {
 		float totalUsed = Float.parseFloat(workspaceResourceUsed) + createWorkloadResourceUsed;
 		float resourceLimit = Float.parseFloat(workspaceResourceLimit);
 		return totalUsed > resourceLimit;
+	}
+
+	private <T extends ModuleWorkloadResDTO> List<FindWorkloadResDTO.Port> generatePortResDTO(T moduleJobResDTO) {
+		List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+		if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
+			ResponseDTO.PageNodeDTO nodeList = nodeFacadeService.getNodeList(1, 1);
+			Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
+			if (node.isPresent()) {
+				// 서비스 포트 찾기
+				SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
+					moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
+
+				// findSvcs.getServices().stream
+				for (SvcResDTO.FindSvcDetail findSvcDetail : findSvcs.getServices()) {
+					Map<Integer, Integer> portMap = findSvcDetail.getPorts()
+						.stream()
+						.collect(Collectors.toMap(SvcResDTO.Port::getPort, SvcResDTO.Port::getNodePort));
+					ports = moduleJobResDTO.getPorts().stream()
+						.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort(),
+							getJobIDEUrl(node.get().getIp(), portMap.get(port.originPort()))))
+						.toList();
+				}
+			}
+		} else {
+			ports = moduleJobResDTO.getPorts().stream()
+				.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort(), null))
+				.toList();
+		}
+		return ports;
+	}
+
+	private String getJobIDEUrl(String ip, Integer nodePort) {
+		return "http://" + ip + ":" + nodePort;
 	}
 }
