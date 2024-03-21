@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
@@ -15,7 +17,6 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -59,6 +60,7 @@ public abstract class ModuleWorkloadResDTO {
 	protected String imageId;
 	protected String imageType;
 	protected Long imageCredentialId;
+	protected boolean canBeDeleted;
 
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		if (hasMetadata != null) {
@@ -91,6 +93,12 @@ public abstract class ModuleWorkloadResDTO {
 			imageId = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_ID.getField());
 		} else {
 			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
+		}
+	}
+
+	public void updateCanBeDeleted(String creator, Set<String> ownerWorkspace) {
+		if (this.creatorId.equals(creator) || ownerWorkspace.contains(this.workspaceResourceName)) {
+			this.canBeDeleted = true;
 		}
 	}
 

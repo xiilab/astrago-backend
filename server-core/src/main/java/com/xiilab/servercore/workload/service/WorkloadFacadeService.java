@@ -150,7 +150,8 @@ public class WorkloadFacadeService {
 
 	}
 
-	private void checkAndSendWorkspaceResourceOverAlert(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+	private void checkAndSendWorkspaceResourceOverAlert(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO,
+		UserInfoDTO userInfoDTO) {
 		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
 			moduleCreateWorkloadReqDTO.getWorkspace());
 		// CPU
@@ -168,16 +169,20 @@ public class WorkloadFacadeService {
 		if (memUsed != 0.0f) {
 			memUsed = memUsed / 1000.0f;
 		}
-		boolean isMemOverResource = isOverResource(String.valueOf(memUsed), moduleCreateWorkloadReqDTO.getMemRequest(), workspaceResourceStatus.getResourceStatus().getMemLimit());
+		boolean isMemOverResource = isOverResource(String.valueOf(memUsed), moduleCreateWorkloadReqDTO.getMemRequest(),
+			workspaceResourceStatus.getResourceStatus().getMemLimit());
 
 		if (isCpuOverResource || isGpuOverResource || isMemOverResource) {
 			SystemAlertMessage workspaceResourceOverAdmin = SystemAlertMessage.WORKSPACE_RESOURCE_OVER_ADMIN;
-			String mailTitle = String.format(workspaceResourceOverAdmin.getMailTitle(), workspaceResourceStatus.getName());
+			String mailTitle = String.format(workspaceResourceOverAdmin.getMailTitle(),
+				workspaceResourceStatus.getName());
 			String title = workspaceResourceOverAdmin.getTitle();
-			String message = String.format(workspaceResourceOverAdmin.getMessage(), workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getName());
+			String message = String.format(workspaceResourceOverAdmin.getMessage(),
+				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getName());
 
 			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), userInfoDTO.getUserName(),
+				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(),
+					userInfoDTO.getUserName(),
 					userInfoDTO.getUserFullName(), mailTitle, title, message));
 		}
 	}
@@ -344,7 +349,12 @@ public class WorkloadFacadeService {
 		//일반 워크로드 목록 필터링
 		List<ModuleWorkloadResDTO> normalWorkloadList = filterNormalWorkloads(workloadResDTOList,
 			searchName, workloadStatus, workloadSortCondition, userInfoDTO.getId());
-		return new PageDTO<>(pinWorkloadList, normalWorkloadList, pageNum, 10);
+		PageDTO<ModuleWorkloadResDTO> moduleWorkloadResDTOPageDTO = new PageDTO<>(pinWorkloadList, normalWorkloadList,
+			pageNum, 10);
+		moduleWorkloadResDTOPageDTO.getContent()
+			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(),
+				userInfoDTO.getWorkspaceList(true)));
+		return moduleWorkloadResDTOPageDTO;
 	}
 
 	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
@@ -428,7 +438,8 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public PageDTO<WorkloadEventDTO> getWorkloadEvent(WorkloadType workloadType, WorkloadEventReqDTO workloadEventReqDTO) {
+	public PageDTO<WorkloadEventDTO> getWorkloadEvent(WorkloadType workloadType,
+		WorkloadEventReqDTO workloadEventReqDTO) {
 		List<Event> workloadEventList = workloadModuleService.getWorkloadEventList(workloadEventReqDTO.getWorkload(),
 			workloadEventReqDTO.getWorkspace(), workloadType);
 
@@ -442,7 +453,8 @@ public class WorkloadFacadeService {
 
 		if (Objects.nonNull(workloadEventReqDTO.getK8SReasonType())) {
 			eventStream = workloadEventList.stream()
-				.filter(workloadEvent -> workloadEvent.getReason().equals(workloadEventReqDTO.getK8SReasonType().name()));
+				.filter(
+					workloadEvent -> workloadEvent.getReason().equals(workloadEventReqDTO.getK8SReasonType().name()));
 		}
 
 		Comparator<Event> comparator = null;
@@ -821,7 +833,8 @@ public class WorkloadFacadeService {
 		return codes;
 	}
 
-	private boolean isOverResource(String workspaceResourceUsed, float createWorkloadResourceUsed, String workspaceResourceLimit) {
+	private boolean isOverResource(String workspaceResourceUsed, float createWorkloadResourceUsed,
+		String workspaceResourceLimit) {
 		float totalUsed = Float.parseFloat(workspaceResourceUsed) + createWorkloadResourceUsed;
 		float resourceLimit = Float.parseFloat(workspaceResourceLimit);
 		return totalUsed > resourceLimit;
