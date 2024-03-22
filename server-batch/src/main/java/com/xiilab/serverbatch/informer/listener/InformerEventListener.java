@@ -21,6 +21,7 @@ import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertMappingRepository;
@@ -42,6 +43,7 @@ public class InformerEventListener {
 	private final MailService mailService;
 	private final WorkspaceAlertService workspaceAlertService;
 	private final WorkspaceAlertMappingRepository workspaceAlertMappingRepository;
+	private final AdminAlertMappingRepository adminAlertMappingRepository;
 	@Value("${spring.mail.username}")
 	private String adminEmailAddr;
 	private final ApplicationEventPublisher publisher;
