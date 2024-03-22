@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulecommon.alert.enums.SystemAlertType;
@@ -30,7 +31,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN,
+	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, AlertRole alertRole, ReadYN readYN,
 		String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate, Pageable pageable) {
 		Long totalCount = queryFactory.select(systemAlertEntity.count())
@@ -40,7 +41,8 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 				eqSystemAlertType(systemAlertType),
 				eqReadYn(readYN),
 				likeSearchText(searchText),
-				betweenRegDate(searchStartDate, searchEndDate)
+				betweenRegDate(searchStartDate, searchEndDate),
+				eqAlertRole(alertRole)
 			)
 			.fetchOne();
 
@@ -50,7 +52,8 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 				eqSystemAlertType(systemAlertType),
 				eqReadYn(readYN),
 				likeSearchText(searchText),
-				betweenRegDate(searchStartDate, searchEndDate)
+				betweenRegDate(searchStartDate, searchEndDate),
+				eqAlertRole(alertRole)
 			);
 
 		if (pageable != null) {
@@ -88,5 +91,16 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 		return StringUtils.hasText(searchText) ? systemAlertEntity.title.contains(searchText)
 			.or(systemAlertEntity.message.contains(searchText))
 			: null;
+	}
+
+	private BooleanExpression eqAlertRole(AlertRole alertRole) {
+		if (alertRole == AlertRole.USER) {
+			return systemAlertEntity.alertRole.eq(AlertRole.USER)
+				.or(systemAlertEntity.alertRole.eq(AlertRole.OWNER));
+		} else if (alertRole == AlertRole.ADMIN) {
+			return systemAlertEntity.alertRole.eq(AlertRole.ADMIN);
+		} else {
+			return null;
+		}
 	}
 }

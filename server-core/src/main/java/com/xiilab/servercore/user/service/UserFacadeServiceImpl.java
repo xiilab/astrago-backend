@@ -6,15 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.service.MailService;
-// import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertDTO;
-import com.xiilab.modulek8sdb.alert.systemalert.dto.SystemAlertSetDTO;
-import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
@@ -23,8 +19,6 @@ import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
-import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
-import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
 
@@ -130,27 +124,27 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		userService.updateUserInfoById(id, updateUserDTO);
 		UserInfo userInfo = userService.getUserInfoById(id);
 
-		SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
+		// SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
 
-		if (systemAlertSet.isUserSystemYN()) {
-			alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
-				.title(SystemAlertMessage.USER_UPDATE.getTitle())
-				.message(String.format(
-					SystemAlertMessage.USER_UPDATE.getMessage(),
-					userInfo.getLastName() + userInfo.getFirstName(),
-					userInfo.getEmail()))
-				.recipientId(adminId)
-				.senderId("SYSTEM")
-				.systemAlertType(SystemAlertType.USER)
-				.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
-				.build());
-		}
-		if (systemAlertSet.isUserEmailYN()) {
-			mailService.sendMail(MailDTO.builder()
-				.title(SystemAlertMessage.USER_CREATE.getMailTitle())
-				.receiverEmail(userInfo.getEmail())
-				.build());
-		}
+		// if (systemAlertSet.isUserSystemYN()) {
+		// 	alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
+		// 		.title(SystemAlertMessage.USER_UPDATE.getTitle())
+		// 		.message(String.format(
+		// 			SystemAlertMessage.USER_UPDATE.getMessage(),
+		// 			userInfo.getLastName() + userInfo.getFirstName(),
+		// 			userInfo.getEmail()))
+		// 		.recipientId(adminId)
+		// 		.senderId("SYSTEM")
+		// 		.systemAlertType(SystemAlertType.USER)
+		// 		.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
+		// 		.build());
+		// }
+		// if (systemAlertSet.isUserEmailYN()) {
+		// 	mailService.sendMail(MailDTO.builder()
+		// 		.title(SystemAlertMessage.USER_CREATE.getMailTitle())
+		// 		.receiverEmail(userInfo.getEmail())
+		// 		.build());
+		// }
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
@@ -31,16 +32,18 @@ public class SystemAlertReqDTO {
 		private SystemAlertType systemAlertType;
 		private SystemAlertEventType systemAlertEventType;
 		private ReadYN readYN;
+		private AlertRole alertRole;
 
 		@Builder
 		public SaveSystemAlert(String title, String message, String recipientId, String senderId,
-			SystemAlertType systemAlertType, SystemAlertEventType systemAlertEventType, ReadYN readYN) {
+			SystemAlertType systemAlertType, SystemAlertEventType systemAlertEventType, ReadYN readYN, AlertRole alertRole) {
 			this.title = title;
 			this.message = message;
 			this.recipientId = recipientId;
 			this.senderId = senderId;
 			this.systemAlertType = systemAlertType;
 			this.systemAlertEventType = systemAlertEventType;
+			this.alertRole = alertRole;
 			if (readYN == null) {
 				this.readYN = ReadYN.N;
 			}
@@ -63,6 +66,7 @@ public class SystemAlertReqDTO {
 		private SystemAlertType systemAlertType;
 		private ReadYN readYN;
 		private String searchText;
+		private AlertRole alertRole;
 		@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 		private LocalDateTime searchStartDate;
 		@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

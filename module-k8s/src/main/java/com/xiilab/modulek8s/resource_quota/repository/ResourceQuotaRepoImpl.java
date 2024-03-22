@@ -57,12 +57,12 @@ public class ResourceQuotaRepoImpl implements ResourceQuotaRepo {
 				.get(0);
 
 			resourceQuota.setSpec(resourceQuota.getSpec().edit().addToHard(Map.of(
-				REQUEST_CPU_KEY.getKey(), new Quantity(String.valueOf(cpuReq), "Gi"),
+				REQUEST_CPU_KEY.getKey(), new Quantity(String.valueOf(cpuReq)),
 				REQUEST_MEMORY_KEY.getKey(), new Quantity(String.valueOf(memReq), "Gi"),
-				REQUEST_GPU_KEY.getKey(), new Quantity(String.valueOf(gpuReq), "Gi"),
-				LIMITS_CPU_KEY.getKey(), new Quantity(String.valueOf(cpuReq), "Gi"),
+				REQUEST_GPU_KEY.getKey(), new Quantity(String.valueOf(gpuReq)),
+				LIMITS_CPU_KEY.getKey(), new Quantity(String.valueOf(cpuReq)),
 				LIMITS_MEMORY_KEY.getKey(), new Quantity(String.valueOf(memReq), "Gi"),
-				LIMITS_GPU_KEY.getKey(), new Quantity(String.valueOf(gpuReq), "Gi")
+				LIMITS_GPU_KEY.getKey(), new Quantity(String.valueOf(gpuReq))
 			)).build());
 			kubernetesClient.resource(resourceQuota).replace();
 		}

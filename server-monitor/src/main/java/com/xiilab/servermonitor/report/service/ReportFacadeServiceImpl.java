@@ -141,6 +141,9 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 		List<ReportDTO.SystemInfoDTO> result = new ArrayList<>();
 		String startDate = DataConverterUtil.getEndDate(endDate, reportType);
 
+		List<ResponseDTO.HistoryDTO> nodeInfo = prometheusService.getHistoryMetricBySystem(
+			"REPORT_SYSTEM_NODE_INFO", startDate, endDate);
+
 		List<ResponseDTO.HistoryDTO> cpuInfo = prometheusService.getHistoryMetricBySystem(
 			"REPORT_SYSTEM_INFO_CPU", startDate, endDate);
 
@@ -159,13 +162,14 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 		List<ResponseDTO.HistoryDTO> gpuModel = prometheusService.getHistoryMetricBySystem(
 			"REPORT_SYSTEM_INFO_GPU_MODEL", startDate, endDate);
 
-		cpuInfo.addAll(memInfo);
-		cpuInfo.addAll(diskInfo);
-		cpuInfo.addAll(gpuInfo);
-		cpuInfo.addAll(osInfo);
-		cpuInfo.addAll(gpuModel);
+		nodeInfo.addAll(cpuInfo);
+		nodeInfo.addAll(memInfo);
+		nodeInfo.addAll(diskInfo);
+		nodeInfo.addAll(gpuInfo);
+		nodeInfo.addAll(osInfo);
+		nodeInfo.addAll(gpuModel);
 
-		Map<String, List<ResponseDTO.HistoryDTO>> systemInfo = cpuInfo.stream()
+		Map<String, List<ResponseDTO.HistoryDTO>> systemInfo = nodeInfo.stream()
 			.collect(Collectors.groupingBy(ResponseDTO.HistoryDTO::nodeName));
 
 		for (Map.Entry<String, List<ResponseDTO.HistoryDTO>> entry : systemInfo.entrySet()) {
@@ -175,19 +179,22 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 			for (ResponseDTO.HistoryDTO value : entry.getValue()) {
 
 				switch (value.metricName()) {
-					case "REPORT_SYSTEM_INFO_CPU" -> {
+					case "REPORT_SYSTEM_NODE_INFO" -> {
 						systemInfoDTO.setServerName(value.nodeName());
-						systemInfoDTO.setIp(value.instance());
-						systemInfoDTO.setCpu(Long.parseLong(value.valueDTOS().get(0).value()));
+						systemInfoDTO.setIp(value.internalIp());
 					}
+					case "REPORT_SYSTEM_INFO_CPU" ->
+						systemInfoDTO.setCpu(Long.parseLong(value.valueDTOS().get(0).value()));
 					case "REPORT_SYSTEM_INFO_MEM" ->
 						systemInfoDTO.setMem(Long.parseLong(value.valueDTOS().get(0).value()));
 					case "REPORT_SYSTEM_INFO_DISK" ->
 						systemInfoDTO.setDisk(Long.parseLong(value.valueDTOS().get(0).value()));
 					case "REPORT_SYSTEM_INFO_GPU" ->
 						systemInfoDTO.setGpu(Long.parseLong(value.valueDTOS().get(0).value()));
-					case "REPORT_SYSTEM_INFO_OS" -> systemInfoDTO.setOs(value.prettyName());
-					case "REPORT_SYSTEM_INFO_GPU_MODEL" -> systemInfoDTO.setGpuModelName(value.modelName());
+					case "REPORT_SYSTEM_INFO_OS" ->
+						systemInfoDTO.setOs(value.prettyName());
+					case "REPORT_SYSTEM_INFO_GPU_MODEL" ->
+						systemInfoDTO.setGpuModelName(value.modelName());
 				}
 			}
 			result.add(systemInfoDTO);

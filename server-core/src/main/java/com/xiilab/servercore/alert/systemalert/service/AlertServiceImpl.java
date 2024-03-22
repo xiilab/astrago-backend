@@ -57,6 +57,7 @@ public class AlertServiceImpl implements AlertService {
 			.senderId(saveSystemAlertReqDTO.getSenderId())
 			.systemAlertType(saveSystemAlertReqDTO.getSystemAlertType())
 			.systemAlertEventType(saveSystemAlertReqDTO.getSystemAlertEventType())
+			.alertRole(saveSystemAlertReqDTO.getAlertRole())
 			.readYN(ReadYN.N)
 			.build();
 		return systemAlertRepository.save(saveSystemAlert).getId();
@@ -74,6 +75,7 @@ public class AlertServiceImpl implements AlertService {
 		SystemAlertReqDTO.FindSearchCondition findSearchCondition, Pageable pageable) {
 		// 각 타입 카운트를 저장할 map
 		Map<SystemAlertType, Long> allAlertTypeCountMap = getAllAlertTypeCountMap(loginUserId,
+			findSearchCondition.getAlertRole() != null? findSearchCondition.getAlertRole() : null,
 			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
 			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
 			findSearchCondition.getSearchStartDate() != null ? findSearchCondition.getSearchStartDate() : null,
@@ -89,6 +91,7 @@ public class AlertServiceImpl implements AlertService {
 		// 항목별 조회 API
 		Page<SystemAlertEntity> systemAlertEntities = systemAlertRepository.findAlerts(loginUserId,
 			findSearchCondition.getSystemAlertType() != null ? findSearchCondition.getSystemAlertType() : null,
+			findSearchCondition.getAlertRole() != null? findSearchCondition.getAlertRole() : null,
 			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
 			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
 			findSearchCondition.getSearchStartDate() != null ? findSearchCondition.getSearchStartDate() : null,
@@ -212,7 +215,7 @@ public class AlertServiceImpl implements AlertService {
 			userInfoDTO.getId());
 	}
 
-	private Map<SystemAlertType, Long> getAllAlertTypeCountMap(String loginUserId, ReadYN readYN, String searchText,
+	private Map<SystemAlertType, Long> getAllAlertTypeCountMap(String loginUserId, AlertRole alertRole, ReadYN readYN, String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate) {
 		Map<SystemAlertType, Long> allAlertTypeCountMap = new HashMap<>();
 		SystemAlertType[] values = SystemAlertType.values();
@@ -221,7 +224,7 @@ public class AlertServiceImpl implements AlertService {
 			allAlertTypeCountMap.put(values[i], 0L);
 		}
 
-		Page<SystemAlertEntity> allSystemAlertEntities = systemAlertRepository.findAlerts(loginUserId, null, readYN,
+		Page<SystemAlertEntity> allSystemAlertEntities = systemAlertRepository.findAlerts(loginUserId, null, alertRole, readYN,
 			searchText, searchStartDate, searchEndDate, null);
 		for (SystemAlertEntity allSystemAlertEntity : allSystemAlertEntities.getContent()) {
 			// 각 알람 타입별로 카운트 증가
