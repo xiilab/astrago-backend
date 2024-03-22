@@ -3,12 +3,14 @@ package com.xiilab.serverbatch.informer;
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
@@ -18,6 +20,8 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertSetEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
@@ -36,6 +40,7 @@ import com.xiilab.moduleuser.service.GroupService;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
@@ -57,14 +62,14 @@ public class BatchJobInformer extends JobInformer{
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
 		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
 		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
-		ImageWorkloadMappingRepository imageWorkloadMappingRepository, K8sAdapter k8sAdapter,
+		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository, K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
-		ImageRepository imageRepository, CredentialRepository credentialRepository,
+		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
 		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository,
 		ApplicationEventPublisher publisher) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
-			codeRepository, imageRepository, credentialRepository);
+			codeRepository, imageRepository, credentialRepository, svcRepository, volumeRepository);
 		this.k8sAdapter = k8sAdapter;
 		this.groupService = groupService;
 		this.systemAlertRepository = systemAlertRepository;
@@ -147,9 +152,22 @@ public class BatchJobInformer extends JobInformer{
 				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
 
+				// 잡 히스토리 저장
 				if (metadataFromResource != null) {
 					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
 				}
+
+				// PV, PVC 삭제
+				List<Volume> volumes = job.getSpec().getTemplate().getSpec().getVolumes();
+				for (Volume volume : volumes) {
+					if (!ObjectUtils.isEmpty(volume.getPersistentVolumeClaim())) {
+						deletePvAndPVC(namespace, volume.getName(), volume.getPersistentVolumeClaim().getClaimName());
+					}
+				}
+
+				// 서비스 삭제
+				deleteServices(metadataFromResource.getWorkspaceResourceName(), metadataFromResource.getWorkloadResourceName());
+
 				//워크로드 삭제 알림 발송
 				String workloadName = metadataFromResource.getWorkloadName();
 				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);

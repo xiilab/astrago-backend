@@ -1,6 +1,5 @@
 package com.xiilab.servercore.image.service;
 
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -64,7 +63,8 @@ public class ImageServiceImpl implements ImageService {
 	@Transactional(readOnly = true)
 	public ImageResDTO.FindImages findImages(ImageReqDTO.FindSearchCondition findSearchCondition) {
 		PageRequest pageRequest = null;
-		if (!NumberValidUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberValidUtils.isNullOrZero(findSearchCondition.getPageSize())) {
+		if (!NumberValidUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberValidUtils.isNullOrZero(
+			findSearchCondition.getPageSize())) {
 			pageRequest = PageRequest.of(findSearchCondition.getPageNo() - 1, findSearchCondition.getPageSize());
 		}
 
@@ -133,7 +133,8 @@ public class ImageServiceImpl implements ImageService {
 
 		// 사용가능한 쿠다 maximum 버전
 		Float maxCudaVersion = findComFrameworkVersionEntities.stream()
-			.map(compatibleFrameworkVersionEntity -> Float.parseFloat(compatibleFrameworkVersionEntity.getFrameWorkVersionEntity().getCudaVersion()))
+			.map(compatibleFrameworkVersionEntity -> Float.parseFloat(
+				compatibleFrameworkVersionEntity.getFrameWorkVersionEntity().getCudaVersion()))
 			.max(Float::compareTo)
 			.orElse(null);
 
@@ -146,9 +147,9 @@ public class ImageServiceImpl implements ImageService {
 
 		int totalCount = 0;
 		int count = 0;
-		for(int i = 0; i < sortImages.size(); i++) {
-		// for (ImageEntity imageEntity : sortImages) {
-			BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity) sortImages.get(i);
+		for (int i = 0; i < sortImages.size(); i++) {
+			// for (ImageEntity imageEntity : sortImages) {
+			BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)sortImages.get(i);
 			Float imageCudaVersion = Float.parseFloat(builtInImageEntity.getCudaVersion());
 			if (!NumberValidUtils.isNullOrZero(imageCudaVersion)) {
 				// maxCudaVersion보다 낮거나 같은 것만 사용

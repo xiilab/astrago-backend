@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public abstract class ModuleWorkloadResDTO {
 	protected LocalDateTime deletedAt;             // 워크로드 종료일시
 	protected SchedulingType schedulingType;       // 스케줄링 방식
 	protected List<ModuleEnvResDTO> envs;          // env 정의
-	protected List<ModulePortResDTO> ports;        // port 정의
+	protected List<ModulePortResDTO> ports = new ArrayList<>();        // port 정의
 	protected List<ModuleCodeResDTO> codes;        // port 정의
 	protected Map<Long, String> datasetMountPathMap = new HashMap<>();    // dataset - mount path 맵
 	protected Map<Long, String> modelMountPathMap = new HashMap<>(); // model - mount path 맵

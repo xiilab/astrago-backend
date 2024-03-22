@@ -2,12 +2,17 @@ package com.xiilab.serverbatch.informer;
 
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
+
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -24,6 +29,7 @@ import com.xiilab.moduleuser.service.GroupService;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
@@ -45,13 +51,13 @@ public class InteractiveJobInformer extends JobInformer{
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
 		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
 		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
-		ImageWorkloadMappingRepository imageWorkloadMappingRepository, K8sAdapter k8sAdapter,
+		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository, K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
-		ImageRepository imageRepository, CredentialRepository credentialRepository,
+		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
 		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
-			codeRepository, imageRepository, credentialRepository);
+			codeRepository, imageRepository, credentialRepository, svcRepository, volumeRepository);
 		this.k8sAdapter = k8sAdapter;
 		this.groupService = groupService;
 		this.systemAlertRepository = systemAlertRepository;
@@ -90,18 +96,17 @@ public class InteractiveJobInformer extends JobInformer{
 					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
 				}
 
-				// WorkspaceAlertSetEntity workspaceAlertSet = workspaceAlertSetRepository.getAlertSetEntityByWorkspaceName(
-				// 	deployment.getMetadata().getName());
-				// // 해당 워크스페이스 알림 설정이 True인 경우
-				// if(workspaceAlertSet.isWorkloadEndAlert()){
-				// 	GroupUserDTO workspaceOwner = groupService.getWorkspaceOwner(deployment.getMetadata().getName());
-				// 	systemAlertRepository.save(SystemAlertEntity.builder()
-				// 		.recipientId(workspaceOwner.getId())
-				// 		.systemAlertType(SystemAlertType.WORKLOAD)
-				// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), deployment.getMetadata().getName()))
-				// 		.senderId("SYSTEM")
-				// 		.build());
-				// }
+				// PV, PVC 삭제
+				List<Volume> volumes = deployment.getSpec().getTemplate().getSpec().getVolumes();
+				for (Volume volume : volumes) {
+					if (!ObjectUtils.isEmpty(volume.getPersistentVolumeClaim())) {
+						deletePvAndPVC(namespace, volume.getName(), volume.getPersistentVolumeClaim().getClaimName());
+					}
+				}
+
+				// 서비스 삭제
+				deleteServices(metadataFromResource.getWorkspaceResourceName(), metadataFromResource.getWorkloadResourceName());
+
 			}
 		});
 

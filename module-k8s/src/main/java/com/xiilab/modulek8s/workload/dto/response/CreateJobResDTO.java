@@ -24,7 +24,6 @@ public class CreateJobResDTO extends ModuleWorkloadResDTO {
 	private WorkloadStatus status;
 	private Map<Long, Map<String, String>> codesInfoMap;
 	private Map<Long, Map<String, String>> datasetInfoMap;
-	// TODO 지워야 될수도?
 	private Map<Long, Map<String, String>> modelInfoMap;
 
 	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {

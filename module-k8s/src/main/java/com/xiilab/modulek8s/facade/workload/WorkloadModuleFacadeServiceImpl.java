@@ -95,7 +95,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 				svcService.createNodePortService(createSvcReqDTO);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {

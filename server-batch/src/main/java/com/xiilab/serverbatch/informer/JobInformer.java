@@ -16,10 +16,10 @@ import org.springframework.util.StringUtils;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
-import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -47,6 +47,7 @@ import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.ServiceList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,6 +65,8 @@ public abstract class JobInformer {
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
 	private final CredentialRepository credentialRepository;
+	private final SvcRepository k8sSvcRepository;
+	private VolumeRepository volumeRepository;
 
 	protected JobInformer(WorkloadHistoryRepo workloadHistoryRepo,
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
@@ -74,7 +77,9 @@ public abstract class JobInformer {
 		ModelRepository modelRepository,
 		CodeRepository codeRepository,
 		ImageRepository imageRepository,
-		CredentialRepository credentialRepository) {
+		CredentialRepository credentialRepository,
+		SvcRepository svcRepository,
+		VolumeRepository volumeRepository) {
 		this.workloadHistoryRepo = workloadHistoryRepo;
 		this.datasetWorkLoadMappingRepository = datasetWorkLoadMappingRepository;
 		this.modelWorkLoadMappingRepository = modelWorkLoadMappingRepository;
@@ -85,6 +90,8 @@ public abstract class JobInformer {
 		this.codeRepository = codeRepository;
 		this.imageRepository = imageRepository;
 		this.credentialRepository = credentialRepository;
+		this.k8sSvcRepository = svcRepository;
+		this.volumeRepository = volumeRepository;
 	}
 
 	@Transactional
@@ -125,12 +132,12 @@ public abstract class JobInformer {
 		saveDataMapping(getSplitIds(modelIds), modelRepository::findById, jobEntity, EntityMappingType.MODEL,
 			metadataFromResource.getModelMountPathMap(), null);
 
-
 		RegUser regUser = new RegUser(metadataFromResource.getCreatorId(), metadataFromResource.getCreatorUserName(),
 			metadataFromResource.getCreatorFullName());
 
 		// 커스텀 소스코드 등록 후 코드 mapping insert
-		String codeIds = saveCustomCode(regUser, namespace, metadataFromResource.getCodeIds(), metadataFromResource.getCodes());
+		String codeIds = saveCustomCode(regUser, namespace, metadataFromResource.getCodeIds(),
+			metadataFromResource.getCodes());
 		saveDataMapping(getSplitIds(codeIds), codeRepository::findById, jobEntity, EntityMappingType.CODE,
 			null, metadataFromResource.getCodeMountPathMap());
 
@@ -141,13 +148,28 @@ public abstract class JobInformer {
 	}
 
 	// TODO 서비스, PV, PVC 삭제로직 필요
+	protected void deleteServices(String workspaceResourceName, String workloadResourceName) {
+		ServiceList serviceList = k8sSvcRepository.getServicesByResourceName(workspaceResourceName, workloadResourceName);
+		serviceList.getItems().forEach(service -> {
+				k8sSvcRepository.deleteServiceByResourceName(service.getMetadata().getName(), workspaceResourceName);
+			}
+		);
+
+		// svcRepository.deleteServiceByResourceName(workspaceResourceName, worloadResourceName);
+	}
+
+	protected void deletePvAndPVC(String workspaceResourceName, String pvName, String pvcName) {
+		volumeRepository.deletePVC(pvcName, workspaceResourceName);
+		volumeRepository.deletePV(pvName);
+	}
 
 	private String[] getSplitIds(String ids) {
 		return ids != null ? ids.split(",") : null;
 	}
 
 	// 커스텀 소스코드 DB에 등록 후 ID 추가해서 반환
-	private String saveCustomCode(RegUser regUser, String namespace, String codeIds, List<K8SResourceMetadataDTO.Code> codes) {
+	private String saveCustomCode(RegUser regUser, String namespace, String codeIds,
+		List<K8SResourceMetadataDTO.Code> codes) {
 		StringBuilder result = StringUtils.hasText(codeIds) ? new StringBuilder(codeIds) : new StringBuilder();
 		if (!CollectionUtils.isEmpty(codes)) {
 			for (K8SResourceMetadataDTO.Code code : codes) {

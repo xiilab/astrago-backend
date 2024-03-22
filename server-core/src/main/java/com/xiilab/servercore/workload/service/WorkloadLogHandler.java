@@ -66,7 +66,7 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage());
 		}
 	}

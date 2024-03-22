@@ -21,15 +21,13 @@ public class SvcRepositoryImpl implements SvcRepository {
 	public void createNodePortService(NodeSvcVO nodeSvcVO) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			client.resource(nodeSvcVO.createResource()).create();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void deleteService(String workSpaceName, String workloadName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			client.services().inNamespace(workloadName).withLabelSelector(workloadName).delete();
+			client.services().inNamespace(workSpaceName).withLabelSelector(workloadName).delete();
 		}
 	}
 

@@ -723,7 +723,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			if (Objects.nonNull(items)) {
 				return items.stream()
 					.filter(item -> item.getRegarding().getKind().equals("Pod") &&
-							item.getRegarding().getName().equals(pod))
+						item.getRegarding().getName().equals(pod))
 					.toList();
 			}
 			return new ArrayList<>();

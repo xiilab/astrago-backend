@@ -847,6 +847,11 @@ public class WorkloadFacadeService {
 
 	private <T extends ModuleWorkloadResDTO> List<FindWorkloadResDTO.Port> generatePortResDTO(T moduleJobResDTO) {
 		List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+
+		// if (CollectionUtils.isEmpty(moduleJobResDTO.getPorts())) {
+		// 	return ports;
+		// }
+
 		if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
 			ResponseDTO.PageNodeDTO nodeList = nodeFacadeService.getNodeList(1, 1);
 			Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
@@ -861,7 +866,8 @@ public class WorkloadFacadeService {
 						.stream()
 						.collect(Collectors.toMap(SvcResDTO.Port::getPort, SvcResDTO.Port::getNodePort));
 					ports = moduleJobResDTO.getPorts().stream()
-						.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort(),
+						.map(port -> new FindWorkloadResDTO.Port(port.name(),
+							port.originPort(),
 							getJobIDEUrl(node.get().getIp(), portMap.get(port.originPort()))))
 						.toList();
 				}
