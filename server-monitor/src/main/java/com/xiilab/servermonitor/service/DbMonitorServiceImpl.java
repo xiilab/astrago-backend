@@ -89,6 +89,7 @@ public class DbMonitorServiceImpl implements DbMonitorService{
 			long memRequest = 0;
 			long memApproval = 0;
 			long memRefuseCount = 0;
+			String workspaceName = "";
 			String userName = "";
 
 			for (Map.Entry<ResourceQuotaStatus, List<ResourceQuotaEntity>> entry2 : entry.getValue().entrySet()) {
@@ -111,12 +112,14 @@ public class DbMonitorServiceImpl implements DbMonitorService{
 							memRequest = memRequest + resourceQuotaEntity.getMemReq();
 						}
 					}
-					userName = resourceQuotaEntity.getRegUser().getRegUserName() + resourceQuotaEntity.getRegUser().getRegUserRealName();
+					workspaceName = resourceQuotaEntity.getWorkspaceName();
+					userName = resourceQuotaEntity.getRegUser().getRegUserName() + " (" + resourceQuotaEntity.getRegUser().getRegUserRealName() + ")";
 				}
 			}
 
 			result.add(ReportDTO.WorkspaceResourceQuotaDTO.builder()
-				.workspaceName(entry.getKey())
+				.workspaceResourceName(entry.getKey())
+				.workspaceName(workspaceName)
 				.userName(userName)
 				.gpuRequest(gpuRequest + gpuApproval + gpuRefuseCount)
 				.gpuApproval(gpuApproval)
