@@ -3,7 +3,9 @@ package com.xiilab.servercore.alert.systemalert.dto.response;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.enums.ReadYN;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
 import com.xiilab.modulecommon.alert.enums.SystemAlertType;
@@ -22,6 +24,7 @@ public class FindSystemAlertResDTO extends ResDTO {
 	private SystemAlertType systemAlertType;
 	private SystemAlertEventType systemAlertEventType;
 	private ReadYN readYN;
+	private AlertRole alertRole;
 
 	public static FindSystemAlertResDTO of(SystemAlertEntity systemAlertEntity) {
 		return FindSystemAlertResDTO.builder()
@@ -31,6 +34,7 @@ public class FindSystemAlertResDTO extends ResDTO {
 			.systemAlertType(systemAlertEntity.getSystemAlertType())
 			.systemAlertEventType(systemAlertEntity.getSystemAlertEventType())
 			.readYN(systemAlertEntity.getReadYN())
+			.alertRole(systemAlertEntity.getAlertRole())
 			.regUserId(systemAlertEntity.getRegUser().getRegUserId())
 			.regUserName(systemAlertEntity.getRegUser().getRegUserName())
 			.regUserRealName(systemAlertEntity.getRegUser().getRegUserRealName())

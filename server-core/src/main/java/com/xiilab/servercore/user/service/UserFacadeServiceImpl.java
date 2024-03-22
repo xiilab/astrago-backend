@@ -122,6 +122,29 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO) {
 		userService.updateUserInfoById(id, updateUserDTO);
+		UserInfo userInfo = userService.getUserInfoById(id);
+
+		// SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
+
+		// if (systemAlertSet.isUserSystemYN()) {
+		// 	alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
+		// 		.title(SystemAlertMessage.USER_UPDATE.getTitle())
+		// 		.message(String.format(
+		// 			SystemAlertMessage.USER_UPDATE.getMessage(),
+		// 			userInfo.getLastName() + userInfo.getFirstName(),
+		// 			userInfo.getEmail()))
+		// 		.recipientId(adminId)
+		// 		.senderId("SYSTEM")
+		// 		.systemAlertType(SystemAlertType.USER)
+		// 		.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
+		// 		.build());
+		// }
+		// if (systemAlertSet.isUserEmailYN()) {
+		// 	mailService.sendMail(MailDTO.builder()
+		// 		.title(SystemAlertMessage.USER_CREATE.getMailTitle())
+		// 		.receiverEmail(userInfo.getEmail())
+		// 		.build());
+		// }
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
 import java.time.LocalDateTime;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
 import com.xiilab.modulecommon.alert.enums.SystemAlertType;
@@ -48,10 +49,14 @@ public class SystemAlertEntity extends BaseEntity {
 	@Column(name = "READ_YN")
 	private ReadYN readYN;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "ALERT_ROLE")
+	private AlertRole alertRole;
+
 	@Builder
 	public SystemAlertEntity(RegUser regUser, LocalDateTime regDate,
 		LocalDateTime modDate, Long id, String title, String message, String recipientId, String senderId,
-		SystemAlertType systemAlertType, SystemAlertEventType systemAlertEventType, ReadYN readYN) {
+		SystemAlertType systemAlertType, SystemAlertEventType systemAlertEventType, ReadYN readYN, AlertRole alertRole) {
 		super(regUser, regDate, modDate);
 		this.id = id;
 		this.title = title;
@@ -61,6 +66,7 @@ public class SystemAlertEntity extends BaseEntity {
 		this.systemAlertType = systemAlertType;
 		this.systemAlertEventType = systemAlertEventType;
 		this.readYN = readYN;
+		this.alertRole = alertRole;
 	}
 
 	public void readAlert(){

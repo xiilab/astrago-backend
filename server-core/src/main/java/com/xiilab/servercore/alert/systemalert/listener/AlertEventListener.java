@@ -83,6 +83,7 @@ public class AlertEventListener {
 						.senderId(regUserID)
 						.systemAlertType(findAlert.getAlertType())
 						.systemAlertEventType(findAlert.getSystemAlertEventType())
+						.alertRole(findAdminAlertMappingEntity.getAlert().getAlertRole())
 						.readYN(ReadYN.N)
 						.regUser(regUser)
 						.build();
@@ -122,6 +123,7 @@ public class AlertEventListener {
 					.senderId(adminEmailAddr)
 					.systemAlertType(findAlert.getAlertType())
 					.systemAlertEventType(findAlert.getSystemAlertEventType())
+					.alertRole(mappingEntity.getAlert().getAlertRole())
 					.readYN(ReadYN.N)
 					.build();
 				systemAlertRepository.save(saveSystemAlert);

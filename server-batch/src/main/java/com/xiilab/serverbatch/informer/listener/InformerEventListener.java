@@ -42,6 +42,7 @@ public class InformerEventListener {
 	private final UserRepository userRepository;
 	private final MailService mailService;
 	private final WorkspaceAlertService workspaceAlertService;
+	private final AdminAlertMappingRepository adminAlertMappingRepository;
 	private final WorkspaceAlertMappingRepository workspaceAlertMappingRepository;
 	private final AdminAlertMappingRepository adminAlertMappingRepository;
 	@Value("${spring.mail.username}")
@@ -53,20 +54,21 @@ public class InformerEventListener {
 	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
 		log.info("관리자[{}] 알림 발송!", adminAlertEvent.title());
 		try {
-			String regUserID = adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : "SYSTEM";
+			String regUserID = adminAlertEvent.senderId() != null ? adminAlertEvent.senderId() : "SYSTEM";
 			String regUserName = "시스템";
 			RegUser regUser = new RegUser(regUserID,
-				adminAlertEvent.senderUserName() != null? adminAlertEvent.senderUserName() : regUserName,
-				adminAlertEvent.senderUserRealName() != null? adminAlertEvent.senderUserRealName() : regUserName);
+				adminAlertEvent.senderUserName() != null ? adminAlertEvent.senderUserName() : regUserName,
+				adminAlertEvent.senderUserRealName() != null ? adminAlertEvent.senderUserRealName() : regUserName);
 
 			// AlertRole, Alert 이름으로 ID 조회
-			AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(), AlertRole.ADMIN).orElseThrow();
+			AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(),
+				AlertRole.ADMIN).orElseThrow();
 
 			// ADMIN - ALERT Mapping 엔티티 조회
 			List<AdminAlertMappingEntity> findAdminAlertMappingEntities = adminAlertMappingRepository.findByAlert_AlertId(
 				findAlert.getAlertId());
 
-			// 관리자 목록 조회해서 반복문
+			// 조회된 모든 관리자 알림 설정정보 조회
 			for (AdminAlertMappingEntity findAdminAlertMappingEntity : findAdminAlertMappingEntities) {
 				UserDTO.UserInfo findUser = userRepository.getUserById(findAdminAlertMappingEntity.getAdminId());
 				// TODO exception 처리 필요
@@ -79,6 +81,7 @@ public class InformerEventListener {
 						.senderId(regUserID)
 						.systemAlertType(findAlert.getAlertType())
 						.systemAlertEventType(findAlert.getSystemAlertEventType())
+						.alertRole(findAdminAlertMappingEntity.getAlert().getAlertRole())
 						.readYN(ReadYN.N)
 						.regUser(regUser)
 						.build();
@@ -102,7 +105,8 @@ public class InformerEventListener {
 	@EventListener
 	public void handleUserAlertEvent(UserAlertEvent userAlertEvent) {
 		// AlertRole, Alert 이름으로 ID 조회
-		AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(userAlertEvent.alertName().getName(), userAlertEvent.alertRole())
+		AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(userAlertEvent.alertName().getName(),
+				userAlertEvent.alertRole())
 			.orElseThrow(() -> new RestApiException(SystemAlertErrorCode.NOT_FOUND_ALERT));
 		List<WorkspaceAlertMappingEntity> workspaceAlertMappingEntities = workspaceAlertMappingRepository.getWorkspaceAlertMappingByAlertId(
 			findAlert.getAlertId(), userAlertEvent.workspaceResourceName());
@@ -118,6 +122,7 @@ public class InformerEventListener {
 					.senderId(adminEmailAddr)
 					.systemAlertType(findAlert.getAlertType())
 					.systemAlertEventType(findAlert.getSystemAlertEventType())
+					.alertRole(mappingEntity.getAlert().getAlertRole())
 					.readYN(ReadYN.N)
 					.build();
 				systemAlertRepository.save(saveSystemAlert);
