@@ -44,7 +44,6 @@ public class InformerEventListener {
 	private final WorkspaceAlertService workspaceAlertService;
 	private final AdminAlertMappingRepository adminAlertMappingRepository;
 	private final WorkspaceAlertMappingRepository workspaceAlertMappingRepository;
-	private final AdminAlertMappingRepository adminAlertMappingRepository;
 	@Value("${spring.mail.username}")
 	private String adminEmailAddr;
 	private final ApplicationEventPublisher publisher;
