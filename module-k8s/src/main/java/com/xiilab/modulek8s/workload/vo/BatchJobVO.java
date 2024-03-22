@@ -98,9 +98,9 @@ public class BatchJobVO extends WorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
-		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), "true"));
-		this.models.forEach(model -> map.put("md-" + model.id(), "true"));
-		this.codes.forEach(code -> map.put("cd-" + code.id(), "true"));
+		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
+		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
+		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
 
 		return map;
 	}
@@ -238,5 +238,11 @@ public class BatchJobVO extends WorkloadVO {
 	@Override
 	protected ResourceType getType() {
 		return ResourceType.WORKLOAD;
+	}
+
+	private void addVolumeMap(Map<String,String> map, String prefix, Long id) {
+		if (!NumberValidUtils.isNullOrZero(id)) {
+			map.put(prefix + id, "true");
+		}
 	}
 }
