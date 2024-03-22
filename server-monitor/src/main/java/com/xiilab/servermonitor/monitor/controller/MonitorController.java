@@ -1,4 +1,4 @@
-package com.xiilab.servermonitor.controller;
+package com.xiilab.servermonitor.monitor.controller;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
-import com.xiilab.servermonitor.service.MonitorService;
+import com.xiilab.servermonitor.monitor.service.MonitorService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -179,6 +179,5 @@ public class MonitorController {
 	public ResponseEntity<List<ResponseDTO.ClusterPodInfo>> getClusterPendingAndFailPod(){
 		return new ResponseEntity<>(monitorService.getClusterPendingAndFailPod(), HttpStatus.OK);
 	}
-
 
 }

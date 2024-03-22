@@ -1,4 +1,4 @@
-package com.xiilab.servermonitor.service;
+package com.xiilab.servermonitor.monitor.service;
 
 import java.util.Arrays;
 import java.util.List;

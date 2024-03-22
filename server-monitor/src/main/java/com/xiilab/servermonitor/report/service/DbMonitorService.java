@@ -1,4 +1,4 @@
-package com.xiilab.servermonitor.service;
+package com.xiilab.servermonitor.report.service;
 
 import java.util.List;
 
