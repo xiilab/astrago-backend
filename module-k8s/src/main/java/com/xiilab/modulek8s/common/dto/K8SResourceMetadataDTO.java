@@ -1,7 +1,6 @@
 package com.xiilab.modulek8s.common.dto;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -13,9 +12,6 @@ import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleEnvResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 import lombok.AllArgsConstructor;
@@ -54,6 +50,7 @@ public class K8SResourceMetadataDTO {
 	private Map<Long, String> modelMountPathMap; 		// model - mount path 맵
 	private Map<String, Map<String, String>> codeMountPathMap; 		// model - mount path 맵
 	private String command;                      // 워크로드 명령
+	private String ide;
 
 	@Getter
 	@AllArgsConstructor

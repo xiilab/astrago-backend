@@ -18,13 +18,13 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
+import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
-import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
@@ -118,6 +118,7 @@ public abstract class JobInformer {
 			.workloadType(metadataFromResource.getWorkloadType())
 			.workspaceName(metadataFromResource.getWorkspaceName())
 			.deleteYN(DeleteYN.N)
+			.ide(metadataFromResource.getIde())
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
@@ -147,15 +148,12 @@ public abstract class JobInformer {
 			EntityMappingType.IMAGE, null, null);
 	}
 
-	// TODO 서비스, PV, PVC 삭제로직 필요
 	protected void deleteServices(String workspaceResourceName, String workloadResourceName) {
 		ServiceList serviceList = k8sSvcRepository.getServicesByResourceName(workspaceResourceName, workloadResourceName);
 		serviceList.getItems().forEach(service -> {
 				k8sSvcRepository.deleteServiceByResourceName(service.getMetadata().getName(), workspaceResourceName);
 			}
 		);
-
-		// svcRepository.deleteServiceByResourceName(workspaceResourceName, worloadResourceName);
 	}
 
 	protected void deletePvAndPVC(String workspaceResourceName, String pvName, String pvcName) {

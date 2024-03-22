@@ -10,10 +10,12 @@ import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
+import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
@@ -34,6 +36,8 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private String creatorId;
 	private String creatorUserName;
 	private String creatorFullName;
+	@Setter
+	private FrameWorkType ide;
 	// SchedulingType schedulingType;        // 스케줄링 방식
 
 
@@ -56,6 +60,7 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.creatorId(creatorId)
 			.creatorUserName(creatorUserName)
 			.creatorFullName(creatorFullName)
+			.ide(ide.name())
 			.build();
 
 	}

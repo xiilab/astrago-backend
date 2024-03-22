@@ -163,6 +163,7 @@ public enum Promql {
 	REPORT_STATISTICS_GPU_REQUEST("avg(kube_resourcequota{resource=\"requests.nvidia.com/gpu\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 GPU 요청량", "REPORT"),
 	REPORT_STATISTICS_CPU_REQUEST("avg(kube_resourcequota{resource=\"requests.cpu\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 CPU 요청량", "REPORT"),
 	REPORT_STATISTICS_MEM_REQUEST("avg(kube_resourcequota{resource=\"requests.memory\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 MEM 요청량", "REPORT"),
+	REPORT_SYSTEM_NODE_INFO("sum(kube_node_info) by(node, internal_ip)", "", ""),
 	REPORT_SYSTEM_INFO_CPU("avg(kube_node_status_capacity{resource=\"cpu\"}) by(node, instance)", "", ""),
 	REPORT_SYSTEM_INFO_MEM("avg(kube_node_status_capacity{resource=\"memory\"}) by(node, instance)", "", ""),
 	REPORT_SYSTEM_INFO_DISK ("max by (node) (label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint!=\"\", mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{})", "", ""),

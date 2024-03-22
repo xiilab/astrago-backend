@@ -113,6 +113,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.cpuRequest(String.valueOf(job.getCpuRequest()))
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
+				.ide(job.getIde())
 				.build())
 			.collect(Collectors.toList());
 	}

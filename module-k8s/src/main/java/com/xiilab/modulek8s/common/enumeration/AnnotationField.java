@@ -23,7 +23,8 @@ public enum AnnotationField {
 	CODE_IDS("code-ids"),
 	IMAGE_TYPE("image-type"),
 	IMAGE_ID("image_id"),
-	IMAGE_CREDENTIAL_ID("image-credential-id");
+	IMAGE_CREDENTIAL_ID("image-credential-id"),
+	IDE("ide");
 
 	private final String field;
 }

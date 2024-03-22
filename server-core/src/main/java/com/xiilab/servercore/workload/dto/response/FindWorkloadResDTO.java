@@ -7,19 +7,17 @@ import java.util.Objects;
 
 import org.hibernate.Hibernate;
 
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
-import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
@@ -28,7 +26,6 @@ import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
-import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.workload.history.entity.EnvEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
@@ -64,7 +61,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private Integer gpuRequest;
 		private Float memRequest;
 		private WorkloadStatus status;
-		// private LocalDateTime createdAt;
+		private String ide;
 
 		public static <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail from(
 			T moduleJobResDTO
@@ -98,6 +95,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regDate(moduleJobResDTO.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.modDate(null)
 				.status(moduleJobResDTO.getStatus())
+				.ide(moduleJobResDTO.getIde())
 				.build();
 		}
 

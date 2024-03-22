@@ -29,6 +29,7 @@ public record ResponseDTO() {
 	@Builder
 	public record HistoryDTO(String metricName,
 							 String nameSpace,
+							 String internalIp,
 							 String nodeName,
 							 String podName,
 							 String kubeNodeName,

@@ -274,6 +274,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			.podName(DataConverterUtil.getStringOrNull(metricData, "pod"))
 			.nodeName(DataConverterUtil.getStringOrNull(metricData, "node"))
 			.prettyName(DataConverterUtil.getStringOrNull(metricData, "pretty_name"))
+			.internalIp(DataConverterUtil.getStringOrNull(metricData, "internal_ip"))
 			.valueDTOS(createHistoryValue(values))
 			.build();
 	}

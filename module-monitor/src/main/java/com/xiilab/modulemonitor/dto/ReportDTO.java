@@ -73,6 +73,7 @@ public class ReportDTO {
 	@AllArgsConstructor
 	public static class WorkspaceResourceQuotaDTO{
 		private String workspaceName;
+		private String workspaceResourceName;
 		private String userName;
 		private long gpuRequest;
 		private long gpuApproval;

@@ -33,6 +33,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private Float cpuRequest;
 	private Float memRequest;
 	private String imageSecretName;
+	private String ide;
 
 	public CredentialVO toCredentialVO() {
 		JobImageVO jobImageVO = this.image.toJobImageVO(workspace);
