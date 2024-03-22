@@ -254,7 +254,6 @@ public class WorkloadFacadeService {
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			try {
 				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
 			} catch (Exception e2) {

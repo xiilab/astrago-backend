@@ -17,6 +17,8 @@ import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
@@ -29,8 +31,10 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
+import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
@@ -42,7 +46,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	private final WorkloadRepository workloadRepository;
-
+	private final SvcRepository svcRepository;
+	private final NodeRepository nodeRepository;
 	public CreateJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
 		String workspaceName) {
 		return workloadRepository.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toBatchJobVO(workspaceName));
@@ -98,13 +103,24 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	@Override
 	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, String userId) {
+		List<ModuleInteractiveJobResDTO> workloadList;
+		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1);
+		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
+		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
 		if (workspaceName != null) {
-			return workloadRepository.getInteractiveWorkloadListByWorkspace(workspaceName);
+			workloadList = workloadRepository.getInteractiveWorkloadListByWorkspace(workspaceName);
 		} else if (userId != null) {
-			return workloadRepository.getInteractiveWorkloadByCreator(userId);
+			workloadList = workloadRepository.getInteractiveWorkloadByCreator(userId);
 		} else {
 			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
 		}
+		workloadList.forEach(workload -> {
+			ServiceList servicesByResourceName = svcRepository.getServicesByResourceName(workload.getWorkspaceResourceName(),
+				workload.getResourceName());
+			io.fabric8.kubernetes.api.model.Service service = servicesByResourceName.getItems().get(0);
+			workload.updatePort(nodeDTO.getIp(), service);
+		});
+		return workloadList;
 	}
 
 	@Override

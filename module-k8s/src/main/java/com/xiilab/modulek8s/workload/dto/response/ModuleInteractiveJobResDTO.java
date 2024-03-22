@@ -1,14 +1,17 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import lombok.experimental.SuperBuilder;
@@ -28,11 +31,9 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 		super.envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
-		super.ports = container.getPorts().stream()
-			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
-			.toList();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(deployment.getStatus());
+
 	}
 
 	@Override
@@ -50,6 +51,17 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 			return WorkloadStatus.RUNNING;
 		} else {
 			return WorkloadStatus.PENDING;
+		}
+	}
+
+	public void updatePort(String nodeIp, Service service) {
+		if (Objects.nonNull(service) && Objects.nonNull(service.getSpec().getPorts())) {
+			List<ServicePort> servicePorts = service.getSpec().getPorts();
+			this.ports = servicePorts.stream().map(servicePort -> ModulePortResDTO.builder()
+				.name(servicePort.getName())
+				.originPort(servicePort.getPort())
+				.url(String.format("%s:%s", nodeIp, servicePort.getNodePort()))
+				.build()).toList();
 		}
 	}
 }

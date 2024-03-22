@@ -29,7 +29,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
 		super.ports = container.getPorts().stream()
-			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
+			.map(port -> ModulePortResDTO.builder().name(port.getName()).originPort(port.getContainerPort()).build())
 			.toList();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(job.getStatus());

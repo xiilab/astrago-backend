@@ -64,7 +64,7 @@ public class CreateJobResDTO extends ModuleWorkloadResDTO {
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
 		ports = container.getPorts().stream()
-			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort()))
+			.map(port -> ModulePortResDTO.builder().name(port.getName()).originPort(port.getContainerPort()).build())
 			.toList();
 		command = !ObjectUtils.isEmpty(container.getCommand())? container.getCommand().get(2) : null;
 	}
