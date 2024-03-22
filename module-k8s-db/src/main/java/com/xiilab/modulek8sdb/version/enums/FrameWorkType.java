@@ -9,5 +9,6 @@ public enum FrameWorkType {
 	PYTORCH,
 	TENSORFLOW,
 	JUPYTER,
-	VSCODE
+	VSCODE,
+	CUSTOM
 }

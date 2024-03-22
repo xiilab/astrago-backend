@@ -68,6 +68,7 @@ import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
@@ -141,6 +142,14 @@ public class WorkloadFacadeService {
 		// 모델 볼륨 추가
 		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
 			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
+		}
+
+		//Image IDE 정보 주입
+		if (moduleCreateWorkloadReqDTO.getImage().getType() == ImageType.BUILT) {
+			ImageResDTO.FindImage imageInfo = imageService.findImageById(moduleCreateWorkloadReqDTO.getImage().getId());
+			moduleCreateWorkloadReqDTO.setIde(imageInfo.getIde());
+		} else {
+			moduleCreateWorkloadReqDTO.setIde(FrameWorkType.CUSTOM);
 		}
 
 		try {
@@ -847,6 +856,11 @@ public class WorkloadFacadeService {
 
 	private <T extends ModuleWorkloadResDTO> List<FindWorkloadResDTO.Port> generatePortResDTO(T moduleJobResDTO) {
 		List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+
+		// if (CollectionUtils.isEmpty(moduleJobResDTO.getPorts())) {
+		// 	return ports;
+		// }
+
 		if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
 			ResponseDTO.PageNodeDTO nodeList = nodeFacadeService.getNodeList(1, 1);
 			Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
@@ -861,7 +875,8 @@ public class WorkloadFacadeService {
 						.stream()
 						.collect(Collectors.toMap(SvcResDTO.Port::getPort, SvcResDTO.Port::getNodePort));
 					ports = moduleJobResDTO.getPorts().stream()
-						.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort(),
+						.map(port -> new FindWorkloadResDTO.Port(port.name(),
+							port.originPort(),
 							getJobIDEUrl(node.get().getIp(), portMap.get(port.originPort()))))
 						.toList();
 				}

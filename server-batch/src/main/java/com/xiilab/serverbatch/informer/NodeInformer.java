@@ -95,8 +95,6 @@ public class NodeInformer {
 										node2.getMetadata().getName());
 								}
 								;
-								// log.info(message);
-								// TODO MIG 알림 이벤트 추가
 							}
 						}
 					}

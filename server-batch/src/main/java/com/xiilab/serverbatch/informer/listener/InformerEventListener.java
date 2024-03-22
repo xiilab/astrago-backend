@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
@@ -50,8 +51,9 @@ public class InformerEventListener {
 
 	@Async
 	@EventListener
+	@Transactional
 	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
-		log.info("관리자[{}] 알림 발송!", adminAlertEvent.title());
+		log.info("관리자[{}] 알림 발송 시작!", adminAlertEvent.title());
 		try {
 			String regUserID = adminAlertEvent.senderId() != null ? adminAlertEvent.senderId() : "SYSTEM";
 			String regUserName = "시스템";
@@ -102,6 +104,7 @@ public class InformerEventListener {
 
 	@Async
 	@EventListener
+	@Transactional
 	public void handleUserAlertEvent(UserAlertEvent userAlertEvent) {
 		// AlertRole, Alert 이름으로 ID 조회
 		AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(userAlertEvent.alertName().getName(),

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.hibernate.sql.Delete;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,11 +14,11 @@ import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
+import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.servercore.common.dto.ResDTO;
 
 import lombok.AccessLevel;
@@ -49,6 +48,7 @@ public class ImageResDTO {
 		private boolean availableStatus;
 		private Map<String, Integer> ports;
 		private String command;
+		private FrameWorkType ide;
 
 		public static FindImage from(ImageEntity imageEntity) {
 			if (imageEntity.isBuiltInImage()) {
@@ -78,6 +78,7 @@ public class ImageResDTO {
 						.regDate(imageEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 						.regUserName(imageEntity.getRegUser().getRegUserName())
 						.regUserRealName(imageEntity.getRegUser().getRegUserRealName())
+						.ide(builtInImageEntity.getFrameworkType())
 						.build();
 				} catch (JsonProcessingException e) {
 					throw new RestApiException(ImageErrorCode.NOT_FOUND_IMAGE_PORT);

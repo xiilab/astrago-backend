@@ -42,7 +42,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	private List<JobPortVO> ports;        //port 정의
 	private String command;        // 워크로드 명령
 	private String jobName;
-
+	private String ide;
 	@Override
 	public Deployment createResource() {
 		return new DeploymentBuilder()
@@ -90,7 +90,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
-
+		annotationMap.put(AnnotationField.IDE.getField(), getIde());
 		return annotationMap;
 	}
 

@@ -21,7 +21,6 @@ public interface AlertService {
 	void deleteSystemAlertById(Long id);
 	// ADMIN 계정 알림설정 초기값 설정
 	void initializeAdminAlertMappingSettings(String adminId);
-	// TODO 여기부터 진행
 	// Admin Alert 매핑 값 조회
 	FindAdminAlertMappingResDTO.AdminAlertMappings findAdminAlertMappings(String adminId);
 	void deleteAdminAlertMappings(String adminId);

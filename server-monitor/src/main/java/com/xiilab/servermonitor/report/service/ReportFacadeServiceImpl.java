@@ -259,7 +259,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 								List<ResponseDTO.ValueDTO> list = res.valueDTOS()
 									.stream()
-									.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 90))
+									.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 10))
 									.toList();
 
 								if (!Objects.requireNonNull(list).isEmpty()) {
@@ -359,7 +359,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 							List<ResponseDTO.ValueDTO> list = res.valueDTOS()
 								.stream()
-								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 90))
+								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 1))
 								.toList();
 
 							if (!Objects.requireNonNull(list).isEmpty()) {
@@ -418,7 +418,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 							List<ResponseDTO.ValueDTO> list = res.valueDTOS()
 								.stream()
-								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 90))
+								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 1))
 								.toList();
 
 							if (!Objects.requireNonNull(list).isEmpty()) {

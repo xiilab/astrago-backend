@@ -117,8 +117,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		workloadList.forEach(workload -> {
 			ServiceList servicesByResourceName = svcRepository.getServicesByResourceName(workload.getWorkspaceResourceName(),
 				workload.getResourceName());
-			io.fabric8.kubernetes.api.model.Service service = servicesByResourceName.getItems().get(0);
-			workload.updatePort(nodeDTO.getIp(), service);
+			List<io.fabric8.kubernetes.api.model.Service> items = servicesByResourceName.getItems();
+			if (!CollectionUtils.isEmpty(items)) {
+				io.fabric8.kubernetes.api.model.Service service = items.get(0);
+				workload.updatePort(nodeDTO.getIp(), service);
+			}
 		});
 		return workloadList;
 	}

@@ -7,6 +7,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -54,8 +56,9 @@ public class AlertEventListener {
 
 	@Async
 	@EventListener
+	@Transactional
 	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
-		log.info("관리자[{}] 알림 발송!", adminAlertEvent.title());
+		log.info("관리자[{}] 알림 발송 시작!", adminAlertEvent.title());
 		try {
 			String regUserID = adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : "SYSTEM";
 			String regUserName = "시스템";
@@ -73,6 +76,7 @@ public class AlertEventListener {
 			// 관리자 목록 조회해서 반복문
 			for (AdminAlertMappingEntity findAdminAlertMappingEntity : findAdminAlertMappingEntities) {
 				UserDTO.UserInfo findUser = userRepository.getUserById(findAdminAlertMappingEntity.getAdminId());
+				System.out.println(findAdminAlertMappingEntity.getAlert().getAlertRole());
 				// TODO exception 처리 필요
 				if (findAdminAlertMappingEntity.getSystemAlertStatus() == AlertStatus.ON) {
 					// save 로직 추가
@@ -105,6 +109,7 @@ public class AlertEventListener {
 
 	@Async
 	@EventListener
+	@Transactional
 	public void handleUserAlertEvent(UserAlertEvent userAlertEvent) {
 		// AlertRole, Alert 이름으로 ID 조회
 		AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(userAlertEvent.alertName().getName(), userAlertEvent.alertRole())

@@ -117,7 +117,7 @@ public class NodeFacadeService {
 			resourceName);
 		RequestDTO requestDTO = RequestDTO.builder()
 			.nodeName(resourceName).build();
-
+		MIGGpuDTO.MIGInfoStatus nodeMigStatus = getNodeMigStatus(resourceName);
 		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource = getMetricMap(requestDTO, Promql.TOTAL_NODE_REQUEST_RESOURCE);
 		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource = getMetricMap(requestDTO, Promql.TOTAL_NODE_LIMIT_RESOURCE);
 
