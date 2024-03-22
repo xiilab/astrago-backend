@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8sdb.report.dto.ReportReservationDTO;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
@@ -35,26 +35,31 @@ public class ReportServiceImpl implements ReportService{
 	@Override
 	@Transactional
 	public ReportReservationDTO.ResponseDTO saveReportReservation(ReportReservationDTO.RequestDTO reservationDTO) {
-
-		if(sendCycleCheck(reservationDTO)){
-			throw new RestApiException(CommonErrorCode.REPORT_SAVE_FAIL_OVER_CYCLE);
+		try{
+			// 예약 기간 및 주기 확인
+			if(sendCycleCheck(reservationDTO)){
+				throw new RestApiException(ReportErrorCode.REPORT_SAVE_FAIL_OVER_CYCLE);
+			}
+			// DTO -> ENTITY Convert
+			ReportReservationEntity reportReservationEntity = reservationDTO.convertEntity();
+			// Report 수신자 추가
+			reportReservationEntity.addUser(reservationDTO.getUserIdList().stream().map(userId ->{
+				UserInfo userInfo = userService.getUserInfoById(userId);
+				return ReportReservationDTO.UserDTO.builder()
+					.userId(userInfo.getId())
+					.email(userInfo.getEmail())
+					.userName(userInfo.getUserName())
+					.firstName(userInfo.getFirstName())
+					.lastName(userInfo.getLastName())
+					.build();
+			}).toList());
+			// Report 저장
+			ReportReservationEntity saveEntity = repository.save(reportReservationEntity);
+			// 저장된 Report Entity -> DTO 변환
+			return ReportReservationDTO.ResponseDTO.toDTOBuilder().reportReservation(saveEntity).build();
+		}catch (IllegalArgumentException e){
+			throw new RestApiException(ReportErrorCode.REPORT_SAVE_FAIL);
 		}
-		ReportReservationEntity reportReservationEntity = reservationDTO.convertEntity();
-
-		reportReservationEntity.addUser(reservationDTO.getUserIdList().stream().map(userId ->{
-			UserInfo userInfo = userService.getUserInfoById(userId);
-			return ReportReservationDTO.UserDTO.builder()
-				.userId(userInfo.getId())
-				.email(userInfo.getEmail())
-				.userName(userInfo.getUserName())
-				.firstName(userInfo.getFirstName())
-				.lastName(userInfo.getLastName())
-				.build();
-		}).toList());
-
-		ReportReservationEntity saveEntity = repository.save(reportReservationEntity);
-
-		return ReportReservationDTO.ResponseDTO.toDTOBuilder().reportReservation(saveEntity).build();
 	}
 
 	@Override
@@ -64,7 +69,7 @@ public class ReportServiceImpl implements ReportService{
 			// 등록된 Report 예약 삭제
 			repository.deleteById(id);
 		}catch (IllegalArgumentException e){
-			throw new RestApiException(CommonErrorCode.REPORT_DELETE_FAIL);
+			throw new RestApiException(ReportErrorCode.REPORT_DELETE_FAIL);
 		}
 	}
 
@@ -79,7 +84,7 @@ public class ReportServiceImpl implements ReportService{
 	@Transactional
 	public void updateReportReservationById(long id, ReportReservationDTO.RequestDTO reservationDTO) {
 		if(sendCycleCheck(reservationDTO)){
-			throw new RestApiException(CommonErrorCode.REPORT_SAVE_FAIL_OVER_CYCLE);
+			throw new RestApiException(ReportErrorCode.REPORT_SAVE_FAIL_OVER_CYCLE);
 		}
 		ReportReservationEntity reportReservation = getReportReservationEntityById(id);
 
@@ -148,7 +153,7 @@ public class ReportServiceImpl implements ReportService{
 
 	private ReportReservationEntity getReportReservationEntityById(long id){
 		return repository.findById(id).orElseThrow(() ->
-			new RestApiException(CommonErrorCode.REPORT_NOT_FOUND));
+			new RestApiException(ReportErrorCode.REPORT_NOT_FOUND));
 	}
 
 	private boolean sendCycleCheck(ReportReservationDTO.RequestDTO requestDTO){

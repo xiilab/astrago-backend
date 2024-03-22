@@ -18,7 +18,7 @@ import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
 import com.xiilab.modulek8sdb.report.report.ReservationRepository;
 import com.xiilab.servermonitor.report.job.ReportJob;
@@ -70,7 +70,7 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 
 	private ReportReservationEntity getReportReservationEntityById(long id){
 		return repository.findById(id).orElseThrow(() ->
-			new RestApiException(CommonErrorCode.REPORT_NOT_FOUND));
+			new RestApiException(ReportErrorCode.REPORT_NOT_FOUND));
 	}
 
 	private JobDetail createReservationJob(long id, JobDataMap jobDataMap){

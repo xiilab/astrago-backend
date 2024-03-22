@@ -40,9 +40,6 @@ public enum CommonErrorCode implements ErrorCode {
 	ALERT_MANAGER_JSON_PARSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ALERT MANAGER JSON PARSE ERROR"),
 	ALERT_MANAGER_RULE_READY(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 ALERT은 이미 사용중입니다."),
 	ALERT_MANAGER_TIME_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 시간의 알림이 존재하지 않습니다."),
-	REPORT_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(),"리포트 예약 삭제 실패하였습니다."),
-	REPORT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 ID의 리포트 예약이 없습니다"),
-	REPORT_SAVE_FAIL_OVER_CYCLE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "주기가 너무 큽니다."),
 	// HUB
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "허브 상세정보가 존재하지 않습니다."),
 	// terminal

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.dto.ReportType;
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationHistoryEntity;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationUserEntity;
@@ -48,13 +48,15 @@ public class ReportJob extends QuartzJobBean {
 		long sendCycle= jobDataMap.get("sendCycle").hashCode();
 		// 예약 종료일
 		LocalDateTime reservationEndDate = LocalDateTime.parse(jobDataMap.get("endDate").toString(), formatter);
-		// startDate ~ endDate
+		// 검색 조건 startDate ~ endDate
 		LocalDateTime endDate = LocalDateTime.now().minusDays(1);
 		LocalDateTime startDate = getStartDate(ReportType.valueOf(jobDataMap.get("reportType").toString()), endDate);
 
 		// (발송일 - 예약종료일) < 주기
 		if(Math.abs(Duration.between(endDate, reservationEndDate).toDays()) < sendCycle){
 			reportMonitorService.reportOnOff((long)jobDataMap.get("reportId").hashCode(), false);
+			// 종료
+			return;
 		}
 
 		// TODO 리포트 PDF 생성
@@ -70,6 +72,7 @@ public class ReportJob extends QuartzJobBean {
 				.result(true)
 				.build());
 			try{
+
 				//TODO 추후 PDF HTML 양식 받으면 메일 전송 로직 추가
 			}catch (Exception e){
 				saveHistory.falseResult();
@@ -95,6 +98,6 @@ public class ReportJob extends QuartzJobBean {
 
 	private ReportReservationEntity getReportReservationEntityById(long id){
 		return repository.findById(id).orElseThrow(() ->
-			new RestApiException(CommonErrorCode.REPORT_NOT_FOUND));
+			new RestApiException(ReportErrorCode.REPORT_NOT_FOUND));
 	}
 }
