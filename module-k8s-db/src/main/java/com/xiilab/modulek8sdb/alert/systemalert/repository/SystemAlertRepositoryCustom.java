@@ -10,6 +10,6 @@ import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 
 public interface SystemAlertRepositoryCustom {
-	Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN,
+	Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN, String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate, Pageable pageable);
 }

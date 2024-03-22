@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.alert.systemalert.repository;
 
 import static com.xiilab.modulek8sdb.alert.systemalert.entity.QSystemAlertEntity.*;
+import static com.xiilab.modulek8sdb.hub.entity.QHubEntity.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 
 	@Override
 	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, ReadYN readYN,
+		String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate, Pageable pageable) {
 		Long totalCount = queryFactory.select(systemAlertEntity.count())
 			.from(systemAlertEntity)
@@ -37,6 +39,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 				eqRecipientId(recipientId),
 				eqSystemAlertType(systemAlertType),
 				eqReadYn(readYN),
+				likeSearchText(searchText),
 				betweenRegDate(searchStartDate, searchEndDate)
 			)
 			.fetchOne();
@@ -46,6 +49,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 				eqRecipientId(recipientId),
 				eqSystemAlertType(systemAlertType),
 				eqReadYn(readYN),
+				likeSearchText(searchText),
 				betweenRegDate(searchStartDate, searchEndDate)
 			);
 
@@ -55,6 +59,8 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 		} else {
 			pageable = PageRequest.of(0, Integer.MAX_VALUE);
 		}
+
+		query.orderBy(systemAlertEntity.regDate.desc());
 
 		List<SystemAlertEntity> result = query.fetch();
 
@@ -76,5 +82,11 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	private BooleanExpression betweenRegDate(LocalDateTime searchStartDate, LocalDateTime searchEndDate) {
 		return !ObjectUtils.isEmpty(searchStartDate) && !ObjectUtils.isEmpty(searchEndDate) ?
 			systemAlertEntity.regDate.between(searchStartDate, searchEndDate) : null;
+	}
+
+	private BooleanExpression likeSearchText(String searchText) {
+		return StringUtils.hasText(searchText) ? systemAlertEntity.title.contains(searchText)
+			.or(systemAlertEntity.message.contains(searchText))
+			: null;
 	}
 }

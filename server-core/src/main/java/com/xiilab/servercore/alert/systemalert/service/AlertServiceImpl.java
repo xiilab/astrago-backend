@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
@@ -74,8 +75,9 @@ public class AlertServiceImpl implements AlertService {
 		// 각 타입 카운트를 저장할 map
 		Map<SystemAlertType, Long> allAlertTypeCountMap = getAllAlertTypeCountMap(loginUserId,
 			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
-			findSearchCondition.getSearchStartDate() != null? findSearchCondition.getSearchStartDate() : null,
-			findSearchCondition.getSearchEndDate() != null? findSearchCondition.getSearchEndDate() : null);
+			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
+			findSearchCondition.getSearchStartDate() != null ? findSearchCondition.getSearchStartDate() : null,
+			findSearchCondition.getSearchEndDate() != null ? findSearchCondition.getSearchEndDate() : null);
 
 		// 페이징 처리
 		PageRequest pageRequest = null;
@@ -88,8 +90,9 @@ public class AlertServiceImpl implements AlertService {
 		Page<SystemAlertEntity> systemAlertEntities = systemAlertRepository.findAlerts(loginUserId,
 			findSearchCondition.getSystemAlertType() != null ? findSearchCondition.getSystemAlertType() : null,
 			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
-			findSearchCondition.getSearchStartDate() != null? findSearchCondition.getSearchStartDate() : null,
-			findSearchCondition.getSearchEndDate() != null? findSearchCondition.getSearchEndDate() : null,
+			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
+			findSearchCondition.getSearchStartDate() != null ? findSearchCondition.getSearchStartDate() : null,
+			findSearchCondition.getSearchEndDate() != null ? findSearchCondition.getSearchEndDate() : null,
 			pageRequest);
 
 		return FindSystemAlertResDTO.SystemAlerts.from(systemAlertEntities.getContent(),
@@ -137,6 +140,11 @@ public class AlertServiceImpl implements AlertService {
 		List<AlertEntity> adminAlertMappingList = alertRepository.findAdminAlertMappingsByAdminId(adminId,
 			AlertRole.ADMIN);
 		return FindAdminAlertMappingResDTO.AdminAlertMappings.from(adminAlertMappingList, adminAlertMappingList.size());
+	}
+
+	@Override
+	public void deleteAdminAlertMappings(String adminId) {
+		adminAlertMappingRepository.deleteByAdminId(adminId);
 	}
 
 	@Override
@@ -204,7 +212,7 @@ public class AlertServiceImpl implements AlertService {
 			userInfoDTO.getId());
 	}
 
-	private Map<SystemAlertType, Long> getAllAlertTypeCountMap(String loginUserId, ReadYN readYN,
+	private Map<SystemAlertType, Long> getAllAlertTypeCountMap(String loginUserId, ReadYN readYN, String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate) {
 		Map<SystemAlertType, Long> allAlertTypeCountMap = new HashMap<>();
 		SystemAlertType[] values = SystemAlertType.values();
@@ -214,7 +222,7 @@ public class AlertServiceImpl implements AlertService {
 		}
 
 		Page<SystemAlertEntity> allSystemAlertEntities = systemAlertRepository.findAlerts(loginUserId, null, readYN,
-			searchStartDate, searchEndDate, null);
+			searchText, searchStartDate, searchEndDate, null);
 		for (SystemAlertEntity allSystemAlertEntity : allSystemAlertEntities.getContent()) {
 			// 각 알람 타입별로 카운트 증가
 			allAlertTypeCountMap.merge(allSystemAlertEntity.getSystemAlertType(), 1L, Long::sum);

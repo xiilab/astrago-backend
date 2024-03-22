@@ -77,8 +77,8 @@ public class HubCategoryMappingRepositoryImpl implements HubCategoryMappingRepos
 	}
 
 	private BooleanExpression likeSearchText(String searchText) {
-		return StringUtils.hasText(searchText) ? hubCategoryMappingEntity.hubEntity.title.like("%" + searchText)
-			.and(hubCategoryMappingEntity.hubEntity.description.like("%" + searchText))
+		return StringUtils.hasText(searchText) ? hubCategoryMappingEntity.hubEntity.title.contains(searchText)
+			.or(hubCategoryMappingEntity.hubEntity.description.contains(searchText))
 			: null;
 	}
 }

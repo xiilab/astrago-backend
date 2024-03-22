@@ -53,8 +53,8 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
 	}
 
 	private BooleanExpression likeSearchText(String searchText) {
-		return StringUtils.hasText(searchText) ? hubEntity.title.like("%" + searchText)
-			.and(hubEntity.description.like("%" + searchText))
+		return StringUtils.hasText(searchText) ? hubEntity.title.contains(searchText)
+			.or(hubEntity.description.contains(searchText))
 			: null;
 	}
 }

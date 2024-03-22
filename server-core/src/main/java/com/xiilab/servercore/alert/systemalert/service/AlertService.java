@@ -24,6 +24,7 @@ public interface AlertService {
 	// TODO 여기부터 진행
 	// Admin Alert 매핑 값 조회
 	FindAdminAlertMappingResDTO.AdminAlertMappings findAdminAlertMappings(String adminId);
+	void deleteAdminAlertMappings(String adminId);
 	// Admin Alert 매핑 값 수정
 	void saveAdminAlertMapping(String adminId, List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings);
 	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(String workspaceResourceName, UserInfoDTO userInfoDTO);

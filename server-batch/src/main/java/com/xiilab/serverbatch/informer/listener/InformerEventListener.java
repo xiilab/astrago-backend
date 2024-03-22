@@ -8,20 +8,25 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.UserRepository;
 
@@ -38,9 +43,60 @@ public class InformerEventListener {
 	private final MailService mailService;
 	private final WorkspaceAlertService workspaceAlertService;
 	private final WorkspaceAlertMappingRepository workspaceAlertMappingRepository;
+	private final AdminAlertMappingRepository adminAlertMappingRepository;
 	@Value("${spring.mail.username}")
 	private String adminEmailAddr;
 	private final ApplicationEventPublisher publisher;
+
+	@Async
+	@EventListener
+	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
+		log.info("관리자[{}] 알림 발송!", adminAlertEvent.title());
+		try {
+			String regUserID = adminAlertEvent.senderId() != null? adminAlertEvent.senderId() : "SYSTEM";
+			String regUserName = "시스템";
+			RegUser regUser = new RegUser(regUserID,
+				adminAlertEvent.senderUserName() != null? adminAlertEvent.senderUserName() : regUserName,
+				adminAlertEvent.senderUserRealName() != null? adminAlertEvent.senderUserRealName() : regUserName);
+
+			// AlertRole, Alert 이름으로 ID 조회
+			AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(), AlertRole.ADMIN).orElseThrow();
+
+			// ADMIN - ALERT Mapping 엔티티 조회
+			List<AdminAlertMappingEntity> findAdminAlertMappingEntities = adminAlertMappingRepository.findByAlert_AlertId(
+				findAlert.getAlertId());
+
+			// 관리자 목록 조회해서 반복문
+			for (AdminAlertMappingEntity findAdminAlertMappingEntity : findAdminAlertMappingEntities) {
+				UserDTO.UserInfo findUser = userRepository.getUserById(findAdminAlertMappingEntity.getAdminId());
+				// TODO exception 처리 필요
+				if (findAdminAlertMappingEntity.getSystemAlertStatus() == AlertStatus.ON) {
+					// save 로직 추가
+					SystemAlertEntity saveSystemAlert = SystemAlertEntity.builder()
+						.title(adminAlertEvent.title())
+						.message(adminAlertEvent.message())
+						.recipientId(findUser.getId())
+						.senderId(regUserID)
+						.systemAlertType(findAlert.getAlertType())
+						.systemAlertEventType(findAlert.getSystemAlertEventType())
+						.readYN(ReadYN.N)
+						.regUser(regUser)
+						.build();
+					systemAlertRepository.save(saveSystemAlert);
+				}
+				if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
+					// 메일 발송 로직 추가
+					mailService.sendMail(MailDTO.builder()
+						.title(adminAlertEvent.mailTitle())
+						.content(adminAlertEvent.message())
+						.receiverEmail(findUser.getEmail())
+						.build());
+				}
+			}
+		} catch (Exception e) {
+			log.info("관리자[{}] 알림 발송 실패!", adminAlertEvent.title());
+		}
+	}
 
 	@Async
 	@EventListener
