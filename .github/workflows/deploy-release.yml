@@ -1,0 +1,72 @@
+name: Deploy to Staging workflow
+run-name: ${{ github.actor }} deploys to Staging 🚀
+on:
+  push:
+    branches:
+      - 'release/[0-9]+.[0-9]+'
+
+concurrency:
+  group: ci-dev-test-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_REPOSITORY: xiilab/astrago-backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+      - name: Build with Gradle
+        run: ./gradlew bootjar --no-daemon --parallel
+
+      - name: Extract Release Image Tag
+        id: extract_image_tag
+        run: |
+          RELEASE_VERSION=$(echo "${GITHUB_REF#refs/heads/release/}" | grep -E '^[0-9]+\.[0-9]+$')
+          echo "RELEASE_VERSION=$RELEASE_VERSION"
+          IMAGE_TAG=${RELEASE_VERSION}-$(git rev-parse --short=4 HEAD)-rc
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # core image build & push
+      - name: Build and push Core Docker images
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: ./server-core
+          file: server-core/Dockerfile
+          push: true
+          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # batch image build & push
+      - name: Build and push Batch Docker images
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: ./server-batch
+          file: server-batch/Dockerfile
+          push: true
+          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # monitor image build & push
+      - name: Build and push Monitor Docker images
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: ./server-monitor
+          file: server-monitor/Dockerfile
+          push: true
+          tags: ${{ env.DOCKER_REPOSITORY }}:monitor-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
