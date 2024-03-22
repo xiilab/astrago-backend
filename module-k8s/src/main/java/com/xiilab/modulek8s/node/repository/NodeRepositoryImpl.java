@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.node.repository;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Repository;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -321,15 +324,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String chipset = extractGpuChipset(productName);
 			List<Map<String, Integer>> resProfile = new ArrayList<>();
 			//MIGProfile.json을 읽어온다.
-			org.springframework.core.io.Resource resource = resourceLoader.getResource(
-				String.format("classpath:migProfile/%s.json", chipset));
-			File file = resource.getFile();
-			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
-			if (!file.exists()) {
-				throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
-			}
+			InputStream inputStream = this.getClass().getResourceAsStream(String.format("/migProfile/%s.json", chipset));
 			//json 파일을 읽어옴
-			MIGProfileDTO migProfileList = objectMapper.readValue(file, MIGProfileDTO.class);
+			MIGProfileDTO migProfileList = objectMapper.readValue(inputStream, MIGProfileDTO.class);
 
 			List<Map<String, Integer>> profiles = migProfileList.getProfile();
 			for (Map<String, Integer> profile : profiles) {
@@ -341,6 +338,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return new MIGProfileDTO(productName, resProfile);
 		} catch (IOException e) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
+		} catch (NullPointerException e) {
+			throw new K8sException(NodeErrorCode.MIG_PROFILE_NOT_EXIST);
 		}
 	}
 
@@ -349,8 +348,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 		try {
 			String chipset = extractGpuChipset(productName);
 			//MIGProfile.json을 읽어온다.
-			org.springframework.core.io.Resource resource = resourceLoader.getResource(
-				String.format("classpath:migProfile/%s.json", chipset));
+			org.springframework.core.io.Resource resource = ResourcePatternUtils.getResourcePatternResolver(
+				new DefaultResourceLoader()).getResource(String.format("classpath:migProfile/%s.json", chipset));
 			File file = resource.getFile();
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
