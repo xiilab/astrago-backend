@@ -46,15 +46,6 @@ public class MonitorFacadeService {
 	}
 
 	public ResponseDTO.NodeResourceDTO getNodeResource(String nodeName) {
-		/**
-		 * CPU 총량, 요청량, 사용률
-		 *
-		 * MEM 총량, 요청량, 사용률
-		 *
-		 * GPU 총량, 사용률
-		 *
-		 * DISK 총량, 사용률
-		 */
 		String node = "node=" + "\"" + nodeName  + "\"";
 		// CPU 총량
 		String cpuMetric = prometheusService.getRealTimeMetricByQuery(
@@ -162,7 +153,7 @@ public class MonitorFacadeService {
 					.workspaceName(workspaceName)
 					.gpuUsage(gpu)
 					.cpuUsage(cpu)
-					.memUsage((memQuota / mem) * 100)
+					.memUsage((mem/ memQuota ) * 100)
 					.wlRunningCount(wlRunning)
 					.wlCount(wlCount)
 					.errorCount(workspaceErrorCount)
