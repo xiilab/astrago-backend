@@ -61,7 +61,7 @@ public abstract class ModuleWorkloadResDTO {
 	protected String imageType;
 	protected Long imageCredentialId;
 	protected boolean canBeDeleted;
-
+	protected String ide;
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		if (hasMetadata != null) {
 			uid = hasMetadata.getMetadata().getUid();

@@ -16,15 +16,13 @@ import org.springframework.util.StringUtils;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
-import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
-import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
@@ -111,6 +109,7 @@ public abstract class JobInformer {
 			.workloadType(metadataFromResource.getWorkloadType())
 			.workspaceName(metadataFromResource.getWorkspaceName())
 			.deleteYN(DeleteYN.N)
+			.ide(metadataFromResource.getIde())
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);

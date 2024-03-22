@@ -267,6 +267,7 @@ public class K8sInfoPicker {
 				.modelMountPathMap(getDatasetAndModelMountMap("md-", mountAnnotationMap))
 				.codeMountPathMap(getCodeMountMap(codes))
 				.command(CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2))
+				.ide(annotations.get(AnnotationField.IDE.getField()))
 				.build();
 		} catch (NullPointerException e) {
 			return null;
@@ -384,7 +385,7 @@ public class K8sInfoPicker {
 		String format = quantity.getFormat();
 		double amount = Double.parseDouble(quantity.getAmount());
 		if (format.equals("Ki")) {
-			return (amount / (1024 * 1024));
+			return (amount / (1024.0 * 1024.0 * 1024.0 / 1024.0));
 		} else if (format.equals("Mi")) {
 			return (amount / 1024);
 		} else {
