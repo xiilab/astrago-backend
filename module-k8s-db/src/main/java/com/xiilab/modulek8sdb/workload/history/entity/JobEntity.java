@@ -9,6 +9,7 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +21,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Getter
 public class JobEntity extends WorkloadEntity {
+	@Column(name = "WORKLOAD_IDE")
 	private String ide;
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	JobEntity(String uid, String name, String description, String resourceName, String workspaceName, String workspaceResourceName, Float cpuReq, Integer gpuReq, Float memReq,
