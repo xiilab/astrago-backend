@@ -8,7 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: [ self-hosted, linux ]
+    #runs-on: [ self-hosted, linux ]
+    runs-on: ubuntu-latest
     outputs:
       branch: "${{ steps.extract_branch.outputs.branch }}"
       tag: ${{ steps.out_image.outputs.tag }}
@@ -183,7 +184,8 @@ jobs:
 
   push_helm:
     needs: [ build ]
-    runs-on: [ self-hosted, linux ]
+    #runs-on: [ self-hosted, linux ]
+    runs-on: ubuntu-latest
     steps:
       - name: clone helmproject
         uses: actions/checkout@v3
