@@ -38,6 +38,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
@@ -638,7 +639,7 @@ public class WorkloadFacadeService {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 				WorkloadType.INTERACTIVE);
 			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
-		} catch (KubernetesClientException ignored) {
+		} catch (KubernetesClientException | K8sException ignored) {
 
 		}
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
