@@ -385,12 +385,14 @@ public class K8sInfoPicker {
 		String format = quantity.getFormat();
 		double amount = Double.parseDouble(quantity.getAmount());
 
-		if (!StringUtils.hasText(format)) {
+		if (!StringUtils.hasText(format) || format.equals("Gi")) {
 			return amount;
 		} else if (format.equals("Ki")) {
 			return (amount / (1024.0 * 1024.0 * 1024.0 / 1024.0));
-		} else if (format.equals("Mi") || format.equals("m")) {
+		} else if (format.equals("Mi")) {
 			return (amount / 1024);
+		} else if (format.equals("m")) {
+			return (amount / 1000);
 		} else {
 			throw new IllegalArgumentException(format + " format은 확인되지 않은 format입니다.");
 		}
