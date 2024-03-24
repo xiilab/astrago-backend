@@ -135,6 +135,7 @@ public class BatchJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
 		cloneGitRepo(podSpecBuilder, this.codes);
+		addDefaultShmVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, this.datasets);
 		addVolumes(podSpecBuilder, this.models);
 
@@ -148,12 +149,20 @@ public class BatchJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
+		addDefaultShmVolumeMountPath(podSpecContainer);
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
 		addContainerResource(podSpecContainer);
 
 		return podSpecContainer.endContainer().build();
+	}
+
+	private void addDefaultShmVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+		podSpecContainer.addNewVolumeMount()
+			.withName("shmdir")
+			.withMountPath("/dev/shm")
+			.endVolumeMount();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
@@ -228,8 +237,9 @@ public class BatchJobVO extends WorkloadVO {
 				.withValue(env.value())
 				.build()
 			).toList();
+		List<EnvVar> result = new ArrayList<>(envVars);
 		if (super.image.imageType() == ImageType.HUB) {
-			envVars.add(new EnvVarBuilder()
+			result.add(new EnvVarBuilder()
 				.withName("POD_NAME")
 				.withValueFrom(new EnvVarSourceBuilder()
 					.withFieldRef(new ObjectFieldSelectorBuilder()
@@ -241,7 +251,7 @@ public class BatchJobVO extends WorkloadVO {
 				.build()
 			);
 
-			envVars.add(new EnvVarBuilder()
+			result.add(new EnvVarBuilder()
 				.withName("POD_NAMESPACE")
 				.withValueFrom(new EnvVarSourceBuilder()
 					.withFieldRef(new ObjectFieldSelectorBuilder()
@@ -254,7 +264,7 @@ public class BatchJobVO extends WorkloadVO {
 			);
 		}
 
-		return envVars;
+		return result;
 	}
 
 	@Override

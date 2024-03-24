@@ -35,7 +35,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public abstract class WorkloadVO extends K8SResourceReqVO {
 	String workspace;        //워크스페이스
-	String workspaceName;	 //워크스페이스 이름
+	String workspaceName;     //워크스페이스 이름
 	WorkloadType workloadType;        // 워크로드 타입
 	JobImageVO image;        //사용할 image
 	Integer gpuRequest;        // 워크로드 gpu 요청량
@@ -93,6 +93,17 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		}
 	}
 
+	public void addDefaultShmVolume(PodSpecBuilder podSpecBuilder) {
+		List<Volume> addVolumes = new ArrayList<>();
+		addVolumes.add(new VolumeBuilder()
+			.withName("shmdir")
+			.withNewEmptyDir()
+			.withMedium("Memory")
+			.endEmptyDir()
+			.build());
+		podSpecBuilder.addAllToVolumes(addVolumes);
+	}
+
 	/**
 	 * 마운트할 볼륨 정의
 	 *
@@ -108,7 +119,6 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 					.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(volume.pvcName(), false))
 					.build())
 				.toList();
-
 			podSpecBuilder.addAllToVolumes(addVolumes);
 		}
 	}
@@ -128,7 +138,8 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 
 	private List<EnvVar> getGithubEnvVarList(JobCodeVO codeVO) {
 		List<EnvVar> result = new ArrayList<>();
-		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_REPO.name()).withValue(codeVO.repositoryURL()).build());
+		result.add(
+			new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_REPO.name()).withValue(codeVO.repositoryURL()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_BRANCH.name()).withValue(codeVO.branch()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue(codeVO.mountPath()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_PERMISSIONS.name()).withValue("0777").build());
@@ -136,13 +147,16 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
 		// 공유 코드면 ID 환경변수로 저장
 		if (!NumberValidUtils.isNullOrZero(codeVO.id())) {
-			result.add(new EnvVarBuilder().withName(GitEnvType.SOURCE_CODE_ID.name()).withValue(String.valueOf(codeVO.id())).build());
+			result.add(new EnvVarBuilder().withName(GitEnvType.SOURCE_CODE_ID.name())
+				.withValue(String.valueOf(codeVO.id()))
+				.build());
 		}
 		// GITHUB 크레덴셜 정보 환경변수로 저장
 		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialLoginId())
 			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
 			result.add(new EnvVarBuilder().withName(GitEnvType.CREDENTIAL_ID.name())
-				.withValue(NumberValidUtils.isNullOrZero(codeVO.credentialVO().credentialId())? "": String.valueOf(codeVO.credentialVO().credentialId()))
+				.withValue(NumberValidUtils.isNullOrZero(codeVO.credentialVO().credentialId()) ? "" :
+					String.valueOf(codeVO.credentialVO().credentialId()))
 				.build());
 			result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_USERNAME.name())
 				.withValue(codeVO.credentialVO().credentialLoginId())

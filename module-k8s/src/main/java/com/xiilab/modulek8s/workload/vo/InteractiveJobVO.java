@@ -138,6 +138,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
 		cloneGitRepo(podSpecBuilder, codes);
+		addDefaultShmVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, datasets);
 		addVolumes(podSpecBuilder, models);
 
@@ -150,12 +151,20 @@ public class InteractiveJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
+		addDefaultShmVolumeMountPath(podSpecContainer);
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
 		addContainerResource(podSpecContainer);
 
 		return podSpecContainer.endContainer().build();
+	}
+
+	private void addDefaultShmVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+		podSpecContainer.addNewVolumeMount()
+			.withName("shmdir")
+			.withMountPath("/dev/shm")
+			.endVolumeMount();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,

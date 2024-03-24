@@ -879,7 +879,6 @@ public class WorkloadFacadeService {
 				SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
 					moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
 
-				// findSvcs.getServices().stream
 				for (SvcResDTO.FindSvcDetail findSvcDetail : findSvcs.getServices()) {
 					Map<Integer, Integer> portMap = findSvcDetail.getPorts()
 						.stream()
