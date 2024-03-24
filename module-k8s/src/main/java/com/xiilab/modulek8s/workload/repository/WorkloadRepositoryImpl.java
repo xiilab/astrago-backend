@@ -886,7 +886,11 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	private DeploymentList getInteractiveJobListByCreator(String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.apps().deployments().withLabel(LabelField.CREATOR_ID.getField(), userId).list();
+			return kubernetesClient.apps()
+				.deployments()
+				.inAnyNamespace()
+				.withLabel(LabelField.CREATOR_ID.getField(), userId)
+				.list();
 		}
 	}
 
