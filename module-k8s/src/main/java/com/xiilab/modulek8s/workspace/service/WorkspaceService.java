@@ -16,4 +16,6 @@ public interface WorkspaceService {
 	void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
 
 	void deleteWorkspaceByName(String workspaceName);
+	void editWorkspaceRole(String workspaceResourceName);
+	void createPodAnnotationsRoleBinding(String workspaceResourceName);
 }

@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -21,6 +23,9 @@ import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSource;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
+import io.fabric8.kubernetes.api.model.ObjectFieldSelectorBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
@@ -217,12 +222,39 @@ public class BatchJobVO extends WorkloadVO {
 
 	@Override
 	public List<EnvVar> convertEnv() {
-		return envs.stream()
+		List<EnvVar> envVars = envs.stream()
 			.map(env -> new EnvVarBuilder()
 				.withName(env.name())
 				.withValue(env.value())
 				.build()
 			).toList();
+		if (super.image.imageType() == ImageType.HUB) {
+			envVars.add(new EnvVarBuilder()
+				.withName("POD_NAME")
+				.withValueFrom(new EnvVarSourceBuilder()
+					.withFieldRef(new ObjectFieldSelectorBuilder()
+						.withFieldPath("metadata.name")
+						.build()
+					)
+					.build()
+				)
+				.build()
+			);
+
+			envVars.add(new EnvVarBuilder()
+				.withName("POD_NAMESPACE")
+				.withValueFrom(new EnvVarSourceBuilder()
+					.withFieldRef(new ObjectFieldSelectorBuilder()
+						.withFieldPath("metadata.namespace")
+						.build()
+					)
+					.build()
+				)
+				.build()
+			);
+		}
+
+		return envVars;
 	}
 
 	@Override
@@ -240,7 +272,7 @@ public class BatchJobVO extends WorkloadVO {
 		return ResourceType.WORKLOAD;
 	}
 
-	private void addVolumeMap(Map<String,String> map, String prefix, Long id) {
+	private void addVolumeMap(Map<String, String> map, String prefix, Long id) {
 		if (!NumberValidUtils.isNullOrZero(id)) {
 			map.put(prefix + id, "true");
 		}

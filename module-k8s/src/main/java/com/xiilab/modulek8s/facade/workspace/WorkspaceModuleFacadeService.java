@@ -16,4 +16,6 @@ public interface WorkspaceModuleFacadeService {
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceName);
 	ResourceQuotaResDTO getWorkspaceResourceQuota(String workspaceResourceName);
 	List<WorkspaceDTO.AdminResponseDTO> getAdminWorkspaceList(String searchCondition);
+	void editWorkspaceRole(String workspaceResourceName);
+	void createPodAnnotationsRoleBinding(String workspaceResourceName);
 }

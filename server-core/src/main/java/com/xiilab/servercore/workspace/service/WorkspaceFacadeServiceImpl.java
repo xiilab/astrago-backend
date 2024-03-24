@@ -109,6 +109,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			}
 		}
 
+		// 롤 생성
+		workspaceService.editWorkspaceRole(workspace.getResourceName());
+		// 롤 바인딩
+		workspaceService.createPodAnnotationsRoleBinding(workspace.getResourceName());
+
 		// 워크스페이스 생성 알림메시지 발송
 		SystemAlertMessage workspaceCreateAdmin = SystemAlertMessage.WORKSPACE_CREATE_ADMIN;
 		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());

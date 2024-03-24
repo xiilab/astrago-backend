@@ -54,6 +54,8 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 				.reqMEM(createWorkspaceDTO.getReqMEM())
 				.build());
 
+		// role 생성
+
 		return workspace;
 	}
 
@@ -111,5 +113,15 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 				return new WorkspaceDTO.AdminResponseDTO(workspace);
 			}
 		}).toList();
+	}
+
+	@Override
+	public void editWorkspaceRole(String workspaceResourceName) {
+		workspaceService.editWorkspaceRole(workspaceResourceName);
+	}
+
+	@Override
+	public void createPodAnnotationsRoleBinding(String workspaceResourceName) {
+		workspaceService.createPodAnnotationsRoleBinding(workspaceResourceName);
 	}
 }
