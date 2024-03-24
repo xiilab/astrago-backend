@@ -299,14 +299,6 @@ public class WorkloadFacadeService {
 			ports, envs);
 	}
 
-	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {
-		if (workloadType == WorkloadType.BATCH) {
-
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-
-		}
-	}
-
 	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO
 	) throws IOException {
