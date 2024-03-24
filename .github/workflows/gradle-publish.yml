@@ -60,9 +60,10 @@ jobs:
         uses: haya14busa/action-cond@v1
         id: image-repo
         with:
-          cond: ${{ steps.extract_branch.outputs.branch  == 'master' }}
+          cond: ${{ steps.extract_branch.outputs.branch  == 'devel' }}
           if_true: "docker.io/xiilab"
-          if_false: "harbor.xiilab.com:32443/uyuni"
+          #if_false: "harbor.xiilab.com:32443/uyuni"
+          if_false: "docker.io/xiilab"
 
       # 브랜치 네임이 마스터일 경우에만 master 이름으로 지정하고 나머지는 develop 으로 지정한다.
       - name: 브랜치에 맞는 이미지 태그 지정 1
