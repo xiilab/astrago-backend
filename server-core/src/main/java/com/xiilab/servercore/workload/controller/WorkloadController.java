@@ -86,7 +86,7 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
-	@GetMapping("/{type}/event")
+	@PostMapping("/{type}/event")
 	@Operation(summary = "워크로드 이벤트 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadEventDTO>> getWorkloadEventList(
 		@PathVariable("type") WorkloadType workloadType,
