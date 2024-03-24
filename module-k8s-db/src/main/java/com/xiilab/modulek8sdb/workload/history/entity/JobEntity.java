@@ -55,4 +55,9 @@ public class JobEntity extends WorkloadEntity {
 		this.image = image;
 	}
 
+	public void updateJob(String name, String description) {
+		super.name = name;
+		super.description = description;
+	}
+
 }

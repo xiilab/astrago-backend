@@ -42,6 +42,7 @@ import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCusotm;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
+import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -216,6 +217,17 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		saveDataMapping(getSplitIds(createWorkloadHistory.getModelIds()), modelRepository::findById, job, EntityMappingType.MODEL, createWorkloadHistory.getModelInfoMap());
 		saveDataMapping(getSplitIds(createWorkloadHistory.getCodeIds()), codeRepository::findById, job, EntityMappingType.CODE, createWorkloadHistory.getCodesInfoMap());
 		saveDataMapping(getSplitIds(createWorkloadHistory.getImageId()), imageRepository::findById, job, EntityMappingType.IMAGE, null);
+
+	}
+
+	@Override
+	public void editWorkloadHistory(WorkloadUpdateDTO workloadUpdateDTO) {
+		JobEntity findWorkload = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
+			workloadUpdateDTO.getWorkspaceResourceName(),
+			workloadUpdateDTO.getWorkloadResourceName())
+			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
+		findWorkload.updateJob(workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
+		workloadHistoryRepo.save(findWorkload);
 
 	}
 

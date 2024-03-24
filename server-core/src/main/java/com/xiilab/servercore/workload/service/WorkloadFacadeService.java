@@ -455,14 +455,18 @@ public class WorkloadFacadeService {
 	}
 
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
-		if (workloadType == WorkloadType.BATCH) {
-			workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
-				workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-				workloadUpdateDTO.getDescription());
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
-				workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-				workloadUpdateDTO.getDescription());
+		try {
+			workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
+		} catch (RestApiException e) {
+			if (workloadType == WorkloadType.BATCH) {
+				workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
+					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+					workloadUpdateDTO.getDescription());
+			} else if (workloadType == WorkloadType.INTERACTIVE) {
+				workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
+					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+					workloadUpdateDTO.getDescription());
+			}
 		}
 	}
 
