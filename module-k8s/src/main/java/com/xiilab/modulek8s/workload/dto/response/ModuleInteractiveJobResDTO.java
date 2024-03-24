@@ -6,7 +6,6 @@ import java.util.Objects;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
@@ -45,12 +44,17 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 	}
 
 	private WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {
-		Integer replicas = deploymentStatus.getReplicas();
-		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
-		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
-		if (!NumberValidUtils.isNullOrZero(unavailableReplicas)) {
+		int replicas = deploymentStatus.getReplicas() == null ? 0 : deploymentStatus.getReplicas();
+		int availableReplicas =
+			deploymentStatus.getAvailableReplicas() == null ? 0 : deploymentStatus.getAvailableReplicas();
+		int unavailableReplicas =
+			deploymentStatus.getUnavailableReplicas() == null ? 0 : deploymentStatus.getUnavailableReplicas();
+
+		if (unavailableReplicas > 0) {
 			return WorkloadStatus.ERROR;
-		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+		} else if (replicas > availableReplicas) {
+			return WorkloadStatus.PENDING;
+		} else if (replicas == availableReplicas) {
 			return WorkloadStatus.RUNNING;
 		} else {
 			return WorkloadStatus.PENDING;
