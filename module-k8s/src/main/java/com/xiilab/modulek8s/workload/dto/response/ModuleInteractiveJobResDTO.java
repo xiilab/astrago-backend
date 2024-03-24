@@ -32,6 +32,9 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 		super.envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
+		super.ports = container.getPorts().stream()
+			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort(), null))
+			.toList();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(deployment.getStatus());
 		this.ide = deployment.getMetadata().getAnnotations().get(AnnotationField.IDE.getField()) == null ? "CUSTOM" :

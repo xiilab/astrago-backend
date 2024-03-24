@@ -887,7 +887,8 @@ public class WorkloadFacadeService {
 					ports = moduleJobResDTO.getPorts().stream()
 						.map(port -> new FindWorkloadResDTO.Port(port.name(),
 							port.originPort(),
-							getJobIDEUrl(node.get().getIp(), portMap.get(port.originPort()))))
+							node.get().getIp() + ":" + portMap.get(port.originPort())
+						))
 						.toList();
 				}
 			}
