@@ -252,4 +252,14 @@ public class WorkloadController {
 			.header(HttpHeaders.CONTENT_TYPE, mediaType.toString())
 			.body(workloadFacadeService.getWorkloadFilePreview(workloadName, workspaceName, workloadType, path));
 	}
+
+	@GetMapping("/{workloadName}/history/log")
+	@Operation(summary = "종료된 워크로드의 로그 조회하기")
+	public ResponseEntity<byte[]> getEndWorkloadHistoryLog(
+		@PathVariable(name = "workloadName") String workloadName,
+		UserInfoDTO userInfoDTO
+	) {
+		return ResponseEntity.ok()
+				.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
+	}
 }

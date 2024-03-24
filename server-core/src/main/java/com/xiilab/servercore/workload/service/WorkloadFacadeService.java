@@ -2,6 +2,8 @@ package com.xiilab.servercore.workload.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -438,6 +440,17 @@ public class WorkloadFacadeService {
 	public byte[] getWorkloadFilePreview(String workloadName, String workspaceName, WorkloadType workloadType,
 		String path) throws IOException {
 		return downloadFileFromWorkload(workloadName, workspaceName, workloadType, path).getContentAsByteArray();
+	}
+
+	public byte[] getWorkloadLogFile(String workloadName, UserInfoDTO userInfoDTO) {
+		//저장된 로그 path 구하기
+		String rootPath = FileUtils.getUserLogFolderPath(userInfoDTO.getUserName());
+		String logPath = rootPath + File.separator + workloadName + ".log";
+		try {
+			return Files.readAllBytes(Path.of(logPath));
+		} catch (IOException e) {
+			throw new RestApiException(WorkloadErrorCode.NOT_FOUND_JOB_LOG);
+		}
 	}
 
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {

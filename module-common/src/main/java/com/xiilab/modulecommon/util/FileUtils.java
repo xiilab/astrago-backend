@@ -20,7 +20,7 @@ public class FileUtils {
 		return System.getProperty("user.home") + File.separator + ROOT_PATH + File.separator + username;
 	}
 
-	private static String getUserLogFolderPath(String username) {
+	public static String getUserLogFolderPath(String username) {
 		return getUserFolderPath(username) + File.separator + "log";
 	}
 
