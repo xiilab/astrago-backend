@@ -243,7 +243,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 	@Override
 	public List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName) {
-		List<GroupUserDTO.UserDTO> result = new ArrayList<>();
+		List<GroupUserDTO.UserDTO> allUser = new ArrayList<>();
 		GroupRepresentation userSubGroup = getWsUserSubGroupByGroupName(groupName);
 		GroupUserDTO.SubGroupUserDto usersByGroupId = findUsersByGroupId(userSubGroup.getId(), null);
 		GroupRepresentation ownerSubGroup = getWsOwnerSubGroupByGroupName(groupName);
@@ -251,8 +251,19 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 		List<GroupUserDTO.UserDTO> users = usersByGroupId.getUsers();
 		List<GroupUserDTO.UserDTO> owners = ownersByGroupId.getUsers();
-		result.addAll(users);
-		result.addAll(owners);
+		allUser.addAll(users);
+		allUser.addAll(owners);
+		// 중복 제거용 Set
+		Set<String> userIds = new HashSet<>();
+
+		List<GroupUserDTO.UserDTO> result = new ArrayList<>();
+
+		for (GroupUserDTO.UserDTO user : allUser) {
+			if (userIds.add(user.getUserId())) {
+				result.add(user);
+			}
+		}
+
 		return result;
 	}
 
