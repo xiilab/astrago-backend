@@ -142,8 +142,8 @@ jobs:
           file: server-core/Dockerfile
           push: true
           tags: |
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:${{ steps.image_tag.outputs.value }}
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+            ${{ steps.image-repo.outputs.value }}/astrago-backend:core-${{ steps.image_tag.outputs.value }}
+            ${{ steps.image-repo.outputs.value }}/astrago-backend:core-${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -156,8 +156,8 @@ jobs:
           file: server-batch/Dockerfile
           push: true
           tags: |
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:${{ steps.image_tag.outputs.value }}
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+            ${{ steps.image-repo.outputs.value }}/astrago-backend:batch-${{ steps.image_tag.outputs.value }}
+            ${{ steps.image-repo.outputs.value }}/astrago-backend:batch-${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -170,8 +170,8 @@ jobs:
           file: server-monitor/Dockerfile
           push: true
           tags: |
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:${{ steps.image_tag.outputs.value }}
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+            ${{ steps.image-repo.outputs.value }}/astrago-backend:monitor-${{ steps.image_tag.outputs.value }}
+            ${{ steps.image-repo.outputs.value }}/astrago-backend:monitor-${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -200,18 +200,18 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.core.imageTag = "core-${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.batch.imageTag = "batch-${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "monitor${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
 
       - name: dev 이미지 정보 수정
         if: ${{ needs.read.outputs.branch != 'master' }}
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.core.imageTag = "core-${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.batch.imageTag = "batch-${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
       - name: push monochart
         run: | #helmfile -e dev -l type=app template > monochart/monochart.yaml
           cat environments/dev/values.yaml
