@@ -120,8 +120,8 @@ public abstract class ModuleWorkloadResDTO {
 		Quantity cpu = resourceRequests.get("cpu");
 		Quantity memory = resourceRequests.get("memory");
 		this.gpuRequest = gpu != null ? gpu.getAmount() : "0";
-		this.cpuRequest = cpu != null ? String.format("%.1f", Float.valueOf(cpu.getAmount()) / 1000) : "0";
-		this.memRequest = memory != null ? String.format("%.1f", Float.valueOf(memory.getAmount()) / 1000) : "0";
+		this.cpuRequest = cpu != null ? String.valueOf(Float.parseFloat(cpu.getAmount())) : "0";
+		this.memRequest = memory != null ? String.valueOf(Float.parseFloat(memory.getAmount())) : "0";
 	}
 
 	protected void initializeVolumeMountPath(Map<String, String> annotations) {
