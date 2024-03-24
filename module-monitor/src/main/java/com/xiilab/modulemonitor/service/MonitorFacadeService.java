@@ -74,7 +74,7 @@ public class MonitorFacadeService {
 		return ResponseDTO.NodeResourceDTO.builder()
 			.nodeName(nodeName)
 			.cpuTotal(clusterCPU.total())
-			.cpuRequest(clusterCPU.request())
+			.cpuRequest(clusterCPU.cpuRequest())
 			.cpuUsage(clusterCPU.cpuUsage())
 			.memTotal(clusterMEM.total())
 			.memRequest(clusterMEM.request())
