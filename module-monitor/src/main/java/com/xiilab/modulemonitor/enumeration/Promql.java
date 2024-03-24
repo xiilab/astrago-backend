@@ -178,10 +178,10 @@ public enum Promql {
 	REPORT_SYSTEM_INFO_GPU_MODEL("avg(label_replace(DCGM_FI_DEV_GPU_TEMP, \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * on(node) group_left kube_node_info{}) by(node, modelName)", "", ""),
 	REPORT_SYSTEM_AVG_GPU_TEMP("avg(DCGM_FI_DEV_GPU_TEMP) by(kubernetes_node, gpu)","",""),
 	REPORT_SYSTEM_MAX_GPU_TEMP("max(DCGM_FI_DEV_GPU_TEMP) by(kubernetes_node, gpu)","",""),
-	REPORT_SYSTEM_AVG_GPU_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{}) by(gpu, kubernetes_node, modelName, instance)", "", ""),
-	REPORT_SYSTEM_MAX_GPU_USAGE("max(DCGM_FI_DEV_GPU_UTIL{}) by(gpu, kubernetes_node, modelName, instance)", "", ""),
-	REPORT_SYSTEM_AVG_GPU_MEM("avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName, instance))", "", ""),
-	REPORT_SYSTEM_MAX_GPU_MEM("max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) / (max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName, instance) + max(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName, instance))", "", ""),
+	REPORT_SYSTEM_AVG_GPU_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{}) by(gpu, kubernetes_node, modelName)", "", ""),
+	REPORT_SYSTEM_MAX_GPU_USAGE("max(DCGM_FI_DEV_GPU_UTIL{}) by(gpu, kubernetes_node, modelName)", "", ""),
+	REPORT_SYSTEM_AVG_GPU_MEM("avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName))", "", ""),
+	REPORT_SYSTEM_MAX_GPU_MEM("max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) / (max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) + max(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName))", "", ""),
 
 
 	;
