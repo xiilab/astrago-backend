@@ -487,7 +487,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.podName(podName)
 				.nodeName(pod.getSpec().getNodeName())
 				.status(pod.getStatus().getPhase())
-				.reason(!pod.getStatus().getContainerStatuses().isEmpty() ?pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason() : "none")
+				.reason(!pod.getStatus().getContainerStatuses().isEmpty() ? pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason() : !pod.getStatus().getReason().isEmpty() ? pod.getStatus().getReason() : "none")
 				.build();
 		}
 	}
