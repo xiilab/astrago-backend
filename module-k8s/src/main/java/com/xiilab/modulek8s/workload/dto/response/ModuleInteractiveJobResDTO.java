@@ -49,10 +49,10 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 			deploymentStatus.getAvailableReplicas() == null ? 0 : deploymentStatus.getAvailableReplicas();
 		int unavailableReplicas =
 			deploymentStatus.getUnavailableReplicas() == null ? 0 : deploymentStatus.getUnavailableReplicas();
-
-		if (unavailableReplicas > 0) {
+		int updateReplicas = deploymentStatus.getUpdatedReplicas() == null ? 0 : deploymentStatus.getUpdatedReplicas();
+		if (unavailableReplicas > 0 && updateReplicas > 0) {
 			return WorkloadStatus.ERROR;
-		} else if (replicas > availableReplicas) {
+		} else if (unavailableReplicas > 0) {
 			return WorkloadStatus.PENDING;
 		} else if (replicas == availableReplicas) {
 			return WorkloadStatus.RUNNING;
