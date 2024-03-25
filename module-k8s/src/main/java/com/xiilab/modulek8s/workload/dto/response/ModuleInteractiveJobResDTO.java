@@ -6,7 +6,6 @@ import java.util.Objects;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
@@ -33,6 +32,9 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 		super.envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
+		super.ports = container.getPorts().stream()
+			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort(), null))
+			.toList();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(deployment.getStatus());
 		this.ide = deployment.getMetadata().getAnnotations().get(AnnotationField.IDE.getField()) == null ? "CUSTOM" :
@@ -45,12 +47,17 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 	}
 
 	private WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {
-		Integer replicas = deploymentStatus.getReplicas();
-		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
-		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
-		if (!NumberValidUtils.isNullOrZero(unavailableReplicas)) {
+		int replicas = deploymentStatus.getReplicas() == null ? 0 : deploymentStatus.getReplicas();
+		int availableReplicas =
+			deploymentStatus.getAvailableReplicas() == null ? 0 : deploymentStatus.getAvailableReplicas();
+		int unavailableReplicas =
+			deploymentStatus.getUnavailableReplicas() == null ? 0 : deploymentStatus.getUnavailableReplicas();
+		int updateReplicas = deploymentStatus.getUpdatedReplicas() == null ? 0 : deploymentStatus.getUpdatedReplicas();
+		if (unavailableReplicas > 0 && updateReplicas > 0) {
 			return WorkloadStatus.ERROR;
-		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+		} else if (unavailableReplicas > 0) {
+			return WorkloadStatus.PENDING;
+		} else if (replicas == availableReplicas) {
 			return WorkloadStatus.RUNNING;
 		} else {
 			return WorkloadStatus.PENDING;

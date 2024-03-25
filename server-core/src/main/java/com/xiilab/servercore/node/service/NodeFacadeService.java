@@ -28,23 +28,31 @@ public class NodeFacadeService {
 		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(pageNo, pageSize);
 		RequestDTO requestDTO = new RequestDTO();
 
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalCpuMap = listToMap(getMetricMap(requestDTO,
-			Promql.TOTAL_NODE_CPU_CORE));
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageCpuMap = listToMap(getMetricMap(requestDTO,
-			Promql.USAGE_NODE_CPU_CORE));
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalGpuMap = listToMap(getMetricMap(requestDTO,
-			Promql.TOTAL_NODE_GPU_COUNT));
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageGpuMap = listToMap(getMetricMap(requestDTO,
-			Promql.USAGE_NODE_GPU_COUNT));
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalMemMap = listToMap(getMetricMap(requestDTO,
-			Promql.TOTAL_NODE_MEMORY_SIZE));
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageMemMap = listToMap(getMetricMap(requestDTO,
-			Promql.USAGE_NODE_MEMORY_SIZE));
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalDiskMap = listToMap(getMetricMap(requestDTO,
-			Promql.NODE_ROOT_DISK_SIZE));
-		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageDiskMap = listToMap(getMetricMap(requestDTO,
-			Promql.NODE_ROOT_DISK_USAGE_SIZE));
-		if(nodeList.getNodes() != null){
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalCpuMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.TOTAL_NODE_CPU_CORE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageCpuMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.USAGE_NODE_CPU_CORE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalGpuMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.TOTAL_NODE_GPU_COUNT));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageGpuMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.USAGE_NODE_GPU_COUNT));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalMemMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.TOTAL_NODE_MEMORY_SIZE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageMemMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.USAGE_NODE_MEMORY_SIZE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalDiskMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.NODE_ROOT_DISK_SIZE));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageDiskMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.NODE_ROOT_DISK_USAGE_SIZE));
+		if (nodeList.getNodes() != null) {
 			for (ResponseDTO.NodeDTO nodeDTO : nodeList.getNodes()) {
 				String nodeName = nodeDTO.getNodeName();
 				nodeDTO.setTotalCPU(getValueFromMap(totalCpuMap, nodeName, Promql.TOTAL_NODE_CPU_CORE));
@@ -61,8 +69,8 @@ public class NodeFacadeService {
 		return nodeList;
 	}
 
-
-	private double getValueFromMap(Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> metricMap, String nodeName, Promql promql) {
+	private double getValueFromMap(Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> metricMap,
+		String nodeName, Promql promql) {
 		com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO realTimeDTO = metricMap.get(nodeName);
 		if (realTimeDTO == null) {
 			return 0.0;
@@ -85,12 +93,14 @@ public class NodeFacadeService {
 				return 0.0;
 		}
 	}
+
 	// MetricType에 따라 요청을 처리하는 메서드 추가
 	private List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> getMetricMap(
 		RequestDTO requestDTO, Promql promql) {
 		requestDTO.changeMetricName(promql.name());
 		return prometheusService.getRealTimeMetric(requestDTO);
 	}
+
 	private Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> listToMap(
 		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> list) {
 		return list.stream()
@@ -117,40 +127,47 @@ public class NodeFacadeService {
 			resourceName);
 		RequestDTO requestDTO = RequestDTO.builder()
 			.nodeName(resourceName).build();
-		MIGGpuDTO.MIGInfoStatus nodeMigStatus = getNodeMigStatus(resourceName);
-		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource = getMetricMap(requestDTO, Promql.TOTAL_NODE_REQUEST_RESOURCE);
-		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource = getMetricMap(requestDTO, Promql.TOTAL_NODE_LIMIT_RESOURCE);
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource = getMetricMap(requestDTO,
+			Promql.TOTAL_NODE_REQUEST_RESOURCE);
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource = getMetricMap(requestDTO,
+			Promql.TOTAL_NODE_LIMIT_RESOURCE);
 
 		double totalCPUResource = getTotalResource(Promql.TOTAL_NODE_CPU_CORE.name());
 		double totalGPUResource = getTotalResource(Promql.TOTAL_NODE_GPU_COUNT.name());
 		double totalMEMResource = getTotalResource(Promql.TOTAL_NODE_MEMORY_SIZE.name()) / 1024;
 
-		ResponseDTO.NodeResourceInfo.Requests requests = buildRequests(requestResource, totalCPUResource, totalGPUResource, totalMEMResource);
-		ResponseDTO.NodeResourceInfo.Limits limits = buildLimits(limitResource, totalCPUResource, totalGPUResource, totalMEMResource);
+		ResponseDTO.NodeResourceInfo.Requests requests = buildRequests(requestResource, totalCPUResource,
+			totalGPUResource, totalMEMResource);
+		ResponseDTO.NodeResourceInfo.Limits limits = buildLimits(limitResource, totalCPUResource, totalGPUResource,
+			totalMEMResource);
 
 		nodeResourceInfo.setRequests(requests);
 		nodeResourceInfo.setLimits(limits);
 
 		return nodeResourceInfo;
 	}
+
 	private double getTotalResource(String metricName) {
 		RequestDTO requestDTO = new RequestDTO();
 		requestDTO.changeMetricName(metricName);
-		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalResource = prometheusService.getRealTimeMetric(requestDTO);
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalResource = prometheusService.getRealTimeMetric(
+			requestDTO);
 		return Double.parseDouble(totalResource.get(0).value());
 	}
-	private ResponseDTO.NodeResourceInfo.Requests buildRequests(List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource,
+
+	private ResponseDTO.NodeResourceInfo.Requests buildRequests(
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> requestResource,
 		double totalCPUResource, double totalGPUResource, double totalMEMResource) {
 		long cpu = 0;
 		long memory = 0;
 		long gpu = 0;
 		for (com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO request : requestResource) {
 			if (request.resource().equalsIgnoreCase("memory")) {
-				memory = (long) Double.parseDouble(request.value()) / 1024;
+				memory = (long)Double.parseDouble(request.value()) / 1024;
 			} else if (request.resource().equalsIgnoreCase("cpu")) {
-				cpu = (long) (Double.parseDouble(request.value()) * 1000);
+				cpu = (long)(Double.parseDouble(request.value()) * 1000);
 			} else if (request.resource().equalsIgnoreCase("nvidia_com_gpu")) {
-				gpu = (long) Float.parseFloat(request.value());
+				gpu = (long)Float.parseFloat(request.value());
 			}
 		}
 		ResponseDTO.NodeResourceInfo.Requests requests = ResponseDTO.NodeResourceInfo.Requests.builder()
@@ -163,18 +180,20 @@ public class NodeFacadeService {
 		requests.memoryPercentCalculation(totalMEMResource);
 		return requests;
 	}
-	private ResponseDTO.NodeResourceInfo.Limits buildLimits(List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource,
+
+	private ResponseDTO.NodeResourceInfo.Limits buildLimits(
+		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> limitResource,
 		double totalCPUResource, double totalGPUResource, double totalMEMResource) {
 		long cpu = 0;
 		long memory = 0;
 		long gpu = 0;
 		for (com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO limits : limitResource) {
 			if (limits.resource().equalsIgnoreCase("memory")) {
-				memory = (long) Double.parseDouble(limits.value()) / 1024;
+				memory = (long)Double.parseDouble(limits.value()) / 1024;
 			} else if (limits.resource().equalsIgnoreCase("cpu")) {
-				cpu = (long) (Double.parseDouble(limits.value()) * 1000);
+				cpu = (long)(Double.parseDouble(limits.value()) * 1000);
 			} else if (limits.resource().equalsIgnoreCase("nvidia_com_gpu")) {
-				gpu = (long) Float.parseFloat(limits.value());
+				gpu = (long)Float.parseFloat(limits.value());
 			}
 		}
 		ResponseDTO.NodeResourceInfo.Limits limitsObj = ResponseDTO.NodeResourceInfo.Limits.builder()
@@ -192,11 +211,14 @@ public class NodeFacadeService {
 		nodeRepository.setSchedule(resourceName, scheduleDTO.getScheduleType());
 	}
 
-	public void updateMIGProfile(MIGGpuDTO MIGGpuDTO) {
+	public void updateMIGProfile(MIGGpuDTO migGpuDTO) {
+		nodeRepository.saveGpuProductTOLabel(migGpuDTO.getNodeName());
 		//mig parted configmap에 해당 노드의 프로파일 추가
-		nodeRepository.updateMigProfile(MIGGpuDTO);
+		nodeRepository.updateMigProfile(migGpuDTO);
+		//변경된 configmap이 적용될 수 있도록 mig manager를 restart한다.
+		nodeRepository.restartMIGManager();
 		//node의 라벨값 변경
-		nodeRepository.updateMIGProfile(MIGGpuDTO.getNodeName(), MIGGpuDTO.getMigKey());
+		nodeRepository.updateMIGProfile(migGpuDTO.getNodeName(), migGpuDTO.getMigKey());
 	}
 
 	public void disableMIG(String nodeName) {

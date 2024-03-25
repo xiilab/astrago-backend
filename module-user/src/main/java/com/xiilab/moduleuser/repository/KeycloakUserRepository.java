@@ -25,7 +25,6 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
-import com.xiilab.moduleuser.enums.UserCreatedAt;
 import com.xiilab.moduleuser.enums.UserEnable;
 import com.xiilab.moduleuser.enums.UserSort;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -463,6 +462,12 @@ public class KeycloakUserRepository implements UserRepository {
 			RoleRepresentation roleRepresentation = getRolerepByName(AuthType.ROLE_USER.name());
 			userResource.roles().realmLevel().add(List.of(roleRepresentation));
 		}
+
+		if(!StringUtils.isEmpty(updateUserDTO.getPassword())){
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false, updateUserDTO.getPassword());
+			userResource.resetPassword(authenticationSettings);
+		}
+
 		keycloakConfig.getRealmClient().users().get(id).update(representation);
 	}
 

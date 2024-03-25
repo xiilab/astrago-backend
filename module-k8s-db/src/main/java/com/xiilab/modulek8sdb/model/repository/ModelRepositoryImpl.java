@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -45,7 +46,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				model.deleteYn.eq(DeleteYN.N)
+				deleteYnEqN()
 			)
 			.orderBy(sort)
 			.offset(pageRequest.getOffset())
@@ -58,7 +59,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				model.deleteYn.eq(DeleteYN.N)
+				deleteYnEqN()
 			)
 			.fetchOne();
 		return new PageImpl<>(models, pageRequest, count);
@@ -74,10 +75,17 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 	@Override
 	public List<Model> findByAuthority(String userId, AuthType userAuth) {
 		List<Model> models = queryFactory.selectFrom(model)
-			.where(creatorEq(userId, userAuth))
+			.where(creatorEq(userId, userAuth),
+				deleteYnEqN())
+			.orderBy(model.regDate.desc())
 			.fetch();
 		return models;
 	}
+
+	private static BooleanExpression deleteYnEqN() {
+		return model.deleteYn.eq(DeleteYN.N);
+	}
+
 	private Predicate modelNameOrCreatorNameContains(String searchText) {
 		return StringUtils.hasText(searchText) ? model.regUser.regUserRealName.contains(searchText)
 			.or(model.modelName.contains(searchText)) : null;

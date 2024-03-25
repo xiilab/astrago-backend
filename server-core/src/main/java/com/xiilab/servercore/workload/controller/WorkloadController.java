@@ -86,7 +86,7 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
-	@GetMapping("/{type}/event")
+	@PostMapping("/{type}/event")
 	@Operation(summary = "워크로드 이벤트 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadEventDTO>> getWorkloadEventList(
 		@PathVariable("type") WorkloadType workloadType,
@@ -251,5 +251,15 @@ public class WorkloadController {
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_TYPE, mediaType.toString())
 			.body(workloadFacadeService.getWorkloadFilePreview(workloadName, workspaceName, workloadType, path));
+	}
+
+	@GetMapping("/{workloadName}/history/log")
+	@Operation(summary = "종료된 워크로드의 로그 조회하기")
+	public ResponseEntity<byte[]> getEndWorkloadHistoryLog(
+		@PathVariable(name = "workloadName") String workloadName,
+		UserInfoDTO userInfoDTO
+	) {
+		return ResponseEntity.ok()
+				.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
 }

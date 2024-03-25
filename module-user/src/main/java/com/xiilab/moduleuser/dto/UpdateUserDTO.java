@@ -15,4 +15,5 @@ public class UpdateUserDTO {
 	private String firstName;
 	private String lastName;
 	private AuthType auth;
+	private String password;
 }

@@ -1,6 +1,5 @@
 prometheus:
   url: http://10.61.3.12:30090/
-
 spring:
   mvc:
     pathmatch:
@@ -48,3 +47,5 @@ keycloak:
   bearer-only: true
   public-client: false
   principal-attribute: preferred_username
+server:
+  max-http-request-header-size: 40KB

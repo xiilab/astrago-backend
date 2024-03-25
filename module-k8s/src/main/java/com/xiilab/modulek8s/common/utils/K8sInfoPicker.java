@@ -287,8 +287,8 @@ public class K8sInfoPicker {
 		return K8SResourceMetadataDTO.builder()
 			.workloadResourceName(metadata.getName())
 			.workspaceResourceName(metadata.getNamespace())
-			.cpuReq(Float.valueOf(containerResourceReq.getCpuReq()))
-			.memReq(Float.valueOf(containerResourceReq.getMemReq()))
+			.cpuReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? Float.valueOf(containerResourceReq.getCpuReq()) : null)
+			.memReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? Float.valueOf(containerResourceReq.getMemReq()) : null)
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imageName(container.getImage())
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
@@ -381,13 +381,18 @@ public class K8sInfoPicker {
 		return new ClusterResourceDTO(cpu, mem, gpu);
 	}
 
-	private static double convertQuantity(Quantity quantity) {
+	public static double convertQuantity(Quantity quantity) {
 		String format = quantity.getFormat();
 		double amount = Double.parseDouble(quantity.getAmount());
-		if (format.equals("Ki")) {
+
+		if (!StringUtils.hasText(format) || format.equals("Gi")) {
+			return amount;
+		} else if (format.equals("Ki")) {
 			return (amount / (1024.0 * 1024.0 * 1024.0 / 1024.0));
 		} else if (format.equals("Mi")) {
 			return (amount / 1024);
+		} else if (format.equals("m")) {
+			return (amount / 1000);
 		} else {
 			throw new IllegalArgumentException(format + " format은 확인되지 않은 format입니다.");
 		}

@@ -2,6 +2,8 @@ package com.xiilab.servercore.workload.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,6 +38,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
@@ -82,6 +85,7 @@ import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.image.dto.ImageResDTO;
 import com.xiilab.servercore.image.service.ImageService;
+import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.pin.service.PinService;
@@ -136,12 +140,12 @@ public class WorkloadFacadeService {
 
 		// 데이터셋 볼륨 추가
 		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
-			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
+			setDatasetVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
 		}
 
 		// 모델 볼륨 추가
 		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
-			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
+			setModelVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
 		}
 
 		//Image IDE 정보 주입
@@ -296,14 +300,6 @@ public class WorkloadFacadeService {
 			ports, envs);
 	}
 
-	public void updateWorkload(String workloadName, WorkloadType workloadType, UserInfoDTO userInfoDTO) {
-		if (workloadType == WorkloadType.BATCH) {
-
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-
-		}
-	}
-
 	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO
 	) throws IOException {
@@ -440,15 +436,30 @@ public class WorkloadFacadeService {
 		return downloadFileFromWorkload(workloadName, workspaceName, workloadType, path).getContentAsByteArray();
 	}
 
+	public byte[] getWorkloadLogFile(String workloadName, UserInfoDTO userInfoDTO) {
+		//저장된 로그 path 구하기
+		String rootPath = FileUtils.getUserLogFolderPath(userInfoDTO.getUserName());
+		String logPath = rootPath + File.separator + workloadName + ".log";
+		try {
+			return Files.readAllBytes(Path.of(logPath));
+		} catch (IOException e) {
+			throw new RestApiException(WorkloadErrorCode.NOT_FOUND_JOB_LOG);
+		}
+	}
+
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
-		if (workloadType == WorkloadType.BATCH) {
-			workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
-				workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-				workloadUpdateDTO.getDescription());
-		} else if (workloadType == WorkloadType.INTERACTIVE) {
-			workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
-				workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-				workloadUpdateDTO.getDescription());
+		try {
+			workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
+		} catch (RestApiException e) {
+			if (workloadType == WorkloadType.BATCH) {
+				workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
+					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+					workloadUpdateDTO.getDescription());
+			} else if (workloadType == WorkloadType.INTERACTIVE) {
+				workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
+					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+					workloadUpdateDTO.getDescription());
+			}
 		}
 	}
 
@@ -625,7 +636,7 @@ public class WorkloadFacadeService {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 				WorkloadType.INTERACTIVE);
 			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
-		} catch (KubernetesClientException ignored) {
+		} catch (KubernetesClientException | K8sException ignored) {
 
 		}
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
@@ -642,22 +653,32 @@ public class WorkloadFacadeService {
 		// }
 	}
 
-	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
-		for (ModuleVolumeReqDTO reqDto : list) {
-			setCreatePVAndPVC(workspaceName, reqDto);
+	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
+			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
+				findDataset);
+			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
+				resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType());
 		}
 	}
 
-	private void setCreatePVAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO) {
-		Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
-		DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
-			findDataset);
+	private void setModelVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
+			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
+			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
+				resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType());
+		}
+	}
 
+	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
+		String storagePath, StorageType storageType) {
 		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
 		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
-		String ip = resDatasetWithStorage.getIp();
-		String storagePath = resDatasetWithStorage.getStoragePath();
-		StorageType storageType = resDatasetWithStorage.getStorageType();
+		// String ip = resDatasetWithStorage.getIp();
+		// String storagePath = resDatasetWithStorage.getStoragePath();
+		// StorageType storageType = resDatasetWithStorage.getStorageType();
 		int requestVolume = 50;
 
 		// PV 생성
@@ -869,7 +890,6 @@ public class WorkloadFacadeService {
 				SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
 					moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
 
-				// findSvcs.getServices().stream
 				for (SvcResDTO.FindSvcDetail findSvcDetail : findSvcs.getServices()) {
 					Map<Integer, Integer> portMap = findSvcDetail.getPorts()
 						.stream()
@@ -877,7 +897,8 @@ public class WorkloadFacadeService {
 					ports = moduleJobResDTO.getPorts().stream()
 						.map(port -> new FindWorkloadResDTO.Port(port.name(),
 							port.originPort(),
-							getJobIDEUrl(node.get().getIp(), portMap.get(port.originPort()))))
+							node.get().getIp() + ":" + portMap.get(port.originPort())
+						))
 						.toList();
 				}
 			}

@@ -22,7 +22,7 @@ public class DirectoryDTO {
 	@Builder(builderClassName = "convertRawString", builderMethodName = "convertRawString")
 	DirectoryDTO(List<String> rawStringList) {
 		String result = rawStringList.get(0);
-		if (result.contains("Syntax error") || result.contains("stat: cannot statx")) {
+		if (result.contains("Syntax error") || result.contains("stat: cannot")) {
 			children = Collections.emptyList();
 			directoryCnt = 0;
 			fileCnt = 0;

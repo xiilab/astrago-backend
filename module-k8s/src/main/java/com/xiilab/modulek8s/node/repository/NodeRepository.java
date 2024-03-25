@@ -37,4 +37,8 @@ public interface NodeRepository {
 	MIGGpuDTO.MIGInfoStatus getNodeMigStatus(String nodeName);
 
 	void updateNodeLabel(String nodeName, Map<String, String> labels);
+
+	void saveGpuProductTOLabel(String nodeName);
+
+	void restartMIGManager();
 }

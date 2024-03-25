@@ -16,6 +16,7 @@ import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
+import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
@@ -46,7 +47,7 @@ public abstract class ModuleWorkloadResDTO {
 	protected LocalDateTime deletedAt;             // 워크로드 종료일시
 	protected SchedulingType schedulingType;       // 스케줄링 방식
 	protected List<ModuleEnvResDTO> envs;          // env 정의
-	protected List<ModulePortResDTO> ports = new ArrayList<>();        // port 정의
+	protected List<ModulePortResDTO> ports;        // port 정의
 	protected List<ModuleCodeResDTO> codes;        // port 정의
 	protected Map<Long, String> datasetMountPathMap = new HashMap<>();    // dataset - mount path 맵
 	protected Map<Long, String> modelMountPathMap = new HashMap<>(); // model - mount path 맵
@@ -120,8 +121,8 @@ public abstract class ModuleWorkloadResDTO {
 		Quantity cpu = resourceRequests.get("cpu");
 		Quantity memory = resourceRequests.get("memory");
 		this.gpuRequest = gpu != null ? gpu.getAmount() : "0";
-		this.cpuRequest = cpu != null ? String.format("%.1f", Float.valueOf(cpu.getAmount()) / 1000) : "0";
-		this.memRequest = memory != null ? String.format("%.1f", Float.valueOf(memory.getAmount()) / 1000) : "0";
+		this.cpuRequest = cpu != null ? String.valueOf(K8sInfoPicker.convertQuantity(cpu)) : "0";
+		this.memRequest = memory != null ? String.valueOf(K8sInfoPicker.convertQuantity(memory)) : "0";
 	}
 
 	protected void initializeVolumeMountPath(Map<String, String> annotations) {

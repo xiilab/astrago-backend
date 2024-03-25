@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -21,6 +22,8 @@ import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
+import io.fabric8.kubernetes.api.model.ObjectFieldSelectorBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
@@ -101,9 +104,9 @@ public class InteractiveJobVO extends WorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
-		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), "true"));
-		this.models.forEach(model -> map.put("md-" + model.id(), "true"));
-		this.codes.forEach(code -> map.put("cd-" + code.id(), "true"));
+		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
+		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
+		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
 
 		return map;
 	}
@@ -135,6 +138,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
 		cloneGitRepo(podSpecBuilder, codes);
+		addDefaultShmVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, datasets);
 		addVolumes(podSpecBuilder, models);
 
@@ -147,12 +151,20 @@ public class InteractiveJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
+		addDefaultShmVolumeMountPath(podSpecContainer);
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
 		addContainerResource(podSpecContainer);
 
 		return podSpecContainer.endContainer().build();
+	}
+
+	private void addDefaultShmVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+		podSpecContainer.addNewVolumeMount()
+			.withName("shmdir")
+			.withMountPath("/dev/shm")
+			.endVolumeMount();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
@@ -223,12 +235,39 @@ public class InteractiveJobVO extends WorkloadVO {
 
 	@Override
 	public List<EnvVar> convertEnv() {
-		return envs.stream()
+		List<EnvVar> envVars = envs.stream()
 			.map(env -> new EnvVarBuilder()
 				.withName(env.name())
 				.withValue(env.value())
 				.build()
 			).toList();
+		if (super.image.imageType() == ImageType.HUB) {
+			envVars.add(new EnvVarBuilder()
+				.withName("POD_NAME")
+				.withValueFrom(new EnvVarSourceBuilder()
+					.withFieldRef(new ObjectFieldSelectorBuilder()
+						.withFieldPath("metadata.name")
+						.build()
+					)
+					.build()
+				)
+				.build()
+			);
+
+			envVars.add(new EnvVarBuilder()
+				.withName("POD_NAMESPACE")
+				.withValueFrom(new EnvVarSourceBuilder()
+					.withFieldRef(new ObjectFieldSelectorBuilder()
+						.withFieldPath("metadata.namespace")
+						.build()
+					)
+					.build()
+				)
+				.build()
+			);
+		}
+
+		return envVars;
 	}
 
 	@Override
@@ -244,5 +283,11 @@ public class InteractiveJobVO extends WorkloadVO {
 	@Override
 	protected ResourceType getType() {
 		return ResourceType.WORKLOAD;
+	}
+
+	private void addVolumeMap(Map<String,String> map, String prefix, Long id) {
+		if (!NumberValidUtils.isNullOrZero(id)) {
+			map.put(prefix + id, "true");
+		}
 	}
 }

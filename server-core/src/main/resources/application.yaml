@@ -13,8 +13,8 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
   datasource:
-#    url: jdbc:mariadb://localhost:3306/astrago
-    url: jdbc:mariadb://10.61.3.138:30756/astrago
+    url: jdbc:mariadb://localhost:3306/astrago
+#    url: jdbc:mariadb://10.61.3.12:30756/astrago
     username: root
     password: root
     hikari:

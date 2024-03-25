@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.repository.WorkspaceRepo;
+import com.xiilab.modulek8s.workspace.repository.WorkspaceRole;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceServiceImpl implements WorkspaceService {
 	private final WorkspaceRepo workspaceRepo;
+	private final WorkspaceRole workspaceRole;
 
 	@Override
 	public WorkspaceDTO.ResponseDTO createWorkspace(WorkspaceDTO.RequestDTO workspaceReqDTO) {
@@ -72,5 +74,15 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	@Override
 	public void deleteWorkspaceByName(String workspaceName) {
 		workspaceRepo.deleteWorkspaceByName(workspaceName);
+	}
+
+	@Override
+	public void editWorkspaceRole(String workspaceResourceName) {
+		workspaceRole.editWorkspaceRole(workspaceResourceName);
+	}
+
+	@Override
+	public void createPodAnnotationsRoleBinding(String workspaceResourceName) {
+		workspaceRole.createPodAnnotationsRoleBinding(workspaceResourceName);
 	}
 }

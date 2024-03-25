@@ -318,6 +318,10 @@ public class DataConverterUtil {
 		} catch (ParseException e) {
 			throw new RuntimeException("날짜 형식이 올바르지 않습니다.", e);
 		}
+	}
 
+	public static String dateFormat(LocalDateTime dateTime){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		return dateTime.format(formatter);
 	}
 }

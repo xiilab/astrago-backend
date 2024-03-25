@@ -76,7 +76,6 @@ public class AlertEventListener {
 			// 관리자 목록 조회해서 반복문
 			for (AdminAlertMappingEntity findAdminAlertMappingEntity : findAdminAlertMappingEntities) {
 				UserDTO.UserInfo findUser = userRepository.getUserById(findAdminAlertMappingEntity.getAdminId());
-				System.out.println(findAdminAlertMappingEntity.getAlert().getAlertRole());
 				// TODO exception 처리 필요
 				if (findAdminAlertMappingEntity.getSystemAlertStatus() == AlertStatus.ON) {
 					// save 로직 추가
