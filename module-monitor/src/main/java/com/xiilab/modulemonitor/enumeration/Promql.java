@@ -79,8 +79,8 @@ public enum Promql {
 
 	// WORK LOAD
 	WL_COUNT_BY_WORKSPACE("sum(kube_pod_info{%s}) by(namespace)","WorkSpace별 Workload 개수","WorkSpace"),
-	WL_RUNNING_COUNT("sum(kube_pod_status_phase{phase=\"Running\", %s}) by(namespace)","Running 상태 WorkLoad 개수","WorkSpace"),
-	WL_PENDING_COUNT("sum(kube_pod_status_phase{phase=\"Pending\", %s}) by(namespace)","Pending 상태 WorkLoad 개수","WorkSpace"),
+	WL_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", %s}) by(namespace)","Running 상태 WorkLoad 개수","WorkSpace"),
+	WL_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\", %s}) by(namespace)","Pending 상태 WorkLoad 개수","WorkSpace"),
 	WL_DISK_READ_BYTE("container_fs_reads_bytes_total{%s}","Workload Disk 읽기 조회","Workload"),
 	WL_DISK_WRITE_BYTE("container_fs_writes_bytes_total{%s}","Workload Disk 쓰기 조회","Workload"),
 	WL_NETWORK_RECEIVED("rate(container_network_transmit_packets_total{%s}[1m])","Network 패킷 수신 조회'","Workload"),
@@ -182,6 +182,14 @@ public enum Promql {
 	REPORT_SYSTEM_MAX_GPU_USAGE("max(DCGM_FI_DEV_GPU_UTIL{}) by(gpu, kubernetes_node, modelName)", "", ""),
 	REPORT_SYSTEM_AVG_GPU_MEM("avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName))", "", ""),
 	REPORT_SYSTEM_MAX_GPU_MEM("max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) / (max(max_over_time(DCGM_FI_DEV_FB_USED{}[1m])) by(gpu, kubernetes_node, modelName) + max(max_over_time(DCGM_FI_DEV_FB_FREE{}[1m])) by(gpu, kubernetes_node, modelName))", "", ""),
+	// DASH BOARD
+	DASHBOARD_WS_GPU_USAGE("((sum(kube_resourcequota{type=\"used\", resource=~\"requests.nvidia.com/gpu\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.nvidia.com/gpu\"} > 0) by(namespace)) * 100 ", "", "DASHBOARD"),
+	DASHBOARD_WS_CPU_USAGE("((sum(kube_resourcequota{type=\"used\", resource=~\"requests.cpu\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.cpu\"} > 0) by(namespace)) * 100 ", "", "DASHBOARD"),
+	DASHBOARD_WS_MEM_USAGE("((sum(kube_resourcequota{type=\"used\", resource=~\"requests.memory\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.memory\"} > 0) by(namespace)) * 100 ", "", "DASHBOARD"),
+	DASHBOARD_WS_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\", namespace =~ \"ws.*\"} > 0 and kube_pod_container_status_waiting_reason{namespace =~ \"ws.*\"} < 0) by(namespace)", "", "DASHBOARD"),
+	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_container_status_waiting_reason{namespace =~ \"ws.*\"} > 0) by(namespace) or count(kube_pod_status_reason{reason != \"\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
+	DASHBOARD_WS_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
+
 
 
 	;

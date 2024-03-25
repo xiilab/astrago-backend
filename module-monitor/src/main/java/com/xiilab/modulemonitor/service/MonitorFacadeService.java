@@ -23,26 +23,78 @@ public class MonitorFacadeService {
 	private final PrometheusService prometheusService;
 
 	public List<ResponseDTO.WorkspaceDTO> getWorkspaceResourceList() {
-		// GPU Metric 조회
-		String gpuMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.WS_GPU_USAGE.getQuery(), ""));
-		// CPU Metric 조회
-		String cpuMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.WS_CPU_USAGE.getQuery(), ""));
-		// MEM Metric 조회
-		String memMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.WS_MEM_USAGE.getQuery(), ""));
-		String memQuotaMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.WS_MEM_QUOTA.getQuery(), ""));
-		String wlPendingMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.WL_PENDING_COUNT.getQuery(), ""));
-		String wlRunningMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.WL_RUNNING_COUNT.getQuery(), ""));
 
+		// GPU 사용량
+		String gpuUsageMetric = prometheusService.getRealTimeMetricByQuery(
+			String.format(Promql.DASHBOARD_WS_GPU_USAGE.getQuery(), ""));
+		// CPU 사용량
+		String cpuUsageMetric = prometheusService.getRealTimeMetricByQuery(
+			String.format(Promql.DASHBOARD_WS_CPU_USAGE.getQuery(), ""));
+		// MEM 사용량
+		String memUsageMetric = prometheusService.getRealTimeMetricByQuery(
+			String.format(Promql.DASHBOARD_WS_MEM_USAGE.getQuery(), ""));
+		// Pending POD
+		String wsPendingMetric = prometheusService.getRealTimeMetricByQuery(
+			String.format(Promql.DASHBOARD_WS_PENDING_COUNT.getQuery(), ""));
+		// ERROR POD
+		String wsErrorMetric = prometheusService.getRealTimeMetricByQuery(
+			String.format(Promql.DASHBOARD_WS_ERROR_COUNT.getQuery(), ""));
+		// Running POD
+		String wsRunningMetric = prometheusService.getRealTimeMetricByQuery(
+			String.format(Promql.DASHBOARD_WS_RUNNING_COUNT.getQuery(), ""));
 
+		List<ResponseDTO.RealTimeDTO> gpuUsage = prometheusService.extractMetrics(gpuUsageMetric, "gpuUsage");
+		List<ResponseDTO.RealTimeDTO> cpuUsage = prometheusService.extractMetrics(cpuUsageMetric, "cpuUsage");
+		List<ResponseDTO.RealTimeDTO> memUsage = prometheusService.extractMetrics(memUsageMetric, "memUsage");
+		List<ResponseDTO.RealTimeDTO> pendingCount = prometheusService.extractMetrics(wsPendingMetric, "pendingCount");
+		List<ResponseDTO.RealTimeDTO> errorCount = prometheusService.extractMetrics(wsErrorMetric, "wsErrorCount");
+		List<ResponseDTO.RealTimeDTO> runnigCount = prometheusService.extractMetrics(wsRunningMetric, "wsRunnigCount");
 
+		gpuUsage.addAll(cpuUsage);
+		gpuUsage.addAll(memUsage);
+		gpuUsage.addAll(pendingCount);
+		gpuUsage.addAll(errorCount);
+		gpuUsage.addAll(runnigCount);
 
-		return mapToWorkspaceDTO(gpuMetric, cpuMetric, memMetric, memQuotaMetric, wlPendingMetric, wlRunningMetric);
+		Map<String, List<ResponseDTO.RealTimeDTO>> collect = gpuUsage.stream()
+			.collect(Collectors.groupingBy(ResponseDTO.RealTimeDTO::nameSpace));
+
+		String wsName = "default";
+		String wsRealName = "";
+		double gpu = 0.0;
+		double cpu = 0.0;
+		double mem = 0.0;
+		long running = 0;
+		long pending = 0;
+		long error = 0;
+
+		List<ResponseDTO.WorkspaceDTO> result = new ArrayList<>();
+		for(Map.Entry<String, List<ResponseDTO.RealTimeDTO>> value : collect.entrySet()){
+			wsRealName = value.getKey();
+			wsName = k8sMonitorService.getWorkspaceName(value.getKey());
+			for(ResponseDTO.RealTimeDTO realTimeDTO : value.getValue()){
+				switch (realTimeDTO.metricName()){
+					case "gpuUsage" -> gpu = Double.parseDouble(realTimeDTO.value());
+					case "cpuUsage" -> cpu = Double.parseDouble(realTimeDTO.value());
+					case "memUsage" -> mem = Double.parseDouble(realTimeDTO.value());
+					case "wsRunnigCount" -> running = Long.parseLong(realTimeDTO.value());
+					case "pendingCount" -> pending = Long.parseLong(realTimeDTO.value());
+					case "wsErrorCount" -> error = Long.parseLong(realTimeDTO.value());
+				}
+			}
+			result.add(ResponseDTO.WorkspaceDTO.builder()
+				.workspaceResourceName(wsRealName)
+				.workspaceName(wsName)
+				.gpuUsage(gpu)
+				.cpuUsage(cpu)
+				.memUsage(mem)
+				.wlRunningCount(running)
+				.pendingCount(pending)
+				.errorCount(error)
+				.build());
+		}
+
+		return result;
 	}
 
 	public ResponseDTO.NodeResourceDTO getNodeResource(String nodeName) {
@@ -71,6 +123,7 @@ public class MonitorFacadeService {
 
 		String diskTotalByte = DataConverterUtil.formatObjectMapper(diskTotal);
 		String diskUsageByte = DataConverterUtil.formatObjectMapper(diskUsage);
+
 		return ResponseDTO.NodeResourceDTO.builder()
 			.nodeName(nodeName)
 			.cpuTotal(clusterCPU.total())
@@ -92,6 +145,7 @@ public class MonitorFacadeService {
 		String cpuResponse = DataConverterUtil.formatObjectMapper(cpuMetric);
 		String memMetric = prometheusService.getRealTimeMetricByQuery(Promql.NODE_MEM_USAGE_KI.getQuery());
 		String memResponse = DataConverterUtil.formatObjectMapper(memMetric);
+
 		return List.of(
 			// CPU
 			k8sMonitorService.getDashboardClusterCPU("", DataConverterUtil.formatRoundTo(cpuResponse)),
@@ -140,6 +194,9 @@ public class MonitorFacadeService {
 
 			String nameSpace = gpuResult.get("metric").get("namespace").asText();
 
+			if(nameSpace.equals("ws-2ca876ed-f09c-4477-abd6-6a2aaf565d34")){
+				System.out.println("");
+			}
 			// 해당 워크스페이스의 워크로드 카운트
 			long wlCount = k8sMonitorService.getWorkloadCountByNamespace(nameSpace);
 			// 워크스페이스에서 발생한 에러 카운트

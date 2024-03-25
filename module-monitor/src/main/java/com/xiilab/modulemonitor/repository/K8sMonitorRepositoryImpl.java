@@ -31,6 +31,12 @@ import lombok.RequiredArgsConstructor;
 public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 	private final MonitorK8sAdapter monitorK8SAdapter;
+	private final String CPU = "CPU";
+	private final String MEM = "memory";
+	private final String REQUEST_MEM = "requests.memory";
+	private final String NVIDIA_GPU = "requests.nvidia.com/gpu";
+	private final String REQUEST_CPU = "requests.cpu";
+	private final String GPU = "GPU";
 	private final List<K8sErrorStatus> targetReasons = Arrays.asList(
 		K8sErrorStatus.CrashLoopBackOff,
 		K8sErrorStatus.ImagePullBackOff,
@@ -135,7 +141,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			ResponseDTO.EventDTO.builder()
 				.type(event.getType())
 				.workloadName(event.getMetadata().getNamespace())
-				.time(event.getEventTime() == null ? "" : event.getEventTime().getTime())
+				.time(event.getEventTime() == null ? event.getLastTimestamp() : event.getEventTime().getTime())
 				.reason(event.getReason())
 				.message(event.getMessage())
 				.build()
@@ -203,12 +209,12 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 			return ResponseDTO.WorkspaceResponseDTO.builder()
 				.wsName(namespace)
-				.gpuUsed(resourceQuota.getUsed().get("requests.nvidia.com/gpu").toString())
-				.gpuHard(resourceQuota.getHard().get("requests.nvidia.com/gpu").toString())
-				.cpuUsed(resourceQuota.getUsed().get("requests.cpu").toString())
-				.cpuHard(resourceQuota.getHard().get("requests.cpu").toString())
-				.memUsed(resourceQuota.getUsed().get("requests.memory").toString())
-				.memHard(resourceQuota.getHard().get("requests.memory").toString())
+				.gpuUsed(resourceQuota.getUsed().get(NVIDIA_GPU).toString())
+				.gpuHard(resourceQuota.getHard().get(NVIDIA_GPU).toString())
+				.cpuUsed(resourceQuota.getUsed().get(REQUEST_CPU).toString())
+				.cpuHard(resourceQuota.getHard().get(REQUEST_CPU).toString())
+				.memUsed(resourceQuota.getUsed().get(REQUEST_MEM).toString())
+				.memHard(resourceQuota.getHard().get(REQUEST_MEM).toString())
 				.workloadResponseDTOS(wlList)
 				.build();
 		}
@@ -221,14 +227,14 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
-			long totalCpuCapacity = totalCapacity(nodeList, "CPU");
+			long totalCpuCapacity = totalCapacity(nodeList, CPU);
 
 			// 모든 노드의 cpuRequest 값을 합산
-			String totalCpuRequests = totalRequests(nodeList, podList, "CPU");
+			String totalCpuRequests = totalRequests(nodeList, podList, CPU);
 			String request = DataConverterUtil.roundToString(totalCpuRequests);
 
 			return ResponseDTO.ResponseClusterDTO.builder()
-				.name("CPU")
+				.name(CPU)
 				.total(totalCpuCapacity)
 				.cpuRequest(DataConverterUtil.roundToNearestHalf(Double.parseDouble(request)) / 1000)
 				.cpuUsage(DataConverterUtil.roundToNearestHalf((totalCpuCapacity * cpuUsage) / 100))
@@ -249,7 +255,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
 
 			return ResponseDTO.ResponseClusterDTO.builder()
-				.name("MEMORY")
+				.name(MEM)
 				.total(totalMemCapacity * 1024)
 				.request(Long.parseLong(totalMemRequests)  * 1024)
 				.usage(Long.parseLong(memUsage)  * 1024)
@@ -263,13 +269,13 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
 
 			// 모든 노드의 GPU total 값을 합산
-			long totalGpuCapacity = totalCapacity(nodeList, "GPU");
+			long totalGpuCapacity = totalCapacity(nodeList, GPU);
 
 			// 모든 노드의 cpuRequest 값을 합산
-			String totalGpuRequests = totalRequests(nodeList, podList, "GPU");
+			String totalGpuRequests = totalRequests(nodeList, podList, GPU);
 
 			return ResponseDTO.ResponseClusterDTO.builder()
-				.name("GPU")
+				.name(GPU)
 				.total(totalGpuCapacity)
 				.usage(Long.parseLong(totalGpuRequests))
 				.build();
@@ -281,12 +287,12 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Node> nodeList = kubernetesClient.nodes().list().getItems();
 			List<Pod> podList = kubernetesClient.pods().list().getItems();
-			int cpu = (int)totalCapacity(nodeList, "CPU");
+			int cpu = (int)totalCapacity(nodeList, CPU);
 			int mem = (int)totalCapacity(nodeList, "MEM");
-			int gpu = (int)totalCapacity(nodeList, "GPU");
-			String totalCpuRequests = totalRequests(nodeList, podList, "CPU");
+			int gpu = (int)totalCapacity(nodeList, GPU);
+			String totalCpuRequests = totalRequests(nodeList, podList, CPU);
 			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
-			String totalGpuRequests = totalRequests(nodeList, podList, "GPU");
+			String totalGpuRequests = totalRequests(nodeList, podList, GPU);
 			return new ResponseDTO.ResponseClusterResourceDTO(cpu, mem, gpu);
 		}
 	}
@@ -303,16 +309,17 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 	private long totalCapacity(List<Node> nodeList, String resourceName){
 		return switch (resourceName) {
-			case "CPU" ->
+			case CPU ->
 				nodeList.stream()
-					.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("cpu").toString()))
+					.mapToInt(node ->
+						Integer.parseInt(node.getStatus().getCapacity().get("cpu").toString()))
 					.sum();
 			case "MEM" ->
 				nodeList.stream()
 					.mapToLong(node ->
-						Integer.parseInt(node.getStatus().getCapacity().get("memory").toString().replace("Ki", "")))
+						Integer.parseInt(node.getStatus().getCapacity().get(MEM).toString().replace("Ki", "")))
 					.sum();
-			case "GPU" ->
+			case GPU ->
 				nodeList.stream()
 					.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu")))
 					.mapToInt(node ->
@@ -328,18 +335,20 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				nodeList.stream()
 					.map(node -> {
 						List<Pod> runningPodsOnNode = podList.stream()
-							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+							.filter(pod ->
+								!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
 							.toList();
 
 						return calculateTotalCpuRequests(runningPodsOnNode);
 					})
 					.reduce("0", (x, y) ->
 						String.valueOf(DataConverterUtil.parseAndSum(x, y)));
-			case "GPU" ->
+			case GPU ->
 				nodeList.stream()
 					.map(node -> {
 						List<Pod> runningPodsOnNode = podList.stream()
-							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+							.filter(pod ->
+								!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
 							.toList();
 
 						return calculateTotalGpuRequests(runningPodsOnNode);
@@ -348,7 +357,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				nodeList.stream()
 					.map(node -> {
 						List<Pod> runningPodsOnNode = podList.stream()
-							.filter(pod -> pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+							.filter(pod ->
+								!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
 							.toList();
 
 						return calculateTotalMemRequests(runningPodsOnNode);
@@ -406,10 +416,10 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	private String calculateTotalMemRequests(List<Pod> podList) {
 		String containerResult = podList.stream()
 			.flatMap(pod -> pod.getSpec().getContainers().stream())
-			.filter(container -> container.getResources().getRequests().get("memory") != null)
+			.filter(container -> container.getResources().getRequests().get(MEM) != null)
 			.map(container -> {
-				String memAmount = container.getResources().getRequests().get("memory").getAmount();
-				String memFormat = container.getResources().getRequests().get("memory").getFormat();
+				String memAmount = container.getResources().getRequests().get(MEM).getAmount();
+				String memFormat = container.getResources().getRequests().get(MEM).getFormat();
 				long memInKiB = DataConverterUtil.convertToKiB(memAmount, memFormat);
 				return String.valueOf(memInKiB);
 			})
@@ -417,10 +427,10 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 		String initContainerResult = podList.stream()
 			.flatMap(pod -> pod.getSpec().getInitContainers().stream())
-			.filter(container -> container.getResources().getRequests().get("memory") != null)
+			.filter(container -> container.getResources().getRequests().get(MEM) != null)
 			.map(container -> {
-				String memAmount = container.getResources().getRequests().get("memory").getAmount();
-				String memFormat = container.getResources().getRequests().get("memory").getFormat();
+				String memAmount = container.getResources().getRequests().get(MEM).getAmount();
+				String memFormat = container.getResources().getRequests().get(MEM).getFormat();
 				long memInKiB = DataConverterUtil.convertToKiB(memAmount, memFormat);
 				return String.valueOf(memInKiB);
 			})
@@ -483,11 +493,22 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 				Pod pod = kubernetesClient.pods().inNamespace(namespace).withName(podName).get();
 
+			String reason = "none";
+
+			if (pod != null) {
+				if (!pod.getStatus().getContainerStatuses().isEmpty()) {
+					String containerReason = pod.getStatus().getContainerStatuses().get(0).getState().getWaiting() != null ?
+						pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason() : null ;
+					reason = containerReason != null ? containerReason : pod.getStatus().getReason();
+				} else {
+					reason = pod.getStatus().getReason();
+				}
+			}
 			return ResponseDTO.ClusterPodInfo.builder()
 				.podName(podName)
 				.nodeName(pod.getSpec().getNodeName())
 				.status(pod.getStatus().getPhase())
-				.reason(!pod.getStatus().getContainerStatuses().isEmpty() ? pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason() : pod != null ? pod.getStatus().getReason() : "none")
+				.reason(reason)
 				.build();
 		}
 	}
