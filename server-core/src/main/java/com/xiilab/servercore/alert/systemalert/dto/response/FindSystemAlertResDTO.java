@@ -3,6 +3,8 @@ package com.xiilab.servercore.alert.systemalert.dto.response;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.springframework.util.ObjectUtils;
+
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
@@ -38,8 +40,8 @@ public class FindSystemAlertResDTO extends ResDTO {
 			.regUserId(systemAlertEntity.getRegUser().getRegUserId())
 			.regUserName(systemAlertEntity.getRegUser().getRegUserName())
 			.regUserRealName(systemAlertEntity.getRegUser().getRegUserRealName())
-			.regDate(systemAlertEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-			.modDate(systemAlertEntity.getModDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+			.regDate(!ObjectUtils.isEmpty(systemAlertEntity.getRegDate())? systemAlertEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+			.modDate(!ObjectUtils.isEmpty(systemAlertEntity.getModDate())? systemAlertEntity.getModDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 			.readYN(systemAlertEntity.getReadYN())
 			.build();
 	}
@@ -63,8 +65,8 @@ public class FindSystemAlertResDTO extends ResDTO {
 				.regUserId(systemAlertEntity.getRegUser().getRegUserId())
 				.regUserName(systemAlertEntity.getRegUser().getRegUserName())
 				.regUserRealName(systemAlertEntity.getRegUser().getRegUserRealName())
-				.regDate(systemAlertEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-				.modDate(systemAlertEntity.getModDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.regDate(!ObjectUtils.isEmpty(systemAlertEntity.getRegDate())? systemAlertEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+				.modDate(!ObjectUtils.isEmpty(systemAlertEntity.getModDate())? systemAlertEntity.getModDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 				.build();
 		}
 	}
