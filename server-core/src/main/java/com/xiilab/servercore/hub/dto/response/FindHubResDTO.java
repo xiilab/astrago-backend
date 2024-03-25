@@ -69,7 +69,7 @@ public class FindHubResDTO extends ResDTO {
 					.hubImage(new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity()))
 					.sourceCodeUrl(hubEntity.getSourceCodeUrl())
 					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
-					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
+					.sourceCodeMountPath(hubEntity.getSourceCodeMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
 					.envs(hubEntity.getEnvs() != null ?
