@@ -96,7 +96,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public List<ResponseDTO.EventDTO> getEventList() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			List<Event> events = kubernetesClient.v1().events().list().getItems();
+			List<Event> events = kubernetesClient.v1().events().inAnyNamespace().list().getItems();
 			return eventToDTO(events);
 		}
 	}
@@ -123,6 +123,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName) {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+
 			List<Event> events = kubernetesClient.v1().events().inNamespace(namespace).list().getItems().stream()
 				.filter(event -> event.getKind().equalsIgnoreCase("pod"))
 				.filter(event ->
@@ -224,7 +225,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage){
 		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()){
 			List<Node> nodeList = getNodeList(nodeName);
-			List<Pod> podList = kubernetesClient.pods().list().getItems();
+			List<Pod> podList = kubernetesClient.pods().inAnyNamespace().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
 			long totalCpuCapacity = totalCapacity(nodeList, CPU);
