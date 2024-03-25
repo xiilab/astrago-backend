@@ -16,13 +16,11 @@ public interface AlertRepository extends JpaRepository<AlertEntity, Long>, Alert
 
 	// TODO fetch 조인 안되는 현상 확인 필요함
 	@Query("SELECT ta FROM TB_ALERT ta " +
-		"LEFT JOIN ta.adminAlertMappingEntities taam " +
-		"ON ta.alertId = taam.alert.alertId " +
-		"AND taam.adminId = :adminId " +
-		"WHERE ta.alertRole = :alertRole ")
-	// "WHERE ta.alertRole = 'ADMIN'")
+		"JOIN FETCH ta.adminAlertMappingEntities taam " +
+		"WHERE ta.alertRole = :alertRole AND taam.adminId = :adminId")
 	List<AlertEntity> findAdminAlertMappingsByAdminId(@Param("adminId") String adminId, @Param("alertRole") AlertRole alertRole);
-
+	// "ON ta.alertId = taam.alert.alertId " +
+	// "ON taam.adminId = :adminId " +
 	@Query("select t from TB_ALERT t "
 		+ "where t.alertName = :alertName "
 		+ "and t.alertRole = :alertRole")

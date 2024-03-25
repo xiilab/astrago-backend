@@ -85,6 +85,7 @@ import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.image.dto.ImageResDTO;
 import com.xiilab.servercore.image.service.ImageService;
+import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.pin.service.PinService;
@@ -139,12 +140,12 @@ public class WorkloadFacadeService {
 
 		// 데이터셋 볼륨 추가
 		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
-			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
+			setDatasetVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
 		}
 
 		// 모델 볼륨 추가
 		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
-			setVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
+			setModelVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
 		}
 
 		//Image IDE 정보 주입
@@ -652,22 +653,32 @@ public class WorkloadFacadeService {
 		// }
 	}
 
-	private void setVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
-		for (ModuleVolumeReqDTO reqDto : list) {
-			setCreatePVAndPVC(workspaceName, reqDto);
+	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
+			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
+				findDataset);
+			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
+				resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType());
 		}
 	}
 
-	private void setCreatePVAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO) {
-		Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
-		DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
-			findDataset);
+	private void setModelVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
+			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
+			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
+				resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType());
+		}
+	}
 
+	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
+		String storagePath, StorageType storageType) {
 		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
 		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
-		String ip = resDatasetWithStorage.getIp();
-		String storagePath = resDatasetWithStorage.getStoragePath();
-		StorageType storageType = resDatasetWithStorage.getStorageType();
+		// String ip = resDatasetWithStorage.getIp();
+		// String storagePath = resDatasetWithStorage.getStoragePath();
+		// StorageType storageType = resDatasetWithStorage.getStorageType();
 		int requestVolume = 50;
 
 		// PV 생성
