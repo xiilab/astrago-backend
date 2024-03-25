@@ -9,6 +9,7 @@ concurrency:
   group: ci-dev-test-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: write-all
 
 jobs:
   build:
@@ -91,7 +92,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: action-slack
+      - name: notify to slack
         if: always()
         uses: 8398a7/action-slack@v3
         with:
