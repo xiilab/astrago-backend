@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -21,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class WorkspaceRoleImpl implements WorkspaceRole{
+public class WorkspaceRoleRepoImpl implements WorkspaceRoleRepo {
 	private final K8sAdapter k8sAdapter;
 
 	@Override
@@ -51,7 +50,7 @@ public class WorkspaceRoleImpl implements WorkspaceRole{
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Subject> subjects = new ArrayList<>();
 			Subject subject = new Subject();
-			subject.setNamespace("default");
+			subject.setNamespace(workspaceResourceName);
 			subject.setKind("ServiceAccount");
 			subject.setName("default");
 			subjects.add(subject);

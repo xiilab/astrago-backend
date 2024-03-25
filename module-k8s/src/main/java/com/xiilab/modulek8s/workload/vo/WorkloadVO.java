@@ -193,7 +193,11 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		Map<String, String> map = new HashMap<>();
 		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
 		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
-		this.codes.forEach(code -> map.put("cd-" + code.id(), code.mountPath()));
+		this.codes.forEach(code -> {
+			if (!NumberValidUtils.isNullOrZero(code.id())) {
+				map.put("cd-" + code.id(), code.mountPath());
+			}
+		});
 
 		return map;
 	}
