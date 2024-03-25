@@ -62,9 +62,9 @@ public class FindSystemAlertResDTO extends ResDTO {
 				.readYN(systemAlertEntity.getReadYN())
 				.recipientId(systemAlertEntity.getRecipientId())
 				.senderId(systemAlertEntity.getSenderId())
-				.regUserId(systemAlertEntity.getRegUser().getRegUserId())
-				.regUserName(systemAlertEntity.getRegUser().getRegUserName())
-				.regUserRealName(systemAlertEntity.getRegUser().getRegUserRealName())
+				.regUserId(!ObjectUtils.isEmpty(systemAlertEntity.getRegUser())? systemAlertEntity.getRegUser().getRegUserId() : null)
+				.regUserName(!ObjectUtils.isEmpty(systemAlertEntity.getRegUser())? systemAlertEntity.getRegUser().getRegUserName() : null)
+				.regUserRealName(!ObjectUtils.isEmpty(systemAlertEntity.getRegUser())? systemAlertEntity.getRegUser().getRegUserRealName() : null)
 				.regDate(!ObjectUtils.isEmpty(systemAlertEntity.getRegDate())? systemAlertEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 				.modDate(!ObjectUtils.isEmpty(systemAlertEntity.getModDate())? systemAlertEntity.getModDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 				.build();
