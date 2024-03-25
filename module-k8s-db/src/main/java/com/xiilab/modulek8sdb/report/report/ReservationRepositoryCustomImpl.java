@@ -40,8 +40,7 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
 			.where(reportReservationEntity.regUser.regUserId.eq(userId))
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
-			.fetchOne();
-
+			.fetchCount();
 		return new PageImpl<>(reportReservationEntityList, pageable, count);
 	}
 
@@ -52,7 +51,7 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
 			reportReservationHistoryEntity.result);
 
 		Expression<String> timeGroupExpression = Expressions.stringTemplate(
-			"DATE_FORMAT({0}, {1})", reportReservationHistoryEntity.transferDate, "%Y-%m-%d %H:%i");
+			"DATE_FORMAT({0}, {1})", reportReservationHistoryEntity.transferDate, "%Y-%m-%d %H:%i:%s");
 
 		List<ReportReservationDTO.ReceiveDTO> receiveDTOList = queryFactory
 			.select(Projections.constructor(ReportReservationDTO.ReceiveDTO.class,

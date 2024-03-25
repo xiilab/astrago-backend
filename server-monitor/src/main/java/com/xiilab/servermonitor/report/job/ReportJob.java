@@ -67,7 +67,7 @@ public class ReportJob extends QuartzJobBean {
 			ReportReservationHistoryEntity saveHistory = historyRepository.save(ReportReservationHistoryEntity.builder()
 				.email(user.getEmail())
 				.userName(user.getUserName())
-				.transferDate(endDate)
+				.transferDate(LocalDateTime.now())
 				.report(reportReservation)
 				.result(true)
 				.build());
