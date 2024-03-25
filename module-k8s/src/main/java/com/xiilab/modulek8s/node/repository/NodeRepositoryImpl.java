@@ -35,6 +35,7 @@ import io.fabric8.kubernetes.api.model.NodeSystemInfo;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -452,7 +453,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Node node = kubernetesClient.nodes().withName(nodeName).get();
 			String gpuProduct = node.getMetadata().getLabels().get(GPU_NAME);
-			updateNodeLabel(nodeName, Map.of(MIG_GPU_NAME, gpuProduct));
+			if (!StringUtils.isBlank(gpuProduct)) {
+				updateNodeLabel(nodeName, Map.of(MIG_GPU_NAME, gpuProduct));
+			}
 		}
 	}
 
