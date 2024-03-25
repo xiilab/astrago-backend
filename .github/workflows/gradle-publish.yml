@@ -8,8 +8,7 @@ on:
 
 jobs:
   build:
-    #runs-on: [ self-hosted, linux ]
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, linux ]
     outputs:
       branch: "${{ steps.extract_branch.outputs.branch }}"
       tag: ${{ steps.out_image.outputs.tag }}
@@ -61,10 +60,9 @@ jobs:
         uses: haya14busa/action-cond@v1
         id: image-repo
         with:
-          cond: ${{ steps.extract_branch.outputs.branch  == 'devel' }}
+          cond: ${{ steps.extract_branch.outputs.branch  == 'master' }}
           if_true: "docker.io/xiilab"
-          #if_false: "harbor.xiilab.com:32443/uyuni"
-          if_false: "docker.io/xiilab"
+          if_false: "harbor.xiilab.com:32443/uyuni"
 
       # 브랜치 네임이 마스터일 경우에만 master 이름으로 지정하고 나머지는 develop 으로 지정한다.
       - name: 브랜치에 맞는 이미지 태그 지정 1
@@ -142,8 +140,8 @@ jobs:
           file: server-core/Dockerfile
           push: true
           tags: |
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:core-${{ steps.image_tag.outputs.value }}
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:core-${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+            ${{ steps.image-repo.outputs.value }}/server-core:${{ steps.image_tag.outputs.value }}
+            ${{ steps.image-repo.outputs.value }}/server-core:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -156,8 +154,8 @@ jobs:
           file: server-batch/Dockerfile
           push: true
           tags: |
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:batch-${{ steps.image_tag.outputs.value }}
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:batch-${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+            ${{ steps.image-repo.outputs.value }}/server-batch:${{ steps.image_tag.outputs.value }}
+            ${{ steps.image-repo.outputs.value }}/server-batch:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -170,8 +168,8 @@ jobs:
           file: server-monitor/Dockerfile
           push: true
           tags: |
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:monitor-${{ steps.image_tag.outputs.value }}
-            ${{ steps.image-repo.outputs.value }}/astrago-backend:monitor-${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
+            ${{ steps.image-repo.outputs.value }}/server-monitor:${{ steps.image_tag.outputs.value }}
+            ${{ steps.image-repo.outputs.value }}/server-monitor:${{ steps.image_tag.outputs.value}}-${{ env.COMMIT_SHORT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -184,8 +182,7 @@ jobs:
 
   push_helm:
     needs: [ build ]
-    #runs-on: [ self-hosted, linux ]
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, linux ]
     steps:
       - name: clone helmproject
         uses: actions/checkout@v3
@@ -200,18 +197,18 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.imageTag = "core-${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
-            yq -i '.astrago.batch.imageTag = "batch-${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "monitor${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/default/values.yaml'
 
       - name: dev 이미지 정보 수정
         if: ${{ needs.read.outputs.branch != 'master' }}
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.imageTag = "core-${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.batch.imageTag = "batch-${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ needs.build.outputs.tag }}"' 'environments/dev/values.yaml'
       - name: push monochart
         run: | #helmfile -e dev -l type=app template > monochart/monochart.yaml
           cat environments/dev/values.yaml
