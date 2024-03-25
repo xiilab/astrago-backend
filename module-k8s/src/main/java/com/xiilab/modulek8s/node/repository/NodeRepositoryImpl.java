@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Repository;
 import org.yaml.snakeyaml.DumperOptions;
@@ -32,6 +31,7 @@ import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
 import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.NodeSystemInfo;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
@@ -66,7 +66,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String DISK_PRESSURE = "DiskPressure";
 	private final String PID_PRESSURE = "PIDPressure";
 	private final String READY = "Ready";
-	private final ResourceLoader resourceLoader;
+
 	@Override
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
 		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
@@ -455,6 +455,19 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String gpuProduct = node.getMetadata().getLabels().get(GPU_NAME);
 			if (!StringUtils.isBlank(gpuProduct)) {
 				updateNodeLabel(nodeName, Map.of(MIG_GPU_NAME, gpuProduct));
+			}
+		}
+	}
+
+	@Override
+	public void restartMIGManager() {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			List<Pod> items = kubernetesClient.pods().inNamespace("gpu-operator").list().getItems();
+			for (Pod pod : items) {
+				String name = pod.getMetadata().getName();
+				if (name.contains("nvidia-mig-manager")) {
+					kubernetesClient.resource(pod).delete();
+				}
 			}
 		}
 	}
