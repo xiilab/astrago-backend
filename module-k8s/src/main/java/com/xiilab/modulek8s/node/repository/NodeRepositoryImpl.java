@@ -25,9 +25,7 @@ import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
-import com.xiilab.modulek8s.node.dto.MigMixedDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
-import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
 import io.fabric8.kubernetes.api.model.Node;
@@ -45,6 +43,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final K8sAdapter k8sAdapter;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final String GPU_NAME = "nvidia.com/gpu.product";
+	private final String MIG_GPU_NAME = "nvidia.com/mig.gpu.product";
 	private final String GPU_COUNT = "nvidia.com/gpu.count";
 	private final String GPU_DRIVER_VER_MAJOR = "nvidia.com/cuda.driver.major";
 	private final String GPU_DRIVER_VER_MINOR = "nvidia.com/cuda.driver.minor";
@@ -215,6 +214,10 @@ public class NodeRepositoryImpl implements NodeRepository {
 			if (node == null) {
 				throw new K8sException(NodeErrorCode.NODE_NOT_FOUND);
 			}
+			int gpuCount = 0;
+			if (node.getMetadata().getLabels().containsKey("nvidia.com/mig-count")) {
+				gpuCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/mig-count"));
+			}
 			Map<String, String> labels = node.getMetadata().getLabels();
 			Map<String, Quantity> capacity = node.getStatus().getCapacity();
 			Map<String, Quantity> allocatable = node.getStatus().getAllocatable();
@@ -226,7 +229,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.capacityHugepages2Mi(getNonNullValueOrZero(capacity.get(HUGEPAGES_2Mi)))
 				.capacityMemory(getNonNullValueOrZero(capacity.get(MEMORY)))
 				.capacityPods(getNonNullValueOrZero(capacity.get(PODS)))
-				.capacityGpu(getNonNullValueOrZero(capacity.get(GPU)))
+				.capacityGpu(gpuCount > 0 ? String.valueOf(gpuCount) : getNonNullValueOrZero(capacity.get(GPU)))
 				.build();
 			ResponseDTO.NodeResourceInfo.Allocatable allocatableResource = ResponseDTO.NodeResourceInfo.Allocatable.builder()
 				.allocatableCpu(getNonNullValueOrZero(allocatable.get(CPU)))
@@ -235,7 +238,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.allocatableHugepages2Mi(getNonNullValueOrZero(allocatable.get(HUGEPAGES_2Mi)))
 				.allocatableMemory(getNonNullValueOrZero(allocatable.get(MEMORY)))
 				.allocatablePods(getNonNullValueOrZero(allocatable.get(PODS)))
-				.allocatableGpu(getNonNullValueOrZero(allocatable.get(GPU)))
+				.allocatableGpu(gpuCount > 0 ? String.valueOf(gpuCount) : getNonNullValueOrZero(allocatable.get(GPU)))
 				.build();
 
 			String version = null;
@@ -417,7 +420,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.gpuIndexs(gpuIndex)
 					.migEnable(false)
 					.build()))
-				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get("nvidia.com/gpu.product")))
+				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get(MIG_GPU_NAME)))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		} else {
@@ -426,7 +429,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
 				.migInfos(convertMapToMIGInfo(rawMIGInfo))
-				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get("nvidia.com/gpu.product")))
+				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get(MIG_GPU_NAME)))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		}
@@ -441,6 +444,15 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.addToLabels(labels)
 					.endMetadata()
 					.build());
+		}
+	}
+
+	@Override
+	public void saveGpuProductTOLabel(String nodeName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Node node = kubernetesClient.nodes().withName(nodeName).get();
+			String gpuProduct = node.getMetadata().getLabels().get(GPU_NAME);
+			updateNodeLabel(nodeName, Map.of(MIG_GPU_NAME, gpuProduct));
 		}
 	}
 
@@ -495,57 +507,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 		Map<String, Object> convertResult = yaml.load(migConfigSTR);
 		Map<String, Object> migConfigs = (Map<String, Object>)convertResult.get("mig-configs");
 		return migConfigs;
-	}
-
-	/**
-	 * k8s Server에서 node resource를 조회하는 메소드
-	 *
-	 * @param nodeName 조회할 nodeName
-	 * @return
-	 */
-	public Resource<Node> getNodeResource(String nodeName) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			return kubernetesClient.nodes().withName(nodeName);
-		}
-	}
-
-	/**
-	 * node의 라벨을 보고 해당 노드가 MIG on/off 여부와 strategy를 조회하는 메소드
-	 *
-	 * @param nodeLabels 노드의 label
-	 * @return MigStrategy, null일 경우 일반 노드거나 MIG off
-	 */
-	public MIGStrategy getNodeMIGOnOffYN(Map<String, String> nodeLabels) {
-		if (nodeLabels.keySet().stream().anyMatch(key -> key.contains("gb.slices.ci"))) {
-			return MIGStrategy.MIXED;
-		} else if (nodeLabels.containsKey("nvidia.com/gpu.slices.ci")) {
-			return MIGStrategy.SINGLE;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * 노드의 mig mixed profile 정보를 조회하는 메소드
-	 *
-	 * @param node 조회할 node
-	 * @return
-	 */
-	public List<MigMixedDTO> getMigMixedInfo(Node node) {
-		Map<String, String> labels = node.getMetadata().getLabels();
-		List<String> migProfileList = labels.keySet().stream()
-			.filter(key -> key.contains("gb.count"))
-			.map(key -> key.split(".count")[0])
-			.sorted()
-			.toList();
-
-		return migProfileList.stream().map(profile ->
-				MigMixedDTO.builder()
-					.name(profile.split("nvidia.com/")[1])
-					.count(Integer.parseInt(labels.get(profile + ".count")))
-					.memory(labels.get(profile + ".memory"))
-					.build())
-			.toList();
 	}
 
 	private String extractGpuChipset(String value) {
