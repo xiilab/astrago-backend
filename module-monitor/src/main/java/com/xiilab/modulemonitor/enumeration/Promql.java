@@ -190,10 +190,9 @@ public enum Promql {
 	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_container_status_waiting_reason{namespace =~ \"ws.*\"} > 0) by(namespace) or count(kube_pod_status_reason{reason != \"\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
 	DASHBOARD_WS_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
 	// TERMINAL
-	TERMINAL_POD_USAGE_BYTE("round(avg(container_cpu_usage_seconds_total{container != \"\", %s}) by(pod), 0.01)", "", "TERMINAL"),
 	TERMINAL_GPU_USAGE("DCGM_FI_DEV_GPU_UTIL{%s}", "", "TERMINAL"),
 	TERMINAL_CPU_USAGE_CORE("round(avg(container_cpu_usage_seconds_total{container != \"\", %s} / 1000) by(pod), 0.01)", "", "TERMINAL"),
-
+	TERMINAL_MEM_USAGE_BYTE("avg(container_memory_working_set_bytes{container != \"\", %s})", "", "TERMINAL"),
 
 	;
 // GPU 사용량, GPU Limit, GPU Request
