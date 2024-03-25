@@ -67,6 +67,8 @@ public class SystemAlertEntity extends BaseEntity {
 		this.systemAlertEventType = systemAlertEventType;
 		this.readYN = readYN;
 		this.alertRole = alertRole;
+		this.regDate = regDate;
+		this.modDate = modDate;
 	}
 
 	public void readAlert(){
