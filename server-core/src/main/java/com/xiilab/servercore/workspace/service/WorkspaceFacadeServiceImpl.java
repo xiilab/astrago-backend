@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -23,6 +24,7 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.resource_quota.dto.TotalResourceQuotaDTO;
 import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
+import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
@@ -45,6 +47,7 @@ import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
+import com.xiilab.servercore.workload.service.WorkloadHistoryService;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
@@ -61,6 +64,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceModuleFacadeService workspaceModuleFacadeService;
+	private final WorkloadHistoryService workloadHistoryService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final ResourceQuotaService resourceQuotaService;
 	private final ResourceQuotaHistoryRepository resourceQuotaHistoryRepository;
@@ -152,10 +156,21 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				workspace.getDescription(),
 				userWorkspacePinList.contains(workspace.getResourceName()),
 				workspace.getCreatedAt(),
-				workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
-					userInfoDTO.getUserName())))
+				getUserRecentlyWorkload(workspace.getResourceName(), userInfoDTO.getUserName())))
 			.toList();
 		return new PageDTO<>(pageDTO.getTotalSize(), pageDTO.getTotalPageNum(), pageDTO.getCurrentPage(), resultList);
+	}
+
+	private ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
+		List<ModuleWorkloadResDTO> serverWorkloadList = workloadModuleFacadeService.getWorkloadList(workspaceName);
+		Optional<ModuleWorkloadResDTO> moduleWorkloadResDTO =
+			CollectionUtils.isEmpty(serverWorkloadList) ? Optional.empty() :
+				serverWorkloadList.stream()
+					.filter(workload -> workload.getCreatorUserName().equals(username))
+					.max(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt));
+
+		return moduleWorkloadResDTO.orElseGet(
+			() -> workloadHistoryService.findByWorkspaceAndRecently(workspaceName, username));
 	}
 
 	@Override
@@ -178,14 +193,15 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		String workspaceNm = workspace.getName();
 		UserAlertEvent userAlertEvent = null;
-		if(auth == AuthType.ROLE_ADMIN){
+		if (auth == AuthType.ROLE_ADMIN) {
 			//관리자가 삭제할 때
 			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getMailTitle(), workspaceNm);
 			String title = SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getTitle();
-			String message = String.format(SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getMessage(), userInfoDTO.getUserFullName(),workspaceNm);
+			String message = String.format(SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getMessage(),
+				userInfoDTO.getUserFullName(), workspaceNm);
 			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_DELETE,
 				emailTitle, title, message, workspaceName);
-		}else{
+		} else {
 			//사용자가 삭제할 때
 			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_DELETE_OWNER.getMailTitle(), workspaceNm);
 			String title = SystemAlertMessage.WORKSPACE_DELETE_OWNER.getTitle();
@@ -316,9 +332,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				gpu
 			);
 			//리소스 승인 알림 발송
-			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(), workspaceNm);
+			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(),
+				workspaceNm);
 			String title = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getTitle();
-			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(), userInfoDTO.getUserFullName(),workspaceNm, "승인");
+			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(),
+				userInfoDTO.getUserFullName(), workspaceNm, "승인");
 			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
 				emailTitle, title, message, resourceQuotaEntity.getWorkspaceResourceName());
 			// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
@@ -334,9 +352,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaApproveDTO.getRejectReason());
 			//리소스 반려 알림 발송
-			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(), workspaceNm);
+			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(),
+				workspaceNm);
 			String title = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getTitle();
-			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(), userInfoDTO.getUserFullName(),workspaceNm, "반려");
+			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(),
+				userInfoDTO.getUserFullName(), workspaceNm, "반려");
 			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
 				emailTitle, title, message, resourceQuotaEntity.getWorkspaceResourceName());
 		}

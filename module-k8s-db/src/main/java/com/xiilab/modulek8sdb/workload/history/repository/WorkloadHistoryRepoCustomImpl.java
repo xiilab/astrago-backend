@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCusotm {
+public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
@@ -32,6 +32,16 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCusotm 
 				eqWorkloadType(workloadType),
 				jobEntity.deleteYN.eq(DeleteYN.N)
 			).fetch();
+	}
+
+	@Override
+	public JobEntity findByWorkspaceNameRecently(String workspace, String username) {
+		return queryFactory
+			.selectFrom(jobEntity)
+			.where(jobEntity.workspaceResourceName.eq(workspace).and(jobEntity.creatorName.eq(username)))
+			.orderBy(jobEntity.createdAt.desc())
+			.limit(1)
+			.fetchOne();
 	}
 
 	private BooleanExpression eqName(String searchName) {

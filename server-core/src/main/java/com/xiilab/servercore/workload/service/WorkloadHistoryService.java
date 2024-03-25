@@ -9,7 +9,6 @@ import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.servercore.workload.dto.response.WorkloadHistoryResDTO;
 
 public interface WorkloadHistoryService {
 	List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName, String userId);
@@ -19,4 +18,5 @@ public interface WorkloadHistoryService {
 	void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO);
 	void saveWorkloadHistory(WorkloadHistoryReqDTO.CreateWorkloadHistory createWorkloadHistory);
 	void editWorkloadHistory(WorkloadUpdateDTO workloadUpdateDTO);
+	ModuleWorkloadResDTO findByWorkspaceAndRecently(String workspaceName, String username);
 }

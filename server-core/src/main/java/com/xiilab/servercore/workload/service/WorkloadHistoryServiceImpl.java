@@ -5,6 +5,7 @@ import static com.xiilab.modulecommon.enums.WorkloadType.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,7 +40,7 @@ import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
-import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCusotm;
+import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
@@ -51,7 +52,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
-	private final WorkloadHistoryRepoCusotm workloadHistoryRepoCusotm;
+	private final WorkloadHistoryRepoCustom workloadHistoryRepoCustom;
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
@@ -64,7 +65,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
 		String userId) {
-		List<JobEntity> batchJobEntityList = workloadHistoryRepoCusotm.findBatchWorkloadHistoryByCondition(
+		List<JobEntity> batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
 			workspaceName, searchName, userId, BATCH);
 		return batchJobEntityList.stream().map(job -> ModuleBatchJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
@@ -93,7 +94,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	@Override
 	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName,
 		String userId) {
-		List<JobEntity> batchJobEntityList = workloadHistoryRepoCusotm.findBatchWorkloadHistoryByCondition(
+		List<JobEntity> batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
 			workspaceName, searchName, userId, WorkloadType.INTERACTIVE);
 		return batchJobEntityList.stream().map(job -> ModuleInteractiveJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
@@ -229,6 +230,53 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		findWorkload.updateJob(workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
 		workloadHistoryRepo.save(findWorkload);
 
+	}
+
+	@Override
+	public ModuleWorkloadResDTO findByWorkspaceAndRecently(String workspaceName, String username) {
+		JobEntity job = workloadHistoryRepoCustom.findByWorkspaceNameRecently(workspaceName, username);
+		if (Objects.nonNull(job)) {
+			if (job.getWorkloadType() == BATCH) {
+				return ModuleBatchJobResDTO.builder()
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(WorkloadStatus.END)
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(BATCH)
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.remainTime(0)
+					.build();
+			} else {
+				return ModuleInteractiveJobResDTO.builder()
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(WorkloadStatus.END)
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(WorkloadType.INTERACTIVE)
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.build();
+			}
+		} else {
+			return null;
+		}
 	}
 
 	private String[] getSplitIds(String ids) {
