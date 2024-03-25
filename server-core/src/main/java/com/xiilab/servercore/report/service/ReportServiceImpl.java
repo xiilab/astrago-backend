@@ -144,6 +144,8 @@ public class ReportServiceImpl implements ReportService{
 						ReportReservationDTO.HistoryDTO.builder()
 							.transferDate(DataConverterUtil.getCurrentTime(history.getTransferDate()))
 							.userName(history.getUserName())
+							.firstName(history.getFirstName())
+							.lastName(history.getLastName())
 							.userEmail(history.getEmail())
 							.result(history.isResult())
 							.build()

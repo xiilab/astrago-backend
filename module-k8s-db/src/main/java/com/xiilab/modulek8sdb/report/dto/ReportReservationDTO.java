@@ -121,6 +121,8 @@ public class ReportReservationDTO {
 		private String transferDate;
 		private String userName;
 		private String userEmail;
+		private String firstName;
+		private String lastName;
 		private boolean result;
 	}
 }

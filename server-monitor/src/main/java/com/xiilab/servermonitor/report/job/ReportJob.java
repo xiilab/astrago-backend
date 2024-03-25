@@ -68,6 +68,8 @@ public class ReportJob extends QuartzJobBean {
 				.email(user.getEmail())
 				.userName(user.getUserName())
 				.transferDate(LocalDateTime.now())
+				.firstName(user.getFirstName())
+				.lastName(user.getLastName())
 				.report(reportReservation)
 				.result(true)
 				.build());
