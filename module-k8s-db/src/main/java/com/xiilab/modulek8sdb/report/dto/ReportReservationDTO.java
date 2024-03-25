@@ -51,6 +51,7 @@ public class ReportReservationDTO {
 	public static class ResponseDTO extends ReportReservationDTO{
 		protected List<ReportReservationDTO.UserDTO> userDTOList;
 		private long id;
+		private boolean enable;
 		@Builder(builderClassName = "toDTOBuilder", builderMethodName = "toDTOBuilder")
 		ResponseDTO(ReportReservationEntity reportReservation) {
 			this.id = reportReservation.getId();
@@ -63,6 +64,7 @@ public class ReportReservationDTO {
 			this.userDTOList = Objects.nonNull(reportReservation.getReservationUserEntities()) ?
 				reportReservation.getReservationUserEntities().stream().map(userEntity ->
 					ReportReservationDTO.UserDTO.toDTOBuilder().userEntity(userEntity).build()).toList() : new ArrayList<>();
+			this.enable = reportReservation.isEnable();
 		}
 	}
 

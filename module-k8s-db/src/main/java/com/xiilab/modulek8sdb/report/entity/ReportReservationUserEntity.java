@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class ReportReservationUserEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "ALERT_MANAGER_USER_ID")
+	@Column(name = "REPORT_USER_ID")
 	private Long id;
 	@Column(name = "USER_ID")
 	private String userId;
