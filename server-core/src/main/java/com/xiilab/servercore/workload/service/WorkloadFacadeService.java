@@ -611,7 +611,7 @@ public class WorkloadFacadeService {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
 				WorkloadType.BATCH);
 			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
-		} catch (KubernetesClientException ignored) {
+		} catch (KubernetesClientException | K8sException ignored) {
 
 		}
 		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
