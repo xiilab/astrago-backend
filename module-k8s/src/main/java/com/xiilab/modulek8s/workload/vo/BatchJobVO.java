@@ -122,6 +122,7 @@ public class BatchJobVO extends WorkloadVO {
 			.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
 			.withSpec(createPodSpec())
 			.endTemplate()
+			.withBackoffLimit(0)
 			.build();
 	}
 

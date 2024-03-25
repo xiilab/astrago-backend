@@ -657,8 +657,6 @@ public class WorkloadFacadeService {
 			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
 			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
 				findDataset);
-			// setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-			// 	resDatasetWithStorage.getDatasetPath(), resDatasetWithStorage.getStorageType());
 			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
 				resDatasetWithStorage.getStoragePath() + resDatasetWithStorage.getDatasetName(), resDatasetWithStorage.getStorageType());
 		}
