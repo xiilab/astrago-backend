@@ -77,9 +77,9 @@ public class MonitorFacadeService {
 					case "gpuUsage" -> gpu = Double.parseDouble(realTimeDTO.value());
 					case "cpuUsage" -> cpu = Double.parseDouble(realTimeDTO.value());
 					case "memUsage" -> mem = Double.parseDouble(realTimeDTO.value());
-					case "wsRunnigCount" -> running = Long.parseLong(realTimeDTO.value());
-					case "pendingCount" -> pending = Long.parseLong(realTimeDTO.value());
-					case "wsErrorCount" -> error = Long.parseLong(realTimeDTO.value());
+					case "wsRunnigCount" -> running = (long)Double.parseDouble(realTimeDTO.value());
+					case "pendingCount" -> pending = (long)Double.parseDouble(realTimeDTO.value());
+					case "wsErrorCount" -> error = (long)Double.parseDouble(realTimeDTO.value());
 				}
 			}
 			result.add(ResponseDTO.WorkspaceDTO.builder()
@@ -194,9 +194,6 @@ public class MonitorFacadeService {
 
 			String nameSpace = gpuResult.get("metric").get("namespace").asText();
 
-			if(nameSpace.equals("ws-2ca876ed-f09c-4477-abd6-6a2aaf565d34")){
-				System.out.println("");
-			}
 			// 해당 워크스페이스의 워크로드 카운트
 			long wlCount = k8sMonitorService.getWorkloadCountByNamespace(nameSpace);
 			// 워크스페이스에서 발생한 에러 카운트
