@@ -659,7 +659,7 @@ public class WorkloadFacadeService {
 			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
 				findDataset);
 			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-				resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType());
+				resDatasetWithStorage.getDatasetPath(), resDatasetWithStorage.getStorageType());
 		}
 	}
 
@@ -668,7 +668,7 @@ public class WorkloadFacadeService {
 			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
 			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
 			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-				resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType());
+				resModelWithStorage.getModelPath(), resModelWithStorage.getStorageType());
 		}
 	}
 
