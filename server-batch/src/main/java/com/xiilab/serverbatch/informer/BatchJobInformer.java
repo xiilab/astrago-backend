@@ -22,7 +22,6 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertSetEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -42,6 +41,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
@@ -108,7 +108,7 @@ public class BatchJobInformer extends JobInformer{
 			@Override
 			public void onUpdate(Job job1, Job job2) {
 				if (!Objects.equals(job1.getMetadata().getResourceVersion(), job2.getMetadata().getResourceVersion())) {
-					if (job2.getStatus().getSucceeded() != null && job2.getStatus().getSucceeded() > 0) {
+					if (getJobCompleted(job2.getStatus())) {
 						log.info("{} job이 완료 되었습니다.", job2.getMetadata().getName());
 						String namespace = job2.getMetadata().getNamespace();
 						K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job2);
@@ -194,7 +194,13 @@ public class BatchJobInformer extends JobInformer{
 		informers.startAllRegisteredInformers();
 	}
 
-	private WorkspaceAlertSetEntity getAlertSet(String workspaceName){
-		return workspaceAlertSetRepository.getAlertSetEntityByWorkspaceName(workspaceName);
+	private boolean getJobCompleted(JobStatus jobStatus) {
+		if (jobStatus.getSucceeded() != null && jobStatus.getSucceeded() > 0) {
+			return true;
+		} else if(jobStatus.getFailed() != null && jobStatus.getFailed() > 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
