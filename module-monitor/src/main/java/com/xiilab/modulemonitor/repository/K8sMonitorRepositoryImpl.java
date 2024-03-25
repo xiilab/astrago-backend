@@ -247,7 +247,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage){
 		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()){
 			List<Node> nodeList = getNodeList(nodeName);
-			List<Pod> podList = kubernetesClient.pods().list().getItems();
+			List<Pod> podList = kubernetesClient.pods().inAnyNamespace().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
 			long totalMemCapacity = totalCapacity(nodeList, "MEM");
@@ -267,7 +267,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName){
 		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()){
 			List<Node> nodeList = getNodeList(nodeName);
-			List<Pod> podList = kubernetesClient.pods().list().getItems();
+			List<Pod> podList = kubernetesClient.pods().inAnyNamespace().list().getItems();
 
 			// 모든 노드의 GPU total 값을 합산
 			long totalGpuCapacity = totalCapacity(nodeList, GPU);
