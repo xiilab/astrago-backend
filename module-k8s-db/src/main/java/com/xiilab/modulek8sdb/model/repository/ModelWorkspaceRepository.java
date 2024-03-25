@@ -16,12 +16,14 @@ public interface ModelWorkspaceRepository extends JpaRepository<ModelWorkSpaceMa
 	void deleteModelWorkspaceMappingById(@Param("modelId") Long modelId);
 
 	@Query("select mwm  from ModelWorkSpaceMappingEntity mwm "
-		+ " join fetch mwm.model m where mwm.workspaceResourceName = :workspaceResourceName")
+		+ " join fetch mwm.model m where mwm.workspaceResourceName = :workspaceResourceName and mwm.model.deleteYn = 'N' "
+		+ "order by mwm.regDate DESC")
 	List<ModelWorkSpaceMappingEntity> findByWorkspaceResourceName(@Param("workspaceResourceName") String workspaceResourceName);
 
 	@Query("select mwm "
 		+ "from ModelWorkSpaceMappingEntity mwm "
 		+ "where mwm.model.modelId = :modelId "
+		+ "and mwm.model.deleteYn = 'N'"
 		+ "and mwm.workspaceResourceName like :workspaceResourceName")
 	ModelWorkSpaceMappingEntity findByWorkspaceResourceNameAndModelId(@Param("workspaceResourceName") String workspaceResourceName, @Param("modelId") Long modelId);
 
