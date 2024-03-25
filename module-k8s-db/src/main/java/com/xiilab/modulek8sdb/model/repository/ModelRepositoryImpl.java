@@ -77,6 +77,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 		List<Model> models = queryFactory.selectFrom(model)
 			.where(creatorEq(userId, userAuth),
 				deleteYnEqN())
+			.orderBy(model.regDate.desc())
 			.fetch();
 		return models;
 	}

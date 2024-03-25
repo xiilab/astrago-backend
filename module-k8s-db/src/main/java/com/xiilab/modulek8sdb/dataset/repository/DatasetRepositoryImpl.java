@@ -77,6 +77,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
 			.where(creatorEq(userId, userAuth),
 				deleteYNEqN())
+			.orderBy(dataset.regDate.desc())
 			.fetch();
 		return datasets;
 	}

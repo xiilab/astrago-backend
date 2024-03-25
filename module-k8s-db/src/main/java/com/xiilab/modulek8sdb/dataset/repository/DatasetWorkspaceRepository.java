@@ -16,7 +16,8 @@ public interface DatasetWorkspaceRepository extends JpaRepository<DatasetWorkSpa
 
 
 	@Query("select dwm  from DatasetWorkSpaceMappingEntity dwm "
-		+ " join fetch dwm.dataset d where dwm.workspaceResourceName = :workspaceResourceName and dwm.dataset.deleteYn = 'N'")
+		+ " join fetch dwm.dataset d where dwm.workspaceResourceName = :workspaceResourceName and dwm.dataset.deleteYn = 'N' "
+		+ "order by dwm.regDate DESC ")
 	List<DatasetWorkSpaceMappingEntity> findByWorkspaceResourceName(@Param("workspaceResourceName") String workspaceResourceName);
 
 	@Query("select dwm "

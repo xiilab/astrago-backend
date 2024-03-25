@@ -1,5 +1,6 @@
 package com.xiilab.serverbatch.informer.listener;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -85,6 +86,8 @@ public class InformerEventListener {
 						.alertRole(findAdminAlertMappingEntity.getAlert().getAlertRole())
 						.readYN(ReadYN.N)
 						.regUser(regUser)
+						.regDate(LocalDateTime.now())
+						.modDate(LocalDateTime.now())
 						.build();
 					systemAlertRepository.save(saveSystemAlert);
 				}
@@ -126,6 +129,8 @@ public class InformerEventListener {
 					.systemAlertEventType(findAlert.getSystemAlertEventType())
 					.alertRole(mappingEntity.getAlert().getAlertRole())
 					.readYN(ReadYN.N)
+					.regDate(LocalDateTime.now())
+					.modDate(LocalDateTime.now())
 					.build();
 				systemAlertRepository.save(saveSystemAlert);
 			}
