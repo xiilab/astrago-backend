@@ -123,7 +123,7 @@ public class InformerEventListener {
 				SystemAlertEntity saveSystemAlert = SystemAlertEntity.builder()
 					.title(userAlertEvent.title())
 					.message(userAlertEvent.message())
-					.recipientId(findUser.getEmail())
+					.recipientId(findUser.getId())
 					.senderId(adminEmailAddr)
 					.systemAlertType(findAlert.getAlertType())
 					.systemAlertEventType(findAlert.getSystemAlertEventType())
