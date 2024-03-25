@@ -21,6 +21,7 @@ import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
+import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -33,6 +34,7 @@ import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -395,6 +397,21 @@ public class K8sInfoPicker {
 			return (amount / 1000);
 		} else {
 			throw new IllegalArgumentException(format + " format은 확인되지 않은 format입니다.");
+		}
+	}
+
+	public static WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {
+		int replicas = deploymentStatus.getReplicas() == null ? 0 : deploymentStatus.getReplicas();
+		int availableReplicas =
+			deploymentStatus.getAvailableReplicas() == null ? 0 : deploymentStatus.getAvailableReplicas();
+		int unavailableReplicas =
+			deploymentStatus.getUnavailableReplicas() == null ? 0 : deploymentStatus.getUnavailableReplicas();
+		if (unavailableReplicas > 0) {
+			return WorkloadStatus.PENDING;
+		} else if (replicas == availableReplicas) {
+			return WorkloadStatus.RUNNING;
+		} else {
+			return WorkloadStatus.ERROR;
 		}
 	}
 
