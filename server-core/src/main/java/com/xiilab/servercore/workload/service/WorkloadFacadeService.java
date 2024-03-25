@@ -127,7 +127,7 @@ public class WorkloadFacadeService {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
 			userInfoDTO.getUserFullName());
 
-		// 이미지 credential 세팅
+		// 이미지 credential setting
 		if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getImage().getCredentialId())
 			&& moduleCreateWorkloadReqDTO.getImage().getCredentialId() > 0) {
 			setImageCredentialReqDTO(moduleCreateWorkloadReqDTO.getImage(), userInfoDTO);
