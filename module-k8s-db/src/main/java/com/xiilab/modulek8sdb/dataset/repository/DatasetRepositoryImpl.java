@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -43,7 +44,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				dataset.deleteYn.eq(DeleteYN.N)
+				deleteYNEqN()
 			)
 			.orderBy(sort)
 			.offset(pageRequest.getOffset())
@@ -56,7 +57,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 				creatorEq(userId, userAuth),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				dataset.deleteYn.eq(DeleteYN.N)
+				deleteYNEqN()
 			)
 			.fetchOne();
 		return new PageImpl<>(datasets, pageRequest, count);
@@ -74,7 +75,8 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 	@Override
 	public List<Dataset> findByAuthority(String userId, AuthType userAuth) {
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
-			.where(creatorEq(userId, userAuth))
+			.where(creatorEq(userId, userAuth),
+				deleteYNEqN())
 			.fetch();
 		return datasets;
 	}
@@ -82,8 +84,13 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 	@Override
 	public Dataset getDatasetWithStorage(Long datasetId) {
 		return queryFactory.selectFrom(dataset)
-			.where(datasetIdEq(datasetId))
+			.where(datasetIdEq(datasetId),
+				deleteYNEqN())
 			.fetchOne();
+	}
+
+	private static BooleanExpression deleteYNEqN() {
+		return dataset.deleteYn.eq(DeleteYN.N);
 	}
 
 	private Predicate datasetIdEq(Long datasetId) {
