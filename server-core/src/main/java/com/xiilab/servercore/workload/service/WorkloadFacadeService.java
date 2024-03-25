@@ -667,7 +667,7 @@ public class WorkloadFacadeService {
 			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
 			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
 			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-				resModelWithStorage.getModelPath() + resModelWithStorage.getModelName(), resModelWithStorage.getStorageType());
+				resModelWithStorage.getStoragePath() + resModelWithStorage.getModelName(), resModelWithStorage.getStorageType());
 		}
 	}
 
