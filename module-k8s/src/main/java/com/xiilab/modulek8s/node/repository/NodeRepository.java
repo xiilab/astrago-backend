@@ -39,4 +39,6 @@ public interface NodeRepository {
 	void updateNodeLabel(String nodeName, Map<String, String> labels);
 
 	void saveGpuProductTOLabel(String nodeName);
+
+	void restartMIGManager();
 }

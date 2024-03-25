@@ -215,6 +215,8 @@ public class NodeFacadeService {
 		nodeRepository.saveGpuProductTOLabel(migGpuDTO.getNodeName());
 		//mig parted configmap에 해당 노드의 프로파일 추가
 		nodeRepository.updateMigProfile(migGpuDTO);
+		//변경된 configmap이 적용될 수 있도록 mig manager를 restart한다.
+		nodeRepository.restartMIGManager();
 		//node의 라벨값 변경
 		nodeRepository.updateMIGProfile(migGpuDTO.getNodeName(), migGpuDTO.getMigKey());
 	}
