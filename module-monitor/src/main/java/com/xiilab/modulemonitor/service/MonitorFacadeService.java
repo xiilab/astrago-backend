@@ -59,18 +59,15 @@ public class MonitorFacadeService {
 		Map<String, List<ResponseDTO.RealTimeDTO>> collect = gpuUsage.stream()
 			.collect(Collectors.groupingBy(ResponseDTO.RealTimeDTO::nameSpace));
 
-		String wsName = "default";
-		String wsRealName = "";
-		double gpu = 0.0;
-		double cpu = 0.0;
-		double mem = 0.0;
-		long running = 0;
-		long pending = 0;
-		long error = 0;
-
 		List<ResponseDTO.WorkspaceDTO> result = new ArrayList<>();
 		for(Map.Entry<String, List<ResponseDTO.RealTimeDTO>> value : collect.entrySet()){
-			wsRealName = value.getKey();
+			String wsName = "default";
+			double gpu = 0.0;
+			double cpu = 0.0;
+			double mem = 0.0;
+			long running = 0;
+			long pending = 0;
+			long error = 0;
 			wsName = k8sMonitorService.getWorkspaceName(value.getKey());
 			for(ResponseDTO.RealTimeDTO realTimeDTO : value.getValue()){
 				switch (realTimeDTO.metricName()){
@@ -83,7 +80,7 @@ public class MonitorFacadeService {
 				}
 			}
 			result.add(ResponseDTO.WorkspaceDTO.builder()
-				.workspaceResourceName(wsRealName)
+				.workspaceResourceName(value.getKey())
 				.workspaceName(wsName)
 				.gpuUsage(gpu)
 				.cpuUsage(cpu)
