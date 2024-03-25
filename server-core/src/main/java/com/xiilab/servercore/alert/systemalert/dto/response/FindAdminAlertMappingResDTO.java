@@ -21,7 +21,7 @@ public class FindAdminAlertMappingResDTO {
 	private SystemAlertType systemAlertType;
 	private AlertRole alertRole;
 	private AlertStatus systemYN;
-	private AlertStatus emilYN;
+	private AlertStatus emailYN;
 
 	public static FindAdminAlertMappingResDTO of(AlertEntity alertEntity) {
 		return FindAdminAlertMappingResDTO.builder()
@@ -33,7 +33,7 @@ public class FindAdminAlertMappingResDTO {
 			.alertRole(alertEntity.getAlertRole())
 			.systemYN(!CollectionUtils.isEmpty(alertEntity.getAdminAlertMappingEntities()) ?
 				alertEntity.getAdminAlertMappingEntities().get(0).getSystemAlertStatus() : AlertStatus.OFF)
-			.emilYN(!CollectionUtils.isEmpty(alertEntity.getAdminAlertMappingEntities()) ?
+			.emailYN(!CollectionUtils.isEmpty(alertEntity.getAdminAlertMappingEntities()) ?
 				alertEntity.getAdminAlertMappingEntities().get(0).getEmailAlertStatus() : AlertStatus.OFF)
 			.build();
 	}
