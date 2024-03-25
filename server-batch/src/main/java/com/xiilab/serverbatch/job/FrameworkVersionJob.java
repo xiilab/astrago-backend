@@ -8,6 +8,7 @@ import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
@@ -34,6 +35,7 @@ public class FrameworkVersionJob extends QuartzJobBean{
 
 
 	@Override
+	@Transactional
 	protected void executeInternal(JobExecutionContext context) {
 		List<ResponseDTO.WorkerNodeDriverInfo> workerNodeDriverInfos = nodeRepository.getWorkerNodeDriverInfos();
 		// 중복된 값들을 담을 Set
