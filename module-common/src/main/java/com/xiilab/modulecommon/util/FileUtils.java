@@ -14,23 +14,23 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class FileUtils {
-	private static final String ROOT_PATH = "/astrago";
+	private static final String ROOT_PATH = "astrago";
 
-	private static String getUserFolderPath(String username) {
+	public static String getUserFolderPath(String username) {
 		return System.getProperty("user.home") + File.separator + ROOT_PATH + File.separator + username;
-	}
-
-	public static String getUserLogFolderPath(String username) {
-		return getUserFolderPath(username) + File.separator + "log";
 	}
 
 	private static Path createFolders(Path path) throws IOException {
 		return Files.createDirectories(path);
 	}
 
+	public static String getUserLogPath(String username, String workloadName) {
+		String userFolderPath = getUserFolderPath(username);
+		return userFolderPath + File.separator + workloadName + ".log";
+	}
+
 	public static void saveLogFile(String logContent, String jobName, String username) throws IOException {
-		Path folderPath = createFolders(Path.of(getUserLogFolderPath(username)));
-		Path filePath = Path.of(folderPath + File.separator + jobName + ".log");
-		Files.writeString(filePath, logContent, StandardOpenOption.CREATE);
+		Path userFolders = createFolders(Path.of(getUserFolderPath(username)));
+		Files.writeString(Path.of(getUserLogPath(username, jobName)), logContent, StandardOpenOption.CREATE);
 	}
 }
