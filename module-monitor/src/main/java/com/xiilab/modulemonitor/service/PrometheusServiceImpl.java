@@ -335,7 +335,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			}
 		}
 		if (requestDTO.podName() != null && !requestDTO.podName().isBlank()) {
-			result = result + "pod=~\"" + requestDTO.podName() + "\"";
+			result = result + "pod=~\"" + requestDTO.podName() + ".*\"";
 		}
 		return String.format(promql.getQuery(), result.toLowerCase());
 	}

@@ -100,7 +100,7 @@ public enum Promql {
 	POD_PENDING("kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Pending 조회", "POD"),
 	POD_PENDING_FAIL_INFO("(kube_pod_status_phase{phase=\"Failed\"} != 0 ) or kube_pod_status_phase{phase=\"Pending\"} != 0", "POD Fail, Pending List 조회", "POD"),
 	POD_MEM_USAGE_BYTE("container_memory_working_set_bytes{container != \"\", %s}", "POD Mem 사용량 조회 ", "POD"),
-	POD_CPU_USAGE_BYTE("container_cpu_usage_seconds_total{container != \"\", %s}", "POD CPU 사용량 조회 ", "POD"),
+	POD_CPU_USAGE_BYTE("avg(container_cpu_usage_seconds_total{container != \"\", %s}) by(pod)", "POD CPU 사용량 조회 ", "POD"),
 	POD_GPU_UTIL("DCGM_FI_DEV_GPU_UTIL{%s}","POD GPU 사용률 조회","POD"),
 	POD_DISK_USAGE("container_fs_usage_bytes{}","POD DISK 사용량 조회","POD"),
 
@@ -189,7 +189,10 @@ public enum Promql {
 	DASHBOARD_WS_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\", namespace =~ \"ws.*\"} > 0 and kube_pod_container_status_waiting_reason{namespace =~ \"ws.*\"} < 0) by(namespace)", "", "DASHBOARD"),
 	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_container_status_waiting_reason{namespace =~ \"ws.*\"} > 0) by(namespace) or count(kube_pod_status_reason{reason != \"\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
 	DASHBOARD_WS_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
-
+	// TERMINAL
+	TERMINAL_POD_USAGE_BYTE("round(avg(container_cpu_usage_seconds_total{container != \"\", %s}) by(pod), 0.01)", "", "TERMINAL"),
+	TERMINAL_GPU_USAGE("DCGM_FI_DEV_GPU_UTIL{%s}", "", "TERMINAL"),
+	TERMINAL_CPU_USAGE_CORE("round(avg(container_cpu_usage_seconds_total{container != \"\", %s} / 1000) by(pod), 0.01)", "", "TERMINAL"),
 
 
 	;
