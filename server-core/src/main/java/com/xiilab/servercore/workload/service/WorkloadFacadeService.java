@@ -438,7 +438,7 @@ public class WorkloadFacadeService {
 
 	public byte[] getWorkloadLogFile(String workloadName, UserInfoDTO userInfoDTO) {
 		//저장된 로그 path 구하기
-		String logPath = FileUtils.getUserLogPath(userInfoDTO.getUserName(), workloadName);
+		String logPath = FileUtils.getUserLogPath(userInfoDTO.getId(), workloadName);
 		try {
 			return Files.readAllBytes(Path.of(logPath));
 		} catch (IOException e) {
