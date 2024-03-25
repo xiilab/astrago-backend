@@ -129,9 +129,17 @@ public class ResourceOptimizationSchedulerService {
 
 	private Trigger createTrigger(JobDetail job, int hour) {
 		return TriggerBuilder.newTrigger()
-			.withSchedule(CronScheduleBuilder.cronSchedule(String.format("0 0 0/%s * * ?", hour)))
+			.withSchedule(CronScheduleBuilder.cronSchedule(getCronExpression(hour)))
 			.startNow()
 			.forJob(job)
 			.build();
+	}
+
+	private String getCronExpression(int hour) {
+		if (hour == 24) {
+			return "0 0 0 1 * ?";
+		} else {
+			return String.format("0 0 0/%s * * ?", hour);
+		}
 	}
 }
