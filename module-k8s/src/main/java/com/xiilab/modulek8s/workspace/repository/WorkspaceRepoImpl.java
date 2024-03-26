@@ -103,7 +103,6 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 				.findFirst()
 				.orElse(null);
 			return pod.getSpec().getNodeName();
-
 		}
 	}
 

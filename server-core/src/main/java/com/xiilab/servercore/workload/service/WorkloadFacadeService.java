@@ -255,9 +255,9 @@ public class WorkloadFacadeService {
 		WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName) {
-		String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 		// 실행중일 떄
 		try {
+			String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 			if (workloadType == WorkloadType.BATCH) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
