@@ -193,7 +193,7 @@ public enum Promql {
 	TERMINAL_GPU_UTILIZATION("DCGM_FI_DEV_GPU_UTIL{%s}", "", "TERMINAL"),
 	TERMINAL_GPU_MEM_USAGE("(label_replace(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])), \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * 100) * on(node) group_left kube_node_info{}", "", "TERMINAL"),
 	TERMINAL_MEM_UTILIZATION("sum(container_memory_usage_bytes{%s})", "", "TERMINAL"),
-	TERMINAL_CPU_UTILIZATION("avg(rate(container_cpu_usage_seconds_total{%s}[1m])) by (instance,cpu,node)", "", "TERMINAL"),
+	TERMINAL_CPU_UTILIZATION("round(sum (rate (container_cpu_usage_seconds_total{%s}[1m])) / sum (machine_cpu_cores{%s}) * 100)", "", "TERMINAL"),
 
 	;
 // GPU 사용량, GPU Limit, GPU Request
