@@ -102,7 +102,7 @@ public class MonitorFacadeService {
 		String cpuResponse = DataConverterUtil.formatObjectMapper(cpuMetric);
 
 		String memMetric = prometheusService.getRealTimeMetricByQuery(
-			String.format(Promql.NODE_MEM_USAGE_KI.getQuery(), node));
+			String.format(Promql.REPORT_CLUSTER_MEM_UTIL.getQuery(), node));
 
 		String memResponse = DataConverterUtil.formatObjectMapper(memMetric);
 

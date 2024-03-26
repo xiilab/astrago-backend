@@ -259,7 +259,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.name(MEM)
 				.total(totalMemCapacity * 1024)
 				.request(Long.parseLong(totalMemRequests)  * 1024)
-				.usage(Long.parseLong(memUsage)  * 1024)
+				.usage((totalMemCapacity * Long.parseLong(memUsage)) / 100 )
 				.build();
 		}
 	}
