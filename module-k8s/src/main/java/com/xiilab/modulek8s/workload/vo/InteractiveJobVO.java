@@ -199,6 +199,7 @@ public class InteractiveJobVO extends WorkloadVO {
 					.addNewVolumeMount()
 					.withName("git-clone-" + index.getAndIncrement())
 					.withMountPath(codeReq.mountPath())
+					.withSubPath("code")
 					.endVolumeMount());
 		}
 	}

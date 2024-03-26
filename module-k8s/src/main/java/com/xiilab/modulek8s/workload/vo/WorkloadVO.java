@@ -64,7 +64,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 					// init컨테이너와 아래서 생성한 emptyDir 볼륨 연결
 					.addNewVolumeMount()
 					.withName("git-clone-" + index.getAndIncrement())
-					.withMountPath(codeVO.mountPath())
+					.withMountPath("/git")
 					// .withMountPath("/tmp/sourceCode")
 					.endVolumeMount()
 					.withEnv(getGithubEnvVarList(codeVO))
@@ -142,7 +142,8 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(
 			new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_REPO.name()).withValue(codeVO.repositoryURL()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_BRANCH.name()).withValue(codeVO.branch()).build());
-		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue(codeVO.mountPath()).build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue("/git").build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_DEST.name()).withValue("code").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_PERMISSIONS.name()).withValue("0777").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ONE_TIME.name()).withValue("true").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
