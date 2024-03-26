@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.workspace.repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -93,16 +94,19 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 	@Override
 	public String getNodeName(String workspaceResourceName, String workloadResourceName){
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			Pod pod = kubernetesClient.pods()
+			Optional<Pod> pod = kubernetesClient.pods()
 				.inNamespace(workspaceResourceName)
 				.list()
 				.getItems()
 				.stream()
 				.filter(pod1 ->
 					pod1.getMetadata().getName().contains(workloadResourceName))
-				.findFirst()
-				.orElse(null);
-			return pod.getSpec().getNodeName();
+				.findFirst();
+			if(pod.isPresent()){
+				return pod.get().getSpec().getNodeName();
+			}else{
+				return "";
+			}
 		}
 	}
 
