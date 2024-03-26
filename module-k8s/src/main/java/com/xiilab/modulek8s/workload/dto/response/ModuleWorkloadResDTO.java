@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -64,6 +65,10 @@ public abstract class ModuleWorkloadResDTO {
 	protected Long imageCredentialId;
 	protected boolean canBeDeleted;
 	protected String ide;
+	// 최초 예측 시간
+	LocalDateTime estimatedInitialTime;
+	// 실시간 예측 시간
+	LocalDateTime estimatedRemainingTime;
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		if (hasMetadata != null) {
 			uid = hasMetadata.getMetadata().getUid();
@@ -93,6 +98,22 @@ public abstract class ModuleWorkloadResDTO {
 					.getAnnotations()
 					.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField()));
 			imageId = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_ID.getField());
+			// 최초 종료 시간 예측
+			if (hasMetadata.getMetadata().getAnnotations().containsKey(AnnotationField.ESTIMATED_INITIAL_TIME)) {
+				String estimatedInitialTimeString = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.ESTIMATED_INITIAL_TIME);
+				if (!ObjectUtils.isEmpty(estimatedInitialTimeString)) {
+					long estimatedInitialTimeSeconds = Long.valueOf(estimatedInitialTimeString);
+					estimatedInitialTime = createdAt.plusSeconds(estimatedInitialTimeSeconds);
+				}
+			}
+			// 실시간 종료 시간 예측
+			if (hasMetadata.getMetadata().getAnnotations().containsKey(AnnotationField.ESTIMATED_REMAINING_TIME)) {
+				String estimatedRemainingTime = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.ESTIMATED_REMAINING_TIME);
+				if (!ObjectUtils.isEmpty(estimatedRemainingTime)) {
+					long estimatedRemainingTimeSeconds = Long.valueOf(estimatedRemainingTime);
+					estimatedInitialTime = LocalDateTime.now().plusSeconds(estimatedRemainingTimeSeconds);
+				}
+			}
 		} else {
 			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
 		}

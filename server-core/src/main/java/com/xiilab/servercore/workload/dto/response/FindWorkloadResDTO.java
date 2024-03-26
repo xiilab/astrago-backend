@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.hibernate.Hibernate;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.ImageType;
@@ -63,6 +64,8 @@ public class FindWorkloadResDTO extends ResDTO {
 		private WorkloadStatus status;
 		private String ide;
 		private String nodeName;
+		private String estimatedInitialTime;
+		private String estimatedRemainingTime;
 		public static <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail from(
 			T moduleJobResDTO
 			, FindWorkloadResDTO.Image image
@@ -98,6 +101,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				.status(moduleJobResDTO.getStatus())
 				.ide(moduleJobResDTO.getIde())
 				.nodeName(nodeName)
+				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 				.build();
 		}
 

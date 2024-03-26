@@ -262,4 +262,14 @@ public class WorkloadController {
 		return ResponseEntity.ok()
 				.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
+
+	// @GetMapping("/hub/predict")
+	// @Operation(summary = "허브 워크로드 종료시간 예측 조회")
+	// public ResponseEntity<byte[]> getEndWorkloadHistoryLog(
+	// 	@PathVariable(name = "workloadName") String workloadName,
+	// 	UserInfoDTO userInfoDTO
+	// ) {
+	// 	return ResponseEntity.ok()
+	// 		.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
+	// }
 }
