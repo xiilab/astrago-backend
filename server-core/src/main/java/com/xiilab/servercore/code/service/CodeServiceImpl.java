@@ -74,7 +74,7 @@ public class CodeServiceImpl implements CodeService {
 					.codeURL(codeReqDTO.getCodeURL())
 					.workspaceResourceName(codeReqDTO.getWorkspaceName())
 					.credentialEntity(credentialEntity)
-					.repositoryType(codeReqDTO.getRepositoryType())
+					.repositoryType(WORKSPACE)
 					.build());
 			return new CodeResDTO(saveCode);
 		} catch (IllegalArgumentException e) {
