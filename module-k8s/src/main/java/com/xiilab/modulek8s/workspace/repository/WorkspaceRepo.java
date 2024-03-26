@@ -20,5 +20,7 @@ public interface WorkspaceRepo {
 	void deleteWorkspaceByName(String name);
 
 	void updateWorkspaceInfo(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
+
+	String getNodeName(String workspaceResourceName, String workloadResourceName);
 }
 

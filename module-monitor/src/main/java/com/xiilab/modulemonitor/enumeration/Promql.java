@@ -191,9 +191,9 @@ public enum Promql {
 	DASHBOARD_WS_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
 	// TERMINAL
 	TERMINAL_GPU_UTILIZATION("DCGM_FI_DEV_GPU_UTIL{%s}", "", "TERMINAL"),
-	TERMINAL_GPU_MEM_USAGE("", "", ""),
-	TERMINAL_MEM_UTILIZATION("", "", ""),
-	TERMINAL_CPU_UTILIZATION("", "", ""),
+	TERMINAL_GPU_MEM_USAGE("(label_replace(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])), \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * 100) * on(node) group_left kube_node_info{}", "", "TERMINAL"),
+	TERMINAL_MEM_UTILIZATION("sum(container_memory_usage_bytes{%s})", "", "TERMINAL"),
+	TERMINAL_CPU_UTILIZATION("avg(rate(container_cpu_usage_seconds_total{%s}[1m])) by (instance,cpu,node)", "", "TERMINAL"),
 
 	;
 // GPU 사용량, GPU Limit, GPU Request

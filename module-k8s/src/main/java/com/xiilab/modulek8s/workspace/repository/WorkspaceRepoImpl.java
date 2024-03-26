@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -86,6 +87,23 @@ public class WorkspaceRepoImpl implements WorkspaceRepo {
 				.get(0)
 				.getStatus();
 			return new WorkspaceDTO.WorkspaceResourceStatus(workspaceByName, resourceQuota);
+		}
+	}
+
+	@Override
+	public String getNodeName(String workspaceResourceName, String workloadResourceName){
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Pod pod = kubernetesClient.pods()
+				.inNamespace(workspaceResourceName)
+				.list()
+				.getItems()
+				.stream()
+				.filter(pod1 ->
+					pod1.getMetadata().getName().contains(workloadResourceName))
+				.findFirst()
+				.orElse(null);
+			return pod.getSpec().getNodeName();
+
 		}
 	}
 

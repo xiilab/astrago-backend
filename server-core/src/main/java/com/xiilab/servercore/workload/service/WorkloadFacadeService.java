@@ -255,16 +255,17 @@ public class WorkloadFacadeService {
 		WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName) {
+		String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 		// 실행중일 떄
 		try {
 			if (workloadType == WorkloadType.BATCH) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
-				return getActiveWorkloadDetail(moduleBatchJobResDTO);
+				return getActiveWorkloadDetail(moduleBatchJobResDTO, nodeName);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
 				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 					workspaceName, workloadResourceName);
-				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+				return getActiveWorkloadDetail(moduleInteractiveJobResDTO, nodeName);
 			}
 		} catch (Exception e) {
 			try {
@@ -278,7 +279,7 @@ public class WorkloadFacadeService {
 	}
 
 	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail getActiveWorkloadDetail(
-		T moduleJobResDTO) {
+		T moduleJobResDTO, String nodeName) {
 		// 이미지 DTO 세팅
 		FindWorkloadResDTO.Image image = generateImageResDTO(moduleJobResDTO);
 		// 모델 세팅
@@ -297,7 +298,7 @@ public class WorkloadFacadeService {
 			.toList();
 
 		return FindWorkloadResDTO.WorkloadDetail.from(moduleJobResDTO, image, models, datasets, codes,
-			ports, envs);
+			ports, envs, nodeName);
 	}
 
 	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,

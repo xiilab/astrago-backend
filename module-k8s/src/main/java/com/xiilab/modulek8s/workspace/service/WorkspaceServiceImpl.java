@@ -85,4 +85,9 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	public void createPodAnnotationsRoleBinding(String workspaceResourceName) {
 		workspaceRoleRepo.createPodAnnotationsRoleBinding(workspaceResourceName);
 	}
+
+	@Override
+	public String getNodeName(String workspaceResourceName, String workloadResourceName){
+		return workspaceRepo.getNodeName(workspaceResourceName, workloadResourceName);
+	}
 }

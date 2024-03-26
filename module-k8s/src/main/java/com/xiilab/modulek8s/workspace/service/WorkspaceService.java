@@ -18,4 +18,6 @@ public interface WorkspaceService {
 	void deleteWorkspaceByName(String workspaceName);
 	void editWorkspaceRole(String workspaceResourceName);
 	void createPodAnnotationsRoleBinding(String workspaceResourceName);
+
+	String getNodeName(String workspaceResourceName, String workloadResourceName);
 }

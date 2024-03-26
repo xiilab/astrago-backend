@@ -1,5 +1,6 @@
 package com.xiilab.servercore.code.service;
 
+import static com.xiilab.modulecommon.enums.RepositoryType.*;
 import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 
 import java.util.ArrayList;
@@ -10,17 +11,17 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.dto.RegexPatterns;
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.GithubApi;
-import com.xiilab.modulecommon.enums.CodeType;
-import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
-import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
+import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
+import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
@@ -125,7 +126,8 @@ public class CodeServiceImpl implements CodeService {
 
 	@Override
 	public List<CodeResDTO> getCodeList(String workspaceName) {
-		List<CodeEntity> codeEntityList = codeRepository.getAlertEntitiesByWorkspaceResourceName(workspaceName);
+		List<CodeEntity> codeEntityList = codeRepository.getAlertEntitiesByWorkspaceResourceNameAndRepositoryType(workspaceName, WORKSPACE);
+
 		return codeEntityList.stream().map(CodeResDTO::new).toList();
 	}
 

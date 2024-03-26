@@ -62,7 +62,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private Float memRequest;
 		private WorkloadStatus status;
 		private String ide;
-
+		private String nodeName;
 		public static <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail from(
 			T moduleJobResDTO
 			, FindWorkloadResDTO.Image image
@@ -70,7 +70,8 @@ public class FindWorkloadResDTO extends ResDTO {
 			, List<FindWorkloadResDTO.Volume> datasets
 			, List<FindWorkloadResDTO.Code> codes
 			, List<FindWorkloadResDTO.Port> ports
-			, List<FindWorkloadResDTO.Env> envs) {
+			, List<FindWorkloadResDTO.Env> envs
+		 	, String nodeName) {
 			return WorkloadDetail.builder()
 				.uid(moduleJobResDTO.getUid())
 				.workloadName(moduleJobResDTO.getName())
@@ -96,6 +97,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.modDate(null)
 				.status(moduleJobResDTO.getStatus())
 				.ide(moduleJobResDTO.getIde())
+				.nodeName(nodeName)
 				.build();
 		}
 
