@@ -43,7 +43,7 @@ public class ModuleCodeResDTO {
 				case GIT_SYNC_BRANCH:
 					this.branch = envVar.getValue();
 					break;
-				case GIT_SYNC_ROOT:
+				case GIT_SYNC_MOUNT_PATH:
 					this.mountPath = envVar.getValue();
 					break;
 				case SOURCE_CODE_ID:	// 공유 코드 아니면 SOURCE_CODE_ID 환경변수 없음
