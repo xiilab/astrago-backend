@@ -1,8 +1,12 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
+import java.time.LocalDateTime;
+
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 
@@ -33,6 +37,22 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			.toList();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(job.getStatus());
+		// // 최초 종료 시간 예측
+		// if (hasMetadata.getMetadata().getAnnotations().containsKey(AnnotationField.ESTIMATED_INITIAL_TIME.getField())) {
+		// 	String estimatedInitialTimeString = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.ESTIMATED_INITIAL_TIME);
+		// 	if (!ObjectUtils.isEmpty(estimatedInitialTimeString)) {
+		// 		long estimatedInitialTimeSeconds = Long.valueOf(estimatedInitialTimeString);
+		// 		super.estimatedInitialTime = createdAt.plusSeconds(estimatedInitialTimeSeconds);
+		// 	}
+		// }
+		// // 실시간 종료 시간 예측
+		// if (hasMetadata.getMetadata().getAnnotations().containsKey(AnnotationField.ESTIMATED_REMAINING_TIME.getField())) {
+		// 	String estimatedRemainingTime = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.ESTIMATED_REMAINING_TIME);
+		// 	if (!ObjectUtils.isEmpty(estimatedRemainingTime)) {
+		// 		long estimatedRemainingTimeSeconds = Long.valueOf(estimatedRemainingTime);
+		// 		super.estimatedInitialTime = LocalDateTime.now().plusSeconds(estimatedRemainingTimeSeconds);
+		// 	}
+		// }
 	}
 
 	@Override

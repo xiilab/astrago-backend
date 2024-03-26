@@ -141,7 +141,7 @@ public class BatchJobVO extends WorkloadVO {
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withRestartPolicy("Never")
-			.withTerminationGracePeriodSeconds(600L)
+			.withTerminationGracePeriodSeconds(10L)
 			.addNewContainer()
 			.withName(getUniqueResourceName())
 			.withImage(image.name());

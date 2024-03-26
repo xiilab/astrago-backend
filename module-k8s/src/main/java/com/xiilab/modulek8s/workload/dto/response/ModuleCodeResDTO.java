@@ -44,7 +44,7 @@ public class ModuleCodeResDTO {
 					this.branch = envVar.getValue();
 					break;
 				case GIT_SYNC_ROOT:
-					this.mountPath = envVar.getValue().substring(0, envVar.getValue().lastIndexOf("/"));
+					this.mountPath = envVar.getValue();
 					break;
 				case SOURCE_CODE_ID:	// 공유 코드 아니면 SOURCE_CODE_ID 환경변수 없음
 					this.sourceCodeId = Long.valueOf(envVar.getValue());
