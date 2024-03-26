@@ -43,7 +43,7 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
-import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
@@ -192,24 +192,24 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		AuthType auth = userInfoDTO.getAuth();
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		String workspaceNm = workspace.getName();
-		UserAlertEvent userAlertEvent = null;
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 		if (auth == AuthType.ROLE_ADMIN) {
 			//관리자가 삭제할 때
 			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getMailTitle(), workspaceNm);
 			String title = SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getTitle();
 			String message = String.format(SystemAlertMessage.WORKSPACE_DELETE_ADMIN.getMessage(),
 				userInfoDTO.getUserFullName(), workspaceNm);
-			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_DELETE,
+			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_DELETE,
 				emailTitle, title, message, workspaceName);
 		} else {
 			//사용자가 삭제할 때
 			String emailTitle = String.format(SystemAlertMessage.WORKSPACE_DELETE_OWNER.getMailTitle(), workspaceNm);
 			String title = SystemAlertMessage.WORKSPACE_DELETE_OWNER.getTitle();
 			String message = String.format(SystemAlertMessage.WORKSPACE_DELETE_OWNER.getMessage(), workspaceNm);
-			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_DELETE,
+			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_DELETE,
 				emailTitle, title, message, workspaceName);
 		}
-		eventPublisher.publishEvent(userAlertEvent);
+		eventPublisher.publishEvent(workspaceUserAlertEvent);
 	}
 
 	@Override
@@ -314,7 +314,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaHistoryRepository.findById(id).orElseThrow();
 
 		String workspaceNm = resourceQuotaEntity.getWorkspaceName();
-		UserAlertEvent userAlertEvent = null;
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
@@ -336,7 +336,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			String title = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getTitle();
 			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(),
 				userInfoDTO.getUserFullName(), workspaceNm, "승인");
-			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
+			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
 				emailTitle, title, message, resourceQuotaEntity.getWorkspaceResourceName());
 			// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(resourceQuotaEntity.getWorkspace());
 			// if(workspaceAlertSet.isResourceApprovalAlert()){
@@ -356,10 +356,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			String title = SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getTitle();
 			String message = String.format(SystemAlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(),
 				userInfoDTO.getUserFullName(), workspaceNm, "반려");
-			userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
+			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.USER_RESOURCE_REQUEST_RESULT,
 				emailTitle, title, message, resourceQuotaEntity.getWorkspaceResourceName());
 		}
-		eventPublisher.publishEvent(userAlertEvent);
+		eventPublisher.publishEvent(workspaceUserAlertEvent);
 	}
 
 	@Override

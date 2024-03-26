@@ -12,6 +12,7 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.enums.AuthType;
@@ -41,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 public class KeycloakUserRepository implements UserRepository {
 	private final KeycloakConfig keycloakConfig;
 	private final String KEY_APPROVAL_YN = "approvalYN";
-
 	@Value("${admin.init-password}")
 	private String initPassword;
 
