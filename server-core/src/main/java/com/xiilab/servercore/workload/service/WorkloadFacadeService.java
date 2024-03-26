@@ -29,7 +29,7 @@ import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
-import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.ImageType;
@@ -314,10 +314,10 @@ public class WorkloadFacadeService {
 		String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
 		String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
 		String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
-		UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
 			emailTitle, title, message, workspaceName);
 
-		eventPublisher.publishEvent(userAlertEvent);
+		eventPublisher.publishEvent(workspaceUserAlertEvent);
 
 	}
 

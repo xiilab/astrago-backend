@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
-import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -108,21 +108,21 @@ public class InformerEventListener {
 	@Async
 	@EventListener
 	@Transactional
-	public void handleUserAlertEvent(UserAlertEvent userAlertEvent) {
+	public void handleUserAlertEvent(WorkspaceUserAlertEvent workspaceUserAlertEvent) {
 		// AlertRole, Alert 이름으로 ID 조회
-		AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(userAlertEvent.alertName().getName(),
-				userAlertEvent.alertRole())
+		AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(workspaceUserAlertEvent.alertName().getName(),
+				workspaceUserAlertEvent.alertRole())
 			.orElseThrow(() -> new RestApiException(SystemAlertErrorCode.NOT_FOUND_ALERT));
 		List<WorkspaceAlertMappingEntity> workspaceAlertMappingEntities = workspaceAlertMappingRepository.getWorkspaceAlertMappingByAlertId(
-			findAlert.getAlertId(), userAlertEvent.workspaceResourceName());
+			findAlert.getAlertId(), workspaceUserAlertEvent.workspaceResourceName());
 
 		for (WorkspaceAlertMappingEntity mappingEntity : workspaceAlertMappingEntities) {
 			UserDTO.UserInfo findUser = userRepository.getUserById(mappingEntity.getUserId());
 			if (mappingEntity.getSystemAlertStatus() == AlertStatus.ON) {
 				// save 로직 추가
 				SystemAlertEntity saveSystemAlert = SystemAlertEntity.builder()
-					.title(userAlertEvent.title())
-					.message(userAlertEvent.message())
+					.title(workspaceUserAlertEvent.title())
+					.message(workspaceUserAlertEvent.message())
 					.recipientId(findUser.getId())
 					.senderId(adminEmailAddr)
 					.systemAlertType(findAlert.getAlertType())
@@ -137,8 +137,8 @@ public class InformerEventListener {
 			if (mappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
 				// 메일 발송 로직 추가
 				mailService.sendMail(MailDTO.builder()
-					.title(userAlertEvent.mailTitle())
-					.content(userAlertEvent.message())
+					.title(workspaceUserAlertEvent.mailTitle())
+					.content(workspaceUserAlertEvent.message())
 					.receiverEmail(findUser.getEmail())
 					.build());
 			}

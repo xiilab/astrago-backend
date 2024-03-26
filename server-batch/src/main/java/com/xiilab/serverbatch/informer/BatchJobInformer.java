@@ -15,7 +15,7 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
-import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -99,10 +99,10 @@ public class BatchJobInformer extends JobInformer{
 				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
 				String title = SystemAlertMessage.WORKLOAD_START_CREATOR.getTitle();
 				String message = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
-				UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
 					emailTitle, title, message, batchWorkloadInfoFromResource.getWorkspaceResourceName());
 
-				publisher.publishEvent(userAlertEvent);
+				publisher.publishEvent(workspaceUserAlertEvent);
 			}
 
 			@Override
@@ -130,10 +130,10 @@ public class BatchJobInformer extends JobInformer{
 						String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
 						String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
 						String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
-						UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
+						WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
 							emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
 
-						publisher.publishEvent(userAlertEvent);
+						publisher.publishEvent(workspaceUserAlertEvent);
 						try {
 							FileUtils.saveLogFile(logResult, metadataFromResource.getWorkloadResourceName(), creator);
 						} catch (IOException e) {
@@ -173,10 +173,10 @@ public class BatchJobInformer extends JobInformer{
 				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
 				String title = SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
 				String message = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
 
-				publisher.publishEvent(userAlertEvent);
+				publisher.publishEvent(workspaceUserAlertEvent);
 				// WorkspaceAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
 				// // 해당 워크스페이스 알림 설정이 True인 경우
 				// if(workspaceAlertSet.isWorkloadEndAlert()){

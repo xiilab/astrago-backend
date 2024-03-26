@@ -21,7 +21,7 @@ import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -100,10 +100,10 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		String title = SystemAlertMessage.WORKSPACE_MEMBER_UPDATE.getTitle();
 		String message = String.format(SystemAlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
 
-		UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_MEMBER_UPDATE,
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_MEMBER_UPDATE,
 			emailTitle, title, message, groupName);
 
-		publisher.publishEvent(userAlertEvent);
+		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
 	@Override

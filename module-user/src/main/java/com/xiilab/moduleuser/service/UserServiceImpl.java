@@ -3,8 +3,14 @@ package com.xiilab.moduleuser.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
@@ -20,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
-
+	private final ApplicationEventPublisher eventPublisher;
 	@Override
 	public UserInfo joinUser(UserReqVO userReqVO) {
 		return userRepository.joinUser(userReqVO);
@@ -94,7 +100,23 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void updateUserEnable(String id, boolean enable) {
+		UserAlertEvent userAlertEvent = null;
 		userRepository.updateUserEnable(id, enable);
+		UserInfo userInfo = userRepository.getUserInfoById(id);
+		//알림 발송 해야함
+		//true 활성화
+		if(enable){
+			String emailTitle = String.format(SystemAlertMessage.USER_ENABLED.getMailTitle());
+			String title = SystemAlertMessage.USER_ENABLED.getTitle();
+			String message = String.format(SystemAlertMessage.USER_ENABLED.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
+			userAlertEvent = new UserAlertEvent(emailTitle, title, message, id);
+		}else{//false 비활성화
+			String emailTitle = String.format(SystemAlertMessage.USER_DISABLED.getMailTitle());
+			String title = SystemAlertMessage.USER_DISABLED.getTitle();
+			String message = String.format(SystemAlertMessage.USER_DISABLED.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
+			userAlertEvent = new UserAlertEvent(emailTitle, title, message, id);
+		}
+		eventPublisher.publishEvent(userAlertEvent);
 	}
 
 	@Override

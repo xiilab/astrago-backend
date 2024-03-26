@@ -11,7 +11,7 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
-import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
@@ -89,10 +89,10 @@ public class InteractiveJobInformer extends JobInformer{
 				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
 				String title = SystemAlertMessage.WORKLOAD_START_CREATOR.getTitle();
 				String message = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
-				UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
 					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
 
-				publisher.publishEvent(userAlertEvent);
+				publisher.publishEvent(workspaceUserAlertEvent);
 			}
 
 			@Override
@@ -125,10 +125,10 @@ public class InteractiveJobInformer extends JobInformer{
 				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
 				String title = SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
 				String message = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				UserAlertEvent userAlertEvent = new UserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
 
-				publisher.publishEvent(userAlertEvent);
+				publisher.publishEvent(workspaceUserAlertEvent);
 			}
 		});
 

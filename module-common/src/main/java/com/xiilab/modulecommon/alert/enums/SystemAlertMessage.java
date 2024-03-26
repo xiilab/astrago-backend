@@ -9,6 +9,8 @@ public enum SystemAlertMessage {
 	// 사용자
 	USER_CREATE("[Astrago] 회원가입 알림", "회원가입 알림","%s(%s)님이 회원가입을 요청하였습니다."),
 	USER_UPDATE("[Astrago] 회원정보 변경 알림", "회원정보 변경", "%s님의 개인 정보가 변경 되었습니다."),
+	USER_ENABLED("[Astrago] 계정 활성화 알림", "계정 활성화 알림", "%s님의 계정이 활성화 되었습니다."),
+	USER_DISABLED("[Astrago] 계정 비활성화 알림", "계정 비활성화 알림", "%s님의 계정이 비활성화 되었습니다."),
 	// 워크스페이스
 	WORKSPACE_CREATE_ADMIN("[Astrago] 워크스페이스(%s) 생성 알림", "워크스페이스 생성", "%s님이 워크스페이스(%s)를 생성하였습니다."),
 	WORKSPACE_CREATE_OWNER("[Astrago] 워크스페이스(%s) 생성 알림", "워크스페이스 생성", "워크스페이스(%s)를 생성하였습니다."),
