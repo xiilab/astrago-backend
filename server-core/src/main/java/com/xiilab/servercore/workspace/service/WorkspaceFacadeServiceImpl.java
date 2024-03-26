@@ -229,8 +229,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					workspace.getDescription(),
 					userWorkspacePinList.contains(workspace.getResourceName()),
 					workspace.getCreatedAt(),
-					workloadModuleFacadeService.getUserRecentlyWorkload(workspace.getResourceName(),
-						userInfoDTO.getUserName()))).toList();
+					getUserRecentlyWorkload(workspace.getResourceName(), userInfoDTO.getUserName()))).toList();
 
 	}
 
