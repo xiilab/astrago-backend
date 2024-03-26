@@ -19,6 +19,7 @@ public interface K8sMonitorService {
 	List<ResponseDTO.EventDTO> getEventList(String namespace, String podName);
 	ResponseDTO.ResponseClusterDTO getDashboardClusterCPU(String nodeName, double cpuUsage);
 	ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage);
+	ResponseDTO.ResponseClusterDTO getDashboardClusterMemByNode(String nodeName, String memUsage);
 	ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName);
 	Map<String, Map<String, Long>> getClusterReason(long minute);
 	String getNodeName(String podName, String namespace);
