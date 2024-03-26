@@ -17,13 +17,11 @@ import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.EnvVarSource;
 import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
 import io.fabric8.kubernetes.api.model.ObjectFieldSelectorBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -130,6 +128,7 @@ public class BatchJobVO extends WorkloadVO {
 	@Override
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
+		podSpecBuilder.withHostname("astrago");
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
 		if (!ObjectUtils.isEmpty(this.secretName)) {

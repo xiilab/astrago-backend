@@ -132,6 +132,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	@Override
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
+		podSpecBuilder.withHostname("astrago");
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
 		if (!ObjectUtils.isEmpty(this.secretName)) {
