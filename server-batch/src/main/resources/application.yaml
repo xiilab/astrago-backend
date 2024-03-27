@@ -38,6 +38,7 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     defer-datasource-initialization: true
+    open-in-view: false
   messages:
     basename: messages
     encoding: utf-8
