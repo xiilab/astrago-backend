@@ -56,7 +56,7 @@ public class CredentialResDTO {
 	@Getter
 	@AllArgsConstructor
 	public static class CredentialInfos {
-		List<CredentialInfo> datasets;
+		List<CredentialInfo> credentials;
 		long totalCount;
 
 		public static CredentialInfos entitiesToDtos(List<CredentialEntity> datasets, long totalCount) {
