@@ -20,6 +20,7 @@ import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -126,7 +127,7 @@ public class CodeServiceImpl implements CodeService {
 
 	@Override
 	public List<CodeResDTO> getCodeList(String workspaceName) {
-		List<CodeEntity> codeEntityList = codeRepository.getAlertEntitiesByWorkspaceResourceNameAndRepositoryType(workspaceName, WORKSPACE);
+		List<CodeEntity> codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(workspaceName, WORKSPACE, DeleteYN.N);
 
 		return codeEntityList.stream().map(CodeResDTO::new).toList();
 	}

@@ -259,10 +259,32 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.name(MEM)
 				.total(totalMemCapacity * 1024)
 				.request(Long.parseLong(totalMemRequests)  * 1024)
+				.usage(Long.parseLong(memUsage) * 1024)
+				.build();
+		}
+	}
+
+	@Override
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterMemByNode(String nodeName, String memUsage){
+		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()){
+			List<Node> nodeList = getNodeList(nodeName);
+			List<Pod> podList = kubernetesClient.pods().inAnyNamespace().list().getItems();
+
+			// 모든 노드의 CPU total 값을 합산
+			long totalMemCapacity = totalCapacity(nodeList, "MEM");
+
+			// 모든 노드의 cpuRequest 값을 합산
+			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
+
+			return ResponseDTO.ResponseClusterDTO.builder()
+				.name(MEM)
+				.total(totalMemCapacity * 1024)
+				.request(Long.parseLong(totalMemRequests)  * 1024)
 				.usage((totalMemCapacity * Long.parseLong(memUsage)) / 100 )
 				.build();
 		}
 	}
+
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName){
 		try(KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()){

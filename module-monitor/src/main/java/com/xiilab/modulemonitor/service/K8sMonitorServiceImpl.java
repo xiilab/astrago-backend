@@ -63,7 +63,10 @@ public class K8sMonitorServiceImpl implements K8sMonitorService{
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterMEM(String nodeName, String memUsage) {
 		return k8sMonitorRepository.getDashboardClusterMEM(nodeName, memUsage);
 	}
-
+	@Override
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterMemByNode(String nodeName, String memUsage) {
+		return k8sMonitorRepository.getDashboardClusterMemByNode(nodeName, memUsage);
+	}
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName) {
 		return k8sMonitorRepository.getDashboardClusterGPU(nodeName);

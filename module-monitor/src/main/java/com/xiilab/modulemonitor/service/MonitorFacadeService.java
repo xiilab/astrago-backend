@@ -109,7 +109,7 @@ public class MonitorFacadeService {
 		ResponseDTO.ResponseClusterDTO clusterCPU = k8sMonitorService.getDashboardClusterCPU(nodeName,
 			DataConverterUtil.formatRoundTo(cpuResponse));
 
-		ResponseDTO.ResponseClusterDTO clusterMEM = k8sMonitorService.getDashboardClusterMEM(nodeName, memResponse);
+		ResponseDTO.ResponseClusterDTO clusterMEM = k8sMonitorService.getDashboardClusterMemByNode(nodeName, memResponse);
 		// GPU
 		ResponseDTO.ResponseClusterDTO clusterGPU = k8sMonitorService.getDashboardClusterGPU(nodeName);
 

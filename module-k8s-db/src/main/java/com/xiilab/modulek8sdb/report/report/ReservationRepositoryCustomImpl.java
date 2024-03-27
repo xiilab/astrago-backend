@@ -2,7 +2,6 @@ package com.xiilab.modulek8sdb.report.report;
 
 import static com.xiilab.modulek8sdb.report.entity.QReportReservationEntity.*;
 import static com.xiilab.modulek8sdb.report.entity.QReportReservationHistoryEntity.*;
-import static com.xiilab.modulek8sdb.report.entity.QReportReservationUserEntity.*;
 
 import java.util.List;
 
@@ -63,8 +62,6 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
 			.from(reportReservationHistoryEntity)
 			.leftJoin(reportReservationEntity)
 			.on(reportReservationEntity.id.eq(reportReservationHistoryEntity.report.id))
-			.leftJoin(reportReservationUserEntity)
-			.on(reportReservationEntity.id.eq(reportReservationUserEntity.report.id))
 			.where(reportReservationEntity.regUser.regUserId.eq(userId))
 			.groupBy(timeGroupExpression, reportReservationEntity.id)
 			.offset(pageable.getOffset())
@@ -76,8 +73,6 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
 			.from(reportReservationHistoryEntity)
 			.leftJoin(reportReservationEntity)
 			.on(reportReservationEntity.id.eq(reportReservationHistoryEntity.report.id))
-			.leftJoin(reportReservationUserEntity)
-			.on(reportReservationEntity.id.eq(reportReservationUserEntity.report.id))
 			.where(reportReservationEntity.regUser.regUserId.eq(userId))
 			.groupBy(timeGroupExpression, reportReservationEntity.id)
 			.fetchCount();
