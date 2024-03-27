@@ -190,6 +190,7 @@ public class WorkloadController {
 		MediaType mediaType = CoreFileUtils.getMediaTypeForFileName(path);
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_TYPE, mediaType.toString())
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + CoreFileUtils.splitFileName(path))
 			.body(workloadFacadeService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path));
 	}
 

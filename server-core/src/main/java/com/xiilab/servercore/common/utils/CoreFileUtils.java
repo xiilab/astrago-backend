@@ -39,6 +39,11 @@ public class CoreFileUtils {
 		}
 	}
 
+	public static String splitFileName(String filePath) {
+		String[] split = filePath.split("/");
+		return split[split.length - 1];
+	}
+
 	public static MediaType getMediaTypeForFileName(String fileName) {
 		String[] parts = fileName.split("\\.");
 		String fileExtension = parts[parts.length - 1].toLowerCase();
