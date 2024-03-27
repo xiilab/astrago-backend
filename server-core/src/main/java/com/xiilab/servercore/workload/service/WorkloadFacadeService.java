@@ -127,7 +127,7 @@ public class WorkloadFacadeService {
 		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
 			userInfoDTO.getUserFullName());
 
-		// 이미지 credential setting
+		// 이미지 credential 세팅
 		if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getImage().getCredentialId())
 			&& moduleCreateWorkloadReqDTO.getImage().getCredentialId() > 0) {
 			setImageCredentialReqDTO(moduleCreateWorkloadReqDTO.getImage(), userInfoDTO);
@@ -211,7 +211,7 @@ public class WorkloadFacadeService {
 		// 코드 목록에 있는 크레덴셜 ID만 추출
 		List<Long> credentialIds = codes.stream()
 			.map(ModuleCodeReqDTO::getCredentialId)
-			.filter(credentialId -> credentialId != null && credentialId > 0)
+			.filter(credentialId -> !NumberValidUtils.isNullOrZero(credentialId))
 			.toList();
 		if (CollectionUtils.isEmpty(credentialIds)) {
 			return;
@@ -221,7 +221,7 @@ public class WorkloadFacadeService {
 		CredentialResDTO.CredentialInfos credentialInfos = credentialService.findCredentialByIdIn(credentialIds,
 			PageRequest.of(1, 9999));
 		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = convertListToMap(
-			!CollectionUtils.isEmpty(credentialInfos.getDatasets()) ? credentialInfos.getDatasets() :
+			!CollectionUtils.isEmpty(credentialInfos.getCredentials()) ? credentialInfos.getCredentials() :
 				new ArrayList<>());
 
 		codes.forEach(moduleCodeReqDTO -> {
@@ -314,7 +314,8 @@ public class WorkloadFacadeService {
 		String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
 		String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
 		String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+			AlertName.USER_WORKLOAD_END,
 			emailTitle, title, message, workspaceName);
 
 		eventPublisher.publishEvent(workspaceUserAlertEvent);
@@ -640,17 +641,6 @@ public class WorkloadFacadeService {
 
 		}
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
-		// 해당 워크스페이스 알림 설정이 True인 경우
-		// SystemAlertSetDTO.ResponseDTO workspaceAlertSet = systemAlertSetService.getWorkspaceAlertSet(
-		// 	workloadName);
-		// if (workspaceAlertSet.isWorkloadEndAlert()) {
-		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
-		// 		.recipientId(userInfoDTO.getId())
-		// 		.senderId("SYSTEM")
-		// 		.systemAlertType(SystemAlertType.WORKLOAD)
-		// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
-		// 		.build());
-		// }
 	}
 
 	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
@@ -659,7 +649,8 @@ public class WorkloadFacadeService {
 			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
 				findDataset);
 			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-				resDatasetWithStorage.getStoragePath() + resDatasetWithStorage.getDatasetName(), resDatasetWithStorage.getStorageType());
+				resDatasetWithStorage.getStoragePath() + resDatasetWithStorage.getDatasetName(),
+				resDatasetWithStorage.getStorageType());
 		}
 	}
 
@@ -668,7 +659,8 @@ public class WorkloadFacadeService {
 			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
 			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
 			setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-				resModelWithStorage.getStoragePath() + resModelWithStorage.getModelName(), resModelWithStorage.getStorageType());
+				resModelWithStorage.getStoragePath() + resModelWithStorage.getModelName(),
+				resModelWithStorage.getStorageType());
 		}
 	}
 
@@ -676,9 +668,6 @@ public class WorkloadFacadeService {
 		String storagePath, StorageType storageType) {
 		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
 		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
-		// String ip = resDatasetWithStorage.getIp();
-		// String storagePath = resDatasetWithStorage.getStoragePath();
-		// StorageType storageType = resDatasetWithStorage.getStorageType();
 		int requestVolume = 50;
 
 		// PV 생성
@@ -766,22 +755,22 @@ public class WorkloadFacadeService {
 			for (String s : splitIds) {
 				long modelId = Long.parseLong(s);
 				Model findModel = modelService.findById(modelId);
-				FindWorkloadResDTO.Volume modelVol = new FindWorkloadResDTO.Volume(
-					findModel.getRegUser().getRegUserId(),
-					findModel.getRegUser().getRegUserName(),
-					findModel.getRegUser().getRegUserRealName(),
-					findModel.getRegDate(),
-					findModel.getModDate(),
-					findModel.getModelId(),
-					findModel.getModelName(),
-					mountMap.get(findModel.getModelId()),
-					findModel.getModelSize(),
-					findModel.getDivision(),
-					findModel.isAstragoModel() ?
+				FindWorkloadResDTO.Volume modelVol = FindWorkloadResDTO.Volume.volumeResDTO()
+					.id(findModel.getModelId())
+					.name(findModel.getModelName())
+					.mountPath(mountMap.get(findModel.getModelId()))
+					.size(findModel.getModelSize())
+					.division(findModel.getDivision())
+					.storageType(findModel.isAstragoModel() ?
 						((AstragoModelEntity)findModel).getStorageEntity().getStorageType()
 						:
-						((LocalModelEntity)findModel).getStorageType()
-				);
+						((LocalModelEntity)findModel).getStorageType())
+					.regUserId(findModel.getRegUser().getRegUserId())
+					.regUserName(findModel.getRegUser().getRegUserName())
+					.regUserRealName(findModel.getRegUser().getRegUserRealName())
+					.regDate(findModel.getRegDate())
+					.modDate(findModel.getModDate())
+					.build();
 				models.add(modelVol);
 			}
 		}
