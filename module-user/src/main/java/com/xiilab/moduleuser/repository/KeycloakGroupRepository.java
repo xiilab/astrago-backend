@@ -182,7 +182,11 @@ public class KeycloakGroupRepository implements GroupRepository {
 	}
 
 	private boolean hasOneGroup(UserResource userResource) {
-		return userResource.groups().size() == 1;
+		List<GroupRepresentation> groups = userResource.groups()
+			.stream()
+			.filter(groupRepresentation -> !groupRepresentation.getPath().contains("/ws/"))
+			.toList();
+		return groups.size() == 1;
 	}
 	private List<UserRepresentation> getMembersWithSingleGroup(GroupResource groupResource) {
 		List<UserRepresentation> groupMembers = new ArrayList<>();
