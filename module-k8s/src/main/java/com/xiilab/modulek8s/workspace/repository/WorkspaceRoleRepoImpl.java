@@ -28,9 +28,9 @@ public class WorkspaceRoleRepoImpl implements WorkspaceRoleRepo {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<PolicyRule> policyRuleList = new ArrayList<>();
 			PolicyRule endpoints = new PolicyRule();
-			endpoints.setApiGroups(List.of(""));
-			endpoints.setResources(List.of("pods"));
-			endpoints.setVerbs(Arrays.asList("patch", "get"));
+			endpoints.setApiGroups(List.of("", "batch"));
+			endpoints.setResources(List.of("pods", "jobs"));
+			endpoints.setVerbs(List.of("patch", "get"));
 			policyRuleList.add(endpoints);
 
 			Role createdRole = new RoleBuilder()
