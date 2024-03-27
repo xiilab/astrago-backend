@@ -13,12 +13,12 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
   datasource:
-#    url: jdbc:mariadb://localhost:3306/astrago
-    url: jdbc:mariadb://10.61.3.12:30756/astrago
+    url: jdbc:mariadb://localhost:3306/astrago
+#    url: jdbc:mariadb://10.61.3.12:30756/astrago
     username: root
     password: root
     hikari:
-      max-lifetime: 57000
+      max-lifetime: 3595000 #59분50초 default 30분
       maximum-pool-size: 24
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
@@ -34,6 +34,7 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     defer-datasource-initialization: true
+    open-in-view: false
   sql:
     init:
       mode: always

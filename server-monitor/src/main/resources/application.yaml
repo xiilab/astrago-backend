@@ -26,6 +26,7 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     defer-datasource-initialization: true
+    open-in-view: false
 
 # keycloak server의 admin 정보
 admin:
