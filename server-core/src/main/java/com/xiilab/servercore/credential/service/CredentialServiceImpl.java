@@ -22,6 +22,7 @@ import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CredentialServiceImpl implements CredentialService {
 	private final CredentialRepository credentialRepository;

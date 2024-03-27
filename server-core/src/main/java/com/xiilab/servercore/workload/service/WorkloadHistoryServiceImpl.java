@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -49,6 +50,7 @@ import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
@@ -166,15 +168,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	@Override
 	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName) {
 			JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
-					workspaceName, workloadResourceName).orElseThrow(() -> {
-				try {
-					throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
-				} catch (RestApiException e) {
-					e.printStackTrace();
-					return e;
-				}
-			});
-				//.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
+					workspaceName, workloadResourceName).orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
 
 		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}

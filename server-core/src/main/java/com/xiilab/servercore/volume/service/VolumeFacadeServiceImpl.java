@@ -3,6 +3,7 @@ package com.xiilab.servercore.volume.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulek8s.facade.dto.FindVolumeDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
@@ -16,6 +17,7 @@ import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	private final StorageModuleService storageModuleService;

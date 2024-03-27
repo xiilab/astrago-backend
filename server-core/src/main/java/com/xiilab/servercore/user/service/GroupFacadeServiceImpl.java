@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -26,6 +27,7 @@ import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final GroupService groupService;

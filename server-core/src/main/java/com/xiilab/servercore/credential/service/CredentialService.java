@@ -11,7 +11,6 @@ import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 
-@Service
 public interface CredentialService {
 	CredentialResDTO createCredential(CredentialReqDTO credentialReqDTO, UserInfoDTO userInfoDTO);
 	CredentialResDTO.CredentialInfo findCredentialById(long id, UserInfoDTO userInfoDTO);

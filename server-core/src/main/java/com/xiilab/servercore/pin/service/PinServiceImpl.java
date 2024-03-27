@@ -18,6 +18,7 @@ import com.xiilab.modulek8sdb.pin.repository.PinRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PinServiceImpl implements PinService {
 	private final PinRepository pinRepository;

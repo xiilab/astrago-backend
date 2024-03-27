@@ -40,6 +40,7 @@ import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDT
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AlertServiceImpl implements AlertService {
 

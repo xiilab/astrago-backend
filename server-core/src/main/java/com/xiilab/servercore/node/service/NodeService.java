@@ -1,12 +1,14 @@
 package com.xiilab.servercore.node.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulek8s.node.repository.NodeRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class NodeService {
 	private final NodeRepository nodeRepository;

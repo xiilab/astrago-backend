@@ -3,6 +3,7 @@ package com.xiilab.servercore.storageclass.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
@@ -14,6 +15,7 @@ import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class StorageClassFacadeServiceImpl implements StorageClassFacadeService {
 	private final StorageModuleService storageModuleService;

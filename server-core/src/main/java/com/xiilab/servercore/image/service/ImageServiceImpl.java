@@ -28,6 +28,7 @@ import com.xiilab.servercore.image.dto.ImageResDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 	private final ImageRepository imageRepository;

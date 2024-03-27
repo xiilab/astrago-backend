@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
@@ -19,6 +20,7 @@ import com.xiilab.servercore.node.dto.ScheduleDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class NodeFacadeService {
 	private final NodeRepository nodeRepository;

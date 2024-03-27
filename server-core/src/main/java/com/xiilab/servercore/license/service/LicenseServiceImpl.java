@@ -14,6 +14,7 @@ import com.xiilab.servercore.license.repository.LicenseRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class LicenseServiceImpl implements LicenseService {
 	private final LicenseRepository licenseRepository;
