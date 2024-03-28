@@ -240,7 +240,7 @@ public class FindWorkloadResDTO extends ResDTO {
 			Long datasetSize = Objects.requireNonNullElse(datasetWorkLoadMappingEntity.getDataset().getDatasetSize(),
 				0L);
 
-			this.id = datasetWorkLoadMappingEntity.getId();
+			this.id = datasetWorkLoadMappingEntity.getDataset().getDatasetId();
 			this.name = datasetWorkLoadMappingEntity.getDataset().getDatasetName();
 			this.mountPath = datasetWorkLoadMappingEntity.getMountPath();
 			this.size = CoreFileUtils.formatFileSize(datasetSize);
@@ -264,7 +264,7 @@ public class FindWorkloadResDTO extends ResDTO {
 			// model size null이면 0L 반환
 			Long modelSize = Objects.requireNonNullElse(modelWorkLoadMappingEntity.getModel().getModelSize(), 0L);
 
-			this.id = modelWorkLoadMappingEntity.getId();
+			this.id = modelWorkLoadMappingEntity.getModel().getModelId();
 			this.name = modelWorkLoadMappingEntity.getModel().getModelName();
 			this.mountPath = modelWorkLoadMappingEntity.getMountPath();
 			this.size = CoreFileUtils.formatFileSize(modelSize);

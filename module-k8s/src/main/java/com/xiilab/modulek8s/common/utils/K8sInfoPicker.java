@@ -169,11 +169,11 @@ public class K8sInfoPicker {
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
 				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ? 0.0f :
-					containerResourceReq.getCpuReq() / 1000.0f)
+					containerResourceReq.getCpuReq())
 				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq()) ? 0 :
 					containerResourceReq.getGpuReq())
 				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ? 0.0f :
-					containerResourceReq.getMemReq() / 1000.0f)
+					containerResourceReq.getMemReq())
 				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.envs(getEnvs(container.getEnv()))
@@ -255,11 +255,11 @@ public class K8sInfoPicker {
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
 				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ? 0.0f :
-					containerResourceReq.getCpuReq() / 1000.0f)
+					containerResourceReq.getCpuReq())
 				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq()) ? 0 :
 					containerResourceReq.getGpuReq())
 				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ? 0.0f :
-					containerResourceReq.getMemReq() / 1000.0f)
+					containerResourceReq.getMemReq())
 				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.envs(getEnvs(container.getEnv()))
