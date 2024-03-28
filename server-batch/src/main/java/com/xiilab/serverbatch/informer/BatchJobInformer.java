@@ -168,12 +168,12 @@ public class BatchJobInformer extends JobInformer{
 				// 서비스 삭제
 				deleteServices(metadataFromResource.getWorkspaceResourceName(), metadataFromResource.getWorkloadResourceName());
 
-				//워크로드 삭제 알림 발송
+				//워크로드 종료 알림 발송
 				String workloadName = metadataFromResource.getWorkloadName();
-				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
-				String title = SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
-				String message = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
+				String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
+				String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
 					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
 
 				publisher.publishEvent(workspaceUserAlertEvent);
