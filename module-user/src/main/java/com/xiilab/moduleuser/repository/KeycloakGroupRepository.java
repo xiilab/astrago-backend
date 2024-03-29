@@ -334,11 +334,17 @@ public class KeycloakGroupRepository implements GroupRepository {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
 
 		GroupRepresentation wsSubGroupByGroupName = getWsUserSubGroupByGroupName(groupName);
+		GroupRepresentation wsOwnerSubGroupByGroupName = getWsOwnerSubGroupByGroupName(groupName);
 
 		List<UserRepresentation> members = realmClient.groups()
 			.group(wsSubGroupByGroupName.getId())
 			.members(0, Integer.MAX_VALUE);
 
+		List<UserRepresentation> owner = realmClient.groups()
+			.group(wsOwnerSubGroupByGroupName.getId())
+			.members(0, Integer.MAX_VALUE);
+
+		members.addAll(owner);
 		return members.stream().filter(
 				userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(
 					search))
@@ -389,7 +395,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		UserRepresentation owner = getWorkspaceGroupOwner(groupName);
 
 		return GroupUserDTO.builder()
-			.id(owner.getId())
+			.userId(owner.getId())
 			.email(owner.getEmail())
 			.name(owner.getUsername())
 			.firstName(owner.getFirstName())
