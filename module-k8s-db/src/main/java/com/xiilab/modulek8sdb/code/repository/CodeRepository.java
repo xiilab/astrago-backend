@@ -14,6 +14,6 @@ public interface CodeRepository  extends JpaRepository<CodeEntity, Long> {
 	List<CodeEntity> getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
 		String workspaceResourceName, RepositoryType repositoryType, DeleteYN deleteYn);
 
-	List<CodeEntity> getCodeEntitiesByWorkspaceResourceNameAndCodeURL(String resourceName, String codeUrl);
+	List<CodeEntity> getCodeEntitiesByWorkspaceResourceNameAndCodeURLAndDeleteYnEquals(String resourceName, String codeUrl, DeleteYN deleteYn);
 
 }
