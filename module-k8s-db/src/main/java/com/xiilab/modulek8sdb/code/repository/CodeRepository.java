@@ -13,4 +13,7 @@ import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 public interface CodeRepository  extends JpaRepository<CodeEntity, Long> {
 	List<CodeEntity> getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
 		String workspaceResourceName, RepositoryType repositoryType, DeleteYN deleteYn);
+
+	List<CodeEntity> getCodeEntitiesByWorkspaceResourceNameAndCodeURL(String resourceName, String codeUrl);
+
 }

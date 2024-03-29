@@ -44,6 +44,12 @@ public class CodeServiceImpl implements CodeService {
 		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
 		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
 
+		List<CodeEntity> codeEntities = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndCodeURL(codeReqDTO.getWorkspaceName(), codeReqDTO.getCodeURL());
+
+		if(!codeEntities.isEmpty()){
+			throw new RestApiException(CodeErrorCode.CODE_VALIDATION_ERROR);
+		}
+
 		// URL 검증
 		if (!isGitHubURL && !isGitLabURL) {
 			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);

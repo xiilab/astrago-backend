@@ -5,9 +5,13 @@ import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class CodeReqDTO {
 	private String codeURL;
