@@ -20,6 +20,7 @@ import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
+import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -45,6 +46,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	private final DatasetRepository datasetRepository;
 	private final DatasetWorkspaceRepository datasetWorkspaceRepository;
+	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 
 	@Override
 	@Transactional
@@ -275,6 +277,11 @@ public class DatasetServiceImpl implements DatasetService {
 				return DatasetDTO.DatasetsInWorkspace.mappingEntitiesToDtos(datasets);
 			}
 			return null;
+	}
+
+	@Override
+	public void deleteDatasetWorkloadMapping(Long jobId) {
+		datasetWorkLoadMappingRepository.deleteByWorkloadId(jobId);
 	}
 
 }

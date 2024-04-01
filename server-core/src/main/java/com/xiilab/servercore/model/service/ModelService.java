@@ -50,4 +50,6 @@ public interface ModelService {
 	void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserInfoDTO userInfoDTO);
 
 	ModelDTO.ModelsInWorkspace getModelsByWorkspaceResourceName(String workspaceResourceName);
+
+	void deleteModelWorkloadMapping(Long jobId);
 }

@@ -153,6 +153,11 @@ public class CodeServiceImpl implements CodeService {
 		codeRepository.deleteById(id);
 	}
 
+	@Override
+	public void deleteCodeWorkloadMapping(Long jobId) {
+		codeWorkLoadMappingRepository.deleteByWorkloadId(jobId);
+	}
+
 	private CodeEntity getCodeEntity(long id) {
 		return codeRepository.findById(id).orElseThrow(() -> new RestApiException(CodeErrorCode.CODE_NOT_FOUND));
 	}
