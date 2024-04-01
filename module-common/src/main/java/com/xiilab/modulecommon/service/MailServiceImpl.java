@@ -24,92 +24,235 @@ public class MailServiceImpl implements MailService {
 
 	public void sendMail(MailDTO mailDTO) {
 		try {
-
-			// String testUser = createSection(mailDTO.getTitle(),
-			// 	createUserBody("testUser", mailDTO.getReceiverEmail())
-			// );
-
 			MailUtils sendMail = new MailUtils(mailSender);
-			sendMail.setSubject(mailDTO.getTitle());
-			sendMail.setText(mailDTO.getContent());
-			sendMail.setTo(mailDTO.getReceiverEmail());
+			// sendMail.setSubject(mailDTO.getTitle());
+			// sendMail.setText(mailDTO.getContent());
+			// sendMail.setTo(mailDTO.getReceiverEmail());
+			// sendMail.setFrom(adminEmailAddr, SYSTEM);
+
+			sendMail.setSubject("테스트 메일");
+			sendMail.setTo("y.kim@xiilab.com");
 			sendMail.setFrom(adminEmailAddr, SYSTEM);
+			sendMail.setText(
+				createBody(
+					createTitle("[Astrago] 노드 장애 알림"),
+					createMainText(""),
+					createSubText(""),
+					createSubTable(
+						createSubTableTitle("DGXH100에 에러가 발생하였습니다."),
+						createSubTableRow()
+					),
+					createFooter()
+				));
+			sendMail.setLogo("image/logo.png");
+			sendMail.setIcon("image/icon.png");
 			sendMail.send();
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
 		}
 	}
 
-	// private String createSection(String title, String body) {
-	// 	return """
-	// 		<table
-	// 			class="container"
-	// 			cellpadding="0"
-	// 			cellspacing="0"
-	// 			style="
-	// 				width: 600px;
-	// 				margin: 0 auto;
-	// 			"
-	// 		>
-	// 		    <!-- content 영역 : 본문 -->
-	// 		            <tr>
-	// 		              <td style="padding-bottom: 26px">
-	// 		                <table
-	// 		                	style="
-	// 		                		background-color: #ffffff;
-	// 		                		padding: 26px 40px 50px;
-	// 		                	"
-	// 		                >
-	// 		                </table>
-	// 		              </td>
-	// 		            </tr>
-	// 		    <!-- footer 영역 : 저작권 표시-->
-	// 		            <tr>
-	// 		              <td>
-	// 		                <table
-	// 		                        style="
-	// 		                        text-align: center;
-	// 		                        font-size: 11px;
-	// 		                        font-weight: 400;
-	// 		                        line-height: 16px;
-	// 		                        color: #90919e;
-	// 		                      "
-	// 		                >
-	// 		                  <tr>
-	// 		                    <td>
-	// 		                      자세한 사항은 astrago 관리자 페이지에서 확인해주세요
-	// 		                    </td>
-	// 		                  </tr>
-	// 		                  <tr>
-	// 		                    <td>
-	// 		                      XIILAB
-	// 		                      <!-- 링크 넣어야 함 -->
-	// 		                      <a href="">astrago</a> Corp. All rights reserved.
-	// 		                    </td>
-	// 		                  </tr>
-	// 		                </table>
-	// 		              </td>
-	// 		            </tr>
-	// 		</table>
-	// 		""".formatted(title, body);
-	// }
-	//
-	// private String createUserBody(String userName, String userMail) {
-	// 	return """
-	// 		<!-- 메인 문구 -->
-	// 		              <tr>
-	// 		                <td
-	// 		                        style="
-	// 		                        text-align: center;
-	// 		                        padding-bottom: 13px;
-	// 		                        font-weight: 700;
-	// 		                        line-height: 24px;
-	// 		                      "
-	// 		                >
-	// 		                  <span style="color: #5b29c7">%s(%s)</span>님이 회원가입을 요청하였습니다.
-	// 		                </td>
-	// 		              </tr>
-	// 		""".formatted(userName, userMail);
-	// }
+	private String createBody(String title, String mainText, String subText, String subTable, String footer){
+		return """
+			<!-- 배경 -->
+			<table
+			    class="wrapper"
+			    cellpadding="0"
+			    cellspacing="0"
+			    style="
+			        width: -webkit-fill-available;
+			        border: 0;
+			        font-family: 'Noto Sans KR', sans-serif;
+			        padding: 26px 40px 32px;
+			        background-color: #ffffff;">
+			    <tr>
+			        <td>
+			            <table
+			                class="container"
+			                cellpadding="0"
+			                cellspacing="0"
+			                style="
+			                    width: 600px;
+			                    margin: 0 auto;
+			                    background: linear-gradient(
+			                        to bottom,
+			                        #5b29c7 0,
+			                        #5b29c7 200px,
+			                        #f0f0f6 200px,
+			                        #f0f0f6);
+			                    padding: 26px 50px 32px;">
+			                <!-- header 영역 : 로고 -->
+			                <tr>
+			                    <td style="padding-bottom: 24px; text-align: center">
+			                        <img
+			                            width="98"
+			                            height="28"
+			                            src="cid:logo" alt="Logo">
+			                    </td>
+			                </tr>
+			                <!-- content 영역 : 본문 -->
+			                <tr>
+			                    <td style="padding-bottom: 26px">
+			                        <table
+			                            style="
+			                                width: 500px;
+			                                background-color: #ffffff;
+			                                padding: 26px 40px 50px;">
+			                            <!-- icon -->
+			                            <tr>
+			                                <td style="text-align: center; padding-bottom: 14px">
+			                                    <img
+			                                        width="48"
+			                                        height="48"
+			                                        src="cid:icon" alt="Icon">
+			                                </td>
+			                            </tr>
+			                            <!-- 제목 -->
+			                            %s
+			                            <!-- 메인 문구 -->
+			                            %s
+			                            <!-- 서브 문구 -->
+			                            %s
+			                            <!-- 서브 테이블 -->
+			                            %s
+			                        </table>
+			                    </td>
+			                </tr>
+			                <!-- footer -->
+			                %s
+			            </table>
+			        </td>
+			    </tr>
+			</table>
+			""".formatted(title, mainText, subText, subTable, footer);
+	}
 
+	private String createTitle(String title){
+		return """
+            <!-- 제목 -->
+            <tr>
+                <td
+                    style="
+                        text-align: center;
+                        padding-bottom: 24px;
+                        font-size: 20px;
+                        font-weight: 700;
+                        line-height: 24px;
+                        color: #5b29c7;">
+                    %s
+                </td>
+            </tr>
+			""".formatted(title);
+	}
+
+	private String createMainText(String text){
+		return """
+            <tr>
+                <td
+                    style="
+                        text-align: center;
+                        padding-bottom: 13px;
+                        font-weight: 700;
+                        line-height: 24px;">
+                    <!--
+                    메인문구, 줄바꿈은 br tag 사용<br />
+                    강조 표시<span style="color: #5b29c7">span</span> tag 사용
+                     -->
+			    </td>
+			</tr>
+			""".formatted(text);
+	}
+
+	private String createSubText(String subText){
+		return """
+            <tr>
+                <td
+                    style="
+                        text-align: center;
+                        font-size: 14px;
+                        font-weight: 400;
+                        line-height: 24px;">
+                    %s
+                </td>
+            </tr>
+			""".formatted(subText);
+	}
+	private String createSubTable(String subTableTitle, String subTableRow){
+		return """
+            <tr>
+                <td>
+                    <table
+                        cellpadding="0"
+                        cellspacing="0"
+                        style="
+                            width: 420px;
+                            margin-top: 40px;
+                            border-top: solid 1px #afadb4;
+                            border-bottom: solid 1px #afadb4;
+                            padding: 28px 0 32px;
+                            border-spacing: 10px;">
+                        <colgroup>
+                            <col style="width: 40px" />
+                            <col style="width: 70px" />
+                        </colgroup>
+                        <!-- 테이블 제목 row -->
+                        %s
+                        <!-- row -->
+                        %s
+                    </table>
+                </td>
+            </tr>
+			""".formatted(subTableTitle, subTableRow);
+	}
+	private String createSubTableTitle(String subTitle){
+		return """
+            <tr style="text-align: center">
+                <td colspan="2">
+                    %s
+                </td>
+            </tr>
+			""".formatted(subTitle);
+	}
+	private String createSubTableRow(){
+		return """
+            <tr>
+                <td style="max-width: 150px; font-weight: 400">
+                    %s
+                </td>
+                <td style="max-width: 250px; text-align: end">
+                    %s
+                </td>
+            </tr>
+			""".formatted("", "");
+	}
+	private String createFooter(){
+		return """
+            <!-- footer 영역 : 저작권 표시-->
+            <tr>
+                <td>
+                    <table
+                        style="
+                            width: 500px;
+                            text-align: center;
+                            font-size: 11px;
+                            font-weight: 400;
+                            line-height: 16px;
+                            color: #90919e;">
+                        <tr>
+                            <td>
+                                자세한 사항은 astrago 관리자 페이지에서 확인해주세요
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                XIILAB
+                                <!-- 링크 넣어야 함 -->
+                                <a href="">astrago</a> Corp. All rights reserved.
+                            </td>
+                        </tr>
+                    </table>
+			    </td>
+			</tr>
+			""";
+	}
 }
