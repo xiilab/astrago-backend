@@ -255,8 +255,8 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 		List<GroupUserDTO.UserDTO> users = usersByGroupId.getUsers();
 		List<GroupUserDTO.UserDTO> owners = ownersByGroupId.getUsers();
-		allUser.addAll(users);
 		allUser.addAll(owners);
+		allUser.addAll(users);
 		// 중복 제거용 Set
 		Set<String> userIds = new HashSet<>();
 
@@ -344,8 +344,8 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.group(wsOwnerSubGroupByGroupName.getId())
 			.members(0, Integer.MAX_VALUE);
 
-		members.addAll(owner);
-		return members.stream().filter(
+		owner.addAll(members);
+		return owner.stream().filter(
 				userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(
 					search))
 			.map(GroupUserDTO::new).toList();
