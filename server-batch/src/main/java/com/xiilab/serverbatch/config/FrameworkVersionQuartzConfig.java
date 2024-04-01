@@ -50,7 +50,7 @@ public class FrameworkVersionQuartzConfig {
 		JobDetail frameworkVersionJobDetail = createJobDetail(FrameworkVersionJob.class, "FrameworkVersionJob", jobDataMap);
 
 		// Trigger frameworkVersionJobTrigger = createCronTrigger(frameworkVersionJobDetail, "frameworkVersionJobTrigger", "0/30 * * * * ?");
-		Trigger frameworkVersionJobTrigger = createCronTrigger(frameworkVersionJobDetail, "frameworkVersionJobTrigger", "1 * * * * ?");
+		Trigger frameworkVersionJobTrigger = createCronTrigger(frameworkVersionJobDetail, "frameworkVersionJobTrigger", "0 0 2 * * ?"); //매일 새벽 2시
 		scheduler.scheduleJob(frameworkVersionJobDetail, frameworkVersionJobTrigger);
 	}
 
