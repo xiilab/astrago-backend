@@ -2,6 +2,7 @@ package com.xiilab.modulecommon.util;
 
 import java.io.UnsupportedEncodingException;
 
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
@@ -42,5 +43,12 @@ public class MailUtils {
 	public void send() {
 		mailSender.send(message);
 	}
-
+	public void setLogo(String imagePath) throws MessagingException {
+		ClassPathResource imageResource = new ClassPathResource(imagePath);
+		messageHelper.addInline("logo", imageResource);
+	}
+	public void setIcon(String imagePath) throws MessagingException {
+		ClassPathResource imageResource = new ClassPathResource(imagePath);
+		messageHelper.addInline("icon", imageResource);
+	}
 }
