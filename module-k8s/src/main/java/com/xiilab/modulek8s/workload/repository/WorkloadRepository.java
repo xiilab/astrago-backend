@@ -21,6 +21,8 @@ import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.dsl.CopyOrReadable;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
@@ -158,4 +160,8 @@ public interface WorkloadRepository {
 
 	ModuleWorkloadResDTO getParentController(String pod, String namespace);
 	List<Event> getWorkloadEventList(String pod, String namespace);
+
+	Job getBatchJob(String workspaceName, String workloadName);
+
+	Deployment getInteractiveJob(String workspaceName, String workloadName);
 }

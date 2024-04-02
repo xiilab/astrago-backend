@@ -855,13 +855,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private Job getBatchJob(String workSpaceName, String workloadName) {
+	@Override
+	public Job getBatchJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get();
 		}
 	}
-
-	private Deployment getInteractiveJob(String workSpaceName, String workloadName) {
+	@Override
+	public Deployment getInteractiveJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.apps().deployments().inNamespace(workSpaceName).withName(workloadName).get();
 		}
