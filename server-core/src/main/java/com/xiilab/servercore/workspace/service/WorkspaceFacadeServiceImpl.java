@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -189,6 +190,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO) {
+		//생성된 워크로드가 있는지 확인
+		List<ModuleWorkloadResDTO> workloadList = workloadModuleFacadeService.getWorkloadList(workspaceName);
+		if(workloadList != null && workloadList.size() > 0){
+			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_DELETE_FAILED);
+		}
+
 		//워크스페이스 삭제
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
 		//리소스 요청 목록 삭제
