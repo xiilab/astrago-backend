@@ -64,6 +64,7 @@ public class UserInfo {
 	}
 
 	private AuthType getUserRole(List<String> roles) {
-		return roles != null ? AuthType.valueOf(roles.get(0)) : null;
+		//admin이면 admin 권한 넣고 user는 user넣고
+		return roles != null && roles.contains(AuthType.ROLE_ADMIN.name()) ? AuthType.ROLE_ADMIN : AuthType.ROLE_USER;
 	}
 }
