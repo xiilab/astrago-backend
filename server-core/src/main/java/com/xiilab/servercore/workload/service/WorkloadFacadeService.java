@@ -45,6 +45,7 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -98,6 +99,8 @@ import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -307,6 +310,9 @@ public class WorkloadFacadeService {
 	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
 		UserInfoDTO userInfoDTO
 	) throws IOException {
+		//워크로드 조회
+		HasMetadata job = workloadModuleService.getJob(workspaceName, workloadName, workloadType);
+		String workloadNm = job.getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
 		if (workloadType == WorkloadType.BATCH) {
 			stopBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
@@ -314,9 +320,9 @@ public class WorkloadFacadeService {
 		}
 
 		//워크로드 종료 알림 발송
-		String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
+		String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadNm);
 		String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
-		String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+		String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadNm);
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 			AlertName.USER_WORKLOAD_END,
 			emailTitle, title, message, workspaceName);

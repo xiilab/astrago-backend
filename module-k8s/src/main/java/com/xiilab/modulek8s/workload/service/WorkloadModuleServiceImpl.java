@@ -33,6 +33,7 @@ import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
@@ -366,5 +367,16 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public List<Event> getWorkloadEventList(String workloadName, String workspace, WorkloadType workloadType) {
 		Pod jobPod = getJobPod(workspace, workloadName, workloadType);
 		return workloadRepository.getWorkloadEventList(jobPod.getMetadata().getName(), workspace);
+	}
+
+	@Override
+	public HasMetadata getJob(String workspaceName, String workloadName, WorkloadType workloadType) {
+		if (workloadType == WorkloadType.INTERACTIVE) {
+			return workloadRepository.getInteractiveJob(workspaceName, workloadName);
+		} else if (workloadType == WorkloadType.BATCH) {
+			return workloadRepository.getBatchJob(workspaceName, workloadName);
+		} else {
+			return null;
+		}
 	}
 }

@@ -23,6 +23,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.dsl.ExecListenable;
@@ -130,4 +131,6 @@ public interface WorkloadModuleService {
 
 	void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description);
 	List<Event> getWorkloadEventList(String workloadName, String workspace, WorkloadType workloadType);
+
+	HasMetadata getJob(String workspaceName, String workloadName, WorkloadType workloadType);
 }
