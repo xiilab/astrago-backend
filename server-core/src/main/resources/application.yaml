@@ -61,8 +61,6 @@ admin:
   name: admin
   password: xiirocks
   init-password: xiirocks
-  secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
-  id: 3810cb0d-0c82-4258-9e43-2d00f7a1d0b9
 
 astrago:
   namespace: astrago

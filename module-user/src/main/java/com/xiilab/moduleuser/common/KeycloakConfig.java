@@ -20,8 +20,6 @@ public class KeycloakConfig {
 	private String name;
 	@Value("${admin.password}")
 	private String password;
-	@Value("${admin.secret}")
-	private String secret;
 
 	public RealmResource getRealmClient() {
 		return getKeycloakClient().realm(keycloakRealm);
@@ -34,6 +32,6 @@ public class KeycloakConfig {
 			name,
 			password,
 			client,
-			secret);
+			"");
 	}
 }

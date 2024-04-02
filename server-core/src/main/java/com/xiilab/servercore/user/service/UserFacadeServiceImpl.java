@@ -34,8 +34,6 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	private final SystemAlertSetService alertSetService;
 	private final AlertService alertService;
 	private final MailService mailService;
-	@Value("${admin.id}")
-	private String adminId;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
