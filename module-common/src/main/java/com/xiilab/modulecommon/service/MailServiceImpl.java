@@ -30,20 +30,35 @@ public class MailServiceImpl implements MailService {
 			// sendMail.setTo(mailDTO.getReceiverEmail());
 			// sendMail.setFrom(adminEmailAddr, SYSTEM);
 
-			sendMail.setSubject("테스트 메일");
+			sendMail.setSubject("[Astrago] 워크스페이스(김연훈의 워크스페이스) 리소스 요청 알림");
 			sendMail.setTo("y.kim@xiilab.com");
 			sendMail.setFrom(adminEmailAddr, SYSTEM);
+			// sendMail.setText(
+			// 	createBody(
+			// 		createTitle("[Astrago] 노드 장애 알림") +
+			// 		createMainText("") +
+			// 		createSubText("") +
+			// 		createSubTable(
+			// 			createSubTableTitle("DGXH100에 에러가 발생하였습니다.") +
+			// 			createSubTableRow("", "")
+			// 		),
+			// 		createFooter()
+			// 	));
 			sendMail.setText(
 				createBody(
-					createTitle("[Astrago] 노드 장애 알림"),
-					createMainText(""),
-					createSubText(""),
-					createSubTable(
-						createSubTableTitle("DGXH100에 에러가 발생하였습니다."),
-						createSubTableRow()
-					),
-					createFooter()
-				));
+					createTitle("안녕하세요. astrago 서비스 이메일 알림입니다.") +
+						createMainText("관리자(admin)님이 워크스페이스(김연훈의 워크스페이스)의 리소스 요청을 반려 하였습니다.") +
+						createSubText("반려사유 : 리소스의 요청량이 너무 많습니다.") +
+						createSubTable(
+							// createSubTableTitle("<리소스 신청량>") +
+							// createSubTableRow("반려 일시", "2024-04-02 17:34:00") +
+							// createSubTableRow("CPU", "4 core") +
+							// createSubTableRow("GPU", "8 개")
+							createSubTableTitle("서준오 바보멍청이")
+									)
+					, createFooter()
+				)
+			);
 			sendMail.setLogo("image/logo.png");
 			sendMail.setIcon("image/icon.png");
 			sendMail.send();
@@ -52,7 +67,7 @@ public class MailServiceImpl implements MailService {
 		}
 	}
 
-	private String createBody(String title, String mainText, String subText, String subTable, String footer){
+	private String createBody(String title, String footer){
 		return """
 			<!-- 배경 -->
 			<table
@@ -107,13 +122,6 @@ public class MailServiceImpl implements MailService {
 			                                        src="cid:icon" alt="Icon">
 			                                </td>
 			                            </tr>
-			                            <!-- 제목 -->
-			                            %s
-			                            <!-- 메인 문구 -->
-			                            %s
-			                            <!-- 서브 문구 -->
-			                            %s
-			                            <!-- 서브 테이블 -->
 			                            %s
 			                        </table>
 			                    </td>
@@ -124,7 +132,7 @@ public class MailServiceImpl implements MailService {
 			        </td>
 			    </tr>
 			</table>
-			""".formatted(title, mainText, subText, subTable, footer);
+			""".formatted(title, footer);
 	}
 
 	private String createTitle(String title){
@@ -177,7 +185,7 @@ public class MailServiceImpl implements MailService {
             </tr>
 			""".formatted(subText);
 	}
-	private String createSubTable(String subTableTitle, String subTableRow){
+	private String createSubTable(String subTable){
 		return """
             <tr>
                 <td>
@@ -197,12 +205,10 @@ public class MailServiceImpl implements MailService {
                         </colgroup>
                         <!-- 테이블 제목 row -->
                         %s
-                        <!-- row -->
-                        %s
                     </table>
                 </td>
             </tr>
-			""".formatted(subTableTitle, subTableRow);
+			""".formatted(subTable);
 	}
 	private String createSubTableTitle(String subTitle){
 		return """
@@ -213,7 +219,7 @@ public class MailServiceImpl implements MailService {
             </tr>
 			""".formatted(subTitle);
 	}
-	private String createSubTableRow(){
+	private String createSubTableRow(String col1, String col2){
 		return """
             <tr>
                 <td style="max-width: 150px; font-weight: 400">
@@ -223,7 +229,7 @@ public class MailServiceImpl implements MailService {
                     %s
                 </td>
             </tr>
-			""".formatted("", "");
+			""".formatted(col1, col2);
 	}
 	private String createFooter(){
 		return """
