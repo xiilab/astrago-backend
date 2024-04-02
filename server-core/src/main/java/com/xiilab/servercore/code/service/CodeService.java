@@ -12,4 +12,6 @@ public interface CodeService {
 	List<CodeResDTO> getCodeList(String workspaceName);
 	CodeResDTO getCodeById(long id);
 	void deleteCodeById(long id);
+
+	void deleteCodeWorkloadMapping(Long jobId);
 }

@@ -72,6 +72,7 @@ import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
@@ -122,6 +123,7 @@ public class WorkloadFacadeService {
 	private final AlertService alertService;
 	private final WorkspaceService workspaceService;
 	private final ApplicationEventPublisher eventPublisher;
+
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -325,9 +327,17 @@ public class WorkloadFacadeService {
 
 	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
 		ModuleWorkloadResDTO workloadHistory = workloadHistoryService.getWorkloadHistoryById(id);
+		List<JobEntity> workloads = workloadHistoryService.getWorkloadByResourceName(workloadHistory.getWorkspaceResourceName());
 		workloadHistoryService.deleteWorkloadHistory(id, userInfoDTO);
 		//해당 워크로드를 등록한 모든 Pin 삭제
 		pinService.deletePin(workloadHistory.getResourceName(), PinType.WORKLOAD);
+		//워크로드 삭제 시 매핑 데이터 deleteYN 업데이트
+		for (JobEntity workload : workloads) {
+			datasetService.deleteDatasetWorkloadMapping(workload.getId());
+			modelService.deleteModelWorkloadMapping(workload.getId());
+			codeService.deleteCodeWorkloadMapping(workload.getId());
+			imageService.deleteImageWorkloadMapping(workload.getId());
+		}
 	}
 
 	public PageDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(WorkloadType workloadType, String workspaceName,

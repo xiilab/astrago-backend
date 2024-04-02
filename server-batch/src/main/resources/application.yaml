@@ -63,7 +63,6 @@ admin:
   name: admin
   password: xiirocks
   init-password: xiirocks
-  secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
 
 mig-profile-path: src/main/resources/MigProfile.json
 prometheus:

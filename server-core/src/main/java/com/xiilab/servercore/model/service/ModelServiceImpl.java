@@ -21,6 +21,7 @@ import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
+import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -44,6 +45,7 @@ public class ModelServiceImpl implements ModelService{
 
 	private final ModelRepository modelRepository;
 	private final ModelWorkspaceRepository modelWorkspaceRepository;
+	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
 
 	@Override
 	@Transactional
@@ -267,5 +269,10 @@ public class ModelServiceImpl implements ModelService{
 			return ModelDTO.ModelsInWorkspace.mappingEntitiesToDtos(models);
 		}
 		return null;
+	}
+
+	@Override
+	public void deleteModelWorkloadMapping(Long jobId) {
+		modelWorkLoadMappingRepository.deleteByWorkloadId(jobId);
 	}
 }

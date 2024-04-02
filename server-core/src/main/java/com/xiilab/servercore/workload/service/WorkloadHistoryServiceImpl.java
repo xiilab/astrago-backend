@@ -282,6 +282,19 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		}
 	}
 
+	@Override
+	public List<JobEntity> getWorkloadByResourceName(String workspaceResourceName){
+		return workloadHistoryRepo.findByWorkspaceResourceName(workspaceResourceName);
+	}
+
+	@Override
+	public void deleteWorkload(String workspaceName) {
+		List<JobEntity> jobEntities = workloadHistoryRepo.findByWorkspaceResourceName(workspaceName);
+		for (JobEntity jobEntity : jobEntities) {
+			workloadHistoryRepo.deleteById(jobEntity.getId());
+		}
+	}
+
 	private String[] getSplitIds(String ids) {
 		return ids != null? ids.split(",") : null;
 	}

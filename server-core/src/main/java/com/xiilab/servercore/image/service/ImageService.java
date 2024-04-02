@@ -12,4 +12,5 @@ public interface ImageService {
 
 	void deleteImageById(Long id);
 
+	void deleteImageWorkloadMapping(Long jobId);
 }

@@ -9,6 +9,8 @@ spring:
         jwt:
           issuer-uri: http://10.61.3.8:30001/realms/myrealm
           jwk-set-uri: http://10.61.3.8:30001/realms/myrealm/protocol/openid-connect/certs
+#          issuer-uri: http://10.61.3.12:30001/realms/astrago
+#          jwk-set-uri: http://10.61.3.12:30001/realms/astrago/protocol/openid-connect/certs
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -47,8 +49,11 @@ spring:
 keycloak:
   realm: myrealm
   auth-server-url: http://10.61.3.8:30001/
+#  realm: astrago
+#  auth-server-url: http://10.61.3.12:30001/
   ssl-required: external
   resource: kubernetes-client
+#  resource: astrago-client
   use-resource-role-mappings: true
   bearer-only: true
   public-client: false
@@ -61,8 +66,6 @@ admin:
   name: admin
   password: xiirocks
   init-password: xiirocks
-  secret: 7bE2Oq2HyKrPsX49EXul0G48O4c4kkFv
-  id: 3810cb0d-0c82-4258-9e43-2d00f7a1d0b9
 
 astrago:
   namespace: astrago

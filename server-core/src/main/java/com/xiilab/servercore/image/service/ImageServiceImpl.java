@@ -20,6 +20,7 @@ import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
+import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.version.entity.CompatibleFrameworkVersionEntity;
 import com.xiilab.modulek8sdb.version.repository.CompatibleFrameWorkVersionRepository;
 import com.xiilab.servercore.image.dto.ImageReqDTO;
@@ -34,6 +35,7 @@ public class ImageServiceImpl implements ImageService {
 	private final ImageRepository imageRepository;
 	private final CredentialRepository credentialRepository;
 	private final CompatibleFrameWorkVersionRepository compatibleFrameWorkVersionRepository;
+	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
 
 	@Override
 	@Transactional
@@ -82,6 +84,11 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public void deleteImageById(Long id) {
 		imageRepository.deleteById(id);
+	}
+
+	@Override
+	public void deleteImageWorkloadMapping(Long jobId) {
+		imageWorkloadMappingRepository.deleteByWorkloadId(jobId);
 	}
 
 	private Long saveBuiltInImage(ImageReqDTO.SaveImage saveImageDTO) {

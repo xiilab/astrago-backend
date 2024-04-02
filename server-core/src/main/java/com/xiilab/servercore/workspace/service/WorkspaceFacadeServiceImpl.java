@@ -33,6 +33,7 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
@@ -45,6 +46,10 @@ import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
+import com.xiilab.servercore.code.service.CodeService;
+import com.xiilab.servercore.dataset.service.DatasetService;
+import com.xiilab.servercore.image.service.ImageService;
+import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadHistoryService;
@@ -77,6 +82,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final WorkspaceSettingRepo workspaceSettingRepo;
 	private final WorkspaceAlertService workspaceAlertService;
 	private final ApplicationEventPublisher eventPublisher;
+	private final DatasetService datasetService;
+	private final ModelService modelService;
+	private final CodeService codeService;
+	private final ImageService imageService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -188,6 +197,18 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//pin 삭제
 		pinService.deletePin(workspaceName, PinType.WORKSPACE);
 		groupService.deleteWorkspaceGroupByName(workspaceName);
+
+		//워크로드 매핑 데이터셋, 모델, code, image 삭제 (deleteYN = Y)
+		List<JobEntity> workloads = workloadHistoryService.getWorkloadByResourceName(workspaceName);
+		for (JobEntity workload : workloads) {
+			datasetService.deleteDatasetWorkloadMapping(workload.getId());
+			modelService.deleteModelWorkloadMapping(workload.getId());
+			codeService.deleteCodeWorkloadMapping(workload.getId());
+			imageService.deleteImageWorkloadMapping(workload.getId());
+		}
+		//워크로드 삭제(deleteYN = Y)
+		workloadHistoryService.deleteWorkload(workspaceName);
+
 		//워크스페이스 삭제 알림 전송
 		AuthType auth = userInfoDTO.getAuth();
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);

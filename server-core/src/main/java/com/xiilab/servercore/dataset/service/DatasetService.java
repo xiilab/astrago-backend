@@ -50,4 +50,6 @@ public interface DatasetService {
 	void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO);
 
 	DatasetDTO.DatasetsInWorkspace getDatasetsByWorkspaceResourceName(String workspaceResourceName);
+
+	void deleteDatasetWorkloadMapping(Long jobId);
 }
