@@ -36,12 +36,18 @@ public class DatasetWorkSpaceMappingEntity extends BaseEntity {
 
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
+	@Column(name = "DATASET_DEFAULT_MOUNT_PATH")
+	private String datasetDefaultMountPath;
 
 	@Builder
-	public DatasetWorkSpaceMappingEntity(Dataset dataset, String workspaceResourceName) {
+	public DatasetWorkSpaceMappingEntity(Dataset dataset, String workspaceResourceName, String datasetDefaultMountPath) {
 		this.dataset = dataset;
 		this.workspaceResourceName = workspaceResourceName;
+		this.datasetDefaultMountPath = datasetDefaultMountPath;
 		//연관관계 편의 메서드
 		dataset.getWorkspaceMappingList().add(this);
+	}
+	public void modifyDefaultPath(String datasetDefaultMountPath){
+		this.datasetDefaultMountPath = datasetDefaultMountPath;
 	}
 }

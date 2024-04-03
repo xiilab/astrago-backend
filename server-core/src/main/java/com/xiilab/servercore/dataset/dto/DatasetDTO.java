@@ -177,6 +177,7 @@ public class DatasetDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
+		private String defaultPath;
 		private boolean isAvailable;
 
 		public static DatasetInWorkspace entityToDto(Dataset dataset) {
@@ -189,7 +190,8 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
+					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return DatasetInWorkspace.builder()
@@ -200,6 +202,7 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			}
 			return null;
@@ -215,7 +218,8 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.getDataset().isAvailable())
 					.division(dataset.getDataset().getDivision())
-					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset.getDataset()).getDatasetSize()))
+					.size(CoreFileUtils.formatFileSize(dataset.getDataset().getDatasetSize()))
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			}else if (dataset.getDataset().isLocalDataset()) {
 				return DatasetInWorkspace.builder()
@@ -226,6 +230,7 @@ public class DatasetDTO {
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.getDataset().isAvailable())
 					.division(dataset.getDataset().getDivision())
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			}
 			return null;

@@ -179,6 +179,7 @@ public class ModelDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
+		private String defaultPath;
 		private boolean isAvailable;
 
 		public static ModelInWorkspace entityToDto(Model model) {
@@ -192,6 +193,7 @@ public class ModelDTO {
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			} else if (model.isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -202,6 +204,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			}
 			return null;
@@ -217,6 +220,7 @@ public class ModelDTO {
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModel().getModelSize()))
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			} else if (model.getModel().isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -227,6 +231,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			}
 			return null;
