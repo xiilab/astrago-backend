@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
@@ -35,16 +33,12 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/user")
 public class UserController {
 	private final UserFacadeService userFacadeService;
-	private final MailService mailService;
 	@GetMapping()
 	@Operation(summary = "사용자 목록 조회")
 	public ResponseEntity<UserDTO.PageUsersDTO> getUserList(
-		// PageInfo pageInfo,
-		// UserSearchCondition searchCondition) {
-		// return ResponseEntity.ok(userFacadeService.getUserList(pageInfo, searchCondition));
-	){
-		mailService.sendMail(MailDTO.builder().build());
-		return null;
+		PageInfo pageInfo,
+		UserSearchCondition searchCondition) {
+		return ResponseEntity.ok(userFacadeService.getUserList(pageInfo, searchCondition));
 	}
 
 	@GetMapping("/{id}")

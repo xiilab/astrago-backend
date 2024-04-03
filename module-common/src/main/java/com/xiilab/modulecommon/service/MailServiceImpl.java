@@ -18,49 +18,35 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
 	private final JavaMailSender mailSender;
-	private final String SYSTEM = "SYSTEM";
+	private final String ASTRAGO = "ASTRAGO";
 	@Value("${spring.mail.username}")
 	private String adminEmailAddr;
 
 	public void sendMail(MailDTO mailDTO) {
 		try {
 			MailUtils sendMail = new MailUtils(mailSender);
-			// sendMail.setSubject(mailDTO.getTitle());
-			// sendMail.setText(mailDTO.getContent());
-			// sendMail.setTo(mailDTO.getReceiverEmail());
-			// sendMail.setFrom(adminEmailAddr, SYSTEM);
+			sendMail.setSubject(mailDTO.getTitle());
+			sendMail.setText(mailDTO.getContent());
+			sendMail.setTo(mailDTO.getReceiverEmail());
+			sendMail.setFrom(adminEmailAddr, ASTRAGO);
 
-			sendMail.setSubject("[Astrago] 워크스페이스(김연훈의 워크스페이스) 리소스 요청 알림");
-			sendMail.setTo("y.kim@xiilab.com");
-			sendMail.setFrom(adminEmailAddr, SYSTEM);
 			// sendMail.setText(
 			// 	createBody(
-			// 		createTitle("[Astrago] 노드 장애 알림") +
-			// 		createMainText("") +
-			// 		createSubText("") +
-			// 		createSubTable(
-			// 			createSubTableTitle("DGXH100에 에러가 발생하였습니다.") +
-			// 			createSubTableRow("", "")
-			// 		),
-			// 		createFooter()
-			// 	));
-			sendMail.setText(
-				createBody(
-					createTitle("안녕하세요. astrago 서비스 이메일 알림입니다.") +
-						createMainText("관리자(admin)님이 워크스페이스(김연훈의 워크스페이스)의 리소스 요청을 반려 하였습니다.") +
-						createSubText("반려사유 : 리소스의 요청량이 너무 많습니다.") +
-						createSubTable(
-							// createSubTableTitle("<리소스 신청량>") +
-							// createSubTableRow("반려 일시", "2024-04-02 17:34:00") +
-							// createSubTableRow("CPU", "4 core") +
-							// createSubTableRow("GPU", "8 개")
-							createSubTableTitle("서준오 바보멍청이")
-									)
-					, createFooter()
-				)
-			);
-			sendMail.setLogo("image/logo.png");
-			sendMail.setIcon("image/icon.png");
+			// 		createTitle("안녕하세요. astrago 서비스 이메일 알림입니다.") +
+			// 			createMainText("관리자(admin)님이 워크스페이스(김연훈의 워크스페이스)의 리소스 요청을 반려 하였습니다.") +
+			// 			createSubText("반려사유 : 리소스의 요청량이 너무 많습니다.") +
+			// 			createSubTable(
+			// 				// createSubTableTitle("<리소스 신청량>") +
+			// 				// createSubTableRow("반려 일시", "2024-04-02 17:34:00") +
+			// 				// createSubTableRow("CPU", "4 core") +
+			// 				// createSubTableRow("GPU", "8 개")
+			// 				createSubTableTitle("서준오 바보멍청이")
+			// 						)
+			// 		, createFooter()
+			// 	)
+			// );
+			// sendMail.setLogo("image/logo.png");
+			// sendMail.setIcon("image/icon.png");
 			sendMail.send();
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
