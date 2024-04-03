@@ -31,8 +31,8 @@ public class AstragoDatasetEntity extends Dataset {
 	private String datasetPath;
 
 	@Builder
-	public AstragoDatasetEntity(Long datasetId, String datasetName, StorageEntity storageEntity) {
-		super(datasetId, datasetName);
+	public AstragoDatasetEntity(Long datasetId, String datasetName, StorageEntity storageEntity, String defaultPath) {
+		super(datasetId, datasetName, defaultPath);
 		this.storageEntity = storageEntity;
 	}
 	public void setDatasetPath(String datasetPath){

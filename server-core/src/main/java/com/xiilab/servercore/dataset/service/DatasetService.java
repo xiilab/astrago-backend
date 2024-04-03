@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
@@ -52,4 +53,7 @@ public interface DatasetService {
 	DatasetDTO.DatasetsInWorkspace getDatasetsByWorkspaceResourceName(String workspaceResourceName);
 
 	void deleteDatasetWorkloadMapping(Long jobId);
+
+	void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName,
+		Long datasetId, UserInfoDTO userInfoDTO);
 }

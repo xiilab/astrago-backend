@@ -17,11 +17,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
+import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -113,14 +117,17 @@ public class ModelServiceImpl implements ModelService{
 		Model model = modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		model.modifyModelName(modifyModel.getModelName());
+		model.modifyModelDefaultPath(modifyModel.getDefaultPath());
 	}
 
 	@Override
+	@Transactional
 	public void deleteModelWorkspaceMappingById(Long modelId) {
 		modelWorkspaceRepository.deleteModelWorkspaceMappingById(modelId);
 	}
 
 	@Override
+	@Transactional
 	public void deleteModelById(Long modelId) {
 		modelRepository.deleteById(modelId);
 	}
@@ -132,6 +139,7 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
+	@Transactional
 	public void astragoModelUploadFile(Long modelId, String path, List<MultipartFile> files) {
 		AstragoModelEntity model = (AstragoModelEntity) modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
@@ -140,6 +148,7 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
+	@Transactional
 	public void astragoModelCreateDirectory(Long modelId, ModelDTO.ReqFilePathDTO reqFilePathDTO) {
 		modelRepository.findById(modelId).orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		Path dirPath = Path.of(reqFilePathDTO.getPath());
@@ -166,6 +175,7 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
+	@Transactional
 	public DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath) {
 		modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
@@ -225,6 +235,7 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
+	@Transactional
 	public void insertWorkspaceModel(InsertWorkspaceModelDTO insertWorkspaceModelDTO) {
 		String workspaceResourceName = insertWorkspaceModelDTO.getWorkspaceResourceName();
 		Long modelId = insertWorkspaceModelDTO.getModelId();
@@ -242,12 +253,14 @@ public class ModelServiceImpl implements ModelService{
 		ModelWorkSpaceMappingEntity datasetWorkSpaceMappingEntity = ModelWorkSpaceMappingEntity.builder()
 			.workspaceResourceName(workspaceResourceName)
 			.model(model)
+			.modelDefaultMountPath(insertWorkspaceModelDTO.getDefaultPath())
 			.build();
 
 		modelWorkspaceRepository.save(datasetWorkSpaceMappingEntity);
 	}
 
 	@Override
+	@Transactional
 	public void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserInfoDTO userInfoDTO) {
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
@@ -272,7 +285,24 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
+	@Transactional
 	public void deleteModelWorkloadMapping(Long jobId) {
 		modelWorkLoadMappingRepository.deleteByWorkloadId(jobId);
+	}
+
+	@Override
+	@Transactional
+	public void updateWorkspaceModel(UpdateWorkspaceModelDTO updateWorkspaceModelDTO, String workspaceResourceName,
+		Long modelId, UserInfoDTO userInfoDTO) {
+		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
+			workspaceResourceName, modelId);
+		if(workSpaceMappingEntity == null){
+			throw new RestApiException(ModelErrorCode.MODEL_NOT_FOUND);
+		}
+		//owner or 본인 체크
+		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
+			throw new RestApiException(ModelErrorCode.MODEL_FIX_FORBIDDEN);
+		}
+		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceModelDTO.getDefaultPath());
 	}
 }

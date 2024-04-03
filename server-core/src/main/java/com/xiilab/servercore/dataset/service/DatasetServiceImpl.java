@@ -21,6 +21,7 @@ import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -114,6 +115,7 @@ public class DatasetServiceImpl implements DatasetService {
 		Dataset dataset = datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		dataset.modifyDatasetName(modifyDataset.getDatasetName());
+		dataset.modifyDatasetDefaultPath(modifyDataset.getDefaultPath());
 	}
 
 	@Override
@@ -154,6 +156,7 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
+	@Transactional
 	public DownloadFileResDTO DownloadAstragoDatasetFile(Long datasetId, String filePath) {
 		datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
@@ -200,6 +203,7 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
+	@Transactional
 	public void astragoDatasetCreateDirectory(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO) {
 		datasetRepository.findById(datasetId).orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		Path dirPath = Path.of(reqFilePathDTO.getPath());
@@ -233,6 +237,7 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
+	@Transactional
 	public void insertWorkspaceDataset(InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO){
 		String workspaceResourceName = insertWorkspaceDatasetDTO.getWorkspaceResourceName();
 		Long datasetId = insertWorkspaceDatasetDTO.getDatasetId();
@@ -250,12 +255,14 @@ public class DatasetServiceImpl implements DatasetService {
 		DatasetWorkSpaceMappingEntity datasetWorkSpaceMappingEntity = DatasetWorkSpaceMappingEntity.builder()
 			.workspaceResourceName(workspaceResourceName)
 			.dataset(dataset)
+			.datasetDefaultMountPath(insertWorkspaceDatasetDTO.getDefaultPath())
 			.build();
 
 		datasetWorkspaceRepository.save(datasetWorkSpaceMappingEntity);
 	}
 
 	@Override
+	@Transactional
 	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
 			workspaceResourceName, datasetId);
@@ -280,8 +287,24 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteDatasetWorkloadMapping(Long jobId) {
 		datasetWorkLoadMappingRepository.deleteByWorkloadId(jobId);
+	}
+
+	@Override
+	@Transactional
+	public void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO) {
+		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
+			workspaceResourceName, datasetId);
+		if(workSpaceMappingEntity == null){
+			throw new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND);
+		}
+		//owner or 본인 체크
+		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
+			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
+		}
+		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceDatasetDTO.getDefaultPath());
 	}
 
 }

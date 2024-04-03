@@ -29,8 +29,8 @@ public class AstragoModelEntity extends Model {
 	private String modelPath;
 
 	@Builder
-	public AstragoModelEntity(Long modelId, String modelName, StorageEntity storageEntity) {
-		super(modelId, modelName);
+	public AstragoModelEntity(Long modelId, String modelName, StorageEntity storageEntity, String defaultPath) {
+		super(modelId, modelName, defaultPath);
 		this.storageEntity = storageEntity;
 	}
 

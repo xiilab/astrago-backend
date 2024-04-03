@@ -67,6 +67,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 		AstragoDatasetEntity astragoDataset = AstragoDatasetEntity.builder()
 			.datasetName(createDatasetDTO.getDatasetName())
 			.storageEntity(storageEntity)
+			.defaultPath(createDatasetDTO.getDefaultPath())
 			.build();
 
 		datasetService.insertAstragoDataset(astragoDataset, files);
@@ -102,6 +103,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			.pvcName(createLocalDatasetResDTO.getPvcName())
 			.pvName(createLocalDatasetResDTO.getPvName())
 			.svcName(createLocalDatasetResDTO.getSvcName())
+			.defaultPath(createDatasetDTO.getDefaultPath())
 			.build();
 		localDatasetEntity.setDatasetSize(0l);
 		datasetService.insertLocalDataset(localDatasetEntity);
