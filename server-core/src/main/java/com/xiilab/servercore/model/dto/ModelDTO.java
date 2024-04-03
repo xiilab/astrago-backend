@@ -23,6 +23,7 @@ public class ModelDTO {
 	public static class CreateAstragoModel {
 		private String modelName;
 		private Long storageId;
+		private String defaultPath;
 	}
 
 	@Getter
@@ -30,6 +31,7 @@ public class ModelDTO {
 		private String modelName;
 		private String ip;
 		private String storagePath;
+		private String defaultPath;
 	}
 
 	@Getter
@@ -44,6 +46,7 @@ public class ModelDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
+		private String defaultPath;
 		private boolean isAvailable;
 
 		public static ModelDTO.ResModel toDto(Model model) {
@@ -59,6 +62,7 @@ public class ModelDTO {
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			} else if (model.isLocalModel()) {
 				return ResModel.builder()
@@ -72,6 +76,7 @@ public class ModelDTO {
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			}
 			return null;
@@ -109,6 +114,7 @@ public class ModelDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
+		private String defaultPath;
 		private List<WorkloadResDTO.UsingModelDTO> usingModels;
 
 		public static ModelDTO.ResModelWithStorage toDto(Model model){
@@ -126,7 +132,8 @@ public class ModelDTO {
 					.storagePath(((AstragoModelEntity)model).getStorageEntity().getStoragePath())
 					.modelPath(((AstragoModelEntity)model).getModelPath())
 					.storageName(((AstragoModelEntity)model).getStorageEntity().getStorageName())
-					.size(CoreFileUtils.formatFileSize(((AstragoModelEntity)model).getModelSize()))
+					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			} else if (model.isLocalModel()) {
 				return ResModelWithStorage.builder()
@@ -140,6 +147,7 @@ public class ModelDTO {
 					.ip(((LocalModelEntity)model).getIp())
 					.storagePath(((LocalModelEntity)model).getStoragePath())
 					.modelPath("/")
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			}
 			return null;
@@ -149,6 +157,7 @@ public class ModelDTO {
 	@Getter
 	public static class ModifyModel {
 		private String modelName;
+		private String defaultPath;
 	}
 
 	@Getter
@@ -170,6 +179,7 @@ public class ModelDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
+		private String defaultPath;
 		private boolean isAvailable;
 
 		public static ModelInWorkspace entityToDto(Model model) {
@@ -183,6 +193,7 @@ public class ModelDTO {
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			} else if (model.isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -193,6 +204,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			}
 			return null;
@@ -208,6 +220,7 @@ public class ModelDTO {
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModel().getModelSize()))
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			} else if (model.getModel().isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -218,6 +231,7 @@ public class ModelDTO {
 					.createdAt(model.getRegDate())
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
+					.defaultPath(model.getModelDefaultMountPath())
 					.build();
 			}
 			return null;

@@ -33,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/user")
 public class UserController {
 	private final UserFacadeService userFacadeService;
-
 	@GetMapping()
 	@Operation(summary = "사용자 목록 조회")
 	public ResponseEntity<UserDTO.PageUsersDTO> getUserList(

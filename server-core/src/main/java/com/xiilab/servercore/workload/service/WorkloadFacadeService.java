@@ -46,6 +46,7 @@ import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -73,6 +74,7 @@ import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
@@ -98,6 +100,8 @@ import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -336,32 +340,17 @@ public class WorkloadFacadeService {
 
 	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
 		ModuleWorkloadResDTO workloadHistory = workloadHistoryService.getWorkloadHistoryById(id);
+		List<JobEntity> workloads = workloadHistoryService.getWorkloadByResourceName(workloadHistory.getWorkspaceResourceName());
 		workloadHistoryService.deleteWorkloadHistory(id, userInfoDTO);
-		// 관리자 또는 owner가 삭제
-		// AlertMessage.WORKSPACE_
-
-		// 워크로드 생성자가 삭제
-
-		/*// 관리자에게 워크스페이스 생성 알림 메시지 발송
-		AlertMessage workspaceCreateAdmin = AlertMessage.WORKSPACE_CREATE_ADMIN;
-		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());
-		String title = workspaceCreateAdmin.getTitle();
-		String message = String.format(workspaceCreateAdmin.getMessage(), userInfoDTO.getUserFullName(),
-			applicationForm.getName());
-		eventPublisher.publishEvent(
-			new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_CREATE, userInfoDTO.getId(), userInfoDTO.getUserName(),
-				userInfoDTO.getUserFullName(), mailTitle, title, message));
-
-		// 워크스페이스 생성자에게 알림 메시지 발송
-		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_CREATE_OWNER;
-		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), applicationForm.getName());
-		String createOwnerTitle = workspaceCreateOwner.getTitle();
-		String createOwnerMessage = String.format(workspaceCreateOwner.getMessage(), applicationForm.getName());
-		eventPublisher.publishEvent(
-			new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_CREATE,
-				emailTitle, createOwnerTitle, createOwnerMessage, applicationForm.getName()));*/
 		//해당 워크로드를 등록한 모든 Pin 삭제
 		pinService.deletePin(workloadHistory.getResourceName(), PinType.WORKLOAD);
+		//워크로드 삭제 시 매핑 데이터 deleteYN 업데이트
+		for (JobEntity workload : workloads) {
+			datasetService.deleteDatasetWorkloadMapping(workload.getId());
+			modelService.deleteModelWorkloadMapping(workload.getId());
+			codeService.deleteCodeWorkloadMapping(workload.getId());
+			imageService.deleteImageWorkloadMapping(workload.getId());
+		}
 	}
 
 	public PageDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(WorkloadType workloadType, String workspaceName,

@@ -141,11 +141,11 @@ public class KeycloakUserRepository implements UserRepository {
 		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
 		UserRepresentation userRepresentation = userResource.toRepresentation();
 		try {
-			RoleRepresentation roleRepresentation = roleRepresentations.stream()
+			List<String> roles = roleRepresentations.stream()
 				.filter(role -> role.getName().contains("ROLE_"))
-				.toList()
-				.get(0);
-			userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
+				.map(user -> user.getName())
+				.toList();
+			userRepresentation.setRealmRoles(roles);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_INFO);
 		}
@@ -164,11 +164,11 @@ public class KeycloakUserRepository implements UserRepository {
 		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
 		UserRepresentation userRepresentation = userResource.toRepresentation();
 		try {
-			RoleRepresentation roleRepresentation = roleRepresentations.stream()
+			List<String> roles = roleRepresentations.stream()
 				.filter(role -> role.getName().contains("ROLE_"))
-				.toList()
-				.get(0);
-			userRepresentation.setRealmRoles(List.of(roleRepresentation.getName()));
+				.map(user -> user.getName())
+				.toList();
+			userRepresentation.setRealmRoles(roles);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RestApiException(UserErrorCode.USER_NOT_FOUND_INFO);
 		}

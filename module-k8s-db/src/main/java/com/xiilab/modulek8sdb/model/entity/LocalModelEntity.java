@@ -42,8 +42,8 @@ public class LocalModelEntity extends Model {
 
 	@Builder
 	public LocalModelEntity(Long modelId, String modelName,String ip, StorageType storageType, String storagePath, String dns, String deploymentName
-		, String svcName, String pvName, String pvcName) {
-		super(modelId, modelName);
+		, String svcName, String pvName, String pvcName, String defaultPath) {
+		super(modelId, modelName, defaultPath);
 		this.ip = ip;
 		this.storageType = storageType;
 		this.storagePath = storagePath;

@@ -21,6 +21,8 @@ import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
@@ -191,6 +193,18 @@ public class WorkspaceController {
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
+	@PatchMapping("{workspaceResourceName}/datasets/{datasetId}")
+	@Operation(summary = "워크스페이스 데이터 셋 defaultPath 수정")
+	public ResponseEntity updateWorkspaceDataset(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(name = "datasetId") Long datasetId,
+		@RequestBody UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO
+	) {
+		datasetService.updateWorkspaceDataset(updateWorkspaceDatasetDTO, workspaceResourceName, datasetId, userInfoDTO);
+		return new ResponseEntity(HttpStatus.OK);
+	}
+
 	@DeleteMapping("{workspaceResourceName}/datasets/{datasetId}")
 	@Operation(summary = "워크스페이스 데이터 셋 삭제")
 	public ResponseEntity deleteWorkspaceDataset(
@@ -204,6 +218,17 @@ public class WorkspaceController {
 	@Operation(summary = "워크스페이스 model 추가")
 	public ResponseEntity insertWorkspaceModel(@RequestBody InsertWorkspaceModelDTO insertWorkspaceModelDTO) {
 		modelService.insertWorkspaceModel(insertWorkspaceModelDTO);
+		return new ResponseEntity(HttpStatus.OK);
+	}
+	@PatchMapping("{workspaceResourceName}/models/{modelId}")
+	@Operation(summary = "워크스페이스 model defaultPath 수정")
+	public ResponseEntity updateWorkspaceModel(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(name = "modelId") Long modelId,
+		@RequestBody UpdateWorkspaceModelDTO updateWorkspaceModelDTO,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO
+	) {
+		modelService.updateWorkspaceModel(updateWorkspaceModelDTO, workspaceResourceName, modelId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 

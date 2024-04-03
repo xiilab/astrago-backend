@@ -54,6 +54,9 @@ public abstract class Model extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	protected RepositoryDivision division;
 
+	@Column(name = "MODEL_DEFAULT_MOUNT_PATH")
+	private String modelDefaultMountPath;
+
 	@OneToMany(mappedBy = "model")
 	private List<ModelWorkSpaceMappingEntity> modelWorkSpaceMappingList = new ArrayList<>();
 	@OneToMany(mappedBy = "model")
@@ -62,9 +65,10 @@ public abstract class Model extends BaseEntity {
 	@Transient
 	private boolean isAvailable = false;
 
-	public Model(Long modelId, String modelName) {
+	public Model(Long modelId, String modelName, String modelDefaultMountPath) {
 		this.modelId = modelId;
 		this.modelName = modelName;
+		this.modelDefaultMountPath = modelDefaultMountPath;
 	}
 
 	public boolean isAvailable() {
@@ -75,6 +79,9 @@ public abstract class Model extends BaseEntity {
 	}
 	public void modifyModelName(String modelName){
 		this.modelName = modelName;
+	}
+	public void modifyModelDefaultPath(String modelDefaultMountPath){
+		this.modelDefaultMountPath = modelDefaultMountPath;
 	}
 	public abstract boolean isAstragoModel();
 	public abstract boolean isLocalModel();

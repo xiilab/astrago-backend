@@ -11,10 +11,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.vo.PageNaviParam;
+import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -44,8 +49,6 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaHistoryRepositor
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
-import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.code.service.CodeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -198,6 +201,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO) {
+		//생성된 워크로드가 있는지 확인
+		List<ModuleWorkloadResDTO> workloadList = workloadModuleFacadeService.getWorkloadList(workspaceName);
+		if (workloadList != null && workloadList.size() > 0) {
+			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_DELETE_FAILED);
+		}
+
 		//워크스페이스 삭제
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
 		//리소스 요청 목록 삭제
@@ -426,34 +435,23 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
 		}
 		//검색 조건으로 전체 조회
-		Stream<WorkspaceDTO.AdminResponseDTO> workspaceStream = workspaceModuleFacadeService.getAdminWorkspaceList(
-			searchCondition).stream();
-		if (sortCondition != null) {
-			workspaceStream = switch (sortCondition) {
-				case CPU_ASSIGN_ASC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu));
-				case CPU_ASSIGN_DESC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu).reversed());
-				case MEM_ASSIGN_ASC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem));
-				case MEM_ASSIGN_DESC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem).reversed());
-				case GPU_ASSIGN_ASC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu));
-				case GPU_ASSIGN_DESC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed());
-				case CREATOR_ASC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator));
-				case CREATOR_DESC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed());
-				case CREATED_AT_ASC ->
-					workspaceStream.sorted(Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt));
-				case CREATED_AT_DESC -> workspaceStream.sorted(
-					Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed());
-			};
-		}
+		List<WorkspaceDTO.AdminResponseDTO> workspaceList = workspaceModuleFacadeService.getAdminWorkspaceList(
+			searchCondition);
+		Comparator<WorkspaceDTO.AdminResponseDTO> comparator = switch (sortCondition) {
+			case CPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu);
+			case CPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu).reversed();
+			case MEM_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem);
+			case MEM_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem).reversed();
+			case GPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu);
+			case GPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed();
+			case CREATOR_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator);
+			case CREATOR_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed();
+			case CREATED_AT_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt);
+			case CREATED_AT_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed();
+		};
+		workspaceList.sort(comparator);
 
-		return new PageDTO<>(workspaceStream.toList(), pageNum, pageSize);
+		return new PageDTO<>(workspaceList, pageNum, pageSize);
 	}
 
 	@Override

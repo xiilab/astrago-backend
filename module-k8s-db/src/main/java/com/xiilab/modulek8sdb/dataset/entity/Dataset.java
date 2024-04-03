@@ -54,6 +54,9 @@ public abstract class Dataset extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	protected RepositoryDivision division;
 
+	@Column(name = "DATASET_DEFAULT_MOUNT_PATH")
+	private String datasetDefaultMountPath;
+
 	@OneToMany(mappedBy = "dataset")
 	private List<DatasetWorkSpaceMappingEntity> workspaceMappingList = new ArrayList<>();
 	@OneToMany(mappedBy = "dataset")
@@ -62,9 +65,10 @@ public abstract class Dataset extends BaseEntity {
 	@Transient
 	private boolean isAvailable = false;
 
-	public Dataset(Long datasetId, String datasetName) {
+	public Dataset(Long datasetId, String datasetName, String datasetDefaultMountPath) {
 		this.datasetId = datasetId;
 		this.datasetName = datasetName;
+		this.datasetDefaultMountPath = datasetDefaultMountPath;
 	}
 	public boolean isAvailable() {
 		 return !this.getWorkspaceMappingList().isEmpty();
@@ -74,6 +78,9 @@ public abstract class Dataset extends BaseEntity {
 	}
 	public void modifyDatasetName(String datasetName){
 		this.datasetName = datasetName;
+	}
+	public void modifyDatasetDefaultPath(String datasetDefaultMountPath){
+		this.datasetDefaultMountPath = datasetDefaultMountPath;
 	}
 	public abstract boolean isAstragoDataset();
 	public abstract boolean isLocalDataset();

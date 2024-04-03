@@ -34,12 +34,18 @@ public class ModelWorkSpaceMappingEntity extends BaseEntity {
 
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
-
+	@Column(name = "MODEL_DEFAULT_MOUNT_PATH")
+	private String modelDefaultMountPath;
 	@Builder
-	public ModelWorkSpaceMappingEntity(Model model, String workspaceResourceName) {
+	public ModelWorkSpaceMappingEntity(Model model, String workspaceResourceName, String modelDefaultMountPath) {
 		this.model = model;
 		this.workspaceResourceName = workspaceResourceName;
+		this.modelDefaultMountPath = modelDefaultMountPath;
 		//연관관계 편의 메서드
 		model.getModelWorkSpaceMappingList().add(this);
+	}
+
+	public void modifyDefaultPath(String modelDefaultMountPath) {
+		this.modelDefaultMountPath = modelDefaultMountPath;
 	}
 }

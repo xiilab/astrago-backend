@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
@@ -52,4 +54,6 @@ public interface ModelService {
 	ModelDTO.ModelsInWorkspace getModelsByWorkspaceResourceName(String workspaceResourceName);
 
 	void deleteModelWorkloadMapping(Long jobId);
+
+	void updateWorkspaceModel(UpdateWorkspaceModelDTO updateWorkspaceModelDTO, String workspaceResourceName, Long modelId, UserInfoDTO userInfoDTO);
 }

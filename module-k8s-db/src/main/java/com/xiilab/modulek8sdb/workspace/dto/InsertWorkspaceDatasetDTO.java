@@ -7,4 +7,5 @@ import lombok.NoArgsConstructor;
 public class InsertWorkspaceDatasetDTO {
 	private Long datasetId;
 	private String workspaceResourceName;
+	private String defaultPath;
 }
