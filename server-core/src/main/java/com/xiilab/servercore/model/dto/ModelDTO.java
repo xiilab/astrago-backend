@@ -176,6 +176,7 @@ public class ModelDTO {
 		private String modelName;
 		private StorageType storageType;
 		private String creator;
+		private String userId;
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
@@ -194,6 +195,7 @@ public class ModelDTO {
 					.division(model.getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.defaultPath(model.getModelDefaultMountPath())
+					.userId(model.getRegUser().getRegUserId())
 					.build();
 			} else if (model.isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -205,6 +207,7 @@ public class ModelDTO {
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
 					.defaultPath(model.getModelDefaultMountPath())
+					.userId(model.getRegUser().getRegUserId())
 					.build();
 			}
 			return null;
@@ -221,6 +224,7 @@ public class ModelDTO {
 					.division(model.getModel().getDivision())
 					.size(CoreFileUtils.formatFileSize(model.getModel().getModelSize()))
 					.defaultPath(model.getModelDefaultMountPath())
+					.userId(model.getRegUser().getRegUserId())
 					.build();
 			} else if (model.getModel().isLocalModel()) {
 				return ModelInWorkspace.builder()
@@ -232,6 +236,7 @@ public class ModelDTO {
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
 					.defaultPath(model.getModelDefaultMountPath())
+					.userId(model.getRegUser().getRegUserId())
 					.build();
 			}
 			return null;
