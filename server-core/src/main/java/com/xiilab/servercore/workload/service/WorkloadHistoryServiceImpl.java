@@ -68,7 +68,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
 		String userId) {
 		List<JobEntity> batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
-			workspaceName, searchName, userId, BATCH);
+			workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, BATCH);
 		return batchJobEntityList.stream().map(job -> ModuleBatchJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
 				.name(job.getName())
