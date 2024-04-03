@@ -1,12 +1,8 @@
 package com.xiilab.modulek8sdb.hub.entity;
 
-import java.time.LocalDateTime;
-
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
-import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,7 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -64,6 +59,9 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "ENVS", length = 1000)
 	private String envs;
 
+	@Column(name = "HYPER_PARAMS", length = 1000)
+	private String hyperParams;
+
 	@Column(name = "PORTS", length = 1000)
 	private String ports;
 
@@ -81,7 +79,7 @@ public class HubEntity extends BaseEntity {
 	@Builder(builderMethodName = "saveBuilder", builderClassName = "saveBuilder")
 	public HubEntity(String title, String description, String thumbnailURL,
 		String readmeURL, String sourceCodeUrl, String sourceCodeBranch, String sourceCodeMountPath,
-		String datasetMountPath, String modelMountPath, String envs, String command,
+		String datasetMountPath, String modelMountPath, String envs, String command, String hyperParams,
 		HubImageEntity hubImageEntity, WorkloadType workloadType) {
 		this.title = title;
 		this.description = description;
@@ -94,6 +92,7 @@ public class HubEntity extends BaseEntity {
 		this.modelMountPath = modelMountPath;
 		this.envs = envs;
 		this.command = command;
+		this.hyperParams = hyperParams;
 		this.hubImageEntity = hubImageEntity;
 		this.workloadType = workloadType;
 		// 연관관계 편의 메서드
