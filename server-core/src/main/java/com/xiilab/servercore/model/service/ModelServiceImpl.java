@@ -113,6 +113,7 @@ public class ModelServiceImpl implements ModelService{
 		Model model = modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		model.modifyModelName(modifyModel.getModelName());
+		model.modifyModelDefaultPath(modifyModel.getDefaultPath());
 	}
 
 	@Override

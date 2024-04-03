@@ -41,8 +41,8 @@ public class LocalDatasetEntity extends Dataset {
 
 	@Builder
 	public LocalDatasetEntity(Long datasetId, String datasetName,String ip, StorageType storageType, String storagePath, String dns, String deploymentName
-		, String svcName, String pvName, String pvcName) {
-		super(datasetId, datasetName);
+		, String svcName, String pvName, String pvcName, String defaultPath) {
+		super(datasetId, datasetName, defaultPath);
 		this.ip = ip;
 		this.storageType = storageType;
 		this.storagePath = storagePath;

@@ -66,6 +66,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 		AstragoModelEntity astragoModel = AstragoModelEntity.builder()
 			.modelName(createModelDTO.getModelName())
 			.storageEntity(storageEntity)
+			.defaultPath(createModelDTO.getDefaultPath())
 			.build();
 
 		modelService.insertAstragoModel(astragoModel, files);
@@ -95,6 +96,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 			.pvcName(createLocalModelResDTO.getPvcName())
 			.pvName(createLocalModelResDTO.getPvName())
 			.svcName(createLocalModelResDTO.getSvcName())
+			.defaultPath(createLocalModel.getDefaultPath())
 			.build();
 		localModelEntity.setModelSize(0L);
 		modelService.insertLocalModel(localModelEntity);

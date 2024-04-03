@@ -31,17 +31,20 @@ public class DatasetDTO {
 	public static class CreateAstragoDataset {
 		private String datasetName;
 		private Long storageId;
+		private String defaultPath;
 	}
 	@Getter
 	public static class CreateLocalDataset {
 		private String datasetName;
 		private String ip;
 		private String storagePath;
+		private String defaultPath;
 	}
 
 	@Getter
 	public static class ModifyDatset{
 		private String datasetName;
+		private String defaultPath;
 	}
 
 
@@ -61,6 +64,7 @@ public class DatasetDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
+		private String defaultPath;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
 			if (dataset.isAstragoDataset()) {
@@ -77,7 +81,8 @@ public class DatasetDTO {
 					.storagePath(((AstragoDatasetEntity)dataset).getStorageEntity().getStoragePath())
 					.datasetPath(((AstragoDatasetEntity)dataset).getDatasetPath())
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
-					.size(CoreFileUtils.formatFileSize(((AstragoDatasetEntity)dataset).getDatasetSize()))
+					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			}else if (dataset.isLocalDataset()) {
 				return ResDatasetWithStorage.builder()
@@ -91,6 +96,7 @@ public class DatasetDTO {
 					.ip(((LocalDatasetEntity)dataset).getIp())
 					.storagePath(((LocalDatasetEntity)dataset).getStoragePath())
 					.datasetPath("/")
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			}
 			return null;
@@ -109,6 +115,7 @@ public class DatasetDTO {
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
+		private String defaultPath;
 		private boolean isAvailable;
 
 		public static ResDataset toDto(Dataset dataset) {
@@ -124,6 +131,7 @@ public class DatasetDTO {
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
 					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return ResDataset.builder()
@@ -137,6 +145,7 @@ public class DatasetDTO {
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
 					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
+					.defaultPath(dataset.getDatasetDefaultMountPath())
 					.build();
 			}
 			return null;

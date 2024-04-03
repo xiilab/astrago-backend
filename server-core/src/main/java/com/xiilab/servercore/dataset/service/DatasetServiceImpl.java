@@ -114,6 +114,7 @@ public class DatasetServiceImpl implements DatasetService {
 		Dataset dataset = datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		dataset.modifyDatasetName(modifyDataset.getDatasetName());
+		dataset.modifyDatasetDefaultPath(modifyDataset.getDefaultPath());
 	}
 
 	@Override
