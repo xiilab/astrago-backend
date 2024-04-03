@@ -11,6 +11,9 @@ import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 
 public interface AlertRepository extends JpaRepository<AlertEntity, Long>, AlertRepositoryCustom {
+	@Query("select t from TB_ALERT t where t.alertName = ?1")
+	Optional<AlertEntity> findByAlertName(String alertName);
+
 	@Query("select t from TB_ALERT t where t.alertRole = ?1")
 	List<AlertEntity> findByAlertRole(AlertRole alertRole);
 

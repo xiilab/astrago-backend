@@ -9,10 +9,13 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
@@ -43,12 +46,7 @@ public class InformerEventListener {
 	private final SystemAlertRepository systemAlertRepository;
 	private final UserRepository userRepository;
 	private final MailService mailService;
-	private final WorkspaceAlertService workspaceAlertService;
 	private final AdminAlertMappingRepository adminAlertMappingRepository;
-	private final WorkspaceAlertMappingRepository workspaceAlertMappingRepository;
-	@Value("${spring.mail.username}")
-	private String adminEmailAddr;
-	private final ApplicationEventPublisher publisher;
 
 	@Async
 	@EventListener
@@ -56,21 +54,22 @@ public class InformerEventListener {
 	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
 		log.info("관리자[{}] 알림 발송 시작!", adminAlertEvent.title());
 		try {
-			String regUserID = adminAlertEvent.senderId() != null ? adminAlertEvent.senderId() : "SYSTEM";
-			String regUserName = "시스템";
-			RegUser regUser = new RegUser(regUserID,
-				adminAlertEvent.senderUserName() != null ? adminAlertEvent.senderUserName() : regUserName,
-				adminAlertEvent.senderUserRealName() != null ? adminAlertEvent.senderUserRealName() : regUserName);
+			// 보내는 유저 정보 조회
+			RegUser regUser = new RegUser("SYSTEM", "SYSTEM", "SYSTEM");
+			UserDTO.UserInfo findSendUser = userRepository.getUserById(adminAlertEvent.sendUserId());
+			if (!ObjectUtils.isEmpty(findSendUser)) {
+				regUser = new RegUser(findSendUser.getId(), findSendUser.getUserName(), findSendUser.getLastName() + findSendUser.getFirstName());
+			}
 
 			// AlertRole, Alert 이름으로 ID 조회
 			AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(),
 				AlertRole.ADMIN).orElseThrow();
 
-			// ADMIN - ALERT Mapping 엔티티 조회
+			// ADMIN ALERT Mapping 엔티티 조회
 			List<AdminAlertMappingEntity> findAdminAlertMappingEntities = adminAlertMappingRepository.findByAlert_AlertId(
 				findAlert.getAlertId());
 
-			// 조회된 모든 관리자 알림 설정정보 조회
+			// 관리자 목록 조회해서 반복문
 			for (AdminAlertMappingEntity findAdminAlertMappingEntity : findAdminAlertMappingEntities) {
 				UserDTO.UserInfo findUser = userRepository.getUserById(findAdminAlertMappingEntity.getAdminId());
 				// TODO exception 처리 필요
@@ -80,14 +79,12 @@ public class InformerEventListener {
 						.title(adminAlertEvent.title())
 						.message(adminAlertEvent.message())
 						.recipientId(findUser.getId())
-						.senderId(regUserID)
-						.systemAlertType(findAlert.getAlertType())
-						.systemAlertEventType(findAlert.getSystemAlertEventType())
+						.senderId(StringUtils.hasText(findSendUser.getId())? findSendUser.getId() : "SYSTEM")
+						.alertType(findAlert.getAlertType())
+						.alertEventType(findAlert.getAlertEventType())
 						.alertRole(findAdminAlertMappingEntity.getAlert().getAlertRole())
 						.readYN(ReadYN.N)
 						.regUser(regUser)
-						.regDate(LocalDateTime.now())
-						.modDate(LocalDateTime.now())
 						.build();
 					systemAlertRepository.save(saveSystemAlert);
 				}
@@ -108,41 +105,34 @@ public class InformerEventListener {
 	@Async
 	@EventListener
 	@Transactional
-	public void handleUserAlertEvent(WorkspaceUserAlertEvent workspaceUserAlertEvent) {
+	public void handleUserAlertEvent(UserAlertEvent userAlertEvent) {
+		UserDTO.UserInfo findUser = userRepository.getUserById(userAlertEvent.userId());
 		// AlertRole, Alert 이름으로 ID 조회
-		AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(workspaceUserAlertEvent.alertName().getName(),
-				workspaceUserAlertEvent.alertRole())
-			.orElseThrow(() -> new RestApiException(SystemAlertErrorCode.NOT_FOUND_ALERT));
-		List<WorkspaceAlertMappingEntity> workspaceAlertMappingEntities = workspaceAlertMappingRepository.getWorkspaceAlertMappingByAlertId(
-			findAlert.getAlertId(), workspaceUserAlertEvent.workspaceResourceName());
+		if (!ObjectUtils.isEmpty(userAlertEvent)) {
+			// Alert 이름으로 ID 조회
+			AlertEntity findAlert = alertRepository.findByAlertName(userAlertEvent.alertName().getName())
+				.orElseThrow(() -> new RestApiException(SystemAlertErrorCode.NOT_FOUND_ALERT));
 
-		for (WorkspaceAlertMappingEntity mappingEntity : workspaceAlertMappingEntities) {
-			UserDTO.UserInfo findUser = userRepository.getUserById(mappingEntity.getUserId());
-			if (mappingEntity.getSystemAlertStatus() == AlertStatus.ON) {
-				// save 로직 추가
-				SystemAlertEntity saveSystemAlert = SystemAlertEntity.builder()
-					.title(workspaceUserAlertEvent.title())
-					.message(workspaceUserAlertEvent.message())
-					.recipientId(findUser.getId())
-					.senderId(adminEmailAddr)
-					.systemAlertType(findAlert.getAlertType())
-					.systemAlertEventType(findAlert.getSystemAlertEventType())
-					.alertRole(mappingEntity.getAlert().getAlertRole())
-					.readYN(ReadYN.N)
-					.regDate(LocalDateTime.now())
-					.modDate(LocalDateTime.now())
-					.build();
-				systemAlertRepository.save(saveSystemAlert);
-			}
-			if (mappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
-				// 메일 발송 로직 추가
-				mailService.sendMail(MailDTO.builder()
-					.title(workspaceUserAlertEvent.mailTitle())
-					.content(workspaceUserAlertEvent.message())
-					.receiverEmail(findUser.getEmail())
-					.build());
-			}
+			// save 로직 추가
+			SystemAlertEntity saveSystemAlert = SystemAlertEntity.builder()
+				.title(userAlertEvent.title())
+				.message(userAlertEvent.message())
+				.recipientId(findUser.getId())
+				.senderId(findUser.getId())
+				.alertType(findAlert.getAlertType())
+				.alertEventType(findAlert.getAlertEventType())
+				.alertRole(findAlert.getAlertRole())
+				.readYN(ReadYN.N)
+				.build();
+			systemAlertRepository.save(saveSystemAlert);
 		}
+
+		// 메일 발송 로직 추가
+		mailService.sendMail(MailDTO.builder()
+			.title(userAlertEvent.mailTitle())
+			.content(userAlertEvent.message())
+			.receiverEmail(findUser.getEmail())
+			.build());
 	}
 
 }

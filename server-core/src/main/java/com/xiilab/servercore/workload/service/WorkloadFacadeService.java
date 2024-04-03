@@ -27,7 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
@@ -43,6 +43,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.common.utils.DateUtils;
@@ -194,17 +195,18 @@ public class WorkloadFacadeService {
 			workspaceResourceStatus.getResourceStatus().getMemLimit());
 
 		if (isCpuOverResource || isGpuOverResource || isMemOverResource) {
-			SystemAlertMessage workspaceResourceOverAdmin = SystemAlertMessage.WORKSPACE_RESOURCE_OVER_ADMIN;
+			AlertMessage workspaceResourceOverAdmin = AlertMessage.WORKSPACE_RESOURCE_OVER_ADMIN;
 			String mailTitle = String.format(workspaceResourceOverAdmin.getMailTitle(),
 				workspaceResourceStatus.getName());
 			String title = workspaceResourceOverAdmin.getTitle();
 			String message = String.format(workspaceResourceOverAdmin.getMessage(),
-				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getName());
+				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorFullName(),
+				workspaceResourceStatus.getName());
 
 			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(),
-					userInfoDTO.getUserName(),
-					userInfoDTO.getUserFullName(), mailTitle, title, message));
+				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
+					message,
+					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build()));
 		}
 	}
 
@@ -258,15 +260,15 @@ public class WorkloadFacadeService {
 		String workloadResourceName) {
 		// 실행중일 떄
 		try {
-			String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
+			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 			if (workloadType == WorkloadType.BATCH) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
-				return getActiveWorkloadDetail(moduleBatchJobResDTO, nodeName);
+				return getActiveWorkloadDetail(moduleBatchJobResDTO);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
 				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 					workspaceName, workloadResourceName);
-				return getActiveWorkloadDetail(moduleInteractiveJobResDTO, nodeName);
+				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
 			try {
@@ -280,7 +282,9 @@ public class WorkloadFacadeService {
 	}
 
 	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail getActiveWorkloadDetail(
-		T moduleJobResDTO, String nodeName) {
+		T moduleJobResDTO) {
+		String nodeName = workspaceService.getNodeName(moduleJobResDTO.getWorkspaceResourceName(),
+			moduleJobResDTO.getResourceName());
 		// 이미지 DTO 세팅
 		FindWorkloadResDTO.Image image = generateImageResDTO(moduleJobResDTO);
 		// 모델 세팅
@@ -303,29 +307,59 @@ public class WorkloadFacadeService {
 	}
 
 	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
-		UserInfoDTO userInfoDTO
-	) throws IOException {
+		UserInfoDTO userInfoDTO) throws IOException {
+
+		FindWorkloadResDTO.WorkloadDetail activeWorkloadDetail = null;
 		if (workloadType == WorkloadType.BATCH) {
+			ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+				workloadName);
+			activeWorkloadDetail = getActiveWorkloadDetail(moduleBatchJobResDTO);
 			stopBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+				workspaceName, workloadName);
+			activeWorkloadDetail = getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			stopInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
 		}
 
-		//워크로드 종료 알림 발송
-		String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
-		String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
-		String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-			AlertName.USER_WORKLOAD_END,
-			emailTitle, title, message, workspaceName);
-
-		eventPublisher.publishEvent(workspaceUserAlertEvent);
-
+		if (!ObjectUtils.isEmpty(activeWorkloadDetail)) {
+			//워크로드 종료 알림 발송
+			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
+			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
+			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(),
+				emailTitle, title, message, workspaceName, null);
+			eventPublisher.publishEvent(workspaceUserAlertEvent);
+		}
 	}
 
 	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
 		ModuleWorkloadResDTO workloadHistory = workloadHistoryService.getWorkloadHistoryById(id);
 		workloadHistoryService.deleteWorkloadHistory(id, userInfoDTO);
+		// 관리자 또는 owner가 삭제
+		// AlertMessage.WORKSPACE_
+
+		// 워크로드 생성자가 삭제
+
+		/*// 관리자에게 워크스페이스 생성 알림 메시지 발송
+		AlertMessage workspaceCreateAdmin = AlertMessage.WORKSPACE_CREATE_ADMIN;
+		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());
+		String title = workspaceCreateAdmin.getTitle();
+		String message = String.format(workspaceCreateAdmin.getMessage(), userInfoDTO.getUserFullName(),
+			applicationForm.getName());
+		eventPublisher.publishEvent(
+			new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_CREATE, userInfoDTO.getId(), userInfoDTO.getUserName(),
+				userInfoDTO.getUserFullName(), mailTitle, title, message));
+
+		// 워크스페이스 생성자에게 알림 메시지 발송
+		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_CREATE_OWNER;
+		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), applicationForm.getName());
+		String createOwnerTitle = workspaceCreateOwner.getTitle();
+		String createOwnerMessage = String.format(workspaceCreateOwner.getMessage(), applicationForm.getName());
+		eventPublisher.publishEvent(
+			new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_CREATE,
+				emailTitle, createOwnerTitle, createOwnerMessage, applicationForm.getName()));*/
 		//해당 워크로드를 등록한 모든 Pin 삭제
 		pinService.deletePin(workloadHistory.getResourceName(), PinType.WORKLOAD);
 	}
@@ -625,8 +659,8 @@ public class WorkloadFacadeService {
 		// if (workspaceAlertSet.isWorkloadEndAlert()) {
 		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
 		// 		.recipientId(userInfoDTO.getId())
-		// 		.senderId("SYSTEM")
-		// 		.systemAlertType(SystemAlertType.WORKLOAD)
+		// 		.sendUserId("SYSTEM")
+		// 		.alertType(SystemAlertType.WORKLOAD)
 		// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
 		// 		.build());
 		// }

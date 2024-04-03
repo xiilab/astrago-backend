@@ -12,7 +12,7 @@ import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
@@ -75,35 +75,35 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList){
+	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList, UserInfoDTO userInfoDTO){
 		groupService.deleteWorkspaceMemberByUserId(groupName, userIdList);
 
 		//삭제 된 멤버들 알람 매핑 데이터 삭제
 		for (String userId : userIdList) {
 			workspaceAlertService.deleteWorkspaceAlertMappingByUserIdAndWorkspaceName(userId, groupName);
 		}
-		sendModifyWorkspaceMemberEvent(groupName);
+		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO){
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO, UserInfoDTO userInfoDTO){
 		Set<String> addUserIds = groupService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 
 		//추가 된 멤버들 알람 매핑 데이터 저장
 		for (String userId : addUserIds) {
 			workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, userId, groupName);
 		}
-		sendModifyWorkspaceMemberEvent(groupName);
+		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO);
 	}
 
-	private void sendModifyWorkspaceMemberEvent(String groupName) {
+	private void sendModifyWorkspaceMemberEvent(String groupName, UserInfoDTO userInfoDTO) {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(groupName);
 		String workspaceName = workspace.getName();
-		String emailTitle = String.format(SystemAlertMessage.WORKSPACE_MEMBER_UPDATE.getMailTitle(), workspaceName);
-		String title = SystemAlertMessage.WORKSPACE_MEMBER_UPDATE.getTitle();
-		String message = String.format(SystemAlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
+		String emailTitle = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMailTitle(), workspaceName);
+		String title = AlertMessage.WORKSPACE_MEMBER_UPDATE.getTitle();
+		String message = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
 
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.USER_WORKSPACE_MEMBER_UPDATE,
-			emailTitle, title, message, groupName);
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_MEMBER_UPDATE,
+			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, null);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}

@@ -10,7 +10,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class InteractiveJobInformer extends JobInformer{
+public class InteractiveJobInformer extends JobInformer {
 	private final K8sAdapter k8sAdapter;
 	private final GroupService groupService;
 	private final SystemAlertRepository systemAlertRepository;
@@ -54,10 +54,12 @@ public class InteractiveJobInformer extends JobInformer{
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
 		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
 		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
-		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository, K8sAdapter k8sAdapter,
+		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository,
+		K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
 		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
-		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository,
+		GroupService groupService, SystemAlertRepository systemAlertRepository,
+		WorkspaceAlertSetRepository workspaceAlertSetRepository,
 		ApplicationEventPublisher publisher) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
@@ -86,11 +88,12 @@ public class InteractiveJobInformer extends JobInformer{
 				K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
 				//워크로드 생성 알림 발송
 				String workloadName = metadataFromResource.getWorkloadName();
-				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
-				String title = SystemAlertMessage.WORKLOAD_START_CREATOR.getTitle();
-				String message = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
-				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
-					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
+				String emailTitle = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
+				String title = AlertMessage.WORKLOAD_START_CREATOR.getTitle();
+				String message = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+					AlertName.USER_WORKLOAD_START, null, metadataFromResource.getCreatorId(), emailTitle, title,
+					message, metadataFromResource.getWorkspaceResourceName(), null);
 
 				publisher.publishEvent(workspaceUserAlertEvent);
 			}
@@ -119,14 +122,16 @@ public class InteractiveJobInformer extends JobInformer{
 				}
 
 				// 서비스 삭제
-				deleteServices(metadataFromResource.getWorkspaceResourceName(), metadataFromResource.getWorkloadResourceName());
+				deleteServices(metadataFromResource.getWorkspaceResourceName(),
+					metadataFromResource.getWorkloadResourceName());
 				//워크로드 삭제 알림 발송
 				String workloadName = metadataFromResource.getWorkloadName();
-				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
-				String title = SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
-				String message = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
-					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
+				String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
+				String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
+				String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+					AlertName.USER_WORKLOAD_DELETE, null, metadataFromResource.getCreatorId(),
+					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName(), null);
 
 				publisher.publishEvent(workspaceUserAlertEvent);
 			}

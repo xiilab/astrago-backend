@@ -2,13 +2,17 @@ package com.xiilab.modulek8sdb.alert.systemalert.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.Type;
+
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.enums.ReadYN;
-import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertEventType;
+import com.xiilab.modulecommon.alert.enums.AlertType;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,9 +26,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "TB_SYSTEM_ALERT")
-// @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-// @AllArgsConstructor
 @Getter
 public class SystemAlertEntity extends BaseEntity {
 	@Id
@@ -41,10 +43,10 @@ public class SystemAlertEntity extends BaseEntity {
 	private String senderId;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "ALERT_TYPE")
-	private SystemAlertType systemAlertType;
+	private AlertType alertType;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "ALERT_EVENT_TYPE")
-	private SystemAlertEventType systemAlertEventType;
+	private AlertEventType alertEventType;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "READ_YN")
 	private ReadYN readYN;
@@ -53,22 +55,27 @@ public class SystemAlertEntity extends BaseEntity {
 	@Column(name = "ALERT_ROLE")
 	private AlertRole alertRole;
 
+	@Type(JsonType.class)
+	@Column(name = "PAGE_NAVI_PARAM")
+	private PageNaviParam pageNaviParam;
+
 	@Builder
 	public SystemAlertEntity(RegUser regUser, LocalDateTime regDate,
 		LocalDateTime modDate, Long id, String title, String message, String recipientId, String senderId,
-		SystemAlertType systemAlertType, SystemAlertEventType systemAlertEventType, ReadYN readYN, AlertRole alertRole) {
+		AlertType alertType, AlertEventType alertEventType, ReadYN readYN, AlertRole alertRole, PageNaviParam pageNaviParam) {
 		super(regUser, regDate, modDate);
 		this.id = id;
 		this.title = title;
 		this.message = message;
 		this.recipientId = recipientId;
 		this.senderId = senderId;
-		this.systemAlertType = systemAlertType;
-		this.systemAlertEventType = systemAlertEventType;
+		this.alertType = alertType;
+		this.alertEventType = alertEventType;
 		this.readYN = readYN;
 		this.alertRole = alertRole;
 		this.regDate = regDate;
 		this.modDate = modDate;
+		this.pageNaviParam = pageNaviParam;
 	}
 
 	public void readAlert(){

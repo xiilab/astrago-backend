@@ -2,7 +2,7 @@ package com.xiilab.modulek8sdb.alert.systemalert.dto;
 
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertType;
 
 import lombok.Getter;
 
@@ -12,7 +12,7 @@ public class WorkspaceAlertMappingDTO {
 	private String alertName;
 	private AlertStatus systemAlertStatus;
 	private AlertStatus emailAlertStatus;
-	private SystemAlertType alertType;
+	private AlertType alertType;
 
 	public WorkspaceAlertMappingDTO(WorkspaceAlertMappingEntity workspaceAlertMappingEntity) {
 		this.workspaceAlertMappingId = workspaceAlertMappingEntity.getWorkspaceAlertMappingId();

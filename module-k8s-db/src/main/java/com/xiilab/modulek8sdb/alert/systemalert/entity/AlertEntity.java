@@ -3,8 +3,8 @@ package com.xiilab.modulek8sdb.alert.systemalert.entity;
 import java.util.List;
 
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertType;
+import com.xiilab.modulecommon.alert.enums.AlertEventType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,7 +34,7 @@ public class AlertEntity {
 	private String alertName;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "ALERT_TYPE")
-	private SystemAlertType alertType;
+	private AlertType alertType;
 	@Column(name = "ALERT_ROLE")
 	@Enumerated(EnumType.STRING)
 	private AlertRole alertRole;
@@ -44,15 +44,15 @@ public class AlertEntity {
 
 	@Column(name = "ALERT_EVENT_TYPE")
 	@Enumerated(EnumType.STRING)
-	private SystemAlertEventType systemAlertEventType;
+	private AlertEventType alertEventType;
 
 	@Builder
-	public AlertEntity(String alertName, SystemAlertType alertType,
+	public AlertEntity(String alertName, AlertType alertType,
 		AlertRole alertRole,
-		SystemAlertEventType systemAlertEventType) {
+		AlertEventType alertEventType) {
 		this.alertName = alertName;
 		this.alertType = alertType;
 		this.alertRole = alertRole;
-		this.systemAlertEventType = systemAlertEventType;
+		this.alertEventType = alertEventType;
 	}
 }

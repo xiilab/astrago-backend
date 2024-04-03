@@ -2,10 +2,9 @@ package com.xiilab.servercore.alert.systemalert.service;
 
 import java.util.List;
 
-import com.xiilab.modulecommon.enums.ReadYN;
-import com.xiilab.modulek8s.common.dto.Pageable;
+import org.springframework.data.domain.Pageable;
+
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;

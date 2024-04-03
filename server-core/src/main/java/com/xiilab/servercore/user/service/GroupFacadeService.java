@@ -35,8 +35,8 @@ public interface GroupFacadeService {
 
 	// 워크스페이스 그룹 사용자 조회
 	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);
-	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList);
-	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList);
+	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList, UserInfoDTO userInfoDTO);
+	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList, UserInfoDTO userInfoDTO);
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 
 	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText, AuthType authType);

@@ -14,7 +14,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class BatchJobInformer extends JobInformer{
+public class BatchJobInformer extends JobInformer {
 	private final K8sAdapter k8sAdapter;
 	private final GroupService groupService;
 	private final SystemAlertRepository systemAlertRepository;
@@ -62,10 +62,12 @@ public class BatchJobInformer extends JobInformer{
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
 		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
 		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
-		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository, K8sAdapter k8sAdapter,
+		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository,
+		K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
 		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
-		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository,
+		GroupService groupService, SystemAlertRepository systemAlertRepository,
+		WorkspaceAlertSetRepository workspaceAlertSetRepository,
 		ApplicationEventPublisher publisher) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
@@ -96,11 +98,13 @@ public class BatchJobInformer extends JobInformer{
 
 				//워크로드 생성 알림 발송
 				String workloadName = batchWorkloadInfoFromResource.getWorkloadName();
-				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
-				String title = SystemAlertMessage.WORKLOAD_START_CREATOR.getTitle();
-				String message = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
-				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
-					emailTitle, title, message, batchWorkloadInfoFromResource.getWorkspaceResourceName());
+				String emailTitle = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
+				String title = AlertMessage.WORKLOAD_START_CREATOR.getTitle();
+				String message = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+					AlertName.USER_WORKLOAD_START,
+					null, batchWorkloadInfoFromResource.getCreatorId(), emailTitle, title, message,
+					batchWorkloadInfoFromResource.getWorkspaceResourceName(), null);
 
 				publisher.publishEvent(workspaceUserAlertEvent);
 			}
@@ -114,7 +118,8 @@ public class BatchJobInformer extends JobInformer{
 						K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job2);
 						Pod pod = kubernetesClient.pods()
 							.inNamespace(namespace)
-							.withLabels(Map.of(LabelField.APP.getField(), metadataFromResource.getWorkloadResourceName()))
+							.withLabels(
+								Map.of(LabelField.APP.getField(), metadataFromResource.getWorkloadResourceName()))
 							.list()
 							.getItems()
 							.get(0);
@@ -125,15 +130,19 @@ public class BatchJobInformer extends JobInformer{
 						String creator =
 							metadataFromResource.getCreatorId() != null ? metadataFromResource.getCreatorId() :
 								"SYSTEM";
+
 						//워크로드 종료 알림 발송
 						String workloadName = metadataFromResource.getWorkloadName();
-						String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
-						String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
-						String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
-						WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
-							emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
+						String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(),
+							workloadName);
+						String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
+						String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+						WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+							AlertName.USER_WORKLOAD_END, null, metadataFromResource.getCreatorId(), emailTitle, title, message,
+							metadataFromResource.getWorkspaceResourceName(), null);
 
 						publisher.publishEvent(workspaceUserAlertEvent);
+
 						try {
 							FileUtils.saveLogFile(logResult, metadataFromResource.getWorkloadResourceName(), creator);
 						} catch (IOException e) {
@@ -166,27 +175,19 @@ public class BatchJobInformer extends JobInformer{
 				}
 
 				// 서비스 삭제
-				deleteServices(metadataFromResource.getWorkspaceResourceName(), metadataFromResource.getWorkloadResourceName());
+				deleteServices(metadataFromResource.getWorkspaceResourceName(),
+					metadataFromResource.getWorkloadResourceName());
 
 				//워크로드 종료 알림 발송
 				String workloadName = metadataFromResource.getWorkloadName();
-				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
-				String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
-				String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
-				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_END,
-					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
+				String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
+				String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
+				String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
+				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+					AlertName.USER_WORKLOAD_DELETE, null, metadataFromResource.getCreatorId(),
+					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName(), null);
 
 				publisher.publishEvent(workspaceUserAlertEvent);
-				// WorkspaceAlertSetEntity workspaceAlertSet = getAlertSet(job.getMetadata().getName());
-				// // 해당 워크스페이스 알림 설정이 True인 경우
-				// if(workspaceAlertSet.isWorkloadEndAlert()){
-				// 	systemAlertRepository.save(SystemAlertEntity.builder()
-				// 		.recipientId(metadataFromResource.getCreatorId())
-				// 		.systemAlertType(SystemAlertType.WORKLOAD)
-				// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), job.getMetadata().getName()))
-				// 		.senderId("SYSTEM")
-				// 		.build());
-				// }
 			}
 		});
 
@@ -197,7 +198,7 @@ public class BatchJobInformer extends JobInformer{
 	private boolean getJobCompleted(JobStatus jobStatus) {
 		if (jobStatus.getSucceeded() != null && jobStatus.getSucceeded() > 0) {
 			return true;
-		} else if(jobStatus.getFailed() != null && jobStatus.getFailed() > 0) {
+		} else if (jobStatus.getFailed() != null && jobStatus.getFailed() > 0) {
 			return true;
 		} else {
 			return false;

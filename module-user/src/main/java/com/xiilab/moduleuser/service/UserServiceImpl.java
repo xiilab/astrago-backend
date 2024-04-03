@@ -6,11 +6,8 @@ import java.util.Map;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
-import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
@@ -106,16 +103,18 @@ public class UserServiceImpl implements UserService {
 		//알림 발송 해야함
 		//true 활성화
 		if(enable){
-			String emailTitle = String.format(SystemAlertMessage.USER_ENABLED.getMailTitle());
-			String title = SystemAlertMessage.USER_ENABLED.getTitle();
-			String message = String.format(SystemAlertMessage.USER_ENABLED.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
-			userAlertEvent = new UserAlertEvent(emailTitle, title, message, id);
+			AlertMessage userEnabled = AlertMessage.USER_ENABLED;
+			String emailTitle = String.format(userEnabled.getMailTitle());
+			String title = userEnabled.getTitle();
+			String message = String.format(userEnabled.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
+			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
 		}else{//false 비활성화
-			String emailTitle = String.format(SystemAlertMessage.USER_DISABLED.getMailTitle());
-			String title = SystemAlertMessage.USER_DISABLED.getTitle();
-			String message = String.format(SystemAlertMessage.USER_DISABLED.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
-			userAlertEvent = new UserAlertEvent(emailTitle, title, message, id);
+			String emailTitle = String.format(AlertMessage.USER_DISABLED.getMailTitle());
+			String title = AlertMessage.USER_DISABLED.getTitle();
+			String message = String.format(AlertMessage.USER_DISABLED.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
+			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
 		}
+
 		eventPublisher.publishEvent(userAlertEvent);
 	}
 
