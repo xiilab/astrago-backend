@@ -14,7 +14,7 @@ public enum AlertMessage {
 	// 워크스페이스
 	WORKSPACE_CREATE_ADMIN("[Astrago] 워크스페이스(%s) 생성 알림", "워크스페이스 생성", "%s(%s)님이 워크스페이스(%s)를 생성하였습니다."),
 	WORKSPACE_CREATE_OWNER("[Astrago] 워크스페이스(%s) 생성 알림", "워크스페이스 생성", "워크스페이스(%s)를 생성하였습니다."),
-	WORKSPACE_RESOURCE_OVER_ADMIN("[Astrago] 워크스페이스(%s) 리소스 초과 알림", "워크스페이스 리소스 초과", "%(%s)님의 워크스페이스(%s)이(가) 리소스 초과되었습니다."),
+	WORKSPACE_RESOURCE_OVER_ADMIN("[Astrago] 워크스페이스(%s) 리소스 초과 알림", "워크스페이스 리소스 초과", "%s(%s)님의 워크스페이스(%s)이(가) 리소스 초과되었습니다."),
 	WORKSPACE_RESOURCE_REQUEST_ADMIN("[Astrago] 워크스페이스(%s) 리소스 요청 알림", "워크스페이스 리소스 요청", "%s(%s)님이 워크스페이스(%s)의 리소스 추가 요청을 하였습니다."),
 	WORKSPACE_RESOURCE_REQUEST_OWNER("[Astrago] 워크스페이스(%s) 리소스 요청 알림", "워크스페이스 리소스 요청", "워크스페이스(%s)의 리소스 추가 요청을 하였습니다."),
 	WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER("[Astrago] 워크스페이스(%s) 리소스 결과 알림", "워크스페이스 리소스 요청 결과", "관리자(%s)님이 워크스페이스(%s)의 리소스 요청을 %s 하였습니다."),

@@ -3,6 +3,7 @@ package com.xiilab.servercore.node.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,5 +22,8 @@ public class NodeService {
 	 */
 	public void updateMIGAllProfile(String nodeName, String option) {
 		nodeRepository.updateMIGProfile(nodeName, option);
+	}
+	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
+		return nodeRepository.getNodeList(pageNo, pageSize);
 	}
 }

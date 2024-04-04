@@ -107,8 +107,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//group 추가
 		groupService.createWorkspaceGroup(GroupReqDTO.builder()
 			.name(workspace.getResourceName())
-			.createdBy(workspace.getCreatorUserName())
-			.createdUserId(workspace.getCreatorId())
+			// .createdBy(workspace.getCreatorUserName())
+			.createdBy(userInfoDTO.getUserName())
+			.createdUserId(userInfoDTO.getId())
 			.description(workspace.getDescription())
 			.users(applicationForm.getUserIds())
 			.build(), userInfoDTO);
@@ -136,7 +137,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 		// 관리자에게 워크스페이스 생성 알림 메시지 발송
 		AlertMessage workspaceCreateAdmin = AlertMessage.WORKSPACE_CREATE_ADMIN;
-		String workspaceName = applicationForm.getName();
+		String workspaceName = workspace.getName();
+		String workspaceResourceName = workspace.getResourceName();
 		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());
 		String title = workspaceCreateAdmin.getTitle();
 		String message = String.format(workspaceCreateAdmin.getMessage(), userInfoDTO.getUserFullName(),
@@ -152,7 +154,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		eventPublisher.publishEvent(
 			new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_CREATE, userInfoDTO.getId(),
 				userInfoDTO.getId(), emailTitle, createOwnerTitle,
-				createOwnerMessage, workspaceName, pageNaviParam));
+				createOwnerMessage, workspaceResourceName, pageNaviParam));
 	}
 
 	@Override
@@ -302,25 +304,29 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		}
 
 		// 관리자한테 워크스페이스 리소스 요청 알림 메시지 발송
+		PageNaviParam pageNaviParam = PageNaviParam.builder()
+			.workspaceResourceName(workspaceInfo.getResourceName())
+			.build();
+
 		AlertMessage workspaceResourceRequestAdmin = AlertMessage.WORKSPACE_RESOURCE_REQUEST_ADMIN;
 		String mailTitle = String.format(workspaceResourceRequestAdmin.getTitle(),
-			workspaceResourceReqDTO.getWorkspace());
+			workspaceInfo.getName());
 		String title = workspaceResourceRequestAdmin.getTitle();
-		String message = String.format(workspaceResourceRequestAdmin.getMessage(), userInfoDTO.getUserFullName(),
-			workspaceResourceReqDTO.getWorkspace());
+		String message = String.format(workspaceResourceRequestAdmin.getMessage(), userInfoDTO.getUserFullName(), userInfoDTO.getUserName(),
+			workspaceInfo.getName());
 		eventPublisher.publishEvent(
-			new AdminAlertEvent(AlertName.ADMIN_USER_RESOURCE_REQUEST, userInfoDTO.getId(), mailTitle, title, message, null));
+			new AdminAlertEvent(AlertName.ADMIN_USER_RESOURCE_REQUEST, userInfoDTO.getId(), mailTitle, title, message, pageNaviParam));
 
 		// 워크스페이스 리소스 요청한 사용자에게 알림 발송
 		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_RESOURCE_REQUEST_OWNER;
-		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), workspaceResourceReqDTO.getWorkspace());
+		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), workspaceInfo.getName());
 		String createOwnerTitle = workspaceCreateOwner.getTitle();
 		String createOwnerMessage = String.format(workspaceCreateOwner.getMessage(),
-			workspaceResourceReqDTO.getWorkspace());
+			workspaceInfo.getName());
 		eventPublisher.publishEvent(
 			new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_RESOURCE_REQUEST, userInfoDTO.getId(),
 				workspaceInfo.getCreatorId(), emailTitle, createOwnerTitle,
-				createOwnerMessage, workspaceResourceReqDTO.getWorkspace(), null));
+				createOwnerMessage, workspaceResourceReqDTO.getWorkspace(), pageNaviParam));
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulecommon.alert.enums.AlertName;
@@ -82,6 +83,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		for (String userId : userIdList) {
 			workspaceAlertService.deleteWorkspaceAlertMappingByUserIdAndWorkspaceName(userId, groupName);
 		}
+
 		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO);
 	}
 	@Override
@@ -97,13 +99,17 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 
 	private void sendModifyWorkspaceMemberEvent(String groupName, UserInfoDTO userInfoDTO) {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(groupName);
+		PageNaviParam pageNaviParam = PageNaviParam.builder()
+			.workspaceResourceName(workspace.getResourceName())
+			.build();
+
 		String workspaceName = workspace.getName();
 		String emailTitle = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMailTitle(), workspaceName);
 		String title = AlertMessage.WORKSPACE_MEMBER_UPDATE.getTitle();
 		String message = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
 
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_MEMBER_UPDATE,
-			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, null);
+			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}

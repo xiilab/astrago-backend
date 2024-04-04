@@ -12,6 +12,7 @@ import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
@@ -86,14 +87,20 @@ public class InteractiveJobInformer extends JobInformer {
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 				K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
+
 				//워크로드 생성 알림 발송
+				PageNaviParam pageNaviParam = PageNaviParam.builder()
+					.workspaceResourceName(metadataFromResource.getWorkspaceResourceName())
+					.workloadResourceName(metadataFromResource.getWorkloadResourceName())
+					.workloadType(metadataFromResource.getWorkloadType())
+					.build();
 				String workloadName = metadataFromResource.getWorkloadName();
 				String emailTitle = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
 				String title = AlertMessage.WORKLOAD_START_CREATOR.getTitle();
 				String message = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
 				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 					AlertName.USER_WORKLOAD_START, null, metadataFromResource.getCreatorId(), emailTitle, title,
-					message, metadataFromResource.getWorkspaceResourceName(), null);
+					message, metadataFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 				publisher.publishEvent(workspaceUserAlertEvent);
 			}

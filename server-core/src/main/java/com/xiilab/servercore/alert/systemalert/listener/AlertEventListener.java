@@ -178,7 +178,13 @@ public class AlertEventListener {
 	public void handleUserAlertEvent(UserAlertEvent userAlertEvent) {
 		UserDTO.UserInfo findUser = userRepository.getUserById(userAlertEvent.userId());
 		// AlertRole, Alert 이름으로 ID 조회
-		if (!ObjectUtils.isEmpty(userAlertEvent)) {
+		if (!ObjectUtils.isEmpty(userAlertEvent.alertName())) {
+			UserDTO.UserInfo findSendUser = userRepository.getUserById(userAlertEvent.userId());
+			RegUser regUser = new RegUser("SYSTEM", "SYSTEM", "SYSTEM");
+			if (!ObjectUtils.isEmpty(findSendUser)) {
+				regUser = new RegUser(findSendUser.getId(), findSendUser.getUserName(), findSendUser.getLastName() + findSendUser.getFirstName());
+			}
+
 			// AlertRole, Alert 이름으로 ID 조회
 			AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(userAlertEvent.alertName().getName(),
 				AlertRole.USER).orElseThrow(() -> new RestApiException(SystemAlertErrorCode.NOT_FOUND_ALERT));
@@ -193,6 +199,7 @@ public class AlertEventListener {
 				.alertEventType(findAlert.getAlertEventType())
 				.alertRole(findAlert.getAlertRole())
 				.readYN(ReadYN.N)
+				.regUser(regUser)
 				.build();
 			systemAlertRepository.save(saveSystemAlert);
 		}

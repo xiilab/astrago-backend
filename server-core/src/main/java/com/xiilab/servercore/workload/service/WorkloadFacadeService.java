@@ -91,6 +91,7 @@ import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
+import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
@@ -115,7 +116,8 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final SvcModuleFacadeService svcModuleFacadeService;
-	private final NodeFacadeService nodeFacadeService;
+	// private final NodeFacadeService nodeFacadeService;
+	private final NodeService nodeService;
 	private final PinService pinService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
@@ -204,7 +206,7 @@ public class WorkloadFacadeService {
 				workspaceResourceStatus.getName());
 			String title = workspaceResourceOverAdmin.getTitle();
 			String message = String.format(workspaceResourceOverAdmin.getMessage(),
-				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorFullName(),
+				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorUserName(),
 				workspaceResourceStatus.getName());
 
 			eventPublisher.publishEvent(
@@ -327,13 +329,19 @@ public class WorkloadFacadeService {
 		}
 
 		if (!ObjectUtils.isEmpty(activeWorkloadDetail)) {
+			PageNaviParam pageNaviParam = PageNaviParam.builder()
+				.workspaceResourceName(activeWorkloadDetail.getWorkSpaceResourceName())
+				.workloadResourceName(activeWorkloadDetail.getWorkloadResourceName())
+				.workloadType(activeWorkloadDetail.getWorkloadType())
+				.build();
+
 			//워크로드 종료 알림 발송
 			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
 			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
 			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(),
-				emailTitle, title, message, workspaceName, null);
+				emailTitle, title, message, workspaceName, pageNaviParam);
 			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
 	}
@@ -896,7 +904,7 @@ public class WorkloadFacadeService {
 		// }
 
 		if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
-			ResponseDTO.PageNodeDTO nodeList = nodeFacadeService.getNodeList(1, 1);
+			ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
 			Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
 			if (node.isPresent()) {
 				// 서비스 포트 찾기

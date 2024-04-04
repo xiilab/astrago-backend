@@ -17,6 +17,7 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.util.FileUtils;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -96,6 +97,12 @@ public class BatchJobInformer extends JobInformer {
 
 				K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
 
+				PageNaviParam pageNaviParam = PageNaviParam.builder()
+					.workspaceResourceName(batchWorkloadInfoFromResource.getWorkspaceResourceName())
+					.workloadResourceName(batchWorkloadInfoFromResource.getWorkloadResourceName())
+					.workloadType(batchWorkloadInfoFromResource.getWorkloadType())
+					.build();
+
 				//워크로드 생성 알림 발송
 				String workloadName = batchWorkloadInfoFromResource.getWorkloadName();
 				String emailTitle = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
@@ -104,7 +111,7 @@ public class BatchJobInformer extends JobInformer {
 				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 					AlertName.USER_WORKLOAD_START,
 					null, batchWorkloadInfoFromResource.getCreatorId(), emailTitle, title, message,
-					batchWorkloadInfoFromResource.getWorkspaceResourceName(), null);
+					batchWorkloadInfoFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 				publisher.publishEvent(workspaceUserAlertEvent);
 			}
@@ -132,6 +139,12 @@ public class BatchJobInformer extends JobInformer {
 								"SYSTEM";
 
 						//워크로드 종료 알림 발송
+						PageNaviParam pageNaviParam = PageNaviParam.builder()
+							.workspaceResourceName(metadataFromResource.getWorkspaceResourceName())
+							.workloadResourceName(metadataFromResource.getWorkloadResourceName())
+							.workloadType(metadataFromResource.getWorkloadType())
+							.build();
+
 						String workloadName = metadataFromResource.getWorkloadName();
 						String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(),
 							workloadName);
@@ -139,7 +152,7 @@ public class BatchJobInformer extends JobInformer {
 						String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
 						WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 							AlertName.USER_WORKLOAD_END, null, metadataFromResource.getCreatorId(), emailTitle, title, message,
-							metadataFromResource.getWorkspaceResourceName(), null);
+							metadataFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 						publisher.publishEvent(workspaceUserAlertEvent);
 
