@@ -151,7 +151,7 @@ public class BatchJobInformer extends JobInformer{
 				Namespace namespaceObject = kubernetesClient.namespaces().withName(namespace).get();
 				Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 				K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
-
+				log.info(metadataFromResource.getCpuReq() + " " + metadataFromResource.getMemReq());
 				// 잡 히스토리 저장
 				if (metadataFromResource != null) {
 					saveJobHistory(namespace, namespaceObject, container, metadataFromResource);
