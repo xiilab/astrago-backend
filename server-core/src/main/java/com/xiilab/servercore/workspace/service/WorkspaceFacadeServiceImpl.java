@@ -434,20 +434,21 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		//검색 조건으로 전체 조회
 		List<WorkspaceDTO.AdminResponseDTO> workspaceList = workspaceModuleFacadeService.getAdminWorkspaceList(
 			searchCondition);
-		Comparator<WorkspaceDTO.AdminResponseDTO> comparator = switch (sortCondition) {
-			case CPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu);
-			case CPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu).reversed();
-			case MEM_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem);
-			case MEM_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem).reversed();
-			case GPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu);
-			case GPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed();
-			case CREATOR_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator);
-			case CREATOR_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed();
-			case CREATED_AT_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt);
-			case CREATED_AT_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed();
-		};
-		workspaceList.sort(comparator);
-
+		if (sortCondition != null) {
+			Comparator<WorkspaceDTO.AdminResponseDTO> comparator = switch (sortCondition) {
+				case CPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu);
+				case CPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu).reversed();
+				case MEM_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem);
+				case MEM_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem).reversed();
+				case GPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu);
+				case GPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed();
+				case CREATOR_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator);
+				case CREATOR_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed();
+				case CREATED_AT_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt);
+				case CREATED_AT_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed();
+			};
+			workspaceList.sort(comparator);
+		}
 		return new PageDTO<>(workspaceList, pageNum, pageSize);
 	}
 
