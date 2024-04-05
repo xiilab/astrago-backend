@@ -13,6 +13,7 @@ import java.util.Set;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -409,7 +410,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 		String migProfile = node.getMetadata().getLabels().get("nvidia.com/mig.config");
 		String migProfileStatus = node.getMetadata().getLabels().get("nvidia.com/mig.config.state");
-		if (migProfile.equals("all-disabled")) {
+		Map<String, Object> migConfigMap = getMigConfigMap();
+		if (CollectionUtils.isEmpty(migConfigMap) || migProfile.equals("all-disabled")) {
 			int gpuCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count"));
 			List<Integer> gpuIndex = new ArrayList<>();
 			for (int i = 0; i < gpuCount; i++) {
@@ -425,7 +427,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		} else {
-			Map<String, Object> migConfigMap = getMigConfigMap();
 			List<Map<String, Object>> rawMIGInfo = (List<Map<String, Object>>)migConfigMap.get(migProfile);
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
@@ -473,23 +474,27 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	private List<MIGGpuDTO.MIGInfoDTO> convertMapToMIGInfo(List<Map<String, Object>> migInfoList) {
-		return migInfoList.stream().map(migInfo -> {
-			boolean migEnabled = (boolean)migInfo.get("mig-enabled");
-			List<Integer> devices = (List<Integer>)migInfo.get("devices");
-			if (migEnabled == false) {
-				return MIGGpuDTO.MIGInfoDTO.builder()
-					.migEnable(migEnabled)
-					.gpuIndexs(devices)
-					.build();
-			} else {
-				Map<String, Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
-				return MIGGpuDTO.MIGInfoDTO.builder()
-					.migEnable(migEnabled)
-					.gpuIndexs(devices)
-					.profile(migProfiles)
-					.build();
-			}
-		}).toList();
+		if (CollectionUtils.isEmpty(migInfoList)) {
+			return null;
+		} else {
+			return migInfoList.stream().map(migInfo -> {
+				boolean migEnabled = (boolean)migInfo.get("mig-enabled");
+				List<Integer> devices = (List<Integer>)migInfo.get("devices");
+				if (migEnabled == false) {
+					return MIGGpuDTO.MIGInfoDTO.builder()
+						.migEnable(migEnabled)
+						.gpuIndexs(devices)
+						.build();
+				} else {
+					Map<String, Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
+					return MIGGpuDTO.MIGInfoDTO.builder()
+						.migEnable(migEnabled)
+						.gpuIndexs(devices)
+						.profile(migProfiles)
+						.build();
+				}
+			}).toList();
+		}
 	}
 
 	private void updateMigConfigMap(Map<String, String> data) {
