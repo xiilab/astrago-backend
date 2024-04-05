@@ -336,7 +336,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			List<Map<String, Integer>> profiles = migProfileList.getProfile();
 			for (Map<String, Integer> profile : profiles) {
 				int sum = profile.values().stream().toList().stream().mapToInt(Integer::intValue).sum();
-				if (sum == giCount) {
+				if (sum == giCount && profile.size() == 1) {
 					resProfile.add(profile);
 				}
 			}
