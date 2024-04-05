@@ -165,12 +165,10 @@ public class WorkloadFacadeService {
 		}
 
 		try {
-			// 커스텀 이미지일 때만 이미지 데이터 저장
-			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 			// 리소스 초과 알림
 			checkAndSendWorkspaceResourceOverAlert(moduleCreateWorkloadReqDTO, userInfoDTO);
-			// 워크로드 엔티티에 데이터 추가
-			// workspaceAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
+			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+			// 워크로드
 		} catch (RestApiException e) {
 			e.printStackTrace();
 			throw e;
@@ -187,16 +185,19 @@ public class WorkloadFacadeService {
 		if (cpuUsed != 0.0f) {
 			cpuUsed = cpuUsed / 1000.0f;
 		}
-		boolean isCpuOverResource = isOverResource(String.valueOf(cpuUsed),
-			moduleCreateWorkloadReqDTO.getCpuRequest(), workspaceResourceStatus.getResourceStatus().getCpuLimit());
-		// GPU
-		boolean isGpuOverResource = isOverResource(workspaceResourceStatus.getResourceStatus().getGpuUsed(),
-			moduleCreateWorkloadReqDTO.getGpuRequest(), workspaceResourceStatus.getResourceStatus().getGpuLimit());
+
 		// MEM
 		float memUsed = Float.parseFloat(workspaceResourceStatus.getResourceStatus().getMemUsed());
 		if (memUsed != 0.0f) {
 			memUsed = memUsed / 1000.0f;
 		}
+
+		boolean isCpuOverResource = isOverResource(String.valueOf(cpuUsed),
+			moduleCreateWorkloadReqDTO.getCpuRequest(), workspaceResourceStatus.getResourceStatus().getCpuLimit());
+		// GPU
+		boolean isGpuOverResource = isOverResource(workspaceResourceStatus.getResourceStatus().getGpuUsed(),
+			moduleCreateWorkloadReqDTO.getGpuRequest(), workspaceResourceStatus.getResourceStatus().getGpuLimit());
+
 		boolean isMemOverResource = isOverResource(String.valueOf(memUsed), moduleCreateWorkloadReqDTO.getMemRequest(),
 			workspaceResourceStatus.getResourceStatus().getMemLimit());
 

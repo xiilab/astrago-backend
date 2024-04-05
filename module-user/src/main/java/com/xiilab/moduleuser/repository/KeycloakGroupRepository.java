@@ -176,6 +176,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 		return new GroupUserDTO.SubGroupUserDto(subGroups, groupMembers);
 	}
+
 	private boolean isDefaultGroup(GroupRepresentation groupRepresentation) {
 		return groupRepresentation.getName().equalsIgnoreCase("default") &&
 			groupRepresentation.getPath().equalsIgnoreCase("/account/default");
@@ -188,6 +189,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.toList();
 		return groups.size() == 1;
 	}
+
 	private List<UserRepresentation> getMembersWithSingleGroup(GroupResource groupResource) {
 		List<UserRepresentation> groupMembers = new ArrayList<>();
 		List<UserRepresentation> memberList = groupResource.members();
@@ -290,12 +292,21 @@ public class KeycloakGroupRepository implements GroupRepository {
 		//그룹내 유저, 요청받은 유저 조회 후 중복 삭제
 		Set<String> userIds = new HashSet<>();
 		for (String userId : addWorkspaceUsersDTO.getUserIds()) {
-			userIds.add(userId);
+			// 이미 그룹에 등록된 회원인지 조회 후 있으면 Set에서 삭제
+			Optional<GroupUserDTO.UserDTO> findUser = findUsersByGroupId(workspace.getId(), null).getUsers().stream()
+				.filter(groupUserDTO -> groupUserDTO.getUserId().equals(userId))
+				.findFirst();
+			if (findUser.isEmpty()) {
+				userIds.add(userId);
+			}
 		}
+
 		List<String> groupIds = addWorkspaceUsersDTO.getGroupIds();
 		getAllGroupMembers(userIds, groupIds);
 
 		for (String userId : userIds) {
+
+			// 등록된 회원이면 삭제
 			keycloakConfig.getRealmClient().users().get(userId).joinGroup(workspace.getId());
 			// 워크스페이스 회원 추가 검사를 위한 GroupUser 조회
 			Optional<GroupUserDTO.UserDTO> group = findUsersByGroupId(workspace.getId(), null).getUsers().stream()
