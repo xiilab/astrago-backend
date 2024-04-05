@@ -411,7 +411,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		String migProfile = node.getMetadata().getLabels().get("nvidia.com/mig.config");
 		String migProfileStatus = node.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 		Map<String, Object> migConfigMap = getMigConfigMap();
-		if (CollectionUtils.isEmpty(migConfigMap) || migProfile.equals("all-disabled")) {
+		if (migProfile.equals("all-disabled") || CollectionUtils.isEmpty((List<Map<String, Object>>)migConfigMap.get(migProfile))) {
 			int gpuCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count"));
 			List<Integer> gpuIndex = new ArrayList<>();
 			for (int i = 0; i < gpuCount; i++) {
