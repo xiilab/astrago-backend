@@ -25,6 +25,7 @@ public class CodeResDTO {
 	private CredentialResDTO credentialResDTO;
 	private RegUser regUser;
 	private LocalDateTime regDate;
+	private String defaultPath;
 
 	public CodeResDTO(CodeEntity codeEntity) {
 		this.id = codeEntity.getId();
@@ -35,5 +36,6 @@ public class CodeResDTO {
 		this.credentialResDTO = codeEntity.getCredentialEntity() == null ? null : new CredentialResDTO(codeEntity.getCredentialEntity());
 		this.regUser = codeEntity.getRegUser();
 		this.regDate = codeEntity.getRegDate();
+		this.defaultPath = codeEntity.getCodeDefaultMountPath();
 	}
 }
