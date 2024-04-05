@@ -8,25 +8,25 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulecommon.util.NumberValidUtils;
-import com.xiilab.modulek8s.common.dto.Pageable;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
@@ -56,8 +56,8 @@ public class AlertServiceImpl implements AlertService {
 			.message(saveSystemAlertReqDTO.getMessage())
 			.recipientId(saveSystemAlertReqDTO.getRecipientId())
 			.senderId(saveSystemAlertReqDTO.getSenderId())
-			.systemAlertType(saveSystemAlertReqDTO.getSystemAlertType())
-			.systemAlertEventType(saveSystemAlertReqDTO.getSystemAlertEventType())
+			.alertType(saveSystemAlertReqDTO.getAlertType())
+			.alertEventType(saveSystemAlertReqDTO.getAlertEventType())
 			.alertRole(saveSystemAlertReqDTO.getAlertRole())
 			.readYN(ReadYN.N)
 			.build();
@@ -74,24 +74,24 @@ public class AlertServiceImpl implements AlertService {
 	@Override
 	public FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String loginUserId,
 		SystemAlertReqDTO.FindSearchCondition findSearchCondition, Pageable pageable) {
+		// 페이징 처리
+		PageRequest pageRequest = null;
+		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
+			pageable.getPageSize())) {
+			pageRequest = PageRequest.of(pageable.previousOrFirst().getPageNumber(), pageable.getPageSize());
+		}
+
 		// 각 타입 카운트를 저장할 map
-		Map<SystemAlertType, Long> allAlertTypeCountMap = getAllAlertTypeCountMap(loginUserId,
+		Map<AlertType, Long> allAlertTypeCountMap = getAllAlertTypeCountMap(loginUserId,
 			findSearchCondition.getAlertRole() != null? findSearchCondition.getAlertRole() : null,
 			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
 			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
 			findSearchCondition.getSearchStartDate() != null ? findSearchCondition.getSearchStartDate() : null,
 			findSearchCondition.getSearchEndDate() != null ? findSearchCondition.getSearchEndDate() : null);
 
-		// 페이징 처리
-		PageRequest pageRequest = null;
-		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
-			pageable.getPageSize())) {
-			pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize());
-		}
-
 		// 항목별 조회 API
 		Page<SystemAlertEntity> systemAlertEntities = systemAlertRepository.findAlerts(loginUserId,
-			findSearchCondition.getSystemAlertType() != null ? findSearchCondition.getSystemAlertType() : null,
+			findSearchCondition.getAlertType() != null ? findSearchCondition.getAlertType() : null,
 			findSearchCondition.getAlertRole() != null? findSearchCondition.getAlertRole() : null,
 			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
 			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
@@ -101,10 +101,10 @@ public class AlertServiceImpl implements AlertService {
 
 		return FindSystemAlertResDTO.SystemAlerts.from(systemAlertEntities.getContent(),
 			allAlertTypeCountMap.values().stream().mapToLong(Long::longValue).sum(),
-			allAlertTypeCountMap.get(SystemAlertType.USER), allAlertTypeCountMap.get(SystemAlertType.WORKSPACE),
-			allAlertTypeCountMap.get(SystemAlertType.WORKLOAD), allAlertTypeCountMap.get(SystemAlertType.LICENSE),
-			allAlertTypeCountMap.get(SystemAlertType.NODE), allAlertTypeCountMap.get(SystemAlertType.MEMBER),
-			allAlertTypeCountMap.get(SystemAlertType.RESOURCE));
+			allAlertTypeCountMap.get(AlertType.USER), allAlertTypeCountMap.get(AlertType.WORKSPACE),
+			allAlertTypeCountMap.get(AlertType.WORKLOAD), allAlertTypeCountMap.get(AlertType.LICENSE),
+			allAlertTypeCountMap.get(AlertType.NODE), allAlertTypeCountMap.get(AlertType.MEMBER),
+			allAlertTypeCountMap.get(AlertType.RESOURCE));
 	}
 
 	@Override
@@ -216,10 +216,10 @@ public class AlertServiceImpl implements AlertService {
 			userInfoDTO.getId());
 	}
 
-	private Map<SystemAlertType, Long> getAllAlertTypeCountMap(String loginUserId, AlertRole alertRole, ReadYN readYN, String searchText,
+	private Map<AlertType, Long> getAllAlertTypeCountMap(String loginUserId, AlertRole alertRole, ReadYN readYN, String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate) {
-		Map<SystemAlertType, Long> allAlertTypeCountMap = new HashMap<>();
-		SystemAlertType[] values = SystemAlertType.values();
+		Map<AlertType, Long> allAlertTypeCountMap = new HashMap<>();
+		AlertType[] values = AlertType.values();
 
 		for (int i = 0; i < values.length; i++) {
 			allAlertTypeCountMap.put(values[i], 0L);
@@ -229,7 +229,7 @@ public class AlertServiceImpl implements AlertService {
 			searchText, searchStartDate, searchEndDate, null);
 		for (SystemAlertEntity allSystemAlertEntity : allSystemAlertEntities.getContent()) {
 			// 각 알람 타입별로 카운트 증가
-			allAlertTypeCountMap.merge(allSystemAlertEntity.getSystemAlertType(), 1L, Long::sum);
+			allAlertTypeCountMap.merge(allSystemAlertEntity.getAlertType(), 1L, Long::sum);
 		}
 
 		// 항목별 알림 총합

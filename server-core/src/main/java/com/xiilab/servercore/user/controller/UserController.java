@@ -75,7 +75,7 @@ public class UserController {
 	@PatchMapping("/{id}/enable")
 	@Operation(summary = "사용자 enable 업데이트")
 	public ResponseEntity<HttpStatus> updateUserEnable(
-		@PathVariable String id,
+		@PathVariable(name = "id") String id,
 		@RequestParam(name = "enable") boolean enable) {
 		userFacadeService.updateUserEnable(id, enable);
 		return ResponseEntity.ok().build();

@@ -10,10 +10,16 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -63,6 +69,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final ModelRepository modelRepository;
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
+	private final ApplicationEventPublisher publisher;
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
@@ -166,9 +173,11 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName) {
-			JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
-					workspaceName, workloadResourceName).orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
+	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName,
+		String workloadResourceName) {
+		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
+				workspaceName, workloadResourceName)
+			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
 
 		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}
@@ -181,19 +190,43 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			.stream()
 			.filter(workspace -> workspace.contains("/owner"))
 			.toList();
-		// 잡 생성자 ID와 같거나 잡이 생성된 워크스페이스 owner면 삭제
-		if (jobEntity.getCreatorId().equals(userInfoDTO.getId()) || Arrays.asList(loginUserOwnerWorkspaceList).contains(jobEntity.getWorkspaceResourceName())) {
-			workloadHistoryRepo.deleteById(id);
-		} else {
+
+
+		String workloadName = jobEntity.getResourceName();
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
+		// 워크로드 생성자가 삭제
+		if (jobEntity.getCreatorId().equals(userInfoDTO.getId())) {
+
+			String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
+			String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
+			String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
+			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
+				jobEntity.getWorkspaceResourceName(), null);
+
+		} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || Arrays.asList(loginUserOwnerWorkspaceList)
+			.contains(jobEntity.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
+
+			String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMailTitle(), workloadName);
+			String title = AlertMessage.WORKLOAD_DELETE_ADMIN.getTitle();
+			String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
+			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
+				jobEntity.getWorkspaceResourceName(), null);
+		}  else {
 			throw new IllegalArgumentException("해당 유저는 워크스페이스 삭제 권한이 없습니다.");
 		}
+
+		workloadHistoryRepo.deleteById(id);
+		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
 	@Override
 	public void saveWorkloadHistory(WorkloadHistoryReqDTO.CreateWorkloadHistory createWorkloadHistory) {
 		// IMAGE 찾기
 		long imageId = Long.parseLong(createWorkloadHistory.getImageId());
-		ImageEntity imageEntity = imageRepository.findById(imageId).orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_SAVE_WORKLOAD_HISTORY));
+		ImageEntity imageEntity = imageRepository.findById(imageId)
+			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_SAVE_WORKLOAD_HISTORY));
 
 		JobEntity jobEntity = JobEntity.jobBuilder()
 			.name(createWorkloadHistory.getName())
@@ -217,18 +250,22 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		JobEntity job = workloadHistoryRepo.save(jobEntity);
 
 		// Dataset Mapping 엔티티 추가
-		saveDataMapping(getSplitIds(createWorkloadHistory.getDatasetIds()), datasetRepository::findById, job, EntityMappingType.DATASET, createWorkloadHistory.getDatasetInfoMap());
-		saveDataMapping(getSplitIds(createWorkloadHistory.getModelIds()), modelRepository::findById, job, EntityMappingType.MODEL, createWorkloadHistory.getModelInfoMap());
-		saveDataMapping(getSplitIds(createWorkloadHistory.getCodeIds()), codeRepository::findById, job, EntityMappingType.CODE, createWorkloadHistory.getCodesInfoMap());
-		saveDataMapping(getSplitIds(createWorkloadHistory.getImageId()), imageRepository::findById, job, EntityMappingType.IMAGE, null);
+		saveDataMapping(getSplitIds(createWorkloadHistory.getDatasetIds()), datasetRepository::findById, job,
+			EntityMappingType.DATASET, createWorkloadHistory.getDatasetInfoMap());
+		saveDataMapping(getSplitIds(createWorkloadHistory.getModelIds()), modelRepository::findById, job,
+			EntityMappingType.MODEL, createWorkloadHistory.getModelInfoMap());
+		saveDataMapping(getSplitIds(createWorkloadHistory.getCodeIds()), codeRepository::findById, job,
+			EntityMappingType.CODE, createWorkloadHistory.getCodesInfoMap());
+		saveDataMapping(getSplitIds(createWorkloadHistory.getImageId()), imageRepository::findById, job,
+			EntityMappingType.IMAGE, null);
 
 	}
 
 	@Override
 	public void editWorkloadHistory(WorkloadUpdateDTO workloadUpdateDTO) {
 		JobEntity findWorkload = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
-			workloadUpdateDTO.getWorkspaceResourceName(),
-			workloadUpdateDTO.getWorkloadResourceName())
+				workloadUpdateDTO.getWorkspaceResourceName(),
+				workloadUpdateDTO.getWorkloadResourceName())
 			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
 		findWorkload.updateJob(workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
 		workloadHistoryRepo.save(findWorkload);
@@ -283,7 +320,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public List<JobEntity> getWorkloadByResourceName(String workspaceResourceName){
+	public List<JobEntity> getWorkloadByResourceName(String workspaceResourceName) {
 		return workloadHistoryRepo.findByWorkspaceResourceName(workspaceResourceName);
 	}
 
@@ -296,17 +333,18 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	private String[] getSplitIds(String ids) {
-		return ids != null? ids.split(",") : null;
+		return ids != null ? ids.split(",") : null;
 	}
 
 	// 데이터셋 또는 모델 정보를 저장하는 메서드
-	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity, EntityMappingType type, Map<Long, Map<String, String>> infoMap) {
+	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity,
+		EntityMappingType type, Map<Long, Map<String, String>> infoMap) {
 		if (ids != null) {
 			for (String id : ids) {
 				if (StringUtils.hasText(id)) {
 					Optional<?> optionalEntity = findByIdFunction.apply(Long.valueOf(id));
 					optionalEntity.ifPresent(entity -> {
-						if(type == EntityMappingType.DATASET){
+						if (type == EntityMappingType.DATASET) {
 							Dataset dataset = (Dataset)entity;
 							Map<String, String> datasetInfoMap = infoMap.get(dataset.getDatasetId());
 							DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity = DatasetWorkLoadMappingEntity.builder()
@@ -315,7 +353,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 								.mountPath(datasetInfoMap.getOrDefault("mountPath", ""))
 								.build();
 							datasetWorkLoadMappingRepository.save(datasetWorkLoadMappingEntity);
-						}else if(type == EntityMappingType.MODEL){
+						} else if (type == EntityMappingType.MODEL) {
 							Model model = (Model)entity;
 							Map<String, String> modelInfoMap = infoMap.get(model.getModelId());
 
@@ -325,7 +363,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 								.mountPath(modelInfoMap.getOrDefault("mountPath", ""))
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
-						}else if(type == EntityMappingType.CODE){
+						} else if (type == EntityMappingType.CODE) {
 							CodeEntity code = (CodeEntity)entity;
 							Map<String, String> codeInfoMap = infoMap.get(code.getId());
 
@@ -337,7 +375,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 								.build();
 							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.IMAGE) {
-							ImageEntity image = (ImageEntity) entity;
+							ImageEntity image = (ImageEntity)entity;
 
 							ImageWorkloadMappingEntity imageWorkloadMappingEntity = ImageWorkloadMappingEntity.builder()
 								.workload(jobEntity)
