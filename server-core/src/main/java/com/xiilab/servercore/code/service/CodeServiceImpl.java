@@ -25,6 +25,7 @@ import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
 import lombok.RequiredArgsConstructor;
@@ -83,6 +84,7 @@ public class CodeServiceImpl implements CodeService {
 					.workspaceResourceName(codeReqDTO.getWorkspaceName())
 					.credentialEntity(credentialEntity)
 					.repositoryType(WORKSPACE)
+					.codeDefaultMountPath(codeReqDTO.getDefaultPath())
 					.build());
 			return new CodeResDTO(saveCode);
 		} catch (IllegalArgumentException e) {
@@ -156,6 +158,12 @@ public class CodeServiceImpl implements CodeService {
 	@Override
 	public void deleteCodeWorkloadMapping(Long jobId) {
 		codeWorkLoadMappingRepository.deleteByWorkloadId(jobId);
+	}
+
+	@Override
+	public void modifyCode(Long codeId, ModifyCodeReqDTO modifyCodeReqDTO) {
+		CodeEntity codeEntity = getCodeEntity(codeId);
+		codeEntity.modifyDefaultMountPath(modifyCodeReqDTO.getDefaultPath());
 	}
 
 	private CodeEntity getCodeEntity(long id) {

@@ -19,6 +19,7 @@ public class CodeReqDTO {
 	private Long credentialId;
 	private RepositoryType repositoryType;
 	private RepositoryAuthType repositoryAuthType;
+	private String defaultPath;
 
 	public CodeReqDTO(ModuleCodeReqDTO moduleCodeReqDTO) {
 		this.codeURL = moduleCodeReqDTO.getRepositoryURL();
