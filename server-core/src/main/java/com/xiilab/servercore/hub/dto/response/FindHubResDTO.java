@@ -13,6 +13,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
+import com.xiilab.servercore.hub.dto.request.HubReqDTO;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -53,13 +54,14 @@ public class FindHubResDTO extends ResDTO {
 		private String modelMountPath;
 		private FindHubCommonResDTO.HubImage hubImage;
 		private Map<String, String> envs;
+		private List<HubReqDTO.HyperParam> hyperParams;
 		private Map<String, Integer> ports;
 		private String command;
 
 		public static FindHubResDTO.HubDetail from(HubEntity hubEntity, Map<Long, Set<String>> typesMap) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
-				return FindHubResDTO.HubDetail.builder()
+				return HubDetail.builder()
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.description(hubEntity.getDescription())
@@ -73,12 +75,15 @@ public class FindHubResDTO extends ResDTO {
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
 					.envs(hubEntity.getEnvs() != null ?
-						objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
+						objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<>() {
 						}) : null)
 					.ports(hubEntity.getPorts() != null ?
-						objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
+						objectMapper.readValue(hubEntity.getPorts(), new TypeReference<>() {
 						}) : null)
 					.command(hubEntity.getCommand())
+					.hyperParams(hubEntity.getHyperParams() != null ?
+						objectMapper.readValue(hubEntity.getHyperParams(), new TypeReference<Map<String,String>>() {
+						}).entrySet().stream().map(e -> new HubReqDTO.HyperParam(e.getKey(), e.getValue())).toList() : null)
 					.regUserName(hubEntity.getRegUser().getRegUserName())
 					.regUserId(hubEntity.getRegUser().getRegUserId())
 					.regUserRealName(hubEntity.getRegUser().getRegUserRealName())

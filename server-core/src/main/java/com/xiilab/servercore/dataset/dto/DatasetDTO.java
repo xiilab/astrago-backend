@@ -174,6 +174,7 @@ public class DatasetDTO {
 		private String datasetName;
 		private StorageType storageType;
 		private String creator;
+		private String userId;
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
 		private String size;
@@ -192,6 +193,7 @@ public class DatasetDTO {
 					.division(dataset.getDivision())
 					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
 					.defaultPath(dataset.getDatasetDefaultMountPath())
+					.userId(dataset.getRegUser().getRegUserId())
 					.build();
 			} else if (dataset.isLocalDataset()) {
 				return DatasetInWorkspace.builder()
@@ -203,6 +205,7 @@ public class DatasetDTO {
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
 					.defaultPath(dataset.getDatasetDefaultMountPath())
+					.userId(dataset.getRegUser().getRegUserId())
 					.build();
 			}
 			return null;
@@ -220,6 +223,7 @@ public class DatasetDTO {
 					.division(dataset.getDataset().getDivision())
 					.size(CoreFileUtils.formatFileSize(dataset.getDataset().getDatasetSize()))
 					.defaultPath(dataset.getDatasetDefaultMountPath())
+					.userId(dataset.getRegUser().getRegUserId())
 					.build();
 			}else if (dataset.getDataset().isLocalDataset()) {
 				return DatasetInWorkspace.builder()
@@ -231,6 +235,7 @@ public class DatasetDTO {
 					.isAvailable(dataset.getDataset().isAvailable())
 					.division(dataset.getDataset().getDivision())
 					.defaultPath(dataset.getDatasetDefaultMountPath())
+					.userId(dataset.getRegUser().getRegUserId())
 					.build();
 			}
 			return null;

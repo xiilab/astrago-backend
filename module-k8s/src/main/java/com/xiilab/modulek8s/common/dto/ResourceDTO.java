@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ResourceDTO {
-	private Integer cpuReq;
-	private Integer memReq;
+	private Float cpuReq;
+	private Float memReq;
 	private Integer gpuReq;
 }

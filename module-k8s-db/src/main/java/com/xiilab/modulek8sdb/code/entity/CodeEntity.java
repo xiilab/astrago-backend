@@ -57,18 +57,21 @@ public class CodeEntity extends BaseEntity {
 	@Column(name = "WORKSPACE_NAME")
 	private String workspaceResourceName;
 
+	@Column(name = "CODE_DEFAULT_MOUNT_PATH")
+	private String codeDefaultMountPath;
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYn = DeleteYN.N;
 
 
 	@Builder(builderClassName = "dtoConverter", builderMethodName = "dtoConverter")
-	CodeEntity(CodeType codeType, String codeURL, String workspaceResourceName, CredentialEntity credentialEntity, RepositoryType repositoryType) {
+	CodeEntity(CodeType codeType, String codeURL, String workspaceResourceName, CredentialEntity credentialEntity, RepositoryType repositoryType, String codeDefaultMountPath) {
 		this.codeType = codeType;
 		this.codeURL = codeURL;
 		this.credentialEntity = credentialEntity;
 		this.workspaceResourceName = workspaceResourceName;
 		this.repositoryType = repositoryType;
+		this.codeDefaultMountPath = codeDefaultMountPath;
 	}
 
 	public CodeEntity(String title, CodeType codeType, RepositoryType repositoryType, String codeURL,
@@ -93,5 +96,8 @@ public class CodeEntity extends BaseEntity {
 		this.credentialEntity = credentialEntity;
 		this.workspaceResourceName = workspaceResourceName;
 		this.deleteYn = deleteYn;
+	}
+	public void modifyDefaultMountPath(String codeDefaultMountPath){
+		this.codeDefaultMountPath = codeDefaultMountPath;
 	}
 }

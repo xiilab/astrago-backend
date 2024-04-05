@@ -188,7 +188,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.TOKEN }}
-          repository: "xiilab/uyuni-infra"
+          repository: "xiilab/astrago-deployment"
       - name: debug
         run: echo "${{ needs.read.outputs.result }}"
 

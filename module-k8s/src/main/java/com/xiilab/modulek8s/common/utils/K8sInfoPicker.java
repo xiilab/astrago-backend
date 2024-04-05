@@ -15,7 +15,6 @@ import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
@@ -168,12 +167,9 @@ public class K8sInfoPicker {
 				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
-				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ? 0.0f :
-					containerResourceReq.getCpuReq())
-				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq()) ? 0 :
-					containerResourceReq.getGpuReq())
-				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ? 0.0f :
-					containerResourceReq.getMemReq())
+				.cpuReq(containerResourceReq.getCpuReq())
+				.memReq(containerResourceReq.getMemReq())
+				.gpuReq(containerResourceReq.getGpuReq())
 				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.envs(getEnvs(container.getEnv()))
@@ -203,10 +199,8 @@ public class K8sInfoPicker {
 		return K8SResourceMetadataDTO.builder()
 			.workloadResourceName(metadata.getName())
 			.workspaceResourceName(metadata.getNamespace())
-			.cpuReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ?
-				Float.valueOf(containerResourceReq.getCpuReq()) : null)
-			.memReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ?
-				Float.valueOf(containerResourceReq.getMemReq()) : null)
+			.cpuReq(containerResourceReq.getCpuReq())
+			.memReq(containerResourceReq.getMemReq())
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imageName(container.getImage())
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
@@ -254,12 +248,9 @@ public class K8sInfoPicker {
 				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
 				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
 				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
-				.cpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq()) ? 0.0f :
-					containerResourceReq.getCpuReq())
-				.gpuReq(NumberValidUtils.isNullOrZero(containerResourceReq.getGpuReq()) ? 0 :
-					containerResourceReq.getGpuReq())
-				.memReq(NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq()) ? 0.0f :
-					containerResourceReq.getMemReq())
+				.cpuReq(containerResourceReq.getCpuReq())
+				.memReq(containerResourceReq.getMemReq())
+				.gpuReq(containerResourceReq.getGpuReq())
 				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.envs(getEnvs(container.getEnv()))
@@ -289,8 +280,8 @@ public class K8sInfoPicker {
 		return K8SResourceMetadataDTO.builder()
 			.workloadResourceName(metadata.getName())
 			.workspaceResourceName(metadata.getNamespace())
-			.cpuReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getCpuReq())? Float.valueOf(containerResourceReq.getCpuReq()) : null)
-			.memReq(!NumberValidUtils.isNullOrZero(containerResourceReq.getMemReq())? Float.valueOf(containerResourceReq.getMemReq()) : null)
+			.cpuReq(containerResourceReq.getCpuReq())
+			.memReq(containerResourceReq.getMemReq())
 			.gpuReq(containerResourceReq.getGpuReq())
 			.imageName(container.getImage())
 			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
@@ -337,8 +328,8 @@ public class K8sInfoPicker {
 				Quantity mem = requests.get("memory");
 				Quantity gpu = requests.get("nvidia.com/gpu");
 
-				Integer cpuReq = cpu != null ? Integer.valueOf(cpu.getAmount()) : null;
-				Integer memReq = mem != null ? Integer.valueOf(mem.getAmount()) : null;
+				Float cpuReq = cpu != null ? convertQuantity(cpu) : null;
+				Float memReq = mem != null ? convertQuantity(mem) : null;
 				Integer gpuReq = gpu != null ? Integer.valueOf(gpu.getAmount()) : null;
 
 				return ResourceDTO.builder()
@@ -383,19 +374,28 @@ public class K8sInfoPicker {
 		return new ClusterResourceDTO(cpu, mem, gpu);
 	}
 
-	public static double convertQuantity(Quantity quantity) {
+	public static float convertQuantity(Quantity quantity) {
 		String format = quantity.getFormat();
-		double amount = Double.parseDouble(quantity.getAmount());
+		float amount = Float.parseFloat(quantity.getAmount());
 
 		if (!StringUtils.hasText(format) || format.equals("Gi")) {
+			// Gi는 이미 GB 단위이므로, 직접 반환
 			return amount;
 		} else if (format.equals("Ki")) {
-			return (amount / (1024.0 * 1024.0 * 1024.0 / 1024.0));
+			// KiB -> GB 변환
+			return (float)(amount / (1024.0 * 1024.0 * 1024.0 / 1024.0));
 		} else if (format.equals("Mi")) {
+			// MiB -> GB 변환
 			return (amount / 1024);
 		} else if (format.equals("m")) {
+			// CPU 자원인 m은 GB로 변환하는 것이 적절하지 않으므로, 예외 처리가 필요할 수 있음
+			// 여기서는 단순 예제로 m을 1000으로 나눈 값을 반환
 			return (amount / 1000);
+		} else if (format.equals("M")) {
+			// "M"이 실제로 메모리 단위로 사용될 경우 (Mebibyte 가정), GB로 변환
+			return (amount / 1024);
 		} else {
+			// 확인되지 않은 단위에 대한 예외 처리
 			throw new IllegalArgumentException(format + " format은 확인되지 않은 format입니다.");
 		}
 	}

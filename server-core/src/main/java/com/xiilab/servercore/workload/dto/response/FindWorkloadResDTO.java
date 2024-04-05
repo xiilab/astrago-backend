@@ -124,7 +124,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.codes(jobEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
 				.command(jobEntity.getWorkloadCMD())
 				.cpuRequest(jobEntity.getCpuRequest().floatValue())
-				.gpuRequest(jobEntity.getGpuRequest().intValue())
+				.gpuRequest(jobEntity.getGpuRequest() == null ? 0 : jobEntity.getGpuRequest())
 				.memRequest(jobEntity.getMemRequest().floatValue())
 				.regUserId(jobEntity.getCreatorId())
 				.regUserName(jobEntity.getCreatorName())

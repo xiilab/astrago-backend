@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
 import com.xiilab.servercore.code.service.CodeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +38,15 @@ public class CodeController {
 	@Operation(summary = "공유 소스 코드 목록 API")
 	public ResponseEntity<List<CodeResDTO>> getCodeList(@RequestParam(value = "workspacename") String workspaceName){
 		return new ResponseEntity<>(codeService.getCodeList(workspaceName), HttpStatus.OK);
+	}
+
+
+	@PatchMapping("/{id}")
+	@Operation(summary = "공유 소스 마운트 경로 수정 API")
+	public ResponseEntity<HttpStatus> modifyCode(@PathVariable(name = "id") Long codeId,
+		@RequestBody ModifyCodeReqDTO modifyCodeReqDTO){
+		codeService.modifyCode(codeId, modifyCodeReqDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
