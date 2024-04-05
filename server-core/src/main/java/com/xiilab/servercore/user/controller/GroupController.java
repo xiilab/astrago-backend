@@ -36,7 +36,8 @@ public class GroupController {
 
 	@GetMapping()
 	@Operation(summary = "그룹 리스트 조회")
-	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(@RequestParam(required = false, name = "searchText") String searchText) {
+	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(
+		@RequestParam(required = false, name = "searchText") String searchText) {
 		return ResponseEntity.ok(groupFacadeService.getGroupList(searchText));
 	}
 
@@ -54,7 +55,6 @@ public class GroupController {
 		return ResponseEntity.ok().build();
 	}
 
-
 	@PatchMapping("/{groupId}")
 	@Operation(summary = "그룹 수정")
 	public ResponseEntity<HttpStatus> modifyAccountGroup(
@@ -66,11 +66,13 @@ public class GroupController {
 
 	@GetMapping("/users")
 	@Operation(summary = "그룹, 유저 검색")
-	public ResponseEntity<UserDTO.SearchGroupAndUser> getUserAndGroupBySearchText(@RequestParam(name = "searchText") String searchText,
+	public ResponseEntity<UserDTO.SearchGroupAndUser> getUserAndGroupBySearchText(
+		@RequestParam(name = "searchText") String searchText,
 		@RequestParam(required = false, name = "authType") AuthType authType) {
 		UserDTO.SearchGroupAndUser searchResults = groupFacadeService.getUserAndGroupBySearchText(searchText, authType);
 		return new ResponseEntity<>(searchResults, HttpStatus.OK);
 	}
+
 	@PostMapping("/{groupId}/users")
 	@Operation(summary = "그룹 멤버 추가")
 	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId,
@@ -83,7 +85,7 @@ public class GroupController {
 	@Operation(summary = "그룹 멤버 삭제")
 	public ResponseEntity<HttpStatus> deleteGroupMemberByUserId(
 		@PathVariable(name = "groupId") String groupId,
-		@RequestBody List<String> userIdList){
+		@RequestBody List<String> userIdList) {
 		groupFacadeService.deleteGroupMemberByUserId(groupId, userIdList);
 		return ResponseEntity.ok().build();
 	}
@@ -104,23 +106,28 @@ public class GroupController {
 
 	@GetMapping("/ws/{groupName}")
 	@Operation(summary = "워크스페이스 멤버 조회")
-	public ResponseEntity<List<GroupUserDTO.UserDTO>> getWorkspaceMember(@PathVariable(name = "groupName") String groupName) {
+	public ResponseEntity<List<GroupUserDTO.UserDTO>> getWorkspaceMember(
+		@PathVariable(name = "groupName") String groupName) {
 		return ResponseEntity.ok(groupFacadeService.getWorkspaceMember(groupName));
 	}
+
 	@DeleteMapping("/ws/{groupName}")
 	@Operation(summary = "워크스페이스 멤버 삭제")
 	public ResponseEntity<HttpStatus> deleteWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
-		@RequestBody List<String> userIdList){
-		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userIdList);
+		@RequestBody List<String> userIdList,
+		UserInfoDTO userInfoDTO) {
+		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userIdList, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
+
 	@PostMapping("/ws/{groupName}")
 	@Operation(summary = "워크스페이스 멤버 추가")
 	public ResponseEntity<HttpStatus> addWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
-		@RequestBody AddWorkspaceUsersDTO addWorkspaceUsersDTO){
-		groupFacadeService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
+		@RequestBody AddWorkspaceUsersDTO addWorkspaceUsersDTO,
+		UserInfoDTO userInfoDTO) {
+		groupFacadeService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -128,9 +135,8 @@ public class GroupController {
 	@Operation(summary = "워크스페이스 멤버 검색")
 	public ResponseEntity<List<GroupUserDTO>> getWorkspaceMemberBySearch(
 		@PathVariable(name = "groupName") String groupName,
-		@PathVariable(name = "search") String search){
+		@PathVariable(name = "search") String search) {
 		return new ResponseEntity<>(groupFacadeService.getWorkspaceMemberBySearch(groupName, search), HttpStatus.OK);
 	}
-
 
 }

@@ -1,12 +1,12 @@
 package com.xiilab.modulecommon.alert.event;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 
 public record AdminAlertEvent(AlertName alertName,
-							  String senderId,
-							  String senderUserName,
-							  String senderUserRealName,
+							  String sendUserId,
 							  String mailTitle,
 							  String title,
-							  String message){
+							  String message,
+							  PageNaviParam pageNaviParam){
 }

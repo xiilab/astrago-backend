@@ -1,9 +1,7 @@
 package com.xiilab.modulek8sdb.alert.systemalert.repository;
 
 import static com.xiilab.modulek8sdb.alert.systemalert.entity.QSystemAlertEntity.*;
-import static com.xiilab.modulek8sdb.hub.entity.QHubEntity.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,9 +17,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,14 +29,14 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<SystemAlertEntity> findAlerts(String recipientId, SystemAlertType systemAlertType, AlertRole alertRole, ReadYN readYN,
+	public Page<SystemAlertEntity> findAlerts(String recipientId, AlertType alertType, AlertRole alertRole, ReadYN readYN,
 		String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate, Pageable pageable) {
 		Long totalCount = queryFactory.select(systemAlertEntity.count())
 			.from(systemAlertEntity)
 			.where(
 				eqRecipientId(recipientId),
-				eqSystemAlertType(systemAlertType),
+				eqSystemAlertType(alertType),
 				eqReadYn(readYN),
 				likeSearchText(searchText),
 				betweenRegDate(searchStartDate, searchEndDate),
@@ -49,7 +47,7 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 		JPAQuery<SystemAlertEntity> query = queryFactory.selectFrom(systemAlertEntity)
 			.where(
 				eqRecipientId(recipientId),
-				eqSystemAlertType(systemAlertType),
+				eqSystemAlertType(alertType),
 				eqReadYn(readYN),
 				likeSearchText(searchText),
 				betweenRegDate(searchStartDate, searchEndDate),
@@ -64,7 +62,6 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 		}
 
 		query.orderBy(systemAlertEntity.regDate.desc());
-
 		List<SystemAlertEntity> result = query.fetch();
 
 		return new PageImpl<>(result, pageable, totalCount);
@@ -74,8 +71,8 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 		return StringUtils.hasText(recipientId) ? systemAlertEntity.recipientId.eq(recipientId) : null;
 	}
 
-	private BooleanExpression eqSystemAlertType(SystemAlertType systemAlertType) {
-		return !ObjectUtils.isEmpty(systemAlertType) ? systemAlertEntity.systemAlertType.eq(systemAlertType) : null;
+	private BooleanExpression eqSystemAlertType(AlertType alertType) {
+		return !ObjectUtils.isEmpty(alertType) ? systemAlertEntity.alertType.eq(alertType) : null;
 	}
 
 	private BooleanExpression eqReadYn(ReadYN readYN) {

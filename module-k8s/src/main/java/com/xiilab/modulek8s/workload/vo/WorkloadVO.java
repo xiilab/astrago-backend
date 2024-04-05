@@ -70,12 +70,12 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 					.withEnv(getGithubEnvVarList(codeVO))
 					.withNewResources()
 					.addToRequests(Map.of(
-						"cpu", new Quantity("500m"),
-						"memory", new Quantity("1000Mi")
+						"cpu", new Quantity("100m"),
+						"memory", new Quantity("100Mi")
 					))
 					.addToLimits(Map.of(
-						"cpu", new Quantity("500m"),
-						"memory", new Quantity("1000Mi")
+						"cpu", new Quantity("100m"),
+						"memory", new Quantity("100Mi")
 					))
 					.endResources()
 					.build())
@@ -127,8 +127,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	// 요청된 워크로드 리소스 MAP로 반환
 	public Map<String, Quantity> getWorkloadResourceMap() {
 		// 소수점 한자리로 변환
-		//String strCpuRequest = String.format("%.1f", cpuRequest * 1000) + ResourcesUnit.CPU_UNIT.getUnit();
-		String strCpuRequest = String.valueOf(cpuRequest);
+		String strCpuRequest = String.valueOf(cpuRequest) ;
 		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
 
 		// gpu 요청여부에 따라 다른 결과 반환

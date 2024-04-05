@@ -151,6 +151,8 @@ public class WorkspaceDTO {
 		private String description;
 		private ResourceStatus resourceStatus;
 		private String creatorFullName;
+		private String creatorId;
+		private String creatorUserName;
 
 		public WorkspaceResourceStatus(WorkspaceVO.ResponseVO workspaceResVO, ResourceQuotaStatus resourceStatus) {
 			this.id = workspaceResVO.getUid();
@@ -158,6 +160,8 @@ public class WorkspaceDTO {
 			this.resourceName = workspaceResVO.getResourceName();
 			this.description = workspaceResVO.getDescription();
 			this.creatorFullName = workspaceResVO.getCreatorFullName();
+			this.creatorId = workspaceResVO.getCreatorId();
+			this.creatorUserName = workspaceResVO.getCreatorUserName();
 			this.resourceStatus = new ResourceStatus(resourceStatus);
 		}
 	}

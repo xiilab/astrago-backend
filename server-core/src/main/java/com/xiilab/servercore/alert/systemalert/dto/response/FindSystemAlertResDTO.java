@@ -6,11 +6,10 @@ import java.util.List;
 import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
-import com.xiilab.modulecommon.alert.enums.SystemAlertEventType;
-import com.xiilab.modulecommon.alert.enums.SystemAlertType;
+import com.xiilab.modulecommon.alert.enums.AlertEventType;
 import com.xiilab.servercore.common.dto.ResDTO;
 
 import lombok.Builder;
@@ -23,8 +22,8 @@ public class FindSystemAlertResDTO extends ResDTO {
 	private Long id;
 	private String title;
 	private String message;
-	private SystemAlertType systemAlertType;
-	private SystemAlertEventType systemAlertEventType;
+	private AlertType alertType;
+	private AlertEventType alertEventType;
 	private ReadYN readYN;
 	private AlertRole alertRole;
 
@@ -33,8 +32,8 @@ public class FindSystemAlertResDTO extends ResDTO {
 			.id(systemAlertEntity.getId())
 			.title(systemAlertEntity.getTitle())
 			.message(systemAlertEntity.getMessage())
-			.systemAlertType(systemAlertEntity.getSystemAlertType())
-			.systemAlertEventType(systemAlertEntity.getSystemAlertEventType())
+			.alertType(systemAlertEntity.getAlertType())
+			.alertEventType(systemAlertEntity.getAlertEventType())
 			.readYN(systemAlertEntity.getReadYN())
 			.alertRole(systemAlertEntity.getAlertRole())
 			.regUserId(!ObjectUtils.isEmpty(systemAlertEntity.getRegUser())? systemAlertEntity.getRegUser().getRegUserId() : null)
@@ -57,8 +56,8 @@ public class FindSystemAlertResDTO extends ResDTO {
 				.id(systemAlertEntity.getId())
 				.title(systemAlertEntity.getTitle())
 				.message(systemAlertEntity.getMessage())
-				.systemAlertType(systemAlertEntity.getSystemAlertType())
-				.systemAlertEventType(systemAlertEntity.getSystemAlertEventType())
+				.alertType(systemAlertEntity.getAlertType())
+				.alertEventType(systemAlertEntity.getAlertEventType())
 				.readYN(systemAlertEntity.getReadYN())
 				.recipientId(systemAlertEntity.getRecipientId())
 				.senderId(systemAlertEntity.getSenderId())

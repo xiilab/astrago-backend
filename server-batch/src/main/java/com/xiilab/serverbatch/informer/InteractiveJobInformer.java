@@ -3,6 +3,7 @@ package com.xiilab.serverbatch.informer;
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -10,11 +11,13 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertSetRepository;
@@ -34,6 +37,7 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
@@ -43,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class InteractiveJobInformer extends JobInformer{
+public class InteractiveJobInformer extends JobInformer {
 	private final K8sAdapter k8sAdapter;
 	private final GroupService groupService;
 	private final SystemAlertRepository systemAlertRepository;
@@ -54,10 +58,12 @@ public class InteractiveJobInformer extends JobInformer{
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
 		ModelWorkLoadMappingRepository modelWorkLoadMappingRepository,
 		CodeWorkLoadMappingRepository codeWorkLoadMappingRepository,
-		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository, K8sAdapter k8sAdapter,
+		ImageWorkloadMappingRepository imageWorkloadMappingRepository, VolumeRepository volumeRepository,
+		K8sAdapter k8sAdapter,
 		DatasetRepository datasetRepository, ModelRepository modelRepository, CodeRepository codeRepository,
 		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
-		GroupService groupService, SystemAlertRepository systemAlertRepository, WorkspaceAlertSetRepository workspaceAlertSetRepository,
+		GroupService groupService, SystemAlertRepository systemAlertRepository,
+		WorkspaceAlertSetRepository workspaceAlertSetRepository,
 		ApplicationEventPublisher publisher) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
@@ -83,20 +89,26 @@ public class InteractiveJobInformer extends JobInformer{
 			@Override
 			public void onAdd(Deployment deployment) {
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
-				K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
-				//워크로드 생성 알림 발송
-				String workloadName = metadataFromResource.getWorkloadName();
-				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
-				String title = SystemAlertMessage.WORKLOAD_START_CREATOR.getTitle();
-				String message = String.format(SystemAlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
-				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_START,
-					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
-
-				publisher.publishEvent(workspaceUserAlertEvent);
 			}
 
 			@Override
 			public void onUpdate(Deployment deployment1, Deployment deployment2) {
+				// 인터렉티브 상태 조회
+				WorkloadStatus beforeStatus = getDeploymentStatus(deployment1.getStatus());
+				WorkloadStatus afterStatus = getDeploymentStatus(deployment2.getStatus());
+
+				// 상태 pending -> running으로 변경되면 인터렉티브 실행 알림 발송
+				if (beforeStatus == WorkloadStatus.PENDING && afterStatus == WorkloadStatus.RUNNING) {
+					System.out.println("beforeStatus1 = " + beforeStatus);
+					System.out.println("afterStatus1 = " + afterStatus);
+					sendRunningNotification(deployment2);
+				}
+				// 워크로드 에러 발생하면 알림 발송
+				if (beforeStatus == WorkloadStatus.PENDING && afterStatus == WorkloadStatus.ERROR) {
+					System.out.println("beforeStatus2 = " + beforeStatus);
+					System.out.println("afterStatus2 = " + afterStatus);
+					sendErrorNotification(deployment2);
+				}
 			}
 
 			@Override
@@ -119,20 +131,81 @@ public class InteractiveJobInformer extends JobInformer{
 				}
 
 				// 서비스 삭제
-				deleteServices(metadataFromResource.getWorkspaceResourceName(), metadataFromResource.getWorkloadResourceName());
-				//워크로드 삭제 알림 발송
-				String workloadName = metadataFromResource.getWorkloadName();
-				String emailTitle = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
-				String title = SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
-				String message = String.format(SystemAlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
-					emailTitle, title, message, metadataFromResource.getWorkspaceResourceName());
+				deleteServices(metadataFromResource.getWorkspaceResourceName(),
+					metadataFromResource.getWorkloadResourceName());
 
-				publisher.publishEvent(workspaceUserAlertEvent);
+				//워크로드 삭제 알림 발송
+				// String workloadName = metadataFromResource.getWorkloadName();
+				// String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
+				// String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
+				// String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
+				// WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+				// 	AlertName.USER_WORKLOAD_DELETE, null, metadataFromResource.getCreatorId(),
+				// 	emailTitle, title, message, metadataFromResource.getWorkspaceResourceName(), null);
+				//
+				// publisher.publishEvent(workspaceUserAlertEvent);
 			}
 		});
 
 		log.info("Starting all registered interative job informers");
 		informers.startAllRegisteredInformers();
+	}
+
+	private void sendErrorNotification(Deployment deployment2) {
+		K8SResourceMetadataDTO interactiveWorkloadInfoFromResource = getInteractiveWorkloadInfoFromResource(deployment2);
+
+		PageNaviParam pageNaviParam = PageNaviParam.builder()
+			.workspaceResourceName(interactiveWorkloadInfoFromResource.getWorkspaceResourceName())
+			.workloadResourceName(interactiveWorkloadInfoFromResource.getWorkloadResourceName())
+			.workloadType(interactiveWorkloadInfoFromResource.getWorkloadType())
+			.build();
+
+		//워크로드 생성 알림 발송
+		String workloadName = interactiveWorkloadInfoFromResource.getWorkloadName();
+		AlertMessage workloadErrorCreator = AlertMessage.WORKLOAD_ERROR_CREATOR;
+		String emailTitle = String.format(workloadErrorCreator.getMailTitle(), workloadName);
+		String title = workloadErrorCreator.getTitle();
+		String message = String.format(workloadErrorCreator.getMessage(), workloadName);
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+			AlertName.USER_WORKLOAD_ERROR,
+			null, interactiveWorkloadInfoFromResource.getCreatorId(), emailTitle, title, message,
+			interactiveWorkloadInfoFromResource.getWorkspaceResourceName(), pageNaviParam);
+
+		publisher.publishEvent(workspaceUserAlertEvent);
+	}
+
+	private void sendRunningNotification(Deployment deployment2) {
+		K8SResourceMetadataDTO interactiveWorkloadInfoFromResource = getInteractiveWorkloadInfoFromResource(deployment2);
+
+		PageNaviParam pageNaviParam = PageNaviParam.builder()
+			.workspaceResourceName(interactiveWorkloadInfoFromResource.getWorkspaceResourceName())
+			.workloadResourceName(interactiveWorkloadInfoFromResource.getWorkloadResourceName())
+			.workloadType(interactiveWorkloadInfoFromResource.getWorkloadType())
+			.build();
+
+		//워크로드 생성 알림 발송
+		String workloadName = interactiveWorkloadInfoFromResource.getWorkloadName();
+		String emailTitle = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
+		String title = AlertMessage.WORKLOAD_START_CREATOR.getTitle();
+		String message = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+			AlertName.USER_WORKLOAD_START,
+			null, interactiveWorkloadInfoFromResource.getCreatorId(), emailTitle, title, message,
+			interactiveWorkloadInfoFromResource.getWorkspaceResourceName(), pageNaviParam);
+
+		publisher.publishEvent(workspaceUserAlertEvent);
+	}
+
+	private static WorkloadStatus getDeploymentStatus(DeploymentStatus deploymentStatus) {
+		Integer replicas = deploymentStatus.getReplicas();
+		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
+		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
+		if (unavailableReplicas != null && unavailableReplicas > 0) {
+			return WorkloadStatus.ERROR;
+		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+			return WorkloadStatus.RUNNING;
+		} else {
+			return WorkloadStatus.PENDING;
+		}
 	}
 }

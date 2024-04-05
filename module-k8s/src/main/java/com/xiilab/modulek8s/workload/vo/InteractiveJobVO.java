@@ -144,7 +144,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		addVolumes(podSpecBuilder, models);
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
-			.withTerminationGracePeriodSeconds(10L)
+			.withTerminationGracePeriodSeconds(20L)
 			.addNewContainer()
 			.withName(getUniqueResourceName())
 			.withImage(image.name());

@@ -35,7 +35,7 @@ import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerReceiveR
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepoCustom;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepository;
 import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.UserService;
@@ -197,30 +197,14 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(alertReceive.getKey());
 
 					// // 사용자 수신 설정에 따른 Email, System 분기
-					SystemAlertMessage nodeError = SystemAlertMessage.NODE_ERROR;
+					AlertMessage nodeError = AlertMessage.NODE_ERROR;
 					String mailTitle = nodeError.getMailTitle();
 					String title = nodeError.getTitle();
 					for(AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()){
 						String message = String.format(nodeError.getMessage(), alertManagerReceiveDTO.getNodeName());
 						// 노드 장애 알림 발송
-						eventPublisher.publishEvent(new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, null, null, mailTitle, title, message));
+						eventPublisher.publishEvent(new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message, null));
 					}
-					// if(findAlertManagerDTO.isEmailYN()){
-					// 	emailService.sendEmail(findAlertManagerDTO, alertReceive.getValue());
-					// }
-					// if(findAlertManagerDTO.isSystemYN()){
-					// 	for(AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()){
-					// 		findAlertManagerDTO.getUserDTOList().forEach(userDTO ->
-					// 			systemAlertService.sendAlert(SystemAlertDTO.builder()
-					// 				.title("노드 장애 알림")
-					// 				.recipientId(userDTO.getUserId())
-					// 				.systemAlertType(SystemAlertType.ALERT_MANAGER)
-					// 				.message(String.format(SystemAlertMessage.NODE_ERROR.getMessage(), alertManagerReceiveDTO.getNodeName()))
-					// 				.senderId("SYSTEM")
-					// 				.build())
-					// 		);
-					// 	}
-					// }
 				}
 
 			}

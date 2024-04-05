@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
@@ -44,18 +45,14 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		} else {
 			userService.joinDefaultGroup(userInfo.getId());
 		}
-
-		SystemAlertMessage userCreate = SystemAlertMessage.USER_CREATE;
+		// 회원가입 알림 메시지 발송
+		AlertMessage userCreate = AlertMessage.USER_CREATE;
 		String mailTitle = userCreate.getMailTitle();
 		String title = userCreate.getTitle();
 		String message = String.format(userCreate.getMessage(), userReqVO.getLastName() + userReqVO.getFirstName(),
 			userReqVO.getEmail());
-		// 회원가입 알림 메시지 발송
 		eventPublisher.publishEvent(
-			new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), userInfo.getUserName(),
-				userInfo.getLastName() + userInfo.getFirstName(), mailTitle, title, message));
-
-		// return userService.getUserInfoById(adminId);
+			new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), mailTitle, title, message, null));
 	}
 
 	@Override
@@ -124,31 +121,18 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		userService.updateUserInfoById(id, updateUserDTO);
 		UserInfo userInfo = userService.getUserInfoById(id);
 
-		// SystemAlertSetDTO.ResponseDTO systemAlertSet = alertSetService.getSystemAlertSet();
-
-		// if (systemAlertSet.isUserSystemYN()) {
-		// 	alertService.saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert.builder()
-		// 		.title(SystemAlertMessage.USER_UPDATE.getTitle())
-		// 		.message(String.format(
-		// 			SystemAlertMessage.USER_UPDATE.getMessage(),
-		// 			userInfo.getLastName() + userInfo.getFirstName(),
-		// 			userInfo.getEmail()))
-		// 		.recipientId(adminId)
-		// 		.senderId("SYSTEM")
-		// 		.systemAlertType(SystemAlertType.USER)
-		// 		.systemAlertEventType(SystemAlertEventType.NOTIFICATION)
-		// 		.build());
-		// }
-		// if (systemAlertSet.isUserEmailYN()) {
-		// 	mailService.sendMail(MailDTO.builder()
-		// 		.title(SystemAlertMessage.USER_CREATE.getMailTitle())
-		// 		.receiverEmail(userInfo.getEmail())
-		// 		.build());
-		// }
+		// 회원정보 변경 알림 메시지 발송
+		AlertMessage userUpdate = AlertMessage.USER_UPDATE;
+		String mailTitle = userUpdate.getMailTitle();
+		String title = userUpdate.getTitle();
+		String message = String.format(userUpdate.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
+		eventPublisher.publishEvent(
+			new UserAlertEvent(AlertName.USER_UPDATE, mailTitle, title, message, userInfo.getId())
+		);
 	}
 
 	@Override
-	public List<UserInfo> getAdminList(){
+	public List<UserInfo> getAdminList() {
 		return userService.getAdminList();
 	}
 }

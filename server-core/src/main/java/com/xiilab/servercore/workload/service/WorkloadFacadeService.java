@@ -27,7 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.SystemAlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
@@ -43,6 +43,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -90,6 +91,7 @@ import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
+import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
@@ -114,7 +116,8 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final SvcModuleFacadeService svcModuleFacadeService;
-	private final NodeFacadeService nodeFacadeService;
+	// private final NodeFacadeService nodeFacadeService;
+	private final NodeService nodeService;
 	private final PinService pinService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
@@ -126,7 +129,6 @@ public class WorkloadFacadeService {
 	private final AlertService alertService;
 	private final WorkspaceService workspaceService;
 	private final ApplicationEventPublisher eventPublisher;
-
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -163,12 +165,10 @@ public class WorkloadFacadeService {
 		}
 
 		try {
-			// 커스텀 이미지일 때만 이미지 데이터 저장
-			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
 			// 리소스 초과 알림
 			checkAndSendWorkspaceResourceOverAlert(moduleCreateWorkloadReqDTO, userInfoDTO);
-			// 워크로드 엔티티에 데이터 추가
-			// workspaceAlertSetService.saveAlertSet(moduleCreateWorkloadReqDTO.getWorkspace());
+			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+			// 워크로드
 		} catch (RestApiException e) {
 			e.printStackTrace();
 			throw e;
@@ -185,31 +185,35 @@ public class WorkloadFacadeService {
 		if (cpuUsed != 0.0f) {
 			cpuUsed = cpuUsed / 1000.0f;
 		}
-		boolean isCpuOverResource = isOverResource(String.valueOf(cpuUsed),
-			moduleCreateWorkloadReqDTO.getCpuRequest(), workspaceResourceStatus.getResourceStatus().getCpuLimit());
-		// GPU
-		boolean isGpuOverResource = isOverResource(workspaceResourceStatus.getResourceStatus().getGpuUsed(),
-			moduleCreateWorkloadReqDTO.getGpuRequest(), workspaceResourceStatus.getResourceStatus().getGpuLimit());
+
 		// MEM
 		float memUsed = Float.parseFloat(workspaceResourceStatus.getResourceStatus().getMemUsed());
 		if (memUsed != 0.0f) {
 			memUsed = memUsed / 1000.0f;
 		}
+
+		boolean isCpuOverResource = isOverResource(String.valueOf(cpuUsed),
+			moduleCreateWorkloadReqDTO.getCpuRequest(), workspaceResourceStatus.getResourceStatus().getCpuLimit());
+		// GPU
+		boolean isGpuOverResource = isOverResource(workspaceResourceStatus.getResourceStatus().getGpuUsed(),
+			moduleCreateWorkloadReqDTO.getGpuRequest(), workspaceResourceStatus.getResourceStatus().getGpuLimit());
+
 		boolean isMemOverResource = isOverResource(String.valueOf(memUsed), moduleCreateWorkloadReqDTO.getMemRequest(),
 			workspaceResourceStatus.getResourceStatus().getMemLimit());
 
 		if (isCpuOverResource || isGpuOverResource || isMemOverResource) {
-			SystemAlertMessage workspaceResourceOverAdmin = SystemAlertMessage.WORKSPACE_RESOURCE_OVER_ADMIN;
+			AlertMessage workspaceResourceOverAdmin = AlertMessage.WORKSPACE_RESOURCE_OVER_ADMIN;
 			String mailTitle = String.format(workspaceResourceOverAdmin.getMailTitle(),
 				workspaceResourceStatus.getName());
 			String title = workspaceResourceOverAdmin.getTitle();
 			String message = String.format(workspaceResourceOverAdmin.getMessage(),
-				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getName());
+				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorUserName(),
+				workspaceResourceStatus.getName());
 
 			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(),
-					userInfoDTO.getUserName(),
-					userInfoDTO.getUserFullName(), mailTitle, title, message));
+				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
+					message,
+					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build()));
 		}
 	}
 
@@ -263,15 +267,15 @@ public class WorkloadFacadeService {
 		String workloadResourceName) {
 		// 실행중일 떄
 		try {
-			String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
+			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 			if (workloadType == WorkloadType.BATCH) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
-				return getActiveWorkloadDetail(moduleBatchJobResDTO, nodeName);
+				return getActiveWorkloadDetail(moduleBatchJobResDTO);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
 				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 					workspaceName, workloadResourceName);
-				return getActiveWorkloadDetail(moduleInteractiveJobResDTO, nodeName);
+				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
 			try {
@@ -285,7 +289,9 @@ public class WorkloadFacadeService {
 	}
 
 	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail getActiveWorkloadDetail(
-		T moduleJobResDTO, String nodeName) {
+		T moduleJobResDTO) {
+		String nodeName = workspaceService.getNodeName(moduleJobResDTO.getWorkspaceResourceName(),
+			moduleJobResDTO.getResourceName());
 		// 이미지 DTO 세팅
 		FindWorkloadResDTO.Image image = generateImageResDTO(moduleJobResDTO);
 		// 모델 세팅
@@ -308,27 +314,37 @@ public class WorkloadFacadeService {
 	}
 
 	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
-		UserInfoDTO userInfoDTO
-	) throws IOException {
-		//워크로드 조회
-		HasMetadata job = workloadModuleService.getJob(workspaceName, workloadName, workloadType);
-		String workloadNm = job.getMetadata().getAnnotations().get(AnnotationField.NAME.getField());
+		UserInfoDTO userInfoDTO) throws IOException {
+
+		FindWorkloadResDTO.WorkloadDetail activeWorkloadDetail = null;
 		if (workloadType == WorkloadType.BATCH) {
+			ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+				workloadName);
+			activeWorkloadDetail = getActiveWorkloadDetail(moduleBatchJobResDTO);
 			stopBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+				workspaceName, workloadName);
+			activeWorkloadDetail = getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			stopInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
 		}
 
-		//워크로드 종료 알림 발송
-		String emailTitle = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadNm);
-		String title = SystemAlertMessage.WORKLOAD_END_CREATOR.getTitle();
-		String message = String.format(SystemAlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadNm);
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-			AlertName.USER_WORKLOAD_END,
-			emailTitle, title, message, workspaceName);
+		if (!ObjectUtils.isEmpty(activeWorkloadDetail)) {
+			PageNaviParam pageNaviParam = PageNaviParam.builder()
+				.workspaceResourceName(activeWorkloadDetail.getWorkSpaceResourceName())
+				.workloadResourceName(activeWorkloadDetail.getWorkloadResourceName())
+				.workloadType(activeWorkloadDetail.getWorkloadType())
+				.build();
 
-		eventPublisher.publishEvent(workspaceUserAlertEvent);
-
+			//워크로드 종료 알림 발송
+			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
+			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
+			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(),
+				emailTitle, title, message, workspaceName, pageNaviParam);
+			eventPublisher.publishEvent(workspaceUserAlertEvent);
+		}
 	}
 
 	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
@@ -641,8 +657,8 @@ public class WorkloadFacadeService {
 		// if (workspaceAlertSet.isWorkloadEndAlert()) {
 		// 	systemAlertService.sendAlert(SystemAlertDTO.builder()
 		// 		.recipientId(userInfoDTO.getId())
-		// 		.senderId("SYSTEM")
-		// 		.systemAlertType(SystemAlertType.WORKLOAD)
+		// 		.sendUserId("SYSTEM")
+		// 		.alertType(SystemAlertType.WORKLOAD)
 		// 		.message(String.format(SystemAlertMessage.WORKSPACE_END.getMessage(), workloadName))
 		// 		.build());
 		// }
@@ -889,7 +905,7 @@ public class WorkloadFacadeService {
 		// }
 
 		if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
-			ResponseDTO.PageNodeDTO nodeList = nodeFacadeService.getNodeList(1, 1);
+			ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
 			Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
 			if (node.isPresent()) {
 				// 서비스 포트 찾기

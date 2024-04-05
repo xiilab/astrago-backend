@@ -1,10 +1,16 @@
 package com.xiilab.servercore.license.service;
 
+import java.util.EventListener;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LicenseErrorCode;
 import com.xiilab.servercore.license.dto.LicenseDTO;
@@ -18,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LicenseServiceImpl implements LicenseService {
 	private final LicenseRepository licenseRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -46,7 +53,18 @@ public class LicenseServiceImpl implements LicenseService {
 		if (recentlyLicense == null) {
 			throw new RestApiException(LicenseErrorCode.NOT_FOUND_LICENSE_KEYS);
 		}
-		recentlyLicense.checkLicense();
+		try {
+			recentlyLicense.checkLicense();
+		} catch (RestApiException e) {
+			// 회원가입 알림 메시지 발송
+			AlertMessage licenseExpiration = AlertMessage.LICENSE_EXPIRATION;
+			String mailTitle = licenseExpiration.getMailTitle();
+			String title = licenseExpiration.getTitle();
+			String message = String.format(licenseExpiration.getMessage(), recentlyLicense.getEndDate());
+			eventPublisher.publishEvent(
+				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null));
+			throw e;
+		}
 	}
 
 }
