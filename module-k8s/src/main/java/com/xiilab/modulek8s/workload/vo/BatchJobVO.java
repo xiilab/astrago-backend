@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -46,7 +45,6 @@ public class BatchJobVO extends WorkloadVO {
 	private List<JobPortVO> ports;        //port 정의
 	private String workingDir;		// 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
-	private Map<String,String> args;		// 사용자가 입력한 args
 	private String jobName;
 
 	@Override
@@ -96,11 +94,6 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
-
-		try {
-			annotationMap.put(AnnotationField.ARGS.getField(),
-				CollectionUtils.isEmpty(args) ? "" : objectMapper.writeValueAsString(args));
-		} catch (JsonProcessingException ignored) {}
 
 		return annotationMap;
 	}
