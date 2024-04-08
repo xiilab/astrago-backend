@@ -498,27 +498,46 @@ jobs:
         id: check_status
         run: 'echo "작업 상태: ${{ job.status }}"'
 
-      # 브랜치 네임이 마스터일 경우에만 docker.io 저장소로 보낸다
-      - name: 작업결과에 따른 메세지 지정
-        uses: haya14busa/action-cond@v1
-        id: slack-message
-        with:
-          cond: ${{ needs.build.result  == 'success' }}
-          if_true: 'Uyuni 백엔드 이미지 CI가 성공했습니다! :tada:'
-          if_false: 'Uyuni 백엔드 이미지 CI가 실패했습니다. :warning:'
-      - name: 작업결과에 따른 메세지 지정
-        uses: haya14busa/action-cond@v1
-        id: slack-status
-        with:
-          cond: ${{ needs.build.result  == 'success' }}
-          if_true: 'success'
-          if_false: 'failure'
-
-      - name: Slack 알림 전송
-        if: ${{ job.status }} == 'failure'
-        uses: 8398a7/action-slack@v3
-        with:
-          status: '${{ steps.slack-status.outputs.value }}'
-          text: '${{ steps.slack-message.outputs.value }}'
+      # job 성공 여부에 따른 message 발송
+      - name: Send push monochart result
+        if: ${{ job.status }} == 'success'
+        uses: slackapi/slack-github-action@v1.25.0
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Astrago build가 성공하였습니다.:* :tada:"
+                  }
+                }
+              ]
+            }
+
+      # job 성공 따른 메시지 발송
+      - name: Send build result
+        if: ${{ job.status }} == 'failure'
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Astrago build가 실패하였습니다.:* :warning:"
+                  }
+                }
+              ]
+            }
