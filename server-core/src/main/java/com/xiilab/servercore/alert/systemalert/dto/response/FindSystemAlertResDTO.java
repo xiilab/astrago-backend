@@ -8,6 +8,7 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulecommon.alert.enums.AlertEventType;
 import com.xiilab.servercore.common.dto.ResDTO;
@@ -26,6 +27,7 @@ public class FindSystemAlertResDTO extends ResDTO {
 	private AlertEventType alertEventType;
 	private ReadYN readYN;
 	private AlertRole alertRole;
+	private PageNaviParam pageNaviParam;
 
 	public static FindSystemAlertResDTO of(SystemAlertEntity systemAlertEntity) {
 		return FindSystemAlertResDTO.builder()
@@ -34,6 +36,7 @@ public class FindSystemAlertResDTO extends ResDTO {
 			.message(systemAlertEntity.getMessage())
 			.alertType(systemAlertEntity.getAlertType())
 			.alertEventType(systemAlertEntity.getAlertEventType())
+			.pageNaviParam(systemAlertEntity.getPageNaviParam())
 			.readYN(systemAlertEntity.getReadYN())
 			.alertRole(systemAlertEntity.getAlertRole())
 			.regUserId(!ObjectUtils.isEmpty(systemAlertEntity.getRegUser())? systemAlertEntity.getRegUser().getRegUserId() : null)
@@ -58,6 +61,7 @@ public class FindSystemAlertResDTO extends ResDTO {
 				.message(systemAlertEntity.getMessage())
 				.alertType(systemAlertEntity.getAlertType())
 				.alertEventType(systemAlertEntity.getAlertEventType())
+				.pageNaviParam(systemAlertEntity.getPageNaviParam())
 				.readYN(systemAlertEntity.getReadYN())
 				.recipientId(systemAlertEntity.getRecipientId())
 				.senderId(systemAlertEntity.getSenderId())
