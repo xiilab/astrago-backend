@@ -80,11 +80,14 @@ public abstract class WorkloadEntity {
 	@Column(name = "WORKLOAD_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	protected WorkloadType workloadType;
+	@Column(name = "WORKING_DIR")
+	protected String workingDir;
 	@Column(name = "WORKLOAD_CMD")
 	protected String workloadCMD;
+	@Column(name = "WORKLOAD_CMD_ARGS")
+	protected String workloadArgs;
 	@ManyToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
-
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	protected DeleteYN deleteYN;

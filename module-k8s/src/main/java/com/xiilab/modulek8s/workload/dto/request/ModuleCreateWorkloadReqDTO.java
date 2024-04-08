@@ -2,12 +2,13 @@ package com.xiilab.modulek8s.workload.dto.request;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
 import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -27,7 +28,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private List<ModuleVolumeReqDTO> models;    // 마운트할 모델 볼륨 목록 (볼륨명, 마운트할 경로)
 	private List<ModulePortReqDTO> ports;    // 노드 포토 목록 (포트명, 포트번호)
 	private List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
+	private String workingDir;	// 명령어를 실행 할 path
 	private String command;    // 실행할 명령어
+	private Map<String,String> args; // 사용자가 입력한 args
 	private WorkloadType workloadType;    // 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
 	private Integer gpuRequest;
 	private Float cpuRequest;
@@ -57,7 +60,9 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
+			.workingDir(this.workingDir)
 			.command(this.command)
+			.args(args)
 			.workloadType(this.workloadType)
 			.cpuRequest(this.cpuRequest)
 			.gpuRequest(this.gpuRequest)

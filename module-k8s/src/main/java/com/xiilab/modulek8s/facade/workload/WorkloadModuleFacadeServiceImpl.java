@@ -49,7 +49,9 @@ import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeService {
@@ -95,6 +97,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 				svcService.createNodePortService(createSvcReqDTO);
 			}
 		} catch (Exception e) {
+			log.error(e.getMessage());
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
