@@ -1,15 +1,17 @@
 package com.xiilab.servercore.image.dto;
 
+
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
@@ -60,11 +62,16 @@ public class ImageReqDTO {
 	}
 
 	@Getter
-	@AllArgsConstructor
+	@NoArgsConstructor
+	@Setter
 	public static class FindSearchCondition {
 		private WorkloadType workloadType;
 		private ImageType imageType;
-		private Integer pageNo;
-		private Integer pageSize;
+		private Integer page;
+		private Integer size;
+
+		public void setPage(Integer page) {
+			this.page = !NumberValidUtils.isNullOrZero(page)? page - 1 : null;
+		}
 	}
 }

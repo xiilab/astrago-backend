@@ -73,30 +73,30 @@ public class AlertServiceImpl implements AlertService {
 
 	@Override
 	public FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String loginUserId,
-		SystemAlertReqDTO.FindSearchCondition findSearchCondition, Pageable pageable) {
+		SystemAlertReqDTO.FindSearchCondition findSearchCondition) {
 		// 페이징 처리
 		PageRequest pageRequest = null;
-		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
-			pageable.getPageSize())) {
-			pageRequest = PageRequest.of(pageable.previousOrFirst().getPageNumber(), pageable.getPageSize());
+		if (!ObjectUtils.isEmpty(findSearchCondition.getPage()) && !ObjectUtils.isEmpty(
+			findSearchCondition.getSize())) {
+			pageRequest = PageRequest.of(findSearchCondition.getPage(), findSearchCondition.getSize());
 		}
 
 		// 각 타입 카운트를 저장할 map
 		Map<AlertType, Long> allAlertTypeCountMap = getAllAlertTypeCountMap(loginUserId,
-			findSearchCondition.getAlertRole() != null? findSearchCondition.getAlertRole() : null,
-			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
-			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
-			findSearchCondition.getSearchStartDate() != null ? findSearchCondition.getSearchStartDate() : null,
-			findSearchCondition.getSearchEndDate() != null ? findSearchCondition.getSearchEndDate() : null);
+			findSearchCondition.getAlertRole(),
+			findSearchCondition.getReadYN(),
+			findSearchCondition.getSearchText(),
+			findSearchCondition.getSearchStartDate(),
+			findSearchCondition.getSearchEndDate());
 
 		// 항목별 조회 API
 		Page<SystemAlertEntity> systemAlertEntities = systemAlertRepository.findAlerts(loginUserId,
-			findSearchCondition.getAlertType() != null ? findSearchCondition.getAlertType() : null,
-			findSearchCondition.getAlertRole() != null? findSearchCondition.getAlertRole() : null,
-			findSearchCondition.getReadYN() != null ? findSearchCondition.getReadYN() : null,
-			StringUtils.hasText(findSearchCondition.getSearchText()) ? findSearchCondition.getSearchText() : null,
-			findSearchCondition.getSearchStartDate() != null ? findSearchCondition.getSearchStartDate() : null,
-			findSearchCondition.getSearchEndDate() != null ? findSearchCondition.getSearchEndDate() : null,
+			findSearchCondition.getAlertType(),
+			findSearchCondition.getAlertRole(),
+			findSearchCondition.getReadYN(),
+			findSearchCondition.getSearchText(),
+			findSearchCondition.getSearchStartDate(),
+			findSearchCondition.getSearchEndDate(),
 			pageRequest);
 
 		return FindSystemAlertResDTO.SystemAlerts.from(systemAlertEntities.getContent(),

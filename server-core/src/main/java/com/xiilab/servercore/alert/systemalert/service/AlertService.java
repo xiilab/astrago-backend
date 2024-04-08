@@ -14,7 +14,7 @@ import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDT
 public interface AlertService {
 	Long saveSystemAlert(SystemAlertReqDTO.SaveSystemAlert saveSystemAlertReqDTO);
 	FindSystemAlertResDTO.SystemAlertDetail getSystemAlertById(Long id);
-	FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String loginUserId, SystemAlertReqDTO.FindSearchCondition findSearchCondition, Pageable pageable);
+	FindSystemAlertResDTO.SystemAlerts getSystemAlerts(String loginUserId, SystemAlertReqDTO.FindSearchCondition findSearchCondition);
 	// 시스템 알림 읽기여부(N -> Y)로 변경
 	void readSystemAlert(Long id);
 	void deleteSystemAlertById(Long id);

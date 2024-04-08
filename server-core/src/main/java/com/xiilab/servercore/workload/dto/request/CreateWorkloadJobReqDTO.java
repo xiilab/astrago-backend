@@ -62,7 +62,6 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.creatorFullName(creatorFullName)
 			.ide(ide.name())
 			.build();
-
 	}
 
 	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {
@@ -70,5 +69,4 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 		this.creatorUserName = creatorName;
 		this.creatorFullName = creatorFullName;
 	}
-
 }

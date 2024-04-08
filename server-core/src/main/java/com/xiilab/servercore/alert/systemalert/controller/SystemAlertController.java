@@ -52,10 +52,9 @@ public class SystemAlertController {
 	@Operation(summary = "알림 목록 조회")
 	public ResponseEntity<FindSystemAlertResDTO.SystemAlerts> getSystemAlerts(
 		@Parameter(hidden = true) UserInfoDTO userInfoDTO,
-		SystemAlertReqDTO.FindSearchCondition findSearchCondition,
-		Pageable pageable
+		SystemAlertReqDTO.FindSearchCondition findSearchCondition
 	) {
-		return new ResponseEntity<>(alertService.getSystemAlerts(userInfoDTO.getId(), findSearchCondition, pageable), HttpStatus.OK);
+		return new ResponseEntity<>(alertService.getSystemAlerts(userInfoDTO.getId(), findSearchCondition), HttpStatus.OK);
 	}
 
 	@PatchMapping("/read/{id}")

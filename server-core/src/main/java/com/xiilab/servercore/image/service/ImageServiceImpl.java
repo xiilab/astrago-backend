@@ -66,9 +66,9 @@ public class ImageServiceImpl implements ImageService {
 	@Transactional(readOnly = true)
 	public ImageResDTO.FindImages findImages(ImageReqDTO.FindSearchCondition findSearchCondition) {
 		PageRequest pageRequest = null;
-		if (!NumberValidUtils.isNullOrZero(findSearchCondition.getPageNo()) && !NumberValidUtils.isNullOrZero(
-			findSearchCondition.getPageSize())) {
-			pageRequest = PageRequest.of(findSearchCondition.getPageNo() - 1, findSearchCondition.getPageSize());
+		if (!ObjectUtils.isEmpty(findSearchCondition.getPage()) && !ObjectUtils.isEmpty(
+			findSearchCondition.getSize())) {
+			pageRequest = PageRequest.of(findSearchCondition.getPage(), findSearchCondition.getSize());
 		}
 
 		Page<ImageEntity> images = imageRepository.findByImages(findSearchCondition.getImageType(),
@@ -144,7 +144,7 @@ public class ImageServiceImpl implements ImageService {
 			.map(compatibleFrameworkVersionEntity -> Float.parseFloat(
 				compatibleFrameworkVersionEntity.getFrameWorkVersionEntity().getCudaVersion()))
 			.max(Float::compareTo)
-			.orElse(null);
+			.orElseGet(null);
 
 		// 쿠다버전 내림차순으로 정렬
 		List<ImageEntity> sortImages = new ArrayList<>(images);
@@ -153,17 +153,14 @@ public class ImageServiceImpl implements ImageService {
 			return Float.parseFloat(builtInImageEntity.getCudaVersion());
 		}).reversed());
 
-		int totalCount = 0;
 		int count = 0;
 		for (int i = 0; i < sortImages.size(); i++) {
-			// for (ImageEntity imageEntity : sortImages) {
 			BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)sortImages.get(i);
 			Float imageCudaVersion = Float.parseFloat(builtInImageEntity.getCudaVersion());
 			if (!NumberValidUtils.isNullOrZero(imageCudaVersion)) {
 				// maxCudaVersion보다 낮거나 같은 것만 사용
 				if (imageCudaVersion.compareTo(maxCudaVersion) <= 0) {
 					builtInImageEntity.setAvailableStatus(true);
-					totalCount++;
 					count++;
 					// 상위 4개의 엔티티만 버전 추천
 					if (count <= 4) {

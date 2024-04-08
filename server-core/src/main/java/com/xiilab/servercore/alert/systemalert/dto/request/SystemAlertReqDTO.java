@@ -9,11 +9,13 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
+import com.xiilab.modulecommon.util.NumberValidUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
@@ -57,8 +59,8 @@ public class SystemAlertReqDTO {
 	}
 
 	@Getter
+	@Setter
 	@NoArgsConstructor
-	@AllArgsConstructor
 	public static class FindSearchCondition {
 		private AlertType alertType;
 		private ReadYN readYN;
@@ -68,6 +70,12 @@ public class SystemAlertReqDTO {
 		private LocalDateTime searchStartDate;
 		@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 		private LocalDateTime searchEndDate;
+		private Integer page;
+		private Integer size;
+
+		public void setPage(Integer page) {
+			this.page = !NumberValidUtils.isNullOrZero(page)? page - 1 : null;
+		}
 	}
 
 }

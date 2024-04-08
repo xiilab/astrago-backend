@@ -131,43 +131,43 @@ public class WorkloadFacadeService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public void createWorkload(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO, UserInfoDTO userInfoDTO) {
-		moduleCreateWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
+	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+		createWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(),
 			userInfoDTO.getUserFullName());
 
 		// 이미지 credential 세팅
-		if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getImage().getCredentialId())
-			&& moduleCreateWorkloadReqDTO.getImage().getCredentialId() > 0) {
-			setImageCredentialReqDTO(moduleCreateWorkloadReqDTO.getImage(), userInfoDTO);
+		if (!ObjectUtils.isEmpty(createWorkloadReqDTO.getImage().getCredentialId())
+			&& createWorkloadReqDTO.getImage().getCredentialId() > 0) {
+			setImageCredentialReqDTO(createWorkloadReqDTO.getImage(), userInfoDTO);
 		}
 
 		// 코드 credential 세팅
-		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getCodes())) {
-			setCodeCredentialReqDTO(moduleCreateWorkloadReqDTO.getCodes());
+		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getCodes())) {
+			setCodeCredentialReqDTO(createWorkloadReqDTO.getCodes());
 		}
 
 		// 데이터셋 볼륨 추가
-		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
-			setDatasetVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getDatasets());
+		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getDatasets())) {
+			setDatasetVolume(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getDatasets());
 		}
 
 		// 모델 볼륨 추가
-		if (!CollectionUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
-			setModelVolume(moduleCreateWorkloadReqDTO.getWorkspace(), moduleCreateWorkloadReqDTO.getModels());
+		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getModels())) {
+			setModelVolume(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getModels());
 		}
 
 		//Image IDE 정보 주입
-		if (moduleCreateWorkloadReqDTO.getImage().getType() == ImageType.BUILT) {
-			ImageResDTO.FindImage imageInfo = imageService.findImageById(moduleCreateWorkloadReqDTO.getImage().getId());
-			moduleCreateWorkloadReqDTO.setIde(imageInfo.getIde());
+		if (createWorkloadReqDTO.getImage().getType() == ImageType.BUILT) {
+			ImageResDTO.FindImage imageInfo = imageService.findImageById(createWorkloadReqDTO.getImage().getId());
+			createWorkloadReqDTO.setIde(imageInfo.getIde());
 		} else {
-			moduleCreateWorkloadReqDTO.setIde(FrameWorkType.CUSTOM);
+			createWorkloadReqDTO.setIde(FrameWorkType.CUSTOM);
 		}
 
 		try {
 			// 리소스 초과 알림
-			checkAndSendWorkspaceResourceOverAlert(moduleCreateWorkloadReqDTO, userInfoDTO);
-			workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO());
+			checkAndSendWorkspaceResourceOverAlert(createWorkloadReqDTO, userInfoDTO);
+			workloadModuleFacadeService.createJobWorkload(createWorkloadReqDTO.toModuleDTO());
 			// 워크로드
 		} catch (RestApiException e) {
 			e.printStackTrace();
