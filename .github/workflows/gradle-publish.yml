@@ -21,10 +21,13 @@ jobs:
       # slack message 발송
       - name: Send first message
         uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           channel-id: 'C0377QY9PLH'
           payload: |
             {
+                "text": ":rocket: Astrago CICD Agent"
             	"blocks": [
             		{
             			"type": "header",
@@ -131,8 +134,6 @@ jobs:
             		}
             	]
             }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_WEBHOOK_URL }}
       # 원격머신에 repo checkout
       - name: Checkout
         uses: actions/checkout@v4
