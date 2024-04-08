@@ -40,7 +40,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*프로젝트:* `${{ vars.GITHUB_REPOSITORY }}`"
+                    "text": "*프로젝트:* `${{ github.repository }}`"
                   }
                 },
                 {
@@ -48,11 +48,11 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*브랜치:* `${{ vars.GITHUB_HEAD_REF }}`"
+                      "text": "*브랜치:* `${{ github.ref_name }}`"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*요청자:* `${{ vars.GITHUB_ACTOR }}`"
+                      "text": "*요청자:* `${{ github.actor }}`"
                     }
                   ]
                 },
@@ -110,45 +110,7 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": ":rocket: Astrago CICD Agent"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*프로젝트:* `${{ vars.GITHUB_REPOSITORY }}`"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*브랜치:* `${{ vars.GITHUB_HEAD_REF }}`"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*요청자:* `${{ vars.GITHUB_ACTOR }}`"
-                    }
-                  ]
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":rocket:*빌드환경 초기화:*"
-                  }
-                },
                 {
                   "type": "section",
                   "text": {
@@ -170,45 +132,7 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": ":rocket: Astrago CICD Agent"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*프로젝트:* `${{ vars.GITHUB_REPOSITORY }}`"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*브랜치:* `${{ vars.GITHUB_HEAD_REF }}`"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*요청자:* `${{ vars.GITHUB_ACTOR }}`"
-                    }
-                  ]
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":rocket:*빌드환경 초기화:*"
-                  }
-                },
                 {
                   "type": "section",
                   "text": {
