@@ -29,20 +29,20 @@ public class CodeController {
 	private final CodeService codeService;
 
 	@PostMapping("")
-	@Operation(summary = "공유 소스 코드 등록 API")
+	@Operation(summary = "소스 코드 등록 API")
 	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO){
 		return new ResponseEntity<>(codeService.saveCode(codeReqDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("")
-	@Operation(summary = "공유 소스 코드 목록 API")
+	@Operation(summary = "소스 코드 목록 API")
 	public ResponseEntity<List<CodeResDTO>> getCodeList(@RequestParam(value = "workspacename") String workspaceName){
 		return new ResponseEntity<>(codeService.getCodeList(workspaceName), HttpStatus.OK);
 	}
 
 
 	@PatchMapping("/{id}")
-	@Operation(summary = "공유 소스 마운트 경로 수정 API")
+	@Operation(summary = "소스 정보 수정 API")
 	public ResponseEntity<HttpStatus> modifyCode(@PathVariable(name = "id") Long codeId,
 		@RequestBody ModifyCodeReqDTO modifyCodeReqDTO){
 		codeService.modifyCode(codeId, modifyCodeReqDTO);
@@ -50,13 +50,13 @@ public class CodeController {
 	}
 
 	@GetMapping("/{id}")
-	@Operation(summary = "공유 소스 코드 상세 조회 API")
+	@Operation(summary = "소스 코드 상세 조회 API")
 	public ResponseEntity<CodeResDTO> getCodeById(@PathVariable(name = "id") long id){
 		return new ResponseEntity<>(codeService.getCodeById(id), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
-	@Operation(summary = "공유 소스 코드 삭제 API")
+	@Operation(summary = "소스 코드 삭제 API")
 	public ResponseEntity<HttpStatus> deleteCodeById(@PathVariable(name = "id") long id){
 		codeService.deleteCodeById(id);
 		return ResponseEntity.ok().build();

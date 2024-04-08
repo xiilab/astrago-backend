@@ -45,9 +45,10 @@ public class CodeServiceImpl implements CodeService {
 		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
 		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
 
-		List<CodeEntity> codeEntities = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndCodeURLAndDeleteYnEquals(codeReqDTO.getWorkspaceName(), codeReqDTO.getCodeURL(), DeleteYN.N);
+		List<CodeEntity> codeEntities = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndCodeURLAndDeleteYnEquals(
+			codeReqDTO.getWorkspaceName(), codeReqDTO.getCodeURL(), DeleteYN.N);
 
-		if(!codeEntities.isEmpty()){
+		if (!codeEntities.isEmpty()) {
 			throw new RestApiException(CodeErrorCode.CODE_VALIDATION_ERROR);
 		}
 
@@ -59,9 +60,10 @@ public class CodeServiceImpl implements CodeService {
 		// 사용자 Credential 조회
 		String token = "";
 		CredentialEntity credentialEntity = null;
-		if (codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE && codeReqDTO.getCredentialId() != null && codeReqDTO.getCredentialId() != 0) {
+		if (codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE && codeReqDTO.getCredentialId() != null
+			&& codeReqDTO.getCredentialId() != 0) {
 			credentialEntity = Optional.ofNullable(credentialService.getCredentialEntity(codeReqDTO.getCredentialId()))
-					.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_CODE_CREDENTIAL_INFO));
+				.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_CODE_CREDENTIAL_INFO));
 			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
 		}
 
@@ -138,7 +140,8 @@ public class CodeServiceImpl implements CodeService {
 
 	@Override
 	public List<CodeResDTO> getCodeList(String workspaceName) {
-		List<CodeEntity> codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(workspaceName, WORKSPACE, DeleteYN.N);
+		List<CodeEntity> codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
+			workspaceName, WORKSPACE, DeleteYN.N);
 
 		return codeEntityList.stream().map(CodeResDTO::new).toList();
 	}
@@ -163,9 +166,13 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
+	@Transactional
 	public void modifyCode(Long codeId, ModifyCodeReqDTO modifyCodeReqDTO) {
 		CodeEntity codeEntity = getCodeEntity(codeId);
-		codeEntity.modifyDefaultMountPath(modifyCodeReqDTO.getDefaultPath());
+		codeEntity.updateCodeInfo(
+			modifyCodeReqDTO.getDefaultPath(),
+			modifyCodeReqDTO.getCmd(),
+			modifyCodeReqDTO.getCodeArgs());
 	}
 
 	private CodeEntity getCodeEntity(long id) {

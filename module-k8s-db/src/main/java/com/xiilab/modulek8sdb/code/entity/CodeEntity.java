@@ -94,7 +94,9 @@ public class CodeEntity extends BaseEntity {
 		this.deleteYn = deleteYn;
 	}
 
-	public void modifyDefaultMountPath(String codeDefaultMountPath) {
-		this.codeDefaultMountPath = codeDefaultMountPath;
+	public void updateCodeInfo(String defaultMountPath, String cmd, Map<String,String> codeArgs) {
+		this.codeDefaultMountPath = defaultMountPath;
+		this.cmd = cmd;
+		this.codeArgs = JsonConvertUtil.convertMapToJson(codeArgs);
 	}
 }
