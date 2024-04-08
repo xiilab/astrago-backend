@@ -40,7 +40,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*프로젝트:* `프로젝트명`"
+                    "text": "*프로젝트:* `${{ vars.GITHUB_REPOSITORY }}`"
                   }
                 },
                 {
@@ -48,11 +48,11 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*브랜치:* `브랜치명`"
+                      "text": "*브랜치:* `${{ vars.GITHUB_HEAD_REF }}`"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*요청자:* `김수현`"
+                      "text": "*요청자:* `${{ vars.GITHUB_ACTOR }}`"
                     }
                   ]
                 },
@@ -63,74 +63,8 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*빌드환경 초기화:* :white_check_mark:"
+                    "text": ":rocket:*빌드환경 초기화:*"
                   }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*프로젝트 build:*"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*image push:*"
-                  }
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*배포 상태:*"
-                  }
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
-                      "type": "image",
-                      "image_url": "https://상태_이미지_URL",
-                      "alt_text": "성공/실패"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "`성공` 또는 `실패`"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*상세 내용:* 배포 과정에서 발생한 주요 이슈 및 로그 링크 제공."
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "로그 보기"
-                      },
-                      "style": "primary"
-                    },
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "재배포 요청"
-                      },
-                      "value": "redeploy_request"
-                    }
-                  ]
                 }
               ]
             }
@@ -165,6 +99,121 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bootjar --no-daemon --parallel
 
+      # Gradle build에 따른 메시지 발송
+      - name: Send build result
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": ":rocket: Astrago CICD Agent",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":rocket: Astrago CICD Agent"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*프로젝트:* `${{ vars.GITHUB_REPOSITORY }}`"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*브랜치:* `${{ vars.GITHUB_HEAD_REF }}`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*요청자:* `${{ vars.GITHUB_ACTOR }}`"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":rocket:*빌드환경 초기화:*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Gradle build result:* :white_check_mark:"
+                  }
+                }
+              ]
+            }
+
+      # Gradle build에 따른 메시지 발송
+      - name: Send build result
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": ":rocket: Astrago CICD Agent",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":rocket: Astrago CICD Agent"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*프로젝트:* `${{ vars.GITHUB_REPOSITORY }}`"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*브랜치:* `${{ vars.GITHUB_HEAD_REF }}`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*요청자:* `${{ vars.GITHUB_ACTOR }}`"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":rocket:*빌드환경 초기화:*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Gradle build result:* :no_entry_sign:"
+                  }
+                }
+              ]
+            }
       # 브랜치 이름 저장
       - name: 브랜치 네임 저장
         shell: bash
