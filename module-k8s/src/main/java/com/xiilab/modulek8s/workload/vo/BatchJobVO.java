@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
@@ -42,6 +43,7 @@ import lombok.experimental.SuperBuilder;
 public class BatchJobVO extends WorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
+	private String workingDir;		// 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
 	private String jobName;
 
@@ -69,6 +71,7 @@ public class BatchJobVO extends WorkloadVO {
 	}
 
 	private Map<String, String> getAnnotationMap() {
+		ObjectMapper objectMapper = new ObjectMapper();
 		String imageCredentialId = "";
 		if (getImage() != null && getImage().credentialVO() != null && !ObjectUtils.isEmpty(
 			getImage().credentialVO().credentialId())) {
@@ -91,6 +94,7 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
+
 		return annotationMap;
 	}
 
@@ -205,6 +209,9 @@ public class BatchJobVO extends WorkloadVO {
 	private void addContainerCommand(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		if (StringUtils.isNotBlank(command)) {
 			podSpecContainer.addAllToCommand(convertCmd());
+		}
+		if (StringUtils.isNotBlank(workingDir)) {
+			podSpecContainer.withWorkingDir(workingDir);
 		}
 	}
 

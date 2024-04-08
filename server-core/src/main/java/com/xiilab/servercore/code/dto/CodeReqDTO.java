@@ -1,8 +1,9 @@
 package com.xiilab.servercore.code.dto;
 
+import java.util.Map;
+
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,12 +21,6 @@ public class CodeReqDTO {
 	private RepositoryType repositoryType;
 	private RepositoryAuthType repositoryAuthType;
 	private String defaultPath;
-
-	public CodeReqDTO(ModuleCodeReqDTO moduleCodeReqDTO) {
-		this.codeURL = moduleCodeReqDTO.getRepositoryURL();
-		this.workspaceName = null;
-		this.credentialId = moduleCodeReqDTO.getCredentialId();
-		this.repositoryType = moduleCodeReqDTO.getRepositoryType();
-		this.repositoryAuthType = moduleCodeReqDTO.getRepositoryAuthType();
-	}
+	private String cmd;
+	private Map<String,String> codeArgs;
 }

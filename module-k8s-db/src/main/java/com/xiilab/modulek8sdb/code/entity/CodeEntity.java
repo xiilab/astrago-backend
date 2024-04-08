@@ -1,11 +1,13 @@
 package com.xiilab.modulek8sdb.code.entity;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.hibernate.annotations.SQLDelete;
 
-import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.CodeType;
+import com.xiilab.modulecommon.enums.RepositoryType;
+import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
@@ -39,13 +41,12 @@ public class CodeEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "CODE_ID")
-	private Long id;								// CODE ID
+	private Long id;                                // CODE ID
 	@Column(name = "TITLE")
 	private String title;
 	@Column(name = "CODE_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	private CodeType codeType;
-
 	@Column(name = "REPOSITORY_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	private RepositoryType repositoryType;
@@ -53,7 +54,7 @@ public class CodeEntity extends BaseEntity {
 	private String codeURL;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "CREDENTIAL_ID")
-	private CredentialEntity credentialEntity; 		// credential Entity
+	private CredentialEntity credentialEntity;        // credential Entity
 	@Column(name = "WORKSPACE_NAME")
 	private String workspaceResourceName;
 
@@ -62,27 +63,22 @@ public class CodeEntity extends BaseEntity {
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYn = DeleteYN.N;
-
+	@Column(name = "CODE_CMD")
+	private String cmd;
+	@Column(name = "CODE_ARGS")
+	private String codeArgs;
 
 	@Builder(builderClassName = "dtoConverter", builderMethodName = "dtoConverter")
-	CodeEntity(CodeType codeType, String codeURL, String workspaceResourceName, CredentialEntity credentialEntity, RepositoryType repositoryType, String codeDefaultMountPath) {
+	CodeEntity(CodeType codeType, String codeURL, String workspaceResourceName, CredentialEntity credentialEntity,
+		RepositoryType repositoryType, String codeDefaultMountPath, String cmd, Map<String,String> codeArgs) {
 		this.codeType = codeType;
 		this.codeURL = codeURL;
 		this.credentialEntity = credentialEntity;
 		this.workspaceResourceName = workspaceResourceName;
 		this.repositoryType = repositoryType;
 		this.codeDefaultMountPath = codeDefaultMountPath;
-	}
-
-	public CodeEntity(String title, CodeType codeType, RepositoryType repositoryType, String codeURL,
-		CredentialEntity credentialEntity, String workspaceResourceName, DeleteYN deleteYn) {
-		this.title = title;
-		this.codeType = codeType;
-		this.repositoryType = repositoryType;
-		this.codeURL = codeURL;
-		this.credentialEntity = credentialEntity;
-		this.workspaceResourceName = workspaceResourceName;
-		this.deleteYn = deleteYn;
+		this.cmd = cmd;
+		this.codeArgs = JsonConvertUtil.convertMapToJson(codeArgs);
 	}
 
 	public CodeEntity(RegUser regUser, String title, CodeType codeType, RepositoryType repositoryType, String codeURL,
@@ -97,7 +93,10 @@ public class CodeEntity extends BaseEntity {
 		this.workspaceResourceName = workspaceResourceName;
 		this.deleteYn = deleteYn;
 	}
-	public void modifyDefaultMountPath(String codeDefaultMountPath){
-		this.codeDefaultMountPath = codeDefaultMountPath;
+
+	public void updateCodeInfo(String defaultMountPath, String cmd, Map<String,String> codeArgs) {
+		this.codeDefaultMountPath = defaultMountPath;
+		this.cmd = cmd;
+		this.codeArgs = JsonConvertUtil.convertMapToJson(codeArgs);
 	}
 }

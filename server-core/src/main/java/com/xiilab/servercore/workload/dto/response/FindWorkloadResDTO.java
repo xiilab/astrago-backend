@@ -57,6 +57,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private List<FindWorkloadResDTO.Volume> datasets;
 		private List<FindWorkloadResDTO.Volume> models;
 		private List<FindWorkloadResDTO.Code> codes;
+		private String workingDir;
 		private String command;
 		private Float cpuRequest;
 		private Integer gpuRequest;
@@ -89,6 +90,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.datasets(datasets)
 				.models(models)
 				.codes(codes)
+				.workingDir(moduleJobResDTO.getWorkingDir())
 				.command(moduleJobResDTO.getCommand())
 				.cpuRequest(Float.parseFloat(moduleJobResDTO.getCpuRequest()))
 				.gpuRequest(Integer.parseInt(moduleJobResDTO.getGpuRequest()))
