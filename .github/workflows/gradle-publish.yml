@@ -27,7 +27,7 @@ jobs:
           channel-id: 'C0377QY9PLH'
           payload: |
             {
-                "text": ":rocket: Astrago CICD Agent"
+                "text": ":rocket: Astrago CICD Agent",
             	"blocks": [
             		{
             			"type": "header",
