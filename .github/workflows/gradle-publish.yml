@@ -22,7 +22,7 @@ jobs:
       - name: Send first message
         uses: slackapi/slack-github-action@v1.25.0
         env:
-          SLACK_BOT_TOKEN: xoxb-129531027059-6949393246608-25UZY765Rool95fQvpU7jGW4
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: 'C0377QY9PLH'
           payload: |
@@ -103,6 +103,8 @@ jobs:
       - name: Send build result
         if: success()
         uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: 'C0377QY9PLH'
           update-ts: ${{ steps.slack.outputs.ts }}
@@ -161,6 +163,8 @@ jobs:
       - name: Send build result
         if: failure()
         uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: 'C0377QY9PLH'
           update-ts: ${{ steps.slack.outputs.ts }}
