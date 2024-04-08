@@ -110,6 +110,8 @@ public abstract class JobInformer {
 			.memReq(metadataFromResource.getMemReq())
 			.gpuReq(metadataFromResource.getGpuReq())
 			.workloadCmd(metadataFromResource.getCommand())
+			.workingDir(metadataFromResource.getWorkingDir())
+			.argMap(metadataFromResource.getArgs())
 			.createdAt(metadataFromResource.getCreatedAt())
 			.deletedAt(metadataFromResource.getDeletedAt())
 			.creatorName(metadataFromResource.getCreatorUserName())

@@ -13,6 +13,9 @@ import java.util.Map;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
@@ -128,6 +131,25 @@ public class K8sInfoPicker {
 	}
 
 	/**
+	 * job annotation에 등록되어있는 argsMap을 가져오는 메소드
+	 * @param annotationMap k8s annotation map
+	 * @return
+	 */
+	public static Map<String,String> getArgsMap(Map<String,String> annotationMap) {
+		String argStr = annotationMap.get(AnnotationField.ARGS.getField());
+		if (StringUtils.hasText(argStr)) {
+			ObjectMapper objectMapper = new ObjectMapper();
+			try {
+				return objectMapper.readValue(argStr, new TypeReference<>() {});
+			} catch (JsonProcessingException e) {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * astra에서 생성된 resource의 경우 값을 추출하는 메소드
 	 * astra에서 생성된 메소드의 경우 metadata에 정보를 저장하기에 해당 정보를 조회하여 매핑
 	 *
@@ -174,6 +196,8 @@ public class K8sInfoPicker {
 				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
 				.envs(getEnvs(container.getEnv()))
 				.ports(getPorts(container.getPorts()))
+				.workingDir(container.getWorkingDir())
+				.args(getArgsMap(annotations))
 				.codes(codes)
 				.datasetMountPathMap(getDatasetAndModelMountMap("ds-", mountAnnotationMap))
 				.modelMountPathMap(getDatasetAndModelMountMap("md-", mountAnnotationMap))
