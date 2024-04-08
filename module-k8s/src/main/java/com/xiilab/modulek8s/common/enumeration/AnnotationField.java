@@ -25,6 +25,7 @@ public enum AnnotationField {
 	IMAGE_ID("image_id"),
 	IMAGE_CREDENTIAL_ID("image-credential-id"),
 	IDE("ide"),
+	ARGS("args"),
 	ESTIMATED_INITIAL_TIME("estimated_initial_time"),
 	ESTIMATED_REMAINING_TIME("estimated_remaining_time")
 	;

@@ -1,13 +1,11 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -65,6 +63,7 @@ public abstract class ModuleWorkloadResDTO {
 	protected Long imageCredentialId;
 	protected boolean canBeDeleted;
 	protected String ide;
+	protected String workingDir;
 	// 최초 예측 시간
 	LocalDateTime estimatedInitialTime;
 	// 실시간 예측 시간
