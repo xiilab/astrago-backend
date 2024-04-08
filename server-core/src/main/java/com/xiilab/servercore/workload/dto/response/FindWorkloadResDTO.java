@@ -3,6 +3,7 @@ package com.xiilab.servercore.workload.dto.response;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.hibernate.Hibernate;
@@ -57,7 +58,9 @@ public class FindWorkloadResDTO extends ResDTO {
 		private List<FindWorkloadResDTO.Volume> datasets;
 		private List<FindWorkloadResDTO.Volume> models;
 		private List<FindWorkloadResDTO.Code> codes;
+		private String workingDir;
 		private String command;
+		private Map<String,String> args;
 		private Float cpuRequest;
 		private Integer gpuRequest;
 		private Float memRequest;
@@ -89,6 +92,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				.datasets(datasets)
 				.models(models)
 				.codes(codes)
+				.workingDir(moduleJobResDTO.getWorkingDir())
+				.args(moduleJobResDTO.getArgs())
 				.command(moduleJobResDTO.getCommand())
 				.cpuRequest(Float.parseFloat(moduleJobResDTO.getCpuRequest()))
 				.gpuRequest(Integer.parseInt(moduleJobResDTO.getGpuRequest()))

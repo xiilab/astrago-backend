@@ -45,7 +45,6 @@ public class CodeEntity extends BaseEntity {
 	@Column(name = "CODE_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	private CodeType codeType;
-
 	@Column(name = "REPOSITORY_TYPE")
 	@Enumerated(value = EnumType.STRING)
 	private RepositoryType repositoryType;
@@ -62,7 +61,10 @@ public class CodeEntity extends BaseEntity {
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYn = DeleteYN.N;
-
+	@Column(name = "CODE_CMD")
+	private String cmd;
+	@Column(name = "CODE_ARGS")
+	private String codeArgs;
 
 	@Builder(builderClassName = "dtoConverter", builderMethodName = "dtoConverter")
 	CodeEntity(CodeType codeType, String codeURL, String workspaceResourceName, CredentialEntity credentialEntity, RepositoryType repositoryType, String codeDefaultMountPath) {

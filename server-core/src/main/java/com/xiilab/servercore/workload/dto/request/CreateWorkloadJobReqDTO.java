@@ -1,15 +1,16 @@
 package com.xiilab.servercore.workload.dto.request;
 
 import java.util.List;
+import java.util.Map;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleEnvReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
-import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
 import lombok.AllArgsConstructor;
@@ -29,7 +30,9 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private List<ModuleVolumeReqDTO> datasets;
 	private List<ModuleVolumeReqDTO> models;
 	private List<ModuleCodeReqDTO> codes;
+	private String workingDir;
 	private String command;
+	private Map<String,String> args;
 	private Float cpuRequest;
 	private Integer gpuRequest;
 	private Float memRequest;
@@ -53,7 +56,9 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.ports(ports)
 			.envs(envs)
 			.codes(codes)
+			.workingDir(workingDir)
 			.command(command)
+			.args(args)
 			.cpuRequest(cpuRequest)
 			.gpuRequest(gpuRequest)
 			.memRequest(memRequest)
