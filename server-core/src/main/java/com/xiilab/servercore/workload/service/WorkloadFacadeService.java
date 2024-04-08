@@ -281,7 +281,7 @@ public class WorkloadFacadeService {
 			try {
 				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
 			} catch (Exception e2) {
-				throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
+				throw e2;
 			}
 		}
 

@@ -33,6 +33,7 @@ import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
@@ -178,7 +179,10 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
 				workspaceName, workloadResourceName)
 			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
-
+		// 삭제된 워크로드는 다른 에러메시지 처리
+		if (jobEntity.getDeleteYN() == DeleteYN.Y) {
+			throw new RestApiException(WorkloadErrorCode.DELETED_WORKLOAD_INFO);
+		}
 		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}
 

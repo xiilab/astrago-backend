@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.repository.WorkspaceRepo;
 import com.xiilab.modulek8s.workspace.repository.WorkspaceRoleRepo;
@@ -90,4 +91,13 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	public String getNodeName(String workspaceResourceName, String workloadResourceName){
 		return workspaceRepo.getNodeName(workspaceResourceName, workloadResourceName);
 	}
+
+	// @Override
+	// public void validRedirectWorkspace(String workspaceResourceName) {
+	// 	try {
+	// 		workspaceRepo.getWorkspaceByName(workspaceResourceName);
+	// 	} catch (K8sException k8sException) {
+	// 		System.out.println("k8sException = " + k8sException);
+	// 	}
+	// }
 }

@@ -16,6 +16,7 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.vo.PageNaviParam;
@@ -557,4 +558,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		}
 	}
 
+	@Override
+	public void validRedirectWorkspace(String workspaceResourceName) {
+		try {
+			workspaceService.getWorkspaceByName(workspaceResourceName);
+		} catch (K8sException e) {
+			e.printStackTrace();
+		}
+	}
 }

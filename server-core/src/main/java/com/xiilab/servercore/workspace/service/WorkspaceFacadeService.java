@@ -57,4 +57,5 @@ public interface WorkspaceFacadeService {
 	ClusterResourceCompareDTO requestResourceComparedClusterResource();
 	WorkspaceResourceSettingDTO getWorkspaceResourceSetting();
 	void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO, UserInfoDTO userInfoDTO);
+	void validRedirectWorkspace(String workspaceResourceName);
 }

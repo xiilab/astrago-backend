@@ -298,4 +298,13 @@ public class WorkspaceController {
 		workspaceService.updateWorkspaceResourceSetting(workspaceResourceSettingDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	@GetMapping("/redirect/valid/{workspaceResourceName}")
+	@Operation(summary = "워크스페이스 리소스 세팅 값 수정")
+	public ResponseEntity<HttpStatus> validRedirectWorkspace(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName
+	){
+		workspaceService.validRedirectWorkspace(workspaceResourceName);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }
