@@ -27,112 +27,112 @@ jobs:
           channel-id: 'C0377QY9PLH'
           payload: |
             {
-                "text": ":rocket: Astrago CICD Agent",
-            	"blocks": [
-            		{
-            			"type": "header",
-            			"text": {
-            				"type": "plain_text",
-            				"text": ":rocket: Astrago CICD Agent"
-            			}
-            		},
-            		{
-            			"type": "section",
-            			"text": {
-            				"type": "mrkdwn",
-            				"text": "*프로젝트:* `프로젝트명`"
-            			}
-            		},
-            		{
-            			"type": "section",
-            			"fields": [
-            				{
-            					"type": "mrkdwn",
-            					"text": "*브랜치:* `브랜치명`"
-            				},
-            				{
-            					"type": "mrkdwn",
-            					"text": "*요청자:* `김수현`"
-            				}
-            			]
-            		},
-            		{
-            			"type": "divider"
-            		},
-            		{
-            			"type": "section",
-            			"text": {
-            				"type": "mrkdwn",
-            				"text": "*빌드환경 초기화:* :white_check_mark:"
-            			}
-            		},
-            		{
-            			"type": "section",
-            			"text": {
-            				"type": "mrkdwn",
-            				"text": "*프로젝트 build:*"
-            			}
-            		},
-            		{
-            			"type": "section",
-            			"text": {
-            				"type": "mrkdwn",
-            				"text": "*image push:*"
-            			}
-            		},
-            		{
-            			"type": "divider"
-            		},
-            		{
-            			"type": "section",
-            			"text": {
-            				"type": "mrkdwn",
-            				"text": "*배포 상태:*"
-            			}
-            		},
-            		{
-            			"type": "context",
-            			"elements": [
-            				{
-            					"type": "image",
-            					"image_url": "https://상태_이미지_URL",
-            					"alt_text": "성공/실패"
-            				},
-            				{
-            					"type": "mrkdwn",
-            					"text": "`성공` 또는 `실패`"
-            				}
-            			]
-            		},
-            		{
-            			"type": "section",
-            			"text": {
-            				"type": "mrkdwn",
-            				"text": "*상세 내용:* 배포 과정에서 발생한 주요 이슈 및 로그 링크 제공."
-            			}
-            		},
-            		{
-            			"type": "actions",
-            			"elements": [
-            				{
-            					"type": "button",
-            					"text": {
-            						"type": "plain_text",
-            						"text": "로그 보기"
-            					},
-            					"style": "primary"
-            				},
-            				{
-            					"type": "button",
-            					"text": {
-            						"type": "plain_text",
-            						"text": "재배포 요청"
-            					},
-            					"value": "redeploy_request"
-            				}
-            			]
-            		}
-            	]
+              "text": ":rocket: Astrago CICD Agent",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":rocket: Astrago CICD Agent"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*프로젝트:* `프로젝트명`"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*브랜치:* `브랜치명`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*요청자:* `김수현`"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*빌드환경 초기화:* :white_check_mark:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*프로젝트 build:*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*image push:*"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*배포 상태:*"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "image",
+                      "image_url": "https://상태_이미지_URL",
+                      "alt_text": "성공/실패"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "`성공` 또는 `실패`"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*상세 내용:* 배포 과정에서 발생한 주요 이슈 및 로그 링크 제공."
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "로그 보기"
+                      },
+                      "style": "primary"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "재배포 요청"
+                      },
+                      "value": "redeploy_request"
+                    }
+                  ]
+                }
+              ]
             }
       # 원격머신에 repo checkout
       - name: Checkout
