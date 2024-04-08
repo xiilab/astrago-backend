@@ -22,7 +22,7 @@ jobs:
       - name: Send first message
         uses: slackapi/slack-github-action@v1.25.0
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: xoxb-129531027059-6949393246608-25UZY765Rool95fQvpU7jGW4
         with:
           channel-id: 'C0377QY9PLH'
           payload: |
