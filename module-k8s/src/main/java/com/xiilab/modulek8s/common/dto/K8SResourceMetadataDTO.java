@@ -51,7 +51,6 @@ public class K8SResourceMetadataDTO {
 	private Map<String, Map<String, String>> codeMountPathMap; 		// model - mount path 맵
 	private String workingDir;
 	private String command;                      // 워크로드 명령
-	private Map<String,String> args;		// args
 	private String ide;
 
 	@Getter

@@ -62,7 +62,6 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.workingDir(this.workingDir)
 			.command(this.command)
-			.args(args)
 			.workloadType(this.workloadType)
 			.cpuRequest(this.cpuRequest)
 			.gpuRequest(this.gpuRequest)

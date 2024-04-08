@@ -197,7 +197,6 @@ public class K8sInfoPicker {
 				.envs(getEnvs(container.getEnv()))
 				.ports(getPorts(container.getPorts()))
 				.workingDir(container.getWorkingDir())
-				.args(getArgsMap(annotations))
 				.codes(codes)
 				.datasetMountPathMap(getDatasetAndModelMountMap("ds-", mountAnnotationMap))
 				.modelMountPathMap(getDatasetAndModelMountMap("md-", mountAnnotationMap))

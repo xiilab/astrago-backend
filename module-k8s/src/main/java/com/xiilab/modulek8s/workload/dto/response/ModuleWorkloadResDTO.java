@@ -1,7 +1,5 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +64,6 @@ public abstract class ModuleWorkloadResDTO {
 	protected boolean canBeDeleted;
 	protected String ide;
 	protected String workingDir;
-	protected Map<String, String> args;
 	// 최초 예측 시간
 	LocalDateTime estimatedInitialTime;
 	// 실시간 예측 시간
@@ -100,7 +97,6 @@ public abstract class ModuleWorkloadResDTO {
 					.getAnnotations()
 					.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField()));
 			imageId = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_ID.getField());
-			args = getArgsMap(hasMetadata.getMetadata().getAnnotations());
 		} else {
 			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
 		}

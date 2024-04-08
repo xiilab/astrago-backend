@@ -85,6 +85,8 @@ public class CodeServiceImpl implements CodeService {
 					.credentialEntity(credentialEntity)
 					.repositoryType(WORKSPACE)
 					.codeDefaultMountPath(codeReqDTO.getDefaultPath())
+					.cmd(codeReqDTO.getCmd())
+					.codeArgs(codeReqDTO.getCodeArgs())
 					.build());
 			return new CodeResDTO(saveCode);
 		} catch (IllegalArgumentException e) {

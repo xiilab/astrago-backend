@@ -1,7 +1,6 @@
 package com.xiilab.servercore.workload.dto.request;
 
 import java.util.List;
-import java.util.Map;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
@@ -32,7 +31,6 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	private List<ModuleCodeReqDTO> codes;
 	private String workingDir;
 	private String command;
-	private Map<String,String> args;
 	private Float cpuRequest;
 	private Integer gpuRequest;
 	private Float memRequest;
@@ -58,7 +56,6 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.codes(codes)
 			.workingDir(workingDir)
 			.command(command)
-			.args(args)
 			.cpuRequest(cpuRequest)
 			.gpuRequest(gpuRequest)
 			.memRequest(memRequest)

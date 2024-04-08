@@ -8,7 +8,6 @@ import org.springframework.util.CollectionUtils;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
-import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import io.fabric8.kubernetes.api.model.Container;
@@ -37,7 +36,6 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			.map(port -> ModulePortResDTO.builder().name(port.getName()).originPort(port.getContainerPort()).build())
 			.toList();
 		this.workingDir = container.getWorkingDir();
-		this.args = K8sInfoPicker.getArgsMap(job.getMetadata().getAnnotations());
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(job.getStatus());
 		// 최초 종료 시간 예측
