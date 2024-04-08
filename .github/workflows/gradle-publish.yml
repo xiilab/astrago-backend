@@ -239,6 +239,50 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # core image build에 따른 메시지 발송
+      - name: Send build result
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Core image build result:* :white_check_mark:"
+                  }
+                }
+              ]
+            }
+
+      # core image build에 따른 메시지 발송
+      - name: Send build result
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Core image build result:* :no_entry_sign:"
+                  }
+                }
+              ]
+            }
+
       # batch image build & push
       - name: Build and push Batch Docker images
         uses: docker/build-push-action@v5.1.0
@@ -253,6 +297,50 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # batch image build에 따른 메시지 발송
+      - name: Send build result
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Batch image build result:* :white_check_mark:"
+                  }
+                }
+              ]
+            }
+
+      # core image build에 따른 메시지 발송
+      - name: Send build result
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Batch image build result:* :no_entry_sign:"
+                  }
+                }
+              ]
+            }
+
       # monitor image build & push
       - name: Build and push Monitor Docker images
         uses: docker/build-push-action@v5.1.0
@@ -266,6 +354,50 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # monitor image build에 따른 메시지 발송
+      - name: Send build result
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Monitor image build result:* :white_check_mark:"
+                  }
+                }
+              ]
+            }
+
+      # core image build에 따른 메시지 발송
+      - name: Send build result
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C0377QY9PLH'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Monitor image build result:* :no_entry_sign:"
+                  }
+                }
+              ]
+            }
 
       ## Write for matrix outputs workaround
       - id: out_image
