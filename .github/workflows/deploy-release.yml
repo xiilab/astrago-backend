@@ -28,7 +28,7 @@ jobs:
       - name: Extract Release Image Tag
         id: extract_image_tag
         run: |
-          RELEASE_VERSION=$(echo "${GITHUB_HEAD_REF##* /}" | grep -E '^[0-9]+\.[0-9]+$')
+          RELEASE_VERSION=$(echo "${GITHUB_HEAD_REF##*/}" | grep -E '^[0-9]+\.[0-9]+$')
           echo "RELEASE_VERSION=$RELEASE_VERSION"
           IMAGE_TAG=${RELEASE_VERSION}-$(git rev-parse --short=4 HEAD)-rc
           echo "IMAGE_TAG=$IMAGE_TAG"
