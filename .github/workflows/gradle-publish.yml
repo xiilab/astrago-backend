@@ -111,6 +111,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -133,6 +134,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -251,6 +253,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -273,6 +276,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -309,6 +313,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -331,6 +336,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -367,6 +373,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -389,6 +396,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -457,6 +465,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -479,6 +488,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -510,6 +520,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
@@ -532,6 +543,7 @@ jobs:
           update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
+              "text": ":rocket: Astrago CICD Agent",
               "blocks": [
                 {
                   "type": "section",
