@@ -6,8 +6,10 @@ import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -38,6 +41,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class CodeServiceImpl implements CodeService {
+	@Value("${gitlab.url}")
+	private String gitlabUrl;
+	@Value("${gitlab.token}")
+	private String gitlabToken;
 	private final CodeRepository codeRepository;
 	private final CredentialService credentialService;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
@@ -80,6 +87,14 @@ public class CodeServiceImpl implements CodeService {
 		} else if (isGitLabURL) {
 			codeType = CodeType.GIT_LAB;
 			// GITLAB API 검증
+			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
+			Matcher matcher = pattern.matcher(codeReqDTO.getCodeURL());
+			if (matcher.find()) {
+				String namespace = matcher.group(1);
+				String project = matcher.group(2);
+				gitLabApi.isRepoConnected(namespace, project);
+			}
 		}
 
 		try {
@@ -137,6 +152,14 @@ public class CodeServiceImpl implements CodeService {
 			}
 		} else if (isGitLabURL) {
 			// GITLAB API 검증
+			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
+			Matcher matcher = pattern.matcher(codeURL);
+			if (matcher.find()) {
+				String namespace = matcher.group(1);
+				String project = matcher.group(2);
+				gitLabApi.isRepoConnected(namespace, project);
+			}
 		}
 
 		return true;
