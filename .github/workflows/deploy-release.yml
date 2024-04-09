@@ -17,7 +17,7 @@ permissions: write-all
 
 jobs:
   build:
-    if: startsWith(github.head_ref, 'releases/')
+    if: startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-latest
     env:
       DOCKER_REPOSITORY: xiilab/astrago-backend
