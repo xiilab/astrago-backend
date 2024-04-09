@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,8 @@ import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
@@ -27,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
+	private final NetworkRepository networkRepository;
 
 	@Value("${astrago.namespace}")
 	private String namespace;
@@ -50,6 +54,9 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			throw new K8sException(StorageErrorCode.STORAGE_DIRECTORY_CREATION_FAILED);
 		}
 
+		//폐쇄망 확인 후 connection image url 조회
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+
 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
 			.storageName(storageDTO.getStorageName())
 			.storageType(storageDTO.getStorageType())
@@ -60,6 +67,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.hostPath(String.valueOf(hostPath))
 			.astragoDeploymentName(astragoDeploymentName)
 			.namespace(namespace)
+			.connectionTestImageUrl(network.getConnectionTestURL())
 			.build();
 		StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
 

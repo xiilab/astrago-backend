@@ -220,7 +220,8 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.namespace(namespace)
 			.connectTestLabelName(connectTestLabelName)
 			.hostPath(hostPath)
-			.dockerImage("xiilab/astrago-dataset-nginx")
+			// .dockerImage("xiilab/astrago-dataset-nginx")
+			.dockerImage(createStorageReqDTO.getConnectionTestImageUrl())
 			.build();
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);

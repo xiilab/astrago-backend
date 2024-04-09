@@ -19,6 +19,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -72,6 +73,8 @@ import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
@@ -129,6 +132,7 @@ public class WorkloadFacadeService {
 	private final AlertService alertService;
 	private final WorkspaceService workspaceService;
 	private final ApplicationEventPublisher eventPublisher;
+	private final NetworkRepository networkRepository;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -165,9 +169,12 @@ public class WorkloadFacadeService {
 		}
 
 		try {
+			NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+			// 커스텀 이미지일 때만 이미지 데이터 저장
+			// workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
 			// 리소스 초과 알림
 			checkAndSendWorkspaceResourceOverAlert(createWorkloadReqDTO, userInfoDTO);
-			workloadModuleFacadeService.createJobWorkload(createWorkloadReqDTO.toModuleDTO());
+			workloadModuleFacadeService.createJobWorkload(createWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
 			// 워크로드
 		} catch (RestApiException e) {
 			e.printStackTrace();

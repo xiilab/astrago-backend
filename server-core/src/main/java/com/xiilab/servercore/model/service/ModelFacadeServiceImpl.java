@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -57,6 +60,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	private final ModelService modelService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WebClientService webClientService;
+	private final NetworkRepository networkRepository;
 
 	@Override
 	@Transactional
@@ -75,12 +79,15 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	@Override
 	@Transactional
 	public void insertLocalModel(ModelDTO.CreateLocalModel createLocalModel) {
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+
 		CreateLocalModelDTO createDto = CreateLocalModelDTO.builder()
 			.namespace(namespace)
 			.modelName(createLocalModel.getModelName())
 			.ip(createLocalModel.getIp())
 			.storagePath(createLocalModel.getStoragePath())
-			.dockerImage(dockerImage)
+			// .dockerImage(dockerImage)
+			.dockerImage(network.getLocalVolumeURL())
 			.hostPath(hostPath)
 			.build();
 
