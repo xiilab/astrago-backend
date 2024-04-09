@@ -18,9 +18,9 @@ permissions: write-all
 jobs:
   build:
     if: startsWith(github.head_ref, 'release/')
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, linux ]
     env:
-      DOCKER_REPOSITORY: xiilab/astrago-backend
+      DOCKER_REPOSITORY: harbor.xiilab.com:32443
     permissions:
       contents: write
     steps:
@@ -56,13 +56,32 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Set up Docker Buildx
+      - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          buildkitd-flags: --debug --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
+          platforms: linux/amd64
+          driver-opts: |
+            network=host
+          #config: /etc/buildkit/buildkitd.toml
+          config-inline: |
+            [registry."${{ env.DOCKER_REPOSITORY }}"]
+              http = true
+              insecure = true
+              mirrors = ["${{ env.DOCKER_REPOSITORY }}"]
+              ca=["/etc/docker/certs.d/${{ env.DOCKER_REPOSITORY }}/ca.crt"]
+              [[registry."${{ env.DOCKER_REPOSITORY }}".keypair]]
+                key="/home/runner/tls/tls.key"
+                cert="/home/runner/tls/tls.crt"
+
+      # Harbor에 로그인
+      - name: harbor 로그인
+        uses: docker/login-action@v3.0.0
+        with:
+          registry: ${{ env.DOCKER_REPOSITORY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
       # core image build & push
       - name: Build and push Core Docker images
         uses: docker/build-push-action@v5.1.0
@@ -107,3 +126,29 @@ jobs:
           if_mention: failure,cancelled
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+
+  push_helm:
+    needs: [ build ]
+    runs-on: [ self-hosted, linux ]
+    steps:
+      - name: clone astrago deploy git repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN }}
+          repository: 'xiilab/astrago-deployment'
+
+      - name: stage 이미지 정보 수정
+        uses: mikefarah/yq@master
+        with:
+          cmd: |
+            yq -i '.astrago.core.imageTag = "${{ env.DOCKER_REPOSITORY }}:core-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ env.DOCKER_REPOSITORY }}:batch-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ env.DOCKER_REPOSITORY }}:monitor-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+
+      - name: Commit and Push
+        run: |
+          git config --global user.email "100milliongold@xiilab.com"
+          git config --global user.name "100milliongold"
+          git add .
+          git commit -m "update backend image tag"
+          git push
