@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} deploys to Staging 🚀
 on:
   pull_request:
     branches:
-      - 'release/[0-9]+.[0-9]+'
+      - main
 
 
 concurrency:
@@ -19,6 +19,7 @@ jobs:
       DOCKER_REPOSITORY: xiilab/astrago-backend
     permissions:
       contents: write
+    if: startsWith(github.ref, 'refs/heads/release/')
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
