@@ -248,7 +248,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -270,7 +270,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -306,7 +306,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -328,7 +328,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -364,7 +364,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -386,7 +386,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -454,7 +454,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -476,7 +476,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -507,7 +507,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -529,7 +529,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.slack.outputs.ts }}
+          update-ts: ${{ steps.first_message.outputs.ts }}
           payload: |
             {
               "blocks": [
