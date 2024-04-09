@@ -500,7 +500,7 @@ jobs:
 
       # job 성공 여부에 따른 message 발송
       - name: Send push monochart result
-        if: ${{ job.status }} == 'success'
+        if: ${{ job.status == 'success' }}
         uses: slackapi/slack-github-action@v1.25.0
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -522,7 +522,7 @@ jobs:
 
       # job 성공 따른 메시지 발송
       - name: Send build result
-        if: ${{ job.status }} == 'failure'
+        if: ${{ job.status == 'failure' }}
         uses: slackapi/slack-github-action@v1.25.0
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
