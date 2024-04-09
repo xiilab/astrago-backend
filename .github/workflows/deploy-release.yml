@@ -5,6 +5,7 @@ on:
     branches:
       - 'release/[0-9]+.[0-9]+'
 
+
 concurrency:
   group: ci-dev-test-${{ github.ref }}
   cancel-in-progress: true
