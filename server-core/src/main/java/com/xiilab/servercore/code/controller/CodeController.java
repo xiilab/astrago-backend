@@ -1,7 +1,7 @@
 package com.xiilab.servercore.code.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,10 +37,10 @@ public class CodeController {
 
 	@GetMapping("")
 	@Operation(summary = "소스 코드 목록 API")
-	public ResponseEntity<List<CodeResDTO>> getCodeList(
+	public ResponseEntity<Page<CodeResDTO>> getCodeList(
 		@RequestParam(value = "workspacename", required = false) String workspaceName,
-		UserInfoDTO userInfoDTO){
-		return new ResponseEntity<>(codeService.getCodeList(workspaceName, userInfoDTO), HttpStatus.OK);
+		UserInfoDTO userInfoDTO, Pageable pageable){
+		return new ResponseEntity<>(codeService.getCodeList(workspaceName, userInfoDTO, pageable), HttpStatus.OK);
 	}
 
 

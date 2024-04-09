@@ -2,6 +2,9 @@ package com.xiilab.servercore.code.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -11,7 +14,7 @@ public interface CodeService {
 	CodeResDTO saveCode(CodeReqDTO codeReqDTO);
 	List<CodeResDTO> saveCodes(List<CodeReqDTO> codeReqDTO);
 	Boolean isCodeURLValid(String codeURL, Long credentialId);
-	List<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO);
+	Page<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO, Pageable pageable);
 	CodeResDTO getCodeById(long id);
 	void deleteCodeById(long id);
 

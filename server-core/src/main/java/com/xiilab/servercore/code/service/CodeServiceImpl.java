@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -141,15 +143,16 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
-	public List<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO) {
-		List<CodeEntity> codeEntityList = null;
+	public Page<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO, Pageable pageable) {
+		Page<CodeEntity> codeEntityList = null;
 		if (StringUtils.isEmpty(workspaceName)) {
-			codeEntityList = codeRepository.findByRegUser_RegUserIdAndDeleteYn(userInfoDTO.getId(), DeleteYN.N);
+			codeEntityList = codeRepository.findByRegUser_RegUserIdAndDeleteYn(userInfoDTO.getId(), DeleteYN.N,
+				pageable);
 		} else {
 			codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
-				workspaceName, WORKSPACE, DeleteYN.N);
+				workspaceName, WORKSPACE, DeleteYN.N, pageable);
 		}
-		return codeEntityList.stream().map(CodeResDTO::new).toList();
+		return codeEntityList.map(CodeResDTO::new);
 	}
 
 	@Override
