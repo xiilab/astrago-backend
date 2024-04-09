@@ -19,6 +19,7 @@ public interface CodeRepository  extends JpaRepository<CodeEntity, Long> {
 
 	List<CodeEntity> getCodeEntitiesByWorkspaceResourceNameAndCodeURLAndDeleteYnEquals(String resourceName, String codeUrl, DeleteYN deleteYn);
 
-	@Query("select c from CodeEntity c where c.regUser.regUserId = ?1 and c.deleteYn = ?2")
-	Page<CodeEntity> findByRegUser_RegUserIdAndDeleteYn(String regUserId, DeleteYN deleteYn, Pageable pageable);
+	@Query("select c from CodeEntity c where c.regUser.regUserId = ?1 and c.repositoryType = ?2 and c.deleteYn = ?3")
+	Page<CodeEntity> findByRegUser_RegUserIdAndRepositoryTypeAndDeleteYn(String regUserId,
+		RepositoryType repositoryType, DeleteYN deleteYn, Pageable pageable);
 }

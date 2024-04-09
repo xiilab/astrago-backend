@@ -146,8 +146,8 @@ public class CodeServiceImpl implements CodeService {
 	public Page<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO, Pageable pageable) {
 		Page<CodeEntity> codeEntityList = null;
 		if (StringUtils.isEmpty(workspaceName)) {
-			codeEntityList = codeRepository.findByRegUser_RegUserIdAndDeleteYn(userInfoDTO.getId(), DeleteYN.N,
-				pageable);
+			codeEntityList = codeRepository.findByRegUser_RegUserIdAndRepositoryTypeAndDeleteYn(userInfoDTO.getId(),
+				USER, DeleteYN.N, pageable);
 		} else {
 			codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
 				workspaceName, WORKSPACE, DeleteYN.N, pageable);
