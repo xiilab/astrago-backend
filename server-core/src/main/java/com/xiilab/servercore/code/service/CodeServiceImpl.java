@@ -23,11 +23,13 @@ import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
+import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -139,10 +141,14 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
-	public List<CodeResDTO> getCodeList(String workspaceName) {
-		List<CodeEntity> codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
-			workspaceName, WORKSPACE, DeleteYN.N);
-
+	public List<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO) {
+		List<CodeEntity> codeEntityList = null;
+		if (StringUtils.isEmpty(workspaceName)) {
+			codeEntityList = codeRepository.findByRegUser_RegUserIdAndDeleteYn(userInfoDTO.getId(), DeleteYN.N);
+		} else {
+			codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
+				workspaceName, WORKSPACE, DeleteYN.N);
+		}
 		return codeEntityList.stream().map(CodeResDTO::new).toList();
 	}
 
