@@ -5,14 +5,20 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ci-dev-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: write-all
+
 jobs:
   build:
+    if: contains(toJSON(github.head_ref), 'release/')
     runs-on: ubuntu-latest
     env:
       DOCKER_REPOSITORY: xiilab/astrago-backend
     permissions:
       contents: write
-    if: contains(toJSON(github.head_ref), 'release/')
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
