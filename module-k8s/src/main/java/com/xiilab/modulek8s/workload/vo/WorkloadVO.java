@@ -60,7 +60,8 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
 				.map(codeVO -> new ContainerBuilder().withName(getUniqueResourceName() + "-git-clone-" + index)
-					.withImage("k8s.gcr.io/git-sync/git-sync:v3.2.2")
+					// .withImage("k8s.gcr.io/git-sync/git-sync:v3.2.2")
+					.withImage(codeVO.initContainerImageUrl())
 					// init컨테이너와 아래서 생성한 emptyDir 볼륨 연결
 					.addNewVolumeMount()
 					.withName("git-clone-" + index.getAndIncrement())

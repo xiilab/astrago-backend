@@ -34,6 +34,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private Float memRequest;
 	private String imageSecretName;
 	private String ide;
+	private String initContainerUrl;
 
 	public CredentialVO toCredentialVO() {
 		JobImageVO jobImageVO = this.image.toJobImageVO(workspace);
@@ -52,7 +53,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.creatorUserName(this.getCreatorUserName())
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
-			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace)).toList())
+			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace, initContainerUrl)).toList())
 			.datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
@@ -78,7 +79,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.creatorUserName(this.getCreatorUserName())
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
-			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace)).toList())
+			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace, initContainerUrl)).toList())
 			.datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())

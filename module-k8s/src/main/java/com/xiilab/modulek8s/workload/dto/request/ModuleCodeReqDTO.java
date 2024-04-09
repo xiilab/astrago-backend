@@ -26,12 +26,12 @@ public class ModuleCodeReqDTO {
 	@JsonIgnore
 	ModuleCredentialReqDTO credentialReqDTO;
 
-	public JobCodeVO toJobCodeVO(String workspace) {
+	public JobCodeVO toJobCodeVO(String workspace, String initContainerUrl) {
 		// String projectName = repositoryURL.substring(repositoryURL.lastIndexOf("/") + 1).split("\\.")[0];
 		if (repositoryAuthType == RepositoryAuthType.PRIVATE && credentialReqDTO != null) {
-			return new JobCodeVO(codeId, repositoryURL, branch, mountPath, credentialReqDTO.toCredentialVO(workspace));
+			return new JobCodeVO(codeId, repositoryURL, branch, mountPath, initContainerUrl, credentialReqDTO.toCredentialVO(workspace));
 		} else {
-			return new JobCodeVO(codeId, repositoryURL, branch, mountPath);
+	 		return new JobCodeVO(codeId, repositoryURL, branch, mountPath, initContainerUrl);
 		}
 	}
 }

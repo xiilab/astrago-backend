@@ -78,7 +78,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
 			// Model PV 생성
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
-
 			if (workloadType == WorkloadType.BATCH) {
 				createJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
