@@ -118,10 +118,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  push_helm:
-    needs: [ build ]
-    runs-on: [ self-hosted, linux ]
-    steps:
       - name: clone astrago deploy git repository
         uses: actions/checkout@v4
         with:
@@ -132,9 +128,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.imageTag = "${{ env.HARBOR_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ env.HARBOR_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ env.HARBOR_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}"/core' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}"/batch' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}"/monitor' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |
