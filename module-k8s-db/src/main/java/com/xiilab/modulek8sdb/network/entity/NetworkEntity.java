@@ -60,4 +60,7 @@ public class NetworkEntity {
 	public String getLocalVolumeURL(){
 		return networkCloseYN == NetworkCloseYN.Y ? localVolumeHarbor : localVolumeHub;
 	}
+	public void modifyNetworkStatus(NetworkCloseYN networkCloseYN){
+		this.networkCloseYN = networkCloseYN;
+	}
 }
