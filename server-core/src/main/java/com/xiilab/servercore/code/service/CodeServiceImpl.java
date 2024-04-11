@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,7 +106,7 @@ public class CodeServiceImpl implements CodeService {
 					.codeURL(codeReqDTO.getCodeURL())
 					.workspaceResourceName(codeReqDTO.getWorkspaceName())
 					.credentialEntity(credentialEntity)
-					.repositoryType(WORKSPACE)
+					.repositoryType(codeReqDTO.getRepositoryType())
 					.codeDefaultMountPath(codeReqDTO.getDefaultPath())
 					.cmd(codeReqDTO.getCmd())
 					.codeArgs(codeReqDTO.getCodeArgs())
