@@ -49,13 +49,13 @@ public class ExternalService {
 
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
-			// token = (token != null) ? token : gitlabToken;
+			token = (token == null) ? gitlabToken : token;
 			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
 			String[] repo = repoName.split("/");
 			return gitLabApi.getBranchList(repo[0], repo[1]);
 		}else{
 			// 토큰값 전달 안되면 PublicToken 넣음
-			// token = (token != null)? token : publicToken;
+			token = (token == null)? publicToken : token;
 			GithubApi githubApi = new GithubApi(token);
 			return githubApi.getBranchList(repoName);
 		}
