@@ -9,12 +9,6 @@ on:
     branches:
       - main
 
-concurrency:
-  group: ci-dev-test-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions: write-all
-
 jobs:
   build:
     if: startsWith(github.head_ref, 'release/')
@@ -25,7 +19,7 @@ jobs:
       DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
     permissions:
       contents: write
-      pull-requests: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -154,12 +148,3 @@ jobs:
           if_mention: failure,cancelled
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-
-      - name: Slack 알림 전송
-        if: ${{ job.status }} == 'failure'
-        uses: 8398a7/action-slack@v3
-        with:
-          status: '${{ steps.slack-status.outputs.value }}'
-          text: '${{ steps.slack-message.outputs.value }}'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
