@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
@@ -30,8 +31,7 @@ public class JobEntity extends WorkloadEntity {
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
 		Map<String, String> envs,
 		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
-		ImageEntity image, DeleteYN deleteYN, String ide,
-		String workingDir) {
+		ImageEntity image, DeleteYN deleteYN, String ide, String workingDir, Map<String,String> parameter) {
 		this.uid = uid;
 		this.name = name;
 		this.description = description;
@@ -55,6 +55,7 @@ public class JobEntity extends WorkloadEntity {
 		this.image = image;
 		this.ide = ide;
 		this.deleteYN = deleteYN;
+		this.parameter = JsonConvertUtil.convertMapToJson(parameter);
 	}
 
 	public void updateImage(ImageEntity image) {

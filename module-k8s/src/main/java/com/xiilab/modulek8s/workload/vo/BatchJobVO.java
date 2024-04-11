@@ -10,9 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -45,6 +45,7 @@ public class BatchJobVO extends WorkloadVO {
 	private List<JobPortVO> ports;        //port 정의
 	private String workingDir;		// 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
+	private Map<String,String> parameter;		// 사용자가 입력한 hyper parameter
 	private String jobName;
 
 	@Override
@@ -71,7 +72,6 @@ public class BatchJobVO extends WorkloadVO {
 	}
 
 	private Map<String, String> getAnnotationMap() {
-		ObjectMapper objectMapper = new ObjectMapper();
 		String imageCredentialId = "";
 		if (getImage() != null && getImage().credentialVO() != null && !ObjectUtils.isEmpty(
 			getImage().credentialVO().credentialId())) {
@@ -94,6 +94,7 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
+		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
 
 		return annotationMap;
 	}

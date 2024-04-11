@@ -30,7 +30,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
 	private String workingDir;	// 명령어를 실행 할 path
 	private String command;    // 실행할 명령어
-	private Map<String,String> args; // 사용자가 입력한 args
+	private Map<String,String> parameter; // 사용자가 입력한 parameter
 	private WorkloadType workloadType;    // 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
 	private Integer gpuRequest;
 	private Float cpuRequest;
@@ -63,6 +63,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.workingDir(this.workingDir)
 			.command(this.command)
+			.parameter(this.parameter)
 			.workloadType(this.workloadType)
 			.cpuRequest(this.cpuRequest)
 			.gpuRequest(this.gpuRequest)

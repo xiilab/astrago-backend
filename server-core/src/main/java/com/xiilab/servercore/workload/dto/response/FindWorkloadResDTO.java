@@ -3,6 +3,7 @@ package com.xiilab.servercore.workload.dto.response;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.hibernate.Hibernate;
@@ -14,6 +15,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
@@ -59,6 +61,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private List<FindWorkloadResDTO.Code> codes;
 		private String workingDir;
 		private String command;
+		private Map<String,String> parameter;
 		private Float cpuRequest;
 		private Integer gpuRequest;
 		private Float memRequest;
@@ -92,6 +95,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.codes(codes)
 				.workingDir(moduleJobResDTO.getWorkingDir())
 				.command(moduleJobResDTO.getCommand())
+				.parameter(moduleJobResDTO.getParameter())
 				.cpuRequest(Float.parseFloat(moduleJobResDTO.getCpuRequest()))
 				.gpuRequest(Integer.parseInt(moduleJobResDTO.getGpuRequest()))
 				.memRequest(Float.parseFloat(moduleJobResDTO.getMemRequest()))
@@ -125,6 +129,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.models(jobEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
 				.codes(jobEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
 				.command(jobEntity.getWorkloadCMD())
+				.parameter(JsonConvertUtil.convertJsonToMap(jobEntity.getParameter()))
 				.cpuRequest(jobEntity.getCpuRequest().floatValue())
 				.gpuRequest(jobEntity.getGpuRequest() == null ? 0 : jobEntity.getGpuRequest())
 				.memRequest(jobEntity.getMemRequest().floatValue())
