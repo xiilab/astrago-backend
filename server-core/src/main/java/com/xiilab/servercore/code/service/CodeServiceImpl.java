@@ -6,10 +6,13 @@ import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +22,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -38,6 +42,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class CodeServiceImpl implements CodeService {
+	@Value("${gitlab.url}")
+	private String gitlabUrl;
+	@Value("${gitlab.token}")
+	private String gitlabToken;
 	private final CodeRepository codeRepository;
 	private final CredentialService credentialService;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
@@ -47,7 +55,7 @@ public class CodeServiceImpl implements CodeService {
 	public CodeResDTO saveCode(CodeReqDTO codeReqDTO) {
 		// 깃허브 또는 깃랩 URL인지 검증
 		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
-		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
+		// boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
 
 		List<CodeEntity> codeEntities = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndCodeURLAndDeleteYnEquals(
 			codeReqDTO.getWorkspaceName(), codeReqDTO.getCodeURL(), DeleteYN.N);
@@ -57,9 +65,9 @@ public class CodeServiceImpl implements CodeService {
 		}
 
 		// URL 검증
-		if (!isGitHubURL && !isGitLabURL) {
-			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-		}
+		// if (!isGitHubURL) {
+		// 	throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
+		// }
 
 		// 사용자 Credential 조회
 		String token = "";
@@ -72,14 +80,24 @@ public class CodeServiceImpl implements CodeService {
 		}
 
 		// 연결 가능한지 확인
-		CodeType codeType = null;
+		CodeType codeType;
 		if (isGitHubURL) {
 			codeType = CodeType.GIT_HUB;
 			GithubApi githubApi = new GithubApi(token);
 			githubApi.isRepoConnected(getRepoByUrl(codeReqDTO.getCodeURL()));
-		} else if (isGitLabURL) {
+		} else {
 			codeType = CodeType.GIT_LAB;
 			// GITLAB API 검증
+			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/([^/.]+)(\\.git){1}");
+			Matcher matcher = pattern.matcher(codeReqDTO.getCodeURL());
+			if (matcher.find()) {
+				String namespace = matcher.group(1);
+				String project = matcher.group(2);
+				gitLabApi.isRepoConnected(namespace, project);
+			}else{
+				throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
+			}
 		}
 
 		try {
@@ -137,6 +155,14 @@ public class CodeServiceImpl implements CodeService {
 			}
 		} else if (isGitLabURL) {
 			// GITLAB API 검증
+			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
+			Matcher matcher = pattern.matcher(codeURL);
+			if (matcher.find()) {
+				String namespace = matcher.group(1);
+				String project = matcher.group(2);
+				gitLabApi.isRepoConnected(namespace, project);
+			}
 		}
 
 		return true;

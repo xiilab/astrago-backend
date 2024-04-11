@@ -42,7 +42,7 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	// SchedulingType schedulingType;        // 스케줄링 방식
 
 
-	public ModuleCreateWorkloadReqDTO toModuleDTO() {
+	public ModuleCreateWorkloadReqDTO toModuleDTO(String initContainerUrl) {
 		return ModuleCreateWorkloadReqDTO.builder()
 			.name(getName())
 			.description(getDescription())
@@ -63,6 +63,7 @@ public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 			.creatorUserName(creatorUserName)
 			.creatorFullName(creatorFullName)
 			.ide(ide.name())
+			.initContainerUrl(initContainerUrl)
 			.build();
 	}
 
