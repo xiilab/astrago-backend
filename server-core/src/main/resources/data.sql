@@ -787,8 +787,7 @@ create table if not exists TB_WORKSPACE_ALERT_SETTING
     WORKLOAD_END_ALERT      bit          null,
     WORKLOAD_ERROR_ALERT    bit          null,
     WORKLOAD_START_ALERT    bit          null,
-    ID                      bigint auto_increment
-        primary key,
+    ID                      bigint auto_increment primary key,
     WORKSPACE_NAME          varchar(255) null
 );
 
@@ -797,8 +796,7 @@ create table if not exists TB_WORKSPACE_SETTING
     cpu double not null,
     gpu int    not null,
     mem double not null,
-    id  bigint auto_increment
-        primary key
+    id  bigint auto_increment primary key
 );
 
 
