@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -21,10 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerDTO;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerReceiveDTO;
 import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerEntity;
@@ -46,13 +49,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class AlertManagerServiceImpl implements AlertManagerService{
+public class AlertManagerServiceImpl implements AlertManagerService {
 
 	private final AlertManagerReceiveRepository receiveRepository;
 	private final AlertManagerRepository repository;
 	private final AlertManagerRepoCustom alertManagerRepoCustom;
 	private final UserService userService;
 	private final ApplicationEventPublisher eventPublisher;
+
 	@Override
 	@Transactional
 	public AlertManagerDTO.ResponseDTO saveAlertManager(AlertManagerDTO.RequestDTO requestDTO) {
@@ -61,7 +65,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 
 		alertManagerEntity.addCategory(requestDTO.getCategoryDTOList());
 
-		alertManagerEntity.addUser(requestDTO.getUserIdList().stream().map(userId ->{
+		alertManagerEntity.addUser(requestDTO.getUserIdList().stream().map(userId -> {
 			UserInfo userInfo = userService.getUserInfoById(userId);
 
 			return AlertManagerDTO.UserDTO.builder()
@@ -82,10 +86,10 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 
 	@Override
 	public void deleteAlertManagerById(long id) {
-		try{
+		try {
 			// 등록된 AlertManager 삭제
 			repository.deleteById(id);
-		}catch (IllegalArgumentException e){
+		} catch (IllegalArgumentException e) {
 			throw new RestApiException(CommonErrorCode.ALERT_MANAGER_DELETE_FAIL);
 		}
 	}
@@ -113,7 +117,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 		alertManagerEntity.addNode(requestDTO.getNodeDTOList());
 		// user
 		alertManagerEntity.getAlertManagerUserEntityList().clear();
-		alertManagerEntity.addUser(requestDTO.getUserIdList().stream().map(userId ->{
+		alertManagerEntity.addUser(requestDTO.getUserIdList().stream().map(userId -> {
 			UserInfo userInfo = userService.getUserInfoById(userId);
 			return AlertManagerDTO.UserDTO.builder()
 				.userId(userInfo.getId())
@@ -136,15 +140,15 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 
 	@Override
 	@Transactional
-	public void receiveAlert(String alertData){
+	public void receiveAlert(String alertData) {
 		String currentTime = "";
 		// JSON 파서 생성
 		org.json.simple.parser.JSONParser parser = new JSONParser();
 		// JSON 파싱
 		try {
 			Object obj = parser.parse(alertData);
-			JSONObject jsonObject = (JSONObject) obj;
-			JSONArray alerts = (JSONArray) jsonObject.get("alerts");
+			JSONObject jsonObject = (JSONObject)obj;
+			JSONArray alerts = (JSONArray)jsonObject.get("alerts");
 			for (Object alertObj : alerts) {
 				JSONObject alert = (JSONObject)alertObj;
 				JSONObject labels = (JSONObject)alert.get("labels");
@@ -154,7 +158,8 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 				LocalDateTime localDateTime = LocalDateTime.parse(startsAt, DateTimeFormatter.ISO_DATE_TIME);
 				currentTime = DataConverterUtil.getCurrentTime(localDateTime);
 				// alertname, ruleName, nodeName이 존재하는
-				if(labels.get("alertname") != null && labels.get("ruleName") != null && labels.get("nodeName") != null){
+				if (labels.get("alertname") != null && labels.get("ruleName") != null
+					&& labels.get("nodeName") != null) {
 					// 알림 분류 내용
 					String categoryType = labels.get("alertname").toString();
 					// 해당 ID 조회
@@ -168,7 +173,7 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					// 발생한 node Name
 					String nodeName = labels.get("nodeName").toString();
 
-					if(alertManagerEntity != null){
+					if (alertManagerEntity != null) {
 
 						String nodeIp = alertManagerEntity.getAlertManagerNodeEntityList().stream()
 							.filter(alertManagerNodeEntity -> alertManagerNodeEntity.getNodeName().equals(nodeName))
@@ -189,10 +194,11 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					}
 				}
 				// 저장된 AlertList 조회
-				Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceiveDTOList = getAlertReceiveDTOList(currentTime);
+				Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceiveDTOList = getAlertReceiveDTOList(
+					currentTime);
 
 				// 알림 전송
-				for(Map.Entry<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceive : alertReceiveDTOList.entrySet()) {
+				for (Map.Entry<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceive : alertReceiveDTOList.entrySet()) {
 
 					AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(alertReceive.getKey());
 
@@ -200,10 +206,20 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 					AlertMessage nodeError = AlertMessage.NODE_ERROR;
 					String mailTitle = nodeError.getMailTitle();
 					String title = nodeError.getTitle();
-					for(AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()){
+					for (AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()) {
+						if (!StringUtils.hasText(alertManagerReceiveDTO.getNodeName())) {
+							continue;
+						}
+
+						PageNaviParam pageNaviParam = PageNaviParam.builder()
+							.nodeName(alertManagerReceiveDTO.getNodeName())
+							.build();
+
 						String message = String.format(nodeError.getMessage(), alertManagerReceiveDTO.getNodeName());
 						// 노드 장애 알림 발송
-						eventPublisher.publishEvent(new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message, null));
+						eventPublisher.publishEvent(
+							new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
+								pageNaviParam));
 					}
 				}
 
@@ -222,14 +238,16 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 			pageable.getPageSize())) {
 			pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize());
 		}
-		Page<AlertManagerReceiveEntity> alertManagerReceiveList = alertManagerRepoCustom.getAlertManagerReceiveList(categoryType, search,
-			DataConverterUtil.dataFormatterByStr(startDate), DataConverterUtil.dataFormatterByStr(endDate), userInfoDTO.getId(), pageRequest);
+		Page<AlertManagerReceiveEntity> alertManagerReceiveList = alertManagerRepoCustom.getAlertManagerReceiveList(
+			categoryType, search,
+			DataConverterUtil.dataFormatterByStr(startDate), DataConverterUtil.dataFormatterByStr(endDate),
+			userInfoDTO.getId(), pageRequest);
 
 		return alertManagerReceiveList.map(alertManagerReceiveEntity ->
-				AlertManagerReceiveDTO.ResponseDTO.responseDTOBuilder()
-					.alertManagerReceiveEntity(alertManagerReceiveEntity)
-					.alertManagerEntity(alertManagerReceiveEntity.getAlertManager())
-					.build());
+			AlertManagerReceiveDTO.ResponseDTO.responseDTOBuilder()
+				.alertManagerReceiveEntity(alertManagerReceiveEntity)
+				.alertManagerEntity(alertManagerReceiveEntity.getAlertManager())
+				.build());
 	}
 
 	@Override
@@ -252,14 +270,14 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 		return AlertManagerDTO.ResponseDTO.toDTOBuilder().alertManager(alertManagerEntity).build();
 	}
 
-	private void validationCheck(AlertManagerDTO.RequestDTO requestDTO){
+	private void validationCheck(AlertManagerDTO.RequestDTO requestDTO) {
 		// Email 수신 true인 경우 사용자 정보 없으면 안됨
-		if(requestDTO.isEmailYN() && requestDTO.isSystemYN() && CollectionUtils.isEmpty(requestDTO.getUserIdList())){
+		if (requestDTO.isEmailYN() && requestDTO.isSystemYN() && CollectionUtils.isEmpty(requestDTO.getUserIdList())) {
 			throw new RestApiException(CommonErrorCode.ALERT_MANAGER_EMAIL_ERROR);
 		}
 	}
 
-	private AlertManagerEntity getAlertManagerEntityById(long id){
+	private AlertManagerEntity getAlertManagerEntityById(long id) {
 		return repository.findById(id).orElseThrow(() ->
 			new RestApiException(CommonErrorCode.ALERT_MANAGER_NOTFOUND));
 	}
@@ -269,10 +287,11 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 	 * @param currentTime 조회할 시간
 	 * @return
 	 */
-	private Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> getAlertReceiveDTOList(String currentTime){
+	private Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> getAlertReceiveDTOList(String currentTime) {
 		// 해당시간 발생된 AlertEntity List 조회
-		List<AlertManagerReceiveEntity> alertList = receiveRepository.findAlertEntityByCurrentTime(currentTime).orElseThrow(() ->
-			new RestApiException(CommonErrorCode.ALERT_MANAGER_ADD_RULE_FAIL));
+		List<AlertManagerReceiveEntity> alertList = receiveRepository.findAlertEntityByCurrentTime(currentTime)
+			.orElseThrow(() ->
+				new RestApiException(CommonErrorCode.ALERT_MANAGER_ADD_RULE_FAIL));
 		// AlertManager ID 별로 AlertDTO Map 생성
 		List<AlertManagerReceiveDTO.ReceiveDTO> list = alertList.stream().map(alertManagerReceiveEntity ->
 			AlertManagerReceiveDTO.ReceiveDTO.receiveDTOBuilder()
@@ -281,8 +300,9 @@ public class AlertManagerServiceImpl implements AlertManagerService{
 		return list.stream().collect(Collectors.collectingAndThen(
 				Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(alertManagerReceiveDTO ->
 					// 조회된 AlertList에서 NodeName, CategoryType, monitorID 중복 제거
-					alertManagerReceiveDTO.getNodeName() + alertManagerReceiveDTO.getCategoryType() + alertManagerReceiveDTO.getAlertManagerId()))),
-				ArrayList::new ))
+					alertManagerReceiveDTO.getNodeName() + alertManagerReceiveDTO.getCategoryType()
+						+ alertManagerReceiveDTO.getAlertManagerId()))),
+				ArrayList::new))
 			.stream().collect(Collectors.groupingBy(AlertManagerReceiveDTO::getAlertManagerId));
 	}
 }

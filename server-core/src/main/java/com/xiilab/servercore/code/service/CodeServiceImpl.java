@@ -84,7 +84,7 @@ public class CodeServiceImpl implements CodeService {
 		if (isGitHubURL) {
 			codeType = CodeType.GIT_HUB;
 			GithubApi githubApi = new GithubApi(token);
-			githubApi.isRepoConnected(getRepoByUrl(codeReqDTO.getCodeURL()));
+			githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeReqDTO.getCodeURL()));
 		} else {
 			codeType = CodeType.GIT_LAB;
 			// GITLAB API 검증
@@ -150,7 +150,7 @@ public class CodeServiceImpl implements CodeService {
 
 		if (isGitHubURL) {
 			GithubApi githubApi = new GithubApi(token);
-			if (githubApi.isRepoConnected(getRepoByUrl(codeURL))) {
+			if (githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeURL))) {
 				return true;
 			}
 		} else if (isGitLabURL) {

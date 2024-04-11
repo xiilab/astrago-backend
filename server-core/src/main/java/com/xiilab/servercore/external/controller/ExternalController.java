@@ -19,7 +19,7 @@ public class ExternalController {
 	private final ExternalService externalService;
 
 	@GetMapping("/github/branches")
-	public ResponseEntity<List<String>> getGitHubRepoBranchList(@RequestParam(value="token", required = false) String token, String repoName) {
-		return ResponseEntity.ok(externalService.getGitHubRepoBranchList(token, repoName));
+	public ResponseEntity<List<String>> getGitHubRepoBranchList(@RequestParam(value="credentialId", required = false) Long credentialId, String repoName) {
+		return ResponseEntity.ok(externalService.getGitHubRepoBranchList(credentialId, repoName));
 	}
 }

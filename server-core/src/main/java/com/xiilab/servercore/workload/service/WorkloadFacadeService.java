@@ -236,7 +236,7 @@ public class WorkloadFacadeService {
 
 		// 크레덴셜 목록 조회
 		CredentialResDTO.CredentialInfos credentialInfos = credentialService.findCredentialByIdIn(credentialIds,
-			PageRequest.of(1, 9999));
+			PageRequest.of(1, Integer.MAX_VALUE));
 		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = convertListToMap(
 			!CollectionUtils.isEmpty(credentialInfos.getCredentials()) ? credentialInfos.getCredentials() :
 				new ArrayList<>());
