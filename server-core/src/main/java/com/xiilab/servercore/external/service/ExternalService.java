@@ -35,7 +35,7 @@ public class ExternalService {
 
 	/**
 	 *
-	 * @param token
+	 * @param credentialId
 	 * @param repoName ex) jojoldu/blog-code.git
 	 * @return
 	 */
