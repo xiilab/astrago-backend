@@ -135,6 +135,9 @@ public class K8sInfoPicker {
 	 */
 	public static Map<String,String> getParameterMap(Map<String,String> annotationMap) {
 		String argStr = annotationMap.get(AnnotationField.PARAMETER.getField());
+		if (StringUtils.isEmpty(argStr)) {
+			return null;
+		}
 		return JsonConvertUtil.convertJsonToMap(argStr);
 	}
 
