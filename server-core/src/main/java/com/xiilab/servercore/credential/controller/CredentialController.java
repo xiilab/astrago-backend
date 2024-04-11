@@ -2,6 +2,7 @@ package com.xiilab.servercore.credential.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +19,7 @@ import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,7 +29,9 @@ public class CredentialController {
 	private final CredentialService credentialService;
 
 	@GetMapping()
-	public ResponseEntity<Page<CredentialResDTO>> getCredentialList(Pageable pageable, UserInfoDTO userInfoDTO) {
+	public ResponseEntity<Page<CredentialResDTO>> getCredentialList(
+		Pageable pageable,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		return new ResponseEntity<>(credentialService.getCredentialList(pageable, userInfoDTO), HttpStatus.OK);
 	}
 

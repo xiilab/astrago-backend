@@ -490,8 +490,6 @@ public class WorkloadFacadeService {
 
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
 		try {
-			workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
-		} catch (RestApiException e) {
 			if (workloadType == WorkloadType.BATCH) {
 				workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
 					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
@@ -500,6 +498,12 @@ public class WorkloadFacadeService {
 				workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
 					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
 					workloadUpdateDTO.getDescription());
+			}
+		} catch (RestApiException e) {
+			try {
+				workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
+			} catch (RestApiException e2) {
+				throw e2;
 			}
 		}
 	}

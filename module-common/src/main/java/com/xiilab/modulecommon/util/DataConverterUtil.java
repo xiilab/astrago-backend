@@ -116,7 +116,7 @@ public class DataConverterUtil {
 			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
 		}
 	}
-	public static String getRepoByUrl(String url){
+	public static String convertGitHubRepoUrlToRepoName(String url){
 		// GitHub URL에서 마지막 슬래시 뒤의 문자열을 추출하여 리턴
 		String[] parts = url.split("com/");
 		String repoName = parts[parts.length - 1];
@@ -125,6 +125,11 @@ public class DataConverterUtil {
 			repoName = repoName.substring(0, repoName.length() - 4);
 		}
 		return repoName;
+	}
+
+	public static String convertGitlabRepoUrlToProjectName(String url){
+		// "http://192.168.1.151/x-trainer/xlabeller-deployment.git" -> "xlabeller-deployment"
+		return url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("."));
 	}
 
 	// 메모리 요청의 단위를 킬로바이트(KiB)로 변환하는 메서드

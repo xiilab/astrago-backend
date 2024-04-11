@@ -60,10 +60,4 @@ public class ImageRepositoryImpl implements ImageRepositoryCustom {
 	private BooleanExpression eqWorkloadType(WorkloadType workloadType) {
 		return !ObjectUtils.isEmpty(workloadType) ? imageEntity.workloadType.eq(workloadType) : null;
 	}
-
-	// private BooleanExpression berweenCudaVersion(String minCudaVersiom, String maxCudaVersion) {
-	// 	// return !ObjectUtils.isEmpty(workloadType) ? imageEntity.workloadType.eq(workloadType) : null;
-	// 	return StringUtils.hasText(minCudaVersiom) && StringUtils.hasText(maxCudaVersion)?
-	// 		imageEntity.
-	// }
 }

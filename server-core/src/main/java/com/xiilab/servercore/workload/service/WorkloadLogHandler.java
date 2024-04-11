@@ -14,7 +14,6 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -43,20 +42,20 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 	// 클라이언트로부터 넘어온 메시지 처리
 	@Override
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws JsonProcessingException {
-		WorkloadLogMessage logReqMessage = getMessageMap(message.getPayload().toString());
-		String podName = getPodNameByWorkloadType(logReqMessage.getWorkspaceName(), logReqMessage.getWorkloadName(), logReqMessage.getWorkloadType())
+		WorkloadLogMessage logReqMessage = WorkloadLogMessage.convertJsonStringToObject(message.getPayload().toString());
+		String podName = getPodNameByWorkloadType(logReqMessage.getWorkspaceResourceName(), logReqMessage.getWorkloadResourceName(), logReqMessage.getWorkloadType())
 			.map(pod -> pod.getMetadata().getName())
 			.orElseThrow(() -> new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD));
 		if (!StringUtils.hasText(podName)) {
 			throw new K8sException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
 		}
 
-		sendLogMessage(session, logReqMessage.getWorkspaceName(), podName);
+		sendLogMessage(session, logReqMessage.getWorkspaceResourceName(), podName);
 	}
 
-	private void sendLogMessage(WebSocketSession session, String workspaceName, String podName) {
+	private void sendLogMessage(WebSocketSession session, String workspaceResourceName, String podName) {
 		try (
-			LogWatch logWatch = workloadModuleFacadeService.watchLogByWorkload(workspaceName, podName);
+			LogWatch logWatch = workloadModuleFacadeService.watchLogByWorkload(workspaceResourceName, podName);
 			InputStream output = logWatch.getOutput();
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(output))) {
 			String line;
@@ -88,19 +87,5 @@ public class WorkloadLogHandler extends TextWebSocketHandler {
 		// finally {
 		// 	stopSendingMessages();
 		// }
-	}
-	/**
-	 * JSON Text 을 Class 으로 파싱
-	 *
-	 * @param message
-	 * @return
-	 */
-	private WorkloadLogMessage getMessageMap(String message) throws JsonProcessingException {
-		try {
-			return new ObjectMapper().readValue(message, WorkloadLogMessage.class);
-		} catch (JsonProcessingException e) {
-			log.error("{}", e);
-			throw e;
-		}
 	}
 }

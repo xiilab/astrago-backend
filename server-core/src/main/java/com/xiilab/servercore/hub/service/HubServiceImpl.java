@@ -153,7 +153,7 @@ public class HubServiceImpl implements HubService {
 		return hubs.getContent();
 	}
 
-	/* 모델 타입 String으로 배열에 넣기(key: ID, value: [repositoryType, repositoryType]) */
+	/* 모델 타입 String으로 배열에 넣기(key: ID, value: [hubCategoryType, hubCategoryType]) */
 	private Map<Long, Set<String>> getModelTypesMap(List<HubCategoryMappingEntity> hubCategoryMappingEntityList) {
 		Map<Long, Set<String>> typesMap = new HashMap<>();
 		for (HubCategoryMappingEntity hubCategoryMappingEntity : hubCategoryMappingEntityList) {
@@ -167,7 +167,6 @@ public class HubServiceImpl implements HubService {
 
 	/* MAP -> JSON 문자열로 변환 */
 	private String serializeToJson(Map<String, String> envMap) throws JsonProcessingException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return envMap != null && !envMap.isEmpty() ? objectMapper.writeValueAsString(envMap) : "{}";
+		return envMap != null && !envMap.isEmpty() ? new ObjectMapper().writeValueAsString(envMap) : "{}";
 	}
 }

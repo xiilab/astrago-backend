@@ -50,7 +50,9 @@ public enum CommonErrorCode implements ErrorCode {
 	CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 크레덴셜이 존재하지 않습니다."),
 	IMAGE_CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "이미지 크레덴셜이 존재하지 않습니다."),
 	// Mail
-	MAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "메일 발송을 실패하였습니다.")
+	MAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "메일 발송을 실패하였습니다."),
+	FAILED_CONNECT_GITLAB(HttpStatus.INTERNAL_SERVER_ERROR.value(), "GitLab API 연결에 실패하였습니다."),
+	FAILED_SEARCH_GITLAB_PROJECT(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당하는 프로젝트가 GitLab에 존재하지 않습니다."),
 	;
 	private final int code;
 	private final String message;

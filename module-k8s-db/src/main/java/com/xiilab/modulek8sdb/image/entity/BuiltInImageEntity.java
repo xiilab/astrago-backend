@@ -91,6 +91,9 @@ public class BuiltInImageEntity extends ImageEntity {
 		return false;
 	}
 
+	public boolean getAvailableStatus(){ return this.availableStatus; }
+	public boolean getRecommendStatus() {return this.recommendStatus; }
+
 	public void setAvailableStatus(boolean availableStatus) {
 		this.availableStatus = availableStatus;
 	}
@@ -98,7 +101,4 @@ public class BuiltInImageEntity extends ImageEntity {
 	public void setRecommendStatus(boolean recommendStatus) {
 		this.recommendStatus = recommendStatus;
 	}
-
-	public boolean getAvailableStatus(){ return this.availableStatus; }
-	public boolean getRecommendStatus() {return this.recommendStatus; }
 }
