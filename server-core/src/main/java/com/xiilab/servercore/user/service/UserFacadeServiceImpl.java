@@ -41,6 +41,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	public void joinUser(UserReqVO userReqVO, String groupId) {
 		UserInfo userInfo = userService.joinUser(userReqVO);
 		if (StringUtils.isNotBlank(groupId)) {
+			userService.joinDefaultGroup(userInfo.getId());
 			userService.joinGroup(groupId, userInfo.getId());
 		} else {
 			userService.joinDefaultGroup(userInfo.getId());
