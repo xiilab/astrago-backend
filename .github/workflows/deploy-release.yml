@@ -2,22 +2,24 @@ name: Deploy to Staging workflow
 run-name: ${{ github.actor }} deploys to Staging 🚀
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
     branches:
-      - 'release/[0-9]+.[0-9]+'
-
-concurrency:
-  group: ci-dev-test-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions: write-all
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: [ self-hosted, linux ]
     env:
-      DOCKER_REPOSITORY: xiilab/astrago-backend
+      HARBOR_REGISTRY: harbor.xiilab.com:32443
+      HARBOR_REPOSITORY: harbor.xiilab.com:32443/astrago
+      DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -44,20 +46,39 @@ jobs:
 
       - name: Extract Release Image Tag
         id: extract_image_tag
-        run: |
-          RELEASE_VERSION=$(echo "${GITHUB_REF#refs/heads/release/}" | grep -E '^[0-9]+\.[0-9]+$')
+        run: |       
+          RELEASE_VERSION=$(echo "${GITHUB_HEAD_REF##*/}" | grep -E '^[0-9]+\.[0-9]+$')
           echo "RELEASE_VERSION=$RELEASE_VERSION"
           IMAGE_TAG=${RELEASE_VERSION}-$(git rev-parse --short=4 HEAD)-rc
           echo "IMAGE_TAG=$IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Set up Docker Buildx
+      - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          buildkitd-flags: --debug --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
+          platforms: linux/amd64
+          driver-opts: |
+            network=host
+          #config: /etc/buildkit/buildkitd.toml
+          config-inline: |
+            [registry."${{ env.HARBOR_REGISTRY }}"]
+              http = true
+              insecure = true
+              mirrors = ["${{ env.HARBOR_REGISTRY }}"]
+              ca=["/etc/docker/certs.d/${{ env.HARBOR_REGISTRY }}/ca.crt"]
+              [[registry."${{ env.HARBOR_REGISTRY }}".keypair]]
+                key="/home/runner/tls/tls.key"
+                cert="/home/runner/tls/tls.crt"
+
+      # Harbor에 로그인
+      - name: harbor 로그인
+        uses: docker/login-action@v3.0.0
+        with:
+          registry: ${{ env.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
       # core image build & push
       - name: Build and push Core Docker images
         uses: docker/build-push-action@v5.1.0
@@ -65,7 +86,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -76,7 +97,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -87,10 +108,35 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:monitor-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: clone astrago deploy git repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN }}
+          repository: ${{ env.DEPLOYMENT_REPOSITORY }}
+
+      - name: stage 이미지 정보 수정
+        uses: mikefarah/yq@master
+        with:
+          cmd: |
+            yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+
+      - name: Commit and Push
+        run: |
+          git config --global user.email "100milliongold@xiilab.com"
+          git config --global user.name "100milliongold"
+          git add .
+          git commit -m "update backend image tag"
+          git push
 
       - name: notify to slack
         if: always()
