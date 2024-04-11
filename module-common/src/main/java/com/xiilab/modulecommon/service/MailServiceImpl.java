@@ -1,7 +1,9 @@
 package com.xiilab.modulecommon.service;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -26,9 +28,20 @@ public class MailServiceImpl implements MailService {
 		try {
 			MailUtils sendMail = new MailUtils(mailSender);
 			sendMail.setSubject(mailDTO.getTitle());
-			sendMail.setText(mailDTO.getContent());
-			sendMail.setTo(mailDTO.getReceiverEmail());
+			sendMail.setTo(StringUtils.isBlank(mailDTO.getReceiverEmail())? adminEmailAddr : mailDTO.getReceiverEmail());
 			sendMail.setFrom(adminEmailAddr, ASTRAGO);
+
+
+			sendMail.setText(
+				createBody(
+					createTitle(mailDTO.getTitle()) +
+						createSubTitle(mailDTO.getSubTitle()) +
+						createContentTitle(mailDTO.getContentTitle()) +
+						createContents(mailDTO.getContents()) +
+						createContentTitle(mailDTO.getFooter())
+					, createFooter()
+				)
+			);
 
 			// sendMail.setText(
 			// 	createBody(
@@ -47,6 +60,9 @@ public class MailServiceImpl implements MailService {
 			// );
 			// sendMail.setLogo("image/logo.png");
 			// sendMail.setIcon("image/icon.png");
+
+
+
 			sendMail.send();
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
@@ -139,7 +155,7 @@ public class MailServiceImpl implements MailService {
 			""".formatted(title);
 	}
 
-	private String createMainText(String text){
+	private String createSubTitle(String text){
 		return """
             <tr>
                 <td
@@ -196,7 +212,7 @@ public class MailServiceImpl implements MailService {
             </tr>
 			""".formatted(subTable);
 	}
-	private String createSubTableTitle(String subTitle){
+	private String createContentTitle(String subTitle){
 		return """
             <tr style="text-align: center">
                 <td colspan="2">
@@ -205,17 +221,30 @@ public class MailServiceImpl implements MailService {
             </tr>
 			""".formatted(subTitle);
 	}
-	private String createSubTableRow(String col1, String col2){
+	private String createContentFooter(String footer){
 		return """
-            <tr>
-                <td style="max-width: 150px; font-weight: 400">
-                    %s
-                </td>
-                <td style="max-width: 250px; text-align: end">
+            <tr style="text-align: center">
+                <td colspan="2">
                     %s
                 </td>
             </tr>
-			""".formatted(col1, col2);
+			""".formatted(footer);
+	}
+	private String createContents(List<MailDTO.Content> contents){
+		String result = "";
+		for(MailDTO.Content content : contents){
+			result += """
+				         <tr>
+				             <td style="max-width: 150px; font-weight: 400">
+				                 %s
+				             </td>
+				             <td style="max-width: 250px; text-align: end">
+				                 %s
+				             </td>
+				         </tr>
+				""".formatted(content.getCol1(), content.getCol2());
+		}
+		return result;
 	}
 	private String createFooter(){
 		return """

@@ -2,7 +2,6 @@ package com.xiilab.servercore.alert.systemalert.listener;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -11,20 +10,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
-import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.alert.event.WorkspaceAlertMappingDeleteEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.service.MailService;
-import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
-import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
@@ -33,9 +33,6 @@ import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.UserRepository;
-import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
-import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
-import com.xiilab.modulecommon.alert.event.WorkspaceAlertMappingDeleteEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,12 +90,12 @@ public class AlertEventListener {
 				}
 				if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
 					// 메일 발송 로직 추가
-					mailService.sendMail(MailDTO.builder()
-						.title(adminAlertEvent.mailTitle())
-						.content(adminAlertEvent.message())
-						.receiverEmail(findUser.getEmail())
-						.build());
-					log.info("관리자[{}] - 메일 알림 발송 성공!", adminAlertEvent.title());
+					// mailService.sendMail(MailDTO.builder()
+					// 	.title(adminAlertEvent.mailTitle())
+					// 	.content(adminAlertEvent.message())
+					// 	.receiverEmail(findUser.getEmail())
+					// 	.build());
+					// log.info("관리자[{}] - 메일 알림 발송 성공!", adminAlertEvent.title());
 				}
 			}
 		} catch (Exception e) {
@@ -149,11 +146,11 @@ public class AlertEventListener {
 			}
 			if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON) {
 				// 메일 발송 로직 추가
-				mailService.sendMail(MailDTO.builder()
-					.title(workspaceUserAlertEvent.mailTitle())
-					.content(workspaceUserAlertEvent.message())
-					.receiverEmail(findRecipientUser.getEmail())
-					.build());
+				// mailService.sendMail(MailDTO.builder()
+				// 	.title(workspaceUserAlertEvent.mailTitle())
+				// 	.content(workspaceUserAlertEvent.message())
+				// 	.receiverEmail(findRecipientUser.getEmail())
+				// 	.build());
 			}
 			if (workspaceUserAlertEvent.alertName() == AlertName.USER_WORKSPACE_DELETE) {
 				WorkspaceAlertMappingDeleteEvent workspaceAlertMappingDeleteEvent = new WorkspaceAlertMappingDeleteEvent(
@@ -199,11 +196,11 @@ public class AlertEventListener {
 		}
 
 		// 메일 발송 로직 추가
-		mailService.sendMail(MailDTO.builder()
-			.title(userAlertEvent.mailTitle())
-			.content(userAlertEvent.message())
-			.receiverEmail(findUser.getEmail())
-			.build());
+		// mailService.sendMail(MailDTO.builder()
+		// 	.title(userAlertEvent.mailTitle())
+		// 	.content(userAlertEvent.message())
+		// 	.receiverEmail(findUser.getEmail())
+		// 	.build());
 	}
 
 	@Async
