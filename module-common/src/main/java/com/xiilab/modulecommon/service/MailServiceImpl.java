@@ -27,8 +27,8 @@ public class MailServiceImpl implements MailService {
 	public void sendMail(MailDTO mailDTO) {
 		try {
 			MailUtils sendMail = new MailUtils(mailSender);
-			sendMail.setSubject(mailDTO.getTitle());
-			sendMail.setTo(StringUtils.isBlank(mailDTO.getReceiverEmail())? adminEmailAddr : mailDTO.getReceiverEmail());
+			sendMail.setSubject(mailDTO.getSubject());
+			sendMail.setTo(StringUtils.isEmpty(mailDTO.getReceiverEmail())? adminEmailAddr : mailDTO.getReceiverEmail());
 			sendMail.setFrom(adminEmailAddr, ASTRAGO);
 
 
@@ -36,9 +36,9 @@ public class MailServiceImpl implements MailService {
 				createBody(
 					createTitle(mailDTO.getTitle()) +
 						createSubTitle(mailDTO.getSubTitle()) +
-						createContentTitle(mailDTO.getContentTitle()) +
+						createContentTitle(StringUtils.isBlank(mailDTO.getContentTitle()) ? "" : String.format(mailDTO.getContentTitle(), adminEmailAddr)) +
 						createContents(mailDTO.getContents()) +
-						createContentTitle(mailDTO.getFooter())
+						createContentFooter(mailDTO.getFooter())
 					, createFooter()
 				)
 			);
@@ -58,11 +58,9 @@ public class MailServiceImpl implements MailService {
 			// 		, createFooter()
 			// 	)
 			// );
-			// sendMail.setLogo("image/logo.png");
-			// sendMail.setIcon("image/icon.png");
 
-
-
+			sendMail.setLogo("image/logo.png");
+			sendMail.setIcon("image/icon.png");
 			sendMail.send();
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
@@ -232,8 +230,9 @@ public class MailServiceImpl implements MailService {
 	}
 	private String createContents(List<MailDTO.Content> contents){
 		String result = "";
-		for(MailDTO.Content content : contents){
-			result += """
+		if(contents != null){
+			for(MailDTO.Content content : contents){
+				result += """
 				         <tr>
 				             <td style="max-width: 150px; font-weight: 400">
 				                 %s
@@ -243,6 +242,7 @@ public class MailServiceImpl implements MailService {
 				             </td>
 				         </tr>
 				""".formatted(content.getCol1(), content.getCol2());
+			}
 		}
 		return result;
 	}

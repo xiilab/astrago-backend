@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public enum MailAttribute{
-	USER_JOIN("[Astrago] 회원가입 알림", "%s(%s)님이 회원가입을 요청하였습니다.", "회원가입 요청내역은 아래와 같습니다.", "", "관리자 로그인 > 설정 > 계정관리 > 가입요청관리에서 승인/반려 하실 수 있습니다. <br>감사합니다."),
+	USER_JOIN("[Astrago] 회원가입 알림", "%s(%s)님이 회원가입을 요청하였습니다.", "회원가입 요청내역은 아래와 같습니다.", "", "관리자 로그인 > 설정 > 계정관리 > 가입요청관리에서 <br>승인/반려 하실 수 있습니다. <br>감사합니다."),
 	USER_UPDATE("[Astrago] 회원정보 변경 알림","%s(%s)님의 개인 정보가 변경 되었습니다.","개인정보 변경 내역은 아래와 같습니다","","감사합니다."),
 	USER_ENABLE("[Astrago] 계정 활성화 알림","%s(%s)님의 계정이 정상적으로 활성화 되었습니다. <br>이제 astrago 서비스를 이용하실수 있습니다.","","","감사합니다."),
 	USER_UNABLE("[Astrago] 계정 비활성화 알림","%s(%s)님의 계정이  비활성화 되었습니다. <br>astrago 서비스를 이용하시려면 관리자에게 문의해 주십시오.","","관리자 이메일 : %s","감사합니다."),

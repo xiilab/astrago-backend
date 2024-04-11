@@ -25,6 +25,7 @@ public class MailDTO {
 	@Getter
 	@AllArgsConstructor
 	@NoArgsConstructor
+	@Builder
 	public static class Content {
 		private String col1;
 		private String col2;
