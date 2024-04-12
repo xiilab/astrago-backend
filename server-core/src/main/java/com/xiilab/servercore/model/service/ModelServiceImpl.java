@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -56,7 +57,7 @@ public class ModelServiceImpl implements ModelService{
 	public void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoModel.getStorageEntity().getHostPath();
-		String modelPath = storageRootPath + "/" + astragoModel.getModelName().replace(" ", "");
+		String modelPath = storageRootPath + "/" + astragoModel.getModelName().replace(" ", "") + UUID.randomUUID().toString().substring(6);
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(modelPath);

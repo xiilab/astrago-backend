@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -54,7 +55,7 @@ public class DatasetServiceImpl implements DatasetService {
 	public void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoDatasetEntity.getStorageEntity().getHostPath();
-		String datasetPath = storageRootPath + "/" + astragoDatasetEntity.getDatasetName().replace(" ", "");
+		String datasetPath = storageRootPath + "/" + astragoDatasetEntity.getDatasetName().replace(" ", "") + UUID.randomUUID().toString().substring(6);
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(datasetPath);
