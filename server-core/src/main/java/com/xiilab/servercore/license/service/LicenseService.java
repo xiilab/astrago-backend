@@ -12,5 +12,5 @@ public interface LicenseService {
 
 	void checkLicense();
 
-	LicenseDTO.LicenseInfoDTO getRecentlyLicenseInfo();
+	LicenseDTO getRecentlyLicenseInfo();
 }

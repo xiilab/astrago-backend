@@ -66,9 +66,16 @@ public class LicenseServiceImpl implements LicenseService {
 	}
 
 	@Override
-	public LicenseDTO.LicenseInfoDTO getRecentlyLicenseInfo() {
-		LicenseEntity licenseEntity = licenseRepository.findTopByOrderByRegDateDesc();
-		return new LicenseDTO.LicenseInfoDTO(licenseEntity);
+	public LicenseDTO getRecentlyLicenseInfo() {
+		LicenseEntity license = licenseRepository.findTopByOrderByRegDateDesc();
+		return LicenseDTO.builder()
+			.id(license.getId())
+			.version(license.getVersion())
+			.regDate(license.getRegDate())
+			.startDate(license.getStartDate())
+			.endDate(license.getEndDate())
+			.gpuCount(license.getGpuCount())
+			.build();
 	}
 
 }

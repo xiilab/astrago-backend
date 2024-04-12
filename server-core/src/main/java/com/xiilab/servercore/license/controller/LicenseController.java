@@ -30,7 +30,7 @@ public class LicenseController {
 
 	@GetMapping("/recently")
 	@Operation(summary = "가장 최근에 등록한 라이센스 상세정보 조회")
-	public ResponseEntity<LicenseDTO.LicenseInfoDTO> getRecentLicense() {
+	public ResponseEntity<LicenseDTO> getRecentLicense() {
 		return new ResponseEntity<>(licenseService.getRecentlyLicenseInfo(), HttpStatus.OK);
 	}
 
