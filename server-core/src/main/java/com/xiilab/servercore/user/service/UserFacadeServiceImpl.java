@@ -2,13 +2,12 @@ package com.xiilab.servercore.user.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
@@ -135,5 +134,10 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public List<UserInfo> getAdminList() {
 		return userService.getAdminList();
+	}
+
+	@Override
+	public void joinAdmin(UserReqVO userReqVO) {
+		userService.joinAdmin(userReqVO);
 	}
 }

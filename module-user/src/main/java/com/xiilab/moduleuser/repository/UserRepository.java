@@ -49,4 +49,6 @@ public interface UserRepository {
 	UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition);
 
 	List<UserInfo> getAdminList();
+
+	void joinAdmin(UserReqVO userReqVO);
 }
