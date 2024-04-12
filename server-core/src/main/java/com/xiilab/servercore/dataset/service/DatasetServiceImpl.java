@@ -55,7 +55,8 @@ public class DatasetServiceImpl implements DatasetService {
 	public void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoDatasetEntity.getStorageEntity().getHostPath();
-		String datasetPath = storageRootPath + "/" + astragoDatasetEntity.getDatasetName().replace(" ", "") + UUID.randomUUID().toString().substring(6);
+		String saveDirectoryName = astragoDatasetEntity.getDatasetName().replace(" ", "") + "-" + UUID.randomUUID().toString().substring(6);
+		String datasetPath = storageRootPath + "/" + saveDirectoryName;
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(datasetPath);
@@ -72,6 +73,7 @@ public class DatasetServiceImpl implements DatasetService {
 			//dataset 저장
 			astragoDatasetEntity.setDatasetSize(size);
 			astragoDatasetEntity.setDatasetPath(datasetPath);
+			astragoDatasetEntity.setSaveDirectoryName(saveDirectoryName);
 			datasetRepository.save(astragoDatasetEntity);
 		} catch (IOException e) {
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);

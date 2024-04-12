@@ -57,7 +57,8 @@ public class ModelServiceImpl implements ModelService{
 	public void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoModel.getStorageEntity().getHostPath();
-		String modelPath = storageRootPath + "/" + astragoModel.getModelName().replace(" ", "") + UUID.randomUUID().toString().substring(6);
+		String saveDirectoryName = astragoModel.getModelName().replace(" ", "") + "-" + UUID.randomUUID().toString().substring(6);
+		String modelPath = storageRootPath + "/" +  saveDirectoryName;
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(modelPath);
@@ -74,6 +75,7 @@ public class ModelServiceImpl implements ModelService{
 			//model 저장
 			astragoModel.setModelSize(size);
 			astragoModel.setModelPath(modelPath);
+			astragoModel.setSaveDirectoryName(saveDirectoryName);
 			modelRepository.save(astragoModel);
 		} catch (IOException e) {
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
