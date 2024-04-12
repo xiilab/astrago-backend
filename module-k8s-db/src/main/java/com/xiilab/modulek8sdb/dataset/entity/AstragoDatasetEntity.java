@@ -29,6 +29,8 @@ public class AstragoDatasetEntity extends Dataset {
 
 	@Column(name = "DATASET_PATH")
 	private String datasetPath;
+	@Column(name = "SAVE_DIRECTORY_NAME")
+	private String saveDirectoryName;
 
 	@Builder
 	public AstragoDatasetEntity(Long datasetId, String datasetName, StorageEntity storageEntity, String defaultPath) {
@@ -38,6 +40,10 @@ public class AstragoDatasetEntity extends Dataset {
 	public void setDatasetPath(String datasetPath){
 		this.datasetPath = datasetPath;
 	}
+	public void setSaveDirectoryName(String saveDirectoryName){
+		this.saveDirectoryName = saveDirectoryName;
+	}
+
 
 	@Override
 	public boolean isAstragoDataset() {

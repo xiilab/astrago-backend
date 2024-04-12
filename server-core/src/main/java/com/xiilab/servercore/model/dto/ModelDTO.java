@@ -115,6 +115,7 @@ public class ModelDTO {
 		private RepositoryDivision division;
 		private String size;
 		private String defaultPath;
+		private String saveDirectoryName;
 		private List<WorkloadResDTO.UsingModelDTO> usingModels;
 
 		public static ModelDTO.ResModelWithStorage toDto(Model model){
@@ -134,6 +135,7 @@ public class ModelDTO {
 					.storageName(((AstragoModelEntity)model).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.defaultPath(model.getModelDefaultMountPath())
+					.saveDirectoryName(((AstragoModelEntity)model).getSaveDirectoryName())
 					.build();
 			} else if (model.isLocalModel()) {
 				return ResModelWithStorage.builder()
