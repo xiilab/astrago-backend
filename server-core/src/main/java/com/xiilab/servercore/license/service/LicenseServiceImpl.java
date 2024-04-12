@@ -1,7 +1,5 @@
 package com.xiilab.servercore.license.service;
 
-import java.util.EventListener;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,6 +63,12 @@ public class LicenseServiceImpl implements LicenseService {
 				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null));
 			throw e;
 		}
+	}
+
+	@Override
+	public LicenseDTO.LicenseInfoDTO getRecentlyLicenseInfo() {
+		LicenseEntity licenseEntity = licenseRepository.findTopByOrderByRegDateDesc();
+		return new LicenseDTO.LicenseInfoDTO(licenseEntity);
 	}
 
 }

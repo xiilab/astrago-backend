@@ -7,6 +7,10 @@ import com.xiilab.servercore.license.dto.LicenseDTO;
 
 public interface LicenseService {
 	Page<LicenseDTO> getLicenseHistory(Pageable pageable);
+
 	void registerLicense(String licenseKey);
+
 	void checkLicense();
+
+	LicenseDTO.LicenseInfoDTO getRecentlyLicenseInfo();
 }

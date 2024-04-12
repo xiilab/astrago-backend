@@ -28,6 +28,12 @@ public class LicenseController {
 		return new ResponseEntity<>(licenseService.getLicenseHistory(pageable), HttpStatus.OK);
 	}
 
+	@GetMapping("/recently")
+	@Operation(summary = "가장 최근에 등록한 라이센스 상세정보 조회")
+	public ResponseEntity<LicenseDTO.LicenseInfoDTO> getRecentLicense() {
+		return new ResponseEntity<>(licenseService.getRecentlyLicenseInfo(), HttpStatus.OK);
+	}
+
 	@PostMapping("")
 	@Operation(summary = "라이센스 추가")
 	public ResponseEntity<HttpStatus> registerLicense(@RequestParam("licenseKey") String licenseKey) {
