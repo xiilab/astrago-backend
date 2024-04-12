@@ -7,10 +7,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.MigStatus;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
@@ -31,6 +34,7 @@ public class NodeInformer {
 	private final K8sAdapter k8sAdapter;
 	private final NodeRepository nodeRepository;
 	private final ApplicationEventPublisher eventPublisher;
+	private final MailService mailService;
 
 	@PostConstruct
 	void doInformer() {
@@ -75,6 +79,12 @@ public class NodeInformer {
 										eventPublisher.publishEvent(
 											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_APPLY, null, mailTitle, title,
 												message, null));
+										MailAttribute mail = MailAttribute.MIG_ON;
+										mailService.sendMail(MailDTO.builder()
+												.subject(mail.getSubject())
+												.title(String.format(mail.getTitle(), nodeName))
+												.footer(mail.getFooter())
+											.build());
 									}
 									// String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
 									case PENDING ->
@@ -87,6 +97,12 @@ public class NodeInformer {
 										eventPublisher.publishEvent(
 											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_ERROR, null, mailTitle, title,
 												message, null));
+										MailAttribute mail = MailAttribute.MIG_ERROR;
+										mailService.sendMail(MailDTO.builder()
+											.subject(mail.getSubject())
+											.title(String.format(mail.getTitle(), nodeName))
+											.footer(mail.getFooter())
+											.build());
 									}
 									// String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
 									case REBOOTING -> log.info("node {}의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.",

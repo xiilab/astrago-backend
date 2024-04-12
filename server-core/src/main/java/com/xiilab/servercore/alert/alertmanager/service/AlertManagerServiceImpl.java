@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -24,8 +23,14 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerDTO;
@@ -37,12 +42,9 @@ import com.xiilab.modulek8sdb.alert.alertmanager.enumeration.AlertManagerCategor
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerReceiveRepository;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepoCustom;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepository;
-import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.UserService;
-import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,6 +58,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 	private final AlertManagerRepoCustom alertManagerRepoCustom;
 	private final UserService userService;
 	private final ApplicationEventPublisher eventPublisher;
+	private final MailService mailService;
 
 	@Override
 	@Transactional
@@ -206,6 +209,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 					AlertMessage nodeError = AlertMessage.NODE_ERROR;
 					String mailTitle = nodeError.getMailTitle();
 					String title = nodeError.getTitle();
+					MailAttribute mail = MailAttribute.NODE_ERROR;
 					for (AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()) {
 						if (!StringUtils.hasText(alertManagerReceiveDTO.getNodeName())) {
 							continue;
@@ -220,6 +224,12 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 						eventPublisher.publishEvent(
 							new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
 								pageNaviParam));
+
+						mailService.sendMail(MailDTO.builder()
+								.subject(mail.getSubject())
+								.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))
+								.footer(mail.getFooter())
+							.build());
 					}
 				}
 
