@@ -173,6 +173,7 @@ public class WorkloadFacadeService {
 			// 커스텀 이미지일 때만 이미지 데이터 저장
 			// workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
 			// 리소스 초과 알림
+			log.info("폐쇄망 : " + network.getNetworkCloseYN());
 			checkAndSendWorkspaceResourceOverAlert(createWorkloadReqDTO, userInfoDTO);
 			workloadModuleFacadeService.createJobWorkload(createWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
 			// 워크로드

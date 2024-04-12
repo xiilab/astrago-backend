@@ -44,7 +44,9 @@ import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -87,7 +89,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	@Transactional
 	public void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-
+		log.info("폐쇄망 : " + network.getNetworkCloseYN());
 		CreateLocalDatasetDTO createDto = CreateLocalDatasetDTO.builder()
 			.namespace(namespace)
 			.datasetName(createDatasetDTO.getDatasetName())

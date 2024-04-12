@@ -19,7 +19,9 @@ import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -48,6 +50,7 @@ public class ExternalService {
 		}
 
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		log.info("폐쇄망 : " + network.getNetworkCloseYN());
 		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
 			token = (token == null) ? gitlabToken : token;
 			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);

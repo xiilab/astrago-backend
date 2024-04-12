@@ -31,8 +31,8 @@ public class CodeController {
 
 	@PostMapping("")
 	@Operation(summary = "소스 코드 등록 API")
-	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO){
-		return new ResponseEntity<>(codeService.saveCode(codeReqDTO), HttpStatus.OK);
+	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO){
+		return new ResponseEntity<>(codeService.saveCode(codeReqDTO, userInfoDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("")

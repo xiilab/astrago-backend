@@ -84,6 +84,8 @@ public abstract class WorkloadEntity {
 	protected String workingDir;
 	@Column(name = "WORKLOAD_CMD")
 	protected String workloadCMD;
+	@Column(name = "WORKLOAD_PARAMETER")
+	protected String parameter;
 	@ManyToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
 	@Column(name = "DELETE_YN")

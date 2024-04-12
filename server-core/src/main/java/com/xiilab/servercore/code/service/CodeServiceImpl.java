@@ -3,7 +3,6 @@ package com.xiilab.servercore.code.service;
 import static com.xiilab.modulecommon.enums.RepositoryType.*;
 import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -12,13 +11,13 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.dto.RegexPatterns;
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -52,17 +51,13 @@ public class CodeServiceImpl implements CodeService {
 
 	@Override
 	@Transactional
-	public CodeResDTO saveCode(CodeReqDTO codeReqDTO) {
+	public CodeResDTO saveCode(CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO) {
 		// 깃허브 또는 깃랩 URL인지 검증
 		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
 		// boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
 
-		List<CodeEntity> codeEntities = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndCodeURLAndDeleteYnEquals(
-			codeReqDTO.getWorkspaceName(), codeReqDTO.getCodeURL(), DeleteYN.N);
-
-		if (!codeEntities.isEmpty()) {
-			throw new RestApiException(CodeErrorCode.CODE_VALIDATION_ERROR);
-		}
+		//repositoryType에 따른 code 존재여부 체크
+		checkCodeExist(codeReqDTO, userInfoDTO);
 
 		// URL 검증
 		// if (!isGitHubURL) {
@@ -107,7 +102,7 @@ public class CodeServiceImpl implements CodeService {
 					.codeURL(codeReqDTO.getCodeURL())
 					.workspaceResourceName(codeReqDTO.getWorkspaceName())
 					.credentialEntity(credentialEntity)
-					.repositoryType(WORKSPACE)
+					.repositoryType(codeReqDTO.getRepositoryType())
 					.codeDefaultMountPath(codeReqDTO.getDefaultPath())
 					.cmd(codeReqDTO.getCmd())
 					.codeArgs(codeReqDTO.getCodeArgs())
@@ -116,19 +111,6 @@ public class CodeServiceImpl implements CodeService {
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(CodeErrorCode.FAILED_SAVE_USER_CODE);
 		}
-	}
-
-	@Override
-	@Transactional
-	public List<CodeResDTO> saveCodes(List<CodeReqDTO> codeReqDTOs) {
-		List<CodeResDTO> savedCodes = new ArrayList<>();
-
-		for (CodeReqDTO codeReqDTO : codeReqDTOs) {
-			CodeResDTO codeResDTO = saveCode(codeReqDTO);
-			savedCodes.add(codeResDTO);
-		}
-
-		return savedCodes;
 	}
 
 	@Override
@@ -212,6 +194,34 @@ public class CodeServiceImpl implements CodeService {
 
 	private CodeEntity getCodeEntity(long id) {
 		return codeRepository.findById(id).orElseThrow(() -> new RestApiException(CodeErrorCode.CODE_NOT_FOUND));
+	}
+
+	private void checkCodeExist(CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO) {
+		RepositoryType repositoryType = codeReqDTO.getRepositoryType();
+		if (repositoryType == USER) {
+			List<CodeEntity> codeEntities = codeRepository.findByCodeURLAndRepositoryTypeAndRegUser_RegUserIdAndDeleteYn(
+				codeReqDTO.getCodeURL(),
+				USER,
+				userInfoDTO.getId(),
+				DeleteYN.N
+			);
+			if (!codeEntities.isEmpty()) {
+				throw new RestApiException(CodeErrorCode.CODE_EXIST_ERROR);
+			}
+		} else if (repositoryType == WORKSPACE) {
+			if (StringUtils.isEmpty(codeReqDTO.getWorkspaceName())) {
+				throw new RestApiException(CodeErrorCode.CODE_INPUT_ERROR);
+			}
+			List<CodeEntity> codeEntities = codeRepository.findByWorkspaceResourceNameAndCodeURLAndRepositoryTypeAndDeleteYn(
+				codeReqDTO.getWorkspaceName(),
+				codeReqDTO.getCodeURL(),
+				WORKSPACE,
+				DeleteYN.N
+			);
+			if (!codeEntities.isEmpty()) {
+				throw new RestApiException(CodeErrorCode.CODE_EXIST_ERROR);
+			}
+		}
 	}
 
 }

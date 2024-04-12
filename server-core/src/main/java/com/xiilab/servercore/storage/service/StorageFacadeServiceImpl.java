@@ -23,7 +23,9 @@ import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -56,7 +58,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 
 		//폐쇄망 확인 후 connection image url 조회
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-
+		log.info("폐쇄망 : " + network.getNetworkCloseYN());
 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
 			.storageName(storageDTO.getStorageName())
 			.storageType(storageDTO.getStorageType())
