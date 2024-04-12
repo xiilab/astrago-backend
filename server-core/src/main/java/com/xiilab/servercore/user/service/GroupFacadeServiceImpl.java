@@ -1,5 +1,7 @@
 package com.xiilab.servercore.user.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 
@@ -7,13 +9,17 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
+import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
-import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
@@ -23,7 +29,7 @@ import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.moduleuser.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +41,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final WorkspaceAlertService workspaceAlertService;
 	private final ApplicationEventPublisher publisher;
 	private final WorkspaceService workspaceService;
+	private final MailService mailService;
+	private final UserService userService;
 	@Override
 	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
 		groupService.createAccountGroup(groupReqDTO, userInfo);
@@ -84,7 +92,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 			workspaceAlertService.deleteWorkspaceAlertMappingByUserIdAndWorkspaceName(userId, groupName);
 		}
 
-		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO);
+		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO, userIdList, false);
 	}
 	@Override
 	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO, UserInfoDTO userInfoDTO){
@@ -94,10 +102,10 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		for (String userId : addUserIds) {
 			workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, userId, groupName);
 		}
-		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO);
+		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO, addWorkspaceUsersDTO.getUserIds(), true);
 	}
 
-	private void sendModifyWorkspaceMemberEvent(String groupName, UserInfoDTO userInfoDTO) {
+	private void sendModifyWorkspaceMemberEvent(String groupName, UserInfoDTO userInfoDTO, List<String> userIdList, boolean result) {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(groupName);
 		PageNaviParam pageNaviParam = PageNaviParam.builder()
 			.workspaceResourceName(workspace.getResourceName())
@@ -112,6 +120,36 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
+
+		MailAttribute mail = MailAttribute.WORKSPACE_MEMBER_UPDATE;
+
+		String contentMessage = "[";
+		String contentTitle;
+		if (result) {
+			contentTitle = "추가된 멤버";
+		} else {
+			contentTitle = "삭제된 멤버";
+		}
+		int i = 0;
+		for (String userId : userIdList) {
+			UserDTO.UserInfo addUser = userService.getUserById(userId);
+			i++;
+			if (userIdList.size() == i) {
+				contentMessage += addUser.getLastName() + addUser.getFirstName() + "(" + addUser.getEmail() + ") ]";
+				break;
+			}
+			contentMessage += addUser.getLastName() + addUser.getFirstName() + "(" + addUser.getEmail() + "), ";
+
+		}
+		mailService.sendMail(MailDTO.builder()
+			.subject(String.format(mail.getSubject(), workspace.getName()))
+			.title(String.format(mail.getTitle(), workspace.getName()))
+			.subTitle(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+			.contentTitle(contentTitle)
+			.contentTitle(contentMessage)
+			.footer(mail.getFooter())
+			.build());
+
 	}
 
 	@Override

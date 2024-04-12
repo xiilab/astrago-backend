@@ -97,12 +97,12 @@ public class InformerEventListener {
 					}
 					if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
 						// 메일 발송 로직 추가
-						mailService.sendMail(MailDTO.builder()
-							.title(adminAlertEvent.mailTitle())
-							.content(adminAlertEvent.message())
-							.receiverEmail(findUser.getEmail())
-							.build());
-						log.info("관리자[{}] - 메일 알림 발송 성공!", adminAlertEvent.title());
+						// mailService.sendMail(MailDTO.builder()
+						// 	.title(adminAlertEvent.mailTitle())
+						// 	.content(adminAlertEvent.message())
+						// 	.receiverEmail(findUser.getEmail())
+						// 	.build());
+						// log.info("관리자[{}] - 메일 알림 발송 성공!", adminAlertEvent.title());
 					}
 				}
 			} catch (Exception e) {
@@ -158,11 +158,11 @@ public class InformerEventListener {
 				}
 				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON) {
 					// 메일 발송 로직 추가
-					mailService.sendMail(MailDTO.builder()
-						.title(workspaceUserAlertEvent.mailTitle())
-						.content(workspaceUserAlertEvent.message())
-						.receiverEmail(findRecipientUser.getEmail())
-						.build());
+					// mailService.sendMail(MailDTO.builder()
+					// 	.title(workspaceUserAlertEvent.mailTitle())
+					// 	.content(workspaceUserAlertEvent.message())
+					// 	.receiverEmail(findRecipientUser.getEmail())
+					// 	.build());
 				}
 				log.info("워크스페이스 유저[{}] 알림 발송 성공", workspaceUserAlertEvent.title());
 			} catch (Exception e) {

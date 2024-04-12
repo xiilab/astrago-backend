@@ -12,7 +12,6 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.enums.AuthType;
@@ -56,7 +55,7 @@ public class KeycloakUserRepository implements UserRepository {
 			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL);
 		}
 		log.info(response.getStatusInfo().getReasonPhrase());
-		UserRepresentation userRep = getUserByUsername(userReqVO.getUsername());
+		UserRepresentation userRep = getUserByUsername(userReqVO.getEmail());
 		UserResource userResource = getUserResourceById(userRep.getId());
 		userResource.resetPassword(userReqVO.createCredentialRep());
 		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
@@ -326,8 +325,8 @@ public class KeycloakUserRepository implements UserRepository {
 		return keycloakConfig.getRealmClient().users().get(userId);
 	}
 
-	private UserRepresentation getUserByUsername(String username) {
-		return keycloakConfig.getRealmClient().users().search(username).get(0);
+	private UserRepresentation getUserByUsername(String mail) {
+		return keycloakConfig.getRealmClient().users().search(mail).get(0);
 	}
 
 	private RoleRepresentation getRolerepByName(String roleName) {

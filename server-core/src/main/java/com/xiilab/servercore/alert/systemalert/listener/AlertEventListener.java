@@ -98,12 +98,12 @@ public class AlertEventListener {
 					}
 					if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
 						// 메일 발송 로직 추가
-						mailService.sendMail(MailDTO.builder()
-							.title(adminAlertEvent.mailTitle())
-							.content(adminAlertEvent.message())
-							.receiverEmail(findUser.getEmail())
-							.build());
-						log.info("관리자[{}] - 메일 알림 발송 성공!", adminAlertEvent.title());
+						// mailService.sendMail(MailDTO.builder()
+						// 	.title(adminAlertEvent.mailTitle())
+						// 	.content(adminAlertEvent.message())
+						// 	.receiverEmail(findUser.getEmail())
+						// 	.build());
+						// log.info("관리자[{}] - 메일 알림 발송 성공!", adminAlertEvent.title());
 					}
 				}
 			} catch (Exception e) {
@@ -159,11 +159,11 @@ public class AlertEventListener {
 				}
 				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON) {
 					// 메일 발송 로직 추가
-					mailService.sendMail(MailDTO.builder()
-						.title(workspaceUserAlertEvent.mailTitle())
-						.content(workspaceUserAlertEvent.message())
-						.receiverEmail(findRecipientUser.getEmail())
-						.build());
+					// mailService.sendMail(MailDTO.builder()
+					// 	.title(workspaceUserAlertEvent.mailTitle())
+					// 	.content(workspaceUserAlertEvent.message())
+					// 	.receiverEmail(findRecipientUser.getEmail())
+					// 	.build());
 				}
 				if (workspaceUserAlertEvent.alertName() == AlertName.USER_WORKSPACE_DELETE) {
 					WorkspaceAlertMappingDeleteEvent workspaceAlertMappingDeleteEvent = new WorkspaceAlertMappingDeleteEvent(
@@ -214,11 +214,11 @@ public class AlertEventListener {
 			}
 
 			// 메일 발송 로직 추가
-			mailService.sendMail(MailDTO.builder()
-				.title(userAlertEvent.mailTitle())
-				.content(userAlertEvent.message())
-				.receiverEmail(findUser.getEmail())
-				.build());
+			// mailService.sendMail(MailDTO.builder()
+			// 	.title(userAlertEvent.mailTitle())
+			// 	.content(userAlertEvent.message())
+			// 	.receiverEmail(findUser.getEmail())
+			// 	.build());
 		}
 	}
 
