@@ -53,7 +53,7 @@ public class CodeServiceImpl implements CodeService {
 	@Transactional
 	public CodeResDTO saveCode(CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO) {
 		// 깃허브 또는 깃랩 URL인지 검증
-		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
+		// boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
 		// boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
 
 		//repositoryType에 따른 code 존재여부 체크
@@ -75,16 +75,13 @@ public class CodeServiceImpl implements CodeService {
 		}
 
 		// 연결 가능한지 확인
-		CodeType codeType;
-		if (isGitHubURL) {
-			codeType = CodeType.GIT_HUB;
+		if (codeReqDTO.getCodeType() == CodeType.GIT_HUB) {
 			GithubApi githubApi = new GithubApi(token);
 			githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeReqDTO.getCodeURL()));
 		} else {
-			codeType = CodeType.GIT_LAB;
 			// GITLAB API 검증
 			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
-			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/([^/.]+)(\\.git){1}");
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/([^/.]+)(\\.git)?$");
 			Matcher matcher = pattern.matcher(codeReqDTO.getCodeURL());
 			if (matcher.find()) {
 				String namespace = matcher.group(1);
@@ -98,7 +95,7 @@ public class CodeServiceImpl implements CodeService {
 		try {
 			CodeEntity saveCode = codeRepository.save(
 				CodeEntity.dtoConverter()
-					.codeType(codeType)
+					.codeType(codeReqDTO.getCodeType())
 					.codeURL(codeReqDTO.getCodeURL())
 					.workspaceResourceName(codeReqDTO.getWorkspaceName())
 					.credentialEntity(credentialEntity)
