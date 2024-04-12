@@ -26,15 +26,17 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.K8sContainerReason;
+import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
@@ -42,12 +44,12 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
-import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -93,7 +95,6 @@ import com.xiilab.servercore.image.dto.ImageResDTO;
 import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
-import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
@@ -104,8 +105,6 @@ import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
-import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -133,6 +132,7 @@ public class WorkloadFacadeService {
 	private final WorkspaceService workspaceService;
 	private final ApplicationEventPublisher eventPublisher;
 	private final NetworkRepository networkRepository;
+	private final MailService mailService;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserInfoDTO userInfoDTO) {
@@ -221,6 +221,23 @@ public class WorkloadFacadeService {
 				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
 					message,
 					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build()));
+
+			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
+			// Mail Contents 작성
+			List<MailDTO.Content> contents = List.of(
+				MailDTO.Content.builder().col1("GPU : ").col2(workspaceResourceStatus.getResourceStatus().getGpuUsed()).build(),
+				MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(cpuUsed)).build(),
+				MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(memUsed)).build()
+			);
+			// Mail 전송
+			mailService.sendMail(MailDTO.builder()
+				.subject(mail.getSubject())
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName() , userInfoDTO.getEmail(), moduleCreateWorkloadReqDTO.getWorkspace()))
+				.subTitle(mail.getSubTitle())
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+				.build());
 		}
 	}
 
