@@ -27,6 +27,7 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.moduleuser.service.UserService;
@@ -116,6 +117,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		String title = AlertMessage.WORKSPACE_MEMBER_UPDATE.getTitle();
 		String message = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
 
+		UserInfo creator = userService.getUserInfoById(workspace.getCreatorId());
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_MEMBER_UPDATE,
 			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam);
 
@@ -147,6 +149,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 			.subTitle(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 			.contentTitle(contentTitle)
 			.contentTitle(contentMessage)
+			.receiverEmail(creator.getEmail())
 			.footer(mail.getFooter())
 			.build());
 

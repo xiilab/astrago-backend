@@ -233,7 +233,7 @@ public class WorkloadFacadeService {
 			);
 			// Mail 전송
 			mailService.sendMail(MailDTO.builder()
-				.subject(mail.getSubject())
+				.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
 				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName() , userInfoDTO.getEmail(), moduleCreateWorkloadReqDTO.getWorkspace()))
 				.subTitle(mail.getSubTitle())
 				.contentTitle(mail.getContentTitle())
