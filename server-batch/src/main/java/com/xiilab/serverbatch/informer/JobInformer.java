@@ -120,6 +120,7 @@ public abstract class JobInformer {
 			.workspaceName(metadataFromResource.getWorkspaceName())
 			.deleteYN(DeleteYN.N)
 			.ide(metadataFromResource.getIde())
+			.parameter(metadataFromResource.getParameter())
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
@@ -150,11 +151,11 @@ public abstract class JobInformer {
 	}
 
 	protected void deleteServices(String workspaceResourceName, String workloadResourceName) {
-		ServiceList serviceList = k8sSvcRepository.getServicesByResourceName(workspaceResourceName, workloadResourceName);
-		serviceList.getItems().forEach(service -> {
-				k8sSvcRepository.deleteServiceByResourceName(service.getMetadata().getName(), workspaceResourceName);
-			}
-		);
+		ServiceList serviceList = k8sSvcRepository.getServicesByResourceName(workspaceResourceName,
+			workloadResourceName);
+		serviceList.getItems()
+			.forEach(service -> k8sSvcRepository.deleteServiceByResourceName(service.getMetadata().getName(),
+				workspaceResourceName));
 	}
 
 	protected void deletePvAndPVC(String workspaceResourceName, String pvName, String pvcName) {
