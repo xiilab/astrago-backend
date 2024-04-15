@@ -12,6 +12,7 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.enums.AuthType;
@@ -325,8 +326,8 @@ public class KeycloakUserRepository implements UserRepository {
 		return keycloakConfig.getRealmClient().users().get(userId);
 	}
 
-	private UserRepresentation getUserByUsername(String mail) {
-		return keycloakConfig.getRealmClient().users().search(mail).get(0);
+	private UserRepresentation getUserByUsername(String username) {
+		return keycloakConfig.getRealmClient().users().search(username).get(0);
 	}
 
 	private RoleRepresentation getRolerepByName(String roleName) {
@@ -489,4 +490,18 @@ public class KeycloakUserRepository implements UserRepository {
 			new UserInfo(userRepresentation, null)).toList();
 	}
 
+	@Override
+	public void joinAdmin(UserReqVO userReqVO) {
+		UserRepresentation userRepresentation = userReqVO.convertUserRep();
+		userRepresentation.setEnabled(true);
+		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
+		if (response.getStatus() != 200 && response.getStatus() != 201) {
+			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL);
+		}
+		log.info(response.getStatusInfo().getReasonPhrase());
+		UserRepresentation userRep = getUserByUsername(userReqVO.getEmail());
+		UserResource userResource = getUserResourceById(userRep.getId());
+		userResource.resetPassword(userReqVO.createCredentialRep());
+		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_ADMIN.name())));
+	}
 }

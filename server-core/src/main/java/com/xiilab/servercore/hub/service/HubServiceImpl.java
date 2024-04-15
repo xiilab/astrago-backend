@@ -75,16 +75,16 @@ public class HubServiceImpl implements HubService {
 	public void saveHub(HubReqDTO.SaveHub saveHubDTO) {
 		try {
 			String strEnvJson = serializeToJson(saveHubDTO.getEnvMap());
-			String strHypterParamJson = serializeToJson(saveHubDTO.convertHypterParmToMap());
+			String strParamJson = serializeToJson(saveHubDTO.getParameter());
 			HubImageEntity hubImageEntity = createHubImageEntity(saveHubDTO);
-			HubEntity hubEntity = createHubEntity(saveHubDTO, strEnvJson, strHypterParamJson, hubImageEntity);
+			HubEntity hubEntity = createHubEntity(saveHubDTO, strEnvJson, strParamJson, hubImageEntity);
 			hubRepository.save(hubEntity);
 		} catch (JsonProcessingException e) {
 			throw new RestApiException(HubErrorCode.FAILED_ENV_MAP_TO_JSON);
 		}
 	}
 
-	private static HubEntity createHubEntity(HubReqDTO.SaveHub saveHubDTO, String strEnvJson, String strHypterParamJson,
+	private static HubEntity createHubEntity(HubReqDTO.SaveHub saveHubDTO, String strEnvJson, String strParamJson,
 		HubImageEntity hubImageEntity) {
 		return HubEntity.saveBuilder()
 			.title(saveHubDTO.getTitle())
@@ -98,7 +98,7 @@ public class HubServiceImpl implements HubService {
 			.modelMountPath(saveHubDTO.getModelMountPath())
 			.envs(strEnvJson)
 			.command(saveHubDTO.getCommand())
-			.hyperParams(strHypterParamJson)
+			.parameter(strParamJson)
 			.workloadType(saveHubDTO.getWorkloadType())
 			.hubImageEntity(hubImageEntity)
 			.build();

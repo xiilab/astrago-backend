@@ -65,6 +65,7 @@ public class DatasetDTO {
 		private RepositoryDivision division;
 		private String size;
 		private String defaultPath;
+		private String saveDirectoryName;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
 			if (dataset.isAstragoDataset()) {
@@ -83,6 +84,7 @@ public class DatasetDTO {
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
 					.defaultPath(dataset.getDatasetDefaultMountPath())
+					.saveDirectoryName(((AstragoDatasetEntity)dataset).getSaveDirectoryName())
 					.build();
 			}else if (dataset.isLocalDataset()) {
 				return ResDatasetWithStorage.builder()

@@ -121,4 +121,10 @@ public class UserController {
 	public ResponseEntity<List<UserInfo>> getAdminList(){
 		return new ResponseEntity<>(userFacadeService.getAdminList(), HttpStatus.OK);
 	}
+	@PostMapping("/admin")
+	@Operation(summary = "관리자 회원 가입")
+	public ResponseEntity<HttpStatus> joinAdmin(@RequestBody @Valid UserReqVO userReqVO) {
+		userFacadeService.joinAdmin(userReqVO);
+		return ResponseEntity.ok().build();
+	}
 }

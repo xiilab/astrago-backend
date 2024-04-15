@@ -1,21 +1,18 @@
 package com.xiilab.servercore.external.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulecommon.util.NumberValidUtils;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
-import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -36,12 +33,12 @@ public class ExternalService {
 	private final CredentialRepository credentialRepository;
 
 	/**
-	 *
 	 * @param credentialId
-	 * @param repoName ex) jojoldu/blog-code.git
+	 * @param repoName     ex) jojoldu/blog-code.git
+	 * @param codeType
 	 * @return
 	 */
-	public List<String> getGitHubRepoBranchList(Long credentialId, String repoName) {
+	public List<String> getGitHubRepoBranchList(Long credentialId, String repoName, CodeType codeType) {
 		String token = null;
 		if (!NumberValidUtils.isNullOrZero(credentialId)) {
 			CredentialEntity findCredential = credentialRepository.findById(credentialId)
@@ -49,9 +46,7 @@ public class ExternalService {
 			token = findCredential.getLoginPw();
 		}
 
-		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		log.info("폐쇄망 : " + network.getNetworkCloseYN());
-		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
+		if(codeType == CodeType.GIT_LAB){
 			token = (token == null) ? gitlabToken : token;
 			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
 			String[] repo = repoName.split("/");

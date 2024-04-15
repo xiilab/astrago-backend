@@ -59,8 +59,8 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "ENVS", length = 1000)
 	private String envs;
 
-	@Column(name = "HYPER_PARAMS", length = 1000)
-	private String hyperParams;
+	@Column(name = "PARAMETER", length = 1000)
+	private String parameter;
 
 	@Column(name = "PORTS", length = 1000)
 	private String ports;
@@ -79,7 +79,7 @@ public class HubEntity extends BaseEntity {
 	@Builder(builderMethodName = "saveBuilder", builderClassName = "saveBuilder")
 	public HubEntity(String title, String description, String thumbnailURL,
 		String readmeURL, String sourceCodeUrl, String sourceCodeBranch, String sourceCodeMountPath,
-		String datasetMountPath, String modelMountPath, String envs, String command, String hyperParams,
+		String datasetMountPath, String modelMountPath, String envs, String command, String parameter,
 		HubImageEntity hubImageEntity, WorkloadType workloadType) {
 		this.title = title;
 		this.description = description;
@@ -92,7 +92,7 @@ public class HubEntity extends BaseEntity {
 		this.modelMountPath = modelMountPath;
 		this.envs = envs;
 		this.command = command;
-		this.hyperParams = hyperParams;
+		this.parameter = parameter;
 		this.hubImageEntity = hubImageEntity;
 		this.workloadType = workloadType;
 		// 연관관계 편의 메서드

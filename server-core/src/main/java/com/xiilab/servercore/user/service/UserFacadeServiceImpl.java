@@ -168,4 +168,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	public List<UserInfo> getAdminList() {
 		return userService.getAdminList();
 	}
+
+	@Override
+	public void joinAdmin(UserReqVO userReqVO) {
+		userService.joinAdmin(userReqVO);
+	}
 }
