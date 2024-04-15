@@ -4,19 +4,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class LicenseDTO {
-	private long id;
-	private String version;
-	private int gpuCount;
-	private LocalDate startDate;
-	private LocalDate endDate;
-	private LocalDateTime regDate;
+	protected long id;
+	protected String version;
+	protected int gpuCount;
+	protected LocalDate startDate;
+	protected LocalDate endDate;
+	protected LocalDateTime regDate;
 }

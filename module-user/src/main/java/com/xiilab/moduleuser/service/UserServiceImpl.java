@@ -155,4 +155,10 @@ public class UserServiceImpl implements UserService {
 	public List<UserInfo> getAdminList(){
 		return userRepository.getAdminList();
 	}
+
+	@Override
+	public void joinAdmin(UserReqVO userReqVO) {
+		userRepository.joinAdmin(userReqVO);
+	}
+
 }

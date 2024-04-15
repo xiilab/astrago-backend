@@ -45,4 +45,5 @@ public interface UserFacadeService {
 
 	UserDTO.UserInfo getUserById(String id);
 	List<UserInfo> getAdminList();
+	void joinAdmin(UserReqVO userReqVO);
 }

@@ -2,6 +2,7 @@ package com.xiilab.servercore.code.dto;
 
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 
@@ -23,4 +24,5 @@ public class CodeReqDTO {
 	private String defaultPath;
 	private String cmd;
 	private Map<String,String> codeArgs;
+	private CodeType codeType;
 }

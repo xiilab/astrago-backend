@@ -22,7 +22,7 @@ public enum Promql {
 	GPU_MEM_CLOCK_SPEED("DCGM_FI_DEV_MEM_CLOCK{%s}","GPU MEW 클럭 속도 조회","GPU"),
 
 	// NODE
-	NODE_CPU_USAGE("(label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100), \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\")) * on (internal_ip) group_left(node) kube_node_info{%s}","CPU 사용량 조회","CPU"),
+	NODE_CPU_USAGE("(label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100), \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\")) * on (internal_ip) group_left(node) kube_node_info{%s}","CPU 사용량 조회","NODE"),
 	NODE_INFO("sum(kube_pod_info{%s}) by(node)","노드 정보 조회", "NODE"),
 	NODE_COUNT("sum(kube_node_info)","총 노드 개수 조회", "NODE"),
 	NODE_MEM_USAGE("label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","Node 메모리 사용률 조회","NODE"),
@@ -36,9 +36,9 @@ public enum Promql {
 		+ "/ max by (mountpoint) (label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}) * 100", "Node Disk 사용량", "NODE"),
 	TOTAL_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{mountpoint=\"/\"})", "전체 노드의 DISK SIZE(Bytes) 조회", "NODE"),
 	USAGE_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{mountpoint=\"/\"}) - sum(node_filesystem_avail_bytes{mountpoint=\"/\"})", "전체 노드의 DISK 사용중인 Bytes 조회", "NODE"),
-	NODE_LOAD1("avg(node_load1) by(nodename, job, instance, container,service)","1분 단위 GPU 평균 부하",""),
-	NODE_LOAD5("avg(node_load5) by(nodename, job, instance, container,service)","5분 단위 GPU 평균 부하",""),
-	NODE_LOAD15("avg(node_load15) by(nodename, job, instance, container,service)","15분 단위 GPU 평균 부하",""),
+	NODE_LOAD1("label_replace((avg(node_load1) by(nodename, job, instance, container,service)), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","1분 단위 GPU 평균 부하","NODE"),
+	NODE_LOAD5("label_replace((avg(node_load5) by(nodename, job, instance, container,service)), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","5분 단위 GPU 평균 부하","NODE"),
+	NODE_LOAD15("label_replace((avg(node_load15) by(nodename, job, instance, container,service)), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","15분 단위 GPU 평균 부하","NODE"),
 	USAGE_NODE_CPU_CORE("sum(kube_pod_container_resource_requests{resource=\"cpu\",%s})by(node)", "특정 노드의 cpu 코어 수 조회", "NODE"),
 	USAGE_NODE_MEMORY_SIZE("sum(kube_pod_container_resource_requests{resource=\"memory\",%s})by(node)", "특정 노드의 memory size 조회", "NODE"),
 	USAGE_NODE_GPU_COUNT("sum(kube_pod_container_resource_requests{resource=\"nvidia_com_gpu\",%s})by(node)", "특정 노드의 gpu 개수 조회", "NODE"),

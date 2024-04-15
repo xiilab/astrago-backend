@@ -28,6 +28,8 @@ public class AstragoModelEntity extends Model {
 
 	@Column(name = "MODEL_PATH")
 	private String modelPath;
+	@Column(name = "SAVE_DIRECTORY_NAME")
+	private String saveDirectoryName;
 
 	@Builder
 	public AstragoModelEntity(Long modelId, String modelName, StorageEntity storageEntity, String defaultPath) {
@@ -39,6 +41,9 @@ public class AstragoModelEntity extends Model {
 		this.modelPath = datasetPath;
 	}
 
+	public void setSaveDirectoryName(String saveDirectoryName){
+		this.saveDirectoryName = saveDirectoryName;
+	}
 	@Override
 	public boolean isAstragoModel() {
 		return true;
