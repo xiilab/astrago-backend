@@ -1,7 +1,9 @@
 package com.xiilab.modulecommon.service;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -25,28 +27,23 @@ public class MailServiceImpl implements MailService {
 	public void sendMail(MailDTO mailDTO) {
 		try {
 			MailUtils sendMail = new MailUtils(mailSender);
-			sendMail.setSubject(mailDTO.getTitle());
-			sendMail.setText(mailDTO.getContent());
-			sendMail.setTo(mailDTO.getReceiverEmail());
+			sendMail.setSubject(mailDTO.getSubject());
+			sendMail.setTo(StringUtils.isEmpty(mailDTO.getReceiverEmail())? adminEmailAddr : mailDTO.getReceiverEmail());
 			sendMail.setFrom(adminEmailAddr, ASTRAGO);
 
-			// sendMail.setText(
-			// 	createBody(
-			// 		createTitle("안녕하세요. astrago 서비스 이메일 알림입니다.") +
-			// 			createMainText("관리자(admin)님이 워크스페이스(김연훈의 워크스페이스)의 리소스 요청을 반려 하였습니다.") +
-			// 			createSubText("반려사유 : 리소스의 요청량이 너무 많습니다.") +
-			// 			createSubTable(
-			// 				// createSubTableTitle("<리소스 신청량>") +
-			// 				// createSubTableRow("반려 일시", "2024-04-02 17:34:00") +
-			// 				// createSubTableRow("CPU", "4 core") +
-			// 				// createSubTableRow("GPU", "8 개")
-			// 				createSubTableTitle("서준오 바보멍청이")
-			// 						)
-			// 		, createFooter()
-			// 	)
-			// );
-			// sendMail.setLogo("image/logo.png");
-			// sendMail.setIcon("image/icon.png");
+			sendMail.setText(
+				createBody(
+					createTitle(mailDTO.getTitle()) +
+						createSubTitle(mailDTO.getSubTitle()) +
+						createContentTitle(StringUtils.isBlank(mailDTO.getContentTitle()) ? "" : String.format(mailDTO.getContentTitle(), adminEmailAddr)) +
+						createContents(mailDTO.getContents()) +
+						createContentFooter(mailDTO.getFooter())
+					, createFooter()
+				)
+			);
+
+			sendMail.setLogo("image/logo.png");
+			sendMail.setIcon("image/icon.png");
 			sendMail.send();
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
@@ -139,7 +136,7 @@ public class MailServiceImpl implements MailService {
 			""".formatted(title);
 	}
 
-	private String createMainText(String text){
+	private String createSubTitle(String text){
 		return """
             <tr>
                 <td
@@ -196,7 +193,7 @@ public class MailServiceImpl implements MailService {
             </tr>
 			""".formatted(subTable);
 	}
-	private String createSubTableTitle(String subTitle){
+	private String createContentTitle(String subTitle){
 		return """
             <tr style="text-align: center">
                 <td colspan="2">
@@ -205,17 +202,32 @@ public class MailServiceImpl implements MailService {
             </tr>
 			""".formatted(subTitle);
 	}
-	private String createSubTableRow(String col1, String col2){
+	private String createContentFooter(String footer){
 		return """
-            <tr>
-                <td style="max-width: 150px; font-weight: 400">
-                    %s
-                </td>
-                <td style="max-width: 250px; text-align: end">
+            <tr style="text-align: center">
+                <td colspan="2">
                     %s
                 </td>
             </tr>
-			""".formatted(col1, col2);
+			""".formatted(footer);
+	}
+	private String createContents(List<MailDTO.Content> contents){
+		String result = "";
+		if(contents != null){
+			for(MailDTO.Content content : contents){
+				result += """
+				         <tr>
+				             <td style="max-width: 150px; font-weight: 400">
+				                 %s
+				             </td>
+				             <td style="max-width: 250px; text-align: end">
+				                 %s
+				             </td>
+				         </tr>
+				""".formatted(content.getCol1(), content.getCol2());
+			}
+		}
+		return result;
 	}
 	private String createFooter(){
 		return """

@@ -2,6 +2,8 @@ package com.xiilab.serverbatch.informer;
 
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
@@ -9,10 +11,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
@@ -32,6 +37,7 @@ import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.GroupService;
+import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -53,6 +59,8 @@ public class InteractiveJobInformer extends JobInformer {
 	private final SystemAlertRepository systemAlertRepository;
 	private final WorkspaceAlertSetRepository workspaceAlertSetRepository;
 	private final ApplicationEventPublisher publisher;
+	private final MailService mailService;
+	private final UserService userService;
 
 	public InteractiveJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
@@ -64,7 +72,7 @@ public class InteractiveJobInformer extends JobInformer {
 		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
 		GroupService groupService, SystemAlertRepository systemAlertRepository,
 		WorkspaceAlertSetRepository workspaceAlertSetRepository,
-		ApplicationEventPublisher publisher) {
+		ApplicationEventPublisher publisher, MailService mailService, UserService userService) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
 			codeRepository, imageRepository, credentialRepository, svcRepository, volumeRepository);
@@ -73,6 +81,8 @@ public class InteractiveJobInformer extends JobInformer {
 		this.systemAlertRepository = systemAlertRepository;
 		this.workspaceAlertSetRepository = workspaceAlertSetRepository;
 		this.publisher = publisher;
+		this.mailService = mailService;
+		this.userService = userService;
 	}
 
 	@PostConstruct
@@ -144,6 +154,15 @@ public class InteractiveJobInformer extends JobInformer {
 				// 	emailTitle, title, message, metadataFromResource.getWorkspaceResourceName(), null);
 				//
 				// publisher.publishEvent(workspaceUserAlertEvent);
+
+				MailAttribute mail = MailAttribute.WORKLOAD_DELETE;
+				mailService.sendMail(MailDTO.builder()
+					.subject(String.format(mail.getSubject(), metadataFromResource.getWorkloadName()))
+					.title(String.format(mail.getTitle(), metadataFromResource.getWorkloadName()))
+					.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.footer(mail.getFooter())
+					.receiverEmail(userService.getUserById(metadataFromResource.getCreatorId()).getEmail())
+					.build());
 			}
 		});
 
@@ -172,6 +191,15 @@ public class InteractiveJobInformer extends JobInformer {
 			interactiveWorkloadInfoFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
+
+		MailAttribute mail = MailAttribute.WORKLOAD_ERROR;
+		mailService.sendMail(MailDTO.builder()
+			.subject(String.format(mail.getSubject(), interactiveWorkloadInfoFromResource.getWorkloadName()))
+			.title(String.format(mail.getTitle(), interactiveWorkloadInfoFromResource.getWorkloadName()))
+			.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+			.footer(mail.getFooter())
+			.receiverEmail(userService.getUserById(interactiveWorkloadInfoFromResource.getCreatorId()).getEmail())
+			.build());
 	}
 
 	private void sendRunningNotification(Deployment deployment2) {
@@ -194,6 +222,16 @@ public class InteractiveJobInformer extends JobInformer {
 			interactiveWorkloadInfoFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
+
+		MailAttribute mail = MailAttribute.WORKLOAD_START;
+
+		mailService.sendMail(MailDTO.builder()
+			.subject(String.format(mail.getSubject(), workloadName))
+			.title(String.format(mail.getTitle(), workloadName))
+			.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+			.footer(mail.getFooter())
+			.receiverEmail(userService.getUserById(interactiveWorkloadInfoFromResource.getCreatorId()).getEmail())
+			.build());
 	}
 
 	private static WorkloadStatus getDeploymentStatus(DeploymentStatus deploymentStatus) {

@@ -1,5 +1,7 @@
 package com.xiilab.servercore.license.service;
 
+import java.util.Comparator;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,8 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LicenseErrorCode;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.servercore.license.dto.LicenseDTO;
 import com.xiilab.servercore.license.entity.LicenseEntity;
 import com.xiilab.servercore.license.repository.LicenseRepository;
@@ -23,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class LicenseServiceImpl implements LicenseService {
 	private final LicenseRepository licenseRepository;
 	private final ApplicationEventPublisher eventPublisher;
+	private final MailService mailService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -61,6 +67,17 @@ public class LicenseServiceImpl implements LicenseService {
 			String message = String.format(licenseExpiration.getMessage(), recentlyLicense.getEndDate());
 			eventPublisher.publishEvent(
 				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null));
+			LicenseEntity licenseEntity = licenseRepository.findAll()
+				.stream()
+				.sorted(Comparator.comparing(LicenseEntity::getEndDate).reversed())
+				.findFirst()
+				.get();
+			MailAttribute mail = MailAttribute.LICENSE;
+			mailService.sendMail(MailDTO.builder()
+					.subject(mail.getSubject())
+					.title(String.format(mail.getTitle(), licenseEntity.getEndDate()))
+					.footer(mail.getFooter())
+				.build());
 			throw e;
 		}
 	}

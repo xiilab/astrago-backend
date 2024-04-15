@@ -1,5 +1,8 @@
 package com.xiilab.moduleuser.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +11,10 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -24,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final ApplicationEventPublisher eventPublisher;
+	private final MailService mailService;
 	@Override
 	public UserInfo joinUser(UserReqVO userReqVO) {
 		return userRepository.joinUser(userReqVO);
@@ -100,6 +107,10 @@ public class UserServiceImpl implements UserService {
 		UserAlertEvent userAlertEvent = null;
 		userRepository.updateUserEnable(id, enable);
 		UserInfo userInfo = userRepository.getUserInfoById(id);
+		MailAttribute mail;
+		// Mail Contents 작성
+		List<MailDTO.Content> contents = new ArrayList<>();
+		String result;
 		//알림 발송 해야함
 		//true 활성화
 		if(enable){
@@ -108,14 +119,32 @@ public class UserServiceImpl implements UserService {
 			String title = userEnabled.getTitle();
 			String message = String.format(userEnabled.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
 			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
+			mail = MailAttribute.USER_ENABLE;
+			contents = List.of(
+				MailDTO.Content.builder().col1("사용자 이름 : ").col2(userInfo.getLastName() + userInfo.getFirstName()).build(),
+				MailDTO.Content.builder().col1("이메일 주소 : ").col2(userInfo.getEmail()).build(),
+				MailDTO.Content.builder().col1("활성화 일시 : ").col2(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).build()
+			);
 		}else{//false 비활성화
 			String emailTitle = String.format(AlertMessage.USER_DISABLED.getMailTitle());
 			String title = AlertMessage.USER_DISABLED.getTitle();
 			String message = String.format(AlertMessage.USER_DISABLED.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
 			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
+			mail = MailAttribute.USER_UNABLE;
 		}
 
 		eventPublisher.publishEvent(userAlertEvent);
+
+		// Mail 전송
+		mailService.sendMail(MailDTO.builder()
+			.subject(mail.getSubject())
+			.title(String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
+			.subTitle(mail.getSubTitle())
+			.receiverEmail(userInfo.getEmail())
+			.contentTitle(mail.getContentTitle())
+			.contents(contents)
+			.footer(mail.getFooter())
+			.build());
 	}
 
 	@Override

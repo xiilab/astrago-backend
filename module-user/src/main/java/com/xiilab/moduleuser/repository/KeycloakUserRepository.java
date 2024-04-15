@@ -12,6 +12,7 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.enums.AuthType;
@@ -325,8 +326,8 @@ public class KeycloakUserRepository implements UserRepository {
 		return keycloakConfig.getRealmClient().users().get(userId);
 	}
 
-	private UserRepresentation getUserByUsername(String email) {
-		return keycloakConfig.getRealmClient().users().search(email).get(0);
+	private UserRepresentation getUserByUsername(String username) {
+		return keycloakConfig.getRealmClient().users().search(username).get(0);
 	}
 
 	private RoleRepresentation getRolerepByName(String roleName) {

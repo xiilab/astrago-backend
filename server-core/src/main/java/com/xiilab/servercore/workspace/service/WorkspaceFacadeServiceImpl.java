@@ -1,26 +1,32 @@
 package com.xiilab.servercore.workspace.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
-import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
+import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -35,9 +41,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
-import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
@@ -91,6 +94,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final ModelService modelService;
 	private final CodeService codeService;
 	private final ImageService imageService;
+	private final MailService mailService;
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
@@ -147,15 +151,44 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		eventPublisher.publishEvent(
 			new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_CREATE, userInfoDTO.getId(), mailTitle, title, message, pageNaviParam));
 
+		MailAttribute mail = MailAttribute.WORKSPACE_CREATE;
+
+		List<MailDTO.Content> contents = List.of(
+			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(applicationForm.getReqGPU())).build(),
+			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(applicationForm.getReqCPU())).build(),
+			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(applicationForm.getReqMEM())).build()
+		);
+
+		mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), workspaceName))
+			.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceName))
+				.subTitle(mail.getSubTitle())
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+			.build());
+
 		// 워크스페이스 생성자에게 알림 메시지 발송
 		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_CREATE_OWNER;
 		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), applicationForm.getName());
 		String createOwnerTitle = workspaceCreateOwner.getTitle();
 		String createOwnerMessage = String.format(workspaceCreateOwner.getMessage(), applicationForm.getName());
-		eventPublisher.publishEvent(
-			new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_CREATE, userInfoDTO.getId(),
-				userInfoDTO.getId(), emailTitle, createOwnerTitle,
-				createOwnerMessage, workspaceResourceName, pageNaviParam));
+		if(!userInfoDTO.getAuth().equals(AuthType.ROLE_ADMIN)){
+			eventPublisher.publishEvent(
+				new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_CREATE, userInfoDTO.getId(),
+					userInfoDTO.getId(), emailTitle, createOwnerTitle,
+					createOwnerMessage, workspaceResourceName, pageNaviParam));
+
+			mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), workspaceName))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceName))
+				.subTitle(mail.getSubTitle())
+				.contentTitle(mail.getContentTitle())
+				.receiverEmail(userInfoDTO.getEmail())
+				.contents(contents)
+				.footer(mail.getFooter())
+				.build());
+		}
 	}
 
 	@Override
@@ -235,6 +268,10 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
 		String workspaceNm = workspace.getName();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
+
+		MailAttribute mail = MailAttribute.WORKSPACE_DELETE;
+		String mailTitle = mail.getTitle();
+
 		if (auth == AuthType.ROLE_ADMIN) {
 			//관리자가 삭제할 때
 			AlertMessage workspaceDeleteAdmin = AlertMessage.WORKSPACE_DELETE_ADMIN;
@@ -253,9 +290,16 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKSPACE_DELETE,
 				userInfoDTO.getId(), workspace.getCreatorId(),
 				emailTitle, title, message, workspaceName, null);
+			mailTitle = String.format(mailTitle, userInfoDTO.getUserFullName() + " (" + userInfoDTO.getEmail() + ")님이 ", workspaceName);
 		}
 
 		eventPublisher.publishEvent(workspaceUserAlertEvent);
+		mailService.sendMail(MailDTO.builder()
+				.subject(mail.getSubject())
+				.title(mailTitle)
+				.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.footer(mail.getFooter())
+			.build());
 	}
 
 	@Override
@@ -317,17 +361,40 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceInfo.getName());
 		eventPublisher.publishEvent(
 			new AdminAlertEvent(AlertName.ADMIN_USER_RESOURCE_REQUEST, userInfoDTO.getId(), mailTitle, title, message, pageNaviParam));
-
+		// 관리자
+		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
+		List<MailDTO.Content> contents = List.of(
+			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(workspaceResourceReqDTO.getGpuReq())).build(),
+			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(workspaceResourceReqDTO.getCpuReq())).build(),
+			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(workspaceResourceReqDTO.getMemReq())).build()
+		);
+		mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), workspaceInfo.getName()))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceInfo.getName()))
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+			.build());
 		// 워크스페이스 리소스 요청한 사용자에게 알림 발송
 		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_RESOURCE_REQUEST_OWNER;
 		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), workspaceInfo.getName());
 		String createOwnerTitle = workspaceCreateOwner.getTitle();
 		String createOwnerMessage = String.format(workspaceCreateOwner.getMessage(),
 			workspaceInfo.getName());
-		eventPublisher.publishEvent(
-			new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_RESOURCE_REQUEST, userInfoDTO.getId(),
-				workspaceInfo.getCreatorId(), emailTitle, createOwnerTitle,
-				createOwnerMessage, workspaceResourceReqDTO.getWorkspace(), pageNaviParam));
+		if(userInfoDTO.getAuth().equals(AuthType.ROLE_ADMIN)){
+			eventPublisher.publishEvent(
+				new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_RESOURCE_REQUEST, userInfoDTO.getId(),
+					workspaceInfo.getCreatorId(), emailTitle, createOwnerTitle,
+					createOwnerMessage, workspaceResourceReqDTO.getWorkspace(), pageNaviParam));
+			// 사용자
+			mailService.sendMail(MailDTO.builder()
+				.subject(mail.getSubject())
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceInfo.getName()))
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+				.build());
+		}
 	}
 
 	@Override
@@ -366,7 +433,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 		String workspaceNm = resourceQuotaEntity.getWorkspaceName();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
-
+		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_RESULT;
+		String result;
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
 			int cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
@@ -386,6 +454,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER,
 				AlertName.OWNER_RESOURCE_REQUEST_RESULT, userInfoDTO.getId(), resourceQuotaEntity.getRegUser().getRegUserId(), emailTitle,
 				title, message, resourceQuotaEntity.getWorkspaceResourceName(), null);
+			result = "승인 일시 : %s";
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaApproveDTO.getRejectReason());
 			//리소스 반려 알림 발송
@@ -397,8 +466,25 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER,
 				AlertName.OWNER_RESOURCE_REQUEST_RESULT, userInfoDTO.getId(), resourceQuotaEntity.getRegUser().getRegUserId(), emailTitle, title, message,
 				resourceQuotaEntity.getWorkspaceResourceName(), null);
+			result = "반려 일시 : %s <br> 반려 사유 : ";
+			if(!StringUtils.isBlank(resourceQuotaApproveDTO.getRejectReason())){
+				result += resourceQuotaApproveDTO.getRejectReason();
+			}
 		}
 		eventPublisher.publishEvent(workspaceUserAlertEvent);
+		List<MailDTO.Content> contents = List.of(
+			MailDTO.Content.builder().col1("GPU : ").col2(String.valueOf(resourceQuotaApproveDTO.getGpu())).build(),
+			MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(resourceQuotaApproveDTO.getCpu())).build(),
+			MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(resourceQuotaApproveDTO.getMem())).build()
+		);
+		mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), resourceQuotaEntity.getWorkspaceName()))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), resourceQuotaEntity.getWorkspaceName(), result))
+				.subTitle(String.format(result, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+			.build());
 	}
 
 	@Override
