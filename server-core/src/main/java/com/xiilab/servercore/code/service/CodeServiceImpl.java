@@ -41,8 +41,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class CodeServiceImpl implements CodeService {
-	@Value("${gitlab.url}")
-	private String gitlabUrl;
 	@Value("${gitlab.token}")
 	private String gitlabToken;
 	private final CodeRepository codeRepository;
@@ -80,8 +78,11 @@ public class CodeServiceImpl implements CodeService {
 			githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeReqDTO.getCodeURL()));
 		} else {
 			// GITLAB API 검증
-			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
-			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/([^/.]+)(\\.git)?$");
+			String codeURL = codeReqDTO.getCodeURL();
+			String baseUrl = getBaseUrl(codeURL);
+
+			GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+			Pattern pattern = Pattern.compile(baseUrl + "/(.*?)/([^/.]+)(\\.git)?$");
 			Matcher matcher = pattern.matcher(codeReqDTO.getCodeURL());
 			if (matcher.find()) {
 				String namespace = matcher.group(1);
@@ -109,7 +110,14 @@ public class CodeServiceImpl implements CodeService {
 			throw new RestApiException(CodeErrorCode.FAILED_SAVE_USER_CODE);
 		}
 	}
-
+	public static String getBaseUrl(String url) {
+		int endIndex = url.indexOf("/", "http://".length());
+		if (endIndex == -1) {
+			return url; // 슬래시가 없는 경우는 그대로 반환
+		} else {
+			return url.substring(0, endIndex);
+		}
+	}
 	@Override
 	public Boolean isCodeURLValid(String codeURL, Long credentialId) {
 		// 깃허브 또는 깃랩 URL인지 검증
@@ -133,15 +141,15 @@ public class CodeServiceImpl implements CodeService {
 				return true;
 			}
 		} else if (isGitLabURL) {
-			// GITLAB API 검증
-			GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
-			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
-			Matcher matcher = pattern.matcher(codeURL);
-			if (matcher.find()) {
-				String namespace = matcher.group(1);
-				String project = matcher.group(2);
-				gitLabApi.isRepoConnected(namespace, project);
-			}
+			// // GITLAB API 검증
+			// GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+			// Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
+			// Matcher matcher = pattern.matcher(codeURL);
+			// if (matcher.find()) {
+			// 	String namespace = matcher.group(1);
+			// 	String project = matcher.group(2);
+			// 	gitLabApi.isRepoConnected(namespace, project);
+			// }
 		}
 
 		return true;
