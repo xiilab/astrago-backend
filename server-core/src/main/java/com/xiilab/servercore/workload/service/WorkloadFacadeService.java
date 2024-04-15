@@ -921,30 +921,23 @@ public class WorkloadFacadeService {
 	}
 
 	private <T extends ModuleWorkloadResDTO> List<FindWorkloadResDTO.Port> generatePortResDTO(T moduleJobResDTO) {
+		ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
+		Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
 		List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+		if (node.isPresent()) {
+			// 서비스 포트 찾기
+			SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
+				moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
 
-		// if (CollectionUtils.isEmpty(moduleJobResDTO.getPorts())) {
-		// 	return ports;
-		// }
-
-		if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
-			ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
-			Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
-			if (node.isPresent()) {
-				// 서비스 포트 찾기
-				SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
-					moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
-
-				for (SvcResDTO.FindSvcDetail findSvcDetail : findSvcs.getServices()) {
-					Map<Integer, Integer> portMap = findSvcDetail.getPorts()
-						.stream()
-						.collect(Collectors.toMap(SvcResDTO.Port::getPort, SvcResDTO.Port::getNodePort));
-					ports = moduleJobResDTO.getPorts()
-						.stream()
-						.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort(),
-							node.get().getIp() + ":" + portMap.get(port.originPort())))
-						.toList();
-				}
+			for (SvcResDTO.FindSvcDetail findSvcDetail : findSvcs.getServices()) {
+				Map<Integer, Integer> portMap = findSvcDetail.getPorts()
+					.stream()
+					.collect(Collectors.toMap(SvcResDTO.Port::getPort, SvcResDTO.Port::getNodePort));
+				ports = moduleJobResDTO.getPorts()
+					.stream()
+					.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort(),
+						node.get().getIp() + ":" + portMap.get(port.originPort())))
+					.toList();
 			}
 		} else {
 			ports = moduleJobResDTO.getPorts()
@@ -952,10 +945,7 @@ public class WorkloadFacadeService {
 				.map(port -> new FindWorkloadResDTO.Port(port.name(), port.originPort(), null))
 				.toList();
 		}
-		return ports;
-	}
 
-	private String getJobIDEUrl(String ip, Integer nodePort) {
-		return "http://" + ip + ":" + nodePort;
+		return ports;
 	}
 }
