@@ -122,17 +122,4 @@ public class K8SResourceMetadataDTO {
 			}
 		}
 	}
-
-	// protected void initializeVolumeMountPath(Map<String, String> annotations) {
-	// 	annotations.entrySet().forEach(entry -> {
-	// 		String key = entry.getKey();
-	// 		String value = entry.getValue();
-	// 		if (key.startsWith("ds-")) {
-	// 			this.datasetMountPathMap.put(key.split("-")[1], value);
-	// 		} else if (key.startsWith("md-")) {
-	// 			this.modelMountPathMap.put(key.split("-")[1], value);
-	// 		}
-	// 	});
-	// }
-
 }

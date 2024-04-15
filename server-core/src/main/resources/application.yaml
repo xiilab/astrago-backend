@@ -30,7 +30,8 @@ spring:
       hibernate:
         default_batch_fetch_size: 100
         format_sql: true
-    show_sql: false
+        use_sql_comments: true
+        show_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     defer-datasource-initialization: true
@@ -75,8 +76,7 @@ github:
   public:
     token: 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
 gitlab:
-  url: http://10.61.3.134
-  token: usL9oNSrMk8yDxGDdmBh
+  token:
 
 mig-profile-path: src/main/resources/MigProfile.json
 server:
