@@ -270,8 +270,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 
 		MailAttribute mail = MailAttribute.WORKSPACE_DELETE;
-		String mailTitle = mail.getTitle();
-
+		String mailTitle;
 		if (auth == AuthType.ROLE_ADMIN) {
 			//관리자가 삭제할 때
 			AlertMessage workspaceDeleteAdmin = AlertMessage.WORKSPACE_DELETE_ADMIN;
@@ -282,6 +281,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKSPACE_DELETE,
 				userInfoDTO.getId(), workspace.getCreatorId(),
 				emailTitle, title, message, workspaceName, null);
+			mailTitle = userInfoDTO.getUserFullName() + " (" + userInfoDTO.getEmail() + ")님이 워크스페이스(" + workspaceName + ")을(를) 삭제하였습니다.";
 		} else {
 			//사용자가 삭제할 때
 			String emailTitle = String.format(AlertMessage.WORKSPACE_DELETE_OWNER.getMailTitle(), workspaceNm);
@@ -290,12 +290,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKSPACE_DELETE,
 				userInfoDTO.getId(), workspace.getCreatorId(),
 				emailTitle, title, message, workspaceName, null);
-			mailTitle = String.format(mailTitle, userInfoDTO.getUserFullName() + " (" + userInfoDTO.getEmail() + ")님이 ", workspaceName);
+			mailTitle = "워크스페이스(" + workspaceName + ")을(를) 삭제하였습니다.";
 		}
 
 		eventPublisher.publishEvent(workspaceUserAlertEvent);
 		mailService.sendMail(MailDTO.builder()
-				.subject(mail.getSubject())
+				.subject(String.format(mail.getSubject(), workspace.getName()))
 				.title(mailTitle)
 				.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 				.footer(mail.getFooter())
