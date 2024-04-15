@@ -435,6 +435,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_RESULT;
 		String result;
+		String res = "반려";
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
 			int cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
@@ -454,7 +455,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER,
 				AlertName.OWNER_RESOURCE_REQUEST_RESULT, userInfoDTO.getId(), resourceQuotaEntity.getRegUser().getRegUserId(), emailTitle,
 				title, message, resourceQuotaEntity.getWorkspaceResourceName(), null);
-			result = "승인 일시 : %s";
+			res = "승인";
+			result = "승인 일시 : " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaApproveDTO.getRejectReason());
 			//리소스 반려 알림 발송
@@ -466,7 +468,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER,
 				AlertName.OWNER_RESOURCE_REQUEST_RESULT, userInfoDTO.getId(), resourceQuotaEntity.getRegUser().getRegUserId(), emailTitle, title, message,
 				resourceQuotaEntity.getWorkspaceResourceName(), null);
-			result = "반려 일시 : %s <br> 반려 사유 : ";
+			result = "반려 일시 : " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) +
+				" <br> 반려 사유 : " + resourceQuotaApproveDTO.getRejectReason();
 			if(!StringUtils.isBlank(resourceQuotaApproveDTO.getRejectReason())){
 				result += resourceQuotaApproveDTO.getRejectReason();
 			}
@@ -479,8 +482,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		);
 		mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), resourceQuotaEntity.getWorkspaceName()))
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), resourceQuotaEntity.getWorkspaceName(), result))
-				.subTitle(String.format(result, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), resourceQuotaEntity.getWorkspaceName(), res))
+				.subTitle(String.format(mail.getSubTitle(), result))
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
 				.footer(mail.getFooter())
