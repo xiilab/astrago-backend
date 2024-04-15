@@ -362,7 +362,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		eventPublisher.publishEvent(
 			new AdminAlertEvent(AlertName.ADMIN_USER_RESOURCE_REQUEST, userInfoDTO.getId(), mailTitle, title, message, pageNaviParam));
 		// 관리자
-		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
+		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_REQUEST;
 		List<MailDTO.Content> contents = List.of(
 			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(workspaceResourceReqDTO.getGpuReq())).build(),
 			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(workspaceResourceReqDTO.getCpuReq())).build(),
@@ -388,8 +388,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					createOwnerMessage, workspaceResourceReqDTO.getWorkspace(), pageNaviParam));
 			// 사용자
 			mailService.sendMail(MailDTO.builder()
-				.subject(mail.getSubject())
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceInfo.getName()))
+				.subject(String.format(mail.getSubject(), workspaceInfo.getName()))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceInfo.getResourceName()))
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
 				.footer(mail.getFooter())

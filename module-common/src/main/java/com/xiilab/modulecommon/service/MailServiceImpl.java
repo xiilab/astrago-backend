@@ -98,7 +98,7 @@ public class MailServiceImpl implements MailService {
 			                                padding: 26px 40px 50px;">
 			                            <!-- icon -->
 			                            <tr>
-			                                <td style="text-align: center; padding-bottom: 14px">
+			                                <td colspan="2" style="text-align: center; padding-bottom: 14px">
 			                                    <img
 			                                        width="48"
 			                                        height="48"
@@ -123,6 +123,7 @@ public class MailServiceImpl implements MailService {
             <!-- 제목 -->
             <tr>
                 <td
+					colspan="2"
                     style="
                         text-align: center;
                         padding-bottom: 24px;
