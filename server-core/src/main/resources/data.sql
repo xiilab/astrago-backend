@@ -135,33 +135,33 @@ ON DUPLICATE KEY UPDATE ALERT_ID = ALERT_ID;
 
 -- 이미지 초기값
 INSERT INTO TB_IMAGE (IMAGE_TYPE, IMAGE_ID, MOD_DATE, REG_DATE, REG_USER_ID, REG_USER_NAME, REG_USER_REAL_NAME,
-                      DELETE_YN, IMAGE_NAME, REPOSITORY_AUTH_TYPE, WORKLOAD_TYPE)
-VALUES ('HUB', 1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', 'PUBLIC', 'BATCH'),
-       ('HUB', 2, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', 'PUBLIC', 'BATCH'),
+                      DELETE_YN, IMAGE_NAME_HUB, IMAGE_NAME_HARBOR, REPOSITORY_AUTH_TYPE, WORKLOAD_TYPE)
+VALUES ('HUB', 1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH'),
+       ('HUB', 2, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH'),
        ('BUILT', 3, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 4, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 5, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 6, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 7, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 8, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 9, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 10, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE'),
        ('BUILT', 11, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', 'PUBLIC', 'BATCH'),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'BATCH'),
        ('BUILT', 12, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', 'PUBLIC', 'BATCH'),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'BATCH'),
        ('BUILT', 13, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', 'PUBLIC', 'BATCH'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'BATCH'),
        ('BUILT', 14, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', 'PUBLIC', 'BATCH')
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'BATCH')
 ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 
 -- 허브 이미지 초기값
@@ -207,13 +207,13 @@ ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 -- 허브 초기값
 INSERT INTO TB_HUB (HUB_ID, MOD_DATE, REG_DATE, ENVS, PORTS, COMMAND, DATASET_MOUNT_PATH, DESCRIPTION, MODEL_MOUNT_PATH,
                     REG_USER_ID, REG_USER_NAME, REG_USER_REAL_NAME, SOURCE_CODE_BRANCH, SOURCE_CODE_MOUNT_PATH,
-                    SOURCE_CODE_URL, TITLE, IMAGE_ID, README_URL, THUMBNAIL_URL, WORKLOAD_TYPE, PARAMETER)
+                    SOURCE_CODE_URL_GITHUB, SOURCE_CODE_URL_GITLAB, TITLE, IMAGE_ID, README_URL, THUMBNAIL_URL, WORKLOAD_TYPE, PARAMETER)
 VALUES (1, null, now(),
         '{     "DB_HOST": "astrago-mariadb.astrago.svc",     "DB_PORT": "3306",     "DB_USER": "root",     "DB_PASSWORD": "root",     "DB_DATABASE": "astrago" }',
         null,
         'python train.py --epochs 100 --batch_size=16 --learning_rate=0.01 --image_size=360 --data_dir=/tmp/datasets/data.yaml --save_model_dir=/tmp/models',
         '/tmp/datasets', 'TEST1', '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master', '/usr/src/ultralytics',
-        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', 'YOLOv8', 1,
+        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null, 'YOLOv8', 1,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/Readme.md',
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif', 'BATCH',
         '{ "flops": 14, "t_img_num": 100000000, "v_img_num": 100000000, "image_size": 640, "batch": 162322000, "param_cnt": 531772342422, "epoch": 120 }'),
@@ -222,7 +222,7 @@ VALUES (1, null, now(),
         null,
         'python train.py --epochs 100 --batch_size=16 --learning_rate=0.01 --image_size=360 --data_dir=/tmp/datasets/data.yaml --save_model_dir=/tmp/models',
         '/tmp/datasets', 'TEST2', '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master', '/usr/src/ultralytics',
-        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', 'YOLOv5', 2,
+        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null,'YOLOv5', 2,
         'https://raw.githubusercontent.com/xiilab/astrago-ultralytics-yolov8-train/master/docs/en/models/yolov5.md',
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif', 'BATCH',
         '{ "flops": 14, "t_img_num": 100000000, "v_img_num": 100000000, "image_size": 640, "batch": 162322000, "param_cnt": 531772342422, "epoch": 120 }')
