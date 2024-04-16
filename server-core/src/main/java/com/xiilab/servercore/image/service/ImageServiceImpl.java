@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -14,6 +15,7 @@ import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
 import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
@@ -21,6 +23,8 @@ import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.version.entity.CompatibleFrameworkVersionEntity;
 import com.xiilab.modulek8sdb.version.repository.CompatibleFrameWorkVersionRepository;
 import com.xiilab.servercore.image.dto.ImageReqDTO;
@@ -36,7 +40,7 @@ public class ImageServiceImpl implements ImageService {
 	private final CredentialRepository credentialRepository;
 	private final CompatibleFrameWorkVersionRepository compatibleFrameWorkVersionRepository;
 	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
-
+	private final NetworkRepository networkRepository;
 	@Override
 	@Transactional
 	public Long saveImage(ImageReqDTO.SaveImage saveImageDTO) {
@@ -59,7 +63,9 @@ public class ImageServiceImpl implements ImageService {
 	public ImageResDTO.FindImage findImageById(Long id) {
 		ImageEntity findImage = imageRepository.findById(id)
 			.orElseThrow(() -> new RestApiException(ImageErrorCode.NOT_FOUND_IMAGE));
-		return ImageResDTO.FindImage.from(findImage);
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+		return ImageResDTO.FindImage.from(findImage, networkCloseYN);
 	}
 
 	@Override
@@ -77,8 +83,10 @@ public class ImageServiceImpl implements ImageService {
 		if (findSearchCondition.getImageType() == ImageType.BUILT) {
 			getRecommendAndSetAvailableBuiltInImages(images.getContent());
 		}
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
-		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements());
+		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements(), networkCloseYN);
 	}
 
 	@Override

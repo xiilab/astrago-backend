@@ -8,7 +8,6 @@ import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
 
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 public class FindHubCommonResDTO {
@@ -28,9 +27,12 @@ public class FindHubCommonResDTO {
 			this.id = hubImageEntity.getId();
 			this.imageType = hubImageEntity.getImageType();
 			this.deleteYN = hubImageEntity.getDeleteYN();
-			this.imageName = hubImageEntity.getImageName();
+			this.imageName = hubImageEntity.getImageNameHub();
 			this.repositoryAuthType = hubImageEntity.getRepositoryAuthType();
 			this.workloadType = hubImageEntity.getWorkloadType();
+		}
+		public void setImageName(String imageName){
+			this.imageName = imageName;
 		}
 	}
 }
