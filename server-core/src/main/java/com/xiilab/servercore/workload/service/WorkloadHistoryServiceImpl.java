@@ -2,7 +2,6 @@ package com.xiilab.servercore.workload.service;
 
 import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -195,7 +194,6 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			.filter(workspace -> workspace.contains("/owner"))
 			.toList();
 
-
 		String workloadName = jobEntity.getResourceName();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 		// 워크로드 생성자가 삭제
@@ -208,16 +206,17 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
 				jobEntity.getWorkspaceResourceName(), null);
 
-		} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || Arrays.asList(loginUserOwnerWorkspaceList)
-			.contains(jobEntity.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
+		} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || loginUserOwnerWorkspaceList.contains(
+			jobEntity.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
 
 			String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMailTitle(), workloadName);
 			String title = AlertMessage.WORKLOAD_DELETE_ADMIN.getTitle();
-			String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
+			String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(),
+				userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
 				jobEntity.getWorkspaceResourceName(), null);
-		}  else {
+		} else {
 			throw new IllegalArgumentException("해당 유저는 워크스페이스 삭제 권한이 없습니다.");
 		}
 
