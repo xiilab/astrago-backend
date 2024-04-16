@@ -469,6 +469,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<io.fabric8.kubernetes.api.model.events.v1.Event> eventList = kubernetesClient.events()
 				.v1()
 				.events()
+				.inAnyNamespace()
+				.withField("type", "Warning")
 				.list()
 				.getItems();
 			// 현재 시간 UTC 조회

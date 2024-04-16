@@ -195,11 +195,11 @@ public class BatchJobInformer extends JobInformer {
 
 				MailAttribute mail = MailAttribute.WORKLOAD_DELETE;
 				mailService.sendMail(MailDTO.builder()
-						.subject(String.format(mail.getSubject(), metadataFromResource.getWorkloadName()))
-						.title(String.format(mail.getTitle(), metadataFromResource.getWorkloadName()))
-						.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-						.footer(mail.getFooter())
-						.receiverEmail(userService.getUserById(metadataFromResource.getCreatorId()).getEmail())
+					.subject(String.format(mail.getSubject(), metadataFromResource.getWorkloadName()))
+					.title(String.format(mail.getTitle(), metadataFromResource.getWorkloadName()))
+					.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.footer(mail.getFooter())
+					.receiverEmail(userService.getUserById(metadataFromResource.getCreatorId()).getEmail())
 					.build());
 			}
 		});
