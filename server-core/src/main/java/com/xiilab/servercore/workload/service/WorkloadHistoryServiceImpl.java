@@ -192,6 +192,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		List<String> loginUserOwnerWorkspaceList = userInfoDTO.getWorkspaces()
 			.stream()
 			.filter(workspace -> workspace.contains("/owner"))
+			.map(workspace -> workspace.split("/owner")[0])
 			.toList();
 
 		String workloadName = jobEntity.getResourceName();
