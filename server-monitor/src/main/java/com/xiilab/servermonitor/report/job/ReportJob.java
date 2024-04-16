@@ -11,6 +11,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.PersistJobDataAfterExecution;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,9 @@ import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationHistoryEntity;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationUserEntity;
@@ -40,6 +44,7 @@ public class ReportJob extends QuartzJobBean {
 	private final ReportReservationHistoryRepository historyRepository;
 	private final ReportMonitorService reportMonitorService;
 	private final MailService mailService;
+	private final NetworkRepository networkRepository;
 	@Value("${frontend.url}")
 	private String frontendUrl;
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
@@ -91,6 +96,7 @@ public class ReportJob extends QuartzJobBean {
 
 	private void sendMail(ReportReservationEntity reportReservation, String start, String end, String pdfLink){
 		MailAttribute mail = MailAttribute.REPORT;
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		// 수신자에게 발송
 		for(ReportReservationUserEntity user : reportReservation.getReservationUserEntities()){
 			ReportReservationHistoryEntity saveHistory = historyRepository.save(ReportReservationHistoryEntity.builder()
@@ -102,18 +108,20 @@ public class ReportJob extends QuartzJobBean {
 				.report(reportReservation)
 				.result(true)
 				.build());
-			try{
-				mailService.sendMail(MailDTO.builder()
-					.subject(String.format(mail.getSubject(), reportReservation.getReportType().getName()))
-					.title(mail.getTitle())
-					.subTitle(String.format(mail.getSubTitle(), reportReservation.getReportType().getName(), LocalDateTime.now(), start + end))
-					.contentTitle(mail.getContentTitle())
-					.contents(List.of(MailDTO.Content.builder().col1("링크 : ").col2(pdfLink).build()))
-					.footer(mail.getFooter())
-					.receiverEmail(user.getEmail())
-					.build());
-			}catch (Exception e){
-				saveHistory.falseResult();
+			if(network.getNetworkCloseYN() == NetworkCloseYN.N){
+				try{
+					mailService.sendMail(MailDTO.builder()
+						.subject(String.format(mail.getSubject(), reportReservation.getReportType().getName()))
+						.title(mail.getTitle())
+						.subTitle(String.format(mail.getSubTitle(), reportReservation.getReportType().getName(), LocalDateTime.now(), start + end))
+						.contentTitle(mail.getContentTitle())
+						.contents(List.of(MailDTO.Content.builder().col1("링크 : ").col2(pdfLink).build()))
+						.footer(mail.getFooter())
+						.receiverEmail(user.getEmail())
+						.build());
+				}catch (Exception e){
+					saveHistory.falseResult();
+				}
 			}
 		}
 	}
