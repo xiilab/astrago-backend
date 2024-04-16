@@ -216,7 +216,7 @@ VALUES (1, null, now(),
         'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', 'YOLOv8', 1,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/Readme.md',
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif', 'BATCH',
-        '{ "flops": 14, "t_img_num": 100000000, "v_img_num": 100000000, "image_size": 640, "batch": 162322000, "param_cnt": 531772342422, "epoch": 120 }'),
+        '{ "flops": 14, "t_img_num": 100000000, "v_img_num": 100000000, "image_size": 640, "batch": 162322000, "param_cnt": 43643718, "epoch": 120 }'),
        (2, null, now(),
         '{     "DB_HOST": "astrago-mariadb.astrago.svc",     "DB_PORT": "3306",     "DB_USER": "root",     "DB_PASSWORD": "root",     "DB_DATABASE": "astrago" }',
         null,
@@ -225,7 +225,7 @@ VALUES (1, null, now(),
         'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', 'YOLOv5', 2,
         'https://raw.githubusercontent.com/xiilab/astrago-ultralytics-yolov8-train/master/docs/en/models/yolov5.md',
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif', 'BATCH',
-        '{ "flops": 14, "t_img_num": 100000000, "v_img_num": 100000000, "image_size": 640, "batch": 162322000, "param_cnt": 531772342422, "epoch": 120 }')
+        '{ "flops": 14, "t_img_num": 100000000, "v_img_num": 100000000, "image_size": 640, "batch": 162322000, "param_cnt": 53177222, "epoch": 120 }')
 ON DUPLICATE KEY UPDATE HUB_ID = HUB_ID;
 
 -- 허브 카테고리 초기값

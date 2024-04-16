@@ -70,6 +70,8 @@ public class FindWorkloadResDTO extends ResDTO {
 		private String nodeName;
 		private String estimatedInitialTime;
 		private String estimatedRemainingTime;
+		private boolean canBeDeleted;
+
 		public static <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail from(
 			T moduleJobResDTO
 			, FindWorkloadResDTO.Image image
@@ -109,6 +111,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.nodeName(nodeName)
 				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
 				.build();
 		}
 
@@ -139,6 +142,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regDate(jobEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.modDate(null)
 				.status(WorkloadStatus.END)
+				.ide(jobEntity.getIde())
+				.canBeDeleted(jobEntity.isCanBeDeleted())
 				.build();
 		}
 	}

@@ -45,6 +45,7 @@ import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -80,9 +81,10 @@ public class WorkloadController {
 	public ResponseEntity<FindWorkloadResDTO.WorkloadDetail> getWorkloadInfo(
 		@PathVariable("type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
-		@RequestParam("workloadResourceName") String workloadResourceName) {
+		@RequestParam("workloadResourceName") String workloadResourceName,
+		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName),
+			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, userInfoDTO),
 			HttpStatus.OK);
 	}
 
@@ -107,11 +109,12 @@ public class WorkloadController {
 		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
 		@RequestParam(value = "workloadSortCondition", required = false) WorkloadSortCondition workloadSortCondition,
 		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "isCreatedByMe", required = false) Boolean isCreatedByMe,
 		UserInfoDTO userInfoDTO
 	) {
 		return new ResponseEntity<>(
 			workloadFacadeService.getOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
-				workloadSortCondition, pageNum, userInfoDTO), HttpStatus.OK);
+				workloadSortCondition, pageNum, isCreatedByMe, userInfoDTO), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{type}")

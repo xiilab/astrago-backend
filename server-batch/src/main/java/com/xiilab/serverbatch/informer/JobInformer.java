@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
@@ -174,7 +174,7 @@ public abstract class JobInformer {
 		if (!CollectionUtils.isEmpty(codes)) {
 			for (K8SResourceMetadataDTO.Code code : codes) {
 				// 커스텀 소스코드일 경우
-				if (NumberValidUtils.isNullOrZero(code.getSourceCodeId())
+				if (ValidUtils.isNullOrZero(code.getSourceCodeId())
 					&& code.getRepositoryType() == RepositoryType.USER) {
 					// 크레덴셜 정보 조회
 					Optional<CredentialEntity> findCredential = findCredentialById(code.getCredentialId());
@@ -202,7 +202,7 @@ public abstract class JobInformer {
 
 	private Long saveCustomImage(RegUser regUser, K8SResourceMetadataDTO metadataFromResource) {
 		Long id = metadataFromResource.getImageId();
-		if (NumberValidUtils.isNullOrZero(metadataFromResource.getImageId()) &&
+		if (ValidUtils.isNullOrZero(metadataFromResource.getImageId()) &&
 			metadataFromResource.getImageType() == ImageType.CUSTOM) {
 
 			Optional<CredentialEntity> findCredential = Optional.empty();
@@ -230,7 +230,7 @@ public abstract class JobInformer {
 
 	private Optional<CredentialEntity> findCredentialById(Long id) {
 		Optional<CredentialEntity> findCredential = Optional.empty();
-		if (!NumberValidUtils.isNullOrZero(id)) {
+		if (!ValidUtils.isNullOrZero(id)) {
 			findCredential = credentialRepository.findById(id);
 		}
 		return findCredential;

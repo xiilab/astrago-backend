@@ -8,11 +8,9 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
@@ -20,7 +18,7 @@ import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
@@ -156,8 +154,8 @@ public class AlertServiceImpl implements AlertService {
 		List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
 		for (SystemAlertReqDTO.SaveAdminAlertMappings saveAdminAlertMapping : saveAdminAlertMappings) {
 			// getAdminAlertMappingId 없으면 새로 등록
-			if (NumberValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId())
-				&& !NumberValidUtils.isNullOrZero(saveAdminAlertMapping.getAlertId())) {
+			if (ValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId())
+				&& !ValidUtils.isNullOrZero(saveAdminAlertMapping.getAlertId())) {
 				AlertEntity alertEntity = alertRepository.findById(saveAdminAlertMapping.getAlertId())
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
 				AdminAlertMappingEntity newAdminAlertMappingEntity = AdminAlertMappingEntity.saveBuilder()

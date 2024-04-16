@@ -11,7 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.GitEnvType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -149,7 +149,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ONE_TIME.name()).withValue("true").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
 		// 공유 코드면 ID 환경변수로 저장
-		if (!NumberValidUtils.isNullOrZero(codeVO.id())) {
+		if (!ValidUtils.isNullOrZero(codeVO.id())) {
 			result.add(new EnvVarBuilder().withName(GitEnvType.SOURCE_CODE_ID.name())
 				.withValue(String.valueOf(codeVO.id()))
 				.build());
@@ -158,7 +158,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialLoginId())
 			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
 			result.add(new EnvVarBuilder().withName(GitEnvType.CREDENTIAL_ID.name())
-				.withValue(NumberValidUtils.isNullOrZero(codeVO.credentialVO().credentialId()) ? "" :
+				.withValue(ValidUtils.isNullOrZero(codeVO.credentialVO().credentialId()) ? "" :
 					String.valueOf(codeVO.credentialVO().credentialId()))
 				.build());
 			result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_USERNAME.name())
@@ -197,7 +197,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
 		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
 		this.codes.forEach(code -> {
-			if (!NumberValidUtils.isNullOrZero(code.id())) {
+			if (!ValidUtils.isNullOrZero(code.id())) {
 				map.put("cd-" + code.id(), code.mountPath());
 			}
 		});

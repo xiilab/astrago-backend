@@ -9,9 +9,8 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -74,7 +73,7 @@ public class SystemAlertReqDTO {
 		private Integer size;
 
 		public void setPage(Integer page) {
-			this.page = !NumberValidUtils.isNullOrZero(page)? page - 1 : null;
+			this.page = !ValidUtils.isNullOrZero(page)? page - 1 : null;
 		}
 	}
 

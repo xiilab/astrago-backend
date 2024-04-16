@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.annotations.SQLDelete;
 
@@ -30,6 +31,7 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -111,4 +113,6 @@ public abstract class WorkloadEntity {
 	protected List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = new ArrayList<>();
 	@OneToOne(mappedBy = "workload")
 	protected ImageWorkloadMappingEntity imageWorkloadMappingEntity;
+	@Transient
+	protected boolean canBeDeleted;
 }

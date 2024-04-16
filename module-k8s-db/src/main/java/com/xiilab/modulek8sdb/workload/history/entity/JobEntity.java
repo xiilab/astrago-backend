@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
@@ -67,4 +68,9 @@ public class JobEntity extends WorkloadEntity {
 		super.description = description;
 	}
 
+	public void updateCanBeDeleted(String creator, Set<String> ownerWorkspace) {
+		if (super.creatorId.equals(creator) || ownerWorkspace.contains(super.workspaceResourceName)) {
+			super.canBeDeleted = true;
+		}
+	}
 }

@@ -15,6 +15,7 @@ import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
@@ -92,9 +93,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId) {
-		if (workspaceName != null) {
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe, String userId) {
+		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
 			return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
+		} else if (workspaceName != null && !ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			return workloadRepository.getBatchWorkloadListByWorkspaceResourceNameAndCreator(workspaceName, userId);
 		} else if (userId != null) {
 			return workloadRepository.getBatchWorkloadListByCreator(userId);
 		} else {
@@ -103,13 +106,15 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, String userId) {
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe, String userId) {
 		List<ModuleInteractiveJobResDTO> workloadList;
 		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1);
 		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
 		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
-		if (workspaceName != null) {
+		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
 			workloadList = workloadRepository.getInteractiveWorkloadListByWorkspace(workspaceName);
+		} else if (workspaceName != null && !ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			workloadList = workloadRepository.getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(workspaceName, userId);
 		} else if (userId != null) {
 			workloadList = workloadRepository.getInteractiveWorkloadByCreator(userId);
 		} else {

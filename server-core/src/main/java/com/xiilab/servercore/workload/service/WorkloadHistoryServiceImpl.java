@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.catalina.User;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
@@ -73,9 +75,16 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
-		String userId) {
-		List<JobEntity> batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
-			workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, BATCH);
+		Boolean isCreatedByMe, String userId) {
+		List<JobEntity> batchJobEntityList = null;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, BATCH);
+		} else {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, userId, BATCH);
+		}
+
 		return batchJobEntityList.stream().map(job -> ModuleBatchJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
 				.name(job.getName())
@@ -102,10 +111,17 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 
 	@Override
 	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName,
-		String userId) {
-		List<JobEntity> batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
-			workspaceName, searchName, userId, WorkloadType.INTERACTIVE);
-		return batchJobEntityList.stream().map(job -> ModuleInteractiveJobResDTO.builder()
+		Boolean isCreatedByMe, String userId) {
+		List<JobEntity> interactiveJobList = null;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			interactiveJobList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, INTERACTIVE);
+		} else {
+			interactiveJobList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, userId, INTERACTIVE);
+		}
+
+		return interactiveJobList.stream().map(job -> ModuleInteractiveJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
 				.name(job.getName())
 				.resourceName(job.getResourceName())
@@ -174,7 +190,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 
 	@Override
 	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName,
-		String workloadResourceName) {
+		String workloadResourceName, UserInfoDTO userInfoDTO) {
 		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
 				workspaceName, workloadResourceName)
 			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
@@ -182,6 +198,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		if (jobEntity.getDeleteYN() == DeleteYN.Y) {
 			throw new RestApiException(WorkloadErrorCode.DELETED_WORKLOAD_INFO);
 		}
+
+		jobEntity.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
+
 		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}
 
@@ -194,7 +213,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			.filter(workspace -> workspace.contains("/owner"))
 			.toList();
 
-		String workloadName = jobEntity.getResourceName();
+		String workloadName = jobEntity.getName();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 		// 워크로드 생성자가 삭제
 		if (jobEntity.getCreatorId().equals(userInfoDTO.getId())) {

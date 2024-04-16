@@ -13,7 +13,7 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
@@ -157,7 +157,7 @@ public class ImageServiceImpl implements ImageService {
 		for (int i = 0; i < sortImages.size(); i++) {
 			BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)sortImages.get(i);
 			Float imageCudaVersion = Float.parseFloat(builtInImageEntity.getCudaVersion());
-			if (!NumberValidUtils.isNullOrZero(imageCudaVersion)) {
+			if (!ValidUtils.isNullOrZero(imageCudaVersion)) {
 				// maxCudaVersion보다 낮거나 같은 것만 사용
 				if (imageCudaVersion.compareTo(maxCudaVersion) <= 0) {
 					builtInImageEntity.setAvailableStatus(true);

@@ -14,7 +14,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulecommon.util.GithubApi;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
@@ -42,7 +42,7 @@ public class ExternalService {
 	 */
 	public List<String> getGitHubRepoBranchList(Long credentialId, String repoName, CodeType codeType) {
 		String token = null;
-		if (!NumberValidUtils.isNullOrZero(credentialId)) {
+		if (!ValidUtils.isNullOrZero(credentialId)) {
 			CredentialEntity findCredential = credentialRepository.findById(credentialId)
 				.orElseThrow();
 			token = findCredential.getLoginPw();

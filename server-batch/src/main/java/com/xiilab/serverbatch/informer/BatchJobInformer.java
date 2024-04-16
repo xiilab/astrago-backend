@@ -22,7 +22,7 @@ import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -321,11 +321,11 @@ public class BatchJobInformer extends JobInformer {
 		Integer active = jobStatus.getActive();
 		Integer failed = jobStatus.getFailed();
 		Integer ready = jobStatus.getReady();
-		if (!NumberValidUtils.isNullOrZero(failed)) {
+		if (!ValidUtils.isNullOrZero(failed)) {
 			return WorkloadStatus.ERROR;
-		} else if (!NumberValidUtils.isNullOrZero(ready)) {
+		} else if (!ValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.RUNNING;
-		} else if (!NumberValidUtils.isNullOrZero(active)) {
+		} else if (!ValidUtils.isNullOrZero(active)) {
 			return WorkloadStatus.PENDING;
 		}
 		return WorkloadStatus.END;

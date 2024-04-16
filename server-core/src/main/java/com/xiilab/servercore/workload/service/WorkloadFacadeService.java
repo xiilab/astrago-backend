@@ -46,7 +46,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
@@ -227,14 +227,18 @@ public class WorkloadFacadeService {
 			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
 			// Mail Contents 작성
 			List<MailDTO.Content> contents = List.of(
-				MailDTO.Content.builder().col1("GPU : ").col2(workspaceResourceStatus.getResourceStatus().getGpuUsed()).build(),
+				MailDTO.Content.builder()
+					.col1("GPU : ")
+					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed())
+					.build(),
 				MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(cpuUsed)).build(),
 				MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(memUsed)).build()
 			);
 			// Mail 전송
 			mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName() , userInfoDTO.getEmail(), moduleCreateWorkloadReqDTO.getWorkspace()))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
+					moduleCreateWorkloadReqDTO.getWorkspace()))
 				.subTitle(mail.getSubTitle())
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
@@ -247,7 +251,7 @@ public class WorkloadFacadeService {
 		// 코드 목록에 있는 크레덴셜 ID만 추출
 		List<Long> credentialIds = codes.stream()
 			.map(ModuleCodeReqDTO::getCredentialId)
-			.filter(credentialId -> !NumberValidUtils.isNullOrZero(credentialId))
+			.filter(credentialId -> !ValidUtils.isNullOrZero(credentialId))
 			.toList();
 		if (CollectionUtils.isEmpty(credentialIds)) {
 			return;
@@ -282,22 +286,27 @@ public class WorkloadFacadeService {
 	}
 
 	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(WorkloadType workloadType,
-		String workspaceName, String workloadResourceName) {
+		String workspaceName, String workloadResourceName, UserInfoDTO userInfoDTO) {
 		// 실행중일 떄
 		try {
 			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 			if (workloadType == WorkloadType.BATCH) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
+				// 삭제권한 업데이트
+				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
 				return getActiveWorkloadDetail(moduleBatchJobResDTO);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
 				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 					workspaceName, workloadResourceName);
+				//삭제권한 업데이트
+				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
 			try {
-				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName);
+				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
+					userInfoDTO);
 			} catch (Exception e2) {
 				throw e2;
 			}
@@ -358,7 +367,8 @@ public class WorkloadFacadeService {
 			//워크로드 종료 알림 발송
 			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
 			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
-			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
+			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
+				activeWorkloadDetail.getWorkloadName());
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(), emailTitle,
 				title, message, workspaceName, pageNaviParam);
@@ -384,25 +394,25 @@ public class WorkloadFacadeService {
 
 	public PageDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(WorkloadType workloadType, String workspaceName,
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, int pageNum,
-		UserInfoDTO userInfoDTO) {
+		Boolean isCreatedByMe, UserInfoDTO userInfoDTO) {
 		//통합용 리스트 선언
 		List<ModuleWorkloadResDTO> workloadResDTOList = new ArrayList<>();
 		if (workloadType == WorkloadType.BATCH) {
 			//k8s cluster에 생성되어있는 batchJob list
 			List<ModuleBatchJobResDTO> batchJobListFromCluster = workloadModuleService.getBatchWorkloadListByCondition(
-				workspaceName, userInfoDTO.getId());
+				workspaceName, isCreatedByMe, userInfoDTO.getId());
 			//종료된 batchJob list
 			List<ModuleBatchJobResDTO> batchWorkloadHistoryList = workloadHistoryService.getBatchWorkloadHistoryList(
-				workspaceName, null, userInfoDTO.getId());
+				workspaceName, null, isCreatedByMe, userInfoDTO.getId());
 			workloadResDTOList.addAll(batchJobListFromCluster);
 			workloadResDTOList.addAll(batchWorkloadHistoryList);
 		} else {
 			//k8s cluster에서 생성되어있는 interactive job list 조회
 			List<ModuleInteractiveJobResDTO> interactiveJobFromCluster = workloadModuleService.getInteractiveWorkloadListByCondition(
-				workspaceName, userInfoDTO.getId());
+				workspaceName, isCreatedByMe, userInfoDTO.getId());
 			//종료된 interactive job list 조회
 			List<ModuleInteractiveJobResDTO> interactiveWorkloadHistoryList = workloadHistoryService.getInteractiveWorkloadHistoryList(
-				workspaceName, null, userInfoDTO.getId());
+				workspaceName, null, isCreatedByMe, userInfoDTO.getId());
 			workloadResDTOList.addAll(interactiveJobFromCluster);
 			workloadResDTOList.addAll(interactiveWorkloadHistoryList);
 		}
@@ -767,7 +777,7 @@ public class WorkloadFacadeService {
 	}
 
 	private CredentialResDTO.CredentialInfo getCredentialInfoDTO(Long credentialId) {
-		if (!NumberValidUtils.isNullOrZero(credentialId)) {
+		if (!ValidUtils.isNullOrZero(credentialId)) {
 			return credentialService.findCredentialById(credentialId, null);
 		} else {
 			return null;
@@ -869,7 +879,7 @@ public class WorkloadFacadeService {
 			FindWorkloadResDTO.Code addCode = null;
 			CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(code.getCredentialId());
 			// 커스텀 코드일 경우
-			if (NumberValidUtils.isNullOrZero(code.getSourceCodeId())
+			if (ValidUtils.isNullOrZero(code.getSourceCodeId())
 				&& code.getRepositoryType() == RepositoryType.USER) {
 				addCode = FindWorkloadResDTO.Code.codeResDTO()
 					.id(null)

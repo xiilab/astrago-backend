@@ -221,6 +221,15 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String workloadName) {
+		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
+			workspaceResourceName, workloadName);
+		return batchJobList.getItems().stream()
+			.map(ModuleBatchJobResDTO::new)
+			.toList();
+	}
+
+	@Override
 	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspace(String workSpaceName) {
 		DeploymentList interactiveJobList = getInteractiveJobList(workSpaceName);
 		return interactiveJobList.getItems().stream()
@@ -231,6 +240,15 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCreator(String creator) {
 		DeploymentList interactiveJobList = getInteractiveJobListByCreator(creator);
+		return interactiveJobList.getItems().stream()
+			.map(ModuleInteractiveJobResDTO::new)
+			.toList();
+	}
+
+	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+		DeploymentList interactiveJobList = getInteractiveJobListByWorkspaceResourceNameAndCreator(
+			workspaceResourceName, userId);
 		return interactiveJobList.getItems().stream()
 			.map(ModuleInteractiveJobResDTO::new)
 			.toList();
@@ -885,6 +903,17 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	private JobList getBatchJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.batch()
+				.v1()
+				.jobs()
+				.inNamespace(workspaceResourceName)
+				.withLabel(LabelField.CREATOR_ID.getField(), userId)
+				.list();
+		}
+	}
+
 	private DeploymentList getInteractiveJobListByCreator(String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.apps()
@@ -898,6 +927,16 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private DeploymentList getInteractiveJobList(String workSpaceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.apps().deployments().inNamespace(workSpaceName).list();
+		}
+	}
+
+	private DeploymentList getInteractiveJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.apps()
+				.deployments()
+				.inNamespace(workspaceResourceName)
+				.withLabel(LabelField.CREATOR_ID.getField(), userId)
+				.list();
 		}
 	}
 

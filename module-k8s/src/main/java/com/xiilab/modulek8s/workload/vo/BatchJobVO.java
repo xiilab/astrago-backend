@@ -13,7 +13,7 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
@@ -92,7 +92,7 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
-		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
+		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
 
@@ -292,7 +292,7 @@ public class BatchJobVO extends WorkloadVO {
 	}
 
 	private void addVolumeMap(Map<String, String> map, String prefix, Long id) {
-		if (!NumberValidUtils.isNullOrZero(id)) {
+		if (!ValidUtils.isNullOrZero(id)) {
 			map.put(prefix + id, "true");
 		}
 	}

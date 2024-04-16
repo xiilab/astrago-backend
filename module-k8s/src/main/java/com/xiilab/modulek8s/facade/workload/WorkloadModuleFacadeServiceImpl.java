@@ -167,9 +167,9 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
 		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchWorkloadListByCondition(
-			workSpaceName, null);
+			workSpaceName, null, null);
 		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveWorkloadListByCondition(
-			workSpaceName, null);
+			workSpaceName, null, null);
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);
 		}

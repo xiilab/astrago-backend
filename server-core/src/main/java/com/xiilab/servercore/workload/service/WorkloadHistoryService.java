@@ -12,10 +12,10 @@ import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 
 public interface WorkloadHistoryService {
-	List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName, String userId);
-	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName, String userId);
+	List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName, Boolean isCreatedByMe, String userId);
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName, Boolean isCreatedByMe, String userId);
 	ModuleWorkloadResDTO getWorkloadHistoryById(long id);
-	FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName);
+	FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName, String workloadResourceName, UserInfoDTO userInfoDTO);
 	void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO);
 	void saveWorkloadHistory(WorkloadHistoryReqDTO.CreateWorkloadHistory createWorkloadHistory);
 	void editWorkloadHistory(WorkloadUpdateDTO workloadUpdateDTO);
