@@ -94,15 +94,33 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe, String userId) {
+		List<ModuleBatchJobResDTO> workloadList;
+		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1);
+		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
+		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
 		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
-			return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
+			workloadList = workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
+			// return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
 		} else if (workspaceName != null && !ValidUtils.isNullOrFalse(isCreatedByMe)) {
-			return workloadRepository.getBatchWorkloadListByWorkspaceResourceNameAndCreator(workspaceName, userId);
+			workloadList = workloadRepository.getBatchWorkloadListByWorkspaceResourceNameAndCreator(workspaceName, userId);
+			// return workloadRepository.getBatchWorkloadListByWorkspaceResourceNameAndCreator(workspaceName, userId);
 		} else if (userId != null) {
-			return workloadRepository.getBatchWorkloadListByCreator(userId);
+			workloadList = workloadRepository.getBatchWorkloadListByCreator(userId);
 		} else {
 			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
 		}
+
+		workloadList.forEach(workload -> {
+			ServiceList servicesByResourceName = svcRepository.getServicesByResourceName(workload.getWorkspaceResourceName(),
+				workload.getResourceName());
+			List<io.fabric8.kubernetes.api.model.Service> items = servicesByResourceName.getItems();
+			if (!CollectionUtils.isEmpty(items)) {
+				io.fabric8.kubernetes.api.model.Service service = items.get(0);
+				workload.updatePort(nodeDTO.getIp(), service);
+			}
+		});
+
+		return workloadList;
 	}
 
 	@Override

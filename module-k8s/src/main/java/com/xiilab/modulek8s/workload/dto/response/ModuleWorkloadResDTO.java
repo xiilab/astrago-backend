@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.util.StringUtils;
@@ -24,6 +25,8 @@ import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServicePort;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -143,5 +146,16 @@ public abstract class ModuleWorkloadResDTO {
 				this.modelMountPathMap.put(Long.parseLong(key.split("-")[1]), value);
 			}
 		});
+	}
+
+	public void updatePort(String nodeIp, Service service) {
+		if (Objects.nonNull(service) && Objects.nonNull(service.getSpec().getPorts())) {
+			List<ServicePort> servicePorts = service.getSpec().getPorts();
+			this.ports = servicePorts.stream().map(servicePort -> ModulePortResDTO.builder()
+				.name(servicePort.getName())
+				.originPort(servicePort.getPort())
+				.url(String.format("%s:%s", nodeIp, servicePort.getNodePort()))
+				.build()).toList();
+		}
 	}
 }

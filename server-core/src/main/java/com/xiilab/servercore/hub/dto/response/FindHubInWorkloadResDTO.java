@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
 
@@ -36,22 +37,26 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 	@Getter
 	@SuperBuilder
 	public static class HubDetail extends FindHubInWorkloadResDTO {
-		public static HubDetail of(HubEntity hubEntity) {
+		public static HubDetail of(HubEntity hubEntity, NetworkCloseYN networkCloseYN) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
+				FindHubCommonResDTO.HubImage hubImageDto = new FindHubCommonResDTO.HubImage(
+					hubEntity.getHubImageEntity());
+				hubImageDto.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageNameHarbor() : hubEntity.getHubImageEntity().getImageNameHub());
+
 				return HubDetail.builder()
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
-					.hubImage(new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity()))
-					.sourceCodeUrl(hubEntity.getSourceCodeUrl())
+					.hubImage(hubImageDto)
+					.sourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrlGitLab() : hubEntity.getSourceCodeUrlGitHub())
 					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
 					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
-					.envs(StringUtils.hasText(hubEntity.getEnvs())? objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<Map<String, String>>() {
-					}) : null)
-					.ports(StringUtils.hasText(hubEntity.getPorts())? objectMapper.readValue(hubEntity.getPorts(), new TypeReference<Map<String, Integer>>() {
-					}) : null)
+					.envs(StringUtils.hasText(hubEntity.getEnvs())? objectMapper.readValue(hubEntity.getEnvs(),
+						new TypeReference<>() {}) : null)
+					.ports(StringUtils.hasText(hubEntity.getPorts())? objectMapper.readValue(hubEntity.getPorts(),
+						new TypeReference<>() {}) : null)
 					.command(hubEntity.getCommand())
 					.regUserName(hubEntity.getRegUser().getRegUserName())
 					.regUserId(hubEntity.getRegUser().getRegUserId())
@@ -70,9 +75,9 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 		private List<FindHubInWorkloadResDTO.HubDetail> hubsDto;
 		private int totalCount;
 
-		public static Hubs from(List<HubEntity> hubEntities, int totalCount) {
+		public static Hubs from(List<HubEntity> hubEntities, int totalCount, NetworkCloseYN networkCloseYN) {
 			return Hubs.builder()
-				.hubsDto(hubEntities.stream().map(FindHubInWorkloadResDTO.HubDetail::of).toList())
+				.hubsDto(hubEntities.stream().map(hubEntity -> HubDetail.of(hubEntity, networkCloseYN)).toList())
 				.totalCount(totalCount)
 				.build();
 		}

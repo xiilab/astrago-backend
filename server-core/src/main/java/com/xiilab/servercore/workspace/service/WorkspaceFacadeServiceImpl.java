@@ -53,6 +53,7 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaHistoryRepositor
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
+import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.code.service.CodeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
@@ -95,7 +96,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final CodeService codeService;
 	private final ImageService imageService;
 	private final MailService mailService;
-
+	private final UserService userService;
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
 		//워크스페이스 생성
@@ -271,6 +272,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 		MailAttribute mail = MailAttribute.WORKSPACE_DELETE;
 		String mailTitle;
+		String creatorMail = userService.getUserById(workspace.getCreatorId()).getEmail();
 		if (auth == AuthType.ROLE_ADMIN) {
 			//관리자가 삭제할 때
 			AlertMessage workspaceDeleteAdmin = AlertMessage.WORKSPACE_DELETE_ADMIN;
@@ -282,6 +284,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				userInfoDTO.getId(), workspace.getCreatorId(),
 				emailTitle, title, message, workspaceName, null);
 			mailTitle = userInfoDTO.getUserFullName() + " (" + userInfoDTO.getEmail() + ")님이 워크스페이스(" + workspaceName + ")을(를) 삭제하였습니다.";
+			mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), workspace.getName()))
+				.title(mailTitle)
+				.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.receiverEmail(creatorMail)
+				.footer(mail.getFooter())
+				.build());
 		} else {
 			//사용자가 삭제할 때
 			String emailTitle = String.format(AlertMessage.WORKSPACE_DELETE_OWNER.getMailTitle(), workspaceNm);
@@ -291,15 +300,17 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				userInfoDTO.getId(), workspace.getCreatorId(),
 				emailTitle, title, message, workspaceName, null);
 			mailTitle = "워크스페이스(" + workspaceName + ")을(를) 삭제하였습니다.";
-		}
-
-		eventPublisher.publishEvent(workspaceUserAlertEvent);
-		mailService.sendMail(MailDTO.builder()
+			mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), workspace.getName()))
 				.title(mailTitle)
 				.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.receiverEmail(creatorMail)
 				.footer(mail.getFooter())
-			.build());
+				.build());
+		}
+
+		eventPublisher.publishEvent(workspaceUserAlertEvent);
+
 	}
 
 	@Override
@@ -392,6 +403,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceInfo.getResourceName()))
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
+				.receiverEmail(userInfoDTO.getEmail())
 				.footer(mail.getFooter())
 				.build());
 		}
@@ -486,6 +498,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.subTitle(String.format(mail.getSubTitle(), result))
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
+				.receiverEmail(userService.getUserInfoById(resourceQuotaEntity.getRegUser().getRegUserId()).getEmail())
 				.footer(mail.getFooter())
 			.build());
 	}

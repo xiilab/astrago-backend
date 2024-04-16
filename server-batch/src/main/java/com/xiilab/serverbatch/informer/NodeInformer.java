@@ -108,7 +108,6 @@ public class NodeInformer {
 									case REBOOTING -> log.info("node {}의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.",
 										node2.getMetadata().getName());
 								}
-								;
 							}
 						}
 					}
