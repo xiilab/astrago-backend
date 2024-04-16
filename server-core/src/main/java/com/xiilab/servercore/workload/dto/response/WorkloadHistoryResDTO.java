@@ -96,7 +96,7 @@ public class WorkloadHistoryResDTO {
 
 		public Image(ImageEntity imageEntity) {
 			this.id = imageEntity.getId();
-			this.name = imageEntity.getImageName();
+			this.name = imageEntity.getImageNameHub();
 			this.type = imageEntity.getImageType();
 			this.repositoryAuthType = imageEntity.getRepositoryAuthType();
 			if (imageEntity.getImageType() == ImageType.CUSTOM

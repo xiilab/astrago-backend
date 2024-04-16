@@ -10,6 +10,7 @@ import java.util.Set;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +23,16 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
 import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.servercore.hub.dto.request.HubReqDTO;
 import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.modulek8sdb.hub.repository.HubCategoryMappingRepository;
 import com.xiilab.modulek8sdb.hub.repository.HubRepository;
+import com.xiilab.servercore.hub.dto.response.FindHubCommonResDTO;
 import com.xiilab.servercore.hub.dto.response.FindHubInWorkloadResDTO;
 import com.xiilab.servercore.hub.dto.response.FindHubResDTO;
 
@@ -41,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HubServiceImpl implements HubService {
 	private final HubCategoryMappingRepository hubCategoryMappingRepository;
 	private final HubRepository hubRepository;
+	private final NetworkRepository networkRepository;
 
 	@Override
 	public FindHubResDTO.Hubs getHubList(String searchText, String[] categoryNames, Pageable pageable) {
@@ -61,13 +67,26 @@ public class HubServiceImpl implements HubService {
 			hubId);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingJoinFetchByHubId);
 
-		return FindHubResDTO.HubDetail.from(hubEntity, typesMap);
+		//폐쇄망 체크 후 code, image url 세팅
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+		FindHubResDTO.HubDetail hubDetail = FindHubResDTO.HubDetail.from(hubEntity, typesMap);
+
+		hubDetail.changeSourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrlGitLab() : hubEntity.getSourceCodeUrlGitHub());
+		FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
+		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageNameHarbor() : hubEntity.getHubImageEntity().getImageNameHub());
+		hubDetail.setHubImage(hubImage);
+
+		return hubDetail;
 	}
 
 	@Override
 	public FindHubInWorkloadResDTO.Hubs getHubListInWorkload(WorkloadType workloadType) {
 		List<HubEntity> findAll = hubRepository.findByWorkloadType(workloadType);
-		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size());
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+
+		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size(), networkCloseYN);
 	}
 
 	@Override
@@ -91,7 +110,8 @@ public class HubServiceImpl implements HubService {
 			.description(saveHubDTO.getDescription())
 			.thumbnailURL(saveHubDTO.getThumbnailURL())
 			.readmeURL(saveHubDTO.getReadmeURL())
-			.sourceCodeUrl(saveHubDTO.getSourceCodeUrl())
+			.sourceCodeUrlGitHub(saveHubDTO.getSourceCodeUrl())
+			.sourceCodeUrlGitLab(saveHubDTO.getSourceCodeUrl())
 			.sourceCodeBranch("master")
 			.sourceCodeMountPath(saveHubDTO.getSourceCodeMountPath())
 			.datasetMountPath(saveHubDTO.getDatasetMountPath())

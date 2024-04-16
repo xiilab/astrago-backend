@@ -16,6 +16,7 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
@@ -50,14 +51,14 @@ public class ImageResDTO {
 		private String command;
 		private FrameWorkType ide;
 
-		public static FindImage from(ImageEntity imageEntity) {
+		public static FindImage from(ImageEntity imageEntity, NetworkCloseYN networkCloseYN) {
 			if (imageEntity.isBuiltInImage()) {
 				BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)imageEntity;
 				ObjectMapper objectMapper = new ObjectMapper();
 				try {
 					return FindImage.builder()
 						.id(imageEntity.getId())
-						.imageName(imageEntity.getImageName())
+						.imageName(networkCloseYN == NetworkCloseYN.Y ? imageEntity.getImageNameHarbor() : imageEntity.getImageNameHub())
 						.repositoryAuthType(imageEntity.getRepositoryAuthType())
 						.imageType(imageEntity.getImageType())
 						.workloadType(imageEntity.getWorkloadType())
@@ -86,7 +87,7 @@ public class ImageResDTO {
 			} else {
 				return FindImage.builder()
 					.id(imageEntity.getId())
-					.imageName(imageEntity.getImageName())
+					.imageName(imageEntity.getImageNameHub())
 					.repositoryAuthType(imageEntity.getRepositoryAuthType())
 					.imageType(imageEntity.getImageType())
 					.workloadType(imageEntity.getWorkloadType())
@@ -107,9 +108,9 @@ public class ImageResDTO {
 		private List<ImageResDTO.FindImage> findImages;
 		private long totalCount;
 
-		public static FindImages from(List<ImageEntity> imageEntities, Long totalCount) {
+		public static FindImages from(List<ImageEntity> imageEntities, Long totalCount, NetworkCloseYN networkCloseYN) {
 			return FindImages.builder()
-				.findImages(imageEntities.stream().map(FindImage::from).filter(Objects::nonNull).toList())
+				.findImages(imageEntities.stream().map(imageEntity -> FindImage.from(imageEntity, networkCloseYN)).filter(Objects::nonNull).toList())
 				.totalCount(totalCount)
 				.build();
 		}

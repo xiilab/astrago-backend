@@ -67,8 +67,7 @@ public class FindHubResDTO extends ResDTO {
 					.thumbnailUrl(hubEntity.getThumbnailURL())
 					.readmeUrl(hubEntity.getReadmeURL())
 					.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
-					.hubImage(new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity()))
-					.sourceCodeUrl(hubEntity.getSourceCodeUrl())
+					.sourceCodeUrl(hubEntity.getSourceCodeUrlGitHub())
 					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
 					.sourceCodeMountPath(hubEntity.getSourceCodeMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
@@ -91,6 +90,13 @@ public class FindHubResDTO extends ResDTO {
 			} catch (JsonProcessingException e) {
 				throw new RestApiException(HubErrorCode.FAILED_ENV_MAP_TO_JSON);
 			}
+		}
+		public void setHubImage(FindHubCommonResDTO.HubImage findHubCommonResDTO){
+			this.hubImage = findHubCommonResDTO;
+		}
+
+		public void changeSourceCodeUrl(String sourceCodeUrl){
+			this.sourceCodeUrl = sourceCodeUrl;
 		}
 	}
 
