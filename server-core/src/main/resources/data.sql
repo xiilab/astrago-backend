@@ -234,3 +234,9 @@ INSERT INTO TB_HUB_CATEGORY (HUB_CATEGORY_ID, MOD_DATE, REG_DATE, REG_USER_ID, R
 VALUES (1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'OBJECT_DETECTION'),
        (2, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'IMAGE_SEGMENTATION')
 ON DUPLICATE KEY UPDATE HUB_CATEGORY_ID= HUB_CATEGORY_ID;
+
+INSERT INTO TB_NETWORK
+(CONNECTION_TEST_HARBOR, CONNECTION_TEST_HUB, INIT_CONTAINER_HARBOR, INIT_CONTAINER_HUB, LOCAL_VOLUME_HARBOR, LOCAL_VOLUME_HUB, NETWORK_CLOSE_YN)
+VALUES('harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx', 'harbor.xiilab.com:32443/astrago/init-container-image',
+       'k8s.gcr.io/git-sync/git-sync:v3.2.2', 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx', 'N')
+ON DUPLICATE KEY UPDATE HUB_CATEGORY_ID= HUB_CATEGORY_ID;
