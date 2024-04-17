@@ -18,57 +18,6 @@ jobs:
       contents: write
 
     steps:
-      # slack message 발송
-      - id: first_message
-        name: Send first message
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": ":rocket: Astrago CICD Agent"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*프로젝트:* `${{ github.repository }}`"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*브랜치:* `${{ github.ref_name }}`"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*요청자:* `${{ github.actor }}`"
-                    }
-                  ]
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":rocket:*빌드환경 초기화*"
-                  }
-                }
-              ]
-            }
       # 원격머신에 repo checkout
       - name: Checkout
         uses: actions/checkout@v4
@@ -100,51 +49,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bootjar --no-daemon --parallel
 
-      # Gradle build에 따른 메시지 발송
-      - name: Send build result
-        if: success()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Gradle build result:* :white_check_mark:"
-                  }
-                }
-              ]
-            }
-
-      # Gradle build에 따른 메시지 발송
-      - name: Send build result
-        if: failure()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Gradle build result:* :no_entry_sign:"
-                  }
-                }
-              ]
-            }
       # 브랜치 이름 저장
       - name: 브랜치 네임 저장
         shell: bash
@@ -242,52 +146,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # core image build에 따른 메시지 발송
-      - name: Send build result
-        if: success()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Core image build result:* :white_check_mark:"
-                  }
-                }
-              ]
-            }
-
-      # core image build에 따른 메시지 발송
-      - name: Send build result
-        if: failure()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Core image build result:* :no_entry_sign:"
-                  }
-                }
-              ]
-            }
-
       # batch image build & push
       - name: Build and push Batch Docker images
         uses: docker/build-push-action@v5.1.0
@@ -302,52 +160,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # batch image build에 따른 메시지 발송
-      - name: Send build result
-        if: success()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Batch image build result:* :white_check_mark:"
-                  }
-                }
-              ]
-            }
-
-      # core image build에 따른 메시지 발송
-      - name: Send build result
-        if: failure()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Batch image build result:* :no_entry_sign:"
-                  }
-                }
-              ]
-            }
-
       # monitor image build & push
       - name: Build and push Monitor Docker images
         uses: docker/build-push-action@v5.1.0
@@ -361,52 +173,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      # monitor image build에 따른 메시지 발송
-      - name: Send build result
-        if: success()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Monitor image build result:* :white_check_mark:"
-                  }
-                }
-              ]
-            }
-
-      # monitor image build에 따른 메시지 발송
-      - name: Send build result
-        if: failure()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Monitor image build result:* :no_entry_sign:"
-                  }
-                }
-              ]
-            }
 
       ## Write for matrix outputs workaround
       - id: out_image
@@ -454,103 +220,21 @@ jobs:
           git commit -m "update monochart"
           git push
 
-      # monochart push 여부에 따른 message 발송
-      - name: Send push monochart result
-        if: success()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Monochart push result:* :white_check_mark:"
-                  }
-                }
-              ]
-            }
-
-      # monitor image build에 따른 메시지 발송
-      - name: Send build result
-        if: failure()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Monochart push result:* :no_entry_sign:"
-                  }
-                }
-              ]
-            }
-
-
   notify_slack:
+    if: always()
     needs: [ build, push_helm ]  # 이 작업이 의존하는 이전 작업의 이름 추가
     runs-on: [ self-hosted, linux ]
+    permissions:
+      actions: 'read'
     steps:
-      - name: 작업 상태 확인
-        id: check_status
-        run: 'echo "작업 상태: ${{ job.status }}"'
-
-      # job 성공 여부에 따른 message 발송
-      - name: Send push monochart result
-        if: ${{ job.status == 'success' }}
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
         with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Astrago build가 성공하였습니다.:* :tada:"
-                  }
-                }
-              ]
-            }
-
-      # job 성공 따른 메시지 발송
-      - name: Send build result
-        if: ${{ job.status == 'failure' }}
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0377QY9PLH"
-          update-ts: ${{ steps.first_message.outputs.ts }}
-          payload: |
-            {
-              "text": ":rocket: Astrago CICD Agent",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Astrago build가 실패하였습니다.:* :warning:"
-                  }
-                }
-              ]
-            }
+          # Required Input
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
+          # Optional Input
+          channel: '#uyuni-suite'
+          name: 'Astrago Build Agent'
+          icon_emoji: ':rocket:'
+          icon_url: 'https://avatars0.githubusercontent.com/u/1701160?s=96&v=4'

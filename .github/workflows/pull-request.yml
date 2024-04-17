@@ -35,35 +35,20 @@ jobs:
 
   
   notify_slack:
-    needs: [build]  # 이 작업이 의존하는 이전 작업의 이름 추가
-    runs-on: [self-hosted, linux]
     if: always()
+    needs: [ build ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    runs-on: [ self-hosted, linux ]
+    permissions:
+      actions: 'read'
     steps:
-      - name: 작업 상태 확인
-        id: check_status
-        run: 'echo "작업 상태: ${{ job.status }}"'
-
-      # 브랜치 네임이 마스터일 경우에만 docker.io 저장소로 보낸다
-      - name: 작업결과에 따른 메세지 지정
-        uses: haya14busa/action-cond@v1
-        id: slack-message
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
         with:
-          cond: ${{ needs.build.result  == 'success' }}
-          if_true: 'Uyuni 백엔드 테스트 결과 성공했습니다! :tada:'
-          if_false: 'Uyuni 백엔드 테스트 결과 실패했습니다. :warning:'
-      - name: 작업결과에 따른 메세지 지정
-        uses: haya14busa/action-cond@v1
-        id: slack-status
-        with:
-          cond: ${{ needs.build.result  == 'success' }}
-          if_true: 'success'
-          if_false: 'failure'
-
-      - name: Slack 알림 전송
-        if: ${{ job.status }} == 'failure'
-        uses: 8398a7/action-slack@v3
-        with:
-          status: '${{ steps.slack-status.outputs.value }}'
-          text: '${{ steps.slack-message.outputs.value }}'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # Required Input
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
+          # Optional Input
+          channel: '#uyuni-suite'
+          name: 'Astrago Build Agent'
+          icon_emoji: ':rocket:'
+          icon_url: 'https://avatars0.githubusercontent.com/u/1701160?s=96&v=4'
