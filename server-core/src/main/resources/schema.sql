@@ -107,7 +107,8 @@ create table if not exists TB_ASTRAGO_DATASET
     DATASET_ID   bigint       not null
         primary key,
     STORAGE_ID   bigint       null,
-    DATASET_PATH varchar(255) null
+    DATASET_PATH varchar(255) null,
+    SAVE_DIRECTORY_NAME varchar(255) null
 );
 
 create index if not exists FKpaj2vxklkof11g5sqlcbdwlo2
@@ -118,7 +119,8 @@ create table if not exists TB_ASTRAGO_MODEL
     MODEL_ID   bigint       not null
         primary key,
     STORAGE_ID bigint       null,
-    MODEL_PATH varchar(255) null
+    MODEL_PATH varchar(255) null,
+    SAVE_DIRECTORY_NAME varchar(255) null
 );
 
 create index if not exists FKl0nh2hu20h8u5j9xw7wqiwm16
