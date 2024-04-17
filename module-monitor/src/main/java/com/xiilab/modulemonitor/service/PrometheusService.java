@@ -27,5 +27,8 @@ public interface PrometheusService {
 
 	List<ResponseDTO.HistoryDTO> getHistoryMetricByWarning(String promql, String startDate, String endDate);
 
-	ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate, String resourceName);
+	List<ResponseDTO.HistoryDTO> getHistoryMetricByWarning(String promql, String startDate, String endDate, Long step);
+
+	ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate,
+		String resourceName);
 }

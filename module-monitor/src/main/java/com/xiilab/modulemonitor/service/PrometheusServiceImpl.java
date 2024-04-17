@@ -98,6 +98,15 @@ public class PrometheusServiceImpl implements PrometheusService{
 		return extractHistoryMetrics(historyMetric, promql);
 	}
 
+	@Override
+	public List<ResponseDTO.HistoryDTO> getHistoryMetricByWarning(String promql, String startDate, String endDate, Long step) {
+		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
+		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
+
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(), startUnixTime, endUnixTime, step);
+
+		return extractHistoryMetrics(historyMetric, promql);
+	}
 
 	@Override
 	public ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate, String resourceName) {

@@ -1,13 +1,17 @@
 package com.xiilab.servermonitor.report.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.dto.ReportType;
+import com.xiilab.modulecommon.dto.WeekRangeDTO;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulemonitor.dto.ReportDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
@@ -501,200 +505,187 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 	@Override
 	public List<ReportDTO.SystemResDTO> getNodeSystemUsage(String endDate, String reportType) {
-		String startDate = DataConverterUtil.getEndDate(endDate, reportType);
-		List<ReportDTO.SystemResDTO> result = new ArrayList<>();
-
-		List<ResponseDTO.HistoryDTO> avgCpuUsage = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_AVG_CPU", startDate, endDate);
-
-		List<ResponseDTO.HistoryDTO> maxCpuUsage = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_MAX_CPU", startDate, endDate);
-		List<ResponseDTO.HistoryDTO> avgMemUsage = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_AVG_MEM", startDate, endDate);
-
-		List<ResponseDTO.HistoryDTO> maxMemUsage = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_MAX_MEM", startDate, endDate);
-		List<ResponseDTO.HistoryDTO> nodeDiskUsage = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_DISK_USAGE", startDate, endDate);
-
-		avgCpuUsage.addAll(maxCpuUsage);
-		avgCpuUsage.addAll(avgMemUsage);
-		avgCpuUsage.addAll(maxMemUsage);
-		avgCpuUsage.addAll(nodeDiskUsage);
-
-		Map<String, List<ResponseDTO.HistoryDTO>> nodeUsage = avgCpuUsage.stream()
-			.collect(Collectors.groupingBy(ResponseDTO.HistoryDTO::nodeName));
-
-		for (Map.Entry<String, List<ResponseDTO.HistoryDTO>> entries : nodeUsage.entrySet()) {
-			ReportDTO.SystemResDTO systemResDTO = ReportDTO.SystemResDTO.builder().build();
-			ReportDTO.SystemCategoryDTO cpuAvg = ReportDTO.SystemCategoryDTO.builder().build();
-			ReportDTO.SystemCategoryDTO cpuMax = ReportDTO.SystemCategoryDTO.builder().build();
-			ReportDTO.SystemCategoryDTO memAvg = ReportDTO.SystemCategoryDTO.builder().build();
-			ReportDTO.SystemCategoryDTO memMax = ReportDTO.SystemCategoryDTO.builder().build();
-			ReportDTO.SystemCategoryDTO disk = ReportDTO.SystemCategoryDTO.builder().build();
-
-			for (ResponseDTO.HistoryDTO historyDTO : entries.getValue()) {
-				String[] ip = historyDTO.instance().split(":");
-
-				switch (historyDTO.metricName()) {
-					case "REPORT_SYSTEM_AVG_CPU" -> {
-						systemResDTO.setServerName(historyDTO.nodeName());
-						systemResDTO.setIp(ip[0]);
-						cpuAvg.setCategory("CPU(%) 평균");
-						cpuAvg.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-							ReportDTO.SystemValueDTO.builder()
-								.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-								.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-								.build()
-						).toList());
-					}
-					case "REPORT_SYSTEM_MAX_CPU" -> {
-						cpuMax.setCategory("CPU(%) 최대");
-						cpuMax.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-							ReportDTO.SystemValueDTO.builder()
-								.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-								.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-								.build()
-						).toList());
-					}
-					case "REPORT_SYSTEM_AVG_MEM" -> {
-						memAvg.setCategory("메모리(%) 평균");
-						memAvg.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-							ReportDTO.SystemValueDTO.builder()
-								.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-								.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-								.build()
-						).toList());
-					}
-					case "REPORT_SYSTEM_MAX_MEM" -> {
-						memMax.setCategory("메모리(%) 최대");
-						memMax.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-							ReportDTO.SystemValueDTO.builder()
-								.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-								.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-								.build()
-						).toList());
-					}
-					default -> {
-						disk.setCategory("디스크(%) 사용량");
-						disk.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-							ReportDTO.SystemValueDTO.builder()
-								.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-								.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-								.build()
-						).toList());
-					}
-				}
-			}
-			systemResDTO.setCategoryDTOS(List.of(cpuAvg, cpuMax, memAvg, memMax, disk));
-			result.add(systemResDTO);
+		ReportType type = ReportType.valueOf(reportType);
+		if (type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)) {
+			return getWeeklyNodeUsage(endDate);
+		} else {
+			return getMonthNodeUsage(endDate);
 		}
-
-		return result;
 	}
 
 	@Override
 	public List<ReportDTO.SystemGpuDTO> getNodeGpuUsage(String endDate, String reportType) {
+		ReportType type = ReportType.valueOf(reportType);
+		if (type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)) {
+			return getWeeklyNodeGpuUsage(endDate);
+		} else {
+			return getMonthNodeGpuUsage(endDate);
+		}
+	}
 
-		String startDate = DataConverterUtil.getEndDate(endDate, reportType);
-		List<ReportDTO.SystemGpuDTO> result = new ArrayList<>();
+	private List<ReportDTO.SystemGpuDTO> getWeeklyNodeGpuUsage(String endDate) {
+		String startDate = DataConverterUtil.getEndDate(endDate, "WEEKLY_CLUSTER");
+		List<ResponseDTO.HistoryDTO> totalList = new ArrayList<>();
 
-		List<ResponseDTO.HistoryDTO> gpuAvgTemp = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_AVG_GPU_TEMP", startDate, endDate);
-		List<ResponseDTO.HistoryDTO> gpuMaxTemp = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_MAX_GPU_TEMP", startDate, endDate);
-		List<ResponseDTO.HistoryDTO> gpuAvgUsage = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_AVG_GPU_USAGE", startDate, endDate);
-		List<ResponseDTO.HistoryDTO> gpuMaxUsage = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_MAX_GPU_USAGE", startDate, endDate);
-		List<ResponseDTO.HistoryDTO> gupAvgMem = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_AVG_GPU_MEM", startDate, endDate);
-		List<ResponseDTO.HistoryDTO> gpuMaxMem = prometheusService.getHistoryMetricByWarning(
-			"REPORT_SYSTEM_MAX_GPU_MEM", startDate, endDate);
-
-		gpuAvgTemp.addAll(gpuMaxTemp);
-		gpuAvgTemp.addAll(gpuAvgUsage);
-		gpuAvgTemp.addAll(gpuMaxUsage);
-		gpuAvgTemp.addAll(gupAvgMem);
-		gpuAvgTemp.addAll(gpuMaxMem);
-
-		Map<String, Map<String, List<ResponseDTO.HistoryDTO>>> gpuInfo = gpuAvgTemp.stream()
+		for (int day = 1; day <= 7; day++) {
+			String endDateStr = DataConverterUtil.plusDay(startDate, 1L);
+			totalList.addAll(getGPUNodeHistoryByRange(startDate, endDateStr));
+			startDate = endDateStr;
+		}
+		//node별로 grouping 처리
+		Map<String, Map<String, List<ResponseDTO.HistoryDTO>>> gpuInfo = totalList.stream()
 			.collect(Collectors.groupingBy(ResponseDTO.HistoryDTO::kubeNodeName, Collectors.groupingBy(
 				ResponseDTO.HistoryDTO::gpuIndex)));
+		return convertSystemGpuDTO(gpuInfo, ReportType.WEEKLY_CLUSTER);
+	}
 
-		for (Map.Entry<String, Map<String, List<ResponseDTO.HistoryDTO>>> entry : gpuInfo.entrySet()) {
-			for (Map.Entry<String, List<ResponseDTO.HistoryDTO>> values : entry.getValue().entrySet()) {
-				ReportDTO.SystemGpuDTO systemResDTO = ReportDTO.SystemGpuDTO.builder().build();
-				ReportDTO.SystemCategoryDTO gpuUsageAvg = ReportDTO.SystemCategoryDTO.builder().build();
-				ReportDTO.SystemCategoryDTO gpuUsageMax = ReportDTO.SystemCategoryDTO.builder().build();
-				ReportDTO.SystemCategoryDTO gpuMemAvg = ReportDTO.SystemCategoryDTO.builder().build();
-				ReportDTO.SystemCategoryDTO gpuMemMax = ReportDTO.SystemCategoryDTO.builder().build();
-				ReportDTO.SystemCategoryDTO gpuTempAvg = ReportDTO.SystemCategoryDTO.builder().build();
-				ReportDTO.SystemCategoryDTO gpuTempMax = ReportDTO.SystemCategoryDTO.builder().build();
-				for (ResponseDTO.HistoryDTO historyDTO : values.getValue()) {
-					switch (historyDTO.metricName()) {
-						case "REPORT_SYSTEM_AVG_GPU_TEMP" -> {
-							gpuUsageAvg.setCategory("GPU 사용(%) 평균");
-							systemResDTO.setServerName(entry.getKey());
-							systemResDTO.setGpuIndex(Long.parseLong(values.getKey()));
-							gpuUsageAvg.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-								ReportDTO.SystemValueDTO.builder()
-									.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-									.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-									.build()
-							).toList());
-						}
-						case "REPORT_SYSTEM_MAX_GPU_TEMP" -> {
-							gpuUsageMax.setCategory("GPU 사용(%) 최대");
-							gpuUsageMax.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-								ReportDTO.SystemValueDTO.builder()
-									.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-									.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-									.build()
-							).toList());
-						}
-						case "REPORT_SYSTEM_AVG_GPU_USAGE" -> {
-							gpuMemAvg.setCategory("GPU 메모리(%) 평균");
-							gpuMemAvg.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-								ReportDTO.SystemValueDTO.builder()
-									.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-									.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-									.build()
-							).toList());
-						}
-						case "REPORT_SYSTEM_MAX_GPU_USAGE" -> {
-							gpuMemMax.setCategory("GPU 메모리(%) 최대");
-							gpuMemMax.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-								ReportDTO.SystemValueDTO.builder()
-									.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-									.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-									.build()
-							).toList());
-						}
-						case "REPORT_SYSTEM_AVG_GPU_MEM" -> {
-							gpuTempAvg.setCategory("GPU 온도(°C) 평균");
-							gpuTempAvg.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-								ReportDTO.SystemValueDTO.builder()
-									.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-									.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-									.build()
-							).toList());
-						}
-						default -> {
-							gpuTempMax.setCategory("GPU 온도(°C) 최대");
-							gpuTempMax.setValueDTOS(historyDTO.valueDTOS().stream().map(valueDTO ->
-								ReportDTO.SystemValueDTO.builder()
-									.date(DataConverterUtil.dateFormatMMDD(valueDTO.dateTime()))
-									.value(DataConverterUtil.formatRoundTo(valueDTO.value()))
-									.build()
-							).toList());
-						}
-					}
-				}
-				systemResDTO.setCategoryDTOS(List.of(gpuUsageAvg, gpuUsageMax, gpuMemAvg, gpuMemMax, gpuTempAvg, gpuTempMax));
-				result.add(systemResDTO);
-			}
+	public List<ReportDTO.SystemGpuDTO> getMonthNodeGpuUsage(String date) {
+		List<ResponseDTO.HistoryDTO> totalList = new ArrayList<>();
+		//해당 월에 몇 개의 주가 있는지 조회
+		int weeksInMonth = DataConverterUtil.getWeeksInMonth(date);
+		//1주차 ~ n주차까지 for문을 돌며 값을 조회한다.
+		for (int week = 1; week <= weeksInMonth; week++) {
+			//해당 주차의 startDate, endDate를 구한다.
+			WeekRangeDTO weekDateRange = DataConverterUtil.getWeekDateRange(date, week);
+			//해당 주차의 node 정보를 불러온다.
+			totalList.addAll(getGPUNodeHistoryByRange(weekDateRange.getStartDate(), weekDateRange.getEndDate()));
 		}
+		//node별로 grouping 처리
+		Map<String, Map<String, List<ResponseDTO.HistoryDTO>>> gpuInfo = totalList.stream()
+			.collect(Collectors.groupingBy(ResponseDTO.HistoryDTO::kubeNodeName, Collectors.groupingBy(
+				ResponseDTO.HistoryDTO::gpuIndex)));
+		return convertSystemGpuDTO(gpuInfo, ReportType.MONTHLY_CLUSTER);
+	}
+
+	private List<ReportDTO.SystemResDTO> getWeeklyNodeUsage(String endDate) {
+		String startDate = DataConverterUtil.getEndDate(endDate, "WEEKLY_CLUSTER");
+		List<ResponseDTO.HistoryDTO> totalList = new ArrayList<>();
+
+		for (int day = 1; day <= 7; day++) {
+			String endDateStr = DataConverterUtil.plusDay(startDate, 1L);
+			totalList.addAll(getNodeHistoryByRange(startDate, endDateStr));
+			startDate = endDateStr;
+		}
+		//node별로 grouping 처리
+		Map<String, List<ResponseDTO.HistoryDTO>> nodeUsage = totalList.stream()
+			.collect(Collectors.groupingBy(ResponseDTO.HistoryDTO::nodeName));
+		return convertSystemResDTO(nodeUsage, ReportType.WEEKLY_CLUSTER);
+	}
+
+	public List<ReportDTO.SystemResDTO> getMonthNodeUsage(String date) {
+		List<ResponseDTO.HistoryDTO> totalList = new ArrayList<>();
+		//해당 월에 몇 개의 주가 있는지 조회
+		int weeksInMonth = DataConverterUtil.getWeeksInMonth(date);
+		//1주차 ~ n주차까지 for문을 돌며 값을 조회한다.
+		for (int week = 1; week <= weeksInMonth; week++) {
+			//해당 주차의 startDate, endDate를 구한다.
+			WeekRangeDTO weekDateRange = DataConverterUtil.getWeekDateRange(date, week);
+			//해당 주차의 node 정보를 불러온다.
+			totalList.addAll(getNodeHistoryByRange(weekDateRange.getStartDate(), weekDateRange.getEndDate()));
+		}
+		//node별로 grouping 처리
+		Map<String, List<ResponseDTO.HistoryDTO>> nodeUsage = totalList.stream()
+			.collect(Collectors.groupingBy(ResponseDTO.HistoryDTO::nodeName));
+		return convertSystemResDTO(nodeUsage, ReportType.MONTHLY_CLUSTER);
+	}
+
+	private List<ResponseDTO.HistoryDTO> getGPUNodeHistoryByRange(String startDate, String endDate) {
+		List<ResponseDTO.HistoryDTO> totalResult = new ArrayList<>();
+		long step = DataConverterUtil.getStep(startDate, endDate);
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_AVG_GPU_TEMP", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_MAX_GPU_TEMP", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_AVG_GPU_USAGE", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_MAX_GPU_USAGE", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_AVG_GPU_MEM", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_MAX_GPU_MEM", startDate, endDate, step));
+		return totalResult;
+	}
+
+	private List<ResponseDTO.HistoryDTO> getNodeHistoryByRange(String startDate, String endDate) {
+		List<ResponseDTO.HistoryDTO> totalResult = new ArrayList<>();
+		long step = DataConverterUtil.getStep(startDate, endDate);
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_AVG_CPU", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_MAX_CPU", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_AVG_MEM", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_MAX_MEM", startDate, endDate, step));
+		totalResult.addAll(prometheusService.getHistoryMetricByWarning("REPORT_SYSTEM_DISK_USAGE", startDate, endDate, step));
+		return totalResult;
+	}
+
+	private List<ReportDTO.SystemGpuDTO> convertSystemGpuDTO(Map<String, Map<String, List<ResponseDTO.HistoryDTO>>> gpuInfo, ReportType reportType) {
+		List<ReportDTO.SystemGpuDTO> result = new ArrayList<>();
+		gpuInfo.forEach((serverName, gpuData) -> gpuData.forEach((gpuIndex, historyList) -> {
+			ReportDTO.SystemGpuDTO systemResDTO = ReportDTO.SystemGpuDTO.builder().serverName(serverName).gpuIndex(Long.parseLong(gpuIndex)).build();
+			Map<String, ReportDTO.SystemCategoryDTO> categoryMap = new HashMap<>();
+
+			historyList.forEach(historyDTO -> {
+				String categoryKey = switch (historyDTO.metricName()) {
+					case "REPORT_SYSTEM_AVG_GPU_USAGE" -> "GPU 사용(%) 평균";
+					case "REPORT_SYSTEM_MAX_GPU_USAGE" -> "GPU 사용(%) 최대";
+					case "REPORT_SYSTEM_AVG_GPU_MEM" -> "GPU 메모리(%) 평균";
+					case "REPORT_SYSTEM_MAX_GPU_MEM" -> "GPU 메모리(%) 최대";
+					case "REPORT_SYSTEM_AVG_GPU_TEMP" -> "GPU 온도(°C) 평균";
+					case "REPORT_SYSTEM_MAX_GPU_TEMP" -> "GPU 온도(°C) 최대";
+					default -> throw new IllegalStateException("Unexpected value: " + historyDTO.metricName());
+				};
+
+				ReportDTO.SystemCategoryDTO categoryDTO = categoryMap.computeIfAbsent(categoryKey, k -> ReportDTO.SystemCategoryDTO.builder().category(k).build());
+				List<ReportDTO.SystemValueDTO> valueDTOs = historyDTO.valueDTOS().stream().map(valueDTO -> {
+						if (reportType == ReportType.WEEKLY_SYSTEM || reportType == ReportType.WEEKLY_CLUSTER) {
+							return ReportDTO.SystemValueDTO.weeklyValueBuilder(valueDTO);
+						} else {
+							return ReportDTO.SystemValueDTO.monthlyValueBuilder(valueDTO);
+						}
+					}).collect(Collectors.toList());
+				List<ReportDTO.SystemValueDTO> valueDTOS = categoryDTO.getValueDTOS();
+				if (CollectionUtils.isEmpty(valueDTOS)) {
+					categoryDTO.setValueDTOS(valueDTOs);
+				} else {
+					valueDTOS.addAll(valueDTOs);
+				}
+			});
+
+			systemResDTO.setCategoryDTOS(new ArrayList<>(categoryMap.values()));
+			result.add(systemResDTO);
+		}));
+		return result;
+	}
+
+	private List<ReportDTO.SystemResDTO> convertSystemResDTO(Map<String, List<ResponseDTO.HistoryDTO>> systemInfo, ReportType reportType) {
+		List<ReportDTO.SystemResDTO> result = new ArrayList<>();
+		systemInfo.forEach((serverName, serverData) -> {
+			ReportDTO.SystemResDTO systemResDTO = ReportDTO.SystemResDTO.builder().serverName(serverName).build();
+			Map<String, ReportDTO.SystemCategoryDTO> categoryMap = new HashMap<>();
+
+			serverData.forEach(historyDTO -> {
+				String categoryKey = switch (historyDTO.metricName()) {
+					case "REPORT_SYSTEM_AVG_CPU" -> "CPU 사용(%) 평균";
+					case "REPORT_SYSTEM_MAX_CPU" -> "CPU 사용(%) 최대";
+					case "REPORT_SYSTEM_AVG_MEM" -> "메모리 사용(%) 평균";
+					case "REPORT_SYSTEM_MAX_MEM" -> "메모리 사용(%) 최대";
+					case "REPORT_SYSTEM_DISK_USAGE" -> "디스크 사용(%) 평균";
+					default -> throw new IllegalStateException("Unexpected value: " + historyDTO.metricName());
+				};
+
+				ReportDTO.SystemCategoryDTO categoryDTO = categoryMap.computeIfAbsent(categoryKey, k -> ReportDTO.SystemCategoryDTO.builder().category(k).build());
+				List<ReportDTO.SystemValueDTO> valueDTOs = historyDTO.valueDTOS().stream().map(valueDTO -> {
+					if (reportType == ReportType.WEEKLY_SYSTEM || reportType == ReportType.WEEKLY_CLUSTER) {
+						return ReportDTO.SystemValueDTO.weeklyValueBuilder(valueDTO);
+					} else {
+						return ReportDTO.SystemValueDTO.monthlyValueBuilder(valueDTO);
+					}
+				}).collect(Collectors.toList());
+				List<ReportDTO.SystemValueDTO> valueDTOS = categoryDTO.getValueDTOS();
+				if (CollectionUtils.isEmpty(valueDTOS)) {
+					categoryDTO.setValueDTOS(valueDTOs);
+				} else {
+					valueDTOS.addAll(valueDTOs);
+				}
+			});
+
+			systemResDTO.setCategoryDTOS(new ArrayList<>(categoryMap.values()));
+			result.add(systemResDTO);
+		});
 		return result;
 	}
 

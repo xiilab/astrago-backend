@@ -13,10 +13,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 public class LicenseDTO {
-	protected long id;
-	protected String version;
-	protected int gpuCount;
-	protected LocalDate startDate;
-	protected LocalDate endDate;
-	protected LocalDateTime regDate;
+	private long id;
+	private String version;
+	private int gpuCount;
+	private LocalDate startDate;
+	private LocalDate endDate;
+	private LocalDateTime regDate;
 }

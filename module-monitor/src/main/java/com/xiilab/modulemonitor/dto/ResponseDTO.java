@@ -42,6 +42,23 @@ public record ResponseDTO() {
 
 	}
 
+	@Builder
+	public record RerportNodeUsageDTO(
+		String metricName,
+		String nodeName,
+		List<ReportNodeUsageValueDTO> values
+	) {
+	}
+
+	@Builder
+	public record ReportNodeUsageValueDTO(
+		String gpuIndex,
+		String date,
+		String value
+	) {
+
+	}
+
 	/**
 	 * 과거 데이터 Value DTO
 	 */
@@ -134,19 +151,22 @@ public record ResponseDTO() {
 									   String memHard,
 									   List<WorkloadResponseDTO> workloadResponseDTOS) {
 	}
+
 	@Builder
 	public record ResponseClusterDTO(String name,
 									 long total,
 									 double cpuRequest,
 									 long request,
 									 double cpuUsage,
-									 long usage){
+									 long usage) {
 	}
+
 	@Builder
 	public record ResponseClusterResourceDTO(int cpu,
 											 int mem,
-											 int gpu){
+											 int gpu) {
 	}
+
 	@Builder
 	public record ClusterResourceDTO(String nodeCount,
 									 String daemonsetCount,
@@ -157,7 +177,9 @@ public record ResponseDTO() {
 									 String containerCount,
 									 String namespaceCount,
 									 String statefulsetCount,
-									 String hpaCount){}
+									 String hpaCount) {
+	}
+
 	@Builder
 	public record ClusterObjectDTO(String podRuning,
 								   String nodeReady,
@@ -168,22 +190,28 @@ public record ResponseDTO() {
 								   String unHealthyHPA,
 								   String unHealthyStatefulset,
 								   String containerRestart,
-								   String containerImageRestart){}
+								   String containerImageRestart) {
+	}
 
 	@Builder
 	public record ClusterReasonDTO(long lastSEEN,
 								   String time,
-								   String reason){}
+								   String reason) {
+	}
+
 	@Builder
 	public record ClusterPendingDTO(String date,
 									String podName,
 									String nodeName,
 									String namespace,
-									String value){}
+									String value) {
+	}
+
 	@Builder
 	public record ClusterPodInfo(String podName,
 								 String nodeName,
 								 String status,
-								 String reason){}
+								 String reason) {
+	}
 
 }

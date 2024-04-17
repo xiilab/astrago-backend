@@ -2,6 +2,8 @@ package com.xiilab.modulemonitor.dto;
 
 import java.util.List;
 
+import com.xiilab.modulecommon.util.DataConverterUtil;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -127,11 +129,21 @@ public class ReportDTO {
 	@Builder
 	@Setter
 	@Getter
-	@NoArgsConstructor
 	@AllArgsConstructor
+	@NoArgsConstructor
 	public static class SystemValueDTO {
 		private String date;
 		private double value;
+
+		public static SystemValueDTO weeklyValueBuilder(ResponseDTO.ValueDTO valueDTO) {
+			return new SystemValueDTO(
+				DataConverterUtil.convertToMonthDay(valueDTO.dateTime()), DataConverterUtil.formatRoundTo(valueDTO.value()));
+		}
+
+		public static SystemValueDTO monthlyValueBuilder(ResponseDTO.ValueDTO valueDTO) {
+			return new SystemValueDTO(
+				DataConverterUtil.getDateMonthWeek(valueDTO.dateTime()), DataConverterUtil.formatRoundTo(valueDTO.value()));
+		}
 	}
 
 	@Builder

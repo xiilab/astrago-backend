@@ -17,6 +17,7 @@ public enum CommonErrorCode implements ErrorCode {
 	// data
 	NUMBER_ROUND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "반올림 실패하였습니다."),
 	DATA_FORMAT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "데이터 포멧 실패하였습니다."),
+	MONTH_WEEKS_OUT_OF_RANGE(HttpStatus.BAD_REQUEST.value(), "해당 월은 입력한 주차가 없습니다."),
 	// file
 	PLUGIN_ALREADY_INSTALLED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "이미 설치된 플러그인입니다."),
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "파일이 존재하지 않습니다."),
