@@ -2,7 +2,7 @@ name: astrago backend image CI
 
 on:
   push:
-    branches: [ "feature/cicd" ]
+    branches: [ "develop", "master" ]
     tags:
       - v.**
 
