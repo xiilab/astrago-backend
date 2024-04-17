@@ -750,6 +750,7 @@ create table if not exists TB_WORKLOAD
     WORKLOAD_CREATOR           varchar(255)                            null,
     WORKLOAD_CREATOR_ID        varchar(255)                            null,
     WORKLOAD_CREATOR_REAL_NAME varchar(255)                            null,
+    WORKLOAD_PARAMETER         varchar(1000)                           null,
     WORKLOAD_DESCRIPTION       varchar(255)                            null,
     WORKING_DIR                varchar(255)                            null comment '명령어를 실행 할 위치',
     WORKLOAD_CMD_ARGS          varchar(1000)                           null,
