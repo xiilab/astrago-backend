@@ -271,14 +271,14 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<Pod> podList = kubernetesClient.pods().inAnyNamespace().list().getItems();
 
 			// 모든 노드의 CPU total 값을 합산
-			long totalMemCapacity = totalCapacity(nodeList, "MEM");
+			long totalMemCapacity = totalCapacity(nodeList, "MEM") * 1024;
 
 			// 모든 노드의 cpuRequest 값을 합산
 			String totalMemRequests = totalRequests(nodeList, podList, "MEM");
 
 			return ResponseDTO.ResponseClusterDTO.builder()
 				.name(MEM)
-				.total(totalMemCapacity * 1024)
+				.total(totalMemCapacity)
 				.request(Long.parseLong(totalMemRequests)  * 1024)
 				.usage((totalMemCapacity * Long.parseLong(memUsage)) / 100 )
 				.build();

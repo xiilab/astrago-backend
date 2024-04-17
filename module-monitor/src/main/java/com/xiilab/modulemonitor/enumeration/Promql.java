@@ -150,6 +150,7 @@ public enum Promql {
 	REPORT_CLUSTER_GPU_UTIL("round(avg(DCGM_FI_DEV_GPU_UTIL))","GPU 사용률","REPORT"),
 	REPORT_CLUSTER_CPU_UTIL("round(100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100))","CPU 사용률","REPORT"),
 	REPORT_CLUSTER_MEM_UTIL("round(avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100))","MEM 사용률","REPORT"),
+	REPORT_CLUSTER_MEM_USAGE("round(label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes), \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s} * 100)","MEM 사용률","REPORT"),
 	REPORT_GPU_RESOURCE_TOTAL("round(sum(kube_node_status_capacity{resource=\"nvidia_com_gpu\"}))", "GPU 총량", "REPORT"),
 	REPORT_GPU_RESOURCE_REQUEST("round(avg(kube_resourcequota{resource=\"requests.nvidia.com/gpu\", type=\"hard\"}))", "GPU 요청량", "REPORT"),
 	REPORT_GPU_RESOURCE_USAGE("round(avg(DCGM_FI_DEV_GPU_UTIL{}))", "GPU 사용량", "REPORT"),

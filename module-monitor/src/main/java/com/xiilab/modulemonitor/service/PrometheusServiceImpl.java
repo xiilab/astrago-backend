@@ -145,13 +145,18 @@ public class PrometheusServiceImpl implements PrometheusService{
 			// result 필드 추출
 			JsonNode results = jsonNode.path("data").path("result");
 
+			JsonNode values;
 
-			JsonNode values = results.get(0).get("values");
-			for (JsonNode value : values) {
-				// 리스트에 추가
-				total = total + Long.parseLong(value.get(1).textValue());
+			if(results.get(0) != null) {
+				values = results.get(0).get("values");
+				for (JsonNode value : values) {
+					// 리스트에 추가
+					total = total + Long.parseLong(value.get(1).textValue());
+				}
+				return total / values.size();
+			}else {
+				return 0;
 			}
-			return total / values.size();
 		} catch (JsonProcessingException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
