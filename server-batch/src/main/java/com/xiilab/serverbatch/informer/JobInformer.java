@@ -175,7 +175,7 @@ public abstract class JobInformer {
 			for (K8SResourceMetadataDTO.Code code : codes) {
 				// 커스텀 소스코드일 경우
 				if (ValidUtils.isNullOrZero(code.getSourceCodeId())
-					&& code.getRepositoryType() == RepositoryType.USER) {
+					&& code.getRepositoryType() == RepositoryType.CUSTOM) {
 					// 크레덴셜 정보 조회
 					Optional<CredentialEntity> findCredential = findCredentialById(code.getCredentialId());
 
