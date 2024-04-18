@@ -20,6 +20,7 @@ import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -105,6 +106,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.remainTime(0)
+				.imageType(job.getImage().getImageType().name())
 				.build())
 			.collect(Collectors.toList());
 	}
