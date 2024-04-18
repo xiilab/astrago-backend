@@ -106,6 +106,7 @@ import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -295,6 +296,14 @@ public class WorkloadFacadeService {
 					workloadResourceName);
 				// 삭제권한 업데이트
 				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
+				// 파드 조회, 실제 실행시간 set
+				try {
+					Pod jobPod = workloadModuleFacadeService.getJobPod(workspaceName, workloadResourceName,
+						workloadType);
+					moduleBatchJobResDTO.setStartTime(jobPod.getStatus().getStartTime());
+				} catch (Exception e) {
+				}
+
 				return getActiveWorkloadDetail(moduleBatchJobResDTO);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
 				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(

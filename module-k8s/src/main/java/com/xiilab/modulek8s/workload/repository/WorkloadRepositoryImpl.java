@@ -192,6 +192,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	// TODO 잡 파드 추가
 	@Override
 	public ModuleBatchJobResDTO getBatchJobWorkload(String workSpaceName, String workloadName) {
 		Job job = getBatchJob(workSpaceName, workloadName);

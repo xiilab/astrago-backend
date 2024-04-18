@@ -1,13 +1,17 @@
 package com.xiilab.servercore.workload.dto.response;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.hibernate.Hibernate;
+import org.keycloak.utils.StringUtil;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.ImageType;
@@ -15,6 +19,8 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
@@ -71,6 +77,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private String estimatedInitialTime;
 		private String estimatedRemainingTime;
 		private boolean canBeDeleted;
+		private String startTime;
 
 		public static <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail from(
 			T moduleJobResDTO
@@ -112,6 +119,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
 				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
+				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime())? convertTZDateString(moduleJobResDTO.getStartTime()) : null)
 				.build();
 		}
 
@@ -145,6 +153,17 @@ public class FindWorkloadResDTO extends ResDTO {
 				.ide(jobEntity.getIde())
 				.canBeDeleted(jobEntity.isCanBeDeleted())
 				.build();
+		}
+
+		public static String convertTZDateString(String date) {
+			SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+			SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			try {
+				Date parse = inputFormat.parse(date);
+				return outputFormat.format(parse);
+			} catch (Exception e) {
+				throw new RestApiException(WorkloadErrorCode.FAILED_POD_START_DATE_CONVERSION);
+			}
 		}
 	}
 

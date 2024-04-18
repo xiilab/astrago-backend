@@ -38,6 +38,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		this.workingDir = container.getWorkingDir();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(job.getStatus());
+		// 파드 시작 시간
 		// 최초 종료 시간 예측
 		Optional.ofNullable(job.getMetadata()
 			.getAnnotations()

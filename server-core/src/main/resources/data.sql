@@ -223,7 +223,7 @@ VALUES (1, null, now(),
         'python train.py --epochs 100 --batch_size=16 --learning_rate=0.01 --image_size=360 --data_dir=/tmp/datasets/data.yaml --save_model_dir=/tmp/models',
         '/tmp/datasets', 'TEST2', '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master', '/usr/src/ultralytics',
         'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null,'YOLOv5', 2,
-        'https://raw.githubusercontent.com/xiilab/astrago-ultralytics-yolov8-train/master/docs/en/models/yolov5.md',
+        'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv5/Readme.md',
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif', 'BATCH',
         '{ "flops": 14, "t_img_num": 100000000, "v_img_num": 100000000, "image_size": 640, "batch": 162322000, "param_cnt": 53177222, "epoch": 120 }')
 ON DUPLICATE KEY UPDATE HUB_ID = HUB_ID;

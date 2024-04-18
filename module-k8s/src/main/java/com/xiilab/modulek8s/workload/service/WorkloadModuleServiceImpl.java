@@ -100,10 +100,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
 		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
 			workloadList = workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
-			// return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
 		} else if (workspaceName != null && !ValidUtils.isNullOrFalse(isCreatedByMe)) {
 			workloadList = workloadRepository.getBatchWorkloadListByWorkspaceResourceNameAndCreator(workspaceName, userId);
-			// return workloadRepository.getBatchWorkloadListByWorkspaceResourceNameAndCreator(workspaceName, userId);
 		} else if (userId != null) {
 			workloadList = workloadRepository.getBatchWorkloadListByCreator(userId);
 		} else {
