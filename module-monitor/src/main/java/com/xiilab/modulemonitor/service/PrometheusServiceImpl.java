@@ -218,8 +218,12 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	private ReportDTO.ResourceDTO createResourceDTO(JsonNode result, String resourceName) {
 		// 결과 값 추출
-		JsonNode values = result.get(0).path("values");
-
+		JsonNode values;
+		if(result.get(0) != null){
+			values = result.get(0).path("values");
+		}else{
+			values = null;
+		}
 		return new ReportDTO.ResourceDTO().builder()
 			.resourceName(resourceName)
 			.valueDTOS(createReportValue(values))
@@ -312,7 +316,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 	}
 	private List<ReportDTO.ValueDTO> createReportValue(JsonNode values) {
 		List<ReportDTO.ValueDTO> valueDTOList = new ArrayList<>();
-		if (values.isArray()) {
+		if (values != null && values.isArray()) {
 			for (JsonNode node : values) {
 				// values DTO List에 추가
 				valueDTOList.add(ReportDTO.ValueDTO.builder()

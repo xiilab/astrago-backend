@@ -95,7 +95,7 @@ public class MonitorController {
 	 * @return 조회된 사용량
 	 */
 	@GetMapping("/dashboard/workspace")
-	@Operation(summary = "관리자 대시보드  워크스페이스 자원 사용량 리스트")
+	@Operation(summary = "관리자 대시보드 워크스페이스 자원 사용량 리스트")
 	public ResponseEntity<List<ResponseDTO.WorkspaceDTO>> getDashboardWorkspaceResourceList() {
 		return new ResponseEntity<>(monitorService.getWorkspaceResourceList(), HttpStatus.OK);
 	}
@@ -104,7 +104,7 @@ public class MonitorController {
 	 * 대시보드 노드 사용량 조회하는 API
 	 */
 	@GetMapping("/dashboard/node/{nodeName}")
-	@Operation(summary = "관리자 대시보드  노드별 자원 사용량 조회")
+	@Operation(summary = "관리자 대시보드 노드별 자원 사용량 조회")
 	public ResponseEntity<ResponseDTO.NodeResourceDTO> getDashboardNodeResourceByNodeName(
 		@PathVariable(name = "nodeName") String nodeName) {
 		return new ResponseEntity<>(monitorService.getNodeResource(nodeName), HttpStatus.OK);
