@@ -34,6 +34,7 @@ public class WebSecurityConfig {
 			.requestMatchers(HttpMethod.GET, "/api/v1/core/group").permitAll()
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/user/join").permitAll()
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/user/admin").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/v1/core/user/admin").permitAll()
 			.requestMatchers("/api/v1/core/license/**").permitAll()
 			.requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/alertManager/receive").permitAll()
