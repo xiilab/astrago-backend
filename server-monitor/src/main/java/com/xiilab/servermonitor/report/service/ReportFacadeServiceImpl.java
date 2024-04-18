@@ -646,6 +646,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 			});
 
 			systemResDTO.setCategoryDTOS(new ArrayList<>(categoryMap.values()));
+			systemResDTO.setAvailableDate();
 			result.add(systemResDTO);
 		}));
 		return result;
@@ -684,6 +685,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 			});
 
 			systemResDTO.setCategoryDTOS(new ArrayList<>(categoryMap.values()));
+			systemResDTO.setAvailableDate();
 			result.add(systemResDTO);
 		});
 		return result;
