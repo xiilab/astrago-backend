@@ -143,6 +143,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.ide(job.getIde())
+				.imageType(job.getImage().getImageType().name())
 				.build())
 			.collect(Collectors.toList());
 	}
