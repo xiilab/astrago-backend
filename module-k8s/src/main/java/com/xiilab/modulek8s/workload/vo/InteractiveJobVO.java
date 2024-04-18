@@ -139,7 +139,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
 		cloneGitRepo(podSpecBuilder, codes);
-		addDefaultShmVolume(podSpecBuilder);
+		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, datasets);
 		addVolumes(podSpecBuilder, models);
 

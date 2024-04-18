@@ -95,7 +95,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		}
 	}
 
-	public void addDefaultShmVolume(PodSpecBuilder podSpecBuilder) {
+	public void addDefaultVolume(PodSpecBuilder podSpecBuilder) {
 		List<Volume> addVolumes = new ArrayList<>();
 		addVolumes.add(new VolumeBuilder()
 			.withName("shmdir")
@@ -103,6 +103,12 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			.withMedium("Memory")
 			.endEmptyDir()
 			.build());
+		// addVolumes.add(new VolumeBuilder()
+		// 	.withName("tz-seoul")
+		// 	.withNewHostPath()
+		// 	.withPath("/usr/share/zoneinfo/Asia/Seoul")
+		// 	.endHostPath()
+		// 	.build());
 		podSpecBuilder.addAllToVolumes(addVolumes);
 	}
 

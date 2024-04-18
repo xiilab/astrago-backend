@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
@@ -148,7 +149,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 	@Override
 	public ModuleInteractiveJobResDTO getInteractiveWorkload(String workSpaceName, String workloadName) {
-		return workloadModuleService.getInteractiveJobWorkload(workSpaceName, workloadName);
+		return workloadModuleService.getInteractiveJobWorkload(
+			workSpaceName, workloadName);
 	}
 
 	@Override

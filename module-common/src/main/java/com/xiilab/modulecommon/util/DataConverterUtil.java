@@ -8,7 +8,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
@@ -27,6 +29,7 @@ import com.xiilab.modulecommon.dto.WeekRangeDTO;
 import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 
 @Service
 public class DataConverterUtil {
@@ -434,5 +437,18 @@ public class DataConverterUtil {
 	public static LocalDateTime getSundayDate(LocalDateTime date) {
 		LocalDateTime localDateTime = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 		return LocalDateTime.parse(localDateTime.format(DateTimeFormatter.ISO_DATE_TIME));
+	}
+
+	public static String convertUTCDateToKorDate(String utcTime) {
+		try {
+			LocalDateTime startTimeUTC = LocalDateTime.parse(utcTime, DateTimeFormatter.ISO_DATE_TIME)
+				.plusHours(9L);
+			ZonedDateTime startTimeKorea = startTimeUTC.atZone(ZoneId.of("Asia/Seoul"));
+			// 변환된 시간을 원하는 형식으로 포맷
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			return startTimeKorea.format(formatter);
+		} catch (DateTimeParseException e) {
+			throw new RestApiException(CommonErrorCode.FAILED_UTC_TO_KOR_TIME);
+		}
 	}
 }

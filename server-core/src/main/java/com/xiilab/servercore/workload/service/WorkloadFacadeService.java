@@ -297,12 +297,7 @@ public class WorkloadFacadeService {
 				// 삭제권한 업데이트
 				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
 				// 파드 조회, 실제 실행시간 set
-				try {
-					Pod jobPod = workloadModuleFacadeService.getJobPod(workspaceName, workloadResourceName,
-						workloadType);
-					moduleBatchJobResDTO.setStartTime(jobPod.getStatus().getStartTime());
-				} catch (Exception e) {
-				}
+				// updatePodStartTime(workloadType, workspaceName, workloadResourceName, moduleBatchJobResDTO);
 
 				return getActiveWorkloadDetail(moduleBatchJobResDTO);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
@@ -323,6 +318,16 @@ public class WorkloadFacadeService {
 
 		return null;
 	}
+
+	// private void updatePodStartTime(WorkloadType workloadType, String workspaceName, String workloadResourceName,
+	// 	ModuleBatchJobResDTO moduleBatchJobResDTO) {
+	// 	try {
+	// 		Pod jobPod = workloadModuleFacadeService.getJobPod(workspaceName, workloadResourceName,
+	// 			workloadType);
+	// 		moduleBatchJobResDTO.setStartTime(jobPod.getStatus().getStartTime());
+	// 	} catch (Exception e) {
+	// 	}
+	// }
 
 	private <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail getActiveWorkloadDetail(
 		T moduleJobResDTO) {
@@ -410,6 +415,7 @@ public class WorkloadFacadeService {
 			//k8s cluster에 생성되어있는 batchJob list
 			List<ModuleBatchJobResDTO> batchJobListFromCluster = workloadModuleService.getBatchWorkloadListByCondition(
 				workspaceName, isCreatedByMe, userInfoDTO.getId());
+			// batchJobListFromCluster.forEach(batchJob -> updatePodStartTime(WorkloadType.BATCH, batchJob.getWorkspaceResourceName(), batchJob.getResourceName(), batchJob));
 			//종료된 batchJob list
 			List<ModuleBatchJobResDTO> batchWorkloadHistoryList = workloadHistoryService.getBatchWorkloadHistoryList(
 				workspaceName, null, isCreatedByMe, userInfoDTO.getId());
