@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class StorageServiceImpl implements StorageService{
+public class CoreStorageServiceImpl implements StorageService{
 	private final StorageRepository storageRepository;
 
 	@Override
