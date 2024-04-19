@@ -531,7 +531,7 @@ public class WorkloadFacadeService {
 					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
 					workloadUpdateDTO.getDescription());
 			}
-		} catch (RestApiException e) {
+		} catch (Exception e) {
 			try {
 				workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
 			} catch (RestApiException e2) {
