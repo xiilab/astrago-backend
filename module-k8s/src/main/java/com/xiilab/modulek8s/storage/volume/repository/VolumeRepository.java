@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.storage.volume.repository;
 
 import java.util.List;
 
+import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
@@ -12,6 +13,8 @@ import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
+
+import io.fabric8.kubernetes.api.model.VolumeMount;
 
 public interface VolumeRepository {
 	String createVolume(CreateVolumeDTO createVolumeDTO);
@@ -44,4 +47,8 @@ public interface VolumeRepository {
 	void deletePV(String pvName);
 
 	void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO);
+
+	List<VolumeMount> getAstragoVolumes();
+
+	void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVC);
 }

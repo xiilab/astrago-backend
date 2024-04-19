@@ -21,6 +21,8 @@ import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
+import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
@@ -35,6 +37,8 @@ import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
+import com.xiilab.modulek8sdb.storage.dto.StorageDto;
+import com.xiilab.modulek8sdb.storage.service.StorageService;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.moduleuser.service.UserService;
@@ -61,6 +65,8 @@ public class InteractiveJobInformer extends JobInformer {
 	private final ApplicationEventPublisher publisher;
 	private final MailService mailService;
 	private final UserService userService;
+	private final StorageService storageService;
+	private final StorageModuleService storageModuleService;
 
 	public InteractiveJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
@@ -72,7 +78,8 @@ public class InteractiveJobInformer extends JobInformer {
 		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
 		GroupService groupService, SystemAlertRepository systemAlertRepository,
 		WorkspaceAlertSetRepository workspaceAlertSetRepository,
-		ApplicationEventPublisher publisher, MailService mailService, UserService userService) {
+		ApplicationEventPublisher publisher, MailService mailService, UserService userService,
+		StorageService storageService, StorageModuleService storageModuleService) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
 			codeRepository, imageRepository, credentialRepository, svcRepository, volumeRepository);
@@ -83,6 +90,8 @@ public class InteractiveJobInformer extends JobInformer {
 		this.publisher = publisher;
 		this.mailService = mailService;
 		this.userService = userService;
+		this.storageService = storageService;
+		this.storageModuleService = storageModuleService;
 	}
 
 	@PostConstruct
@@ -98,6 +107,18 @@ public class InteractiveJobInformer extends JobInformer {
 		jobSharedIndexInformer.addEventHandler(new ResourceEventHandler<>() {
 			@Override
 			public void onAdd(Deployment deployment) {
+				//core deployment 새로 생성 시 기존 마운트 재연결 로직
+				if(deployment.getMetadata().getName().equals("astrago-backend-core")){
+					List<StorageDto> storages = storageService.getStorages();
+					List<AstragoDeploymentConnectPVC> mounts = storages.stream().map(storageDto ->
+						AstragoDeploymentConnectPVC.builder()
+							.pvcName(storageDto.getPvcName())
+							.hostPath(storageDto.getHostPath())
+							.volumeName(storageDto.getVolumeName())
+							.build()
+					).toList();
+					storageModuleService.astragoCoreDeploymentConnectPVC(mounts);
+				}
 				log.info("{} interactive job이 생성되었습니다.", deployment.getMetadata().getName());
 			}
 

@@ -76,6 +76,7 @@
 // import io.fabric8.kubernetes.api.model.apps.Deployment;
 // import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 // import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
+// import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 // import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 // import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 // import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -86,6 +87,7 @@
 // import io.fabric8.kubernetes.client.KubernetesClient;
 // import io.fabric8.kubernetes.client.dsl.MixedOperation;
 // import io.fabric8.kubernetes.client.dsl.Resource;
+// import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
 // import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 // import lombok.Getter;
 // import lombok.extern.slf4j.Slf4j;
@@ -104,7 +106,6 @@
 // 	private WorkloadModuleFacadeServiceImpl workloadModuleFacadeService;
 // 	@MockBean
 // 	private ObjectMapper objectMapper;
-//
 //
 // 	@Test
 // 	void getStorageClasses() {
@@ -888,6 +889,26 @@
 // 				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
 // 				.endSpec()
 // 				.build());
+// 		}
+// 	}
+//
+// 	@Test
+// 	void test1(){
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			RollableScalableResource<Deployment> deployment = client.apps()
+// 				.deployments()
+// 				.inNamespace("astrago")
+// 				.withName("astrago-backend-core");
+// 			List<VolumeMount> volumeMounts = deployment.get()
+// 				.getSpec()
+// 				.getTemplate()
+// 				.getSpec()
+// 				.getContainers()
+// 				.get(0)
+// 				.getVolumeMounts();
+// 			for (VolumeMount volumeMount : volumeMounts) {
+// 				System.out.println(volumeMount.getName());
+// 			}
 // 		}
 // 	}
 // }
