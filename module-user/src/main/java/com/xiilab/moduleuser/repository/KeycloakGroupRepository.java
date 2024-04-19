@@ -329,8 +329,23 @@ public class KeycloakGroupRepository implements GroupRepository {
 	private void retrieveGroupMembers(Set<String> userIds, String groupId) {
 		GroupResource groupResource = keycloakConfig.getRealmClient().groups().group(groupId);
 		List<UserRepresentation> members = groupResource.members(0, Integer.MAX_VALUE);
+		boolean isDefaultGroup = groupResource.toRepresentation().getPath().equals("/account/default");
 		for (UserRepresentation member : members) {
-			userIds.add(member.getId());
+			if(isDefaultGroup){//default 그룹을 추가한건지 체크
+				int groupSize = keycloakConfig.getRealmClient()
+					.users()
+					.get(member.getId())
+					.groups()
+					.stream()
+					.filter(groupRepresentation -> groupRepresentation.getPath().contains("/account/"))
+					.toList()
+					.size();
+				if(groupSize == 1){//default 그룹만 가진 유저면 추가
+					userIds.add(member.getId());
+				}
+			}else {
+				userIds.add(member.getId());
+			}
 		}
 		//sub group
 		List<GroupRepresentation> subGroups = groupResource.toRepresentation().getSubGroups();
