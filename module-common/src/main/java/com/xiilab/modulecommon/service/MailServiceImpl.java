@@ -26,25 +26,27 @@ public class MailServiceImpl implements MailService {
 
 	public void sendMail(MailDTO mailDTO) {
 		try {
-			MailUtils sendMail = new MailUtils(mailSender);
-			sendMail.setSubject(mailDTO.getSubject());
-			sendMail.setTo(StringUtils.isEmpty(mailDTO.getReceiverEmail())? adminEmailAddr : mailDTO.getReceiverEmail());
-			sendMail.setFrom(adminEmailAddr, ASTRAGO);
+			if(!StringUtils.isBlank(mailDTO.getReceiverEmail())){
+				MailUtils sendMail = new MailUtils(mailSender);
+				sendMail.setSubject(mailDTO.getSubject());
+				sendMail.setTo(mailDTO.getReceiverEmail());
+				sendMail.setFrom(adminEmailAddr, ASTRAGO);
 
-			sendMail.setText(
-				createBody(
-					createTitle(mailDTO.getTitle()) +
-						createSubTitle(mailDTO.getSubTitle()) +
-						createContentTitle(StringUtils.isBlank(mailDTO.getContentTitle()) ? "" : String.format(mailDTO.getContentTitle(), adminEmailAddr)) +
-						createContents(mailDTO.getContents()) +
-						createContentFooter(mailDTO.getFooter())
-					, createFooter()
-				)
-			);
+				sendMail.setText(
+					createBody(
+						createTitle(mailDTO.getTitle()) +
+							createSubTitle(mailDTO.getSubTitle()) +
+							createContentTitle(StringUtils.isBlank(mailDTO.getContentTitle()) ? "" : String.format(mailDTO.getContentTitle(), adminEmailAddr)) +
+							createContents(mailDTO.getContents()) +
+							createContentFooter(mailDTO.getFooter())
+						, createFooter()
+					)
+				);
 
-			sendMail.setLogo("image/logo.png");
-			sendMail.setIcon("image/icon.png");
-			sendMail.send();
+				sendMail.setLogo("image/logo.png");
+				sendMail.setIcon("image/icon.png");
+				sendMail.send();
+			}
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
 		}

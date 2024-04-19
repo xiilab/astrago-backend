@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulemonitor.dto.ClusterObjectDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
+import com.xiilab.modulemonitor.enumeration.ClusterObject;
 import com.xiilab.modulemonitor.enumeration.Promql;
 
 import lombok.RequiredArgsConstructor;
@@ -382,5 +384,31 @@ public class MonitorFacadeService {
 		}
 
 		return result;
+	}
+
+	public List<ClusterObjectDTO> getClusterObjectByObject(ClusterObject clusterObject){
+
+		return switch (clusterObject){
+			case POD_RUNNING ->
+				k8sMonitorService.getClusterRunningPods();
+			case POD_PENDING ->
+				k8sMonitorService.getClusterPendingPods();
+			case POD_FAILED ->
+				k8sMonitorService.getClusterFailPods();
+			case NODE_READY ->
+				k8sMonitorService.getReadyNodes();
+			case UNHEALTHY_DEPOLYMENTS ->
+				k8sMonitorService.getUnhealthyDeployments();
+			case UNHEALTHY_HPA ->
+				k8sMonitorService.getUnhealthyHpas();
+			case UNHEALTHY_DAEMONSET ->
+				k8sMonitorService.getUnhealthyDaemonSets();
+			case UNHEALTHY_STATEFULSET ->
+				k8sMonitorService.getUnhealthyStatefulSets();
+			case CONTAINER_RESTART ->
+				k8sMonitorService.getContainerRestart();
+			case CONTAINER_IMAGE_RESTART ->
+				k8sMonitorService.getContainerImageRestart();
+		};
 	}
 }

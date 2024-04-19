@@ -61,6 +61,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		List<MailDTO.Content> contents = List.of(MailDTO.Content.builder().col1("사용자 이름 : ").col2(userReqVO.getLastName() + userReqVO.getFirstName()).build(),
 			MailDTO.Content.builder().col1("이메일 주소 : ").col2(userReqVO.getEmail()).build(),
 			MailDTO.Content.builder().col1("가입 일시 : ").col2(userInfo.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).build());
+
 		// Mail 전송
 		mailService.sendMail(MailDTO.builder()
 				.subject(mail.getSubject())

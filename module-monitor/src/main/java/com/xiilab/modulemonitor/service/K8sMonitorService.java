@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulemonitor.dto.ClusterObjectDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 
 @Service
@@ -25,4 +26,14 @@ public interface K8sMonitorService {
 	String getNodeName(String podName, String namespace);
 	ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace);
 	String getWorkspaceName(String workspaceName);
+	List<ClusterObjectDTO> getClusterRunningPods();
+	List<ClusterObjectDTO> getClusterPendingPods();
+	List<ClusterObjectDTO> getClusterFailPods();
+	List<ClusterObjectDTO> getReadyNodes();
+	List<ClusterObjectDTO> getUnhealthyDeployments();
+	List<ClusterObjectDTO> getUnhealthyHpas();
+	List<ClusterObjectDTO> getUnhealthyDaemonSets();
+	List<ClusterObjectDTO> getUnhealthyStatefulSets();
+	List<ClusterObjectDTO> getContainerRestart();
+	List<ClusterObjectDTO> getContainerImageRestart();
 }
