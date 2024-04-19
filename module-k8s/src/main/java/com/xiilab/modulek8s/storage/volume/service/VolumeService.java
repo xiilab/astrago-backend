@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.common.dto.Pageable;
 import com.xiilab.modulek8s.common.dto.SearchCondition;
+import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
@@ -21,6 +22,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 
+import io.fabric8.kubernetes.api.model.VolumeMount;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -106,5 +108,14 @@ public class VolumeService {
 
 	public void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
 		volumeRepository.deleteStorage(deleteStorageReqDTO);
+	}
+
+	public List<String> getAstragoVolumes() {
+		List<VolumeMount> astragoVolumes = volumeRepository.getAstragoVolumes();
+		return astragoVolumes.stream().map(volumeMount -> volumeMount.getName()).toList();
+	}
+
+	public void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVCs) {
+		volumeRepository.astragoCoreDeploymentConnectPVC(missingPVCs);
 	}
 }
