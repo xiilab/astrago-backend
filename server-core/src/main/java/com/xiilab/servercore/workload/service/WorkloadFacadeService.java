@@ -415,7 +415,6 @@ public class WorkloadFacadeService {
 			//k8s cluster에 생성되어있는 batchJob list
 			List<ModuleBatchJobResDTO> batchJobListFromCluster = workloadModuleService.getBatchWorkloadListByCondition(
 				workspaceName, isCreatedByMe, userInfoDTO.getId());
-			// batchJobListFromCluster.forEach(batchJob -> updatePodStartTime(WorkloadType.BATCH, batchJob.getWorkspaceResourceName(), batchJob.getResourceName(), batchJob));
 			//종료된 batchJob list
 			List<ModuleBatchJobResDTO> batchWorkloadHistoryList = workloadHistoryService.getBatchWorkloadHistoryList(
 				workspaceName, null, isCreatedByMe, userInfoDTO.getId());

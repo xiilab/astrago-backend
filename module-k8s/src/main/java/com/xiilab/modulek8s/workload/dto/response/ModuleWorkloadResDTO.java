@@ -73,9 +73,9 @@ public abstract class ModuleWorkloadResDTO {
 	protected String workingDir;
 	protected Map<String,String> parameter;
 	// 최초 예측 시간
-	LocalDateTime estimatedInitialTime;
+	String estimatedInitialTime;
 	// 실시간 예측 시간
-	LocalDateTime estimatedRemainingTime;
+	String estimatedRemainingTime;
 	@Setter
 	private String startTime;	// 파드 실행시간
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {

@@ -119,8 +119,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				.status(moduleJobResDTO.getStatus())
 				.ide(moduleJobResDTO.getIde())
 				.nodeName(nodeName)
-				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
-				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime() : null)
+				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime() : null)
 				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
 				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime())? moduleJobResDTO.getStartTime() : null)
 				.build();

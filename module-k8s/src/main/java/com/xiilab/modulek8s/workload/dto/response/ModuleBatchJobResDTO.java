@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.springframework.util.CollectionUtils;
@@ -39,16 +40,19 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(job.getStatus());
 		// 파드 시작 시간
+		// .subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		// 최초 종료 시간 예측
 		Optional.ofNullable(job.getMetadata()
-			.getAnnotations()
-			.getOrDefault(AnnotationField.ESTIMATED_INITIAL_TIME.getField(), null))
-			.ifPresent(estimatedInitialTimeString -> super.estimatedInitialTime = createdAt.plusSeconds(Long.parseLong(estimatedInitialTimeString)));
+				.getAnnotations()
+				.getOrDefault(AnnotationField.ESTIMATED_INITIAL_TIME.getField(), null))
+			.ifPresent(estimatedInitialTimeString -> super.estimatedInitialTime = createdAt.plusSeconds(
+				Long.parseLong(estimatedInitialTimeString)).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 		// 실시간 종료 시간 예측
 		Optional.ofNullable(job.getMetadata()
 				.getAnnotations()
 				.getOrDefault(AnnotationField.ESTIMATED_REMAINING_TIME.getField(), null))
-			.ifPresent(estimatedRemainingTime -> super.estimatedRemainingTime = LocalDateTime.now().plusSeconds(Long.parseLong(estimatedRemainingTime)));
+			.ifPresent(estimatedRemainingTime -> super.estimatedRemainingTime = LocalDateTime.now().plusSeconds(
+					Long.parseLong(estimatedRemainingTime)).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
 	}
 
 	@Override
@@ -64,7 +68,8 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			return WorkloadStatus.ERROR;
 		} else if (!ValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.RUNNING;
-		} else if (ready == 0 || ValidUtils.isNullOrZero(active) && ValidUtils.isNullOrZero(failed) && ValidUtils.isNullOrZero(ready)) {
+		} else if (ready == 0 || ValidUtils.isNullOrZero(active) && ValidUtils.isNullOrZero(failed)
+			&& ValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.PENDING;
 		} else {
 			return WorkloadStatus.END;
