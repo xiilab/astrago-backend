@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -98,6 +100,16 @@ public class CoreFileUtils {
 			}
 		}
 		return size;
+	}
+
+	public static String saveInputStreamToFile(String path, String fileName, InputStream inputStream) throws IOException {
+		// 파일명
+		String filePath = path + File.separator + fileName.replace(" ", "_");
+
+		// 파일 저장
+		FileUtils.copyInputStreamToFile(inputStream, new File(filePath));
+
+		return filePath;
 	}
 
 	public static DirectoryDTO getAstragoFiles(String path) {
