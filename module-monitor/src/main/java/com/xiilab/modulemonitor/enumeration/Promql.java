@@ -110,7 +110,7 @@ public enum Promql {
 
 	// DEPLOYMENT
 	DEPLOYMENT_COUNT("count(kube_deployment_created)", "DEPLOYMENT 총 개수 조회", "DEPLOYMENT"),
-	DEPLOYMENT_UNHEALYHY_COUNT("sum(kube_deployment_status_condition{status=\"unknown\"})", "DEPLOYMENT unhealthy Count","DEPLOYMENT"),
+	DEPLOYMENT_UNHEALYHY_COUNT("count(kube_deployment_status_condition{condition=\"Available\", status=\"false\"} > 0) ", "DEPLOYMENT unhealthy Count","DEPLOYMENT"),
 
 
 	// SERVICE
