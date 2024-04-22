@@ -449,12 +449,8 @@ create table if not exists TB_LICENSE
 (
     LICENSE_ID         bigint auto_increment
         primary key,
-    LICENSE_END_DATE   date         null,
-    LICENSE_GPU_COUNT  int          null,
     LICENSE_KEY        varchar(255) null,
-    LICENSE_REG_DATE   datetime(6)  null,
-    LICENSE_START_DATE date         null,
-    LICENSE_VERSION    varchar(255) null
+    LICENSE_REG_DATE   datetime(6)  null
 );
 
 create table if not exists TB_LOCAL_DATASET
