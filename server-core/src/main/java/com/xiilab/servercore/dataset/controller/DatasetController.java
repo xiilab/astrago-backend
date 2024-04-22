@@ -23,7 +23,7 @@ import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.service.DatasetFacadeService;
@@ -65,7 +65,7 @@ public class DatasetController {
 	public ResponseEntity<DatasetDTO.ResDatasets> getDatasets(
 		PageInfo pageInfo,
 		RepositorySearchCondition repositorySearchCondition,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageInfo, repositorySearchCondition, userInfoDTO);
 		return new ResponseEntity(datasets, HttpStatus.OK);
 	}
@@ -92,7 +92,7 @@ public class DatasetController {
 	@Operation(summary = "데이터 셋 수정")
 	public ResponseEntity<HttpStatus> modifyDataset(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestBody DatasetDTO.ModifyDatset modifyDataset,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		datasetFacadeService.modifyDataset(modifyDataset, datasetId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}
@@ -100,7 +100,7 @@ public class DatasetController {
 	@DeleteMapping("/datasets/{datasetId}")
 	@Operation(summary = "데이터 셋 삭제")
 	public ResponseEntity<HttpStatus> deleteDataset(@PathVariable(name = "datasetId") Long datasetId,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		datasetFacadeService.deleteDataset(datasetId, userInfoDTO);
 		return new ResponseEntity(HttpStatus.OK);
 	}

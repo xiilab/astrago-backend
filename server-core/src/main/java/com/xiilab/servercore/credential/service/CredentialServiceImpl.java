@@ -10,14 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
-import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.credential.dto.CredentialResDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +29,7 @@ public class CredentialServiceImpl implements CredentialService {
 
 	@Override
 	@Transactional
-	public CredentialResDTO createCredential(CredentialReqDTO credentialReqDTO, UserInfoDTO userInfoDTO) {
+	public CredentialResDTO createCredential(CredentialReqDTO credentialReqDTO, UserDTO.UserInfo userInfoDTO) {
 		CredentialEntity credentialEntity = credentialRepository.save(CredentialEntity
 			.dtoConverter()
 			.credentialReqDTO(credentialReqDTO)
@@ -38,7 +38,7 @@ public class CredentialServiceImpl implements CredentialService {
 	}
 
 	@Override
-	public CredentialResDTO.CredentialInfo findCredentialById(long id, UserInfoDTO userInfoDTO) {
+	public CredentialResDTO.CredentialInfo findCredentialById(long id, UserDTO.UserInfo userInfoDTO) {
 		CredentialEntity credentialEntity = credentialRepository.findById(id)
 			.orElseThrow(() -> new RestApiException(CommonErrorCode.CREDENTIAL_NOT_FOUND));
 
@@ -46,7 +46,7 @@ public class CredentialServiceImpl implements CredentialService {
 	}
 
 	@Override
-	public Page<CredentialResDTO> getCredentialList(Pageable pageable, UserInfoDTO userInfoDTO) {
+	public Page<CredentialResDTO> getCredentialList(Pageable pageable, UserDTO.UserInfo userInfoDTO) {
 		Page<CredentialEntity> credentialEntities = null;
 		if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN) {
 			credentialEntities = credentialRepository.findAll(pageable);
@@ -57,13 +57,13 @@ public class CredentialServiceImpl implements CredentialService {
 	}
 
 	@Override
-	public void deleteCredentialById(long id, UserInfoDTO userInfoDTO) {
+	public void deleteCredentialById(long id, UserDTO.UserInfo userInfoDTO) {
 		credentialRepository.deleteById(id);
 	}
 
 	@Override
 	@Transactional
-	public void updateCredentialById(long id, CredentialReqDTO.UpdateDTO updateDTO, UserInfoDTO userInfoDTO) {
+	public void updateCredentialById(long id, CredentialReqDTO.UpdateDTO updateDTO, UserDTO.UserInfo userInfoDTO) {
 		CredentialEntity credentialEntity = credentialRepository.findById(id).orElseThrow();
 
 		if (!userInfoDTO.getId().equals(credentialEntity.getRegUser().getRegUserId())) {

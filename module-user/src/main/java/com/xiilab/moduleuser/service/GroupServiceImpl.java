@@ -15,7 +15,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.repository.GroupRepository;
 import com.xiilab.moduleuser.vo.GroupReqVO;
 
@@ -27,7 +26,7 @@ public class GroupServiceImpl implements GroupService {
 	private final GroupRepository groupRepository;
 
 	@Override
-	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
+	public void createAccountGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfo) {
 		GroupReqVO groupReqVO = GroupReqVO.builder()
 			.name(groupReqDTO.getName())
 			.description(groupReqDTO.getDescription())
@@ -44,7 +43,7 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
+	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfoDTO) {
 		//group 생성
 		GroupReqVO groupReqVO = GroupReqVO.builder()
 			.name(groupReqDTO.getName())
@@ -100,7 +99,7 @@ public class GroupServiceImpl implements GroupService {
 		}
 	}
 
-	private void createWorkspaceChildGroup(String parentId, GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
+	private void createWorkspaceChildGroup(String parentId, GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfoDTO) {
 		//owner 그룹 생성
 		GroupSummaryDTO ownerGroup = groupRepository.createChildGroup(GroupReqVO.ChildGroupReqVO.builder()
 			.name("owner")

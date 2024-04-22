@@ -1,11 +1,15 @@
 package com.xiilab.servercore.user.service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
@@ -14,12 +18,12 @@ import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -41,7 +45,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 
 	@Override
 	public void joinUser(UserReqVO userReqVO, String groupId) {
-		UserInfo userInfo = userService.joinUser(userReqVO);
+		UserDTO.UserInfo userInfo = userService.joinUser(userReqVO);
 		if (StringUtils.isNotBlank(groupId)) {
 			userService.joinDefaultGroup(userInfo.getId());
 			userService.joinGroup(groupId, userInfo.getId());
@@ -58,17 +62,23 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 			new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), mailTitle, title, message, null));
 		MailAttribute mail = MailAttribute.USER_JOIN;
 		// Mail Contents 작성
-		List<MailDTO.Content> contents = List.of(MailDTO.Content.builder().col1("사용자 이름 : ").col2(userReqVO.getLastName() + userReqVO.getFirstName()).build(),
+		List<MailDTO.Content> contents = List.of(MailDTO.Content.builder()
+				.col1("사용자 이름 : ")
+				.col2(userReqVO.getLastName() + userReqVO.getFirstName())
+				.build(),
 			MailDTO.Content.builder().col1("이메일 주소 : ").col2(userReqVO.getEmail()).build(),
-			MailDTO.Content.builder().col1("가입 일시 : ").col2(userInfo.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).build());
-
+			MailDTO.Content.builder()
+				.col1("가입 일시 : ")
+				.col2(userInfo.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.build());
 		// Mail 전송
 		mailService.sendMail(MailDTO.builder()
-				.subject(mail.getSubject())
-				.title(String.format(mail.getTitle(), userReqVO.getLastName() + userReqVO.getFirstName(), userReqVO.getEmail()))
-				.contents(contents)
-				.subTitle(mail.getSubTitle())
-				.footer(mail.getFooter())
+			.subject(mail.getSubject())
+			.title(String.format(mail.getTitle(), userReqVO.getLastName() + userReqVO.getFirstName(),
+				userReqVO.getEmail()))
+			.contents(contents)
+			.subTitle(mail.getSubTitle())
+			.footer(mail.getFooter())
 			.build());
 	}
 
@@ -83,7 +93,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public UserInfo getUserInfoById(String userId) {
+	public UserDTO.UserInfo getUserInfoById(String userId) {
 		return userService.getUserInfoById(userId);
 	}
 
@@ -136,7 +146,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO) {
 		userService.updateUserInfoById(id, updateUserDTO);
-		UserInfo userInfo = userService.getUserInfoById(id);
+		UserDTO.UserInfo userInfo = userService.getUserInfoById(id);
 
 		// 회원정보 변경 알림 메시지 발송
 		AlertMessage userUpdate = AlertMessage.USER_UPDATE;
@@ -148,14 +158,16 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		);
 		MailAttribute mail = MailAttribute.USER_UPDATE;
 		// Mail Contents 작성
-		List<MailDTO.Content> contents = List.of(MailDTO.Content.builder().col1("사용자 이름 : ").col2(userInfo.getLastName() + userInfo.getFirstName()).build(),
+		List<MailDTO.Content> contents = List.of(
+			MailDTO.Content.builder().col1("사용자 이름 : ").col2(userInfo.getLastName() + userInfo.getFirstName()).build(),
 			MailDTO.Content.builder().col1("이메일 주소 : ").col2(userInfo.getEmail()).build()
 
 		);
 		// Mail 전송
 		mailService.sendMail(MailDTO.builder()
 			.subject(mail.getSubject())
-			.title(String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
+			.title(
+				String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
 			.subTitle(mail.getSubTitle())
 			.contentTitle(mail.getContentTitle())
 			.receiverEmail(userInfo.getEmail())
@@ -166,12 +178,95 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public List<UserInfo> getAdminList() {
+	public List<UserDTO.UserInfo> getAdminList() {
 		return userService.getAdminList();
 	}
 
 	@Override
 	public void joinAdmin(UserReqVO userReqVO) {
 		userService.joinAdmin(userReqVO);
+	}
+
+	@Override
+	public Set<String> getWorkspaceList(String userId, boolean isMyWorkspace) {
+		UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
+		List<String> workspaces = userInfo.getWorkspaces();
+		if (!CollectionUtils.isEmpty(workspaces)) {
+			if (isMyWorkspace) {
+				return userInfo.getMyWorkspaces();
+			} else {
+				return userInfo.getAllWorkspaces();
+			}
+		} else {
+			return new HashSet<>();
+		}
+	}
+
+	@Override
+	public boolean isMyWorkspace(String userId, String workspaceName) {
+		UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
+		//ROLE_ADMIN을 가지고 있을 경우, 리턴 true
+		if (userInfo.getAuth() == AuthType.ROLE_ADMIN) {
+			return true;
+		}
+		if (StringUtils.isEmpty(workspaceName)) {
+			return false;
+		}
+
+		Set<String> ownerWorkspace = userInfo.getWorkspaces()
+			.stream()
+			.filter(ws -> ws.contains("/owner"))
+			.map(group -> group.split("/")[0])
+			.collect(
+				Collectors.toSet());
+
+		return ownerWorkspace.contains(workspaceName);
+	}
+
+	@Override
+	public boolean isAccessAuthorityWorkspace(String userId, String workspaceName) {
+		UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
+		//ROLE_ADMIN을 가지고 있을 경우, 리턴 true
+		if (userInfo.getAuth() == AuthType.ROLE_ADMIN) {
+			return true;
+		}
+		if (StringUtils.isEmpty(workspaceName)) {
+			return false;
+		}
+
+		Set<String> workspaces = userInfo.getWorkspaces().stream()
+			.filter(ws -> ws.contains("/owner") || ws.contains("/user"))
+			.map(group -> group.split("/")[0])
+			.collect(Collectors.toSet());
+
+		return workspaces.contains(workspaceName);
+	}
+
+	@Override
+	public boolean isAccessAuthorityWorkspaceNotAdmin(String userId, String workspaceName) {
+		UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
+
+		if (StringUtils.isEmpty(workspaceName)) {
+			return false;
+		}
+
+		Set<String> workspaces = userInfo.getWorkspaces().stream()
+			.filter(ws -> ws.contains("/owner") || ws.contains("/user"))
+			.map(group -> group.split("/")[0])
+			.collect(Collectors.toSet());
+
+		return workspaces.contains(workspaceName);
+	}
+
+	@Override
+	public WorkspaceRole getWorkspaceAuthority(String userId, String workspaceName) {
+		UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
+
+		Set<String> workspaces = userInfo.getWorkspaces().stream()
+			.filter(ws -> ws.contains("/owner") || ws.contains("/user"))
+			.map(group -> group.split("/")[0])
+			.collect(Collectors.toSet());
+
+		return workspaces.contains(workspaceName) ? WorkspaceRole.ROLE_OWNER : WorkspaceRole.ROLE_USER;
 	}
 }

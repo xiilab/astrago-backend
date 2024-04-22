@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
@@ -31,7 +31,7 @@ public class CodeController {
 
 	@PostMapping("")
 	@Operation(summary = "소스 코드 등록 API")
-	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO){
+	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO, UserDTO.UserInfo userInfoDTO){
 		return new ResponseEntity<>(codeService.saveCode(codeReqDTO, userInfoDTO), HttpStatus.OK);
 	}
 
@@ -39,7 +39,7 @@ public class CodeController {
 	@Operation(summary = "소스 코드 목록 API")
 	public ResponseEntity<Page<CodeResDTO>> getCodeList(
 		@RequestParam(value = "workspacename", required = false) String workspaceName,
-		UserInfoDTO userInfoDTO, Pageable pageable){
+		UserDTO.UserInfo userInfoDTO, Pageable pageable){
 		return new ResponseEntity<>(codeService.getCodeList(workspaceName, userInfoDTO, pageable), HttpStatus.OK);
 	}
 

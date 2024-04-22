@@ -9,9 +9,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.xiilab.moduleuser.dto.UserInfo;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.KeycloakUserRepository;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +21,7 @@ public class CustomUserResolver implements HandlerMethodArgumentResolver {
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		// userDto 가 파라미터에 포함되어 있는지 체크하여 true를 리턴한다.
-		return parameter.getParameterType() == UserInfoDTO.class;
+		return parameter.getParameterType() == UserDTO.UserInfo.class;
 	}
 
 	@Override
@@ -31,19 +30,6 @@ public class CustomUserResolver implements HandlerMethodArgumentResolver {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		Jwt principal = (Jwt)authentication.getPrincipal();
-		String userRealName =
-			principal.getClaims().get("family_name").toString() + principal.getClaims().get("given_name").toString();
-		UserInfo userInfo = repository.getUserInfoById(principal.getSubject());
-		return UserInfoDTO.builder()
-			.id(userInfo.getId())
-			.userName(userInfo.getUserName())
-			.userFullName(userRealName)
-			.email(userInfo.getEmail())
-			.joinDate(userInfo.getJoinDate())
-			.signUpMethod(userInfo.getSignUpMethod())
-			.auth(userInfo.getAuth())
-			.groups(userInfo.getGroups())
-			.workspaces(userInfo.getWorkspaces())
-			.build();
+		return repository.getUserInfoById(principal.getSubject());
 	}
 }

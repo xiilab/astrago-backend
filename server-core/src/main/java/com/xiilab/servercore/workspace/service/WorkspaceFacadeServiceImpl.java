@@ -51,15 +51,15 @@ import com.xiilab.modulek8sdb.workspace.entity.ResourceQuotaEntity;
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaCustomRepository;
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaHistoryRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.code.service.CodeService;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadHistoryService;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
@@ -96,9 +96,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final CodeService codeService;
 	private final ImageService imageService;
 	private final MailService mailService;
-	private final UserService userService;
+	private final UserFacadeService userService;
 	@Override
-	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO) {
+	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserDTO.UserInfo userInfoDTO) {
 		//워크스페이스 생성
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
 			.name(applicationForm.getName())
@@ -194,15 +194,15 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition,
-		int pageNum, UserInfoDTO userInfoDTO) {
-		Set<String> groupList = userInfoDTO.getWorkspaceList(isMyWorkspace);
+		int pageNum, UserDTO.UserInfo userInfoDTO) {
+		Set<String> userWorkspaceList = userInfoDTO.getWorkspaceList(isMyWorkspace);
 		//전체 workspace 리스트 조회
 		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
 		//user의 pin 리스트 조회
 		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
 		//조건절 처리
 		workspaceList = workspaceList.stream()
-			.filter(workspace -> groupList.contains(workspace.getResourceName()))
+			.filter(workspace -> userWorkspaceList.contains(workspace.getResourceName()))
 			.filter(workspace -> searchCondition == null || workspace.getName().contains(searchCondition))
 			.sorted(Comparator.comparing(WorkspaceDTO.ResponseDTO::getCreatedAt).reversed())
 			.toList();
@@ -237,7 +237,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO) {
+	public void deleteWorkspaceByName(String workspaceName, UserDTO.UserInfo userInfoDTO) {
 		//생성된 워크로드가 있는지 확인
 		List<ModuleWorkloadResDTO> workloadList = workloadModuleFacadeService.getWorkloadList(workspaceName);
 		if (workloadList != null && workloadList.size() > 0) {
@@ -314,7 +314,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO) {
+	public List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserDTO.UserInfo userInfoDTO) {
 		//전체 workspace 리스트 조회
 		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
 		//user의 pin 리스트 조회
@@ -345,7 +345,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional
-	public void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO) {
+	public void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserDTO.UserInfo userInfoDTO) {
 		WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(
 			workspaceResourceReqDTO.getWorkspace());
 		//관리자가 요청 했을 경우 승인 프로세스를 건너뛰고 바로 적용
@@ -412,7 +412,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	@Transactional(readOnly = true)
 	public PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		List<ResourceQuotaEntity> resourceQuotaReqList = resourceQuotaHistoryRepository.findByWorkspaceResourceName(
 			workspace);
 
@@ -437,7 +437,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	@Transactional
-	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO, UserInfoDTO userInfoDTO) {
+	public void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO, UserDTO.UserInfo userInfoDTO) {
 		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
 			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
 		}
@@ -510,7 +510,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		Set<String> workspaceList = userInfoDTO.getWorkspaceList(false);
 		return workspaceList.stream()
 			.map(this::safeGetWorkspaceResourceStatus)
@@ -532,13 +532,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO) {
+	public boolean workspaceAccessAuthority(String workspaceResourceName, UserDTO.UserInfo userInfoDTO) {
 		return userInfoDTO.isAccessAuthorityWorkspace(workspaceResourceName);
 	}
 
 	@Override
 	public PageDTO<WorkspaceDTO.AdminResponseDTO> getAdminWorkspaceList(String searchCondition,
-		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserInfoDTO userInfoDTO) {
+		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserDTO.UserInfo userInfoDTO) {
 		//권한 체크
 		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
 			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
@@ -566,7 +566,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		List<ResourceQuotaEntity> resourceQuotaEntityList = resourceQuotaHistoryRepository.findAll();
 
 		List<ResourceQuotaFormDTO> list = resourceQuotaEntityList.stream()
@@ -640,7 +640,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	@Transactional
 	public void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
 			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
 		}

@@ -18,7 +18,6 @@ import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.repository.UserRepository;
 import com.xiilab.moduleuser.vo.UserReqVO;
@@ -31,8 +30,9 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final ApplicationEventPublisher eventPublisher;
 	private final MailService mailService;
+
 	@Override
-	public UserInfo joinUser(UserReqVO userReqVO) {
+	public UserDTO.UserInfo joinUser(UserReqVO userReqVO) {
 		return userRepository.joinUser(userReqVO);
 	}
 
@@ -42,12 +42,13 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition) {
+	public UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize,
+		UserSearchCondition searchCondition) {
 		return userRepository.getWaitingApprovalUserList(pageNo, pageSize, searchCondition);
 	}
 
 	@Override
-	public UserInfo getUserInfoById(String userId) {
+	public UserDTO.UserInfo getUserInfoById(String userId) {
 		return userRepository.getUserInfoById(userId);
 	}
 
@@ -84,6 +85,7 @@ public class UserServiceImpl implements UserService {
 	public void joinGroup(String groupId, String userId) {
 		userRepository.joinGroup(groupId, userId);
 	}
+
 	@Override
 	public void joinDefaultGroup(String userId) {
 		userRepository.joinDefaultGroup(userId);
@@ -93,12 +95,14 @@ public class UserServiceImpl implements UserService {
 	public void deleteUserById(List<String> userId) {
 		userRepository.deleteUserById(userId);
 	}
+
 	@Override
-	public List<SearchDTO> getUserAndGroupBySearch(String search){
+	public List<SearchDTO> getUserAndGroupBySearch(String search) {
 		return userRepository.getUserAndGroupBySearch(search);
 	}
+
 	@Override
-	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO){
+	public void updateUserInfoById(String id, UpdateUserDTO updateUserDTO) {
 		userRepository.updateUserInfoById(id, updateUserDTO);
 	}
 
@@ -106,14 +110,14 @@ public class UserServiceImpl implements UserService {
 	public void updateUserEnable(String id, boolean enable) {
 		UserAlertEvent userAlertEvent = null;
 		userRepository.updateUserEnable(id, enable);
-		UserInfo userInfo = userRepository.getUserInfoById(id);
+		UserDTO.UserInfo userInfo = userRepository.getUserInfoById(id);
 		MailAttribute mail;
 		// Mail Contents 작성
 		List<MailDTO.Content> contents = new ArrayList<>();
 		String result;
 		//알림 발송 해야함
 		//true 활성화
-		if(enable){
+		if (enable) {
 			AlertMessage userEnabled = AlertMessage.USER_ENABLED;
 			String emailTitle = String.format(userEnabled.getMailTitle());
 			String title = userEnabled.getTitle();
@@ -121,14 +125,21 @@ public class UserServiceImpl implements UserService {
 			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
 			mail = MailAttribute.USER_ENABLE;
 			contents = List.of(
-				MailDTO.Content.builder().col1("사용자 이름 : ").col2(userInfo.getLastName() + userInfo.getFirstName()).build(),
+				MailDTO.Content.builder()
+					.col1("사용자 이름 : ")
+					.col2(userInfo.getLastName() + userInfo.getFirstName())
+					.build(),
 				MailDTO.Content.builder().col1("이메일 주소 : ").col2(userInfo.getEmail()).build(),
-				MailDTO.Content.builder().col1("활성화 일시 : ").col2(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).build()
+				MailDTO.Content.builder()
+					.col1("활성화 일시 : ")
+					.col2(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+					.build()
 			);
-		}else{//false 비활성화
+		} else {//false 비활성화
 			String emailTitle = String.format(AlertMessage.USER_DISABLED.getMailTitle());
 			String title = AlertMessage.USER_DISABLED.getTitle();
-			String message = String.format(AlertMessage.USER_DISABLED.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
+			String message = String.format(AlertMessage.USER_DISABLED.getMessage(),
+				userInfo.getLastName() + userInfo.getFirstName());
 			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
 			mail = MailAttribute.USER_UNABLE;
 		}
@@ -138,7 +149,8 @@ public class UserServiceImpl implements UserService {
 		// Mail 전송
 		mailService.sendMail(MailDTO.builder()
 			.subject(mail.getSubject())
-			.title(String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
+			.title(
+				String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
 			.subTitle(mail.getSubTitle())
 			.receiverEmail(userInfo.getEmail())
 			.contentTitle(mail.getContentTitle())
@@ -151,8 +163,9 @@ public class UserServiceImpl implements UserService {
 	public UserDTO.UserInfo getUserById(String id) {
 		return userRepository.getUserById(id);
 	}
+
 	@Override
-	public List<UserInfo> getAdminList(){
+	public List<UserDTO.UserInfo> getAdminList() {
 		return userRepository.getAdminList();
 	}
 

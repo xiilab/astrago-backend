@@ -18,8 +18,7 @@ import com.xiilab.modulek8sdb.report.dto.ReportReservationDTO;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
 import com.xiilab.modulek8sdb.report.report.ReservationRepository;
 import com.xiilab.modulek8sdb.report.report.ReservationRepositoryCustom;
-import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -45,7 +44,7 @@ public class ReportServiceImpl implements ReportService{
 			ReportReservationEntity reportReservationEntity = reservationDTO.convertEntity();
 			// Report 수신자 추가
 			reportReservationEntity.addUser(reservationDTO.getUserIdList().stream().map(userId ->{
-				UserInfo userInfo = userService.getUserInfoById(userId);
+				UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
 				return ReportReservationDTO.UserDTO.builder()
 					.userId(userInfo.getId())
 					.email(userInfo.getEmail())
@@ -94,7 +93,7 @@ public class ReportServiceImpl implements ReportService{
 		if(Objects.nonNull(reservationDTO.getUserIdList())){
 			reportReservation.getReservationUserEntities().clear();
 			reportReservation.addUser(reservationDTO.getUserIdList().stream().map(userId ->{
-				UserInfo userInfo = userService.getUserInfoById(userId);
+				UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
 				return ReportReservationDTO.UserDTO.builder()
 					.userId(userInfo.getId())
 					.email(userInfo.getEmail())
@@ -107,7 +106,7 @@ public class ReportServiceImpl implements ReportService{
 	}
 
 	@Override
-	public Page<ReportReservationDTO.ResponseDTO> getReportReservationList(Pageable pageable, UserInfoDTO userInfoDTO) {
+	public Page<ReportReservationDTO.ResponseDTO> getReportReservationList(Pageable pageable, UserDTO.UserInfo userInfoDTO) {
 		PageRequest pageRequest = null;
 		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
 			pageable.getPageSize())) {
@@ -121,7 +120,7 @@ public class ReportServiceImpl implements ReportService{
 	}
 
 	@Override
-	public Page<ReportReservationDTO.ReceiveDTO> getReportReceiveList(Pageable pageable, UserInfoDTO userInfoDTO) {
+	public Page<ReportReservationDTO.ReceiveDTO> getReportReceiveList(Pageable pageable, UserDTO.UserInfo userInfoDTO) {
 		PageRequest pageRequest = null;
 		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
 			pageable.getPageSize())) {
@@ -132,7 +131,7 @@ public class ReportServiceImpl implements ReportService{
 	}
 
 	@Override
-	public ReportReservationDTO.DetailDTO getReportReceiveListById(long id, UserInfoDTO userInfoDTO) {
+	public ReportReservationDTO.DetailDTO getReportReceiveListById(long id, UserDTO.UserInfo userInfoDTO) {
 
 		ReportReservationEntity reportReservationEntity = repositoryCustom.getReportReceiveListById(id, userInfoDTO.getId());
 		return ReportReservationDTO.DetailDTO.builder()

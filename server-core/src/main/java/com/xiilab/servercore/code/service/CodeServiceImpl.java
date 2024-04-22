@@ -28,7 +28,7 @@ import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
@@ -49,7 +49,7 @@ public class CodeServiceImpl implements CodeService {
 
 	@Override
 	@Transactional
-	public CodeResDTO saveCode(CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO) {
+	public CodeResDTO saveCode(CodeReqDTO codeReqDTO, UserDTO.UserInfo userInfoDTO) {
 		// 깃허브 또는 깃랩 URL인지 검증
 		// boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
 		// boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
@@ -156,7 +156,7 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
-	public Page<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO, Pageable pageable) {
+	public Page<CodeResDTO> getCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO, Pageable pageable) {
 		Page<CodeEntity> codeEntityList = null;
 		if (StringUtils.isEmpty(workspaceName)) {
 			codeEntityList = codeRepository.findByRegUser_RegUserIdAndRepositoryTypeAndDeleteYn(userInfoDTO.getId(),
@@ -201,7 +201,7 @@ public class CodeServiceImpl implements CodeService {
 		return codeRepository.findById(id).orElseThrow(() -> new RestApiException(CodeErrorCode.CODE_NOT_FOUND));
 	}
 
-	private void checkCodeExist(CodeReqDTO codeReqDTO, UserInfoDTO userInfoDTO) {
+	private void checkCodeExist(CodeReqDTO codeReqDTO, UserDTO.UserInfo userInfoDTO) {
 		RepositoryType repositoryType = codeReqDTO.getRepositoryType();
 		if (repositoryType == USER) {
 			List<CodeEntity> codeEntities = codeRepository.findByCodeURLAndRepositoryTypeAndRegUser_RegUserIdAndDeleteYn(

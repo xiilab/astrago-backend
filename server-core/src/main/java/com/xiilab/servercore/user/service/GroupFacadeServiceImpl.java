@@ -27,8 +27,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.moduleuser.service.UserService;
 
@@ -45,12 +43,12 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final MailService mailService;
 	private final UserService userService;
 	@Override
-	public void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo) {
+	public void createAccountGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfo) {
 		groupService.createAccountGroup(groupReqDTO, userInfo);
 	}
 
 	@Override
-	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO) {
+	public void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfoDTO) {
 		groupService.createWorkspaceGroup(groupReqDTO, userInfoDTO);
 	}
 
@@ -85,7 +83,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	}
 
 	@Override
-	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList, UserInfoDTO userInfoDTO){
+	public void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList, UserDTO.UserInfo userInfoDTO){
 		groupService.deleteWorkspaceMemberByUserId(groupName, userIdList);
 
 		//삭제 된 멤버들 알람 매핑 데이터 삭제
@@ -96,7 +94,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO, userIdList, false);
 	}
 	@Override
-	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO, UserInfoDTO userInfoDTO){
+	public void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO addWorkspaceUsersDTO, UserDTO.UserInfo userInfoDTO){
 		Set<String> addUserIds = groupService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO);
 
 		//추가 된 멤버들 알람 매핑 데이터 저장
@@ -106,7 +104,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO, addWorkspaceUsersDTO.getUserIds(), true);
 	}
 
-	private void sendModifyWorkspaceMemberEvent(String groupName, UserInfoDTO userInfoDTO, List<String> userIdList, boolean result) {
+	private void sendModifyWorkspaceMemberEvent(String groupName, UserDTO.UserInfo userInfoDTO, List<String> userIdList, boolean result) {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(groupName);
 		PageNaviParam pageNaviParam = PageNaviParam.builder()
 			.workspaceResourceName(workspace.getResourceName())
@@ -117,7 +115,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		String title = AlertMessage.WORKSPACE_MEMBER_UPDATE.getTitle();
 		String message = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
 
-		UserInfo creator = userService.getUserInfoById(workspace.getCreatorId());
+		UserDTO.UserInfo creator = userService.getUserInfoById(workspace.getCreatorId());
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_MEMBER_UPDATE,
 			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam);
 

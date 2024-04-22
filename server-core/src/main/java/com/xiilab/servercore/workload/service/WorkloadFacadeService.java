@@ -81,9 +81,7 @@ import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.servercore.alert.systemalert.service.AlertService;
-import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
@@ -98,6 +96,7 @@ import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
@@ -106,7 +105,6 @@ import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
 
-import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -120,7 +118,6 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final SvcModuleFacadeService svcModuleFacadeService;
-	// private final NodeFacadeService nodeFacadeService;
 	private final NodeService nodeService;
 	private final PinService pinService;
 	private final DatasetService datasetService;
@@ -129,15 +126,14 @@ public class WorkloadFacadeService {
 	private final CredentialService credentialService;
 	private final CodeService codeService;
 	private final ImageService imageService;
-	private final WorkspaceAlertSetService workspaceAlertSetService;
-	private final AlertService alertService;
 	private final WorkspaceService workspaceService;
 	private final ApplicationEventPublisher eventPublisher;
 	private final NetworkRepository networkRepository;
 	private final MailService mailService;
+	private final UserFacadeService userFacadeService;
 
 	@Transactional
-	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserInfoDTO userInfoDTO) {
+	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserDTO.UserInfo userInfoDTO) {
 		createWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(), userInfoDTO.getUserFullName());
 
 		// 이미지 credential 세팅
@@ -187,7 +183,7 @@ public class WorkloadFacadeService {
 	}
 
 	private void checkAndSendWorkspaceResourceOverAlert(CreateWorkloadJobReqDTO moduleCreateWorkloadReqDTO,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
 			moduleCreateWorkloadReqDTO.getWorkspace());
 		// CPU
@@ -280,22 +276,24 @@ public class WorkloadFacadeService {
 		return datasets.stream().collect(Collectors.toMap(CredentialResDTO::getId, credentialInfo -> credentialInfo));
 	}
 
-	private void setImageCredentialReqDTO(ModuleImageReqDTO moduleImageReqDTO, UserInfoDTO userInfoDTO) {
+	private void setImageCredentialReqDTO(ModuleImageReqDTO moduleImageReqDTO, UserDTO.UserInfo userInfoDTO) {
 		CredentialResDTO.CredentialInfo findCredential = credentialService.findCredentialById(
 			moduleImageReqDTO.getCredentialId(), userInfoDTO);
 		moduleImageReqDTO.setCredentialReqDTO(findCredential.toModuleCredentialReqDTO());
 	}
 
 	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(WorkloadType workloadType,
-		String workspaceName, String workloadResourceName, UserInfoDTO userInfoDTO) {
+		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 		// 실행중일 떄
 		try {
+			UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
+			Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 			if (workloadType == WorkloadType.BATCH) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
 				// 삭제권한 업데이트
-				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
+				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
 				// 파드 조회, 실제 실행시간 set
 				// updatePodStartTime(workloadType, workspaceName, workloadResourceName, moduleBatchJobResDTO);
 
@@ -304,7 +302,7 @@ public class WorkloadFacadeService {
 				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 					workspaceName, workloadResourceName);
 				//삭제권한 업데이트
-				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
+				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
@@ -356,7 +354,7 @@ public class WorkloadFacadeService {
 	}
 
 	public void stopWorkload(String workspaceName, String workloadName, WorkloadType workloadType,
-		UserInfoDTO userInfoDTO) throws IOException {
+		UserDTO.UserInfo userInfoDTO) throws IOException {
 
 		FindWorkloadResDTO.WorkloadDetail activeWorkloadDetail = null;
 		if (workloadType == WorkloadType.BATCH) {
@@ -390,7 +388,7 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
+	public void deleteWorkloadHistory(long id, UserDTO.UserInfo userInfoDTO) {
 		ModuleWorkloadResDTO workloadHistory = workloadHistoryService.getWorkloadHistoryById(id);
 		List<JobEntity> workloads = workloadHistoryService.getWorkloadByResourceName(
 			workloadHistory.getWorkspaceResourceName());
@@ -408,7 +406,7 @@ public class WorkloadFacadeService {
 
 	public PageDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(WorkloadType workloadType, String workspaceName,
 		String searchName, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, int pageNum,
-		Boolean isCreatedByMe, UserInfoDTO userInfoDTO) {
+		Boolean isCreatedByMe, UserDTO.UserInfo userInfoDTO) {
 		//통합용 리스트 선언
 		List<ModuleWorkloadResDTO> workloadResDTOList = new ArrayList<>();
 		if (workloadType == WorkloadType.BATCH) {
@@ -438,9 +436,9 @@ public class WorkloadFacadeService {
 			workloadStatus, workloadSortCondition, userInfoDTO.getId());
 		PageDTO<ModuleWorkloadResDTO> moduleWorkloadResDTOPageDTO = new PageDTO<>(pinWorkloadList, normalWorkloadList,
 			pageNum, 10);
+		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		moduleWorkloadResDTOPageDTO.getContent()
-			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(),
-				userInfoDTO.getWorkspaceList(true)));
+			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
 		return moduleWorkloadResDTOPageDTO;
 	}
 
@@ -510,7 +508,7 @@ public class WorkloadFacadeService {
 		return downloadFileFromWorkload(workloadName, workspaceName, workloadType, path).getContentAsByteArray();
 	}
 
-	public byte[] getWorkloadLogFile(String workloadName, UserInfoDTO userInfoDTO) {
+	public byte[] getWorkloadLogFile(String workloadName, UserDTO.UserInfo userInfoDTO) {
 		//저장된 로그 path 구하기
 		String logPath = FileUtils.getUserLogPath(userInfoDTO.getId(), workloadName);
 		try {
@@ -681,7 +679,7 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	private void stopBatchHobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void stopBatchHobWorkload(String workSpaceName, String workloadName, UserDTO.UserInfo userInfoDTO) throws
 		IOException {
 		try {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
@@ -705,7 +703,7 @@ public class WorkloadFacadeService {
 		// }
 	}
 
-	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserInfoDTO userInfoDTO) throws
+	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserDTO.UserInfo userInfoDTO) throws
 		IOException {
 		try {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,

@@ -12,7 +12,6 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.enums.AuthType;
@@ -23,7 +22,6 @@ import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.enums.UserEnable;
@@ -46,7 +44,7 @@ public class KeycloakUserRepository implements UserRepository {
 	private String initPassword;
 
 	@Override
-	public UserInfo joinUser(UserReqVO userReqVO) {
+	public UserDTO.UserInfo joinUser(UserReqVO userReqVO) {
 		UserRepresentation userRepresentation = userReqVO.convertUserRep();
 		// User 중복 체크
 		checkUserDuplicate(userReqVO);
@@ -60,7 +58,7 @@ public class KeycloakUserRepository implements UserRepository {
 		UserResource userResource = getUserResourceById(userRep.getId());
 		userResource.resetPassword(userReqVO.createCredentialRep());
 		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_USER.name())));
-		return new UserInfo(userResource.toRepresentation());
+		return new UserDTO.UserInfo(userResource.toRepresentation(), null);
 	}
 
 	private void checkUserDuplicate(UserReqVO userReqVO) {
@@ -136,14 +134,14 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
-	public UserInfo getUserInfoById(String userId) {
+	public UserDTO.UserInfo getUserInfoById(String userId) {
 		UserResource userResource = getUserResourceById(userId);
 		List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
 		UserRepresentation userRepresentation = userResource.toRepresentation();
 		try {
 			List<String> roles = roleRepresentations.stream()
 				.filter(role -> role.getName().contains("ROLE_"))
-				.map(user -> user.getName())
+				.map(RoleRepresentation::getName)
 				.toList();
 			userRepresentation.setRealmRoles(roles);
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -155,7 +153,7 @@ public class KeycloakUserRepository implements UserRepository {
 		} catch (NullPointerException e) {
 			groupList = null;
 		}
-		return new UserInfo(userRepresentation, groupList);
+		return new UserDTO.UserInfo(userRepresentation, groupList);
 	}
 
 	@Override
@@ -484,10 +482,10 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
-	public List<UserInfo> getAdminList() {
+	public List<UserDTO.UserInfo> getAdminList() {
 		List<UserRepresentation> adminList = keycloakConfig.getRealmClient().roles().get("ROLE_ADMIN").getUserMembers();
 		return adminList.stream().map(userRepresentation ->
-			new UserInfo(userRepresentation, null)).toList();
+			new UserDTO.UserInfo(userRepresentation, null)).toList();
 	}
 
 	@Override

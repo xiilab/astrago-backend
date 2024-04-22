@@ -42,8 +42,7 @@ import com.xiilab.modulek8sdb.alert.alertmanager.enumeration.AlertManagerCategor
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerReceiveRepository;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepoCustom;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerRepository;
-import com.xiilab.moduleuser.dto.UserInfo;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -69,7 +68,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 		alertManagerEntity.addCategory(requestDTO.getCategoryDTOList());
 
 		alertManagerEntity.addUser(requestDTO.getUserIdList().stream().map(userId -> {
-			UserInfo userInfo = userService.getUserInfoById(userId);
+			UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
 
 			return AlertManagerDTO.UserDTO.builder()
 				.userId(userInfo.getId())
@@ -121,7 +120,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 		// user
 		alertManagerEntity.getAlertManagerUserEntityList().clear();
 		alertManagerEntity.addUser(requestDTO.getUserIdList().stream().map(userId -> {
-			UserInfo userInfo = userService.getUserInfoById(userId);
+			UserDTO.UserInfo userInfo = userService.getUserInfoById(userId);
 			return AlertManagerDTO.UserDTO.builder()
 				.userId(userInfo.getId())
 				.email(userInfo.getEmail())
@@ -242,7 +241,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 
 	@Override
 	public Page<AlertManagerReceiveDTO.ResponseDTO> getAlertManagerReceiveList(String categoryType, String startDate,
-		String endDate, String search, UserInfoDTO userInfoDTO, Pageable pageable) {
+		String endDate, String search, UserDTO.UserInfo userInfoDTO, Pageable pageable) {
 		PageRequest pageRequest = null;
 		if (pageable != null && !ObjectUtils.isEmpty(pageable.getPageNumber()) && !ObjectUtils.isEmpty(
 			pageable.getPageSize())) {

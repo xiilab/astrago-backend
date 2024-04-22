@@ -1,19 +1,19 @@
 package com.xiilab.servercore.user.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
 public interface UserFacadeService {
 	//회원가입
-	// UserInfo joinUser(UserReqVO userReqVO, String groupId);
 	void joinUser(UserReqVO userReqVO, String groupId);
 
 	//사용자 리스트 조회
@@ -23,7 +23,7 @@ public interface UserFacadeService {
 	UserDTO.PageUsersDTO getWaitingApprovalUserList(PageInfo pageInfo, UserSearchCondition searchCondition);
 
 	//사용자 상세 조회
-	UserInfo getUserInfoById(String userId);
+	UserDTO.UserInfo getUserInfoById(String userId);
 
 	// 사용자 정보 수정
 	void updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
@@ -39,11 +39,24 @@ public interface UserFacadeService {
 	void updateUserRole(String userId, AuthType authType);
 
 	void deleteUserById(List<String> userIdList);
+
 	List<SearchDTO> getUserAndGroupBySearch(String search);
 
 	void updateUserEnable(String id, boolean enable);
 
 	UserDTO.UserInfo getUserById(String id);
-	List<UserInfo> getAdminList();
+
+	List<UserDTO.UserInfo> getAdminList();
+
 	void joinAdmin(UserReqVO userReqVO);
+
+	Set<String> getWorkspaceList(String userId, boolean isMyWorkspace);
+
+	boolean isMyWorkspace(String userId, String workspaceName);
+
+	boolean isAccessAuthorityWorkspace(String userId, String workspaceName);
+
+	boolean isAccessAuthorityWorkspaceNotAdmin(String userId, String workspaceName);
+
+	WorkspaceRole getWorkspaceAuthority(String userId, String workspaceName);
 }

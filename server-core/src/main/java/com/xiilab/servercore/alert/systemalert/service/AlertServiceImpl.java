@@ -29,7 +29,7 @@ import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepo
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
@@ -180,14 +180,14 @@ public class AlertServiceImpl implements AlertService {
 
 	@Override
 	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(
-		String workspaceResourceName, UserInfoDTO userInfoDTO) {
-		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
+		String workspaceResourceName, UserDTO.UserInfo userInfo) {
+		boolean accessAuthorityWorkspace = userInfo.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
 		//워크스페이스 접근 권한 없음
 		if (!accessAuthorityWorkspace) {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
 		}
-		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
-		return workspaceAlertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(userInfoDTO.getId(),
+		WorkspaceRole workspaceAuthority = userInfo.getWorkspaceAuthority(workspaceResourceName);
+		return workspaceAlertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(userInfo.getId(),
 			workspaceResourceName, workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER);
 	}
 
@@ -196,22 +196,22 @@ public class AlertServiceImpl implements AlertService {
 	 * @param alertId
 	 * @param workspaceResourceName
 	 * @param modifyWorkspaceAlertMapping
-	 * @param userInfoDTO
+	 * @param userInfo
 	 */
 	@Override
 	@Transactional
 	public void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName,
-		ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping, UserInfoDTO userInfoDTO) {
-		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
+		ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping, UserDTO.UserInfo userInfo) {
+		boolean accessAuthorityWorkspace = userInfo.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
 		//워크스페이스 접근 권한 없음
 		if (!accessAuthorityWorkspace) {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
 		}
-		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
+		WorkspaceRole workspaceAuthority = userInfo.getWorkspaceAuthority(workspaceResourceName);
 		AlertRole alertRole = workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER;
 		workspaceAlertService.modifyWorkspaceAlertMapping(alertId, alertRole,
 			modifyWorkspaceAlertMapping.getAlertSendType(), modifyWorkspaceAlertMapping.getAlertStatus(),
-			userInfoDTO.getId());
+			userInfo.getId());
 	}
 
 	private Map<AlertType, Long> getAllAlertTypeCountMap(String loginUserId, AlertRole alertRole, ReadYN readYN, String searchText,

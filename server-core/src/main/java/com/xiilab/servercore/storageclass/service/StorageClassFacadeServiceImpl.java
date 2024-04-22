@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class StorageClassFacadeServiceImpl implements StorageClassFacadeService {
 	private final StorageModuleService storageModuleService;
 	@Override
-	public void createStorageClass(CreateStorageClassReqDTO createStorageClassReqDTO, UserInfoDTO userInfoDTO) {
+	public void createStorageClass(CreateStorageClassReqDTO createStorageClassReqDTO, UserDTO.UserInfo userInfoDTO) {
 		createStorageClassReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(), userInfoDTO.getUserFullName());
 		storageModuleService.createStorageClass(createStorageClassReqDTO.toModuleDto());
 	}

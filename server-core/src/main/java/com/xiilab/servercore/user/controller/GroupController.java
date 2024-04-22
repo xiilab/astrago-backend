@@ -21,7 +21,6 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.user.service.GroupFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,7 +49,7 @@ public class GroupController {
 	@PostMapping()
 	@Operation(summary = "그룹 생성")
 	public ResponseEntity<HttpStatus> createAccountGroup(@RequestBody GroupReqDTO groupReqDTO,
-		@Parameter(hidden = true) UserInfoDTO userInfo) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfo) {
 		groupFacadeService.createAccountGroup(groupReqDTO, userInfo);
 		return ResponseEntity.ok().build();
 	}
@@ -116,7 +115,7 @@ public class GroupController {
 	public ResponseEntity<HttpStatus> deleteWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
 		@RequestBody List<String> userIdList,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userIdList, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -126,7 +125,7 @@ public class GroupController {
 	public ResponseEntity<HttpStatus> addWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
 		@RequestBody AddWorkspaceUsersDTO addWorkspaceUsersDTO,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		groupFacadeService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}

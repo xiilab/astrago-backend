@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerDTO;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerReceiveDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.alert.alertmanager.service.AlertManagerFacadeService;
 import com.xiilab.servercore.alert.alertmanager.service.AlertManagerService;
 
@@ -87,7 +87,7 @@ public class AlertManagerController {
 		@RequestParam(value = "endDate", required = false) String endDate,
 		@RequestParam(value = "search", required = false) String search,
 		Pageable pageable,
-		UserInfoDTO userInfoDTO){
+		UserDTO.UserInfo userInfoDTO){
 		return new ResponseEntity<>(alertManagerService.getAlertManagerReceiveList(categoryType, startDate, endDate, search, userInfoDTO, pageable), HttpStatus.OK);
 	}
 

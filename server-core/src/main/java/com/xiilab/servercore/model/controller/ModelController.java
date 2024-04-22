@@ -23,7 +23,7 @@ import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelFacadeService;
@@ -62,7 +62,7 @@ public class ModelController {
 	@Operation(summary = "model 전체 조회")
 	public ResponseEntity<ModelDTO.ResModels> getModels(PageInfo pageInfo,
 		RepositorySearchCondition repositorySearchCondition,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO){
 		ModelDTO.ResModels models = modelService.getModels(pageInfo, repositorySearchCondition, userInfoDTO);
 
 		return new ResponseEntity<>(models, HttpStatus.OK);
@@ -88,7 +88,7 @@ public class ModelController {
 	@Operation(summary = "model 수정")
 	public ResponseEntity<HttpStatus> modifyModel(@PathVariable(name = "modelId") Long modelId,
 		@RequestBody ModelDTO.ModifyModel modifyModel,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO){
 		modelFacadeService.modifyModel(modifyModel, modelId, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -96,7 +96,7 @@ public class ModelController {
 	@DeleteMapping("/models/{modelId}")
 	@Operation(summary = "model 삭제")
 	public ResponseEntity<HttpStatus> deleteModel(@PathVariable(name = "modelId") Long modelId,
-		@Parameter(hidden = true) UserInfoDTO userInfoDTO){
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO){
 		modelFacadeService.deleteModel(modelId, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

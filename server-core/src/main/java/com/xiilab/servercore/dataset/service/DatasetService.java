@@ -4,23 +4,23 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
-import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 
 public interface DatasetService {
 	void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files);
 
-	DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserInfoDTO userInfoDTO);
+	DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserDTO.UserInfo userInfoDTO);
 
 	DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId);
 
@@ -44,16 +44,16 @@ public interface DatasetService {
 
 	void astragoDatasetCreateDirectory(Long datasetId, DatasetDTO.ReqFilePathDTO reqFilePathDTO);
 
-	DatasetDTO.DatasetsInWorkspace getDatasetsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType, UserInfoDTO userInfoDTO);
+	DatasetDTO.DatasetsInWorkspace getDatasetsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType, UserDTO.UserInfo userInfoDTO);
 
 	void insertWorkspaceDataset(InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO);
 
-	void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO);
+	void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO);
 
 	DatasetDTO.DatasetsInWorkspace getDatasetsByWorkspaceResourceName(String workspaceResourceName);
 
 	void deleteDatasetWorkloadMapping(Long jobId);
 
 	void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName,
-		Long datasetId, UserInfoDTO userInfoDTO);
+		Long datasetId, UserDTO.UserInfo userInfoDTO);
 }

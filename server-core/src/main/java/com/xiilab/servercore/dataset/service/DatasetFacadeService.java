@@ -8,7 +8,7 @@ import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 
@@ -19,9 +19,9 @@ public interface DatasetFacadeService {
 
 	void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO);
 
-	void modifyDataset(DatasetDTO.ModifyDatset modifyDatset, Long datasetId, UserInfoDTO userInfoDTO);
+	void modifyDataset(DatasetDTO.ModifyDatset modifyDatset, Long datasetId, UserDTO.UserInfo userInfoDTO);
 
-	void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO);
+	void deleteDataset(Long datasetId, UserDTO.UserInfo userInfoDTO);
 
 	DirectoryDTO getLocalDatasetFiles(Long datasetId, String filePath);
 

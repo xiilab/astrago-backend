@@ -10,14 +10,13 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 public interface GroupService {
 	//사용자 그룹 생성
-	void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo);
+	void createAccountGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfo);
 
 	//워크스페이스 그룹 생성
-	void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO);
+	void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfoDTO);
 
 	//그룹 전체 목록 조회
 	List<GroupSummaryDTO> getGroupList(String searchText);

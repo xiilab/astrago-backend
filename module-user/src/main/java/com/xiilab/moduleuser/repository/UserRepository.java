@@ -9,18 +9,17 @@ import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfo;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
 @Component
 public interface UserRepository {
-	UserInfo joinUser(UserReqVO userReqVO);
+	UserDTO.UserInfo joinUser(UserReqVO userReqVO);
 
 	UserDTO.PageUsersDTO getUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition);
 
-	UserInfo getUserInfoById(String userId);
+	UserDTO.UserInfo getUserInfoById(String userId);
 
 	List<UserSummary> getUserListSearchByAttribute(String attribute);
 
@@ -48,7 +47,7 @@ public interface UserRepository {
 
 	UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition);
 
-	List<UserInfo> getAdminList();
+	List<UserDTO.UserInfo> getAdminList();
 
 	void joinAdmin(UserReqVO userReqVO);
 }

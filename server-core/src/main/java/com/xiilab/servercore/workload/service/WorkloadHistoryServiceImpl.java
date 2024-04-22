@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.catalina.User;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,6 @@ import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -51,7 +50,8 @@ import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
@@ -73,6 +73,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
 	private final ApplicationEventPublisher publisher;
+	private final UserFacadeService userFacadeService;
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
@@ -193,7 +194,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 
 	@Override
 	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName,
-		String workloadResourceName, UserInfoDTO userInfoDTO) {
+		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
 				workspaceName, workloadResourceName)
 			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
@@ -201,14 +202,14 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		if (jobEntity.getDeleteYN() == DeleteYN.Y) {
 			throw new RestApiException(WorkloadErrorCode.DELETED_WORKLOAD_INFO);
 		}
-
-		jobEntity.updateCanBeDeleted(userInfoDTO.getId(), userInfoDTO.getWorkspaceList(true));
+		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		jobEntity.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
 
 		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}
 
 	@Override
-	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
+	public void deleteWorkloadHistory(long id, UserDTO.UserInfo userInfoDTO) {
 		JobEntity jobEntity = workloadHistoryRepo.findById(id).orElseThrow();
 		// owner 권한인 워크스페이스 목록 가져옴
 		List<String> loginUserOwnerWorkspaceList = userInfoDTO.getWorkspaces()

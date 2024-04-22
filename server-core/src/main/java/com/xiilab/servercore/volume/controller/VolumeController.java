@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.dto.SearchCondition;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.servercore.volume.dto.CreateVolumeReqDTO;
 import com.xiilab.servercore.volume.dto.ModifyVolumeReqDTO;
 import com.xiilab.servercore.volume.service.VolumeFacadeService;
@@ -42,7 +42,7 @@ public class VolumeController {
 	@PostMapping("")
 	@Operation(summary = "볼륨 생성")
 	public ResponseEntity<HttpStatus> createVolume(@RequestBody CreateVolumeReqDTO requestDTO,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		volumeFacadeService.createVolume(requestDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
