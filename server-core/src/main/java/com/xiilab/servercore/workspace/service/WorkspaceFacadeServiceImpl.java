@@ -159,15 +159,18 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(applicationForm.getReqCPU())).build(),
 			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(applicationForm.getReqMEM())).build()
 		);
-
-		mailService.sendMail(MailDTO.builder()
+		List<UserDTO.UserInfo> adminList = userService.getAdminList();
+		for(UserDTO.UserInfo admin : adminList){
+			mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), workspaceName))
-			.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceName))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceName))
 				.subTitle(mail.getSubTitle())
 				.contentTitle(mail.getContentTitle())
+				.receiverEmail(admin.getEmail())
 				.contents(contents)
 				.footer(mail.getFooter())
-			.build());
+				.build());
+		}
 
 		// 워크스페이스 생성자에게 알림 메시지 발송
 		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_CREATE_OWNER;
@@ -379,13 +382,17 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(workspaceResourceReqDTO.getCpuReq())).build(),
 			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(workspaceResourceReqDTO.getMemReq())).build()
 		);
-		mailService.sendMail(MailDTO.builder()
+		List<UserDTO.UserInfo> adminList = userService.getAdminList();
+		for (UserDTO.UserInfo admin : adminList) {
+			mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), workspaceInfo.getName()))
 				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workspaceInfo.getName()))
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
 				.footer(mail.getFooter())
-			.build());
+				.receiverEmail(admin.getEmail())
+				.build());
+		}
 		// 워크스페이스 리소스 요청한 사용자에게 알림 발송
 		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_RESOURCE_REQUEST_OWNER;
 		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), workspaceInfo.getName());

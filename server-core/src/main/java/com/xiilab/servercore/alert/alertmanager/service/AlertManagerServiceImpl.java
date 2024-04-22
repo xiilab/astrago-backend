@@ -223,12 +223,15 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 						eventPublisher.publishEvent(
 							new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
 								pageNaviParam));
-
-						mailService.sendMail(MailDTO.builder()
+						List<UserDTO.UserInfo> adminList = userService.getAdminList();
+						for (UserDTO.UserInfo admin : adminList) {
+							mailService.sendMail(MailDTO.builder()
 								.subject(mail.getSubject())
 								.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))
 								.footer(mail.getFooter())
-							.build());
+								.receiverEmail(admin.getEmail())
+								.build());
+						}
 					}
 				}
 

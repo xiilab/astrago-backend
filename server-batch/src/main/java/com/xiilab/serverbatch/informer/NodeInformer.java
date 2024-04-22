@@ -1,5 +1,6 @@
 package com.xiilab.serverbatch.informer;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,6 +18,8 @@ import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -35,6 +38,7 @@ public class NodeInformer {
 	private final NodeRepository nodeRepository;
 	private final ApplicationEventPublisher eventPublisher;
 	private final MailService mailService;
+	private final UserService userService;
 
 	@PostConstruct
 	void doInformer() {
@@ -80,11 +84,15 @@ public class NodeInformer {
 											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_APPLY, null, mailTitle, title,
 												message, null));
 										MailAttribute mail = MailAttribute.MIG_ON;
-										mailService.sendMail(MailDTO.builder()
+										List<UserDTO.UserInfo> adminList = userService.getAdminList();
+										for (UserDTO.UserInfo admin : adminList) {
+											mailService.sendMail(MailDTO.builder()
 												.subject(mail.getSubject())
 												.title(String.format(mail.getTitle(), nodeName))
 												.footer(mail.getFooter())
-											.build());
+												.receiverEmail(admin.getEmail())
+												.build());
+										}
 									}
 									// String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
 									case PENDING ->
@@ -98,11 +106,15 @@ public class NodeInformer {
 											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_ERROR, null, mailTitle, title,
 												message, null));
 										MailAttribute mail = MailAttribute.MIG_ERROR;
-										mailService.sendMail(MailDTO.builder()
-											.subject(mail.getSubject())
-											.title(String.format(mail.getTitle(), nodeName))
-											.footer(mail.getFooter())
-											.build());
+										List<UserDTO.UserInfo> adminList = userService.getAdminList();
+										for (UserDTO.UserInfo admin : adminList) {
+											mailService.sendMail(MailDTO.builder()
+												.subject(mail.getSubject())
+												.title(String.format(mail.getTitle(), nodeName))
+												.footer(mail.getFooter())
+												.receiverEmail(admin.getEmail())
+												.build());
+										}
 									}
 									// String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
 									case REBOOTING -> log.info("node {}의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.",

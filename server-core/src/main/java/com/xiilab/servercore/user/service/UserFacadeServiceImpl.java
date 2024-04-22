@@ -71,15 +71,19 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 				.col1("가입 일시 : ")
 				.col2(userInfo.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.build());
-		// Mail 전송
-		mailService.sendMail(MailDTO.builder()
-			.subject(mail.getSubject())
-			.title(String.format(mail.getTitle(), userReqVO.getLastName() + userReqVO.getFirstName(),
-				userReqVO.getEmail()))
-			.contents(contents)
-			.subTitle(mail.getSubTitle())
-			.footer(mail.getFooter())
-			.build());
+		List<UserDTO.UserInfo> adminList = userService.getAdminList();
+		for (UserDTO.UserInfo admin : adminList) {
+			// Mail 전송
+			mailService.sendMail(MailDTO.builder()
+				.subject(mail.getSubject())
+				.title(String.format(mail.getTitle(), userReqVO.getLastName() + userReqVO.getFirstName(),
+					userReqVO.getEmail()))
+				.contents(contents)
+				.subTitle(mail.getSubTitle())
+				.footer(mail.getFooter())
+				.receiverEmail(admin.getEmail())
+				.build());
+		}
 	}
 
 	@Override
