@@ -1,7 +1,5 @@
 package com.xiilab.servercore.license.service;
 
-import java.util.Comparator;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,15 +32,7 @@ public class LicenseServiceImpl implements LicenseService {
 	@Transactional(readOnly = true)
 	public Page<LicenseDTO> getLicenseHistory(Pageable pageable) {
 		Page<LicenseEntity> licenseList = licenseRepository.findAll(pageable);
-		return licenseList.map(license ->
-			LicenseDTO.builder()
-				.id(license.getId())
-				.version(license.getVersion())
-				.regDate(license.getRegDate())
-				.startDate(license.getStartDate())
-				.endDate(license.getEndDate())
-				.gpuCount(license.getGpuCount())
-				.build());
+		return licenseList.map(LicenseEntity::decryptLicensekey);
 	}
 
 	@Override
@@ -60,22 +50,18 @@ public class LicenseServiceImpl implements LicenseService {
 		try {
 			recentlyLicense.checkLicense();
 		} catch (RestApiException e) {
+			LicenseDTO licenseDTO = recentlyLicense.decryptLicensekey();
 			// 회원가입 알림 메시지 발송
 			AlertMessage licenseExpiration = AlertMessage.LICENSE_EXPIRATION;
 			String mailTitle = licenseExpiration.getMailTitle();
 			String title = licenseExpiration.getTitle();
-			String message = String.format(licenseExpiration.getMessage(), recentlyLicense.getEndDate());
+			String message = String.format(licenseExpiration.getMessage(), licenseDTO.getEndDate());
 			eventPublisher.publishEvent(
 				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null));
-			LicenseEntity licenseEntity = licenseRepository.findAll()
-				.stream()
-				.sorted(Comparator.comparing(LicenseEntity::getEndDate).reversed())
-				.findFirst()
-				.get();
 			MailAttribute mail = MailAttribute.LICENSE;
 			mailService.sendMail(MailDTO.builder()
 					.subject(mail.getSubject())
-					.title(String.format(mail.getTitle(), licenseEntity.getEndDate()))
+					.title(String.format(mail.getTitle(), licenseDTO.getEndDate()))
 					.footer(mail.getFooter())
 				.build());
 			throw e;
@@ -85,14 +71,7 @@ public class LicenseServiceImpl implements LicenseService {
 	@Override
 	public LicenseDTO getRecentlyLicenseInfo() {
 		LicenseEntity license = licenseRepository.findTopByOrderByRegDateDesc();
-		return LicenseDTO.builder()
-			.id(license.getId())
-			.version(license.getVersion())
-			.regDate(license.getRegDate())
-			.startDate(license.getStartDate())
-			.endDate(license.getEndDate())
-			.gpuCount(license.getGpuCount())
-			.build();
+		return license.decryptLicensekey();
 	}
 
 }
