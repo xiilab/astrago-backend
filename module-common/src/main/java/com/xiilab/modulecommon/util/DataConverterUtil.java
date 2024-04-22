@@ -29,7 +29,6 @@ import com.xiilab.modulecommon.dto.WeekRangeDTO;
 import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 
 @Service
 public class DataConverterUtil {
@@ -258,6 +257,24 @@ public class DataConverterUtil {
 			long timeMil1 = start.getTime();
 			long timeMil2 = end.getTime();
 			long setp = (timeMil2 - timeMil1);
+
+			return setp;
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static long getFortyStep(String startDate, String endDate) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date start = sdf.parse(startDate);
+			Date end = sdf.parse(endDate);
+
+			// Date -> 밀리세컨즈
+			long timeMil1 = start.getTime();
+			long timeMil2 = end.getTime();
+			long setp = (timeMil2 - timeMil1) / 40000;
 
 			return setp;
 		} catch (ParseException e) {

@@ -231,16 +231,20 @@ public class WorkloadFacadeService {
 				MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(cpuUsed)).build(),
 				MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(memUsed)).build()
 			);
-			// Mail 전송
-			mailService.sendMail(MailDTO.builder()
-				.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-					moduleCreateWorkloadReqDTO.getWorkspace()))
-				.subTitle(mail.getSubTitle())
-				.contentTitle(mail.getContentTitle())
-				.contents(contents)
-				.footer(mail.getFooter())
-				.build());
+			List<UserDTO.UserInfo> adminList = userFacadeService.getAdminList();
+			for (UserDTO.UserInfo admin : adminList) {
+				// Mail 전송
+				mailService.sendMail(MailDTO.builder()
+					.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
+					.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
+						moduleCreateWorkloadReqDTO.getWorkspace()))
+					.subTitle(mail.getSubTitle())
+					.contentTitle(mail.getContentTitle())
+					.contents(contents)
+					.footer(mail.getFooter())
+					.receiverEmail(admin.getEmail())
+					.build());
+			}
 		}
 	}
 

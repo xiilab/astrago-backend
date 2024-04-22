@@ -80,8 +80,7 @@ public class LicenseEntity {
 	 * @return 라이센스 키 정보 (만료일, gpu 개수)
 	 */
 	public LicenseDTO decryptLicensekey() {
-		String licenselimitDate = "20" + (Integer.parseInt(this.licenseKey.substring(0, 7)) / 7); //만료일 221124 -> 20221124로 변
-		String limitDate = licenselimitDate.substring(0, 4) + "-" + licenselimitDate.substring(4, 6) + "-" + licenselimitDate.substring(6, 8); //만료일 20221124 -> 2022-11-24로 변경
+		String limitDate = getLimitDate(licenseKey);
 		int gpuUnit = Integer.parseInt(this.licenseKey.substring(8, 12));   //gpu개수
 		return new LicenseDTO(this.id, null, gpuUnit, this.regDate.toLocalDate(), LocalDate.parse(limitDate), this.regDate);
 	}
@@ -110,6 +109,11 @@ public class LicenseEntity {
 		if ((getLhunAlgorithm(dateNode) + getLhunAlgorithm(verificationNum)) % 10 != 0) {
 			result = false;
 		}
+		String limitDate = getLimitDate(licenseKey);
+		//만료된 라이센스 키 입력시 에러 발생
+		if (LocalDate.now().isAfter(LocalDate.parse(limitDate))) {
+			throw new RestApiException(LicenseErrorCode.LICENSE_PAST_EXPIRATION_DATE);
+		}
 		return result;
 	}
 
@@ -137,5 +141,10 @@ public class LicenseEntity {
 		if (now.isAfter(licenseDTO.getEndDate())) {
 			throw new RestApiException(LicenseErrorCode.LICENSE_PAST_EXPIRATION_DATE);
 		}
+	}
+
+	private String getLimitDate(String licenseKey) {
+		String licenselimitDate = "20" + (Integer.parseInt(licenseKey.substring(0, 7)) / 7); //만료일 221124 -> 20221124로 변
+		return licenselimitDate.substring(0, 4) + "-" + licenselimitDate.substring(4, 6) + "-" + licenselimitDate.substring(6, 8); //만료일 20221124 -> 2022-11-24로 변경
 	}
 }
