@@ -15,10 +15,10 @@ public class TusConfig {
 	@Value("${tus.upload-path}")
 	private String tusStoragePath; // 업로드 재개를 위한 메타 데이터를 저장하는 디렉토리 경로
 	@Value("${tus.expire-period}")
-	private  Long tusExpirationPeriod; // 업로드 재개 가능한 만료시간
+	private Long tusExpirationPeriod; // 업로드 재개 가능한 만료시간
 
-	@Value("${server.servlet.context-path}")
-	private String contextPath;
+	// @Value("${server.servlet.context-path}")
+	// private String contextPath;
 
 	/**
 	 * 스프링 컨테이너에 등록된 빈 제거할 때, 메타 데이터 디렉토리에 저장된 파일 전체 삭제
@@ -40,6 +40,6 @@ public class TusConfig {
 			// 쓰레드 로컬 캐쉬 활성화
 			.withThreadLocalCache(true)
 			// 업로드 엔드포인트로 사용할 URI
-			.withUploadUri(contextPath + "/api/tus");
+			.withUploadUri("/api/v1/core/tus");
 	}
 }
