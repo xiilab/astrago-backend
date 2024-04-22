@@ -98,7 +98,7 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 
 		return TriggerBuilder.newTrigger()
 			.withSchedule(CronScheduleBuilder.cronSchedule(getCronExpression(report.getSendCycle())))
-			// .withSchedule(CronScheduleBuilder.cronSchedule("0/60 * * ? * *"))
+			// .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * ? * *"))
 			.startNow()
 			.forJob(jobDetail)
 			.endAt(Date.from(report.getEndDate().atZone(ZoneId.systemDefault()).toInstant()))

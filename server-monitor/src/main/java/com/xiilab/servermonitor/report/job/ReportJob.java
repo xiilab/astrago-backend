@@ -1,6 +1,7 @@
 package com.xiilab.servermonitor.report.job;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -70,7 +71,8 @@ public class ReportJob extends QuartzJobBean {
 			return;
 		}
 		String start = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-		String end = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		// String end = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		String end = getEndDate(reportReservation.getReportType(), endDate);
 		String pdfLink = createPDFLink(reportReservation, start, end);
 
 		sendMail(reportReservation, start, end, pdfLink);
@@ -125,4 +127,13 @@ public class ReportJob extends QuartzJobBean {
 			}
 		}
 	}
+
+	private String getEndDate(ReportType reportType, LocalDateTime endDate){
+		return switch (reportType){
+			case MONTHLY_SYSTEM, MONTHLY_CLUSTER ->
+			LocalDate.of(endDate.getYear(), endDate.getMonth(), 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+			case WEEKLY_SYSTEM, WEEKLY_CLUSTER -> endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		};
+	}
+
 }

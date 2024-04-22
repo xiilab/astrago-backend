@@ -35,7 +35,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	@Override
 	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO) {
-		long step = DataConverterUtil.getStep(requestDTO.startDate(), requestDTO.endDate());
+		long step = DataConverterUtil.getFortyStep(requestDTO.startDate(), requestDTO.endDate());
 		// 검색시간 UnixTime로 변환
 		String startDate = DataConverterUtil.toUnixTime(requestDTO.startDate());
 		String endDate = DataConverterUtil.toUnixTime(requestDTO.endDate());
@@ -110,7 +110,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	@Override
 	public ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate, String resourceName) {
-		long step = DataConverterUtil.getStep(endDate, startDate);
+		long step = DataConverterUtil.getFortyStep(endDate, startDate);
 		// 검색시간 UnixTime로 변환
 		String startDateUnix = DataConverterUtil.toUnixTime(startDate);
 		String endDateUnix = DataConverterUtil.toUnixTime(endDate);
