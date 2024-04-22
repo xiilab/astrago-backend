@@ -161,6 +161,7 @@ public class K8sInfoPicker {
 				DateUtils.convertK8sUtcTimeString(metadata.getCreationTimestamp());
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
 				DateUtils.convertK8sUtcTimeString(metadata.getDeletionTimestamp());
+
 			return K8SResourceMetadataDTO.builder()
 				.uid(metadata.getUid())
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
