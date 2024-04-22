@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
@@ -107,7 +108,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.remainTime(0)
-				.imageType(job.getImage().getImageType().name())
+				.imageType(!ObjectUtils.isEmpty(job.getImage())? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
 	}
@@ -144,7 +145,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.ide(job.getIde())
-				.imageType(job.getImage().getImageType().name())
+				.imageType(!ObjectUtils.isEmpty(job.getImage())? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
 	}
