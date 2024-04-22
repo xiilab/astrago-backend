@@ -315,8 +315,10 @@ create table if not exists TB_HUB
     SOURCE_CODE_URL_GITLAB        varchar(255)                            null,
     TITLE                  varchar(255)                            null,
     IMAGE_ID               bigint                                  null,
-    README_URL             varchar(255)                            null,
-    THUMBNAIL_URL          varchar(255)                            null,
+    README_URL_GITHUB             varchar(255)                            null,
+    README_URL_GITLAB             varchar(255)                            null,
+    THUMBNAIL_URL_GITHUB          varchar(255)                            null,
+    THUMBNAIL_URL_GITLAB          varchar(255)                            null,
     WORKLOAD_TYPE          enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
     PARAMETER           varchar(1000)                           null
 );

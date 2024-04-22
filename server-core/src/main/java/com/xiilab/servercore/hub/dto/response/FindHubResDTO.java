@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
 
@@ -27,12 +28,12 @@ public class FindHubResDTO extends ResDTO {
 	private String[] types;
 	private String thumbnailUrl;
 
-	public static FindHubResDTO of(HubEntity hubEntity, Map<Long, Set<String>> typesMap) {
+	public static FindHubResDTO of(HubEntity hubEntity, Map<Long, Set<String>> typesMap, NetworkCloseYN networkCloseYN) {
 		return FindHubResDTO.builder()
 			.id(hubEntity.getHubId())
 			.title(hubEntity.getTitle())
 			.description(hubEntity.getDescription())
-			.thumbnailUrl(hubEntity.getThumbnailURL())
+			.thumbnailUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrlGitLab() : hubEntity.getThumbnailUrlGitHub())
 			.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
 			.regUserName(hubEntity.getRegUser().getRegUserName())
 			.regUserId(hubEntity.getRegUser().getRegUserId())
@@ -64,8 +65,8 @@ public class FindHubResDTO extends ResDTO {
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.description(hubEntity.getDescription())
-					.thumbnailUrl(hubEntity.getThumbnailURL())
-					.readmeUrl(hubEntity.getReadmeURL())
+					.thumbnailUrl(hubEntity.getThumbnailUrlGitHub())
+					.readmeUrl(hubEntity.getReadmeUrlGitHub())
 					.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
 					.sourceCodeUrl(hubEntity.getSourceCodeUrlGitHub())
 					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
@@ -94,7 +95,12 @@ public class FindHubResDTO extends ResDTO {
 		public void setHubImage(FindHubCommonResDTO.HubImage findHubCommonResDTO){
 			this.hubImage = findHubCommonResDTO;
 		}
-
+		public void setReadmeUrl(String readmeUrl){
+			this.readmeUrl = readmeUrl;
+		}
+		public void setThumbnailUrl(String thumbnailUrl){
+			this.thumbnailUrl = thumbnailUrl;
+		}
 		public void changeSourceCodeUrl(String sourceCodeUrl){
 			this.sourceCodeUrl = sourceCodeUrl;
 		}
@@ -106,9 +112,9 @@ public class FindHubResDTO extends ResDTO {
 		private List<FindHubResDTO> hubsDto;
 		private long totalCount;
 
-		public static Hubs from(List<HubEntity> hubEntities, Long totalCount, Map<Long, Set<String>> typesMap) {
+		public static Hubs from(List<HubEntity> hubEntities, Long totalCount, Map<Long, Set<String>> typesMap, NetworkCloseYN networkCloseYN) {
 			return FindHubResDTO.Hubs.builder()
-				.hubsDto(hubEntities.stream().map(hubEntity -> FindHubResDTO.of(hubEntity, typesMap)).toList())
+				.hubsDto(hubEntities.stream().map(hubEntity -> FindHubResDTO.of(hubEntity, typesMap, networkCloseYN)).toList())
 				.totalCount(totalCount)
 				.build();
 		}
