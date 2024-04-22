@@ -76,6 +76,8 @@ public class HubServiceImpl implements HubService {
 		FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
 		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageNameHarbor() : hubEntity.getHubImageEntity().getImageNameHub());
 		hubDetail.setHubImage(hubImage);
+		hubDetail.setReadmeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getReadmeUrlGitLab() : hubEntity.getReadmeUrlGitHub());
+		hubDetail.setThumbnailUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrlGitLab() : hubEntity.getThumbnailUrlGitHub());
 
 		return hubDetail;
 	}
@@ -108,8 +110,10 @@ public class HubServiceImpl implements HubService {
 		return HubEntity.saveBuilder()
 			.title(saveHubDTO.getTitle())
 			.description(saveHubDTO.getDescription())
-			.thumbnailURL(saveHubDTO.getThumbnailURL())
-			.readmeURL(saveHubDTO.getReadmeURL())
+			.thumbnailUrlGitLab(saveHubDTO.getThumbnailURL())
+			.thumbnailUrlGitHub(saveHubDTO.getThumbnailURL())
+			.readmeUrlGitHub(saveHubDTO.getReadmeURL())
+			.readmeUrlGitLab(saveHubDTO.getReadmeURL())
 			.sourceCodeUrlGitHub(saveHubDTO.getSourceCodeUrl())
 			.sourceCodeUrlGitLab(saveHubDTO.getSourceCodeUrl())
 			.sourceCodeBranch("master")
@@ -142,8 +146,9 @@ public class HubServiceImpl implements HubService {
 		// 각 허브에 매핑되어 있는 타입 목록 조회
 		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
-
-		return FindHubResDTO.Hubs.from(hubEntities, totalElements, typesMap);
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+		return FindHubResDTO.Hubs.from(hubEntities, totalElements, typesMap, networkCloseYN);
 	}
 
 	/* 카테고리 검색 List 반환 */
@@ -160,7 +165,10 @@ public class HubServiceImpl implements HubService {
 		List<HubCategoryMappingEntity> hubCategoryMappingEntityList = getHubCategoryMappingEntityList(hubEntities);
 
 		Map<Long, Set<String>> typesMap = getModelTypesMap(hubCategoryMappingEntityList);
-		return FindHubResDTO.Hubs.from(hubEntities, totalElements, typesMap);
+
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+		return FindHubResDTO.Hubs.from(hubEntities, totalElements, typesMap, networkCloseYN);
 	}
 
 	/* 허브 카테고리 매핑 테이블 전체 조회 */
