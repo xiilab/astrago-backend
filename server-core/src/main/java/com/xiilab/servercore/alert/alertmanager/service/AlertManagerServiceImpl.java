@@ -46,10 +46,12 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class AlertManagerServiceImpl implements AlertManagerService {
 
 	private final AlertManagerReceiveRepository receiveRepository;
@@ -144,6 +146,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 	@Override
 	@Transactional
 	public void receiveAlert(String alertData) {
+		log.info(alertData);
 		String currentTime = "";
 		// JSON 파서 생성
 		org.json.simple.parser.JSONParser parser = new JSONParser();
