@@ -726,7 +726,7 @@ public class WorkloadFacadeService {
 				findDataset);
 			if (resDatasetWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-					resDatasetWithStorage.getStoragePath() + resDatasetWithStorage.getSaveDirectoryName(),
+					resDatasetWithStorage.getStoragePath() + File.separator +  resDatasetWithStorage.getSaveDirectoryName(),
 					resDatasetWithStorage.getStorageType());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
@@ -741,7 +741,7 @@ public class WorkloadFacadeService {
 			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
 			if (resModelWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-					resModelWithStorage.getStoragePath() + resModelWithStorage.getSaveDirectoryName(),
+					resModelWithStorage.getStoragePath() + File.separator +  resModelWithStorage.getSaveDirectoryName(),
 					resModelWithStorage.getStorageType());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
