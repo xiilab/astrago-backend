@@ -639,6 +639,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 						&& deploymentCondition.getStatus().equals("False")))
 				.map(deployment ->
 					ClusterObjectDTO.builder()
+						.deploymentName(deployment.getMetadata().getName())
 						.namespace(deployment.getMetadata().getNamespace())
 						.reason(deployment.getStatus().getConditions().get(0).getReason())
 						.message(deployment.getStatus().getConditions().get(0).getMessage())
