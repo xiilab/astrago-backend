@@ -102,14 +102,15 @@ public class CoreFileUtils {
 		return size;
 	}
 
-	public static String saveInputStreamToFile(String path, String fileName, InputStream inputStream) throws IOException {
+	public static Long saveInputStreamToFile(String path, String fileName, InputStream inputStream) throws IOException {
 		// 파일명
 		String filePath = path + File.separator + fileName.replace(" ", "_");
+		File file = new File(filePath);
 
 		// 파일 저장
-		FileUtils.copyInputStreamToFile(inputStream, new File(filePath));
+		FileUtils.copyInputStreamToFile(inputStream, file);
 
-		return filePath;
+		return file.length();
 	}
 
 	public static DirectoryDTO getAstragoFiles(String path) {

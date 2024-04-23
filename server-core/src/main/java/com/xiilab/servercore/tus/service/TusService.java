@@ -6,7 +6,13 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.TusErrorCode;
+import com.xiilab.modulek8sdb.dataset.entity.Dataset;
+import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
+import com.xiilab.modulek8sdb.model.entity.Model;
+import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +28,8 @@ import me.desair.tus.server.upload.UploadInfo;
 @RequiredArgsConstructor
 public class TusService {
 	private final TusFileUploadService tusFileUploadService;
+	private final ModelRepository modelRepository;
+	private final DatasetRepository datasetRepository;
 
 	public void tusUpload(HttpServletRequest request, HttpServletResponse response) {
 		try {
@@ -36,11 +44,32 @@ public class TusService {
 				// "metadata"로 넘어온 원본 파일명 추출
 				String filename = Optional.ofNullable(uploadInfo.getMetadata().get("filename"))
 					.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
+				String uploadType = Optional.ofNullable(uploadInfo.getMetadata().get("uploadType"))
+					.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
 
-
-				// 파일 저장
-				CoreFileUtils.saveInputStreamToFile(uploadInfo.getMetadata().get("path"), filename,
-					tusFileUploadService.getUploadedBytes(request.getRequestURI()));
+				if ("DATASET".equals(uploadType)) {
+					Long datasetId = Optional.ofNullable(uploadInfo.getMetadata().get("datasetId"))
+						.map(Long::valueOf)
+						.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
+					Dataset findDataset = datasetRepository.findById(datasetId)
+						.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+					// 파일 저장
+					Long fileSize = CoreFileUtils.saveInputStreamToFile(uploadInfo.getMetadata().get("filePath"),
+						filename,
+						tusFileUploadService.getUploadedBytes(request.getRequestURI()));
+					findDataset.setDatasetSize(fileSize);
+				} else if ("MODEL".equals(uploadType)) {
+					Long modelId = Optional.ofNullable(uploadInfo.getMetadata().get("modelId"))
+						.map(Long::valueOf)
+						.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
+					Model findModel = modelRepository.findById(modelId)
+						.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
+					// 파일 저장
+					Long fileSize = CoreFileUtils.saveInputStreamToFile(uploadInfo.getMetadata().get("filePath"),
+						filename,
+						tusFileUploadService.getUploadedBytes(request.getRequestURI()));
+					findModel.setModelSize(fileSize);
+				}
 
 				// 임시 파일 삭제
 				tusFileUploadService.deleteUpload(request.getRequestURI());
