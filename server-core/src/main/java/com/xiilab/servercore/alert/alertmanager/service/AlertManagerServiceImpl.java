@@ -133,8 +133,9 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 	}
 
 	@Override
-	public List<AlertManagerDTO.ResponseDTO> getAlertManagerList() {
-		List<AlertManagerEntity> allAlertManagerList = repository.findAll();
+	public List<AlertManagerDTO.ResponseDTO> getAlertManagerList(UserDTO.UserInfo userInfoDTO) {
+		List<AlertManagerEntity> allAlertManagerList = repository.findByAlertManagerUserEntityList_UserId(userInfoDTO.getId());
+
 		return allAlertManagerList.stream().map(alertManagerEntity ->
 			AlertManagerDTO.ResponseDTO.toDTOBuilder().alertManager(alertManagerEntity).build()
 		).toList();

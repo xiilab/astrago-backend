@@ -67,8 +67,8 @@ public class AlertManagerController {
 
 	@GetMapping()
 	@Operation(summary = "Alert Manager 전체 조회 API")
-	public ResponseEntity<List<AlertManagerDTO.ResponseDTO>> getAlertManagerList(){
-		return new ResponseEntity<>(alertManagerService.getAlertManagerList(), HttpStatus.OK);
+	public ResponseEntity<List<AlertManagerDTO.ResponseDTO>> getAlertManagerList(UserDTO.UserInfo userInfoDTO){
+		return new ResponseEntity<>(alertManagerService.getAlertManagerList(userInfoDTO), HttpStatus.OK);
 	}
 
 

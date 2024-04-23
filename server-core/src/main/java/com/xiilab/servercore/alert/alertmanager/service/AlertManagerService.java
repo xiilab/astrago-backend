@@ -14,7 +14,7 @@ public interface AlertManagerService {
 	void deleteAlertManagerById(long id);
 	AlertManagerDTO.ResponseDTO getAlertManagerById(long id);
 	void updateAlertManagerById(long id, AlertManagerDTO.RequestDTO requestDTO);
-	List<AlertManagerDTO.ResponseDTO> getAlertManagerList();
+	List<AlertManagerDTO.ResponseDTO> getAlertManagerList(UserDTO.UserInfo userInfoDTO);
 	void receiveAlert(String alertData);
 	Page<AlertManagerReceiveDTO.ResponseDTO> getAlertManagerReceiveList(String categoryType, String startDate, String endDate, String search, UserDTO.UserInfo userInfoDTO, Pageable pageable);
 	AlertManagerDTO.ResponseDTO enableAlertManagerById(long id, boolean enable);
