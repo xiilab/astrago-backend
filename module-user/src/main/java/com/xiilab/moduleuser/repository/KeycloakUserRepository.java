@@ -48,7 +48,8 @@ public class KeycloakUserRepository implements UserRepository {
 		UserRepresentation userRepresentation = userReqVO.convertUserRep();
 		// User 중복 체크
 		checkUserDuplicate(userReqVO);
-
+		userRepresentation.setRequiredActions(List.of("Verify Email"));
+		userRepresentation.setEmailVerified(true);
 		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
 		if (response.getStatus() != 200 && response.getStatus() != 201) {
 			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL);

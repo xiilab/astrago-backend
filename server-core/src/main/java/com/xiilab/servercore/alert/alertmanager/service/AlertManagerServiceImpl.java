@@ -203,7 +203,6 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 				for (Map.Entry<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceive : alertReceiveDTOList.entrySet()) {
 
 					AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(alertReceive.getKey());
-
 					// // 사용자 수신 설정에 따른 Email, System 분기
 					AlertMessage nodeError = AlertMessage.NODE_ERROR;
 					String mailTitle = nodeError.getMailTitle();
@@ -219,18 +218,22 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 							.build();
 
 						String message = String.format(nodeError.getMessage(), alertManagerReceiveDTO.getNodeName());
-						// 노드 장애 알림 발송
-						eventPublisher.publishEvent(
-							new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
-								pageNaviParam));
-						List<UserDTO.UserInfo> adminList = userService.getAdminList();
-						for (UserDTO.UserInfo admin : adminList) {
-							mailService.sendMail(MailDTO.builder()
-								.subject(mail.getSubject())
-								.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))
-								.footer(mail.getFooter())
-								.receiverEmail(admin.getEmail())
-								.build());
+						if(findAlertManagerDTO.isSystemYN()){
+							// 노드 장애 알림 발송
+							eventPublisher.publishEvent(
+								new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
+									pageNaviParam));
+						}
+						if(findAlertManagerDTO.isEmailYN()){
+							List<AlertManagerDTO.UserDTO> userDTOList = findAlertManagerDTO.getUserDTOList();
+							for(AlertManagerDTO.UserDTO user : userDTOList){
+								mailService.sendMail(MailDTO.builder()
+									.subject(mail.getSubject())
+									.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))
+									.footer(mail.getFooter())
+									.receiverEmail(user.getEmail())
+									.build());
+							}
 						}
 					}
 				}
