@@ -46,10 +46,12 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class AlertManagerServiceImpl implements AlertManagerService {
 
 	private final AlertManagerReceiveRepository receiveRepository;
@@ -144,6 +146,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 	@Override
 	@Transactional
 	public void receiveAlert(String alertData) {
+		log.info(alertData);
 		String currentTime = "";
 		// JSON 파서 생성
 		org.json.simple.parser.JSONParser parser = new JSONParser();
@@ -159,7 +162,8 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 				// 발생시간
 				String startsAt = alert.get("startsAt").toString();
 				LocalDateTime localDateTime = LocalDateTime.parse(startsAt, DateTimeFormatter.ISO_DATE_TIME);
-				currentTime = DataConverterUtil.getCurrentTime(localDateTime);
+				// UTC 시간 + 9
+				currentTime = DataConverterUtil.getCurrentTime(localDateTime.plusHours(9));
 				// alertname, ruleName, nodeName이 존재하는
 				if (labels.get("alertname") != null && labels.get("ruleName") != null
 					&& labels.get("nodeName") != null) {
