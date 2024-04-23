@@ -725,8 +725,18 @@ public class WorkloadFacadeService {
 			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
 				findDataset);
 			if (resDatasetWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
+				String storagePath = resDatasetWithStorage.getStoragePath();
+				String saveDirectoryName = resDatasetWithStorage.getSaveDirectoryName();
+
+				// storagePath의 끝이 '/'로 끝나는지 여부 확인
+				if (!storagePath.endsWith(File.separator)) {
+					storagePath += File.separator;
+				}
+
+				String filePath = storagePath + saveDirectoryName;
+
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-					resDatasetWithStorage.getStoragePath() + File.separator +  resDatasetWithStorage.getSaveDirectoryName(),
+					filePath,
 					resDatasetWithStorage.getStorageType());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
@@ -740,8 +750,17 @@ public class WorkloadFacadeService {
 			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
 			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
 			if (resModelWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
+				String storagePath = resModelWithStorage.getStoragePath();
+				String saveDirectoryName = resModelWithStorage.getSaveDirectoryName();
+
+				// storagePath의 끝이 '/'로 끝나는지 여부 확인
+				if (!storagePath.endsWith(File.separator)) {
+					storagePath += File.separator;
+				}
+
+				String filePath = storagePath + saveDirectoryName;
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-					resModelWithStorage.getStoragePath() + File.separator +  resModelWithStorage.getSaveDirectoryName(),
+					filePath,
 					resModelWithStorage.getStorageType());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
