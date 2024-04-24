@@ -125,7 +125,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.TOKEN }}
-          repository: ${{ env.DEPLOYMENT_REPOSITORY }}
+          repository: ${{ env.GIT_DEPLOYMENT_REPOSITORY }}
 
       - name: stage 이미지 정보 수정
         uses: mikefarah/yq@master
