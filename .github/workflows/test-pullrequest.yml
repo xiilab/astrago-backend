@@ -1,8 +1,13 @@
-name: uyuni backend image CI
-
+name: Test Pull Request
+run-name: ${{ github.actor }} Test to PR 🚀
 on:
   pull_request:
-    branches: ["develop", "master"]
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - develop
 
 jobs:
   build:
@@ -27,13 +32,10 @@ jobs:
         java-version: '17'
         distribution: 'zulu'
 
-    
     # Gradle build
     - name: Build with Gradle
-      run: ./gradlew ${{ matrix.path }}:bootjar
+      run: ./gradlew ${{ matrix.path }}:build
 
-
-  
   notify_slack:
     if: always()
     needs: [ build ]  # 이 작업이 의존하는 이전 작업의 이름 추가

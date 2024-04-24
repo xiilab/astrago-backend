@@ -6,6 +6,10 @@ on:
     branches: [ main ]
 
 jobs:
+  if: >
+    startsWith(github.head_ref, 'release/') || 
+    startsWith(github.head_ref, 'hotfix/') &&
+    github.event.pull_request.merged == true
   update_release_draft:
     permissions:
       # write permission is required to create a github release
@@ -21,3 +25,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commitish: main
+
+  notify_slack:
+    if: always()
+    needs: [ update_release_draft ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    runs-on: ubuntu-latest
+    permissions:
+      actions: 'read'
+    steps:
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
+        with:
+          # Required Input
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
+          # Optional Input
+          channel: '#uyuni-suite'
+          name: 'Astrago Build Agent'
+          icon_emoji: ':rocket:'
+          icon_url: 'https://avatars0.githubusercontent.com/u/1701160?s=96&v=4'
+

@@ -1,5 +1,5 @@
 name: Deploy to Production workflow
-run-name: ${{ github.actor }} deploys to Production 🚀
+run-name: ${{ github.actor }} Deploys to Production 🚀
 on:
   push:
     tags: [ 'v*.*.*' ]
@@ -7,10 +7,6 @@ on:
 env:
   DOCKER_REPOSITORY: xiilab/astrago
   GIT_DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
-
-concurrency:
-  group: ci-release-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   set-variable:

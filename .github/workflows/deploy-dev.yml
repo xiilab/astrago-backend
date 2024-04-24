@@ -1,17 +1,13 @@
-name: Deploy to Staging workflow
-run-name: ${{ github.actor }} deploys to Staging 🚀
+name: Deploy to Develop workflow
+run-name: ${{ github.actor }} Deploys to Development 🚀
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+    types: [ closed ]
     branches:
-      - main
+      - develop
 
 jobs:
   build:
-    if: startsWith(github.head_ref, 'release/')
     runs-on: [ self-hosted, linux ]
     env:
       HARBOR_REGISTRY: harbor.xiilab.com:32443
@@ -46,10 +42,8 @@ jobs:
 
       - name: Extract Release Image Tag
         id: extract_image_tag
-        run: |       
-          RELEASE_VERSION=$(echo "${GITHUB_HEAD_REF##*/}" | grep -E '^[0-9]+\.[0-9]+$')
-          echo "RELEASE_VERSION=$RELEASE_VERSION"
-          IMAGE_TAG=${RELEASE_VERSION}-$(git rev-parse --short=4 HEAD)-rc
+        run: |
+          IMAGE_TAG=dev-$(git rev-parse --short=4 HEAD)
           echo "IMAGE_TAG=$IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
@@ -123,12 +117,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/stage/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/dev/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/dev/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/dev/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/dev/values.yaml'
 
       - name: Commit and Push
         run: |
