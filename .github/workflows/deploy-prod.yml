@@ -2,7 +2,7 @@ name: Deploy to Production workflow
 run-name: ${{ github.actor }} deploys to Production 🚀
 on:
   push:
-    branches: [ "feature/prod-workflow" ]
+    branches: [ "release/0.1" ]
 
 env:
   DOCKERHUB_REPOSITORY: xiilab/astrago
