@@ -372,8 +372,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 		owner.addAll(members);
 		return owner.stream().filter(
-				userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(
-					search))
+				userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search) || userRepresentation.getEmail().contains(search))
 			.map(GroupUserDTO::new).toList();
 	}
 
