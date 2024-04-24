@@ -1,8 +1,13 @@
 name: Deploy to Production workflow
 run-name: ${{ github.actor }} deploys to Production 🚀
 on:
-  push:
-    branches: [ "release/0.1" ]
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - develop
 
 env:
   DOCKERHUB_REPOSITORY: xiilab/astrago
@@ -10,6 +15,7 @@ env:
 
 jobs:
   prod-build:
+    if: startsWith(github.head_ref, 'release/')
     runs-on: [ ubuntu-latest ]
     steps:
       - uses: actions/checkout@v4
