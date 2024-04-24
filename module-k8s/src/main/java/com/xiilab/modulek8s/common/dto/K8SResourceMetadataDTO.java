@@ -51,6 +51,7 @@ public class K8SResourceMetadataDTO {
 	private Map<String, Map<String, String>> codeMountPathMap; 		// model - mount path 맵
 	private String workingDir;
 	private String command;                      // 워크로드 명령
+	private Map<String,String> parameter;
 	private String ide;
 
 	@Getter
@@ -76,7 +77,7 @@ public class K8SResourceMetadataDTO {
 		private CodeType codeType;
 		private String mountPath;
 		private RepositoryAuthType repositoryAuthType = RepositoryAuthType.PUBLIC;
-		private RepositoryType repositoryType = RepositoryType.USER;
+		private RepositoryType repositoryType;
 		private Long credentialId;
 		private String credentialUserName;
 		private String credentialPassword;
@@ -103,7 +104,7 @@ public class K8SResourceMetadataDTO {
 						break;
 					case SOURCE_CODE_ID:	// 공유 코드 아니면 환경변수 없음
 						this.sourceCodeId = Long.valueOf(envVar.getValue());
-						this.repositoryType = RepositoryType.WORKSPACE;
+						// this.repositoryType = RepositoryType.WORKSPACE;
 						break;
 					case CREDENTIAL_ID: // private repository 아니면 환경변수 없음
 						this.credentialId = Long.valueOf(envVar.getValue());
@@ -115,23 +116,13 @@ public class K8SResourceMetadataDTO {
 					case GIT_SYNC_PASSWORD:
 						this.credentialPassword = envVar.getValue();
 						break;
+					case REPOSITORY_TYPE:
+						this.repositoryType = RepositoryType.valueOf(envVar.getValue());
+						break;
 					default:
 						break;
 				}
 			}
 		}
 	}
-
-	// protected void initializeVolumeMountPath(Map<String, String> annotations) {
-	// 	annotations.entrySet().forEach(entry -> {
-	// 		String key = entry.getKey();
-	// 		String value = entry.getValue();
-	// 		if (key.startsWith("ds-")) {
-	// 			this.datasetMountPathMap.put(key.split("-")[1], value);
-	// 		} else if (key.startsWith("md-")) {
-	// 			this.modelMountPathMap.put(key.split("-")[1], value);
-	// 		}
-	// 	});
-	// }
-
 }

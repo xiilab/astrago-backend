@@ -13,11 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,33 +28,35 @@ public class CredentialController {
 	private final CredentialService credentialService;
 
 	@GetMapping()
-	public ResponseEntity<Page<CredentialResDTO>> getCredentialList(Pageable pageable, UserInfoDTO userInfoDTO) {
+	public ResponseEntity<Page<CredentialResDTO>> getCredentialList(
+		Pageable pageable,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(credentialService.getCredentialList(pageable, userInfoDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<CredentialResDTO.CredentialInfo> findCredentialInfoById(@PathVariable(name = "id") long id,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(credentialService.findCredentialById(id, userInfoDTO), HttpStatus.OK);
 	}
 
 	@PostMapping()
 	public ResponseEntity<CredentialResDTO> createCredential(@RequestBody CredentialReqDTO credentialReqDTO,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(credentialService.createCredential(credentialReqDTO, userInfoDTO), HttpStatus.OK);
 	}
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<HttpStatus> updateCredentialInfo(@PathVariable("id") long id,
 		@RequestBody CredentialReqDTO.UpdateDTO updateDTO,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		credentialService.updateCredentialById(id, updateDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<HttpStatus> deleteCredentialById(@PathVariable(name = "id") long id,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		credentialService.deleteCredentialById(id, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

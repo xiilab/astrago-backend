@@ -65,6 +65,7 @@ public class DatasetDTO {
 		private RepositoryDivision division;
 		private String size;
 		private String defaultPath;
+		private String saveDirectoryName;
 
 		public static ResDatasetWithStorage toDto(Dataset dataset){
 			if (dataset.isAstragoDataset()) {
@@ -83,6 +84,7 @@ public class DatasetDTO {
 					.storageName(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(dataset.getDatasetSize()))
 					.defaultPath(dataset.getDatasetDefaultMountPath())
+					.saveDirectoryName(((AstragoDatasetEntity)dataset).getSaveDirectoryName())
 					.build();
 			}else if (dataset.isLocalDataset()) {
 				return ResDatasetWithStorage.builder()
@@ -174,6 +176,7 @@ public class DatasetDTO {
 		private String datasetName;
 		private StorageType storageType;
 		private String creator;
+		private String creatorName;
 		private String userId;
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
@@ -188,6 +191,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDatasetName())
 					.storageType(((AstragoDatasetEntity)dataset).getStorageEntity().getStorageType())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
@@ -201,6 +205,7 @@ public class DatasetDTO {
 					.storageType(((LocalDatasetEntity)dataset).getStorageType())
 					.datasetName(dataset.getDatasetName())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.isAvailable())
 					.division(dataset.getDivision())
@@ -218,6 +223,7 @@ public class DatasetDTO {
 					.datasetName(dataset.getDataset().getDatasetName())
 					.storageType(((AstragoDatasetEntity)dataset.getDataset()).getStorageEntity().getStorageType())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.getDataset().isAvailable())
 					.division(dataset.getDataset().getDivision())
@@ -231,6 +237,7 @@ public class DatasetDTO {
 					.storageType(((LocalDatasetEntity)dataset.getDataset()).getStorageType())
 					.datasetName(dataset.getDataset().getDatasetName())
 					.creator(dataset.getRegUser().getRegUserName())
+					.creatorName(dataset.getRegUser().getRegUserRealName())
 					.createdAt(dataset.getRegDate())
 					.isAvailable(dataset.getDataset().isAvailable())
 					.division(dataset.getDataset().getDivision())

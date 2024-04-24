@@ -2,17 +2,18 @@ package com.xiilab.servercore.workload.service;
 
 import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
@@ -23,6 +24,7 @@ import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
@@ -49,7 +51,8 @@ import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
@@ -71,12 +74,20 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
 	private final ApplicationEventPublisher publisher;
+	private final UserFacadeService userFacadeService;
 
 	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
-		String userId) {
-		List<JobEntity> batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
-			workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, BATCH);
+		Boolean isCreatedByMe, String userId) {
+		List<JobEntity> batchJobEntityList = null;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, BATCH);
+		} else {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, userId, BATCH);
+		}
+
 		return batchJobEntityList.stream().map(job -> ModuleBatchJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
 				.name(job.getName())
@@ -97,16 +108,24 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.remainTime(0)
+				.imageType(!ObjectUtils.isEmpty(job.getImage())? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName,
-		String userId) {
-		List<JobEntity> batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
-			workspaceName, searchName, userId, WorkloadType.INTERACTIVE);
-		return batchJobEntityList.stream().map(job -> ModuleInteractiveJobResDTO.builder()
+		Boolean isCreatedByMe, String userId) {
+		List<JobEntity> interactiveJobList = null;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			interactiveJobList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, INTERACTIVE);
+		} else {
+			interactiveJobList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, userId, INTERACTIVE);
+		}
+
+		return interactiveJobList.stream().map(job -> ModuleInteractiveJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
 				.name(job.getName())
 				.resourceName(job.getResourceName())
@@ -126,6 +145,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.ide(job.getIde())
+				.imageType(!ObjectUtils.isEmpty(job.getImage())? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
 	}
@@ -175,7 +195,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 
 	@Override
 	public FindWorkloadResDTO.WorkloadDetail getWorkloadInfoByResourceName(String workspaceName,
-		String workloadResourceName) {
+		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
 				workspaceName, workloadResourceName)
 			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
@@ -183,20 +203,23 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		if (jobEntity.getDeleteYN() == DeleteYN.Y) {
 			throw new RestApiException(WorkloadErrorCode.DELETED_WORKLOAD_INFO);
 		}
+		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		jobEntity.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+
 		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}
 
 	@Override
-	public void deleteWorkloadHistory(long id, UserInfoDTO userInfoDTO) {
+	public void deleteWorkloadHistory(long id, UserDTO.UserInfo userInfoDTO) {
 		JobEntity jobEntity = workloadHistoryRepo.findById(id).orElseThrow();
 		// owner 권한인 워크스페이스 목록 가져옴
 		List<String> loginUserOwnerWorkspaceList = userInfoDTO.getWorkspaces()
 			.stream()
 			.filter(workspace -> workspace.contains("/owner"))
+			.map(workspace -> workspace.split("/owner")[0])
 			.toList();
 
-
-		String workloadName = jobEntity.getResourceName();
+		String workloadName = jobEntity.getName();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 		// 워크로드 생성자가 삭제
 		if (jobEntity.getCreatorId().equals(userInfoDTO.getId())) {
@@ -208,16 +231,17 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
 				jobEntity.getWorkspaceResourceName(), null);
 
-		} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || Arrays.asList(loginUserOwnerWorkspaceList)
-			.contains(jobEntity.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
+		} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || loginUserOwnerWorkspaceList.contains(
+			jobEntity.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
 
 			String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMailTitle(), workloadName);
 			String title = AlertMessage.WORKLOAD_DELETE_ADMIN.getTitle();
-			String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
+			String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(),
+				userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
 				jobEntity.getWorkspaceResourceName(), null);
-		}  else {
+		} else {
 			throw new IllegalArgumentException("해당 유저는 워크스페이스 삭제 권한이 없습니다.");
 		}
 

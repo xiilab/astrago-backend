@@ -30,13 +30,14 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 	private List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
 	private String workingDir;	// 명령어를 실행 할 path
 	private String command;    // 실행할 명령어
-	private Map<String,String> args; // 사용자가 입력한 args
+	private Map<String,String> parameter; // 사용자가 입력한 parameter
 	private WorkloadType workloadType;    // 워크로드 타입(BATCH, INTERACTIVE, SERVICE)
 	private Integer gpuRequest;
 	private Float cpuRequest;
 	private Float memRequest;
 	private String imageSecretName;
 	private String ide;
+	private String initContainerUrl;
 
 	public CredentialVO toCredentialVO() {
 		JobImageVO jobImageVO = this.image.toJobImageVO(workspace);
@@ -55,13 +56,14 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.creatorUserName(this.getCreatorUserName())
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
-			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace)).toList())
+			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace, initContainerUrl)).toList())
 			.datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.workingDir(this.workingDir)
 			.command(this.command)
+			.parameter(this.parameter)
 			.workloadType(this.workloadType)
 			.cpuRequest(this.cpuRequest)
 			.gpuRequest(this.gpuRequest)
@@ -82,7 +84,7 @@ public class ModuleCreateWorkloadReqDTO extends K8SResourceReqDTO {
 			.creatorUserName(this.getCreatorUserName())
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
-			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace)).toList())
+			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace, initContainerUrl)).toList())
 			.datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())

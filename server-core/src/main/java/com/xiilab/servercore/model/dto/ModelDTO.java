@@ -115,6 +115,7 @@ public class ModelDTO {
 		private RepositoryDivision division;
 		private String size;
 		private String defaultPath;
+		private String saveDirectoryName;
 		private List<WorkloadResDTO.UsingModelDTO> usingModels;
 
 		public static ModelDTO.ResModelWithStorage toDto(Model model){
@@ -134,6 +135,7 @@ public class ModelDTO {
 					.storageName(((AstragoModelEntity)model).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(model.getModelSize()))
 					.defaultPath(model.getModelDefaultMountPath())
+					.saveDirectoryName(((AstragoModelEntity)model).getSaveDirectoryName())
 					.build();
 			} else if (model.isLocalModel()) {
 				return ResModelWithStorage.builder()
@@ -176,6 +178,7 @@ public class ModelDTO {
 		private String modelName;
 		private StorageType storageType;
 		private String creator;
+		private String creatorName;
 		private String userId;
 		private LocalDateTime createdAt;
 		private RepositoryDivision division;
@@ -190,6 +193,7 @@ public class ModelDTO {
 					.modelName(model.getModelName())
 					.storageType(((AstragoModelEntity)model).getStorageEntity().getStorageType())
 					.creator(model.getRegUser().getRegUserName())
+					.creatorName(model.getRegUser().getRegUserRealName())
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
@@ -203,6 +207,7 @@ public class ModelDTO {
 					.storageType(((LocalModelEntity)model).getStorageType())
 					.modelName(model.getModelName())
 					.creator(model.getRegUser().getRegUserName())
+					.creatorName(model.getRegUser().getRegUserRealName())
 					.createdAt(model.getRegDate())
 					.isAvailable(model.isAvailable())
 					.division(model.getDivision())
@@ -219,6 +224,7 @@ public class ModelDTO {
 					.modelName(model.getModel().getModelName())
 					.storageType(((AstragoModelEntity)model.getModel()).getStorageEntity().getStorageType())
 					.creator(model.getRegUser().getRegUserName())
+					.creatorName(model.getRegUser().getRegUserRealName())
 					.createdAt(model.getRegDate())
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())
@@ -232,6 +238,7 @@ public class ModelDTO {
 					.storageType(((LocalModelEntity)model.getModel()).getStorageType())
 					.modelName(model.getModel().getModelName())
 					.creator(model.getRegUser().getRegUserName())
+					.creatorName(model.getRegUser().getRegUserRealName())
 					.createdAt(model.getRegDate())
 					.isAvailable(model.getModel().isAvailable())
 					.division(model.getModel().getDivision())

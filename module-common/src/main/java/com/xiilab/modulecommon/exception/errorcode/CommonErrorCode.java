@@ -17,6 +17,8 @@ public enum CommonErrorCode implements ErrorCode {
 	// data
 	NUMBER_ROUND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "반올림 실패하였습니다."),
 	DATA_FORMAT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "데이터 포멧 실패하였습니다."),
+	MONTH_WEEKS_OUT_OF_RANGE(HttpStatus.BAD_REQUEST.value(), "해당 월은 입력한 주차가 없습니다."),
+	JSON_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "JSON 파싱 실패하였습니다."),
 	// file
 	PLUGIN_ALREADY_INSTALLED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "이미 설치된 플러그인입니다."),
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "파일이 존재하지 않습니다."),
@@ -50,7 +52,10 @@ public enum CommonErrorCode implements ErrorCode {
 	CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 크레덴셜이 존재하지 않습니다."),
 	IMAGE_CREDENTIAL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "이미지 크레덴셜이 존재하지 않습니다."),
 	// Mail
-	MAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "메일 발송을 실패하였습니다.")
+	MAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "메일 발송을 실패하였습니다."),
+	FAILED_CONNECT_GITLAB(HttpStatus.INTERNAL_SERVER_ERROR.value(), "GitLab API 연결에 실패하였습니다."),
+	FAILED_SEARCH_GITLAB_PROJECT(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당하는 프로젝트가 GitLab에 존재하지 않습니다."),
+	FAILED_UTC_TO_KOR_TIME(HttpStatus.INTERNAL_SERVER_ERROR.value(), "국제표준시(UTC)를 한국 시간으로 변환하는데 실패하였습니다."),
 	;
 	private final int code;
 	private final String message;

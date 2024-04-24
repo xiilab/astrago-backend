@@ -1,5 +1,8 @@
 prometheus:
   url: http://10.61.3.12:30090/
+frontend:
+  url: http://10.61.3.12:30080
+
 spring:
   mvc:
     pathmatch:

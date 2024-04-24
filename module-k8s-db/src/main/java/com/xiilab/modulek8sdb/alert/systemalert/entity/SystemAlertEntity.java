@@ -56,7 +56,7 @@ public class SystemAlertEntity extends BaseEntity {
 	private AlertRole alertRole;
 
 	@Type(JsonType.class)
-	@Column(name = "PAGE_NAVI_PARAM")
+	@Column(name = "PAGE_NAVI_PARAM", columnDefinition = "VARCHAR(1000)")
 	private PageNaviParam pageNaviParam;
 
 	@Builder

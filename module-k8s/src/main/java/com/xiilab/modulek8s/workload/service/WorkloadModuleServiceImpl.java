@@ -15,6 +15,8 @@ import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
@@ -49,6 +51,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	private final WorkloadRepository workloadRepository;
 	private final SvcRepository svcRepository;
 	private final NodeRepository nodeRepository;
+
 	public CreateJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
 		String workspaceName) {
 		return workloadRepository.createBatchJobWorkload(moduleCreateWorkloadReqDTO.toBatchJobVO(workspaceName));
@@ -83,48 +86,94 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	@Override
 	public ModuleBatchJobResDTO getBatchJobWorkload(String workSpaceName, String workloadName) {
-		return workloadRepository.getBatchJobWorkload(workSpaceName, workloadName);
+		ModuleBatchJobResDTO batchJobWorkload = workloadRepository.getBatchJobWorkload(workSpaceName, workloadName);
+		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.BATCH, batchJobWorkload);
+		return batchJobWorkload;
 	}
 
 	@Override
 	public ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName) {
-		return workloadRepository.getInteractiveJobWorkload(workSpaceName, workloadName);
+		ModuleInteractiveJobResDTO interactiveJobWorkload = workloadRepository.getInteractiveJobWorkload(workSpaceName,
+			workloadName);
+		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.INTERACTIVE, interactiveJobWorkload);
+		return interactiveJobWorkload;
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId) {
-		if (workspaceName != null) {
-			return workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
-		} else if (userId != null) {
-			return workloadRepository.getBatchWorkloadListByCreator(userId);
-		} else {
-			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
-		}
-	}
-
-	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, String userId) {
-		List<ModuleInteractiveJobResDTO> workloadList;
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe,
+		String userId) {
+		List<ModuleBatchJobResDTO> workloadList;
 		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1);
 		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
 		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
-		if (workspaceName != null) {
-			workloadList = workloadRepository.getInteractiveWorkloadListByWorkspace(workspaceName);
+		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			workloadList = workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
+		} else if (workspaceName != null && !ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			workloadList = workloadRepository.getBatchWorkloadListByWorkspaceResourceNameAndCreator(workspaceName,
+				userId);
 		} else if (userId != null) {
-			workloadList = workloadRepository.getInteractiveWorkloadByCreator(userId);
+			workloadList = workloadRepository.getBatchWorkloadListByCreator(userId);
 		} else {
 			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
 		}
+
 		workloadList.forEach(workload -> {
-			ServiceList servicesByResourceName = svcRepository.getServicesByResourceName(workload.getWorkspaceResourceName(),
+			ServiceList servicesByResourceName = svcRepository.getServicesByResourceName(
+				workload.getWorkspaceResourceName(),
 				workload.getResourceName());
 			List<io.fabric8.kubernetes.api.model.Service> items = servicesByResourceName.getItems();
 			if (!CollectionUtils.isEmpty(items)) {
 				io.fabric8.kubernetes.api.model.Service service = items.get(0);
 				workload.updatePort(nodeDTO.getIp(), service);
 			}
+			updateJopPodStartTime(workload.getWorkspaceResourceName(), workload.getResourceName(), WorkloadType.BATCH,
+				workload);
+		});
+
+		return workloadList;
+	}
+
+	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName,
+		Boolean isCreatedByMe, String userId) {
+		List<ModuleInteractiveJobResDTO> workloadList;
+		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1);
+		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
+		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
+		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			workloadList = workloadRepository.getInteractiveWorkloadListByWorkspace(workspaceName);
+		} else if (workspaceName != null && !ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			workloadList = workloadRepository.getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(workspaceName,
+				userId);
+		} else if (userId != null) {
+			workloadList = workloadRepository.getInteractiveWorkloadByCreator(userId);
+		} else {
+			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
+		}
+		workloadList.forEach(workload -> {
+			// 포트 URL 업데이트
+			ServiceList servicesByResourceName = svcRepository.getServicesByResourceName(
+				workload.getWorkspaceResourceName(),
+				workload.getResourceName());
+			List<io.fabric8.kubernetes.api.model.Service> items = servicesByResourceName.getItems();
+			if (!CollectionUtils.isEmpty(items)) {
+				io.fabric8.kubernetes.api.model.Service service = items.get(0);
+				workload.updatePort(nodeDTO.getIp(), service);
+			}
+			//
+			updateJopPodStartTime(workload.getWorkspaceResourceName(), workload.getResourceName(),
+				WorkloadType.INTERACTIVE, workload);
 		});
 		return workloadList;
+	}
+
+	private <T extends ModuleWorkloadResDTO> void updateJopPodStartTime(String workspaceResourceName,
+		String workloadResourceName, WorkloadType workloadType, T workload) {
+		try {
+			Pod pod = getJobPod(workspaceResourceName, workloadResourceName, workloadType);
+			workload.setStartTime(DataConverterUtil.convertUTCDateToKorDate(pod.getStatus().getStartTime()));
+		} catch (Exception e) {
+		}
 	}
 
 	@Override

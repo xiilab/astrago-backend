@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8sdb.report.dto.ReportReservationDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.report.service.ReportService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,7 +58,7 @@ public class ReportController {
 	@Operation(summary = "Report 리스트 조회")
 	public ResponseEntity<Page<ReportReservationDTO.ResponseDTO>> getReportReservationList(
 		Pageable pageable,
-		UserInfoDTO userInfoDTO){
+		UserDTO.UserInfo userInfoDTO){
 		return new ResponseEntity<>(reportService.getReportReservationList(pageable, userInfoDTO), HttpStatus.OK);
 	}
 
@@ -66,7 +66,7 @@ public class ReportController {
 	@Operation(summary = "Report 발송 내역")
 	public ResponseEntity<Page<ReportReservationDTO.ReceiveDTO>> getReportReceiveList(
 		Pageable pageable,
-		UserInfoDTO userInfoDTO){
+		UserDTO.UserInfo userInfoDTO){
 		return new ResponseEntity<>(reportService.getReportReceiveList(pageable, userInfoDTO), HttpStatus.OK);
 	}
 
@@ -74,7 +74,7 @@ public class ReportController {
 	@Operation(summary = "Report 발송 내역 상세조회")
 	public ResponseEntity<ReportReservationDTO.DetailDTO> getReportReceiveListById(
 		@PathVariable(name = "id") Long id,
-		UserInfoDTO userInfoDTO){
+		UserDTO.UserInfo userInfoDTO){
 		return new ResponseEntity<>(reportService.getReportReceiveListById(id, userInfoDTO), HttpStatus.OK);
 	}
 }

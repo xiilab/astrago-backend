@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.xiilab.modulemonitor.dto.ClusterObjectDTO;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
+import com.xiilab.modulemonitor.enumeration.ClusterObject;
 import com.xiilab.servermonitor.monitor.service.MonitorService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -95,7 +97,7 @@ public class MonitorController {
 	 * @return 조회된 사용량
 	 */
 	@GetMapping("/dashboard/workspace")
-	@Operation(summary = "관리자 대시보드  워크스페이스 자원 사용량 리스트")
+	@Operation(summary = "관리자 대시보드 워크스페이스 자원 사용량 리스트")
 	public ResponseEntity<List<ResponseDTO.WorkspaceDTO>> getDashboardWorkspaceResourceList() {
 		return new ResponseEntity<>(monitorService.getWorkspaceResourceList(), HttpStatus.OK);
 	}
@@ -104,7 +106,7 @@ public class MonitorController {
 	 * 대시보드 노드 사용량 조회하는 API
 	 */
 	@GetMapping("/dashboard/node/{nodeName}")
-	@Operation(summary = "관리자 대시보드  노드별 자원 사용량 조회")
+	@Operation(summary = "관리자 대시보드 노드별 자원 사용량 조회")
 	public ResponseEntity<ResponseDTO.NodeResourceDTO> getDashboardNodeResourceByNodeName(
 		@PathVariable(name = "nodeName") String nodeName) {
 		return new ResponseEntity<>(monitorService.getNodeResource(nodeName), HttpStatus.OK);
@@ -188,5 +190,13 @@ public class MonitorController {
 	public ResponseEntity<List<ResponseDTO.ClusterPodInfo>> getClusterPendingAndFailPod() {
 		return new ResponseEntity<>(monitorService.getClusterPendingAndFailPod(), HttpStatus.OK);
 	}
+
+	@GetMapping("/cluster/{object}")
+	@Operation(summary = "클러스터 모니터링 Object별 상세 내역 조회")
+	public ResponseEntity<List<ClusterObjectDTO>> getClusterObjectByObject(
+		@PathVariable(name = "object") ClusterObject object) {
+		return new ResponseEntity<>(monitorService.getClusterObjectByObject(object), HttpStatus.OK);
+	}
+
 
 }

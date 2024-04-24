@@ -3,6 +3,7 @@ package com.xiilab.modulemonitor.repository;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulemonitor.dto.ClusterObjectDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 
 public interface K8sMonitorRepository {
@@ -23,4 +24,15 @@ public interface K8sMonitorRepository {
 	String getNodeName(String podName, String namespace);
 	ResponseDTO.ClusterPodInfo getClusterPendingAndFailPod(String podName, String namespace);
 	String getWorkspaceName(String workspaceName);
+	List<ClusterObjectDTO> getClusterRunningPods();
+	List<ClusterObjectDTO> getClusterPendingPods();
+	List<ClusterObjectDTO> getClusterFailPods();
+	List<ClusterObjectDTO> getReadyNodes();
+	List<ClusterObjectDTO> getUnhealthyDeployments();
+	List<ClusterObjectDTO> getUnhealthyHpas();
+	List<ClusterObjectDTO> getUnhealthyDaemonSets();
+	List<ClusterObjectDTO> getUnhealthyStatefulSets();
+	List<ClusterObjectDTO> getContainerRestart();
+	List<ClusterObjectDTO> getContainerImageRestart();
+
 }

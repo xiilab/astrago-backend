@@ -11,7 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
@@ -91,7 +91,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
-		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
+		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.IDE.getField(), getIde());
 		return annotationMap;
@@ -139,7 +139,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
 		cloneGitRepo(podSpecBuilder, codes);
-		addDefaultShmVolume(podSpecBuilder);
+		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, datasets);
 		addVolumes(podSpecBuilder, models);
 
@@ -288,7 +288,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	}
 
 	private void addVolumeMap(Map<String,String> map, String prefix, Long id) {
-		if (!NumberValidUtils.isNullOrZero(id)) {
+		if (!ValidUtils.isNullOrZero(id)) {
 			map.put(prefix + id, "true");
 		}
 	}

@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.JsonConvertUtil;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
@@ -45,6 +45,7 @@ public class BatchJobVO extends WorkloadVO {
 	private List<JobPortVO> ports;        //port 정의
 	private String workingDir;		// 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
+	private Map<String,String> parameter;		// 사용자가 입력한 hyper parameter
 	private String jobName;
 
 	@Override
@@ -71,7 +72,6 @@ public class BatchJobVO extends WorkloadVO {
 	}
 
 	private Map<String, String> getAnnotationMap() {
-		ObjectMapper objectMapper = new ObjectMapper();
 		String imageCredentialId = "";
 		if (getImage() != null && getImage().credentialVO() != null && !ObjectUtils.isEmpty(
 			getImage().credentialVO().credentialId())) {
@@ -92,8 +92,9 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
-		annotationMap.put(AnnotationField.IMAGE_ID.getField(), NumberValidUtils.isNullOrZero(getImage().id()) ?
+		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
+		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
 
 		return annotationMap;
 	}
@@ -139,7 +140,7 @@ public class BatchJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
 		cloneGitRepo(podSpecBuilder, this.codes);
-		addDefaultShmVolume(podSpecBuilder);
+		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, this.datasets);
 		addVolumes(podSpecBuilder, this.models);
 
@@ -153,7 +154,7 @@ public class BatchJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
-		addDefaultShmVolumeMountPath(podSpecContainer);
+		addDefaultVolumeMountPath(podSpecContainer);
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
@@ -162,11 +163,15 @@ public class BatchJobVO extends WorkloadVO {
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addDefaultShmVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+	private void addDefaultVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.addNewVolumeMount()
 			.withName("shmdir")
 			.withMountPath("/dev/shm")
 			.endVolumeMount();
+		// podSpecContainer.addNewVolumeMount()
+		// 	.withName("tz-seoul")
+		// 	.withMountPath("/etc/localtime")
+		// 	.endVolumeMount();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
@@ -291,7 +296,7 @@ public class BatchJobVO extends WorkloadVO {
 	}
 
 	private void addVolumeMap(Map<String, String> map, String prefix, Long id) {
-		if (!NumberValidUtils.isNullOrZero(id)) {
+		if (!ValidUtils.isNullOrZero(id)) {
 			map.put(prefix + id, "true");
 		}
 	}

@@ -4,7 +4,7 @@ package com.xiilab.servercore.image.dto;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
 import lombok.AccessLevel;
@@ -71,7 +71,7 @@ public class ImageReqDTO {
 		private Integer size;
 
 		public void setPage(Integer page) {
-			this.page = !NumberValidUtils.isNullOrZero(page)? page - 1 : null;
+			this.page = !ValidUtils.isNullOrZero(page)? page - 1 : null;
 		}
 	}
 }

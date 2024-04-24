@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -22,7 +23,7 @@ import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
@@ -54,7 +55,8 @@ public class DatasetServiceImpl implements DatasetService {
 	public void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoDatasetEntity.getStorageEntity().getHostPath();
-		String datasetPath = storageRootPath + "/" + astragoDatasetEntity.getDatasetName().replace(" ", "");
+		String saveDirectoryName = astragoDatasetEntity.getDatasetName().replace(" ", "") + "-" + UUID.randomUUID().toString().substring(6);
+		String datasetPath = storageRootPath + "/" + saveDirectoryName;
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(datasetPath);
@@ -71,6 +73,7 @@ public class DatasetServiceImpl implements DatasetService {
 			//dataset 저장
 			astragoDatasetEntity.setDatasetSize(size);
 			astragoDatasetEntity.setDatasetPath(datasetPath);
+			astragoDatasetEntity.setSaveDirectoryName(saveDirectoryName);
 			datasetRepository.save(astragoDatasetEntity);
 		} catch (IOException e) {
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
@@ -78,7 +81,7 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	@Override
-	public DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserInfoDTO userInfoDTO) {
+	public DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserDTO.UserInfo userInfoDTO) {
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth(), repositorySearchCondition);
 		List<Dataset> entities = datasets.getContent();
@@ -221,7 +224,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public DatasetDTO.DatasetsInWorkspace getDatasetsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		if(repositoryType == RepositoryType.WORKSPACE){
 			List<DatasetWorkSpaceMappingEntity> datasets = datasetWorkspaceRepository.findByWorkspaceResourceName(
 				workspaceResourceName);
@@ -263,7 +266,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	@Transactional
-	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO) {
+	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
 			workspaceResourceName, datasetId);
 		if(workSpaceMappingEntity == null){
@@ -294,7 +297,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	@Transactional
-	public void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName, Long datasetId, UserInfoDTO userInfoDTO) {
+	public void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
 			workspaceResourceName, datasetId);
 		if(workSpaceMappingEntity == null){

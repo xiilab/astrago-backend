@@ -44,8 +44,8 @@ public class PageDTO<T> {
 		List<T> result = new ArrayList<>();
 		//pinList가 상단에 고정되므로, 한 페이지의 size - pinList size를 뺀다.
 		int normalPageSize = pageSize - pinList.size();
-		int startIndex = (pageNum - 1) * pageSize;
-		int endIndex = Math.min(pageNum * pageSize, normalList.size());
+		int startIndex = Math.max((pageNum - 1) * normalPageSize - Math.max(0, pinList.size() - (pageNum - 1) * pageSize), 0);
+		int endIndex = Math.min(startIndex + normalPageSize, normalList.size());
 		int totalPage = getPinTotalPage(pinList, normalList, normalPageSize);
 		//normal list
 		List<T> subListResult = normalList.subList(startIndex, endIndex);

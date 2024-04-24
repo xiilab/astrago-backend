@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.facade.storage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
+import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
@@ -220,7 +222,8 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.namespace(namespace)
 			.connectTestLabelName(connectTestLabelName)
 			.hostPath(hostPath)
-			.dockerImage("xiilab/astrago-dataset-nginx")
+			// .dockerImage("xiilab/astrago-dataset-nginx")
+			.dockerImage(createStorageReqDTO.getConnectionTestImageUrl())
 			.build();
 		//connect test deployment 생성
 		workloadModuleService.createConnectTestDeployment(connectTestDTO);
@@ -292,5 +295,29 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		//PVC, PV 삭제
 		volumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
 		volumeService.deletePV(deleteStorageReqDTO.getPvName());
+	}
+
+	@Override
+	public void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> mounts) {
+		List<String> deploymentVolumeNames = volumeService.getAstragoVolumes();
+		List<AstragoDeploymentConnectPVC> missingPVCs = getMissingPVCs(mounts, deploymentVolumeNames);
+		volumeService.astragoCoreDeploymentConnectPVC(missingPVCs);
+	}
+
+	public static List<AstragoDeploymentConnectPVC> getMissingPVCs(List<AstragoDeploymentConnectPVC> astragoDeploymentPVCs, List<String> deploymentVolumeNames) {
+		// deploymentVolumeNames에 있는 이름들을 Set으로 변환
+		List<String> deploymentVolumeNamesCopy = new ArrayList<>(deploymentVolumeNames);
+		List<AstragoDeploymentConnectPVC> missingPVCs = new ArrayList<>();
+
+		// storageEntities를 iteration하며 deploymentVolumeNames에 있는 이름을 제거
+		for (AstragoDeploymentConnectPVC storageEntity : astragoDeploymentPVCs) {
+			if (deploymentVolumeNamesCopy.contains(storageEntity.getVolumeName())) {
+				deploymentVolumeNamesCopy.remove(storageEntity.getVolumeName());
+			} else {
+				// deploymentVolumeNames에 없는 이름을 가진 storageEntity를 missingEntities에 추가
+				missingPVCs.add(storageEntity);
+			}
+		}
+		return missingPVCs;
 	}
 }

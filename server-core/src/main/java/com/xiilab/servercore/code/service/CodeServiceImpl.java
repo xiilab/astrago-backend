@@ -3,11 +3,12 @@ package com.xiilab.servercore.code.service;
 import static com.xiilab.modulecommon.enums.RepositoryType.*;
 import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,16 +17,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.dto.RegexPatterns;
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
@@ -38,28 +41,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class CodeServiceImpl implements CodeService {
+	@Value("${gitlab.token}")
+	private String gitlabToken;
 	private final CodeRepository codeRepository;
 	private final CredentialService credentialService;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 
 	@Override
 	@Transactional
-	public CodeResDTO saveCode(CodeReqDTO codeReqDTO) {
+	public CodeResDTO saveCode(CodeReqDTO codeReqDTO, UserDTO.UserInfo userInfoDTO) {
 		// 깃허브 또는 깃랩 URL인지 검증
-		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
-		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
+		// boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeReqDTO.getCodeURL());
+		// boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeReqDTO.getCodeURL());
 
-		List<CodeEntity> codeEntities = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndCodeURLAndDeleteYnEquals(
-			codeReqDTO.getWorkspaceName(), codeReqDTO.getCodeURL(), DeleteYN.N);
-
-		if (!codeEntities.isEmpty()) {
-			throw new RestApiException(CodeErrorCode.CODE_VALIDATION_ERROR);
-		}
+		//repositoryType에 따른 code 존재여부 체크
+		checkCodeExist(codeReqDTO, userInfoDTO);
 
 		// URL 검증
-		if (!isGitHubURL && !isGitLabURL) {
-			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-		}
+		// if (!isGitHubURL) {
+		// 	throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
+		// }
 
 		// 사용자 Credential 조회
 		String token = "";
@@ -72,24 +73,34 @@ public class CodeServiceImpl implements CodeService {
 		}
 
 		// 연결 가능한지 확인
-		CodeType codeType = null;
-		if (isGitHubURL) {
-			codeType = CodeType.GIT_HUB;
+		if (codeReqDTO.getCodeType() == CodeType.GIT_HUB) {
 			GithubApi githubApi = new GithubApi(token);
-			githubApi.isRepoConnected(getRepoByUrl(codeReqDTO.getCodeURL()));
-		} else if (isGitLabURL) {
-			codeType = CodeType.GIT_LAB;
+			githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeReqDTO.getCodeURL()));
+		} else {
 			// GITLAB API 검증
+			String codeURL = codeReqDTO.getCodeURL();
+			String baseUrl = getBaseUrl(codeURL);
+
+			GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+			Pattern pattern = Pattern.compile(baseUrl + "/(.*?)/([^/.]+)(\\.git)?$");
+			Matcher matcher = pattern.matcher(codeReqDTO.getCodeURL());
+			if (matcher.find()) {
+				String namespace = matcher.group(1);
+				String project = matcher.group(2);
+				gitLabApi.isRepoConnected(namespace, project);
+			}else{
+				throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
+			}
 		}
 
 		try {
 			CodeEntity saveCode = codeRepository.save(
 				CodeEntity.dtoConverter()
-					.codeType(codeType)
+					.codeType(codeReqDTO.getCodeType())
 					.codeURL(codeReqDTO.getCodeURL())
 					.workspaceResourceName(codeReqDTO.getWorkspaceName())
 					.credentialEntity(credentialEntity)
-					.repositoryType(WORKSPACE)
+					.repositoryType(codeReqDTO.getRepositoryType())
 					.codeDefaultMountPath(codeReqDTO.getDefaultPath())
 					.cmd(codeReqDTO.getCmd())
 					.codeArgs(codeReqDTO.getCodeArgs())
@@ -99,20 +110,14 @@ public class CodeServiceImpl implements CodeService {
 			throw new RestApiException(CodeErrorCode.FAILED_SAVE_USER_CODE);
 		}
 	}
-
-	@Override
-	@Transactional
-	public List<CodeResDTO> saveCodes(List<CodeReqDTO> codeReqDTOs) {
-		List<CodeResDTO> savedCodes = new ArrayList<>();
-
-		for (CodeReqDTO codeReqDTO : codeReqDTOs) {
-			CodeResDTO codeResDTO = saveCode(codeReqDTO);
-			savedCodes.add(codeResDTO);
+	public static String getBaseUrl(String url) {
+		int endIndex = url.indexOf("/", "http://".length());
+		if (endIndex == -1) {
+			return url; // 슬래시가 없는 경우는 그대로 반환
+		} else {
+			return url.substring(0, endIndex);
 		}
-
-		return savedCodes;
 	}
-
 	@Override
 	public Boolean isCodeURLValid(String codeURL, Long credentialId) {
 		// 깃허브 또는 깃랩 URL인지 검증
@@ -132,18 +137,26 @@ public class CodeServiceImpl implements CodeService {
 
 		if (isGitHubURL) {
 			GithubApi githubApi = new GithubApi(token);
-			if (githubApi.isRepoConnected(getRepoByUrl(codeURL))) {
+			if (githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeURL))) {
 				return true;
 			}
 		} else if (isGitLabURL) {
-			// GITLAB API 검증
+			// // GITLAB API 검증
+			// GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+			// Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
+			// Matcher matcher = pattern.matcher(codeURL);
+			// if (matcher.find()) {
+			// 	String namespace = matcher.group(1);
+			// 	String project = matcher.group(2);
+			// 	gitLabApi.isRepoConnected(namespace, project);
+			// }
 		}
 
 		return true;
 	}
 
 	@Override
-	public Page<CodeResDTO> getCodeList(String workspaceName, UserInfoDTO userInfoDTO, Pageable pageable) {
+	public Page<CodeResDTO> getCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO, Pageable pageable) {
 		Page<CodeEntity> codeEntityList = null;
 		if (StringUtils.isEmpty(workspaceName)) {
 			codeEntityList = codeRepository.findByRegUser_RegUserIdAndRepositoryTypeAndDeleteYn(userInfoDTO.getId(),
@@ -186,6 +199,34 @@ public class CodeServiceImpl implements CodeService {
 
 	private CodeEntity getCodeEntity(long id) {
 		return codeRepository.findById(id).orElseThrow(() -> new RestApiException(CodeErrorCode.CODE_NOT_FOUND));
+	}
+
+	private void checkCodeExist(CodeReqDTO codeReqDTO, UserDTO.UserInfo userInfoDTO) {
+		RepositoryType repositoryType = codeReqDTO.getRepositoryType();
+		if (repositoryType == USER) {
+			List<CodeEntity> codeEntities = codeRepository.findByCodeURLAndRepositoryTypeAndRegUser_RegUserIdAndDeleteYn(
+				codeReqDTO.getCodeURL(),
+				USER,
+				userInfoDTO.getId(),
+				DeleteYN.N
+			);
+			if (!codeEntities.isEmpty()) {
+				throw new RestApiException(CodeErrorCode.CODE_EXIST_ERROR);
+			}
+		} else if (repositoryType == WORKSPACE) {
+			if (StringUtils.isEmpty(codeReqDTO.getWorkspaceName())) {
+				throw new RestApiException(CodeErrorCode.CODE_INPUT_ERROR);
+			}
+			List<CodeEntity> codeEntities = codeRepository.findByWorkspaceResourceNameAndCodeURLAndRepositoryTypeAndDeleteYn(
+				codeReqDTO.getWorkspaceName(),
+				codeReqDTO.getCodeURL(),
+				WORKSPACE,
+				DeleteYN.N
+			);
+			if (!codeEntities.isEmpty()) {
+				throw new RestApiException(CodeErrorCode.CODE_EXIST_ERROR);
+			}
+		}
 	}
 
 }

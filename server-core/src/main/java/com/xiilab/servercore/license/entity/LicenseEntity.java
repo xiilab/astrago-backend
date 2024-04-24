@@ -6,11 +6,9 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.xiilab.modulecommon.alert.enums.AlertMessage;
-import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LicenseErrorCode;
+import com.xiilab.servercore.license.dto.LicenseDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,14 +32,6 @@ public class LicenseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "LICENSE_ID")
 	private Long id;
-	@Column(name = "LICENSE_VERSION")
-	private String version;
-	@Column(name = "LICENSE_GPU_COUNT")
-	private int gpuCount;
-	@Column(name = "LICENSE_START_DATE")
-	private LocalDate startDate;
-	@Column(name = "LICENSE_END_DATE")
-	private LocalDate endDate;
 	@Column(name = "LICENSE_KEY")
 	private String licenseKey;
 	@Column(name = "LICENSE_REG_DATE")
@@ -59,8 +49,7 @@ public class LicenseEntity {
 		if (!validateLicensekey) {
 			throw new RestApiException(LicenseErrorCode.INVALID_LICENSE_KEYS);
 		}
-		//licenseKey 복호화
-		decryptLicensekey(licenseKey);
+		this.licenseKey = licenseKey;
 	}
 
 	/**
@@ -88,16 +77,12 @@ public class LicenseEntity {
 	/**
 	 * 라이센스 키 검증
 	 *
-	 * @param licensekey 라이센스 키
 	 * @return 라이센스 키 정보 (만료일, gpu 개수)
 	 */
-	private void decryptLicensekey(String licensekey) {
-		String licenselimitDate = "20" + (Integer.parseInt(licensekey.substring(0, 7)) / 7); //만료일 221124 -> 20221124로 변
-		String limitDate = licenselimitDate.substring(0, 4) + "-" + licenselimitDate.substring(4, 6) + "-" + licenselimitDate.substring(6, 8); //만료일 20221124 -> 2022-11-24로 변경
-		int gpuUnit = Integer.parseInt(licensekey.substring(8, 12));   //gpu개수
-		this.startDate = LocalDate.now();
-		this.endDate = LocalDate.parse(limitDate);
-		this.gpuCount = gpuUnit;
+	public LicenseDTO decryptLicensekey() {
+		String limitDate = getLimitDate(licenseKey);
+		int gpuUnit = Integer.parseInt(this.licenseKey.substring(8, 12));   //gpu개수
+		return new LicenseDTO(this.id, null, gpuUnit, this.regDate.toLocalDate(), LocalDate.parse(limitDate), this.regDate);
 	}
 
 	/**
@@ -124,6 +109,11 @@ public class LicenseEntity {
 		if ((getLhunAlgorithm(dateNode) + getLhunAlgorithm(verificationNum)) % 10 != 0) {
 			result = false;
 		}
+		String limitDate = getLimitDate(licenseKey);
+		//만료된 라이센스 키 입력시 에러 발생
+		if (LocalDate.now().isAfter(LocalDate.parse(limitDate))) {
+			throw new RestApiException(LicenseErrorCode.LICENSE_PAST_EXPIRATION_DATE);
+		}
 		return result;
 	}
 
@@ -147,8 +137,14 @@ public class LicenseEntity {
 
 	public void checkLicense() {
 		LocalDate now = LocalDate.now();
-		if (now.isAfter(endDate)) {
+		LicenseDTO licenseDTO = decryptLicensekey();
+		if (now.isAfter(licenseDTO.getEndDate())) {
 			throw new RestApiException(LicenseErrorCode.LICENSE_PAST_EXPIRATION_DATE);
 		}
+	}
+
+	private String getLimitDate(String licenseKey) {
+		String licenselimitDate = "20" + (Integer.parseInt(licenseKey.substring(0, 7)) / 7); //만료일 221124 -> 20221124로 변
+		return licenselimitDate.substring(0, 4) + "-" + licenselimitDate.substring(4, 6) + "-" + licenselimitDate.substring(6, 8); //만료일 20221124 -> 2022-11-24로 변경
 	}
 }

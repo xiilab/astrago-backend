@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.facade.storage;
 
 import java.util.List;
 
+import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
@@ -59,4 +60,6 @@ public interface StorageModuleService {
 	StorageResDTO createStorage(CreateStorageReqDTO createStorageReqDTO);
 
 	void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO);
+
+	void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> mounts);
 }

@@ -7,8 +7,10 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulemonitor.dto.ClusterObjectDTO;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
+import com.xiilab.modulemonitor.enumeration.ClusterObject;
 import com.xiilab.modulemonitor.enumeration.Promql;
 import com.xiilab.modulemonitor.service.K8sMonitorService;
 import com.xiilab.modulemonitor.service.MonitorFacadeService;
@@ -142,6 +144,9 @@ public class MonitorService {
 	}
 	public List<ResponseDTO.ClusterPodInfo> getClusterPendingAndFailPod(){
 		return monitorFacadeService.getClusterPendingAndFailPod();
+	}
+	public List<ClusterObjectDTO> getClusterObjectByObject(ClusterObject clusterObject){
+		return monitorFacadeService.getClusterObjectByObject(clusterObject);
 	}
 
 }

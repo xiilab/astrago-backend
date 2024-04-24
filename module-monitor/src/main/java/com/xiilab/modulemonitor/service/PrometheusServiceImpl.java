@@ -35,7 +35,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	@Override
 	public List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO) {
-		long step = DataConverterUtil.getStep(requestDTO.startDate(), requestDTO.endDate());
+		long step = DataConverterUtil.getFortyStep(requestDTO.startDate(), requestDTO.endDate());
 		// 검색시간 UnixTime로 변환
 		String startDate = DataConverterUtil.toUnixTime(requestDTO.startDate());
 		String endDate = DataConverterUtil.toUnixTime(requestDTO.endDate());
@@ -98,10 +98,19 @@ public class PrometheusServiceImpl implements PrometheusService{
 		return extractHistoryMetrics(historyMetric, promql);
 	}
 
+	@Override
+	public List<ResponseDTO.HistoryDTO> getHistoryMetricByWarning(String promql, String startDate, String endDate, Long step) {
+		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
+		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
+
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(), startUnixTime, endUnixTime, step);
+
+		return extractHistoryMetrics(historyMetric, promql);
+	}
 
 	@Override
 	public ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate, String resourceName) {
-		long step = DataConverterUtil.getStep(endDate, startDate);
+		long step = DataConverterUtil.getFortyStep(endDate, startDate);
 		// 검색시간 UnixTime로 변환
 		String startDateUnix = DataConverterUtil.toUnixTime(startDate);
 		String endDateUnix = DataConverterUtil.toUnixTime(endDate);
@@ -136,13 +145,18 @@ public class PrometheusServiceImpl implements PrometheusService{
 			// result 필드 추출
 			JsonNode results = jsonNode.path("data").path("result");
 
+			JsonNode values;
 
-			JsonNode values = results.get(0).get("values");
-			for (JsonNode value : values) {
-				// 리스트에 추가
-				total = total + Long.parseLong(value.get(1).textValue());
+			if(results.get(0) != null) {
+				values = results.get(0).get("values");
+				for (JsonNode value : values) {
+					// 리스트에 추가
+					total = total + Long.parseLong(value.get(1).textValue());
+				}
+				return total / values.size();
+			}else {
+				return 0;
 			}
-			return total / values.size();
 		} catch (JsonProcessingException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
@@ -204,8 +218,12 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	private ReportDTO.ResourceDTO createResourceDTO(JsonNode result, String resourceName) {
 		// 결과 값 추출
-		JsonNode values = result.get(0).path("values");
-
+		JsonNode values;
+		if(result.get(0) != null){
+			values = result.get(0).path("values");
+		}else{
+			values = null;
+		}
 		return new ReportDTO.ResourceDTO().builder()
 			.resourceName(resourceName)
 			.valueDTOS(createReportValue(values))
@@ -298,7 +316,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 	}
 	private List<ReportDTO.ValueDTO> createReportValue(JsonNode values) {
 		List<ReportDTO.ValueDTO> valueDTOList = new ArrayList<>();
-		if (values.isArray()) {
+		if (values != null && values.isArray()) {
 			for (JsonNode node : values) {
 				// values DTO List에 추가
 				valueDTOList.add(ReportDTO.ValueDTO.builder()

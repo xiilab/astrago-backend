@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
@@ -80,7 +81,6 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
 			// Model PV 생성
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
-
 			if (workloadType == WorkloadType.BATCH) {
 				createJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
@@ -149,7 +149,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 	@Override
 	public ModuleInteractiveJobResDTO getInteractiveWorkload(String workSpaceName, String workloadName) {
-		return workloadModuleService.getInteractiveJobWorkload(workSpaceName, workloadName);
+		return workloadModuleService.getInteractiveJobWorkload(
+			workSpaceName, workloadName);
 	}
 
 	@Override
@@ -168,9 +169,9 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
 		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchWorkloadListByCondition(
-			workSpaceName, null);
+			workSpaceName, null, null);
 		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveWorkloadListByCondition(
-			workSpaceName, null);
+			workSpaceName, null, null);
 		if (!jobWorkloadList.isEmpty()) {
 			workloadList.addAll(jobWorkloadList);
 		}

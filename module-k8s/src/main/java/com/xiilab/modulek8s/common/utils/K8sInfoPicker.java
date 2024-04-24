@@ -13,11 +13,9 @@ import java.util.Map;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
@@ -135,18 +133,12 @@ public class K8sInfoPicker {
 	 * @param annotationMap k8s annotation map
 	 * @return
 	 */
-	public static Map<String,String> getArgsMap(Map<String,String> annotationMap) {
-		String argStr = annotationMap.get(AnnotationField.ARGS.getField());
-		if (StringUtils.hasText(argStr)) {
-			ObjectMapper objectMapper = new ObjectMapper();
-			try {
-				return objectMapper.readValue(argStr, new TypeReference<>() {});
-			} catch (JsonProcessingException e) {
-				return null;
-			}
-		} else {
+	public static Map<String,String> getParameterMap(Map<String,String> annotationMap) {
+		String argStr = annotationMap.get(AnnotationField.PARAMETER.getField());
+		if (StringUtils.isEmpty(argStr)) {
 			return null;
 		}
+		return JsonConvertUtil.convertJsonToMap(argStr);
 	}
 
 	/**
@@ -169,6 +161,7 @@ public class K8sInfoPicker {
 				DateUtils.convertK8sUtcTimeString(metadata.getCreationTimestamp());
 			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
 				DateUtils.convertK8sUtcTimeString(metadata.getDeletionTimestamp());
+
 			return K8SResourceMetadataDTO.builder()
 				.uid(metadata.getUid())
 				.workloadName(annotations.get(AnnotationField.NAME.getField()))
@@ -197,6 +190,7 @@ public class K8sInfoPicker {
 				.envs(getEnvs(container.getEnv()))
 				.ports(getPorts(container.getPorts()))
 				.workingDir(container.getWorkingDir())
+				.parameter(getParameterMap(annotations))
 				.codes(codes)
 				.datasetMountPathMap(getDatasetAndModelMountMap("ds-", mountAnnotationMap))
 				.modelMountPathMap(getDatasetAndModelMountMap("md-", mountAnnotationMap))

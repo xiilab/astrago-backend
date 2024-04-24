@@ -9,7 +9,7 @@ import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
@@ -17,45 +17,45 @@ import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
 
 public interface WorkspaceFacadeService {
-	void createWorkspace(WorkspaceApplicationForm applicationForm, UserInfoDTO userInfoDTO);
+	void createWorkspace(WorkspaceApplicationForm applicationForm, UserDTO.UserInfo userInfoDTO);
 
 	PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition, int pageNum,
-		UserInfoDTO userInfoDTO);
+		UserDTO.UserInfo userInfoDTO);
 
 	void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
 
-	void deleteWorkspaceByName(String workspaceName, UserInfoDTO userInfoDTO);
+	void deleteWorkspaceByName(String workspaceName, UserDTO.UserInfo userInfoDTO);
 
-	List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserInfoDTO userInfoDTO);
+	List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserDTO.UserInfo userInfoDTO);
 
 	WorkspaceResourceQuotaState getWorkspaceResourceQuotaState(String workspaceResourceName);
 
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName);
 
-	void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserInfoDTO userInfoDTO);
+	void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserDTO.UserInfo userInfoDTO);
 
-	PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum, UserInfoDTO userInfoDTO);
+	PageDTO<ResourceQuotaFormDTO> getResourceQuotaRequests(String workspace, int pageNum, UserDTO.UserInfo userInfoDTO);
 
-	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO, UserInfoDTO userInfoDTO);
+	void updateResourceQuota(long id, ResourceQuotaApproveDTO resourceQuotaApproveDTO, UserDTO.UserInfo userInfoDTO);
 
 	void deleteResourceQuota(long id);
 
-	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserInfoDTO userInfoDTO);
+	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserDTO.UserInfo userInfoDTO);
 
 	WorkspaceAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName);
 
 	WorkspaceAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, WorkspaceAlertSetDTO workspaceAlertSetDTO);
 
-	boolean workspaceAccessAuthority(String workspaceResourceName, UserInfoDTO userInfoDTO);
+	boolean workspaceAccessAuthority(String workspaceResourceName, UserDTO.UserInfo userInfoDTO);
 
 	PageDTO<WorkspaceDTO.AdminResponseDTO> getAdminWorkspaceList(String searchCondition,
-		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserInfoDTO userInfoDTO);
+		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserDTO.UserInfo userInfoDTO);
 
-	PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserInfoDTO userInfoDTO);
+	PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserDTO.UserInfo userInfoDTO);
 
 	WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name);
 	ClusterResourceCompareDTO requestResourceComparedClusterResource();
 	WorkspaceResourceSettingDTO getWorkspaceResourceSetting();
-	void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO, UserInfoDTO userInfoDTO);
+	void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO, UserDTO.UserInfo userInfoDTO);
 	void validRedirectWorkspace(String workspaceResourceName);
 }

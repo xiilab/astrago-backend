@@ -1,12 +1,13 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
@@ -38,16 +39,20 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		this.workingDir = container.getWorkingDir();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = getWorkloadStatus(job.getStatus());
+		// 파드 시작 시간
+		// .subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		// 최초 종료 시간 예측
 		Optional.ofNullable(job.getMetadata()
-			.getAnnotations()
-			.getOrDefault(AnnotationField.ESTIMATED_INITIAL_TIME.getField(), null))
-			.ifPresent(estimatedInitialTimeString -> super.estimatedInitialTime = createdAt.plusSeconds(Long.parseLong(estimatedInitialTimeString)));
+				.getAnnotations()
+				.getOrDefault(AnnotationField.ESTIMATED_INITIAL_TIME.getField(), null))
+			.ifPresent(estimatedInitialTimeString -> super.estimatedInitialTime = createdAt.plusSeconds(
+				Long.parseLong(estimatedInitialTimeString)).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 		// 실시간 종료 시간 예측
 		Optional.ofNullable(job.getMetadata()
 				.getAnnotations()
 				.getOrDefault(AnnotationField.ESTIMATED_REMAINING_TIME.getField(), null))
-			.ifPresent(estimatedRemainingTime -> super.estimatedRemainingTime = LocalDateTime.now().plusSeconds(Long.parseLong(estimatedRemainingTime)));
+			.ifPresent(estimatedRemainingTime -> super.estimatedRemainingTime = LocalDateTime.now().plusSeconds(
+					Long.parseLong(estimatedRemainingTime)).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
 	}
 
 	@Override
@@ -59,11 +64,12 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		Integer active = jobStatus.getActive();
 		Integer failed = jobStatus.getFailed();
 		Integer ready = jobStatus.getReady();
-		if (!NumberValidUtils.isNullOrZero(failed)) {
+		if (!ValidUtils.isNullOrZero(failed)) {
 			return WorkloadStatus.ERROR;
-		} else if (!NumberValidUtils.isNullOrZero(ready)) {
+		} else if (!ValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.RUNNING;
-		} else if (ready == 0 || NumberValidUtils.isNullOrZero(active) && NumberValidUtils.isNullOrZero(failed) && NumberValidUtils.isNullOrZero(ready)) {
+		} else if (ready == 0 || ValidUtils.isNullOrZero(active) && ValidUtils.isNullOrZero(failed)
+			&& ValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.PENDING;
 		} else {
 			return WorkloadStatus.END;

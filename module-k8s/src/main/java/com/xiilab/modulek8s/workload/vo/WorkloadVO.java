@@ -11,7 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.GitEnvType;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -60,7 +60,8 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
 				.map(codeVO -> new ContainerBuilder().withName(getUniqueResourceName() + "-git-clone-" + index)
-					.withImage("k8s.gcr.io/git-sync/git-sync:v3.2.2")
+					// .withImage("k8s.gcr.io/git-sync/git-sync:v3.2.2")
+					.withImage(codeVO.initContainerImageUrl())
 					// init컨테이너와 아래서 생성한 emptyDir 볼륨 연결
 					.addNewVolumeMount()
 					.withName("git-clone-" + index.getAndIncrement())
@@ -94,7 +95,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		}
 	}
 
-	public void addDefaultShmVolume(PodSpecBuilder podSpecBuilder) {
+	public void addDefaultVolume(PodSpecBuilder podSpecBuilder) {
 		List<Volume> addVolumes = new ArrayList<>();
 		addVolumes.add(new VolumeBuilder()
 			.withName("shmdir")
@@ -102,6 +103,12 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			.withMedium("Memory")
 			.endEmptyDir()
 			.build());
+		// addVolumes.add(new VolumeBuilder()
+		// 	.withName("tz-seoul")
+		// 	.withNewHostPath()
+		// 	.withPath("/usr/share/zoneinfo/Asia/Seoul")
+		// 	.endHostPath()
+		// 	.build());
 		podSpecBuilder.addAllToVolumes(addVolumes);
 	}
 
@@ -142,13 +149,15 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_REPO.name()).withValue(codeVO.repositoryURL()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_BRANCH.name()).withValue(codeVO.branch()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_MOUNT_PATH.name()).withValue(codeVO.mountPath()).build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.REPOSITORY_TYPE.name()).withValue(codeVO.repositoryType().name()).build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue("/git").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_DEST.name()).withValue("code").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_PERMISSIONS.name()).withValue("0777").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ONE_TIME.name()).withValue("true").build());
-		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
+
 		// 공유 코드면 ID 환경변수로 저장
-		if (!NumberValidUtils.isNullOrZero(codeVO.id())) {
+		if (!ValidUtils.isNullOrZero(codeVO.id())) {
 			result.add(new EnvVarBuilder().withName(GitEnvType.SOURCE_CODE_ID.name())
 				.withValue(String.valueOf(codeVO.id()))
 				.build());
@@ -157,7 +166,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialLoginId())
 			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
 			result.add(new EnvVarBuilder().withName(GitEnvType.CREDENTIAL_ID.name())
-				.withValue(NumberValidUtils.isNullOrZero(codeVO.credentialVO().credentialId()) ? "" :
+				.withValue(ValidUtils.isNullOrZero(codeVO.credentialVO().credentialId()) ? "" :
 					String.valueOf(codeVO.credentialVO().credentialId()))
 				.build());
 			result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_USERNAME.name())
@@ -196,7 +205,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
 		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
 		this.codes.forEach(code -> {
-			if (!NumberValidUtils.isNullOrZero(code.id())) {
+			if (!ValidUtils.isNullOrZero(code.id())) {
 				map.put("cd-" + code.id(), code.mountPath());
 			}
 		});

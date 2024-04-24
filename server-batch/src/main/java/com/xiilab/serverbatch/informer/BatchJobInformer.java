@@ -3,22 +3,26 @@ package com.xiilab.serverbatch.informer;
 import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -39,21 +43,18 @@ import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.GroupService;
+import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.api.model.PodTemplateSpec;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.informers.SharedInformerFactory;
-import io.fabric8.kubernetes.client.utils.PodStatusUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,6 +66,8 @@ public class BatchJobInformer extends JobInformer {
 	private final SystemAlertRepository systemAlertRepository;
 	private final WorkspaceAlertSetRepository workspaceAlertSetRepository;
 	private final ApplicationEventPublisher publisher;
+	private final MailService mailService;
+	private final UserService userService;
 
 	public BatchJobInformer(WorkloadHistoryRepo workloadHistoryRepo,
 		DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository,
@@ -76,7 +79,7 @@ public class BatchJobInformer extends JobInformer {
 		ImageRepository imageRepository, CredentialRepository credentialRepository, SvcRepository svcRepository,
 		GroupService groupService, SystemAlertRepository systemAlertRepository,
 		WorkspaceAlertSetRepository workspaceAlertSetRepository,
-		ApplicationEventPublisher publisher) {
+		ApplicationEventPublisher publisher, MailService mailService, UserService userService) {
 		super(workloadHistoryRepo, datasetWorkLoadMappingRepository, modelWorkLoadMappingRepository,
 			codeWorkLoadMappingRepository, imageWorkloadMappingRepository, datasetRepository, modelRepository,
 			codeRepository, imageRepository, credentialRepository, svcRepository, volumeRepository);
@@ -85,6 +88,8 @@ public class BatchJobInformer extends JobInformer {
 		this.systemAlertRepository = systemAlertRepository;
 		this.workspaceAlertSetRepository = workspaceAlertSetRepository;
 		this.publisher = publisher;
+		this.mailService = mailService;
+		this.userService = userService;
 	}
 
 	@PostConstruct
@@ -187,6 +192,15 @@ public class BatchJobInformer extends JobInformer {
 				// 	emailTitle, title, message, metadataFromResource.getWorkspaceResourceName(), null);
 				//
 				// publisher.publishEvent(workspaceUserAlertEvent);
+
+				MailAttribute mail = MailAttribute.WORKLOAD_DELETE;
+				mailService.sendMail(MailDTO.builder()
+					.subject(String.format(mail.getSubject(), metadataFromResource.getWorkloadName()))
+					.title(String.format(mail.getTitle(), metadataFromResource.getWorkloadName()))
+					.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.footer(mail.getFooter())
+					.receiverEmail(userService.getUserById(metadataFromResource.getCreatorId()).getEmail())
+					.build());
 			}
 		});
 
@@ -211,6 +225,15 @@ public class BatchJobInformer extends JobInformer {
 			metadataFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
+
+		MailAttribute mail = MailAttribute.WORKLOAD_END;
+		mailService.sendMail(MailDTO.builder()
+			.subject(String.format(mail.getSubject(), metadataFromResource.getWorkloadName()))
+			.title(String.format(mail.getTitle(), metadataFromResource.getWorkloadName()))
+			.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+			.footer(mail.getFooter())
+			.receiverEmail(userService.getUserById(metadataFromResource.getCreatorId()).getEmail())
+			.build());
 	}
 
 	private void sendRunningNotification(Job job) {
@@ -239,6 +262,17 @@ public class BatchJobInformer extends JobInformer {
 			batchWorkloadInfoFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
+
+		MailAttribute mail = MailAttribute.WORKLOAD_START;
+
+		mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), workloadName))
+				.title(String.format(mail.getTitle(), workloadName))
+				.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.footer(mail.getFooter())
+				.receiverEmail(userService.getUserById(batchWorkloadInfoFromResource.getCreatorId()).getEmail())
+			.build());
+
 	}
 
 	private void sendErrorNotification(Job job2) {
@@ -262,6 +296,15 @@ public class BatchJobInformer extends JobInformer {
 			batchWorkloadInfoFromResource.getWorkspaceResourceName(), pageNaviParam);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
+
+		MailAttribute mail = MailAttribute.WORKLOAD_ERROR;
+		mailService.sendMail(MailDTO.builder()
+			.subject(String.format(mail.getSubject(), batchWorkloadInfoFromResource.getWorkloadName()))
+			.title(String.format(mail.getTitle(), batchWorkloadInfoFromResource.getWorkloadName()))
+			.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+			.footer(mail.getFooter())
+			.receiverEmail(userService.getUserById(batchWorkloadInfoFromResource.getCreatorId()).getEmail())
+			.build());
 	}
 
 	private boolean getJobCompleted(JobStatus jobStatus) {
@@ -278,11 +321,11 @@ public class BatchJobInformer extends JobInformer {
 		Integer active = jobStatus.getActive();
 		Integer failed = jobStatus.getFailed();
 		Integer ready = jobStatus.getReady();
-		if (!NumberValidUtils.isNullOrZero(failed)) {
+		if (!ValidUtils.isNullOrZero(failed)) {
 			return WorkloadStatus.ERROR;
-		} else if (!NumberValidUtils.isNullOrZero(ready)) {
+		} else if (!ValidUtils.isNullOrZero(ready)) {
 			return WorkloadStatus.RUNNING;
-		} else if (!NumberValidUtils.isNullOrZero(active)) {
+		} else if (!ValidUtils.isNullOrZero(active)) {
 			return WorkloadStatus.PENDING;
 		}
 		return WorkloadStatus.END;

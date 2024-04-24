@@ -23,11 +23,8 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "TB_IMAGE")
@@ -42,8 +39,11 @@ public abstract class ImageEntity extends BaseEntity {
 	@Column(name = "IMAGE_ID")
 	private Long id;
 
-	@Column(name = "IMAGE_NAME")
-	private String imageName;
+	@Column(name = "IMAGE_NAME_HUB")
+	private String imageNameHub;
+
+	@Column(name = "IMAGE_NAME_HARBOR")
+	private String imageNameHarbor;
 
 	@Column(name = "REPOSITORY_AUTH_TYPE")
 	@Enumerated(EnumType.STRING)
@@ -61,19 +61,19 @@ public abstract class ImageEntity extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYN = DeleteYN.N;
 
-	protected ImageEntity(String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
+	protected ImageEntity(String imageNameHub, RepositoryAuthType repositoryAuthType, ImageType imageType,
 		WorkloadType workloadType) {
-		this.imageName = imageName;
+		this.imageNameHub = imageNameHub;
 		this.repositoryAuthType = repositoryAuthType;
 		this.imageType = imageType;
 		this.workloadType = workloadType;
 	}
 
-	protected ImageEntity(RegUser regUser, String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
+	protected ImageEntity(RegUser regUser, String imageNameHub, RepositoryAuthType repositoryAuthType, ImageType imageType,
 		WorkloadType workloadType) {
 		super.regDate = LocalDateTime.now();
 		super.regUser = regUser;
-		this.imageName = imageName;
+		this.imageNameHub = imageNameHub;
 		this.repositoryAuthType = repositoryAuthType;
 		this.imageType = imageType;
 		this.workloadType = workloadType;

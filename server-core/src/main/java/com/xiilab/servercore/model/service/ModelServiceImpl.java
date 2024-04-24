@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -26,8 +27,8 @@ import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
@@ -56,7 +57,8 @@ public class ModelServiceImpl implements ModelService{
 	public void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoModel.getStorageEntity().getHostPath();
-		String modelPath = storageRootPath + "/" + astragoModel.getModelName().replace(" ", "");
+		String saveDirectoryName = astragoModel.getModelName().replace(" ", "") + "-" + UUID.randomUUID().toString().substring(6);
+		String modelPath = storageRootPath + "/" +  saveDirectoryName;
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(modelPath);
@@ -73,6 +75,7 @@ public class ModelServiceImpl implements ModelService{
 			//model 저장
 			astragoModel.setModelSize(size);
 			astragoModel.setModelPath(modelPath);
+			astragoModel.setSaveDirectoryName(saveDirectoryName);
 			modelRepository.save(astragoModel);
 		} catch (IOException e) {
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
@@ -86,7 +89,7 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
-	public ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserInfoDTO userInfoDTO) {
+	public ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserDTO.UserInfo userInfoDTO) {
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth(), repositorySearchCondition);
 		List<Model> entities = models.getContent();
@@ -220,7 +223,7 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	public ModelDTO.ModelsInWorkspace getModelsByRepositoryType(String workspaceResourceName,
-		RepositoryType repositoryType, UserInfoDTO userInfoDTO) {
+		RepositoryType repositoryType, UserDTO.UserInfo userInfoDTO) {
 		if(repositoryType == RepositoryType.WORKSPACE){
 			List<ModelWorkSpaceMappingEntity> models = modelWorkspaceRepository.findByWorkspaceResourceName(
 				workspaceResourceName);
@@ -261,7 +264,7 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	@Transactional
-	public void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserInfoDTO userInfoDTO) {
+	public void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserDTO.UserInfo userInfoDTO) {
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
 		if(workSpaceMappingEntity == null){
@@ -293,7 +296,7 @@ public class ModelServiceImpl implements ModelService{
 	@Override
 	@Transactional
 	public void updateWorkspaceModel(UpdateWorkspaceModelDTO updateWorkspaceModelDTO, String workspaceResourceName,
-		Long modelId, UserInfoDTO userInfoDTO) {
+		Long modelId, UserDTO.UserInfo userInfoDTO) {
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
 		if(workSpaceMappingEntity == null){

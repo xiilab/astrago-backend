@@ -17,5 +17,6 @@ public class CreateStorageReqDTO {
 	private String namespace;
 	private String astragoDeploymentName;
 	private String hostPath;
+	private String connectionTestImageUrl;
 	private int requestVolume;
 }

@@ -2,6 +2,10 @@ package com.xiilab.modulemonitor.dto;
 
 import java.util.List;
 
+import org.springframework.util.CollectionUtils;
+
+import com.xiilab.modulecommon.util.DataConverterUtil;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +18,7 @@ public class ReportDTO {
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class ResourceUtilDTO{
+	public static class ResourceUtilDTO {
 		private long gpuUtil;
 		private long cpuUtil;
 		private long memUtil;
@@ -25,11 +29,10 @@ public class ReportDTO {
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class ResourceDTO{
+	public static class ResourceDTO {
 		private String resourceName;
 		private List<ValueDTO> valueDTOS;
 	}
-
 
 	@Builder
 	public record ValueDTO(String dateTime,
@@ -40,7 +43,7 @@ public class ReportDTO {
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class StatisticsDTO{
+	public static class StatisticsDTO {
 		private String workspaceName;
 		private long gpuRequest;
 		private long cpuRequest;
@@ -55,7 +58,7 @@ public class ReportDTO {
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class ResourceQuotaDTO{
+	public static class ResourceQuotaDTO {
 		private long gpuRequest;
 		private long gpuApproval;
 		private long gpuRefuseCount;
@@ -71,7 +74,7 @@ public class ReportDTO {
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class WorkspaceResourceQuotaDTO{
+	public static class WorkspaceResourceQuotaDTO {
 		private String workspaceName;
 		private String workspaceResourceName;
 		private String userName;
@@ -110,18 +113,16 @@ public class ReportDTO {
 	@AllArgsConstructor
 	public static class SystemGpuDTO {
 		private String serverName;
+		private List<String> availableDate;
 		private long gpuIndex;
 		private List<SystemCategoryDTO> categoryDTOS;
-	}
-	@Builder
-	@Setter
-	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SystemResDTO {
-		private String serverName;
-		private String ip;
-		private List<SystemCategoryDTO> categoryDTOS;
+
+		public void setAvailableDate() {
+			if (!CollectionUtils.isEmpty(categoryDTOS)) {
+				SystemCategoryDTO systemCategoryDTO = categoryDTOS.get(0);
+				availableDate = systemCategoryDTO.getValueDTOS().stream().map(value -> value.date).toList();
+			}
+		}
 	}
 
 	@Builder
@@ -129,9 +130,40 @@ public class ReportDTO {
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
+	public static class SystemResDTO {
+		private String serverName;
+		private List<String> availableDate;
+		private String ip;
+		private List<SystemCategoryDTO> categoryDTOS;
+
+		public void setAvailableDate() {
+			if (!CollectionUtils.isEmpty(categoryDTOS)) {
+				SystemCategoryDTO systemCategoryDTO = categoryDTOS.get(0);
+				availableDate = systemCategoryDTO.getValueDTOS().stream().map(value -> value.date).toList();
+			}
+		}
+	}
+
+	@Builder
+	@Setter
+	@Getter
+	@AllArgsConstructor
+	@NoArgsConstructor
 	public static class SystemValueDTO {
 		private String date;
 		private double value;
+
+		public static SystemValueDTO weeklyValueBuilder(ResponseDTO.ValueDTO valueDTO) {
+			return new SystemValueDTO(
+				DataConverterUtil.convertToMonthDay(valueDTO.dateTime()),
+				DataConverterUtil.formatRoundTo(valueDTO.value()));
+		}
+
+		public static SystemValueDTO monthlyValueBuilder(ResponseDTO.ValueDTO valueDTO) {
+			return new SystemValueDTO(
+				DataConverterUtil.getDateMonthWeek(valueDTO.dateTime()),
+				DataConverterUtil.formatRoundTo(valueDTO.value()));
+		}
 	}
 
 	@Builder

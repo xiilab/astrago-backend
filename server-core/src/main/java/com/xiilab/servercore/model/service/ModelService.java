@@ -4,26 +4,25 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
-import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
-import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
+import com.xiilab.servercore.model.dto.ModelDTO;
 
 public interface ModelService {
 	void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files);
 
 	void insertLocalModel(LocalModelEntity localModelEntity);
 
-	ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserInfoDTO userInfoDTO);
+	ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserDTO.UserInfo userInfoDTO);
 
 	ModelDTO.ResModelWithStorage getModelWithStorage(Long modelId);
 
@@ -45,15 +44,15 @@ public interface ModelService {
 
 	DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath);
 
-	ModelDTO.ModelsInWorkspace getModelsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType, UserInfoDTO userInfoDTO);
+	ModelDTO.ModelsInWorkspace getModelsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType, UserDTO.UserInfo userInfoDTO);
 
 	void insertWorkspaceModel(InsertWorkspaceModelDTO insertWorkspaceModelDTO);
 
-	void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserInfoDTO userInfoDTO);
+	void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserDTO.UserInfo userInfoDTO);
 
 	ModelDTO.ModelsInWorkspace getModelsByWorkspaceResourceName(String workspaceResourceName);
 
 	void deleteModelWorkloadMapping(Long jobId);
 
-	void updateWorkspaceModel(UpdateWorkspaceModelDTO updateWorkspaceModelDTO, String workspaceResourceName, Long modelId, UserInfoDTO userInfoDTO);
+	void updateWorkspaceModel(UpdateWorkspaceModelDTO updateWorkspaceModelDTO, String workspaceResourceName, Long modelId, UserDTO.UserInfo userInfoDTO);
 }

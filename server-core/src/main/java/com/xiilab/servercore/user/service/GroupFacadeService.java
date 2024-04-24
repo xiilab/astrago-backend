@@ -9,14 +9,13 @@ import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 
 public interface GroupFacadeService {
 	//사용자 그룹 생성
-	void createAccountGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfo);
+	void createAccountGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfo);
 
 	//워크스페이스 그룹 생성
-	void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserInfoDTO userInfoDTO);
+	void createWorkspaceGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfoDTO);
 
 	//그룹 전체 목록 조회
 	List<GroupSummaryDTO> getGroupList(String searchText);
@@ -35,8 +34,11 @@ public interface GroupFacadeService {
 
 	// 워크스페이스 그룹 사용자 조회
 	List<GroupUserDTO.UserDTO> getWorkspaceMember(String groupName);
-	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList, UserInfoDTO userInfoDTO);
-	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList, UserInfoDTO userInfoDTO);
+
+	void deleteWorkspaceMemberByUserId(String groupName, List<String> userIdList, UserDTO.UserInfo userInfoDTO);
+
+	void addWorkspaceMemberByUserId(String groupName, AddWorkspaceUsersDTO userIdList, UserDTO.UserInfo userInfoDTO);
+
 	List<GroupUserDTO> getWorkspaceMemberBySearch(String groupName, String search);
 
 	UserDTO.SearchGroupAndUser getUserAndGroupBySearchText(String searchText, AuthType authType);

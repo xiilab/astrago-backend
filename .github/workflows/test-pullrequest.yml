@@ -1,0 +1,56 @@
+name: Test Pull Request
+run-name: ${{ github.actor }} Test to PR 🚀
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    permissions:
+      contents: write
+    strategy:
+      max-parallel: 3
+      matrix:
+        include:
+          - path: server-core
+          - path: server-batch
+          - path: server-monitor
+    steps:
+    # 원격머신에 repo checkout
+    - name: Checkout
+      uses: actions/checkout@v3
+    # JDK 설정
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+
+    # Gradle build
+    - name: Build with Gradle
+      run: ./gradlew ${{ matrix.path }}:build
+
+  notify_slack:
+    if: always()
+    needs: [ build ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    runs-on: [ self-hosted, linux ]
+    permissions:
+      actions: 'read'
+    steps:
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
+        with:
+          # Required Input
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
+          # Optional Input
+          channel: '#uyuni-suite'
+          name: 'Astrago Build Agent'
+          icon_emoji: ':rocket:'
+          icon_url: 'https://avatars0.githubusercontent.com/u/1701160?s=96&v=4'

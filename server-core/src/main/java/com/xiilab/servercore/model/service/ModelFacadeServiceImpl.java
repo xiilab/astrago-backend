@@ -9,36 +9,39 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.FileType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelResDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
-import com.xiilab.modulecommon.enums.FileType;
+import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
+import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
+import com.xiilab.modulek8sdb.model.entity.Model;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.dataset.service.WebClientService;
 import com.xiilab.servercore.model.dto.ModelDTO;
-import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
-import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
-import com.xiilab.modulek8sdb.model.entity.Model;
-import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.servercore.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
@@ -57,6 +60,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	private final ModelService modelService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WebClientService webClientService;
+	private final NetworkRepository networkRepository;
 
 	@Override
 	@Transactional
@@ -75,12 +79,15 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	@Override
 	@Transactional
 	public void insertLocalModel(ModelDTO.CreateLocalModel createLocalModel) {
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+
 		CreateLocalModelDTO createDto = CreateLocalModelDTO.builder()
 			.namespace(namespace)
 			.modelName(createLocalModel.getModelName())
 			.ip(createLocalModel.getIp())
 			.storagePath(createLocalModel.getStoragePath())
-			.dockerImage(dockerImage)
+			// .dockerImage(dockerImage)
+			.dockerImage(network.getLocalVolumeURL())
 			.hostPath(hostPath)
 			.build();
 
@@ -110,7 +117,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 
 	@Override
 	@Transactional
-	public void modifyModel(ModelDTO.ModifyModel modifyModel, Long modelId, UserInfoDTO userInfoDTO) {
+	public void modifyModel(ModelDTO.ModifyModel modifyModel, Long modelId, UserDTO.UserInfo userInfoDTO) {
 		//division 확인 후 astrago 데이터 셋이면 디비만 변경
 		Model model = modelService.findById(modelId);
 
@@ -134,7 +141,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 
 	@Override
 	@Transactional
-	public void deleteModel(Long modelId, UserInfoDTO userInfoDTO) {
+	public void deleteModel(Long modelId, UserDTO.UserInfo userInfoDTO) {
 		Model model = modelService.findById(modelId);
 		if (checkAccessDataset(userInfoDTO, model)) {
 			boolean isUse = workloadModuleFacadeService.isUsedModel(modelId);
@@ -323,7 +330,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 		 return workloadModuleFacadeService.workloadsUsingModel(pageInfo.getPageNo(), pageInfo.getPageSize(), modelId);
 	}
 
-	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Model model) {
+	private static boolean checkAccessDataset(UserDTO.UserInfo userInfoDTO, Model model) {
 		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
 			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId()
 				.equals(model.getRegUser().getRegUserId()));

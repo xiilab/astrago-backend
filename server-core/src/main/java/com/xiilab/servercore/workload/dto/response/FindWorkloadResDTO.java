@@ -1,12 +1,19 @@
 package com.xiilab.servercore.workload.dto.response;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import org.hibernate.Hibernate;
+import org.keycloak.utils.StringUtil;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.ImageType;
@@ -14,6 +21,10 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
@@ -59,6 +70,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private List<FindWorkloadResDTO.Code> codes;
 		private String workingDir;
 		private String command;
+		private Map<String,String> parameter;
 		private Float cpuRequest;
 		private Integer gpuRequest;
 		private Float memRequest;
@@ -67,6 +79,9 @@ public class FindWorkloadResDTO extends ResDTO {
 		private String nodeName;
 		private String estimatedInitialTime;
 		private String estimatedRemainingTime;
+		private boolean canBeDeleted;
+		private String startTime;
+
 		public static <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail from(
 			T moduleJobResDTO
 			, FindWorkloadResDTO.Image image
@@ -92,6 +107,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.codes(codes)
 				.workingDir(moduleJobResDTO.getWorkingDir())
 				.command(moduleJobResDTO.getCommand())
+				.parameter(moduleJobResDTO.getParameter())
 				.cpuRequest(Float.parseFloat(moduleJobResDTO.getCpuRequest()))
 				.gpuRequest(Integer.parseInt(moduleJobResDTO.getGpuRequest()))
 				.memRequest(Float.parseFloat(moduleJobResDTO.getMemRequest()))
@@ -103,8 +119,10 @@ public class FindWorkloadResDTO extends ResDTO {
 				.status(moduleJobResDTO.getStatus())
 				.ide(moduleJobResDTO.getIde())
 				.nodeName(nodeName)
-				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
-				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
+				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime() : null)
+				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime() : null)
+				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
+				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime())? moduleJobResDTO.getStartTime() : null)
 				.build();
 		}
 
@@ -125,6 +143,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.models(jobEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
 				.codes(jobEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
 				.command(jobEntity.getWorkloadCMD())
+				.parameter(JsonConvertUtil.convertJsonToMap(jobEntity.getParameter()))
 				.cpuRequest(jobEntity.getCpuRequest().floatValue())
 				.gpuRequest(jobEntity.getGpuRequest() == null ? 0 : jobEntity.getGpuRequest())
 				.memRequest(jobEntity.getMemRequest().floatValue())
@@ -134,6 +153,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regDate(jobEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.modDate(null)
 				.status(WorkloadStatus.END)
+				.ide(jobEntity.getIde())
+				.canBeDeleted(jobEntity.isCanBeDeleted())
 				.build();
 		}
 	}
@@ -152,8 +173,8 @@ public class FindWorkloadResDTO extends ResDTO {
 			super(imageEntity.getRegUser().getRegUserId(), imageEntity.getRegUser().getRegUserName(),
 				imageEntity.getRegUser().getRegUserRealName(), imageEntity.getRegDate(), imageEntity.getModDate());
 			this.id = imageEntity.getId();
-			this.title = imageEntity.isBuiltInImage()? ((BuiltInImageEntity)imageEntity).getTitle() : imageEntity.getImageName();
-			this.name = imageEntity.getImageName();
+			this.title = imageEntity.isBuiltInImage()? ((BuiltInImageEntity)imageEntity).getTitle() : imageEntity.getImageNameHub();
+			this.name = imageEntity.getImageNameHub();
 			this.type = imageEntity.getImageType();
 			this.repositoryAuthType = imageEntity.getRepositoryAuthType();
 			if (imageEntity.getImageType() == ImageType.CUSTOM

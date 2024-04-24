@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -32,8 +33,10 @@ import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
@@ -41,7 +44,9 @@ import com.xiilab.servercore.dataset.dto.NginxFilesDTO;
 import com.xiilab.servercore.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -56,6 +61,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	private final StorageService storageService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WebClientService webClientService;
+	private final NetworkRepository networkRepository;
 
 	@Override
 	@Transactional
@@ -82,12 +88,15 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	@Override
 	@Transactional
 	public void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO) {
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		log.info("폐쇄망 : " + network.getNetworkCloseYN());
 		CreateLocalDatasetDTO createDto = CreateLocalDatasetDTO.builder()
 			.namespace(namespace)
 			.datasetName(createDatasetDTO.getDatasetName())
 			.ip(createDatasetDTO.getIp())
 			.storagePath(createDatasetDTO.getStoragePath())
-			.dockerImage(dockerImage)
+			// .dockerImage(dockerImage)
+			.dockerImage(network.getLocalVolumeURL())
 			.hostPath(hostPath)
 			.build();
 		//1. nginx deployment, pvc, pv, svc 생성
@@ -105,13 +114,13 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			.svcName(createLocalDatasetResDTO.getSvcName())
 			.defaultPath(createDatasetDTO.getDefaultPath())
 			.build();
-		localDatasetEntity.setDatasetSize(0l);
+		localDatasetEntity.setDatasetSize(50l);
 		datasetService.insertLocalDataset(localDatasetEntity);
 	}
 
 	@Override
 	@Transactional
-	public void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId, UserInfoDTO userInfoDTO) {
+	public void modifyDataset(DatasetDTO.ModifyDatset modifyDataset, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		//division 확인 후 astrago 데이터 셋이면 디비만 변경
 		Dataset dataset = datasetService.findById(datasetId);
 
@@ -135,7 +144,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 
 	@Override
 	@Transactional
-	public void deleteDataset(Long datasetId, UserInfoDTO userInfoDTO) {
+	public void deleteDataset(Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		Dataset dataset = datasetService.findById(datasetId);
 		if (checkAccessDataset(userInfoDTO, dataset)) {
 			boolean isUse = workloadModuleFacadeService.isUsedDataset(datasetId);
@@ -324,7 +333,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 		return workloadModuleFacadeService.workloadsUsingDataset(pageInfo.getPageNo(), pageInfo.getPageSize(), datasetId);
 	}
 
-	private static boolean checkAccessDataset(UserInfoDTO userInfoDTO, Dataset dataset) {
+	private static boolean checkAccessDataset(UserDTO.UserInfo userInfoDTO, Dataset dataset) {
 		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
 			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId()
 				.equals(dataset.getRegUser().getRegUserId()));

@@ -35,14 +35,21 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "DESCRIPTION")
 	private String description;
 
-	@Column(name = "THUMBNAIL_URL")
-	private String thumbnailURL;
+	@Column(name = "THUMBNAIL_URL_GITHUB")
+	private String thumbnailUrlGitHub;
 
-	@Column(name = "README_URL")
-	private String readmeURL;
+	@Column(name = "THUMBNAIL_URL_GITLAB")
+	private String thumbnailUrlGitLab;
+	@Column(name = "README_URL_GITHUB")
+	private String readmeUrlGitHub;
+	@Column(name = "README_URL_GITLAB")
+	private String readmeUrlGitLab;
 
-	@Column(name = "SOURCE_CODE_URL")
-	private String sourceCodeUrl;
+	@Column(name = "SOURCE_CODE_URL_GITHUB")
+	private String sourceCodeUrlGitHub;
+
+	@Column(name = "SOURCE_CODE_URL_GITLAB")
+	private String sourceCodeUrlGitLab;
 
 	@Column(name = "SOURCE_CODE_BRANCH")
 	private String sourceCodeBranch;
@@ -59,8 +66,8 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "ENVS", length = 1000)
 	private String envs;
 
-	@Column(name = "HYPER_PARAMS", length = 1000)
-	private String hyperParams;
+	@Column(name = "PARAMETER", length = 1000)
+	private String parameter;
 
 	@Column(name = "PORTS", length = 1000)
 	private String ports;
@@ -77,22 +84,25 @@ public class HubEntity extends BaseEntity {
 	private WorkloadType workloadType;
 
 	@Builder(builderMethodName = "saveBuilder", builderClassName = "saveBuilder")
-	public HubEntity(String title, String description, String thumbnailURL,
-		String readmeURL, String sourceCodeUrl, String sourceCodeBranch, String sourceCodeMountPath,
-		String datasetMountPath, String modelMountPath, String envs, String command, String hyperParams,
+	public HubEntity(String title, String description, String thumbnailUrlGitHub,
+		String thumbnailUrlGitLab, String readmeUrlGitHub, String readmeUrlGitLab, String sourceCodeUrlGitHub, String sourceCodeUrlGitLab, String sourceCodeBranch, String sourceCodeMountPath,
+		String datasetMountPath, String modelMountPath, String envs, String command, String parameter,
 		HubImageEntity hubImageEntity, WorkloadType workloadType) {
 		this.title = title;
 		this.description = description;
-		this.thumbnailURL = thumbnailURL;
-		this.readmeURL = readmeURL;
-		this.sourceCodeUrl = sourceCodeUrl;
+		this.thumbnailUrlGitHub = thumbnailUrlGitHub;
+		this.thumbnailUrlGitLab = thumbnailUrlGitLab;
+		this.readmeUrlGitHub = readmeUrlGitHub;
+		this.readmeUrlGitLab = readmeUrlGitLab;
+		this.sourceCodeUrlGitHub = sourceCodeUrlGitHub;
+		this.sourceCodeUrlGitLab = sourceCodeUrlGitLab;
 		this.sourceCodeBranch = sourceCodeBranch;
 		this.sourceCodeMountPath = sourceCodeMountPath;
 		this.datasetMountPath = datasetMountPath;
 		this.modelMountPath = modelMountPath;
 		this.envs = envs;
 		this.command = command;
-		this.hyperParams = hyperParams;
+		this.parameter = parameter;
 		this.hubImageEntity = hubImageEntity;
 		this.workloadType = workloadType;
 		// 연관관계 편의 메서드

@@ -1,16 +1,19 @@
 package com.xiilab.moduleuser.dto;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.WorkspaceRole;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +29,7 @@ public class UserDTO {
 	}
 
 	@Getter
-	public static class ReqUserIds{
+	public static class ReqUserIds {
 		private List<String> ids;
 	}
 
@@ -36,17 +39,19 @@ public class UserDTO {
 		private List<SearchUser> users;
 		private List<SearchGroup> groups;
 	}
+
 	@Getter
 	@Builder
-	public static class SearchUser{
+	public static class SearchUser {
 		private String userId;
 		private String userName;
 		private String group;
 		private String email;
 	}
+
 	@Getter
 	@Builder
-	public static class SearchGroup{
+	public static class SearchGroup {
 		private String groupId;
 		private String groupName;
 	}
@@ -56,12 +61,14 @@ public class UserDTO {
 		private String id;
 		private String userName;
 		private String email;
-		private LocalDate joinDate;
+		private LocalDateTime joinDate;
 		private SignUpPath signUpPath;
 		private AuthType auth;
 		private String enable;
 		private String approval;
 		private List<String> groups;
+		private List<String> workspaces;
+		private String userFullName;
 		private String firstName;
 		private String lastName;
 
@@ -70,13 +77,15 @@ public class UserDTO {
 			this.userName = userRepresentation.getUsername();
 			this.firstName = userRepresentation.getFirstName();
 			this.lastName = userRepresentation.getLastName();
+			this.userFullName = lastName + firstName;
 			this.email = userRepresentation.getEmail();
-			this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ? SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
+			this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ?
+				SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
 			// 에포크 시간을 Instant로 변환
 			Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 			// 특정 시간대에 맞춰 LocalDateTime으로 변환
 			LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-			this.joinDate = localDateTime.toLocalDate();
+			this.joinDate = localDateTime;
 			this.enable = String.valueOf(userRepresentation.isEnabled());
 			this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
 			this.auth = getUserRole(userRepresentation.getRealmRoles());
@@ -86,11 +95,115 @@ public class UserDTO {
 					.map(GroupRepresentation::getName)
 					.toList();
 			}
+			if (!CollectionUtils.isEmpty(groups)) {
+				this.workspaces = groupReps.stream()
+					.filter(group -> group.getPath().contains("/ws/"))
+					.map(group -> group.getPath().split("/ws/")[1])
+					.toList();
+			}
 		}
 
 		private AuthType getUserRole(List<String> roles) {
 			//admin이면 admin 권한 넣고 user는 user넣고
-			return roles != null && roles.contains(AuthType.ROLE_ADMIN.name()) ? AuthType.ROLE_ADMIN : AuthType.ROLE_USER;
+			return roles != null && roles.contains(AuthType.ROLE_ADMIN.name()) ? AuthType.ROLE_ADMIN :
+				AuthType.ROLE_USER;
+		}
+
+		public Set<String> getWorkspaceList(boolean isMyWorkspace) {
+			if (workspaces != null && !workspaces.isEmpty()) {
+				if (isMyWorkspace) {
+					//내가 생성한 워크스페이스만 리턴
+					return getMyWorkspaces();
+				} else {
+					//내가 생성했거나, 멤버로 속해있는 워크스페이스 리턴
+					return getAllWorkspaces();
+				}
+			} else {
+				return new HashSet<>();
+			}
+		}
+
+		public boolean isMyWorkspace(String workspaceName){
+			if(auth == AuthType.ROLE_ADMIN){
+				return true;
+			}
+			if(workspaces == null){
+				return false;
+			}
+			List<String> workspaces = this.workspaces.stream()
+				.filter(ws -> ws.contains("/owner"))
+				.map(group -> group.split("/")[0])
+				.toList();
+			return workspaces.contains(workspaceName);
+		}
+
+		/**
+		 * 내가 생성한 워크스페이스를 리턴하는 메소드(owner 권한을 가지고 있는 워크스페이스)
+		 * @return workspace set
+		 */
+		public Set<String> getMyWorkspaces() {
+			if (!CollectionUtils.isEmpty(workspaces)) {
+				return workspaces.stream()
+					.filter(ws -> ws.contains("/owner"))
+					.map(group -> group.split("/")[0])
+					.collect(Collectors.toSet());
+			} else {
+				return new HashSet<>();
+			}
+		}
+
+		/**
+		 * 내가 생성한 워크스페이스 + 멤버로 속해있는 워크스페이스를 리턴하는 메소드(owner, user 권한을 가지고 있는 워크스페이스)
+		 * @return workspace set
+		 */
+		public Set<String> getAllWorkspaces() {
+			if (!CollectionUtils.isEmpty(workspaces)) {
+				return workspaces.stream()
+					.map(group -> group.split("/")[0])
+					.collect(Collectors.toSet());
+			} else {
+				return new HashSet<>();
+			}
+		}
+
+		/**
+		 * 유저가 workspace에 대한 권한이 있는지 체크하는 메소드
+		 * @param workspaceName 조회 할 워크스페이스
+		 * @return 권한여부
+		 */
+		public boolean isAccessAuthorityWorkspace(String workspaceName){
+			if(auth == AuthType.ROLE_ADMIN){
+				return true;
+			}
+			if(workspaces == null){
+				return false;
+			}
+
+			Set<String> allWorkspaces = getAllWorkspaces();
+
+			return allWorkspaces.contains(workspaceName);
+		}
+
+		/**
+		 * 일반 유저가 워크스페이스에 권한을 가지고 있는지 체크하는 메소드
+		 * @param workspaceName 조회 할 워크스페이스 이름
+		 * @return 권한 여부
+		 */
+		public boolean isAccessAuthorityWorkspaceNotAdmin(String workspaceName){
+			if(CollectionUtils.isEmpty(workspaces)){
+				return false;
+			}
+			Set<String> allWorkspaces = getAllWorkspaces();
+			return allWorkspaces.contains(workspaceName);
+		}
+
+		public WorkspaceRole getWorkspaceAuthority(String workspaceName) {
+			if (!CollectionUtils.isEmpty(workspaces)) {
+				Set<String> myWorkspaces = getMyWorkspaces();
+				return myWorkspaces.contains(workspaceName) ? WorkspaceRole.ROLE_OWNER : WorkspaceRole.ROLE_USER;
+			} else {
+				return null;
+			}
 		}
 	}
 }

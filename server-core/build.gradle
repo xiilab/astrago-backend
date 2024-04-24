@@ -37,6 +37,8 @@ dependencies {
     implementation 'org.yaml:snakeyaml:2.2'
     // simple json
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    // tus 프로토콜
+    implementation "me.desair.tus:tus-java-server:1.0.0-3.0"
 }
 
 def querydslSrcDir = "src/main/generated"

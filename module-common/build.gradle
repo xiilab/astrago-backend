@@ -3,6 +3,12 @@ dependencies {
     // github
     implementation 'org.kohsuke:github-api:1.301'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    //git lab
+    // https://mvnrepository.com/artifact/org.gitlab4j/gitlab4j-api
+    implementation group: 'org.gitlab4j', name: 'gitlab4j-api', version: '6.0.0-rc.4'
+// https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api
+    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
+
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.github.jknack:handlebars:4.3.1'

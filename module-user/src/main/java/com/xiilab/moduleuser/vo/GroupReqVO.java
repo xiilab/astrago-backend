@@ -7,7 +7,7 @@ import java.util.Map;
 import org.keycloak.representations.idm.GroupRepresentation;
 
 import com.xiilab.moduleuser.dto.GroupCategory;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -21,7 +21,7 @@ public class GroupReqVO {
 	protected String createdBy;
 	protected String creatorEmail;
 
-	public void setCreator(UserInfoDTO userInfo){
+	public void setCreator(UserDTO.UserInfo userInfo){
 		this.createdBy = userInfo.getUserFullName();
 		this.creatorEmail = userInfo.getEmail();
 	}

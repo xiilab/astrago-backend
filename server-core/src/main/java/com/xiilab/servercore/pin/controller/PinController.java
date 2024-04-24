@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.moduleuser.dto.UserInfoDTO;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.pin.service.PinService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +26,7 @@ public class PinController {
 	public ResponseEntity<HttpStatus> createWorkspacePin(
 		@RequestParam(value = "resourceName") String resourceName,
 		@RequestParam(value = "pinType") PinType pinType,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		pinService.createPin(resourceName, pinType, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -36,7 +36,7 @@ public class PinController {
 	public ResponseEntity<HttpStatus> deleteWorkspace(
 		@RequestParam(value = "resourceName") String resourceName,
 		@RequestParam(value = "pinType") PinType pinType,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		pinService.deletePin(resourceName, pinType, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

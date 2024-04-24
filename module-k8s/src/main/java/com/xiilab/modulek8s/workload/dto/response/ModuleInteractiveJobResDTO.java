@@ -45,14 +45,14 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 		return WorkloadType.INTERACTIVE;
 	}
 
-	public void updatePort(String nodeIp, Service service) {
-		if (Objects.nonNull(service) && Objects.nonNull(service.getSpec().getPorts())) {
-			List<ServicePort> servicePorts = service.getSpec().getPorts();
-			this.ports = servicePorts.stream().map(servicePort -> ModulePortResDTO.builder()
-				.name(servicePort.getName())
-				.originPort(servicePort.getPort())
-				.url(String.format("%s:%s", nodeIp, servicePort.getNodePort()))
-				.build()).toList();
-		}
-	}
+	// public void updatePort(String nodeIp, Service service) {
+	// 	if (Objects.nonNull(service) && Objects.nonNull(service.getSpec().getPorts())) {
+	// 		List<ServicePort> servicePorts = service.getSpec().getPorts();
+	// 		this.ports = servicePorts.stream().map(servicePort -> ModulePortResDTO.builder()
+	// 			.name(servicePort.getName())
+	// 			.originPort(servicePort.getPort())
+	// 			.url(String.format("%s:%s", nodeIp, servicePort.getNodePort()))
+	// 			.build()).toList();
+	// 	}
+	// }
 }

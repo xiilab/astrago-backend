@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteVolumeDTO;
@@ -33,11 +34,15 @@ import io.fabric8.kubernetes.api.model.PersistentVolume;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
+import io.fabric8.kubernetes.api.model.PodSpecFluent;
+import io.fabric8.kubernetes.api.model.PodTemplateSpecFluent;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
+import io.fabric8.kubernetes.api.model.apps.DeploymentFluent;
+import io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -218,6 +223,62 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 					.endTemplate()
 					.endSpec()
 					.build());
+		}
+	}
+
+	@Override
+	public List<VolumeMount> getAstragoVolumes() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			Deployment deployment = client.apps()
+				.deployments()
+				.inNamespace("astrago")
+				.withName("astrago-backend-core")
+				.get();
+			return deployment.getSpec()
+				.getTemplate()
+				.getSpec()
+				.getContainers()
+				.get(0)
+				.getVolumeMounts();
+		}
+	}
+
+	@Override
+	public void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVCs) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			List<Volume> volumes = new ArrayList<>();
+			for (AstragoDeploymentConnectPVC missingPVC : missingPVCs) {
+				volumes.add( new VolumeBuilder()
+					.withName(missingPVC.getVolumeName())
+					.withPersistentVolumeClaim(
+						new PersistentVolumeClaimVolumeSource(missingPVC.getPvcName(), false))
+					.build());
+			}
+			client.apps()
+				.deployments()
+				.inNamespace("astrago")
+				.withName("astrago-backend-core")
+				.edit(d -> {
+					if(missingPVCs.size() != 0){
+						PodSpecFluent<io.fabric8.kubernetes.api.model.PodTemplateSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>.ContainersNested<PodTemplateSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>
+							specNestedContainersNested = new DeploymentBuilder(d)
+							.editSpec()
+							.editOrNewTemplate()
+							.editSpec()
+							.addAllToVolumes(volumes)
+							.editContainer(0);
+						PodSpecFluent<PodTemplateSpecFluent<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>.ContainersNested<PodTemplateSpecFluent<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>
+							depolymentBuilder = null;
+						for (AstragoDeploymentConnectPVC pvc : missingPVCs) {
+								depolymentBuilder = specNestedContainersNested.addNewVolumeMount()
+								.withName(pvc.getVolumeName())
+								.withMountPath(pvc.getHostPath())
+								.endVolumeMount();
+						}
+						return depolymentBuilder.endContainer().endSpec().endTemplate().endSpec().build();
+					}
+						return d;
+				});
 		}
 	}
 

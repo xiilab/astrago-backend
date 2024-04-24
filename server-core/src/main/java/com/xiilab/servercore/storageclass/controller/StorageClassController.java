@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.storageclass.dto.CreateStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.dto.ModifyStorageClassReqDTO;
 import com.xiilab.servercore.storageclass.service.StorageClassFacadeService;
@@ -42,7 +42,7 @@ public class StorageClassController {
 	@PostMapping("")
 	@Operation(summary = "스토리지 클래스 생성")
 	public ResponseEntity<Object> createStorageClass(@RequestBody CreateStorageClassReqDTO createStorageClassReqDTO,
-		UserInfoDTO userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO) {
 		storageClassFacadeService.createStorageClass(createStorageClassReqDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

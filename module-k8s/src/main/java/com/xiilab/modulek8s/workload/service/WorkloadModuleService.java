@@ -59,9 +59,9 @@ public interface WorkloadModuleService {
 	 */
 	ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
 
-	List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, String userId);
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe, String userId);
 
-	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, String userId);
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe, String userId);
 
 	/**
 	 * batch job workload 삭제

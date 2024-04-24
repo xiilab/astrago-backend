@@ -1,8 +1,8 @@
 spring:
   servlet:
     multipart:
-      max-request-size: 100MB
-      max-file-size: 100MB
+      max-request-size: 100GB
+      max-file-size: 100GB
   security:
     oauth2:
       resource-server:
@@ -30,7 +30,8 @@ spring:
       hibernate:
         default_batch_fetch_size: 100
         format_sql: true
-    show_sql: false
+        use_sql_comments: true
+        show_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     defer-datasource-initialization: true
@@ -74,9 +75,15 @@ astrago:
 github:
   public:
     token: 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
+gitlab:
+  token:
 
 mig-profile-path: src/main/resources/MigProfile.json
 server:
   max-http-request-header-size: 40KB
 prometheus:
   url: http://10.61.3.12:30090/
+
+tus:
+  upload-path: /root/astrago
+  expire-period: 60000

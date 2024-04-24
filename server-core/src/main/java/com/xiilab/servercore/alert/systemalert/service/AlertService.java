@@ -2,10 +2,8 @@ package com.xiilab.servercore.alert.systemalert.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
-
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
@@ -25,8 +23,8 @@ public interface AlertService {
 	void deleteAdminAlertMappings(String adminId);
 	// Admin Alert 매핑 값 수정
 	void saveAdminAlertMapping(String adminId, List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings);
-	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(String workspaceResourceName, UserInfoDTO userInfoDTO);
+	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(String workspaceResourceName, UserDTO.UserInfo userInfoDTO);
 
 	void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName, ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
-		UserInfoDTO userInfoDTO);
+		UserDTO.UserInfo userInfoDTO);
 }

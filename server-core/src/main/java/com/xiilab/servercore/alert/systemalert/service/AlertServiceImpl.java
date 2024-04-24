@@ -8,11 +8,9 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
@@ -20,7 +18,7 @@ import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
-import com.xiilab.modulecommon.util.NumberValidUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
@@ -31,7 +29,7 @@ import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepo
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
-import com.xiilab.moduleuser.dto.UserInfoDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
 import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
@@ -156,8 +154,8 @@ public class AlertServiceImpl implements AlertService {
 		List<SystemAlertReqDTO.SaveAdminAlertMappings> saveAdminAlertMappings) {
 		for (SystemAlertReqDTO.SaveAdminAlertMappings saveAdminAlertMapping : saveAdminAlertMappings) {
 			// getAdminAlertMappingId 없으면 새로 등록
-			if (NumberValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId())
-				&& !NumberValidUtils.isNullOrZero(saveAdminAlertMapping.getAlertId())) {
+			if (ValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId())
+				&& !ValidUtils.isNullOrZero(saveAdminAlertMapping.getAlertId())) {
 				AlertEntity alertEntity = alertRepository.findById(saveAdminAlertMapping.getAlertId())
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
 				AdminAlertMappingEntity newAdminAlertMappingEntity = AdminAlertMappingEntity.saveBuilder()
@@ -182,14 +180,14 @@ public class AlertServiceImpl implements AlertService {
 
 	@Override
 	public List<WorkspaceAlertMappingDTO> getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(
-		String workspaceResourceName, UserInfoDTO userInfoDTO) {
-		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
+		String workspaceResourceName, UserDTO.UserInfo userInfo) {
+		boolean accessAuthorityWorkspace = userInfo.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
 		//워크스페이스 접근 권한 없음
 		if (!accessAuthorityWorkspace) {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
 		}
-		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
-		return workspaceAlertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(userInfoDTO.getId(),
+		WorkspaceRole workspaceAuthority = userInfo.getWorkspaceAuthority(workspaceResourceName);
+		return workspaceAlertService.getWorkspaceAlertMappingByWorkspaceResourceNameAndAlertRole(userInfo.getId(),
 			workspaceResourceName, workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER);
 	}
 
@@ -198,22 +196,22 @@ public class AlertServiceImpl implements AlertService {
 	 * @param alertId
 	 * @param workspaceResourceName
 	 * @param modifyWorkspaceAlertMapping
-	 * @param userInfoDTO
+	 * @param userInfo
 	 */
 	@Override
 	@Transactional
 	public void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName,
-		ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping, UserInfoDTO userInfoDTO) {
-		boolean accessAuthorityWorkspace = userInfoDTO.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
+		ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping, UserDTO.UserInfo userInfo) {
+		boolean accessAuthorityWorkspace = userInfo.isAccessAuthorityWorkspaceNotAdmin(workspaceResourceName);
 		//워크스페이스 접근 권한 없음
 		if (!accessAuthorityWorkspace) {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_FORBIDDEN);
 		}
-		WorkspaceRole workspaceAuthority = userInfoDTO.getWorkspaceAuthority(workspaceResourceName);
+		WorkspaceRole workspaceAuthority = userInfo.getWorkspaceAuthority(workspaceResourceName);
 		AlertRole alertRole = workspaceAuthority == WorkspaceRole.ROLE_OWNER ? AlertRole.OWNER : AlertRole.USER;
 		workspaceAlertService.modifyWorkspaceAlertMapping(alertId, alertRole,
 			modifyWorkspaceAlertMapping.getAlertSendType(), modifyWorkspaceAlertMapping.getAlertStatus(),
-			userInfoDTO.getId());
+			userInfo.getId());
 	}
 
 	private Map<AlertType, Long> getAllAlertTypeCountMap(String loginUserId, AlertRole alertRole, ReadYN readYN, String searchText,
