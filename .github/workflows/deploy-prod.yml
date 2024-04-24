@@ -29,7 +29,7 @@ jobs:
           SPLIT_CURRENT_RELEASE=($(echo "$CURRENT_RELEASE" | tr -d 'v' | tr '.' ' '))
           
           BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}")
-          SPLIT_BRANCH_VERSION = ($(echo "$BRANCH_VERSION" | tr '.' ' '))
+          SPLIT_BRANCH_VERSION=($(echo $BRANCH_VERSION | tr '.' ' '))
           if [[ "$GITHUB_HEAD_REF" == release/* ]]
           then
             if [[ "${#SPLIT_BRANCH_VERSION[0]}" -gt "${#SPLIT_CURRENT_RELEASE[0]}" ]]
