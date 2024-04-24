@@ -146,6 +146,20 @@ jobs:
           git commit -m "update backend image tag"
           git push
 
+  update_release_draft:
+    needs: [ prod-delivery ]
+    permissions:
+      # write permission is required to create a github release
+      contents: write
+      # write permission is required for autolabeler
+      # otherwise, read permission is required at least
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   notify_slack:
     if: always()
     needs: [ prod-delivery ]  # 이 작업이 의존하는 이전 작업의 이름 추가
