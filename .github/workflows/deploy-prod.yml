@@ -2,12 +2,9 @@ name: Deploy to Production workflow
 run-name: ${{ github.actor }} deploys to Production 🚀
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-    branches:
-      - develop
+    types: [ closed ]
+    branches: [ feature/prod-workflow ]
+
 
 env:
   DOCKERHUB_REPOSITORY: xiilab/astrago
@@ -15,7 +12,7 @@ env:
 
 jobs:
   prod-integration:
-    if: startsWith(github.head_ref, 'release/')
+    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: [ ubuntu-latest ]
     outputs:
       IMAGE_TAG: ${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
