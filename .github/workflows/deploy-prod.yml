@@ -49,7 +49,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ env.GITHUB_REF_NAME }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -60,7 +60,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ env.GITHUB_REF_NAME }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -71,7 +71,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:monitor-${{ env.GITHUB_REF_NAME }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:monitor-${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -90,11 +90,11 @@ jobs:
         with:
           cmd: |
             yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ env.GITHUB_REF_NAME }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ github.ref_name }}"' 'environments/prod/values.yaml'
             yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ env.GITHUB_REF_NAME }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ github.ref_name }}"' 'environments/prod/values.yaml'
             yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ env.GITHUB_REF_NAME }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ github.ref_name }}"' 'environments/prod/values.yaml'
 
       - name: Commit and Push
         run: |
