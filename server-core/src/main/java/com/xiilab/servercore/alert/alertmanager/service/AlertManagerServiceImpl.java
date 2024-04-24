@@ -36,7 +36,6 @@ import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerDTO;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerReceiveDTO;
 import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerEntity;
-import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerNodeEntity;
 import com.xiilab.modulek8sdb.alert.alertmanager.entity.AlertManagerReceiveEntity;
 import com.xiilab.modulek8sdb.alert.alertmanager.enumeration.AlertManagerCategoryType;
 import com.xiilab.modulek8sdb.alert.alertmanager.repository.AlertManagerReceiveRepository;
@@ -174,17 +173,13 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 
 					AlertManagerEntity alertManagerEntity = repository.findById(id).orElse(null);
 
-					// 임계값 소수점 2자까지
-					double value = Double.parseDouble(annotations.get("value").toString());
-					String val = String.format("%.2f", value);
-					// 발생한 node Name
-					String nodeName = labels.get("nodeName").toString();
-
-					if (alertManagerEntity != null) {
-
-						String nodeIp = alertManagerEntity.getAlertManagerNodeEntityList().stream()
-							.filter(alertManagerNodeEntity -> alertManagerNodeEntity.getNodeName().equals(nodeName))
-							.map(AlertManagerNodeEntity::getNodeIp).findFirst().orElse("");
+					if (alertManagerEntity != null && alertManagerEntity.isAlertEnable()) {
+						// 임계값 소수점 2자까지
+						double value = Double.parseDouble(annotations.get("value").toString());
+						String val = String.format("%.2f", value);
+						// 발생한 node Name
+						String nodeName = labels.get("nodeName").toString();
+						String nodeIp = labels.get("internal_ip").toString();
 
 						receiveRepository.save(
 							AlertManagerReceiveEntity.builder()
@@ -198,51 +193,51 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 								.alertManager(alertManagerEntity)
 								.result(true)
 								.build());
-					}
-				}
-				// 저장된 AlertList 조회
-				Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceiveDTOList = getAlertReceiveDTOList(
-					currentTime);
 
-				// 알림 전송
-				for (Map.Entry<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceive : alertReceiveDTOList.entrySet()) {
+						// 저장된 AlertList 조회
+						Map<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceiveDTOList = getAlertReceiveDTOList(
+							currentTime);
 
-					AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(alertReceive.getKey());
-					// // 사용자 수신 설정에 따른 Email, System 분기
-					AlertMessage nodeError = AlertMessage.NODE_ERROR;
-					String mailTitle = nodeError.getMailTitle();
-					String title = nodeError.getTitle();
-					MailAttribute mail = MailAttribute.NODE_ERROR;
-					for (AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()) {
-						if (!StringUtils.hasText(alertManagerReceiveDTO.getNodeName())) {
-							continue;
-						}
+						// 알림 전송
+						for (Map.Entry<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceive : alertReceiveDTOList.entrySet()) {
 
-						PageNaviParam pageNaviParam = PageNaviParam.builder()
-							.nodeName(alertManagerReceiveDTO.getNodeName())
-							.build();
+							AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(alertReceive.getKey());
+							// // 사용자 수신 설정에 따른 Email, System 분기
+							AlertMessage nodeError = AlertMessage.NODE_ERROR;
+							String mailTitle = nodeError.getMailTitle();
+							String title = nodeError.getTitle();
+							MailAttribute mail = MailAttribute.NODE_ERROR;
+							for (AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()) {
+								if (!StringUtils.hasText(alertManagerReceiveDTO.getNodeName())) {
+									continue;
+								}
 
-						String message = String.format(nodeError.getMessage(), alertManagerReceiveDTO.getNodeName());
-						if(findAlertManagerDTO.isSystemYN()){
-							// 노드 장애 알림 발송
-							eventPublisher.publishEvent(
-								new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
-									pageNaviParam));
-						}
-						if(findAlertManagerDTO.isEmailYN()){
-							List<AlertManagerDTO.UserDTO> userDTOList = findAlertManagerDTO.getUserDTOList();
-							for(AlertManagerDTO.UserDTO user : userDTOList){
-								mailService.sendMail(MailDTO.builder()
-									.subject(mail.getSubject())
-									.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))
-									.footer(mail.getFooter())
-									.receiverEmail(user.getEmail())
-									.build());
+								PageNaviParam pageNaviParam = PageNaviParam.builder()
+									.nodeName(alertManagerReceiveDTO.getNodeName())
+									.build();
+
+								String message = String.format(nodeError.getMessage(), alertManagerReceiveDTO.getNodeName());
+								if(findAlertManagerDTO.isSystemYN()){
+									// 노드 장애 알림 발송
+									eventPublisher.publishEvent(
+										new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
+											pageNaviParam));
+								}
+								if(findAlertManagerDTO.isEmailYN()){
+									List<AlertManagerDTO.UserDTO> userDTOList = findAlertManagerDTO.getUserDTOList();
+									for(AlertManagerDTO.UserDTO user : userDTOList){
+										mailService.sendMail(MailDTO.builder()
+											.subject(mail.getSubject())
+											.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))
+											.footer(mail.getFooter())
+											.receiverEmail(user.getEmail())
+											.build());
+									}
+								}
 							}
 						}
 					}
 				}
-
 			}
 		} catch (ParseException e) {
 			throw new RestApiException(CommonErrorCode.ALERT_MANAGER_JSON_PARSE_ERROR);
