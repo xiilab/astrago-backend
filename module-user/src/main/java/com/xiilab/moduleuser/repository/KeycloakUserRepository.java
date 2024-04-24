@@ -113,11 +113,12 @@ public class KeycloakUserRepository implements UserRepository {
 			.map(userSummary -> {
 					UserResource userResource = realmClient.users().get(userSummary.getUid());
 					List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
-				List<RoleRepresentation> roles = roleRepresentations.stream()
+				List<String> roles = roleRepresentations.stream()
 					.filter(role -> role.getName().contains("ROLE_"))
+					.map(role -> role.getName())
 					.toList();
 				if(roles != null && roles.size() > 0){
-					userSummary.setAuthType(AuthType.valueOf(roles.get(0).getName()));
+					userSummary.setAuthType(roles.contains(AuthType.ROLE_ADMIN.name()) ? AuthType.ROLE_ADMIN : AuthType.ROLE_USER);
 				}
 					return userSummary;
 				}
