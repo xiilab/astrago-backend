@@ -9,17 +9,7 @@ env:
   GIT_DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
-  set-variable:
-    runs-on: [ ubuntu-latest ]
-    steps:
-    - name: Extract Release Image Tag
-      id: extract_image_tag
-      run: |
-        echo "IMAGE_TAG=$GITHUB_REF_NAME-$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
-        echo "IMAGE_TAG=$IMAGE_TAG"
-
   prod-integration:
-    needs: [set-variable]
     runs-on: [ ubuntu-latest ]
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +49,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ env.IMAGE_TAG }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ env.GITHUB_REF_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -70,7 +60,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ env.IMAGE_TAG }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ env.GITHUB_REF_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -81,7 +71,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:monitor-${{ env.IMAGE_TAG }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:monitor-${{ env.GITHUB_REF_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -99,12 +89,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}/core"' 'environments/prod/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}/batch"' 'environments/prod/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}/monitor"' 'environments/prod/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ env.GITHUB_REF_NAME }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ env.GITHUB_REF_NAME }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ env.GITHUB_REF_NAME }}"' 'environments/prod/values.yaml'
 
       - name: Commit and Push
         run: |
