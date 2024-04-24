@@ -16,7 +16,7 @@ env:
 
 jobs:
   prod-integration:
-    if: startsWith(github.head_ref, 'release/')
+    if: startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/')
     runs-on: [ ubuntu-latest ]
     outputs:
       IMAGE_TAG: ${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
@@ -29,13 +29,13 @@ jobs:
           SPLIT_CURRENT_RELEASE=($(echo "$CURRENT_RELEASE" | tr -d 'v' | tr '.' ' '))
           
           BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}" | grep -E '^[0-9]+\.[0-9]+$')
-          
-          if [[ "$GITHUB_HEAD_REF" == release* ]]
+          SPLIT_BRANCH_VERSION = ($(echo "$BRANCH_VERSION" | tr '.' ' '))
+          if [[ "$GITHUB_HEAD_REF" == release/* ]]
           then
-            if [[ "${#BRANCH_VERSION[0]}" -gt "${#SPLIT_CURRENT_RELEASE[0]}" ]]
+            if [[ "${#SPLIT_BRANCH_VERSION[0]}" -gt "${#SPLIT_CURRENT_RELEASE[0]}" ]]
             then
               NEW_RELEASE=v$(( SPLIT_CURRENT_RELEASE[0] + 1)).0.0;
-            elif [[ "${#BRANCH_VERSION[0]}" -eq "${#SPLIT_CURRENT_RELEASE[0]}" ]]
+            elif [[ "${#SPLIT_BRANCH_VERSION[0]}" -eq "${#SPLIT_CURRENT_RELEASE[0]}" ]]
             then
               NEW_RELEASE=v${SPLIT_CURRENT_RELEASE[0]}.$(( SPLIT_CURRENT_RELEASE[1] + 1)).0;
             fi
