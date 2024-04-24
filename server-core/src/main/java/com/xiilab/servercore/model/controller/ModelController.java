@@ -75,7 +75,7 @@ public class ModelController {
 		return new ResponseEntity<>(model, HttpStatus.OK);
 	}
 	@GetMapping("/models/{modelId}/workloads")
-	@Operation(summary = "데이터 셋을 사용중인 워크로드 리스트 조회")
+	@Operation(summary = "모델을 사용중인 워크로드 리스트 조회")
 	public ResponseEntity<WorkloadResDTO.PageUsingModelDTO> getWorkloadsUsingModel(
 		PageInfo pageInfo,
 		@PathVariable(name = "modelId") Long modelId

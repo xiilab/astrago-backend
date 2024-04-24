@@ -848,13 +848,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	private static List<Job> getJobsInUseDataset(String key, KubernetesClient client) {
-		return client.batch().v1().jobs().withLabelIn(key, "true")
+		return client.batch().v1().jobs().inAnyNamespace().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
 
 	private static List<Deployment> getDeploymentsInUseDataset(String key, KubernetesClient client) {
-		return client.apps().deployments().withLabelIn(key, "true")
+		return client.apps().deployments().inAnyNamespace().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
@@ -863,6 +863,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		return client
 			.apps()
 			.statefulSets()
+			.inAnyNamespace()
 			.withLabelIn(key, "true")
 			.list()
 			.getItems();
