@@ -44,6 +44,7 @@ jobs:
     needs: [ prod-build ]
     runs-on: [ ubuntu-latest ]
     steps:
+      - uses: actions/checkout@v4
       - name: Extract Release Image Tag
         id: extract_image_tag
         run: |       
