@@ -1,7 +1,6 @@
 package com.xiilab.moduleuser.dto;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashSet;
@@ -62,7 +61,7 @@ public class UserDTO {
 		private String id;
 		private String userName;
 		private String email;
-		private LocalDate joinDate;
+		private LocalDateTime joinDate;
 		private SignUpPath signUpPath;
 		private AuthType auth;
 		private String enable;
@@ -86,7 +85,7 @@ public class UserDTO {
 			Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 			// 특정 시간대에 맞춰 LocalDateTime으로 변환
 			LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-			this.joinDate = localDateTime.toLocalDate();
+			this.joinDate = localDateTime;
 			this.enable = String.valueOf(userRepresentation.isEnabled());
 			this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
 			this.auth = getUserRole(userRepresentation.getRealmRoles());
