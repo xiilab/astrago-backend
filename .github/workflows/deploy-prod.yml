@@ -1,8 +1,8 @@
 name: Deploy to Production workflow
 run-name: ${{ github.actor }} deploys to Production 🚀
 on:
-  pull_request:
-    branches: [ "feature/prod-workflow" ]
+  push:
+    tags: [ 'v*.*.*' ]
 
 env:
   DOCKER_REPOSITORY: xiilab/astrago
@@ -13,11 +13,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  set-variable:
+    runs-on: [ ubuntu-latest ]
+    steps:
+    - name: Extract Release Image Tag
+      id: extract_image_tag
+      run: |
+        echo "IMAGE_TAG=$GITHUB_REF_NAME-$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
+        echo "IMAGE_TAG=$IMAGE_TAG"
+
   prod-integration:
-    if: >
-      startsWith(github.head_ref, 'release/') || 
-      startsWith(github.head_ref, 'hotfix/') && 
-      github.event.pull_request.merged == true
+    needs: [set-variable]
     runs-on: [ ubuntu-latest ]
     steps:
       - uses: actions/checkout@v4
@@ -41,40 +47,6 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew bootjar --no-daemon --parallel
-
-      - name: Extract Release Image Tag
-        id: extract_image_tag
-        run: |
-          git fetch --prune --prune-tags origin
-          CURRENT_RELEASE=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-          IFS='.' read -ra SPLIT_CURRENT_RELEASE <<< "${CURRENT_RELEASE:1}"
-          
-          BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}")
-          IFS='.' read -ra SPLIT_BRANCH_VERSION <<< "${BRANCH_VERSION}"
-          
-          if [[ "$GITHUB_HEAD_REF" == release/* ]]
-          then
-          if [[ "${SPLIT_BRANCH_VERSION[0]}" -gt "${SPLIT_CURRENT_RELEASE[0]}" ]]
-          then
-          NEW_RELEASE=v$(( SPLIT_CURRENT_RELEASE[0] + 1)).0.0;
-          elif [[ "${SPLIT_BRANCH_VERSION[0]}" -eq "${SPLIT_CURRENT_RELEASE[0]}" ]]
-          then
-          NEW_RELEASE=v${SPLIT_CURRENT_RELEASE[0]}.$(( SPLIT_CURRENT_RELEASE[1] + 1)).0;
-          else
-          echo "$BRANCH_VERSION는 $CURRENT_RELEASE의 Major Version 보다 크거나 같아야 합니다." && exit 1
-          fi
-          else
-          NEW_RELEASE=v${SPLIT_CURRENT_RELEASE[0]}.${SPLIT_CURRENT_RELEASE[1]}.$(( SPLIT_CURRENT_RELEASE[2] + 1))
-          fi
-          
-          echo "NEW_RELEASE=$NEW_RELEASE" >> $GITHUB_ENV
-          IMAGE_TAG=${NEW_RELEASE}-$(git rev-parse --short=4 HEAD)
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-
-      - name: Print variables
-        run: |
-          echo "NEW_RELEASE=$NEW_RELEASE"
-          echo "IMAGE_TAG=$IMAGE_TAG"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -131,12 +103,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}/core"' 'environments/stage/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}/core"' 'environments/prod/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}/batch"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}/monitor"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/prod/values.yaml'
 
       - name: Commit and Push
         run: |
