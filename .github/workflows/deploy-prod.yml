@@ -38,6 +38,9 @@ jobs:
             elif [[ "${#SPLIT_BRANCH_VERSION[0]}" -eq "${#SPLIT_CURRENT_RELEASE[0]}" ]]
             then
               NEW_RELEASE=v${SPLIT_CURRENT_RELEASE[0]}.$(( SPLIT_CURRENT_RELEASE[1] + 1)).0;
+            else
+            then
+              echo "$BRANCH_VERSION의 Major version은 마지막 태그보다 크거나 같아야 합니다." && exit 1
             fi
           else
             NEW_RELEASE=v${SPLIT_CURRENT_RELEASE[0]}.${SPLIT_CURRENT_RELEASE[1]}.$(( SPLIT_CURRENT_RELEASE[2] + 1))
