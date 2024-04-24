@@ -17,6 +17,8 @@ jobs:
   prod-integration:
     if: startsWith(github.head_ref, 'release/')
     runs-on: [ ubuntu-latest ]
+    outputs:
+      IMAGE_TAG: ${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -86,7 +88,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.DOCKERHUB_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.DOCKERHUB_REPOSITORY }}/monitor-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -105,12 +107,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/stage/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.repository = "${{ env.DOCKERHUB_REPOSITORY }}/core"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ needs.prod-integration.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.DOCKERHUB_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ needs.prod-integration.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.DOCKERHUB_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ needs.prod-integration.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |
