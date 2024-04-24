@@ -32,4 +32,4 @@ jobs:
       - name: Process new_tag
         id: process_new_tag
         run: |
-          echo "new_tag=${{steps.release.outputs.tag_name}}"
+          echo "new_tag=${{steps.release-drafter.outputs.tag_name}}"
