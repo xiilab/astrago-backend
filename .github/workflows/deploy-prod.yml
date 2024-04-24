@@ -8,10 +8,6 @@ env:
   DOCKERHUB_REPOSITORY: xiilab/astrago
   GIT_DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
-concurrency:
-  group: ci-release-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   prod-build:
     if: startsWith(github.head_ref, 'release/')
