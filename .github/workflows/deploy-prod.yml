@@ -88,7 +88,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.DOCKERHUB_REPOSITORY }}/monitor-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.DOCKERHUB_REPOSITORY }}:monitor-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
