@@ -92,7 +92,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   prod-delivery:
-    needs: [ prod-build ]
+    needs: [ prod-integration ]
     runs-on: [ ubuntu-latest ]
     steps:
       - name: clone astrago deploy git repository
