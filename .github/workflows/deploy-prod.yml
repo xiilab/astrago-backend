@@ -27,8 +27,7 @@ jobs:
           git fetch --prune --prune-tags origin
           CURRENT_RELEASE=$(git describe --tags "$(git rev-list --tags --max-count=1)")
           IFS='.' read -ra SPLIT_CURRENT_RELEASE <<< "${CURRENT_RELEASE:1}"
-#          SPLIT_CURRENT_RELEASE=($(echo "$CURRENT_RELEASE" | tr -d 'v' | tr '.' ' '))
-          
+
           BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}")
           IFS='.' read -ra SPLIT_BRANCH_VERSION <<< "${BRANCH_VERSION}"
           
