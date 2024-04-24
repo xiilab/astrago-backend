@@ -26,19 +26,20 @@ jobs:
         run: |
           git fetch --prune --prune-tags origin
           CURRENT_RELEASE=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-          SPLIT_CURRENT_RELEASE=($(echo "$CURRENT_RELEASE" | tr -d 'v' | tr '.' ' '))
+          IFS='.' read -ra SPLIT_CURRENT_RELEASE <<< "${CURRENT_RELEASE:1}"
+#          SPLIT_CURRENT_RELEASE=($(echo "$CURRENT_RELEASE" | tr -d 'v' | tr '.' ' '))
           
           BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}")
-          SPLIT_BRANCH_VERSION=($(echo $BRANCH_VERSION | tr '.' ' '))
+          IFS='.' read -ra SPLIT_BRANCH_VERSION <<< "${BRANCH_VERSION}"
           
-          echo "${#SPLIT_BRANCH_VERSION[0]}"
-          echo "${#SPLIT_CURRENT_RELEASE[0]}"
+          echo "${SPLIT_CURRENT_RELEASE[0]}"
+          echo "${SPLIT_BRANCH_VERSION[0]}"
           if [[ "$GITHUB_HEAD_REF" == release/* ]]
           then
-            if [[ "${#SPLIT_BRANCH_VERSION[0]}" -gt "${#SPLIT_CURRENT_RELEASE[0]}" ]]
+            if [[ "${SPLIT_BRANCH_VERSION[0]}" -gt "${SPLIT_CURRENT_RELEASE[0]}" ]]
             then
               NEW_RELEASE=v$(( SPLIT_CURRENT_RELEASE[0] + 1)).0.0;
-            elif [[ "${#SPLIT_BRANCH_VERSION[0]}" -eq "${#SPLIT_CURRENT_RELEASE[0]}" ]]
+            elif [[ "${SPLIT_BRANCH_VERSION[0]}" -eq "${SPLIT_CURRENT_RELEASE[0]}" ]]
             then
               NEW_RELEASE=v${SPLIT_CURRENT_RELEASE[0]}.$(( SPLIT_CURRENT_RELEASE[1] + 1)).0;
             else
