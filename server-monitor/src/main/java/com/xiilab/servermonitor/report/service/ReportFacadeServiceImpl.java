@@ -240,7 +240,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 								avgCategory.setValueDTOS(
 									List.of(
 										ReportDTO.SystemValueDTO.builder()
-											.date("avg")
+											.date(DataConverterUtil.dateFormatMMDD(res.valueDTOS().get(0).dateTime()))
 											.value(res.valueDTOS().stream()
 												.mapToDouble(
 													valueDTO -> DataConverterUtil.formatRoundTo(valueDTO.value()))
@@ -271,7 +271,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 										maxCategory.setValueDTOS(
 											List.of(
 												ReportDTO.SystemValueDTO.builder()
-													.date("avg")
+													.date(DataConverterUtil.dateFormatMMDD(res.valueDTOS().get(0).dateTime()))
 													.value(res.valueDTOS()
 														.stream()
 														.mapToDouble(value ->
@@ -341,7 +341,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 							avgCategory.setValueDTOS(
 								List.of(
 									ReportDTO.SystemValueDTO.builder()
-										.date("avg")
+										.date(DataConverterUtil.dateFormatMMDD(res.valueDTOS().get(0).dateTime()))
 										.value(res.valueDTOS().stream()
 											.mapToDouble(valueDTO -> DataConverterUtil.formatRoundTo(valueDTO.value()))
 											.average().orElse(0.00)).build()
@@ -371,7 +371,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 									maxCategory.setValueDTOS(
 										List.of(
 											ReportDTO.SystemValueDTO.builder()
-												.date("avg")
+												.date(DataConverterUtil.dateFormatMMDD(res.valueDTOS().get(0).dateTime()))
 												.value(res.valueDTOS()
 													.stream()
 													.mapToDouble(value ->
@@ -400,7 +400,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 							avgCategory.setValueDTOS(
 								List.of(
 									ReportDTO.SystemValueDTO.builder()
-										.date("avg")
+										.date(DataConverterUtil.dateFormatMMDD(res.valueDTOS().get(0).dateTime()))
 										.value(res.valueDTOS().stream()
 											.mapToDouble(valueDTO -> DataConverterUtil.formatRoundTo(valueDTO.value()))
 											.average().orElse(0.00)).build()
@@ -430,7 +430,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 									maxCategory.setValueDTOS(
 										List.of(
 											ReportDTO.SystemValueDTO.builder()
-												.date("avg")
+												.date(DataConverterUtil.dateFormatMMDD(res.valueDTOS().get(0).dateTime()))
 												.value(res.valueDTOS()
 													.stream()
 													.mapToDouble(value ->
