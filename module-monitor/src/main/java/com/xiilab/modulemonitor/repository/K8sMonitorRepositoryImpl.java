@@ -586,9 +586,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
 			return pods.stream()
 				.filter(pod ->
-					pod.getStatus().getConditions().stream()
-						.anyMatch(podCondition -> podCondition.getType().equals("Ready") && podCondition.getStatus()
-							.equals("False")))
+					pod.getStatus().getPhase().equals("Pending")
+				)
 				.map(pod -> ClusterObjectDTO.builder()
 					.podName(pod.getMetadata().getName())
 					.namespace(pod.getMetadata().getNamespace())
