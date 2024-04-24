@@ -29,7 +29,7 @@ public class CredentialResDTO {
 		this.name = credential.getName();
 		this.description = credential.getDescription();
 		this.type = credential.getType();
-		this.creator = credential.getRegUser().getRegUserName();
+		this.creator = credential.getRegUser().getRegUserRealName();
 		this.createdAt = credential.getCreatedAt();
 	}
 
@@ -40,12 +40,16 @@ public class CredentialResDTO {
 	public static class CredentialInfo extends CredentialResDTO {
 		private String loginId;
 		private String loginPw;
+		private String creatorId;
+		private String creatorUserName;
 
 		public CredentialInfo(CredentialEntity credential) {
 			super(credential.getId(), credential.getName(), credential.getDescription(), credential.getType(),
-				credential.getRegUser().getRegUserName(), credential.getCreatedAt());
+				credential.getRegUser().getRegUserRealName(), credential.getCreatedAt());
 			this.loginId = credential.getLoginId();
 			this.loginPw = credential.getLoginPw();
+			this.creatorId = credential.getRegUser().getRegUserId();
+			this.creatorUserName = credential.getRegUser().getRegUserName();
 		}
 
 		public ModuleCredentialReqDTO toModuleCredentialReqDTO() {
