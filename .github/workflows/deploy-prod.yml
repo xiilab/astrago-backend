@@ -28,7 +28,7 @@ jobs:
           CURRENT_RELEASE=$(git describe --tags "$(git rev-list --tags --max-count=1)")
           SPLIT_CURRENT_RELEASE=($(echo "$CURRENT_RELEASE" | tr -d 'v' | tr '.' ' '))
           
-          BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}" | grep -E '^[0-9]+\.[0-9]+$')
+          BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}")
           SPLIT_BRANCH_VERSION = ($(echo "$BRANCH_VERSION" | tr '.' ' '))
           if [[ "$GITHUB_HEAD_REF" == release/* ]]
           then
