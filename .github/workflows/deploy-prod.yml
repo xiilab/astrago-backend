@@ -30,10 +30,13 @@ jobs:
           
           BRANCH_VERSION=$(echo "${GITHUB_HEAD_REF##*/}" | grep -E '^[0-9]+\.[0-9]+$')
           
-          if [[ "$GITHUB_HEAD_REF" == release* ]] then
-            if [[ "${#BRANCH_VERSION[0]}" -gt "${#SPLIT_CURRENT_RELEASE[0]}"  ]]; then
+          if [[ "$GITHUB_HEAD_REF" == release* ]]
+          then
+            if [[ "${#BRANCH_VERSION[0]}" -gt "${#SPLIT_CURRENT_RELEASE[0]}" ]]
+            then
               NEW_RELEASE=v$(( SPLIT_CURRENT_RELEASE[0] + 1)).0.0;
-            elif [[ "${#BRANCH_VERSION[0]}" -eq "${#SPLIT_CURRENT_RELEASE[0]}"  ]; then
+            elif [[ "${#BRANCH_VERSION[0]}" -eq "${#SPLIT_CURRENT_RELEASE[0]}" ]]
+            then
               NEW_RELEASE=v${SPLIT_CURRENT_RELEASE[0]}.$(( SPLIT_CURRENT_RELEASE[1] + 1)).0;
             fi
           else
