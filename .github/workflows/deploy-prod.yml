@@ -69,7 +69,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.DOCKERHUB_REPOSITORY }}:core-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -80,7 +80,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.DOCKERHUB_REPOSITORY }}:batch-${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -91,7 +91,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.DOCKERHUB_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
