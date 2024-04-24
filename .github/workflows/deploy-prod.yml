@@ -22,7 +22,7 @@ jobs:
       IMAGE_TAG: ${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
     steps:
       - uses: actions/checkout@v4
-        id: extract_image_tag
+      - id: extract_image_tag
         run: |
           CURRENT_RELEASE=$(git describe --tags "$(git rev-list --tags --max-count=1)")
           SPLIT_CURRENT_RELEASE=($(echo "$CURRENT_RELEASE" | tr -d 'v' | tr '.' ' '))
