@@ -14,7 +14,7 @@ env:
   GIT_DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
-  prod-build:
+  prod-integration:
     if: startsWith(github.head_ref, 'release/')
     runs-on: [ ubuntu-latest ]
     steps:
@@ -40,11 +40,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bootjar --no-daemon --parallel
 
-  prod-deploy:
-    needs: [ prod-build ]
-    runs-on: [ ubuntu-latest ]
-    steps:
-      - uses: actions/checkout@v4
       - name: Extract Release Image Tag
         id: extract_image_tag
         run: |       
@@ -97,7 +92,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   prod-delivery:
-    needs: [ prod-deploy ]
+    needs: [ prod-build ]
     runs-on: [ ubuntu-latest ]
     steps:
       - name: clone astrago deploy git repository
