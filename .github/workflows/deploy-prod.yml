@@ -16,7 +16,7 @@ env:
 
 jobs:
   prod-integration:
-    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
+    if: startsWith(github.head_ref, 'release/')
     runs-on: [ ubuntu-latest ]
     outputs:
       IMAGE_TAG: ${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
