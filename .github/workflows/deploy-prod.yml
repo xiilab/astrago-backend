@@ -91,7 +91,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: $DOCKER_REPOSITORY:core-$IMAGE_TAG
+          tags: ${{ DOCKER_REPOSITORY }}:core-${{ IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -102,7 +102,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: $DOCKER_REPOSITORY:batch-$IMAGE_TAG
+          tags: ${{ DOCKER_REPOSITORY }}:batch-${{ IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -113,7 +113,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: $DOCKER_REPOSITORY:monitor-$IMAGE_TAG
+          tags: ${{ DOCKER_REPOSITORY }}:monitor-${{ IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -131,12 +131,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "$DOCKER_REPOSITORY/core"' 'environments/stage/values.yaml'
-            yq -i '.astrago.core.imageTag = "$IMAGE_TAG"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.repository = "$DOCKER_REPOSITORY/batch"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "$IMAGE_TAG"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.repository = "$DOCKER_REPOSITORY/monitor"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "$IMAGE_TAG"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.repository = "${{ DOCKER_REPOSITORY }}/core"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ DOCKER_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ DOCKER_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ IMAGE_TAG }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |
