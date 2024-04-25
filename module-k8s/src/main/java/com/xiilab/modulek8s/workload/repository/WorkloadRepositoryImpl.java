@@ -756,6 +756,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
 			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
+			.creatorName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_FULL_NAME.getField()))
 			.build();
 
 		switch (resourceType) {
