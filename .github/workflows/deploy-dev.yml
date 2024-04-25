@@ -23,7 +23,6 @@ jobs:
           IMAGE_TAG=dev-$(git rev-parse --short=4 HEAD)
           echo "IMAGE_TAG=$IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          
 
   dev-integration:
     needs: [ set-variable ]
@@ -88,7 +87,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ env.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/core:"$IMAGE_TAG"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -99,7 +98,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ env.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/batch:"$IMAGE_TAG"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -110,7 +109,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ env.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:"$IMAGE_TAG"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -130,11 +129,11 @@ jobs:
         with:
           cmd: |
             yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/dev/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.core.imageTag = "$IMAGE_TAG"' 'environments/dev/values.yaml'
             yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/dev/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.batch.imageTag = "$IMAGE_TAG"' 'environments/dev/values.yaml'
             yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/dev/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "$IMAGE_TAG"' 'environments/dev/values.yaml'
 
       - name: Commit and Push
         run: |
