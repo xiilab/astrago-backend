@@ -146,9 +146,11 @@ public class KeycloakGroupRepository implements GroupRepository {
 		GroupRepresentation groupRepresentation = group.toRepresentation();
 		List<GroupRepresentation> subGroups = group.toRepresentation().getSubGroups();
 		List<UserRepresentation> groupMembers = new ArrayList<>();
-		List<UserRepresentation> members = group.members(0, Integer.MAX_VALUE);
+		List<UserRepresentation> members = group.members(0, Integer.MAX_VALUE)
+			.stream()
+			.filter(userRepresentation -> userRepresentation.isEnabled() == true).toList();
 
-		if (authType == AuthType.ROLE_ADMIN) {
+		if (authType == AuthType.ROLE_ADMIN) { // 관리자만 검색
 			for (UserRepresentation member : members) {
 				UserResource userResource = keycloakConfig.getRealmClient().users().get(member.getId());
 				List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
@@ -170,7 +172,9 @@ public class KeycloakGroupRepository implements GroupRepository {
 				groupMembers.addAll(getMembersWithSingleGroup(group));
 				return new GroupUserDTO.SubGroupUserDto(subGroups, groupMembers);
 			} else {
-				groupMembers = group.members(0, Integer.MAX_VALUE);
+				groupMembers = group.members(0, Integer.MAX_VALUE)
+					.stream()
+					.filter(userRepresentation -> userRepresentation.isEnabled() == true).toList();
 			}
 		}
 
@@ -192,7 +196,10 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 	private List<UserRepresentation> getMembersWithSingleGroup(GroupResource groupResource) {
 		List<UserRepresentation> groupMembers = new ArrayList<>();
-		List<UserRepresentation> memberList = groupResource.members();
+		List<UserRepresentation> memberList = groupResource.members()
+			.stream()
+			.filter(userRepresentation -> userRepresentation.isEnabled() == true).toList();
+		;
 		for (UserRepresentation member : memberList) {
 			UserResource userResource = keycloakConfig.getRealmClient().users().get(member.getId());
 			if (hasOneGroup(userResource)) {
@@ -331,7 +338,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		List<UserRepresentation> members = groupResource.members(0, Integer.MAX_VALUE);
 		boolean isDefaultGroup = groupResource.toRepresentation().getPath().equals("/account/default");
 		for (UserRepresentation member : members) {
-			if(isDefaultGroup){//default 그룹을 추가한건지 체크
+			if (isDefaultGroup) {//default 그룹을 추가한건지 체크
 				int groupSize = keycloakConfig.getRealmClient()
 					.users()
 					.get(member.getId())
@@ -340,10 +347,10 @@ public class KeycloakGroupRepository implements GroupRepository {
 					.filter(groupRepresentation -> groupRepresentation.getPath().contains("/account/"))
 					.toList()
 					.size();
-				if(groupSize == 1){//default 그룹만 가진 유저면 추가
+				if (groupSize == 1) {//default 그룹만 가진 유저면 추가
 					userIds.add(member.getId());
 				}
-			}else {
+			} else {
 				userIds.add(member.getId());
 			}
 		}
@@ -372,7 +379,9 @@ public class KeycloakGroupRepository implements GroupRepository {
 
 		owner.addAll(members);
 		return owner.stream().filter(
-				userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search) || userRepresentation.getEmail().contains(search))
+				userRepresentation ->
+					(userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search)
+						|| userRepresentation.getEmail().contains(search))
 			.map(GroupUserDTO::new).toList();
 	}
 
@@ -435,9 +444,14 @@ public class KeycloakGroupRepository implements GroupRepository {
 		List<UserRepresentation> userList = realmClient.users()
 			.list(0, Integer.MAX_VALUE)
 			.stream()
-			.filter(userRepresentation -> (userRepresentation.getLastName() + userRepresentation.getFirstName())
-				.toLowerCase()
-				.contains(searchText.toLowerCase()))
+			.filter(userRepresentation ->
+				userRepresentation.isEnabled() == true
+					&&
+					(((userRepresentation.getLastName() + userRepresentation.getFirstName())
+						.toLowerCase().contains(searchText.toLowerCase())) || userRepresentation.getEmail()
+						.toLowerCase()
+						.contains(searchText.toLowerCase()))
+			)
 			.filter(userRepresentation -> {
 				if (authType == AuthType.ROLE_ADMIN) {
 					UserResource userResource = realmClient.users().get(userRepresentation.getId());
