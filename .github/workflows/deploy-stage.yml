@@ -15,7 +15,7 @@ env:
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
-  stag-integration:
+  integration:
     if: >
       startsWith(github.head_ref, 'release/') || 
       startsWith(github.head_ref, 'hotfix/')
@@ -23,6 +23,8 @@ jobs:
     permissions:
       contents: write
       actions: read
+    outputs:
+      image-tag: ${{ steps.extract_image_tag.outputs.image-tag }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -50,8 +52,8 @@ jobs:
         id: extract_image_tag
         run: |
           IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)
-          echo "IMAGE_TAG=$IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "image-tag=$IMAGE_TAG"
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT     
 
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3
@@ -86,7 +88,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ env.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -97,7 +99,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ env.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -108,13 +110,13 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ env.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
 
-  stag-delivery:
-    needs: [ stag-integration ]
+  delivery:
+    needs: [ integration ]
     runs-on: [ self-hosted, linux ]
     steps:
       - name: clone astrago deploy git repository
@@ -128,11 +130,11 @@ jobs:
         with:
           cmd: |
             yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/stage/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
             yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
             yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ env.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |
@@ -145,7 +147,7 @@ jobs:
 
   notify_slack:
     if: always()
-    needs: [ stag-delivery ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    needs: [ delivery ]  # 이 작업이 의존하는 이전 작업의 이름 추가
     runs-on: [ self-hosted, linux ]
     permissions:
       actions: 'read'
