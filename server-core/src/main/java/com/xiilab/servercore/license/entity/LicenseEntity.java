@@ -109,7 +109,7 @@ public class LicenseEntity {
 		if ((getLhunAlgorithm(dateNode) + getLhunAlgorithm(verificationNum)) % 10 != 0) {
 			result = false;
 		}
-		String limitDate = getLimitDate(licenseKey);
+		String limitDate = getLimitDate(licensekey);
 		//만료된 라이센스 키 입력시 에러 발생
 		if (LocalDate.now().isAfter(LocalDate.parse(limitDate))) {
 			throw new RestApiException(LicenseErrorCode.LICENSE_PAST_EXPIRATION_DATE);
