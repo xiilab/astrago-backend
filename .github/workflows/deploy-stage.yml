@@ -21,6 +21,7 @@ jobs:
       startsWith(github.head_ref, 'hotfix/')
     runs-on: [ self-hosted, linux ]
     steps:
+      - uses: actions/checkout@v4
       - name: Set Image Tag
         id: extract_image_tag
         run: |
