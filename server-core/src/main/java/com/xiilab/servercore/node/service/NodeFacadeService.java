@@ -26,8 +26,8 @@ public class NodeFacadeService {
 	private final NodeRepository nodeRepository;
 	private final PrometheusService prometheusService;
 
-	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
-		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(pageNo, pageSize);
+	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText) {
+		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(pageNo, pageSize, searchText);
 		RequestDTO requestDTO = new RequestDTO();
 
 		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalCpuMap = listToMap(
