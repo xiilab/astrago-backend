@@ -15,10 +15,21 @@ env:
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
-  build:
+  set-variable:
     if: >
       startsWith(github.head_ref, 'release/') || 
       startsWith(github.head_ref, 'hotfix/')
+    runs-on: [ self-hosted, linux ]
+    steps:
+      - name: Set Image Tag
+        id: extract_image_tag
+        run: |
+          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+  stag-integration:
+    needs: [ set-variable ]
     runs-on: [ self-hosted, linux ]
     permissions:
       contents: write
@@ -43,16 +54,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-
       - name: Build with Gradle
         run: ./gradlew bootjar --no-daemon --parallel
-
-      - name: Extract Release Image Tag
-        id: extract_image_tag
-        run: |       
-          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)-rc
-          echo "IMAGE_TAG=$IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3
@@ -113,6 +116,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+
+  stag-delivery:
+    needs: [ stag-integration ]
+    runs-on: [ self-hosted, linux ]
+    steps:
       - name: clone astrago deploy git repository
         uses: actions/checkout@v4
         with:
@@ -137,10 +145,11 @@ jobs:
           git add .
           git commit -m "update backend image tag"
           git push
+      
 
   notify_slack:
     if: always()
-    needs: [ build ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    needs: [ stag-delivery ]  # 이 작업이 의존하는 이전 작업의 이름 추가
     runs-on: [ self-hosted, linux ]
     permissions:
       actions: 'read'
