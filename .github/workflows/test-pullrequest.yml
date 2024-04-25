@@ -33,7 +33,7 @@ jobs:
         distribution: 'zulu'
     # Gradle build
     - name: Build with Gradle
-      run: ./gradlew ${{ matrix.path }}:build
+      run: ./gradlew ${{ matrix.path }}:bootjar
 
   notify_slack:
     if: always()

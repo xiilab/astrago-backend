@@ -9,6 +9,16 @@ env:
   GIT_DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
+  set-variable:
+    runs-on: [ ubuntu-latest ]
+    steps:
+      - name: Set Image Tag
+        id: extract_image_tag
+        run: |
+          IMAGE_TAG=${{ github.ref_name }}
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
   prod-integration:
     runs-on: [ ubuntu-latest ]
     steps:

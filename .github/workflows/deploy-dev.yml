@@ -13,17 +13,18 @@ env:
 
 jobs:
   set-variable:
+    if: github.event.pull_request.merged == true
     runs-on: [ self-hosted, linux ]
     steps:
-      - name: Extract Release Image Tag
+      - name: Set Image Tag
         id: extract_image_tag
         run: |
           IMAGE_TAG=dev-$(git rev-parse --short=4 HEAD)
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "IMAGE_TAG=$IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          
 
   dev-integration:
-    if: github.event.pull_request.merged == true
     needs: [ set-variable ]
     runs-on: [ self-hosted, linux ]
     permissions:
