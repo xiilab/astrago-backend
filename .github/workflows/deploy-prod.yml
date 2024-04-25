@@ -115,7 +115,7 @@ jobs:
 
   notify_slack:
     if: always()
-    needs: [ prod-delivery ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    needs: [ delivery ]  # 이 작업이 의존하는 이전 작업의 이름 추가
     runs-on: [ self-hosted, linux ]
     permissions:
       actions: 'read'
