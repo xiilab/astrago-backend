@@ -1,4 +1,4 @@
-name: Deploy to Staging workflow
+name: Deploy to Staging Workflow
 run-name: ${{ github.actor }} Deploys to Staging 🚀
 on:
   pull_request:
@@ -9,19 +9,22 @@ on:
     branches:
       - main
 
+env:
+  HARBOR_REGISTRY: harbor.xiilab.com:32443
+  HARBOR_REPOSITORY: harbor.xiilab.com:32443/astrago
+  DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
+
 jobs:
-  build:
+  integration:
     if: >
       startsWith(github.head_ref, 'release/') || 
       startsWith(github.head_ref, 'hotfix/')
     runs-on: [ self-hosted, linux ]
-    env:
-      HARBOR_REGISTRY: harbor.xiilab.com:32443
-      HARBOR_REPOSITORY: harbor.xiilab.com:32443/astrago
-      DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
     permissions:
       contents: write
       actions: read
+    outputs:
+      image-tag: ${{ steps.extract_image_tag.outputs.image-tag }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -42,16 +45,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-
       - name: Build with Gradle
         run: ./gradlew bootjar --no-daemon --parallel
 
-      - name: Extract Release Image Tag
+      - name: Set Image Tag
         id: extract_image_tag
-        run: |       
-          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)-rc
-          echo "IMAGE_TAG=$IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        run: |
+          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)
+          echo "image-tag=$IMAGE_TAG"
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT     
 
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3
@@ -61,7 +63,7 @@ jobs:
           driver-opts: |
             network=host
           #config: /etc/buildkit/buildkitd.toml
-          config-inline: |
+          buildkitd-config-inline: |
             [registry."${{ env.HARBOR_REGISTRY }}"]
               http = true
               insecure = true
@@ -86,7 +88,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -97,7 +99,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -108,11 +110,15 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.IMAGE_TAG }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+
+  delivery:
+    needs: [ integration ]
+    runs-on: [ self-hosted, linux ]
+    steps:
       - name: clone astrago deploy git repository
         uses: actions/checkout@v4
         with:
@@ -124,11 +130,11 @@ jobs:
         with:
           cmd: |
             yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/stage/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
             yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
             yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ steps.extract_image_tag.outputs.IMAGE_TAG }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |
@@ -137,10 +143,11 @@ jobs:
           git add .
           git commit -m "update backend image tag"
           git push
+      
 
   notify_slack:
     if: always()
-    needs: [ build ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    needs: [ delivery ]  # 이 작업이 의존하는 이전 작업의 이름 추가
     runs-on: [ self-hosted, linux ]
     permissions:
       actions: 'read'

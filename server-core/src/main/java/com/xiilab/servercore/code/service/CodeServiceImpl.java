@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.dto.RegexPatterns;
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
@@ -24,6 +25,7 @@ import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
+import com.xiilab.modulek8sdb.code.repository.CodeCustomRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
@@ -44,6 +46,7 @@ public class CodeServiceImpl implements CodeService {
 	@Value("${gitlab.token}")
 	private String gitlabToken;
 	private final CodeRepository codeRepository;
+	private final CodeCustomRepository codeCustomRepository;
 	private final CredentialService credentialService;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 
@@ -88,7 +91,7 @@ public class CodeServiceImpl implements CodeService {
 				String namespace = matcher.group(1);
 				String project = matcher.group(2);
 				gitLabApi.isRepoConnected(namespace, project);
-			}else{
+			} else {
 				throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 			}
 		}
@@ -110,6 +113,7 @@ public class CodeServiceImpl implements CodeService {
 			throw new RestApiException(CodeErrorCode.FAILED_SAVE_USER_CODE);
 		}
 	}
+
 	public static String getBaseUrl(String url) {
 		int endIndex = url.indexOf("/", "http://".length());
 		if (endIndex == -1) {
@@ -118,6 +122,7 @@ public class CodeServiceImpl implements CodeService {
 			return url.substring(0, endIndex);
 		}
 	}
+
 	@Override
 	public Boolean isCodeURLValid(String codeURL, Long credentialId) {
 		// 깃허브 또는 깃랩 URL인지 검증
@@ -157,13 +162,11 @@ public class CodeServiceImpl implements CodeService {
 
 	@Override
 	public Page<CodeResDTO> getCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO, Pageable pageable) {
-		Page<CodeEntity> codeEntityList = null;
-		if (StringUtils.isEmpty(workspaceName)) {
-			codeEntityList = codeRepository.findByRegUser_RegUserIdAndRepositoryTypeAndDeleteYn(userInfoDTO.getId(),
-				USER, DeleteYN.N, pageable);
+		Page<CodeEntity> codeEntityList;
+		if (isAdmin(userInfoDTO)) {
+			codeEntityList = getAdminCodeList(workspaceName, pageable);
 		} else {
-			codeEntityList = codeRepository.getCodeEntitiesByWorkspaceResourceNameAndRepositoryTypeAndDeleteYnEquals(
-				workspaceName, WORKSPACE, DeleteYN.N, pageable);
+			codeEntityList = getNonAdminCodeList(workspaceName, userInfoDTO, pageable);
 		}
 		return codeEntityList.map(CodeResDTO::new);
 	}
@@ -226,6 +229,38 @@ public class CodeServiceImpl implements CodeService {
 			if (!codeEntities.isEmpty()) {
 				throw new RestApiException(CodeErrorCode.CODE_EXIST_ERROR);
 			}
+		}
+	}
+
+	private boolean isAdmin(UserDTO.UserInfo userInfoDTO) {
+		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN;
+	}
+
+	private Page<CodeEntity> getAdminCodeList(String workspaceName, Pageable pageable) {
+		return codeCustomRepository.getCodeListByCondition(
+			null,
+			workspaceName,
+			StringUtils.isEmpty(workspaceName) ? USER : WORKSPACE,
+			pageable
+		);
+	}
+
+	private Page<CodeEntity> getNonAdminCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO,
+		Pageable pageable) {
+		if (StringUtils.isEmpty(workspaceName)) {
+			return codeCustomRepository.getCodeListByCondition(
+				userInfoDTO.getId(),
+				null,
+				USER,
+				pageable
+			);
+		} else {
+			return codeCustomRepository.getCodeListByCondition(
+				null,
+				workspaceName,
+				WORKSPACE,
+				pageable
+			);
 		}
 	}
 

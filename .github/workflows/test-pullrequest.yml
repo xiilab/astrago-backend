@@ -1,4 +1,4 @@
-name: Test Pull Request
+name: Test Pull Request Workflow
 run-name: ${{ github.actor }} Test to PR 🚀
 on:
   pull_request:
@@ -31,10 +31,9 @@ jobs:
       with:
         java-version: '17'
         distribution: 'zulu'
-
     # Gradle build
     - name: Build with Gradle
-      run: ./gradlew ${{ matrix.path }}:build
+      run: ./gradlew ${{ matrix.path }}:bootjar
 
   notify_slack:
     if: always()
