@@ -69,10 +69,17 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String READY = "Ready";
 
 	@Override
-	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
+	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText) {
 		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			List<Node> nodes = client.nodes().list().getItems();
+			List<Node> nodes = client.nodes().list().getItems()
+				.stream().filter(node -> {
+					if(searchText == null || searchText.isBlank()){
+						return true;
+					}
+					return node.getMetadata().getName().toLowerCase().contains(searchText);
+				})
+				.toList();
 
 			for (Node node : nodes) {
 				boolean migCapable = getMigCapable(node);
