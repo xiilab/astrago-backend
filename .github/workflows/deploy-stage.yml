@@ -1,4 +1,4 @@
-name: Deploy to Staging workflow
+name: Deploy to Staging Workflow
 run-name: ${{ github.actor }} Deploys to Staging 🚀
 on:
   pull_request:
@@ -15,22 +15,10 @@ env:
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
-  set-variable:
+  stag-integration:
     if: >
       startsWith(github.head_ref, 'release/') || 
       startsWith(github.head_ref, 'hotfix/')
-    runs-on: [ self-hosted, linux ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Image Tag
-        id: extract_image_tag
-        run: |
-          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)
-          echo "IMAGE_TAG=$IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-
-  stag-integration:
-    needs: [ set-variable ]
     runs-on: [ self-hosted, linux ]
     permissions:
       contents: write
@@ -57,6 +45,13 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew bootjar --no-daemon --parallel
+
+      - name: Set Image Tag
+        id: extract_image_tag
+        run: |
+          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v3

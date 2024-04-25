@@ -1,4 +1,4 @@
-name: Create Release
+name: Create Release Workflow
 run-name: ${{ github.actor }} Create Release 🚀
 on:
   pull_request:
