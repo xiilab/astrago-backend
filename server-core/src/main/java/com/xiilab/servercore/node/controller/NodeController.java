@@ -80,7 +80,6 @@ public class NodeController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-
 	/**
 	 * 등록된 node의 mig 가능한 리스트를 리턴하는 API
 	 *

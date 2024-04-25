@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.modulek8sdb.code.dto.CodeSearchCondition;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
 import com.xiilab.servercore.code.service.CodeService;
 
@@ -39,8 +40,9 @@ public class CodeController {
 	@Operation(summary = "소스 코드 목록 API")
 	public ResponseEntity<Page<CodeResDTO>> getCodeList(
 		@RequestParam(value = "workspacename", required = false) String workspaceName,
+		CodeSearchCondition codeSearchCondition,
 		UserDTO.UserInfo userInfoDTO, Pageable pageable){
-		return new ResponseEntity<>(codeService.getCodeList(workspaceName, userInfoDTO, pageable), HttpStatus.OK);
+		return new ResponseEntity<>(codeService.getCodeList(workspaceName, userInfoDTO, pageable, codeSearchCondition), HttpStatus.OK);
 	}
 
 
