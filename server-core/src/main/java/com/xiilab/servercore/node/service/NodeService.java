@@ -24,6 +24,6 @@ public class NodeService {
 		nodeRepository.updateMIGProfile(nodeName, option);
 	}
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
-		return nodeRepository.getNodeList(pageNo, pageSize);
+		return nodeRepository.getNodeList(pageNo, pageSize, null);
 	}
 }

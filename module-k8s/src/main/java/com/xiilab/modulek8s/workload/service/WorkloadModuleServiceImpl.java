@@ -103,7 +103,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe,
 		String userId) {
 		List<ModuleBatchJobResDTO> workloadList;
-		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1);
+		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1, null);
 		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
 		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
 		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
@@ -137,7 +137,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName,
 		Boolean isCreatedByMe, String userId) {
 		List<ModuleInteractiveJobResDTO> workloadList;
-		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1);
+		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1, null);
 		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
 		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
 		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
