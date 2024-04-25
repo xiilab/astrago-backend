@@ -61,7 +61,7 @@ jobs:
           driver-opts: |
             network=host
           #config: /etc/buildkit/buildkitd.toml
-          config-inline: |
+          buildkitd-config-inline: |
             [registry."${{ env.HARBOR_REGISTRY }}"]
               http = true
               insecure = true
