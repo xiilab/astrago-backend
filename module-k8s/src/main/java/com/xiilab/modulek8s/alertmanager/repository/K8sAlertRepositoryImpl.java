@@ -1,4 +1,4 @@
-package com.xiilab.modulemonitor.repository;
+package com.xiilab.modulek8s.alertmanager.repository;
 
 import java.util.List;
 import java.util.Map;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulemonitor.config.MonitorK8sAdapter;
+import com.xiilab.modulek8s.config.K8sAdapter;
 
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.openshift.api.model.monitoring.v1.PrometheusRule;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 	private static final String PROMETHEUS = "prometheus";
 	private static final String NAMESPACE = "astrago";
-	private final MonitorK8sAdapter k8sAdapter;
+	private final K8sAdapter k8sAdapter;
 
 	@Override
 	public void createPrometheusRule(long alertId, List<String> exprList) {
@@ -32,7 +32,7 @@ public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 			PrometheusRule prometheusRule = new PrometheusRuleBuilder()
 				// metaData 설정
 				.withNewMetadata().withName(prometheusName)
-				.withLabels(Map.of("app", "kube-prometheus-stack", "release", "prometheus"))
+				.withLabels(Map.of("app", "kube-prometheus-stack", "release", PROMETHEUS))
 				.endMetadata()
 				.withNewSpec()
 				// group 설정
@@ -70,8 +70,8 @@ public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 		try (OpenShiftClient client = k8sAdapter.defaultOpenShiftClient()) {
 			return !client.monitoring()
 				.prometheusRules()
-				.inNamespace("astrago")
-				.withName("prometheus-" + id).isReady();
+				.inNamespace(NAMESPACE)
+				.withName(PROMETHEUS +"-" + id).isReady();
 
 		}catch (KubernetesClientException e){
 			throw new K8sException(CommonErrorCode.ALERT_MANAGER_ADD_RULE_FAIL);
@@ -86,7 +86,7 @@ public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 	private void createPrometheusRule(PrometheusRule prometheusRule){
 		try (OpenShiftClient client = k8sAdapter.defaultOpenShiftClient()) {
 			// PrometheusRule 생성
-			client.monitoring().prometheusRules().inNamespace("astrago").create(prometheusRule);
+			client.monitoring().prometheusRules().inNamespace(NAMESPACE).resource(prometheusRule).create();
 		}catch (KubernetesClientException e){
 			throw new K8sException(CommonErrorCode.ALERT_MANAGER_ADD_RULE_FAIL);
 		}
@@ -102,7 +102,7 @@ public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 			String[] split = expr.split("~");
 			// 규칙 설정 및 for설정,
 			return new RuleBuilder()
-				.withLabels(Map.of("app", "uyuni-suite", "ruleName", name, "nodeName", split[3]))
+				.withLabels(Map.of("app", NAMESPACE, "ruleName", name, "nodeName", split[3]))
 				.withAlert(split[2]).withNewExpr(split[0]).withFor(split[1])
 				.withAnnotations(Map.of("value", "{{$value}}")).build();
 		}).toList();
@@ -116,5 +116,4 @@ public class K8sAlertRepositoryImpl implements K8sAlertRepository{
 	private String setName(Long id){
 		return PROMETHEUS + "-" + id;
 	}
-
 }
