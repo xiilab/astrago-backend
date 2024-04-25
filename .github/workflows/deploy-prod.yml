@@ -12,6 +12,7 @@ jobs:
   set-variable:
     runs-on: [ ubuntu-latest ]
     steps:
+      - uses: actions/checkout@v4
       - name: Set Image Tag
         id: extract_image_tag
         run: |
