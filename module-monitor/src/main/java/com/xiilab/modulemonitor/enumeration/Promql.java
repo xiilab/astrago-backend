@@ -48,7 +48,7 @@ public enum Promql {
 	USAGE_NODE_CPU_COUNT("sum(kube_node_status_capacity{resource=\"cpu\",%s})by(node)", "특정 노드의 cpu 사용량 조회", "NODE"),
 	USAGE_NODE_MEMORY_COUNT("sum(kube_node_status_capacity{resource=\"memory\",%s})by(node)", "특정 노드의 memory 사용량 조회", "NODE"),
 	USAGE_NODE_GPU_USAGE("sum(kube_node_status_capacity{resource=\"nvidia_com_gpu\",%s})by(node)", "특정 노드의 gpu 사용량 조회", "NODE"),
-	NODE_READY_PERCENT("sum(kube_node_status_condition{status=\"true\", condition=\"Ready\"} > 0) / count(kube_node_info) * 100", "", "" ),
+	NODE_READY_PERCENT("round(sum(kube_node_status_condition{status=\"true\", condition=\"Ready\"} > 0) / count(kube_node_info) * 100, 0.01)", "", "" ),
 	NODE_CPU_TEMP("label_replace(avg(node_hwmon_temp_celsius) by(instance),  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}", "노드 CPU TEMP 조회", "NODE"),
 	NODE_NETWORK_RECEIVE("avg by(instance) (label_replace(node_network_receive_bytes_total, \"internal_ip\", \"$1\", \"instance\",\"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{%s})", "노드의 네트워크 수신", "NODE"),
 	NODE_NETWORK_TRANSMIT("avg by(instance) (label_replace(node_network_transmit_bytes_total, \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on(internal_ip) group_left(node) kube_node_info{%s})","노드의 네트워크 송신","NODE"),
