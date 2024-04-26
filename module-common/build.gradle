@@ -13,4 +13,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.github.jknack:handlebars:4.3.1'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    // zip 라이브러리
+    implementation 'org.apache.commons:commons-compress:1.26.1'
 }
