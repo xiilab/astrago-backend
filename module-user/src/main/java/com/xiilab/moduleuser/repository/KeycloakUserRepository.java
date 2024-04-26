@@ -494,9 +494,8 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
-	public void joinAdmin(UserReqVO userReqVO) {
-		UserRepresentation userRepresentation = userReqVO.convertUserRep();
-		userRepresentation.setEnabled(true);
+	public String joinAdmin(UserReqVO userReqVO) {
+		UserRepresentation userRepresentation = userReqVO.convertAdminRep();
 		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
 		if (response.getStatus() != 200 && response.getStatus() != 201) {
 			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL);
@@ -506,5 +505,6 @@ public class KeycloakUserRepository implements UserRepository {
 		UserResource userResource = getUserResourceById(userRep.getId());
 		userResource.resetPassword(userReqVO.createCredentialRep());
 		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_ADMIN.name())));
+		return userRep.getId();
 	}
 }

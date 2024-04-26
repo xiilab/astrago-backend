@@ -170,8 +170,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void joinAdmin(UserReqVO userReqVO) {
-		userRepository.joinAdmin(userReqVO);
+	public String joinAdmin(UserReqVO userReqVO) {
+		return userRepository.joinAdmin(userReqVO);
 	}
 
 }
