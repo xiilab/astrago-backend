@@ -95,7 +95,7 @@ public class UserDTO {
 					.map(GroupRepresentation::getName)
 					.toList();
 			}
-			if (!CollectionUtils.isEmpty(groups)) {
+			if (!CollectionUtils.isEmpty(groupReps)) {
 				this.workspaces = groupReps.stream()
 					.filter(group -> group.getPath().contains("/ws/"))
 					.map(group -> group.getPath().split("/ws/")[1])
