@@ -79,7 +79,6 @@ public class PrometheusServiceImpl implements PrometheusService{
 	public List<ResponseDTO.HistoryDTO> getHistoryMetricBySystem(String promql, String startDate, String endDate) {
 
 		long systemStep = DataConverterUtil.getFortyStep(startDate, endDate);
-
 		// 2024.02.03(start) ~ 2024.02.15(end)
 		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
 		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
