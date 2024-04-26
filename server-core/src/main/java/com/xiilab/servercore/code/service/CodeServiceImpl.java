@@ -33,6 +33,7 @@ import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.modulek8sdb.code.dto.CodeSearchCondition;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
 
@@ -161,12 +162,13 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
-	public Page<CodeResDTO> getCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO, Pageable pageable) {
+	public Page<CodeResDTO> getCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO, Pageable pageable,
+		CodeSearchCondition codeSearchCondition) {
 		Page<CodeEntity> codeEntityList;
 		if (isAdmin(userInfoDTO)) {
-			codeEntityList = getAdminCodeList(workspaceName, pageable);
+			codeEntityList = getAdminCodeList(workspaceName, pageable, codeSearchCondition);
 		} else {
-			codeEntityList = getNonAdminCodeList(workspaceName, userInfoDTO, pageable);
+			codeEntityList = getNonAdminCodeList(workspaceName, userInfoDTO, pageable,codeSearchCondition);
 		}
 		return codeEntityList.map(CodeResDTO::new);
 	}
@@ -236,31 +238,33 @@ public class CodeServiceImpl implements CodeService {
 		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN;
 	}
 
-	private Page<CodeEntity> getAdminCodeList(String workspaceName, Pageable pageable) {
+	private Page<CodeEntity> getAdminCodeList(String workspaceName, Pageable pageable,
+		CodeSearchCondition codeSearchCondition) {
 		return codeCustomRepository.getCodeListByCondition(
 			null,
 			workspaceName,
 			StringUtils.isEmpty(workspaceName) ? USER : WORKSPACE,
-			pageable
+			pageable,
+			codeSearchCondition
 		);
 	}
 
 	private Page<CodeEntity> getNonAdminCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO,
-		Pageable pageable) {
+		Pageable pageable, CodeSearchCondition codeSearchCondition) {
 		if (StringUtils.isEmpty(workspaceName)) {
 			return codeCustomRepository.getCodeListByCondition(
 				userInfoDTO.getId(),
 				null,
 				USER,
-				pageable
-			);
+				pageable,
+				codeSearchCondition);
 		} else {
 			return codeCustomRepository.getCodeListByCondition(
 				null,
 				workspaceName,
 				WORKSPACE,
-				pageable
-			);
+				pageable,
+				codeSearchCondition);
 		}
 	}
 
