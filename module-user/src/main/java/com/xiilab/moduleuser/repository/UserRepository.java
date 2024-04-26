@@ -49,5 +49,5 @@ public interface UserRepository {
 
 	List<UserDTO.UserInfo> getAdminList();
 
-	void joinAdmin(UserReqVO userReqVO);
+	String joinAdmin(UserReqVO userReqVO);
 }

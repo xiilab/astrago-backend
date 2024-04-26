@@ -49,5 +49,5 @@ public interface UserService {
 
 	List<UserDTO.UserInfo> getAdminList();
 
-	void joinAdmin(UserReqVO userReqVO);
+	String joinAdmin(UserReqVO userReqVO);
 }
