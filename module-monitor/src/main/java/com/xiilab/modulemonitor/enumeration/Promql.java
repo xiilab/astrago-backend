@@ -159,7 +159,7 @@ public enum Promql {
 	REPORT_MEM_RESOURCE_TOTAL("round(sum(kube_node_status_capacity{resource=\"memory\"}))", "MEM 총량", "REPORT"),
 	REPORT_MEM_RESOURCE_REQUEST("round(avg(kube_resourcequota{resource=\"requests.memory\", type=\"hard\"}))", "MEM 요청량", "REPORT"),
 	REPORT_MEM_RESOURCE_USAGE("round(round(sum(kube_node_status_capacity{resource=\"memory\"})) * avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes)))", "MEM 사용량", "REPORT"),
-	REPORT_TOTAL_SCORE("round((avg(DCGM_FI_DEV_GPU_UTIL) * 0.4) * ((100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)) * 0.3) * (avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100) * 0.3))", "REPORT 활용 점수", "REPORT"),
+	REPORT_TOTAL_SCORE("round((avg(DCGM_FI_DEV_GPU_UTIL) * 0.4) + ((100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)) * 0.3) + (avg(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100) * 0.3))", "REPORT 활용 점수", "REPORT"),
 	REPORT_STATISTICS_GPU_REQUEST("avg(kube_resourcequota{resource=\"requests.nvidia.com/gpu\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 GPU 요청량", "REPORT"),
 	REPORT_STATISTICS_CPU_REQUEST("avg(kube_resourcequota{resource=\"requests.cpu\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 CPU 요청량", "REPORT"),
 	REPORT_STATISTICS_MEM_REQUEST("avg(kube_resourcequota{resource=\"requests.memory\", type=\"hard\"}) by(namespace)", "워크스페이스별 리소스 활용 통계 MEM 요청량", "REPORT"),
