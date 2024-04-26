@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerDTO;
-import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class AlertManagerEntity extends BaseEntity {
+public class AlertManagerEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
