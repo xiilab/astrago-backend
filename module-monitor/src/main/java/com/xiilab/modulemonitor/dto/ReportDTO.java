@@ -1,5 +1,6 @@
 package com.xiilab.modulemonitor.dto;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.util.CollectionUtils;
@@ -121,6 +122,12 @@ public class ReportDTO {
 			if (!CollectionUtils.isEmpty(categoryDTOS)) {
 				SystemCategoryDTO systemCategoryDTO = categoryDTOS.get(0);
 				availableDate = systemCategoryDTO.getValueDTOS().stream().map(value -> value.date).toList();
+			}
+		}
+
+		public void sortByCategory() {
+			if (!CollectionUtils.isEmpty(categoryDTOS)) {
+				this.getCategoryDTOS().sort(Comparator.comparing(SystemCategoryDTO::getCategory));
 			}
 		}
 	}
