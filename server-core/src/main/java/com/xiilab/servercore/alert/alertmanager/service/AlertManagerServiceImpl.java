@@ -63,6 +63,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 	@Override
 	@Transactional
 	public AlertManagerDTO.ResponseDTO saveAlertManager(AlertManagerDTO.RequestDTO requestDTO) {
+		// Mail 수신인 경우 사용자 Mail 정보 체크
 		validationCheck(requestDTO);
 		AlertManagerEntity alertManagerEntity = requestDTO.convertEntity();
 
@@ -135,7 +136,8 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 
 	@Override
 	public List<AlertManagerDTO.ResponseDTO> getAlertManagerList(UserDTO.UserInfo userInfoDTO) {
-		List<AlertManagerEntity> allAlertManagerList = repository.findByAlertManagerUserEntityList_UserId(userInfoDTO.getId());
+		List<AlertManagerEntity> allAlertManagerList = repository.findByAlertManagerUserEntityList_UserId(
+			userInfoDTO.getId());
 
 		return allAlertManagerList.stream().map(alertManagerEntity ->
 			AlertManagerDTO.ResponseDTO.toDTOBuilder().alertManager(alertManagerEntity).build()
@@ -201,7 +203,8 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 						// 알림 전송
 						for (Map.Entry<Long, List<AlertManagerReceiveDTO.ReceiveDTO>> alertReceive : alertReceiveDTOList.entrySet()) {
 
-							AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(alertReceive.getKey());
+							AlertManagerDTO.ResponseDTO findAlertManagerDTO = getAlertManagerById(
+								alertReceive.getKey());
 							// // 사용자 수신 설정에 따른 Email, System 분기
 							AlertMessage nodeError = AlertMessage.NODE_ERROR;
 							String mailTitle = nodeError.getMailTitle();
@@ -216,16 +219,17 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 									.nodeName(alertManagerReceiveDTO.getNodeName())
 									.build();
 
-								String message = String.format(nodeError.getMessage(), alertManagerReceiveDTO.getNodeName());
-								if(findAlertManagerDTO.isSystemYN()){
+								String message = String.format(nodeError.getMessage(),
+									alertManagerReceiveDTO.getNodeName());
+								if (findAlertManagerDTO.isSystemYN()) {
 									// 노드 장애 알림 발송
 									eventPublisher.publishEvent(
 										new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
 											pageNaviParam));
 								}
-								if(findAlertManagerDTO.isEmailYN()){
+								if (findAlertManagerDTO.isEmailYN()) {
 									List<AlertManagerDTO.UserDTO> userDTOList = findAlertManagerDTO.getUserDTOList();
-									for(AlertManagerDTO.UserDTO user : userDTOList){
+									for (AlertManagerDTO.UserDTO user : userDTOList) {
 										mailService.sendMail(MailDTO.builder()
 											.subject(mail.getSubject())
 											.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))

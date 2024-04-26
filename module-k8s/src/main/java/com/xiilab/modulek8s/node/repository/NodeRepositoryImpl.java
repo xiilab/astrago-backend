@@ -69,10 +69,17 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String READY = "Ready";
 
 	@Override
-	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
+	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText) {
 		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			List<Node> nodes = client.nodes().list().getItems();
+			List<Node> nodes = client.nodes().list().getItems()
+				.stream().filter(node -> {
+					if(searchText == null || searchText.isBlank()){
+						return true;
+					}
+					return node.getMetadata().getName().toLowerCase().contains(searchText);
+				})
+				.toList();
 
 			for (Node node : nodes) {
 				boolean migCapable = getMigCapable(node);
@@ -98,17 +105,20 @@ public class NodeRepositoryImpl implements NodeRepository {
 		int totalCount = nodeDtos.size();
 		int startIndex = (pageNo - 1) * pageSize;
 		int endIndex = Math.min(startIndex + pageSize, totalCount);
+		int totalPageSize = (int)Math.ceil((double)totalCount / pageSize);
 
 		if (startIndex >= totalCount || endIndex <= startIndex) {
 			// 페이지 범위를 벗어나면 빈 리스트 반환
 			return ResponseDTO.PageNodeDTO.builder()
 				.nodes(null)
 				.totalCount(totalCount)
+				.totalPageCount(totalPageSize)
 				.build();
 		}
 		return ResponseDTO.PageNodeDTO.builder()
 			.nodes(nodeDtos.subList(startIndex, endIndex))
 			.totalCount(totalCount)
+			.totalPageCount(totalPageSize)
 			.build();
 	}
 

@@ -52,6 +52,20 @@ public class UserReqVO {
 		userRepresentation.setAttributes(attributes);
 		return userRepresentation;
 	}
+	public UserRepresentation convertAdminRep() {
+		UserRepresentation userRepresentation = new UserRepresentation();
+		userRepresentation.setFirstName(this.firstName);
+		userRepresentation.setLastName(this.lastName);
+		userRepresentation.setEmail(this.email);
+		userRepresentation.setUsername(username);
+		userRepresentation.setEnabled(true);
+		Map<String, List<String>> attributes = new HashMap<>();
+		attributes.put("approvalYN", List.of(String.valueOf(true)));
+		attributes.put("signUpPath", List.of(SignUpPath.ASTRAGO.name()));
+
+		userRepresentation.setAttributes(attributes);
+		return userRepresentation;
+	}
 
 	public CredentialRepresentation createCredentialRep() {
 		CredentialRepresentation credentialRepresentation = new CredentialRepresentation();

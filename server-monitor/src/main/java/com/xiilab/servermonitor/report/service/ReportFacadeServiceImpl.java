@@ -263,7 +263,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 								List<ResponseDTO.ValueDTO> list = res.valueDTOS()
 									.stream()
-									.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 10))
+									.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 90))
 									.toList();
 
 								if (!Objects.requireNonNull(list).isEmpty()) {
@@ -363,7 +363,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 							List<ResponseDTO.ValueDTO> list = res.valueDTOS()
 								.stream()
-								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 1))
+								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 90))
 								.toList();
 
 							if (!Objects.requireNonNull(list).isEmpty()) {
@@ -422,7 +422,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 							List<ResponseDTO.ValueDTO> list = res.valueDTOS()
 								.stream()
-								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 1))
+								.filter(valueDTO -> (DataConverterUtil.formatRoundTo(valueDTO.value()) > 90))
 								.toList();
 
 							if (!Objects.requireNonNull(list).isEmpty()) {
@@ -647,6 +647,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 			systemResDTO.setCategoryDTOS(new ArrayList<>(categoryMap.values()));
 			systemResDTO.setAvailableDate();
+			systemResDTO.sortByCategory();
 			result.add(systemResDTO);
 		}));
 		return result;

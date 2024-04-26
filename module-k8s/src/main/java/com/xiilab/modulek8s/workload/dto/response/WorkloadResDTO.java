@@ -30,6 +30,7 @@ public class WorkloadResDTO {
 		private String workloadName;
 		private WorkloadResourceType resourceType;
 		private String creator;
+		private String creatorName;
 		private String createdAt;
 		WorkloadStatus status;
 

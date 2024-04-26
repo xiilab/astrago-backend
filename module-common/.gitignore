@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### ZIP압축 테스트 파일 ###
+**/src/test/resources/zip
+**/src/test/resources/zipoutput

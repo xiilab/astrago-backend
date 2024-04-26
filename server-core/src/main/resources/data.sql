@@ -219,7 +219,7 @@ VALUES (1, null, now(),
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif',
         null,
         'BATCH',
-        '{ "flops": 14, "t_img_num": 100, "v_img_num": 100, "image_size": 640, "batch": 16, "param_cnt": 43643718, "epoch": 120, "learning_rate": 0.01 }'),
+        '{ "data_dir": "./ultralytics/cfg/datasets/coco128.yaml", "save_model_dir": "./default_train_result", "flops": 14, "t_img_num": 100, "v_img_num": 100, "image_size": 640, "batch": 16, "param_cnt": 43643718, "epoch": 120, "learning_rate": 0.01 }'),
        (2, null, now(),
         '{     "DB_HOST": "astrago-mariadb.astrago.svc",     "DB_PORT": "3306",     "DB_USER": "root",     "DB_PASSWORD": "root",     "DB_DATABASE": "astrago" }',
         null,
@@ -230,7 +230,7 @@ VALUES (1, null, now(),
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif',
         null,
         'BATCH',
-        '{ "flops": 14, "t_img_num": 100, "v_img_num": 100, "image_size": 640, "batch": 16, "param_cnt": 53177222, "epoch": 120, "learning_rate": 0.01 }')
+        '{ "data_dir": "./ultralytics/cfg/datasets/coco128.yaml", "save_model_dir": "./default_train_result", "flops": 14, "t_img_num": 100, "v_img_num": 100, "image_size": 640, "batch": 16, "param_cnt": 53177222, "epoch": 120, "learning_rate": 0.01 }')
 ON DUPLICATE KEY UPDATE HUB_ID = HUB_ID;
 
 -- 허브 카테고리 초기값

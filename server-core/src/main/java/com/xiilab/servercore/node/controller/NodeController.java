@@ -32,8 +32,9 @@ public class NodeController {
 	@Operation(summary = "노드 전체 리스트 조회")
 	public ResponseEntity<ResponseDTO.PageNodeDTO> getNodeList(
 		@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
-		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize) {
-		return new ResponseEntity<>(nodeFacadeService.getNodeList(pageNo, pageSize), HttpStatus.OK);
+		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize,
+		@RequestParam(required = false, value = "searchText") String searchText) {
+		return new ResponseEntity<>(nodeFacadeService.getNodeList(pageNo, pageSize, searchText), HttpStatus.OK);
 	}
 
 	@GetMapping("/{resourceName}")
@@ -78,7 +79,6 @@ public class NodeController {
 		nodeFacadeService.disableMIG(nodeName);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
 
 	/**
 	 * 등록된 node의 mig 가능한 리스트를 리턴하는 API

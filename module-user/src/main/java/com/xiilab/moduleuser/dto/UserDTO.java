@@ -95,7 +95,7 @@ public class UserDTO {
 					.map(GroupRepresentation::getName)
 					.toList();
 			}
-			if (!CollectionUtils.isEmpty(groups)) {
+			if (!CollectionUtils.isEmpty(groupReps)) {
 				this.workspaces = groupReps.stream()
 					.filter(group -> group.getPath().contains("/ws/"))
 					.map(group -> group.getPath().split("/ws/")[1])
@@ -123,11 +123,11 @@ public class UserDTO {
 			}
 		}
 
-		public boolean isMyWorkspace(String workspaceName){
-			if(auth == AuthType.ROLE_ADMIN){
+		public boolean isMyWorkspace(String workspaceName) {
+			if (auth == AuthType.ROLE_ADMIN) {
 				return true;
 			}
-			if(workspaces == null){
+			if (workspaces == null) {
 				return false;
 			}
 			List<String> workspaces = this.workspaces.stream()
@@ -139,6 +139,7 @@ public class UserDTO {
 
 		/**
 		 * 내가 생성한 워크스페이스를 리턴하는 메소드(owner 권한을 가지고 있는 워크스페이스)
+		 *
 		 * @return workspace set
 		 */
 		public Set<String> getMyWorkspaces() {
@@ -154,6 +155,7 @@ public class UserDTO {
 
 		/**
 		 * 내가 생성한 워크스페이스 + 멤버로 속해있는 워크스페이스를 리턴하는 메소드(owner, user 권한을 가지고 있는 워크스페이스)
+		 *
 		 * @return workspace set
 		 */
 		public Set<String> getAllWorkspaces() {
@@ -168,14 +170,15 @@ public class UserDTO {
 
 		/**
 		 * 유저가 workspace에 대한 권한이 있는지 체크하는 메소드
+		 *
 		 * @param workspaceName 조회 할 워크스페이스
 		 * @return 권한여부
 		 */
-		public boolean isAccessAuthorityWorkspace(String workspaceName){
-			if(auth == AuthType.ROLE_ADMIN){
+		public boolean isAccessAuthorityWorkspace(String workspaceName) {
+			if (auth == AuthType.ROLE_ADMIN) {
 				return true;
 			}
-			if(workspaces == null){
+			if (workspaces == null) {
 				return false;
 			}
 
@@ -186,11 +189,12 @@ public class UserDTO {
 
 		/**
 		 * 일반 유저가 워크스페이스에 권한을 가지고 있는지 체크하는 메소드
+		 *
 		 * @param workspaceName 조회 할 워크스페이스 이름
 		 * @return 권한 여부
 		 */
-		public boolean isAccessAuthorityWorkspaceNotAdmin(String workspaceName){
-			if(CollectionUtils.isEmpty(workspaces)){
+		public boolean isAccessAuthorityWorkspaceNotAdmin(String workspaceName) {
+			if (CollectionUtils.isEmpty(workspaces)) {
 				return false;
 			}
 			Set<String> allWorkspaces = getAllWorkspaces();

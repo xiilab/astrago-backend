@@ -23,14 +23,17 @@ public class AlertManagerFacadeServiceImpl implements AlertManagerFacadeService{
 	private final AlertManagerService alertManagerService;
 	private final K8sAlertService k8sAlertService;
 
+	/**
+	 * AlertManager 저장
+	 * @param requestDTO 저장될 Alert 정보가 담긴 객체
+	 * @return 저장된 Alert
+	 */
 	@Override
 	public AlertManagerDTO.ResponseDTO saveAlertManager(AlertManagerDTO.RequestDTO requestDTO) {
 		// alertManager DB 저장
 		AlertManagerDTO.ResponseDTO responseDTO = alertManagerService.saveAlertManager(requestDTO);
-
 		// alertExpr 생성
 		List<String> alertExpr = creatExpr(requestDTO.getNodeDTOList(), requestDTO.getCategoryDTOList());
-
 		try{
 			// K8s Prometheus Rule 등록
 			k8sAlertService.createPrometheusRule(responseDTO.getId(), alertExpr);
@@ -76,8 +79,6 @@ public class AlertManagerFacadeServiceImpl implements AlertManagerFacadeService{
 			k8sAlertService.deletePrometheusRule(id);
 		}
 	}
-
-
 
 	private List<String> creatExpr(List<AlertManagerDTO.NodeDTO> nodeDTOList, List<AlertManagerDTO.CategoryDTO> categoryDTOList){
 		List<String> exprList = new ArrayList<>();

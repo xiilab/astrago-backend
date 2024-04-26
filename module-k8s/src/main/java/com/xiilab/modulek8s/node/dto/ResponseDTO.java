@@ -19,6 +19,7 @@ public class ResponseDTO {
 	public static class PageNodeDTO{
 		private List<NodeDTO> nodes;
 		private long totalCount;
+		private long totalPageCount;
 	}
 	@Builder
 	@Getter

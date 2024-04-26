@@ -12,7 +12,7 @@ import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 import io.fabric8.kubernetes.api.model.Node;
 
 public interface NodeRepository {
-	ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize);
+	ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText);
 
 	MIGProfileDTO getNodeMIGProfiles(String nodeName, int giCount);
 

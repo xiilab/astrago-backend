@@ -85,13 +85,14 @@ public class KeycloakUserRepository implements UserRepository {
 			.stream().filter(user
 				-> user.getAttributes() != null
 				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
+				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("true")
 				&& searchName(searchCondition.getSearchText(), user)
 			)
 			.sorted(
 				searchCondition.getUserSort() == UserSort.CREATED_AT_ASC ?
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp) :
 					searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
-					Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
+						Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
 						searchCondition.getUserSort() == UserSort.ENABLE_ASC ?
 							Comparator.comparing(UserRepresentation::isEnabled) :
 							Comparator.comparing(UserRepresentation::isEnabled).reversed()
@@ -113,13 +114,14 @@ public class KeycloakUserRepository implements UserRepository {
 			.map(userSummary -> {
 					UserResource userResource = realmClient.users().get(userSummary.getUid());
 					List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listAll();
-				List<String> roles = roleRepresentations.stream()
-					.filter(role -> role.getName().contains("ROLE_"))
-					.map(role -> role.getName())
-					.toList();
-				if(roles != null && roles.size() > 0){
-					userSummary.setAuthType(roles.contains(AuthType.ROLE_ADMIN.name()) ? AuthType.ROLE_ADMIN : AuthType.ROLE_USER);
-				}
+					List<String> roles = roleRepresentations.stream()
+						.filter(role -> role.getName().contains("ROLE_"))
+						.map(role -> role.getName())
+						.toList();
+					if (roles != null && roles.size() > 0) {
+						userSummary.setAuthType(
+							roles.contains(AuthType.ROLE_ADMIN.name()) ? AuthType.ROLE_ADMIN : AuthType.ROLE_USER);
+					}
 					return userSummary;
 				}
 			)
@@ -367,9 +369,9 @@ public class KeycloakUserRepository implements UserRepository {
 		String userRealName = user.getLastName() + user.getFirstName();
 		String userName = user.getUsername();
 
-		search = (user.getEmail() != null && user.getEmail().contains(searchText)) ||
-			(userRealName != null && userRealName.contains(searchText)) ||
-			(userName != null && userName.contains(searchText));
+		search = (user.getEmail() != null && user.getEmail().toLowerCase().contains(searchText.toLowerCase())) ||
+			(userRealName != null && userRealName.toLowerCase().contains(searchText.toLowerCase())) ||
+			(userName != null && userName.toLowerCase().contains(searchText.toLowerCase()));
 		return search;
 	}
 
@@ -463,8 +465,9 @@ public class KeycloakUserRepository implements UserRepository {
 			userResource.roles().realmLevel().add(List.of(roleRepresentation));
 		}
 
-		if(!StringUtils.isEmpty(updateUserDTO.getPassword())){
-			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false, updateUserDTO.getPassword());
+		if (!StringUtils.isEmpty(updateUserDTO.getPassword())) {
+			CredentialRepresentation authenticationSettings = getAuthenticationSettings(false,
+				updateUserDTO.getPassword());
 			userResource.resetPassword(authenticationSettings);
 		}
 
@@ -491,9 +494,8 @@ public class KeycloakUserRepository implements UserRepository {
 	}
 
 	@Override
-	public void joinAdmin(UserReqVO userReqVO) {
-		UserRepresentation userRepresentation = userReqVO.convertUserRep();
-		userRepresentation.setEnabled(true);
+	public String joinAdmin(UserReqVO userReqVO) {
+		UserRepresentation userRepresentation = userReqVO.convertAdminRep();
 		Response response = keycloakConfig.getRealmClient().users().create(userRepresentation);
 		if (response.getStatus() != 200 && response.getStatus() != 201) {
 			throw new RestApiException(UserErrorCode.USER_CREATE_FAIL);
@@ -503,5 +505,6 @@ public class KeycloakUserRepository implements UserRepository {
 		UserResource userResource = getUserResourceById(userRep.getId());
 		userResource.resetPassword(userReqVO.createCredentialRep());
 		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_ADMIN.name())));
+		return userRep.getId();
 	}
 }
