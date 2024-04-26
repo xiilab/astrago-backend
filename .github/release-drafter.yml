@@ -29,6 +29,7 @@ template: |
   ## Changes
 
   $CHANGES
+
 autolabeler: # PR에 자동으로 label 붙혀주는 규칙 
   - label: 'chore'
     files:
