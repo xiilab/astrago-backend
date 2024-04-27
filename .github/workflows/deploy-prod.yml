@@ -99,11 +99,11 @@ jobs:
         with:
           cmd: |
             yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.core.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.core.imageTag = "core-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
             yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.imageTag = "batch-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
             yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
 
       - name: Commit and Push
         run: |
