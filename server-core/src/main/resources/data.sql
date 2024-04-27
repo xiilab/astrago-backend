@@ -243,5 +243,6 @@ ON DUPLICATE KEY UPDATE HUB_CATEGORY_ID= HUB_CATEGORY_ID;
 INSERT INTO TB_NETWORK
 (NETWORK_ID,CONNECTION_TEST_HARBOR, CONNECTION_TEST_HUB, INIT_CONTAINER_HARBOR, INIT_CONTAINER_HUB, LOCAL_VOLUME_HARBOR, LOCAL_VOLUME_HUB, NETWORK_CLOSE_YN)
 VALUES(1, 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx', 'harbor.xiilab.com:32443/astrago/init-container-image',
-       'k8s.gcr.io/git-sync/git-sync:v3.2.2', 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx', 'N')
+       'k8s.gcr.io/git-sync/git-sync:v3.6.0', 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx',
+       'xiilab/astrago-dataset-nginx', 'N')
 ON DUPLICATE KEY UPDATE NETWORK_ID= NETWORK_ID;
