@@ -189,8 +189,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			// K8s 워크로드 리스트 조회
 			return kubernetesClient.pods().inAnyNamespace().list().getItems().stream()
 				.filter(pod -> pod.getMetadata().getName().contains("wl-"))
-				.map(pod ->
-				ResponseDTO.WorkloadResponseDTO.builder()
+				.map(pod -> ResponseDTO.WorkloadResponseDTO.builder()
 					.wlName(pod.getMetadata().getName())
 					.wsName(pod.getMetadata().getNamespace())
 					.status(pod.getStatus().getPhase())
