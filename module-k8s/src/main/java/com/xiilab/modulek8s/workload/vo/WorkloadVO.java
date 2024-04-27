@@ -11,10 +11,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.GitEnvType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -71,12 +71,12 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 					.withEnv(getGithubEnvVarList(codeVO))
 					.withNewResources()
 					.addToRequests(Map.of(
-						"cpu", new Quantity("100m"),
-						"memory", new Quantity("100Mi")
+						"cpu", new Quantity("500m"),
+						"memory", new Quantity("500Mi")
 					))
 					.addToLimits(Map.of(
-						"cpu", new Quantity("100m"),
-						"memory", new Quantity("100Mi")
+						"cpu", new Quantity("500m"),
+						"memory", new Quantity("500Mi")
 					))
 					.endResources()
 					.build())
