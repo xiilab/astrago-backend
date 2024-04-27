@@ -8,11 +8,10 @@ import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
+import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -37,7 +36,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			.toList();
 		this.workingDir = container.getWorkingDir();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
-		super.status = getWorkloadStatus(job.getStatus());
+		super.status = K8sInfoPicker.getBatchWorkloadStatus(job.getStatus());
 		// 파드 시작 시간
 		// .subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		// 최초 종료 시간 예측
@@ -57,20 +56,5 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 	@Override
 	public WorkloadType getType() {
 		return WorkloadType.BATCH;
-	}
-
-	private WorkloadStatus getWorkloadStatus(JobStatus jobStatus) {
-		int active = jobStatus.getActive() == null ? 0 : jobStatus.getActive();
-		int failed = jobStatus.getFailed() == null ? 0 : jobStatus.getFailed();
-		int ready = jobStatus.getReady() == null ? 0 : jobStatus.getReady();
-		if (failed > 0) {
-			return WorkloadStatus.ERROR;
-		} else if (ready > 0 || active > 0) {
-			return WorkloadStatus.RUNNING;
-		} else if (active == 0 && failed == 0 && ready == 0) {
-			return WorkloadStatus.PENDING;
-		} else {
-			return WorkloadStatus.END;
-		}
 	}
 }

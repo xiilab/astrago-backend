@@ -187,7 +187,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public List<ResponseDTO.WorkloadResponseDTO> getWlList() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			// K8s 워크로드 리스트 조회
-			return kubernetesClient.pods().list().getItems().stream()
+			return kubernetesClient.pods().inAnyNamespace().list().getItems().stream()
 				.filter(pod -> pod.getMetadata().getName().contains("wl-"))
 				.map(pod -> ResponseDTO.WorkloadResponseDTO.builder()
 					.wlName(pod.getMetadata().getName())
