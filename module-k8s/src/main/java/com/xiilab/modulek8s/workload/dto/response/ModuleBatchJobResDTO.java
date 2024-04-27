@@ -7,13 +7,11 @@ import java.util.Optional;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
+import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -38,7 +36,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 			.toList();
 		this.workingDir = container.getWorkingDir();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
-		super.status = getWorkloadStatus(job.getStatus());
+		super.status = K8sInfoPicker.getBatchWorkloadStatus(job.getStatus());
 		// 파드 시작 시간
 		// .subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		// 최초 종료 시간 예측
@@ -58,21 +56,5 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 	@Override
 	public WorkloadType getType() {
 		return WorkloadType.BATCH;
-	}
-
-	private WorkloadStatus getWorkloadStatus(JobStatus jobStatus) {
-		Integer active = jobStatus.getActive();
-		Integer failed = jobStatus.getFailed();
-		Integer ready = jobStatus.getReady();
-		if (!ValidUtils.isNullOrZero(failed)) {
-			return WorkloadStatus.ERROR;
-		} else if (!ValidUtils.isNullOrZero(ready)) {
-			return WorkloadStatus.RUNNING;
-		} else if (ready == 0 || ValidUtils.isNullOrZero(active) && ValidUtils.isNullOrZero(failed)
-			&& ValidUtils.isNullOrZero(ready)) {
-			return WorkloadStatus.PENDING;
-		} else {
-			return WorkloadStatus.END;
-		}
 	}
 }
