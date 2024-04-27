@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
@@ -61,15 +60,14 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 	}
 
 	private WorkloadStatus getWorkloadStatus(JobStatus jobStatus) {
-		Integer active = jobStatus.getActive();
-		Integer failed = jobStatus.getFailed();
-		Integer ready = jobStatus.getReady();
-		if (!ValidUtils.isNullOrZero(failed)) {
+		int active = jobStatus.getActive() == null ? 0 : jobStatus.getActive();
+		int failed = jobStatus.getFailed() == null ? 0 : jobStatus.getFailed();
+		int ready = jobStatus.getReady() == null ? 0 : jobStatus.getReady();
+		if (failed > 0) {
 			return WorkloadStatus.ERROR;
-		} else if (!ValidUtils.isNullOrZero(ready)) {
+		} else if (ready > 0 || active > 0) {
 			return WorkloadStatus.RUNNING;
-		} else if (ready == 0 || ValidUtils.isNullOrZero(active) && ValidUtils.isNullOrZero(failed)
-			&& ValidUtils.isNullOrZero(ready)) {
+		} else if (active == 0 && failed == 0 && ready == 0) {
 			return WorkloadStatus.PENDING;
 		} else {
 			return WorkloadStatus.END;
