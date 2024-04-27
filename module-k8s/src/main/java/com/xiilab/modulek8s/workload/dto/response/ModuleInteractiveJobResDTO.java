@@ -1,8 +1,5 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-import java.util.List;
-import java.util.Objects;
-
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -10,8 +7,6 @@ import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 
 import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import lombok.experimental.SuperBuilder;
 
@@ -35,7 +30,7 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort(), null))
 			.toList();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
-		super.status = K8sInfoPicker.getWorkloadStatus(deployment.getStatus());
+		super.status = K8sInfoPicker.getInteractiveWorkloadStatus(deployment.getStatus());
 		this.ide = deployment.getMetadata().getAnnotations().get(AnnotationField.IDE.getField()) == null ? "CUSTOM" :
 			deployment.getMetadata().getAnnotations().get(AnnotationField.IDE.getField());
 	}

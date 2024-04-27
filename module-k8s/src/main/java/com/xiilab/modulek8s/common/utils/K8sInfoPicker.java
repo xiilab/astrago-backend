@@ -36,6 +36,7 @@ import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -417,7 +418,7 @@ public class K8sInfoPicker {
 		}
 	}
 
-	public static WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {
+	public static WorkloadStatus getInteractiveWorkloadStatus(DeploymentStatus deploymentStatus) {
 		int replicas = deploymentStatus.getReplicas() == null ? 0 : deploymentStatus.getReplicas();
 		int availableReplicas =
 			deploymentStatus.getAvailableReplicas() == null ? 0 : deploymentStatus.getAvailableReplicas();
@@ -430,6 +431,45 @@ public class K8sInfoPicker {
 		} else {
 			return WorkloadStatus.ERROR;
 		}
+	}
+
+	public static WorkloadStatus getBatchWorkloadStatus(JobStatus status) {
+		if (status == null) {
+			return WorkloadStatus.PENDING;
+		}
+
+		Integer active = status.getActive();
+		Integer failed = status.getFailed();
+		Integer succeeded = status.getSucceeded();
+
+		// ERROR 상태: 실패한 팟(failed)이 있거나 조건(conditions) 중 하나라도 실패 상태인 경우
+		if ((failed != null && failed > 0) || jobHasFailedCondition(status)) {
+			return WorkloadStatus.ERROR;
+		}
+
+		// RUNNING 상태: 활성 팟(active)이 있고, 성공적으로 완료된 팟(succeeded)이 아직 없는 경우
+		if ((active != null && active > 0) && (succeeded == null || succeeded == 0)) {
+			return WorkloadStatus.RUNNING;
+		}
+
+		// PENDING 상태: 작업이 시작되지 않았거나(start time이 없거나), 모든 필드가 null인 초기 상태
+		if (status.getStartTime() == null || (active == null && failed == null && succeeded == null)) {
+			return WorkloadStatus.PENDING;
+		}
+
+		// END 상태: 성공적으로 완료된 팟(succeeded)이 있는 경우
+		if (succeeded != null && succeeded > 0) {
+			return WorkloadStatus.END;
+		}
+
+		// 기본적으로 PENDING 상태로 분류
+		return WorkloadStatus.PENDING;
+	}
+
+	private static boolean jobHasFailedCondition(JobStatus status) {
+		// 조건(conditions)을 확인하여 실패 상태가 있는지 검사하는 로직
+		return status.getConditions().stream()
+			.anyMatch(condition -> "Failed".equals(condition.getStatus()));
 	}
 
 	private static List<K8SResourceMetadataDTO.Env> getEnvs(List<EnvVar> envs) {
