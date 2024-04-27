@@ -65,7 +65,7 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		int ready = jobStatus.getReady() == null ? 0 : jobStatus.getReady();
 		if (failed > 0) {
 			return WorkloadStatus.ERROR;
-		} else if (ready > 0) {
+		} else if (ready > 0 || active > 0) {
 			return WorkloadStatus.RUNNING;
 		} else if (active == 0 && failed == 0 && ready == 0) {
 			return WorkloadStatus.PENDING;
