@@ -36,6 +36,7 @@ import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.batch.v1.JobCondition;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -438,27 +439,25 @@ public class K8sInfoPicker {
 			return WorkloadStatus.PENDING;
 		}
 
-		Integer active = status.getActive();
-		Integer failed = status.getFailed();
-		Integer succeeded = status.getSucceeded();
+		List<JobCondition> conditions = status.getConditions();
 
-		// ERROR 상태: 실패한 팟(failed)이 있거나 조건(conditions) 중 하나라도 실패 상태인 경우
-		if ((failed != null && failed > 0) || jobHasFailedCondition(status)) {
+		// ERROR 상태: 실패한 조건(conditions)이 있는 경우
+		if (jobHasFailedCondition(conditions)) {
 			return WorkloadStatus.ERROR;
 		}
 
 		// RUNNING 상태: 활성 팟(active)이 있고, 성공적으로 완료된 팟(succeeded)이 아직 없는 경우
-		if ((active != null && active > 0) && (succeeded == null || succeeded == 0)) {
+		if (jobIsRunning(status, conditions)) {
 			return WorkloadStatus.RUNNING;
 		}
 
-		// PENDING 상태: 작업이 시작되지 않았거나(start time이 없거나), 모든 필드가 null인 초기 상태
-		if (status.getStartTime() == null || (active == null && failed == null && succeeded == null)) {
+		// PENDING 상태: 작업이 시작되었지만 pod가 아직 시작되지 않았거나 초기 상태인 경우
+		if (jobIsPending(status, conditions)) {
 			return WorkloadStatus.PENDING;
 		}
 
 		// END 상태: 성공적으로 완료된 팟(succeeded)이 있는 경우
-		if (succeeded != null && succeeded > 0) {
+		if (jobIsCompleted(status)) {
 			return WorkloadStatus.END;
 		}
 
@@ -466,10 +465,40 @@ public class K8sInfoPicker {
 		return WorkloadStatus.PENDING;
 	}
 
-	private static boolean jobHasFailedCondition(JobStatus status) {
-		// 조건(conditions)을 확인하여 실패 상태가 있는지 검사하는 로직
-		return status.getConditions().stream()
-			.anyMatch(condition -> "Failed".equals(condition.getStatus()));
+	private static boolean jobHasFailedCondition(List<JobCondition> conditions) {
+		return conditions.stream()
+			.anyMatch(condition -> "Failed".equals(condition.getType()));
+	}
+
+	private static boolean jobIsRunning(JobStatus status, List<JobCondition> conditions) {
+		Integer active = status.getActive();
+		Integer ready = status.getReady();
+		Integer succeeded = status.getSucceeded();
+
+		return (active != null && active > 0) && (ready != null && ready > 0) && (succeeded == null || succeeded == 0)
+			&& !jobHasFailedCondition(conditions)
+			&& !jobHasPodInitializingCondition(conditions);
+	}
+
+	private static boolean jobIsPending(JobStatus status, List<JobCondition> conditions) {
+		Integer active = status.getActive();
+		Integer failed = status.getFailed();
+		Integer succeeded = status.getSucceeded();
+
+		return status.getStartTime() != null
+			&& ((active == null || active == 0) && (failed == null && succeeded == null))
+			&& !jobHasFailedCondition(conditions)
+			&& jobHasPodInitializingCondition(conditions);
+	}
+
+	private static boolean jobIsCompleted(JobStatus status) {
+		Integer succeeded = status.getSucceeded();
+		return succeeded != null && succeeded > 0;
+	}
+
+	private static boolean jobHasPodInitializingCondition(List<JobCondition> conditions) {
+		return conditions.stream()
+			.anyMatch(condition -> "PodInitializing".equals(condition.getType()));
 	}
 
 	private static List<K8SResourceMetadataDTO.Env> getEnvs(List<EnvVar> envs) {
