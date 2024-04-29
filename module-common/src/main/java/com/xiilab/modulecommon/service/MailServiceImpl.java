@@ -206,13 +206,17 @@ public class MailServiceImpl implements MailService {
 			""".formatted(subTitle);
 	}
 	private String createContentFooter(String footer){
-		return """
+		if(footer.equals("")){
+			return "";
+		}else{
+			return """
             <tr style="text-align: center">
                 <td colspan="2">
                     %s
                 </td>
             </tr>
 			""".formatted(footer);
+		}
 	}
 	private String createContents(List<MailDTO.Content> contents){
 		String result = "";
