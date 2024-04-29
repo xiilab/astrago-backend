@@ -66,12 +66,11 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 	@Override
 	public long getHistoryMetricByReport(String promql, String startDateUnixTime, String endDate, long step) {
-
 		// 검색시간 UnixTime로 변환
 		String endDateUnixTime = DataConverterUtil.toUnixTime(endDate);
-
+		long getStep = DataConverterUtil.getStepByUnixTime(startDateUnixTime, endDateUnixTime);
 		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
-			startDateUnixTime, endDateUnixTime, 4000L);
+			startDateUnixTime, endDateUnixTime, getStep);
 		return getAvgHistoryMetric(historyMetric);
 	}
 

@@ -282,6 +282,10 @@ public class DataConverterUtil {
 		}
 	}
 
+	public static long getStepByUnixTime(String start, String end){
+		return (Long.parseLong(end) - Long.parseLong(start)) / 31;
+	}
+
 	public static long getSystemStep(String startDate, String endDate) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
@@ -426,7 +430,8 @@ public class DataConverterUtil {
 			sundayDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
 		}
 
-		return new WeekRangeDTO(mondayDate.format(DateTimeFormatter.ofPattern(dateFormat)), sundayDate.format(DateTimeFormatter.ofPattern(dateFormat)));
+		return new WeekRangeDTO(mondayDate.format(DateTimeFormatter.ofPattern(dateFormat)),
+			sundayDate.format(DateTimeFormatter.ofPattern(dateFormat)));
 	}
 
 	public static String getDateMonthWeek(String date) {
