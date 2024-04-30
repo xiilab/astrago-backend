@@ -89,7 +89,7 @@ public enum Promql {
 
 	// Daemonset
 	DAEMONSET_COUNT("count(kube_daemonset_created)", "데몬셋 총 개수 조회", "DAEMONSET"),
-	DAEMONSET_UNHEALYHY_COUNT("sum(kube_daemonset_status_desired_number_scheduled - kube_daemonset_status_number_ready)","데몬셋 unhealthy Count","DAEMONSET"),
+	DAEMONSET_UNHEALYHY_COUNT("count((kube_daemonset_status_desired_number_scheduled - kube_daemonset_status_number_ready) > 0)","데몬셋 unhealthy Count","DAEMONSET"),
 
 
 	// POD
