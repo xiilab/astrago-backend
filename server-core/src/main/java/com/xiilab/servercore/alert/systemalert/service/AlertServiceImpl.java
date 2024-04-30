@@ -139,8 +139,7 @@ public class AlertServiceImpl implements AlertService {
 
 	@Override
 	public FindAdminAlertMappingResDTO.AdminAlertMappings findAdminAlertMappings(String adminId) {
-		List<AlertEntity> adminAlertMappingList = alertRepository.findAdminAlertMappingsByAdminId(adminId,
-			AlertRole.ADMIN);
+		List<AlertEntity> adminAlertMappingList = alertRepository.findAdminAlertMappings(adminId);
 		return FindAdminAlertMappingResDTO.AdminAlertMappings.from(adminAlertMappingList, adminAlertMappingList.size());
 	}
 
