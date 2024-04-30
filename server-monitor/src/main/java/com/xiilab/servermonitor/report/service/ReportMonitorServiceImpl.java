@@ -1,5 +1,6 @@
 package com.xiilab.servermonitor.report.service;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +45,7 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 			if(enable){
 				JobDataMap jobDataMap = createJobDataMap(report);
 				JobDetail reservationJob = createReservationJob(report.getId(), jobDataMap);
-				Trigger reservationTrigger = createTigger(reservationJob, report);
+				Trigger reservationTrigger = createTrigger(reservationJob, report);
 				scheduler.scheduleJob(reservationJob, reservationTrigger);
 			// False 알림기능 OFF
 			}else {
@@ -94,24 +95,24 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 		return jobDataMap;
 	}
 
-	private Trigger createTigger(JobDetail jobDetail, ReportReservationEntity report){
+	private Trigger createTrigger(JobDetail jobDetail, ReportReservationEntity report){
 
 		return TriggerBuilder.newTrigger()
-			.withSchedule(CronScheduleBuilder.cronSchedule(getCronExpression(report.getSendCycle())))
+			.withSchedule(CronScheduleBuilder.cronSchedule(getCronExpression(report.getSendCycle(), report.getStartDate())))
 			// .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * ? * *"))
 			.startNow()
 			.forJob(jobDetail)
 			.endAt(Date.from(report.getEndDate().atZone(ZoneId.systemDefault()).toInstant()))
 			.build();
 	}
-	private String getCronExpression(long period) {
+	private String getCronExpression(long period, LocalDateTime startDate) {
 		switch ((int)period) {
 			case 1:
-				return "0 0 0 1/1 * ?";
+				return String.format("0 %s %s 1/1 * ?", startDate.getMinute(), startDate.getHour());
 			case 7:
-				return "0 0 0 ? * MON";
+				return String.format("0 %s %s ? * MON", startDate.getMinute(), startDate.getHour());
 			case 30:
-				return "0 0 0 1 * ?";
+				return String.format("0 %s %s 1 * ?", startDate.getMinute(), startDate.getHour());
 			default:
 				throw new IllegalArgumentException("Invalid period: " + period);
 		}
