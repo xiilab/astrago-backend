@@ -604,11 +604,10 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
 			return pods.stream()
-				.filter(pod -> pod.getStatus()
-					.getConditions()
-					.stream()
-					.anyMatch(podCondition -> podCondition.getType().equals("PodScheduled") && podCondition.getStatus()
-						.equals("False")))
+				.filter(pod -> !pod.getStatus().getPhase().equals("Succeeded")
+					&& !pod.getStatus().getPhase().equals("Running")
+					&& !pod.getStatus().getPhase().equals("Pending")
+					&& pod.getStatus().getPhase().equals("Failed"))
 				.map(pod -> ClusterObjectDTO.builder()
 					.podName(pod.getMetadata().getName())
 					.namespace(pod.getMetadata().getNamespace())

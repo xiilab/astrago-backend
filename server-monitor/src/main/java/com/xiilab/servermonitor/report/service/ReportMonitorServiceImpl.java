@@ -96,10 +96,8 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 	}
 
 	private Trigger createTrigger(JobDetail jobDetail, ReportReservationEntity report){
-
 		return TriggerBuilder.newTrigger()
 			.withSchedule(CronScheduleBuilder.cronSchedule(getCronExpression(report.getSendCycle(), report.getStartDate())))
-			// .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * ? * *"))
 			.startNow()
 			.forJob(jobDetail)
 			.endAt(Date.from(report.getEndDate().atZone(ZoneId.systemDefault()).toInstant()))
