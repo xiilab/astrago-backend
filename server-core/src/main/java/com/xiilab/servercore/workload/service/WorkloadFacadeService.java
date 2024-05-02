@@ -226,10 +226,10 @@ public class WorkloadFacadeService {
 			List<MailDTO.Content> contents = List.of(
 				MailDTO.Content.builder()
 					.col1("GPU : ")
-					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed())
+					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed() + "개")
 					.build(),
-				MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(cpuUsed)).build(),
-				MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(memUsed)).build()
+				MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(cpuUsed) + "Core").build(),
+				MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(memUsed) + "GB").build()
 			);
 			List<UserDTO.UserInfo> adminList = userFacadeService.getAdminList();
 			for (UserDTO.UserInfo admin : adminList) {

@@ -30,6 +30,7 @@ import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
+import io.fabric8.kubernetes.api.model.apps.DaemonSet;
 import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscaler;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.openshift.client.OpenShiftClient;
@@ -602,17 +603,17 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
 			return pods.stream()
-				.filter(pod ->
-					pod.getStatus().getConditions().stream()
-						.anyMatch(
-							podCondition -> podCondition.getType().equals("PodScheduled") && podCondition.getStatus()
-								.equals("False")))
+				.filter(pod -> !pod.getStatus().getPhase().equals("Succeeded")
+					&& !pod.getStatus().getPhase().equals("Running")
+					&& !pod.getStatus().getPhase().equals("Pending")
+					&& pod.getStatus().getPhase().equals("Failed"))
 				.map(pod -> ClusterObjectDTO.builder()
 					.podName(pod.getMetadata().getName())
 					.namespace(pod.getMetadata().getNamespace())
 					.nodeName(pod.getSpec().getNodeName())
 					.reason(pod.getStatus().getConditions().get(0).getReason())
-					.build()).toList();
+					.build())
+				.toList();
 		}
 	}
 
@@ -688,21 +689,18 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public List<ClusterObjectDTO> getUnhealthyDaemonSets() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			List<ClusterObjectDTO> result = new ArrayList<>();
- 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems().stream().filter(pod ->
-				!pod.getStatus().getPhase().equals("Running")).toList();
-			for(Pod pod : pods){
-				for(OwnerReference ownerReference : pod.getMetadata().getOwnerReferences()){
-					if(ownerReference.getKind().equals("DaemonSet")){
-						result.add(ClusterObjectDTO.builder()
-							.daemonsetName(ownerReference.getName())
-								.reason(pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason())
-								.message(pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getMessage())
-							.build());
-					}
-				}
-			}
-			return result;
+			List<DaemonSet> daemonSets = kubernetesClient.apps().daemonSets().inAnyNamespace().list().getItems();
+
+			return daemonSets.stream()
+				.filter(daemonSet -> (
+					daemonSet.getStatus().getDesiredNumberScheduled() - daemonSet.getStatus().getNumberReady() > 0))
+				.map(daemonSet -> ClusterObjectDTO.builder()
+					.daemonsetName(daemonSet.getMetadata().getName())
+					.namespace(daemonSet.getMetadata().getNamespace())
+					.desiredCount(daemonSet.getStatus().getDesiredNumberScheduled())
+					.readyCount(daemonSet.getStatus().getNumberReady())
+					.build())
+				.toList();
 		}
 	}
 

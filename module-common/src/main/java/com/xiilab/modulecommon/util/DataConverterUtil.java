@@ -282,6 +282,10 @@ public class DataConverterUtil {
 		}
 	}
 
+	public static long getStepByUnixTime(String start, String end){
+		return (Long.parseLong(end) - Long.parseLong(start)) / 31;
+	}
+
 	public static long getSystemStep(String startDate, String endDate) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 

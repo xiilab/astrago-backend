@@ -155,9 +155,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		MailAttribute mail = MailAttribute.WORKSPACE_CREATE;
 
 		List<MailDTO.Content> contents = List.of(
-			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(applicationForm.getReqGPU())).build(),
-			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(applicationForm.getReqCPU())).build(),
-			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(applicationForm.getReqMEM())).build()
+			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(applicationForm.getReqGPU()) + "개").build(),
+			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(applicationForm.getReqCPU()) + "Core").build(),
+			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(applicationForm.getReqMEM()) + "GB").build()
 		);
 		List<UserDTO.UserInfo> adminList = userService.getAdminList();
 		for(UserDTO.UserInfo admin : adminList){
@@ -378,9 +378,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		// 관리자
 		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_REQUEST;
 		List<MailDTO.Content> contents = List.of(
-			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(workspaceResourceReqDTO.getGpuReq())).build(),
-			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(workspaceResourceReqDTO.getCpuReq())).build(),
-			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(workspaceResourceReqDTO.getMemReq())).build()
+			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(workspaceResourceReqDTO.getGpuReq()) + "개").build(),
+			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(workspaceResourceReqDTO.getCpuReq()) + "Core").build(),
+			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(workspaceResourceReqDTO.getMemReq()) + "GB").build()
 		);
 		List<UserDTO.UserInfo> adminList = userService.getAdminList();
 		for (UserDTO.UserInfo admin : adminList) {
@@ -449,7 +449,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
 		}
 		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaHistoryRepository.findById(id).orElseThrow();
-
+		int cpu = 0;
+		int mem = 0;
+		int gpu = 0;
 		String workspaceNm = resourceQuotaEntity.getWorkspaceName();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_RESULT;
@@ -457,11 +459,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		String res = "반려";
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
-			int cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
+			cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
 				resourceQuotaEntity.getCpuReq();
-			int mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getMem() :
+			mem = resourceQuotaApproveDTO.getMem() != null ? resourceQuotaApproveDTO.getMem() :
 				resourceQuotaEntity.getMemReq();
-			int gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getGpu() :
+			gpu = resourceQuotaApproveDTO.getGpu() != null ? resourceQuotaApproveDTO.getGpu() :
 				resourceQuotaEntity.getGpuReq();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(resourceQuotaEntity.getWorkspaceResourceName(),
 				cpu, mem, gpu);
@@ -495,9 +497,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		}
 		eventPublisher.publishEvent(workspaceUserAlertEvent);
 		List<MailDTO.Content> contents = List.of(
-			MailDTO.Content.builder().col1("GPU : ").col2(String.valueOf(resourceQuotaApproveDTO.getGpu())).build(),
-			MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(resourceQuotaApproveDTO.getCpu())).build(),
-			MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(resourceQuotaApproveDTO.getMem())).build()
+			MailDTO.Content.builder().col1("GPU : ").col2(gpu + "개").build(),
+			MailDTO.Content.builder().col1("CPU : ").col2(cpu + "Core").build(),
+			MailDTO.Content.builder().col1("MEM : ").col2(mem + "GB").build()
 		);
 		mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), resourceQuotaEntity.getWorkspaceName()))
