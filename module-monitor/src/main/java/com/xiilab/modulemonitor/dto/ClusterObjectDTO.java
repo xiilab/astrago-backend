@@ -23,4 +23,6 @@ public class ClusterObjectDTO {
 	private String message;
 	private String containerName;
 	private long restartCount;
+	private long desiredCount;
+	private long readyCount;
 }
