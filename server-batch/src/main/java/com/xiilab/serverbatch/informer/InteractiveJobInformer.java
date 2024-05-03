@@ -164,26 +164,6 @@ public class InteractiveJobInformer extends JobInformer {
 				// 서비스 삭제
 				deleteServices(metadataFromResource.getWorkspaceResourceName(),
 					metadataFromResource.getWorkloadResourceName());
-
-				//워크로드 삭제 알림 발송
-				// String workloadName = metadataFromResource.getWorkloadName();
-				// String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
-				// String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
-				// String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				// WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-				// 	AlertName.USER_WORKLOAD_DELETE, null, metadataFromResource.getCreatorId(),
-				// 	emailTitle, title, message, metadataFromResource.getWorkspaceResourceName(), null);
-				//
-				// publisher.publishEvent(workspaceUserAlertEvent);
-
-				MailAttribute mail = MailAttribute.WORKLOAD_DELETE;
-				mailService.sendMail(MailDTO.builder()
-					.subject(String.format(mail.getSubject(), metadataFromResource.getWorkloadName()))
-					.title(String.format(mail.getTitle(), metadataFromResource.getWorkloadName()))
-					.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-					.footer(mail.getFooter())
-					.receiverEmail(userService.getUserById(metadataFromResource.getCreatorId()).getEmail())
-					.build());
 			}
 		});
 

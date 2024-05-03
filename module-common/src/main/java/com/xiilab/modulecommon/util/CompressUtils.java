@@ -4,6 +4,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.IOUtils;
@@ -19,21 +20,23 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.HashSet;
 import java.util.List;
-import java.util.zip.ZipOutputStream;
+import java.util.Set;
 
 @Slf4j
 public class CompressUtils {
 
 	/**
-	 * 지정된 압축 형식을 사용하여 파일이나 디렉토리 목록을 압축하여 지정된 대상 경로에 저장
+	 * 지정된 압축 형식으로 파일이나 디렉토리 목록을 압축해 지정된 대상 경로에 저장
 	 *
 	 * @param targetPaths      압축할 파일 또는 디렉토리 목록
-	 * @param destinationPath  압축된 파일을 저장할 대상 경로
+	 * @param destinationPath  압축된 파일을 저장할 대상 경로 (null 입력시, 압축하려는 파일이 위치한 경로에 압축파일 저장)
 	 * @param compressFileType 사용할 압축 형식 (ZIP, TAR)
-	 * @return 압축이 성공하면 true, 그렇지 않으면 false를 반환
 	 */
-	public static boolean compress(List<Path> targetPaths, Path destinationPath, CompressFileType compressFileType) {
+	public static void saveCompressFile(List<Path> targetPaths, Path destinationPath,
+		CompressFileType compressFileType) {
 		// 압축할 파일 없으면 throw
 		if (CollectionUtils.isEmpty(targetPaths)) {
 			throw new RestApiException(UtilsErrorCode.NO_SELECTED_COMPRESS_FILE);
@@ -43,19 +46,50 @@ public class CompressUtils {
 
 		if (compressFileType == CompressFileType.ZIP) {
 			try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(new FileOutputStream(destPath.toFile()))) {
-				compressFilesAndDirectories(targetPaths, zipOut);
+				compressDirectoriesAndFiles(targetPaths, zipOut);
 			} catch (IOException e) {
 				throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_ZIP_FILE);
 			}
 		} else if (compressFileType == CompressFileType.TAR) {
 			try (TarArchiveOutputStream tarOut = new TarArchiveOutputStream(new FileOutputStream(destPath.toFile()))) {
-				compressFilesAndDirectories(targetPaths, tarOut);
+				compressDirectoriesAndFiles(targetPaths, tarOut);
+			} catch (IOException e) {
+				throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_TAR_FILE);
+			}
+		}
+	}
+
+	/**
+	 * 지정된 압축 형식을 사용하여 파일이나 디렉토리 목록을 압축하여 Byte[]로 반환
+	 *
+	 * @param targetPaths      압축할 파일 또는 디렉토리 목록
+	 * @param compressFileType 사용할 압축 형식 (ZIP, TAR)
+	 * @return 압축이 성공하면 true, 그렇지 않으면 false를 반환
+	 */
+	public static byte[] compressFileToByteArray(List<Path> targetPaths, CompressFileType compressFileType) {
+		// 압축할 파일 없으면 throw
+		if (CollectionUtils.isEmpty(targetPaths)) {
+			throw new RestApiException(UtilsErrorCode.NO_SELECTED_COMPRESS_FILE);
+		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		if (compressFileType == CompressFileType.ZIP) {
+			try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(baos)) {
+				zipOut.setEncoding("UTF-8");
+				compressDirectoriesAndFiles(targetPaths, zipOut);
+			} catch (IOException e) {
+				throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_ZIP_FILE);
+			}
+		} else if (compressFileType == CompressFileType.TAR) {
+			try (TarArchiveOutputStream tarOut = new TarArchiveOutputStream(baos)) {
+				tarOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+				compressDirectoriesAndFiles(targetPaths, tarOut);
 			} catch (IOException e) {
 				throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_TAR_FILE);
 			}
 		}
 
-		return true;
+		return baos.toByteArray();
 	}
 
 	/**
@@ -74,9 +108,14 @@ public class CompressUtils {
 			getSaveFileName(FileNameUtils.getBaseName(targetPaths.get(0)), compressFileType) :
 			getSaveFileName("archive", compressFileType);
 
-		// destinationPath 없으면, 압축할 파일명과 동일한 루트경로 반환
+		// destinationPath 없으면, 압축할 파일과 동일한 경로 반환
 		if (ObjectUtils.isEmpty(destinationPath)) {
-			destinationPath = Path.of(targetPaths.get(0).getParent().toString() + File.separator + saveCompressFileName);
+			destinationPath = Path.of(
+				targetPaths.get(0).getParent().toString() + File.separator + saveCompressFileName);
+		} else {
+			destinationPath = Path.of(
+				destinationPath + File.separator + saveCompressFileName
+			);
 		}
 
 		return destinationPath;
@@ -107,13 +146,13 @@ public class CompressUtils {
 	 * @param targetPaths 압축할 파일 목록
 	 * @param os outputStream 타입
 	 */
-	private static <T extends ArchiveOutputStream<?>> void compressFilesAndDirectories(List<Path> targetPaths, T os) {
+	private static <T extends ArchiveOutputStream<?>> void compressDirectoriesAndFiles(List<Path> targetPaths, T os) {
 		for (Path targetPath : targetPaths) {
 			if (Files.exists(targetPath)) {
 				if (targetPath.toFile().isDirectory()) {
-					addFolder("", targetPath, os);
+					addFolder(targetPath, "", os);
 				} else if (targetPath.toFile().isFile()) {
-					addFile("", targetPath, os);
+					addFile(targetPath, "", os);
 				}
 			} else {
 				throw new RestApiException(UtilsErrorCode.NOT_FOUND_COMPRESS_FILE);
@@ -124,20 +163,21 @@ public class CompressUtils {
 	/**
 	 * 폴더 및 폴더의 하위항목 내용을 zipOutputStream에 추가
 	 *
-	 * @param entryPath       폴더의 부모 경로
-	 * @param targetFolderPath 추가할 폴더의 경로
-	 * @param os           ZIP 출력 스트림
+	 * @param targetFolderPath 압축할 폴더의 경로
+	 * @param entryName		압축 파일 내에서 저장될 이름
+	 * @param os            출력 스트림
 	 */
-	private static <T extends ArchiveOutputStream<?>> void addFolder(String entryPath, Path targetFolderPath, T os) {
+	private static <T extends ArchiveOutputStream<?>> void addFolder(Path targetFolderPath, String entryName,
+		T os) {
 		File folder = targetFolderPath.toFile();
-		entryPath = entryPath + folder.getName() + File.separator;
-		putArchiveEntry(entryPath, targetFolderPath.toFile().length(), os);
+		entryName = entryName + folder.getName() + File.separator;
+		putArchiveEntry(entryName, targetFolderPath.toFile().length(), os);
 
 		for (File file : folder.listFiles()) {
 			if (file.isDirectory()) {
-				addFolder(entryPath, Path.of(file.getAbsolutePath()), os);
+				addFolder(Path.of(file.getAbsolutePath()), entryName, os);
 			} else if (file.isFile()) {
-				addFile(entryPath, Path.of(file.getAbsolutePath()), os);
+				addFile(Path.of(file.getAbsolutePath()), entryName, os);
 			}
 		}
 	}
@@ -145,35 +185,46 @@ public class CompressUtils {
 	/**
 	 * 파일을 zipOutputStream에 추가
 	 *
-	 * @param entryPath 부모 경로
-	 * @param targetFilePath   추가할 파일의 경로
-	 * @param os     ZIP 출력 스트림
+	 * @param targetFilePath 압축할 파일의 경로
+	 * @param entryFolderPath 파일이 압축 파일 내에서 저장될 상위폴더명
+	 * @param os	출력 스트림
 	 */
-	private static <T extends ArchiveOutputStream<?>> void addFile(String entryPath, Path targetFilePath, T os) {
+	private static <T extends ArchiveOutputStream<?>> void addFile(Path targetFilePath, String entryFolderPath, T os) {
 		File targetFile = targetFilePath.toFile();
-		try (FileInputStream fis = new FileInputStream(targetFile)) {
-			if (targetFile.getName().contains(".DS_Store")) {
-				return ;
-			}
 
-			putArchiveEntry(entryPath + targetFile.getName(), targetFilePath.toFile().length(), os);
-			IOUtils.copy(fis, os);
+		if (targetFile.getName().contains(".DS_Store")) {
+			return;
+		}
+
+		long fileSize = targetFilePath.toFile().length();
+		try (InputStream is = new BufferedInputStream(new FileInputStream(targetFile))) {
+			String entryName = entryFolderPath + targetFile.getName();
+			putArchiveEntry(entryName, fileSize, os);
+
+			IOUtils.copy(is, os);
+
 			os.closeArchiveEntry();
 		} catch (IOException e) {
 			throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_ADD_FILE);
 		}
 	}
 
-	private static <T extends ArchiveOutputStream<?>> void putArchiveEntry(String filePath, long fileSize, T os) {
+	private static <T extends ArchiveOutputStream<?>> void putArchiveEntry(String entryName, long fileSize, T os) {
 		try {
 			if (os instanceof ZipArchiveOutputStream) {
-				ZipArchiveEntry zipArchiveEntry = new ZipArchiveEntry(filePath);
+				ZipArchiveOutputStream zos = (ZipArchiveOutputStream)os;
+				zos.setEncoding("UTF-8");
+
+				ZipArchiveEntry zipArchiveEntry = new ZipArchiveEntry(entryName);
 				zipArchiveEntry.setSize(fileSize);
-				((ZipArchiveOutputStream) os).putArchiveEntry(zipArchiveEntry);
+				((ZipArchiveOutputStream)os).putArchiveEntry(zipArchiveEntry);
 			} else if (os instanceof TarArchiveOutputStream) {
-				TarArchiveEntry tarArchiveEntry = new TarArchiveEntry(filePath);
+				TarArchiveOutputStream tos = (TarArchiveOutputStream)os;
+				tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+
+				TarArchiveEntry tarArchiveEntry = new TarArchiveEntry(entryName);
 				tarArchiveEntry.setSize(fileSize);
-				((TarArchiveOutputStream) os).putArchiveEntry(tarArchiveEntry);
+				tos.putArchiveEntry(tarArchiveEntry);
 			}
 		} catch (IOException e) {
 			throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_ADD_FILE);
