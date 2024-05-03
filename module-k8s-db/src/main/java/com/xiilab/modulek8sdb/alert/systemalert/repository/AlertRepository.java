@@ -19,12 +19,6 @@ public interface AlertRepository extends JpaRepository<AlertEntity, Long>, Alert
 	@Query("select t from TB_ALERT t where t.alertRole = ?1")
 	List<AlertEntity> findByAlertRole(AlertRole alertRole);
 
-	// @Query("SELECT ta FROM TB_ALERT ta " +
-	// 	"LEFT JOIN FETCH ta.adminAlertMappingEntities taam " +
-	// 	"WHERE ta.alertRole = :alertRole AND taam.adminId = :adminId")
-	// List<AlertEntity> findAdminAlertMappingsByAdminId(@Param("adminId") String adminId,
-	// 	@Param("alertRole") AlertRole alertRole);
-
 	@Query("select t from TB_ALERT t "
 		+ "where t.alertName = :alertName "
 		+ "and t.alertRole = :alertRole")

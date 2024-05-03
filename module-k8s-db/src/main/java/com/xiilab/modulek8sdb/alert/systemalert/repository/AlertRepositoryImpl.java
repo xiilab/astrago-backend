@@ -1,22 +1,13 @@
 package com.xiilab.modulek8sdb.alert.systemalert.repository;
 
-import static com.querydsl.core.group.GroupBy.*;
-import static com.xiilab.modulek8sdb.alert.systemalert.entity.QAdminAlertMappingEntity.*;
 import static com.xiilab.modulek8sdb.alert.systemalert.entity.QAlertEntity.*;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.alert.enums.AlertType;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 
@@ -38,14 +29,4 @@ public class AlertRepositoryImpl implements AlertRepositoryCustom {
 						AlertType.RESOURCE))
 			).fetch();
 	}
-
-	// @Override
-	// public List<AlertEntity> findAdminAlertMappings(String adminId) {
-	// 	List<AlertEntity> alertEntities = queryFactory.selectFrom(alertEntity)
-	// 		.leftJoin(alertEntity.adminAlertMappingEntities, adminAlertMappingEntity)
-	// 		.on(adminAlertMappingEntity.adminId.eq(adminId))
-	// 		.where(alertEntity.alertRole.eq(AlertRole.ADMIN))
-	// 		.fetch();
-	// 	alertEntities
-	// }
 }
