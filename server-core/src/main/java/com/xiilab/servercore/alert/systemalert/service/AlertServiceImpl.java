@@ -35,6 +35,7 @@ import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
 
+import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -138,9 +139,17 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public FindAdminAlertMappingResDTO.AdminAlertMappings findAdminAlertMappings(String adminId) {
-		List<AlertEntity> adminAlertMappingList = alertRepository.findAdminAlertMappings(adminId);
-		return FindAdminAlertMappingResDTO.AdminAlertMappings.from(adminAlertMappingList, adminAlertMappingList.size());
+		List<AdminAlertMappingEntity> findAdminAlertMappings = adminAlertMappingRepository.findAdminAlertMappingsByAdminId(
+			adminId, AlertRole.ADMIN);
+
+		if (findAdminAlertMappings.isEmpty()) {
+			List<AlertEntity> findAlertEntities = alertRepository.findByAlertRole(AlertRole.ADMIN);
+			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromDefaultAlerts(findAlertEntities, findAlertEntities.size());
+		} else {
+			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromAdminAlertsMappings(findAdminAlertMappings, findAdminAlertMappings.size());
+		}
 	}
 
 	@Override
@@ -155,11 +164,11 @@ public class AlertServiceImpl implements AlertService {
 			// getAdminAlertMappingId 없으면 새로 등록
 			if (ValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId())
 				&& !ValidUtils.isNullOrZero(saveAdminAlertMapping.getAlertId())) {
+
 				AlertEntity alertEntity = alertRepository.findById(saveAdminAlertMapping.getAlertId())
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
 				AdminAlertMappingEntity newAdminAlertMappingEntity = AdminAlertMappingEntity.saveBuilder()
 					.alert(alertEntity)
-					// .adminId(saveAdminAlertMapping.getAdminId())
 					.adminId(adminId)
 					.emailAlertStatus(saveAdminAlertMapping.getEmailAlertStatus())
 					.systemAlertStatus(saveAdminAlertMapping.getSystemAlertStatus())
@@ -170,6 +179,7 @@ public class AlertServiceImpl implements AlertService {
 				AdminAlertMappingEntity findAdminAlertMappingEntity = adminAlertMappingRepository.findById(
 						saveAdminAlertMapping.getAdminAlertMappingId())
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
+
 				findAdminAlertMappingEntity.updateAlertMappingEntity(saveAdminAlertMapping.getEmailAlertStatus(),
 					saveAdminAlertMapping.getSystemAlertStatus());
 				adminAlertMappingRepository.save(findAdminAlertMappingEntity);
