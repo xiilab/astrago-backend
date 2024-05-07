@@ -744,7 +744,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			Files.createDirectories(Path.of(downloadReportPath));
 		} catch (IOException e) {
 			log.error("엑셀 파일을 저장할 폴더 생성을 실패했습니다.");
-			throw new RuntimeException(e);
+			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_FOLDER);
 		}
 		String reportFile =
 			downloadReportPath + File.separator + UUID.randomUUID().toString().substring(6) + "_report.xlsx";
@@ -769,11 +769,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				return new ByteArrayResource(bytes);
 			} catch (IOException e) {
 				log.error("엑셀 파일 다운로드 실패");
-				throw new RuntimeException(e);
+				throw new RestApiException(WorkspaceErrorCode.FAILED_DOWNLOAD_EXCEL_FILE);
 			}
 		} else {
 			log.error("다운로드할 엑셀 파일이 존재하지않습니다.");
-			throw new RuntimeException("");
+			throw new RestApiException(WorkspaceErrorCode.NOT_FOUND_EXCEL_FILE);
 		}
 	}
 
@@ -817,7 +817,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workbook.write(fos);
 		} catch (IOException e) {
 			log.error("엑셀 파일 생성 실패");
-			throw new RuntimeException(e);
+			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_EXCEL_FILE);
 		}
 	}
 
