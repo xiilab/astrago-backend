@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -155,12 +156,33 @@ public class ModelController {
 	@Operation(summary = "astrago model 파일, 디렉토리 다운로드")
 	public ResponseEntity<Resource> downloadAstragoModelFile(@PathVariable(name = "modelId") Long modelId,
 		@RequestParam(value = "filePath") String filePath){
-		DownloadFileResDTO downloadFileResDTO = modelService.DownloadAstragoModelFile(modelId, filePath);
+		DownloadFileResDTO downloadFileResDTO = modelService.downloadAstragoModelFile(modelId, filePath);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(downloadFileResDTO.getMediaType());
 		headers.add("Content-Disposition", "attachment; filename=" + downloadFileResDTO.getFileName());
 		return new ResponseEntity<>(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
+	}
+
+	@GetMapping("/models/astrago/{modelId}/compress")
+	@Operation(summary = "astrago 데이터 셋 압축")
+	public ResponseEntity<HttpStatus> compressAstragoDatasetFiles(@PathVariable(name = "modelId") Long modelId,
+		@RequestParam(value = "filePath") List<String> filePaths,
+		@RequestParam(value = "compressFileType") CompressFileType compressFileType) {
+
+		modelService.compressAstragoModelFiles(modelId, filePaths, compressFileType);
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/models/astrago/{modelId}/decompress")
+	@Operation(summary = "astrago 데이터 셋 압축해제")
+	public ResponseEntity<HttpStatus> compressAstragoDatasetFiles(@PathVariable(name = "modelId") Long modelId,
+		@RequestParam(value = "filePath") String filePath) {
+
+		modelService.deCompressAstragoModelFile(modelId, filePath);
+
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/models/local/{modelId}/files")

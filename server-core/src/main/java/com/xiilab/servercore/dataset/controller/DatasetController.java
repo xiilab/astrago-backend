@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -77,6 +78,7 @@ public class DatasetController {
 		DatasetDTO.ResDatasetWithStorage datasetWithStorage = datasetFacadeService.getDataset(datasetId);
 		return new ResponseEntity(datasetWithStorage, HttpStatus.OK);
 	}
+
 	@GetMapping("/datasets/{datasetId}/workloads")
 	@Operation(summary = "데이터 셋을 사용중인 워크로드 리스트 조회")
 	public ResponseEntity<WorkloadResDTO.PageUsingDatasetDTO> getWorkloadsUsingDataset(
@@ -162,12 +164,33 @@ public class DatasetController {
 	@Operation(summary = "astrago 데이터 셋 파일, 디렉토리 다운로드")
 	public ResponseEntity<Resource> downloadAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath) {
-		DownloadFileResDTO downloadFileResDTO = datasetService.DownloadAstragoDatasetFile(datasetId, filePath);
+		DownloadFileResDTO downloadFileResDTO = datasetService.downloadAstragoDatasetFile(datasetId, filePath);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(downloadFileResDTO.getMediaType());
 		headers.add("Content-Disposition", "attachment; filename=" + downloadFileResDTO.getFileName());
 		return new ResponseEntity<>(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
+	}
+
+	@GetMapping("/datasets/astrago/{datasetId}/compress")
+	@Operation(summary = "astrago 데이터 셋 압축")
+	public ResponseEntity<HttpStatus> compressAstragoDatasetFiles(@PathVariable(name = "datasetId") Long datasetId,
+		@RequestParam(value = "filePath") List<String> filePaths,
+		@RequestParam(value = "compressFileType") CompressFileType compressFileType) {
+
+		datasetService.compressAstragoDatasetFiles(datasetId, filePaths, compressFileType);
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/datasets/astrago/{datasetId}/decompress")
+	@Operation(summary = "astrago 데이터 셋 압축해제")
+	public ResponseEntity<HttpStatus> deCompressAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
+		@RequestParam(value = "filePath") String filePath) {
+
+		datasetService.deCompressAstragoDatasetFile(datasetId, filePath);
+
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/datasets/local/{datasetId}/files")

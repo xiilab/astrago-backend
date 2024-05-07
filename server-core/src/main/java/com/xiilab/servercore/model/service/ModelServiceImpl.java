@@ -16,10 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
+import com.xiilab.modulecommon.util.CompressUtils;
+import com.xiilab.modulecommon.util.DecompressUtils;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
@@ -179,7 +182,7 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	@Transactional
-	public DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath) {
+	public DownloadFileResDTO downloadAstragoModelFile(Long modelId, String filePath) {
 		modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		Path targetPath = Path.of(filePath);
@@ -219,6 +222,21 @@ public class ModelServiceImpl implements ModelService{
 		}else{
 			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
+	}
+
+	@Override
+	public void compressAstragoModelFiles(Long modelId, List<String> filePaths, CompressFileType compressFileType) {
+		modelRepository.findById(modelId)
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
+		List<Path> pathList = filePaths.stream().map(Path::of).toList();
+		CompressUtils.saveCompressFile(pathList, null, compressFileType);
+	}
+
+	@Override
+	public void deCompressAstragoModelFile(Long modelId, String filePath) {
+		modelRepository.findById(modelId)
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
+		DecompressUtils.saveDecompressFile(Path.of(filePath), null);
 	}
 
 	@Override
