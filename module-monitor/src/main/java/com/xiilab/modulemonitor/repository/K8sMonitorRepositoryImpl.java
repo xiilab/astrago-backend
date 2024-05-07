@@ -701,7 +701,6 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public List<ClusterObjectDTO> getUnhealthyDaemonSets() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-
 			List<DaemonSet> daemonSets = kubernetesClient.apps().daemonSets().inAnyNamespace().list().getItems();
 
 			return daemonSets.stream()
