@@ -39,8 +39,8 @@ public class AlertEntity {
 	@Enumerated(EnumType.STRING)
 	private AlertRole alertRole;
 
-	@OneToMany(mappedBy = "alert", fetch = FetchType.LAZY)
-	private List<AdminAlertMappingEntity> adminAlertMappingEntities;
+	// @OneToMany(mappedBy = "alert", fetch = FetchType.LAZY)
+	// private List<AdminAlertMappingEntity> adminAlertMappingEntities;
 
 	@Column(name = "ALERT_EVENT_TYPE")
 	@Enumerated(EnumType.STRING)

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -42,7 +43,11 @@ public interface ModelService {
 
 	void astragoModelDeleteFiles(Long modelId, ModelDTO.ReqFilePathsDTO reqFilePathsDTO);
 
-	DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath);
+	DownloadFileResDTO downloadAstragoModelFile(Long modelId, String filePath);
+
+	void compressAstragoModelFiles(Long modelId, List<String> filePaths, CompressFileType compressFileType);
+
+	void deCompressAstragoModelFile(Long modelId, String filePath);
 
 	ModelDTO.ModelsInWorkspace getModelsByRepositoryType(String workspaceResourceName, RepositoryType repositoryType, UserDTO.UserInfo userInfoDTO);
 

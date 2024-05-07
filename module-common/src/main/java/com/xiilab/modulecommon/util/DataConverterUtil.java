@@ -430,7 +430,8 @@ public class DataConverterUtil {
 			sundayDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
 		}
 
-		return new WeekRangeDTO(mondayDate.format(DateTimeFormatter.ofPattern(dateFormat)), sundayDate.format(DateTimeFormatter.ofPattern(dateFormat)));
+		return new WeekRangeDTO(mondayDate.format(DateTimeFormatter.ofPattern(dateFormat)),
+			sundayDate.format(DateTimeFormatter.ofPattern(dateFormat)));
 	}
 
 	public static String getDateMonthWeek(String date) {
