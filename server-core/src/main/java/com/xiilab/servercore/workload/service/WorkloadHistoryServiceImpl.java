@@ -2,6 +2,7 @@ package com.xiilab.servercore.workload.service;
 
 import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +31,7 @@ import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
@@ -49,6 +51,7 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -108,7 +111,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.remainTime(0)
-				.imageType(!ObjectUtils.isEmpty(job.getImage())? job.getImage().getImageType().name() : null)
+				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
 	}
@@ -145,7 +148,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.ide(job.getIde())
-				.imageType(!ObjectUtils.isEmpty(job.getImage())? job.getImage().getImageType().name() : null)
+				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
 	}
@@ -358,6 +361,26 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		for (JobEntity jobEntity : jobEntities) {
 			workloadHistoryRepo.deleteById(jobEntity.getId());
 		}
+	}
+
+	@Override
+	public List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+		List<String> workspaceIds, LocalDate startDate,
+		LocalDate endDate) {
+		List<WorkloadEntity> workloads = workloadHistoryRepoCustom.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+			workspaceIds, startDate, endDate);
+		return workloads.stream()
+			.map(workloadEntity -> WorkloadResDTO.WorkloadReportDTO.builder()
+				.userName(workloadEntity.getCreatorRealName())
+				.userId(workloadEntity.getCreatorId())
+				.userEmail(workloadEntity.getCreatorName())
+				.workspaceName(workloadEntity.getWorkspaceName())
+				.workloadName(workloadEntity.getName())
+				.startDate(workloadEntity.getCreatedAt())
+				.endDate(workloadEntity.getDeletedAt())
+				.build()
+			)
+			.toList();
 	}
 
 	private String[] getSplitIds(String ids) {
