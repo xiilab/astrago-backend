@@ -1,7 +1,5 @@
 package com.xiilab.modulek8sdb.dataset.repository;
 
-
-
 import static com.xiilab.modulek8sdb.dataset.entity.QDataset.*;
 
 import java.io.Serializable;
@@ -29,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
+public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
@@ -100,7 +98,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 	}
 
 	private Predicate creatorEq(String creator, AuthType authType, PageMode pageMode) {
-		if(authType == AuthType.ROLE_USER || pageMode == PageMode.USER){
+		if (authType == AuthType.ROLE_USER || pageMode == PageMode.USER) {
 			return StringUtils.hasText(creator) ? dataset.regUser.regUserId.eq(creator) : null;
 		}
 		return null;

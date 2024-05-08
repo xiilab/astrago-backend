@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -63,18 +64,20 @@ public class ModelController {
 	@Operation(summary = "model 전체 조회")
 	public ResponseEntity<ModelDTO.ResModels> getModels(PageInfo pageInfo,
 		RepositorySearchCondition repositorySearchCondition,
-		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO){
-		ModelDTO.ResModels models = modelService.getModels(pageInfo, repositorySearchCondition, userInfoDTO);
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO,
+		@RequestParam(value = "pageMode") PageMode pageMode) {
+		ModelDTO.ResModels models = modelService.getModels(pageInfo, repositorySearchCondition, userInfoDTO, pageMode);
 
 		return new ResponseEntity<>(models, HttpStatus.OK);
 	}
 
 	@GetMapping("/models/{modelId}")
 	@Operation(summary = "model 단건 조회")
-	public ResponseEntity<ModelDTO.ResModelWithStorage> getModel(@PathVariable(name = "modelId") Long modelId){
+	public ResponseEntity<ModelDTO.ResModelWithStorage> getModel(@PathVariable(name = "modelId") Long modelId) {
 		ModelDTO.ResModelWithStorage model = modelFacadeService.getModel(modelId);
 		return new ResponseEntity<>(model, HttpStatus.OK);
 	}
+
 	@GetMapping("/models/{modelId}/workloads")
 	@Operation(summary = "모델을 사용중인 워크로드 리스트 조회")
 	public ResponseEntity<WorkloadResDTO.PageUsingModelDTO> getWorkloadsUsingModel(
@@ -85,11 +88,12 @@ public class ModelController {
 			pageInfo, modelId);
 		return new ResponseEntity(workloadsUsingModel, HttpStatus.OK);
 	}
+
 	@PutMapping("/models/{modelId}")
 	@Operation(summary = "model 수정")
 	public ResponseEntity<HttpStatus> modifyModel(@PathVariable(name = "modelId") Long modelId,
 		@RequestBody ModelDTO.ModifyModel modifyModel,
-		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO){
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		modelFacadeService.modifyModel(modifyModel, modelId, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -97,7 +101,7 @@ public class ModelController {
 	@DeleteMapping("/models/{modelId}")
 	@Operation(summary = "model 삭제")
 	public ResponseEntity<HttpStatus> deleteModel(@PathVariable(name = "modelId") Long modelId,
-		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO){
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		modelFacadeService.deleteModel(modelId, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -105,7 +109,7 @@ public class ModelController {
 	@GetMapping("/models/astrago/{modelId}/files")
 	@Operation(summary = "astrago model 파일리스트 조회")
 	public ResponseEntity<DirectoryDTO> getAstragoModelFiles(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		DirectoryDTO files = modelService.getAstragoModelFiles(modelId, filePath);
 		return new ResponseEntity<>(files, HttpStatus.OK);
 	}
@@ -113,7 +117,7 @@ public class ModelController {
 	@GetMapping("/models/astrago/{modelId}/file")
 	@Operation(summary = "astrago model 파일 상세 조회")
 	public ResponseEntity<FileInfoDTO> getAstragoModelFileInfo(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		FileInfoDTO fileInfo = modelFacadeService.getAstragoModelFileInfo(modelId, filePath);
 		return new ResponseEntity<>(fileInfo, HttpStatus.OK);
 	}
@@ -121,7 +125,7 @@ public class ModelController {
 	@GetMapping("/models/astrago/{modelId}/preview")
 	@Operation(summary = "astrago model 파일 미리 보기")
 	public ResponseEntity<Resource> getAstragoModelFile(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		DownloadFileResDTO file = modelFacadeService.getAstragoModelFile(modelId, filePath);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(file.getMediaType());
@@ -133,21 +137,23 @@ public class ModelController {
 	public ResponseEntity<HttpStatus> astragoModelUploadFile(
 		@PathVariable(name = "modelId") Long modelId,
 		@RequestPart(name = "path") String path,
-		@RequestPart(name = "files") List<MultipartFile> files){
+		@RequestPart(name = "files") List<MultipartFile> files) {
 		modelService.astragoModelUploadFile(modelId, path, files);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 	@PostMapping("/models/astrago/{modelId}/directory")
 	@Operation(summary = "astrago model 폴더 생성")
 	public ResponseEntity<HttpStatus> astragoModelCreateDirectory(@PathVariable(name = "modelId") Long modelId,
-		@RequestBody ModelDTO.ReqFilePathDTO reqFilePathDTO){
+		@RequestBody ModelDTO.ReqFilePathDTO reqFilePathDTO) {
 		modelService.astragoModelCreateDirectory(modelId, reqFilePathDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 	@PostMapping("/models/astrago/{modelId}/files/delete")
 	@Operation(summary = "astrago model 파일, 디렉토리 삭제")
 	public ResponseEntity<HttpStatus> astragoModelDeleteFiles(@PathVariable(name = "modelId") Long modelId,
-		@RequestBody ModelDTO.ReqFilePathsDTO reqFilePathsDTO){
+		@RequestBody ModelDTO.ReqFilePathsDTO reqFilePathsDTO) {
 		modelService.astragoModelDeleteFiles(modelId, reqFilePathsDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -155,7 +161,7 @@ public class ModelController {
 	@GetMapping("/models/astrago/{modelId}/files/download")
 	@Operation(summary = "astrago model 파일, 디렉토리 다운로드")
 	public ResponseEntity<Resource> downloadAstragoModelFile(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		DownloadFileResDTO downloadFileResDTO = modelService.downloadAstragoModelFile(modelId, filePath);
 
 		HttpHeaders headers = new HttpHeaders();
@@ -188,7 +194,7 @@ public class ModelController {
 	@GetMapping("/models/local/{modelId}/files")
 	@Operation(summary = "local model 파일, 디렉토리 리스트 조회")
 	public ResponseEntity<DirectoryDTO> getLocalModelFiles(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		DirectoryDTO files = modelFacadeService.getLocalModelFiles(modelId,
 			filePath);
 		return new ResponseEntity<>(files, HttpStatus.OK);
@@ -197,7 +203,7 @@ public class ModelController {
 	@GetMapping("/models/local/{modelId}/files/download")
 	@Operation(summary = "local model 파일 다운로드")
 	public ResponseEntity<Resource> DownloadLocalModelFile(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		DownloadFileResDTO file = modelFacadeService.DownloadLocalModelFile(modelId,
 			filePath);
 		HttpHeaders headers = new HttpHeaders();
@@ -209,15 +215,16 @@ public class ModelController {
 	@GetMapping("/models/local/{modelId}/file")
 	@Operation(summary = "local model 파일 상세 조회")
 	public ResponseEntity<FileInfoDTO> getLocalModelFileInfo(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		FileInfoDTO fileInfo = modelFacadeService.getLocalModelFileInfo(modelId,
 			filePath);
 		return new ResponseEntity<>(fileInfo, HttpStatus.OK);
 	}
+
 	@GetMapping("/models/local/{modelId}/preview")
 	@Operation(summary = "local model 파일 미리 보기")
 	public ResponseEntity<Resource> getLocalModelFile(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") String filePath){
+		@RequestParam(value = "filePath") String filePath) {
 		DownloadFileResDTO file = modelFacadeService.getLocalModelFile(modelId, filePath);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(file.getMediaType());
