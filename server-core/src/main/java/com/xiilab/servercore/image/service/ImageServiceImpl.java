@@ -152,7 +152,7 @@ public class ImageServiceImpl implements ImageService {
 			.map(compatibleFrameworkVersionEntity -> Float.parseFloat(
 				compatibleFrameworkVersionEntity.getFrameWorkVersionEntity().getCudaVersion()))
 			.max(Float::compareTo)
-			.orElseGet(null);
+			.orElseThrow(() -> new RestApiException(ImageErrorCode.NOT_FOUND_CUDA_VERSION));
 
 		// 쿠다버전 내림차순으로 정렬
 		List<ImageEntity> sortImages = new ArrayList<>(images);
@@ -178,5 +178,4 @@ public class ImageServiceImpl implements ImageService {
 			}
 		}
 	}
-
 }
