@@ -83,6 +83,7 @@ public class ImageServiceImpl implements ImageService {
 		if (findSearchCondition.getImageType() == ImageType.BUILT) {
 			getRecommendAndSetAvailableBuiltInImages(images.getContent());
 		}
+
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
@@ -153,6 +154,9 @@ public class ImageServiceImpl implements ImageService {
 				compatibleFrameworkVersionEntity.getFrameWorkVersionEntity().getCudaVersion()))
 			.max(Float::compareTo)
 			.orElseGet(null);
+		if (maxCudaVersion == null) {
+			return ;
+		}
 
 		// 쿠다버전 내림차순으로 정렬
 		List<ImageEntity> sortImages = new ArrayList<>(images);
@@ -178,5 +182,4 @@ public class ImageServiceImpl implements ImageService {
 			}
 		}
 	}
-
 }
