@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -20,7 +21,6 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.HasMetadata;

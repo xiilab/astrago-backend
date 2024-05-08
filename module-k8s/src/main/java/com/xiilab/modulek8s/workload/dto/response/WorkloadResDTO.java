@@ -2,8 +2,8 @@ package com.xiilab.modulek8s.workload.dto.response;
 
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import lombok.Builder;
 import lombok.Getter;

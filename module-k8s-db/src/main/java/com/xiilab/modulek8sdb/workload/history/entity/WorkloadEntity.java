@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
@@ -86,6 +86,9 @@ public abstract class WorkloadEntity {
 	protected String workingDir;
 	@Column(name = "WORKLOAD_CMD")
 	protected String workloadCMD;
+	@Enumerated(value = EnumType.STRING)
+	@Column(name = "WORKLOAD_STATUS")
+	protected WorkloadStatus workloadStatus;
 	@Column(name = "WORKLOAD_PARAMETER")
 	protected String parameter;
 	@ManyToOne(fetch = FetchType.EAGER)
@@ -115,4 +118,13 @@ public abstract class WorkloadEntity {
 	protected ImageWorkloadMappingEntity imageWorkloadMappingEntity;
 	@Transient
 	protected boolean canBeDeleted;
+
+	/**
+	 * 워크로드 상태 업데이트를 위한 메소드
+	 *
+	 * @param status 변경 할 워크로드 상태 값
+	 */
+	public void updateStatus(WorkloadStatus status) {
+		this.workloadStatus = status;
+	}
 }

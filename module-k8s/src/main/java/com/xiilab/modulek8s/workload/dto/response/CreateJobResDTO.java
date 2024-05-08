@@ -5,8 +5,8 @@ import java.util.Objects;
 
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Quantity;
