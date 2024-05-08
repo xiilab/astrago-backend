@@ -145,7 +145,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		eventPublisher.publishEvent(userAlertEvent);
-
+		// 사용자 활성화 정보 사용자에게 전성
 		// Mail 전송
 		mailService.sendMail(MailDTO.builder()
 			.subject(mail.getSubject())

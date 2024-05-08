@@ -85,6 +85,7 @@ public class NodeInformer {
 												message, null));
 										MailAttribute mail = MailAttribute.MIG_ON;
 										List<UserDTO.UserInfo> adminList = userService.getAdminList();
+										// MIG ON 관리자에게 메일 전송
 										for (UserDTO.UserInfo admin : adminList) {
 											mailService.sendMail(MailDTO.builder()
 												.subject(mail.getSubject())
@@ -107,6 +108,7 @@ public class NodeInformer {
 												message, null));
 										MailAttribute mail = MailAttribute.MIG_ERROR;
 										List<UserDTO.UserInfo> adminList = userService.getAdminList();
+										// MIG 적용 실패 에러 관리자에게 전송
 										for (UserDTO.UserInfo admin : adminList) {
 											mailService.sendMail(MailDTO.builder()
 												.subject(mail.getSubject())

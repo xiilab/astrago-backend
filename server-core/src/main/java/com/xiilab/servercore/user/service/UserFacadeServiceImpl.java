@@ -72,6 +72,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 				.col2(userInfo.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.build());
 		List<UserDTO.UserInfo> adminList = userService.getAdminList();
+		// 회원 가입시 관리자에게 메일 전송
 		for (UserDTO.UserInfo admin : adminList) {
 			// Mail 전송
 			mailService.sendMail(MailDTO.builder()

@@ -226,25 +226,23 @@ public class WorkloadFacadeService {
 			List<MailDTO.Content> contents = List.of(
 				MailDTO.Content.builder()
 					.col1("GPU : ")
-					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed() + "개")
+					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed() + " 개")
 					.build(),
 				MailDTO.Content.builder().col1("CPU : ").col2(cpuUsed + "Core").build(),
 				MailDTO.Content.builder().col1("MEM : ").col2(memUsed + "GB").build()
 			);
-			List<UserDTO.UserInfo> adminList = userFacadeService.getAdminList();
-			for (UserDTO.UserInfo admin : adminList) {
-				// Mail 전송
-				mailService.sendMail(MailDTO.builder()
-					.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
-					.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-						moduleCreateWorkloadReqDTO.getWorkspace()))
-					.subTitle(mail.getSubTitle())
-					.contentTitle(mail.getContentTitle())
-					.contents(contents)
-					.footer(mail.getFooter())
-					.receiverEmail(admin.getEmail())
-					.build());
-			}
+
+			// 리소스 초과 요청 Owner에게 전송
+			mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
+					moduleCreateWorkloadReqDTO.getWorkspace()))
+				.subTitle(mail.getSubTitle())
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+				.receiverEmail(userFacadeService.getUserInfoById(workspaceResourceStatus.getCreatorId()).getEmail())
+				.build());
 		}
 	}
 
