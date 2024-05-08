@@ -2,13 +2,11 @@ package com.xiilab.servercore.alert.systemalert.dto.response;
 
 import java.util.List;
 
-import org.springframework.util.CollectionUtils;
-
-import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.enums.AlertType;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -61,7 +59,8 @@ public class FindAdminAlertMappingResDTO {
 				.build();
 		}
 
-		public static AdminAlertMappings fromAdminAlertsMappings(List<AdminAlertMappingEntity> adminAlertMappingEntities, long totalCount) {
+		public static AdminAlertMappings fromAdminAlertsMappings(
+			List<AdminAlertMappingEntity> adminAlertMappingEntities, long totalCount) {
 			return AdminAlertMappings.builder()
 				.adminAlertMappingsDTO(adminAlertMappingEntities.stream().map(FindAdminAlertMappingResDTO::of).toList())
 				.totalCount(totalCount)

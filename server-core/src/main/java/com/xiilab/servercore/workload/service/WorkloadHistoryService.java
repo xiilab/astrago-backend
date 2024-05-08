@@ -27,5 +27,6 @@ public interface WorkloadHistoryService {
 
 	void deleteWorkload(String workspaceName);
 
-	List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);
+	List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds,
+		LocalDate startDate, LocalDate endDate);
 }

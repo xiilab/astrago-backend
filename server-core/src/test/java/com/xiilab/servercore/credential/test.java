@@ -16,7 +16,7 @@
 //
 // import com.xiilab.modulek8s.common.dto.PageDTO;
 // import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
-// import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
+// import com.xiilab.modulecommon.enums.WorkloadStatus;
 // import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 // import com.xiilab.moduleuser.dto.UserInfoDTO;
 // import com.xiilab.servercore.pin.service.PinService;

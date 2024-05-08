@@ -1,6 +1,5 @@
 package com.xiilab.modulek8sdb.alert.systemalert.repository;
 
-
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
-import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 
 @Repository
 public interface AdminAlertMappingRepository extends JpaRepository<AdminAlertMappingEntity, Long> {
@@ -29,5 +27,6 @@ public interface AdminAlertMappingRepository extends JpaRepository<AdminAlertMap
 	@Query("SELECT taam FROM TB_ADMIN_ALERT_MAPPING taam " +
 		"LEFT JOIN taam.alert ta " +
 		"WHERE ta.alertRole = :alertRole AND taam.adminId = :adminId")
-	List<AdminAlertMappingEntity> findAdminAlertMappingsByAdminId(@Param("adminId") String adminId, @Param("alertRole") AlertRole alertRole);
+	List<AdminAlertMappingEntity> findAdminAlertMappingsByAdminId(@Param("adminId") String adminId,
+		@Param("alertRole") AlertRole alertRole);
 }

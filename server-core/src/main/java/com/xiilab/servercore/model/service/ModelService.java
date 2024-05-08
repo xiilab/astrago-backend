@@ -24,7 +24,8 @@ public interface ModelService {
 
 	void insertLocalModel(LocalModelEntity localModelEntity);
 
-	ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserDTO.UserInfo userInfoDTO,
+	ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
+		UserDTO.UserInfo userInfoDTO,
 		PageMode pageMode);
 
 	ModelDTO.ResModelWithStorage getModelWithStorage(Long modelId);

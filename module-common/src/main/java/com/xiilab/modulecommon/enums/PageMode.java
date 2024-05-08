@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum PageMode {
-		ADMIN,
-		USER
+	ADMIN,
+	USER
 }

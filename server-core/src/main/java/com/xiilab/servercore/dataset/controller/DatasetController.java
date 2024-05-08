@@ -69,7 +69,8 @@ public class DatasetController {
 		RepositorySearchCondition repositorySearchCondition,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO,
 		@RequestParam(value = "pageMode") PageMode pageMode) {
-		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageInfo, repositorySearchCondition, userInfoDTO, pageMode);
+		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageInfo, repositorySearchCondition, userInfoDTO,
+			pageMode);
 		return new ResponseEntity(datasets, HttpStatus.OK);
 	}
 
