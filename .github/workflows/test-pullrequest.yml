@@ -1,5 +1,10 @@
 name: Test Pull Request Workflow
 run-name: ${{ github.actor }} Test to PR 🚀
+
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   pull_request:
     types:
@@ -11,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux]
+    runs-on: [ self-hosted, linux ]
     permissions:
       contents: write
     strategy:
@@ -22,22 +27,31 @@ jobs:
           - path: server-batch
           - path: server-monitor
     steps:
-    # 원격머신에 repo checkout
-    - name: Checkout
-      uses: actions/checkout@v3
-    # JDK 설정
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'zulu'
-    # Gradle build
-    - name: Build with Gradle
-      run: ./gradlew ${{ matrix.path }}:bootjar
+      # 원격머신에 repo checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+      # JDK 설정
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      # Gradle build
+      - name: Build with Gradle
+        run: ./gradlew ${{ matrix.path }}:bootjar
+  code_review:
+    needs: [ build ]
+    runs-on: [ self-hosted, linux ]
+    steps:
+      - uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Korean
 
   notify_slack:
     if: always()
-    needs: [ build ]  # 이 작업이 의존하는 이전 작업의 이름 추가
+    needs: [ build, code_review ]  # 이 작업이 의존하는 이전 작업의 이름 추가
     runs-on: [ self-hosted, linux ]
     permissions:
       actions: 'read'
