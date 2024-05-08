@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -22,6 +23,7 @@ import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
 import com.xiilab.servercore.code.service.CodeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,7 +34,8 @@ public class CodeController {
 
 	@PostMapping("")
 	@Operation(summary = "소스 코드 등록 API")
-	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO, UserDTO.UserInfo userInfoDTO){
+	public ResponseEntity<CodeResDTO> saveCode(@RequestBody CodeReqDTO codeReqDTO,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(codeService.saveCode(codeReqDTO, userInfoDTO), HttpStatus.OK);
 	}
 
@@ -41,35 +44,38 @@ public class CodeController {
 	public ResponseEntity<Page<CodeResDTO>> getCodeList(
 		@RequestParam(value = "workspacename", required = false) String workspaceName,
 		CodeSearchCondition codeSearchCondition,
-		UserDTO.UserInfo userInfoDTO, Pageable pageable){
-		return new ResponseEntity<>(codeService.getCodeList(workspaceName, userInfoDTO, pageable, codeSearchCondition), HttpStatus.OK);
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO,
+		Pageable pageable,
+		@RequestParam(value = "pageMode") PageMode pageMode) {
+		return new ResponseEntity<>(codeService.getCodeList(workspaceName, userInfoDTO, pageable, codeSearchCondition, pageMode),
+			HttpStatus.OK);
 	}
-
 
 	@PatchMapping("/{id}")
 	@Operation(summary = "소스 정보 수정 API")
 	public ResponseEntity<HttpStatus> modifyCode(@PathVariable(name = "id") Long codeId,
-		@RequestBody ModifyCodeReqDTO modifyCodeReqDTO){
+		@RequestBody ModifyCodeReqDTO modifyCodeReqDTO) {
 		codeService.modifyCode(codeId, modifyCodeReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
 	@Operation(summary = "소스 코드 상세 조회 API")
-	public ResponseEntity<CodeResDTO> getCodeById(@PathVariable(name = "id") long id){
+	public ResponseEntity<CodeResDTO> getCodeById(@PathVariable(name = "id") long id) {
 		return new ResponseEntity<>(codeService.getCodeById(id), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "소스 코드 삭제 API")
-	public ResponseEntity<HttpStatus> deleteCodeById(@PathVariable(name = "id") long id){
+	public ResponseEntity<HttpStatus> deleteCodeById(@PathVariable(name = "id") long id) {
 		codeService.deleteCodeById(id);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/check")
 	@Operation(summary = "소스 코드URL 검증 API")
-	public ResponseEntity<HttpStatus> isCodeValid(@RequestParam(value = "codeURL") String codeURL, @RequestParam(value = "credentialId") Long credentialId){
+	public ResponseEntity<HttpStatus> isCodeValid(@RequestParam(value = "codeURL") String codeURL,
+		@RequestParam(value = "credentialId") Long credentialId) {
 		codeService.isCodeURLValid(codeURL, credentialId);
 		return ResponseEntity.ok().build();
 	}
