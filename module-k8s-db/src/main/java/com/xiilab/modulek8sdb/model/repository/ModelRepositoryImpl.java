@@ -1,8 +1,5 @@
 package com.xiilab.modulek8sdb.model.repository;
 
-
-
-import static com.xiilab.modulek8sdb.dataset.entity.QDataset.*;
 import static com.xiilab.modulek8sdb.model.entity.QModel.*;
 
 import java.io.Serializable;
@@ -18,6 +15,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -33,8 +31,8 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<Model> findByAuthorityWithPaging(PageRequest pageRequest,String userId, AuthType userAuth,
-		RepositorySearchCondition repositorySearchCondition) {
+	public Page<Model> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType userAuth,
+		RepositorySearchCondition repositorySearchCondition, PageMode pageMode) {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 
 		OrderSpecifier<? extends Serializable> sort =
@@ -43,7 +41,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 
 		List<Model> models = queryFactory.selectFrom(model)
 			.where(
-				creatorEq(userId, userAuth),
+				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
 				deleteYnEqN()
@@ -56,7 +54,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 		Long count = queryFactory.select(model.count())
 			.from(model)
 			.where(
-				creatorEq(userId, userAuth),
+				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				modelNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
 				deleteYnEqN()
@@ -75,7 +73,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 	@Override
 	public List<Model> findByAuthority(String userId, AuthType userAuth) {
 		List<Model> models = queryFactory.selectFrom(model)
-			.where(creatorEq(userId, userAuth),
+			.where(creatorEq(userId, userAuth, PageMode.USER),
 				deleteYnEqN())
 			.orderBy(model.regDate.desc())
 			.fetch();
@@ -99,8 +97,8 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 		return modelId != null ? model.modelId.eq(modelId) : null;
 	}
 
-	private Predicate creatorEq(String creator, AuthType authType) {
-		if(authType == AuthType.ROLE_USER){
+	private Predicate creatorEq(String creator, AuthType authType, PageMode pageMode) {
+		if (authType == AuthType.ROLE_USER || pageMode == PageMode.USER) {
 			return StringUtils.hasText(creator) ? model.regUser.regUserId.eq(creator) : null;
 		}
 		return null;

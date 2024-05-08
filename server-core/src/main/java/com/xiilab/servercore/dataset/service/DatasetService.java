@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -22,7 +23,7 @@ public interface DatasetService {
 	void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files);
 
 	DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
-		UserDTO.UserInfo userInfoDTO);
+		UserDTO.UserInfo userInfoDTO, PageMode pageMode);
 
 	DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId);
 

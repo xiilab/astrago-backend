@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.dto.RegexPatterns;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.CodeType;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -163,9 +164,9 @@ public class CodeServiceImpl implements CodeService {
 
 	@Override
 	public Page<CodeResDTO> getCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO, Pageable pageable,
-		CodeSearchCondition codeSearchCondition) {
+		CodeSearchCondition codeSearchCondition, PageMode pageMode) {
 		Page<CodeEntity> codeEntityList;
-		if (isAdmin(userInfoDTO)) {
+		if (isAdminPage(pageMode)) {
 			codeEntityList = getAdminCodeList(workspaceName, pageable, codeSearchCondition);
 		} else {
 			codeEntityList = getNonAdminCodeList(workspaceName, userInfoDTO, pageable,codeSearchCondition);
@@ -234,8 +235,8 @@ public class CodeServiceImpl implements CodeService {
 		}
 	}
 
-	private boolean isAdmin(UserDTO.UserInfo userInfoDTO) {
-		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN;
+	private boolean isAdminPage(PageMode pageMode) {
+		return pageMode == PageMode.ADMIN;
 	}
 
 	private Page<CodeEntity> getAdminCodeList(String workspaceName, Pageable pageable,
