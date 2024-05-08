@@ -29,15 +29,15 @@ public class LicenseFilter extends OncePerRequestFilter {
 
 	private final ObjectMapper objectMapper;
 
-
 	@Override
-	public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws RestApiException,
+	public void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+		FilterChain filterChain) throws RestApiException,
 		ServletException,
 		IOException {
 
 		String uri = request.getRequestURI();
 		String method = request.getMethod();
-		if (method.equals("POST") && uri.equals("/api/v1/core/license")|| uri.contains("/actuator/health")) {
+		if (method.equals("POST") && uri.equals("/api/v1/core/license") || uri.contains("/actuator/health")) {
 			log.debug("Exclusion : 라이센스 필터 제외");
 			filterChain.doFilter(request, response);
 		} else {
@@ -59,7 +59,8 @@ public class LicenseFilter extends OncePerRequestFilter {
 	 * @param status   해당 LicenseException status
 	 * @param message  해당 LicenseException message
 	 */
-	public void setErrorResponse(HttpServletRequest request, HttpServletResponse response, int status, String message) throws IOException {
+	public void setErrorResponse(HttpServletRequest request, HttpServletResponse response, int status,
+		String message) throws IOException {
 		//String에 LocalDate를 매핑하도록 jackson 구성을 위해 모듈 활성화
 		objectMapper.registerModule(new JavaTimeModule());
 		//json에서 날짜를 문자열로 표시하도록 매퍼에게 지시
