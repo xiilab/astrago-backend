@@ -121,149 +121,89 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final MailService mailService;
 	private final UserFacadeService userService;
 
-	@Override
-	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserDTO.UserInfo userInfoDTO) {
-		//워크스페이스 생성
-		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
-			.name(applicationForm.getName())
-			.description(applicationForm.getDescription())
-			.creatorId(userInfoDTO.getId())
-			.creatorUserName(userInfoDTO.getUserName())
-			.creatorFullName(userInfoDTO.getUserFullName())
-			.reqCPU(applicationForm.getReqCPU())
-			.reqMEM(applicationForm.getReqMEM())
-			.reqGPU(applicationForm.getReqGPU())
-			.build());
-		//group 추가
-		groupService.createWorkspaceGroup(GroupReqDTO.builder()
-			.name(workspace.getResourceName())
-			// .createdBy(workspace.getCreatorUserName())
-			.createdBy(userInfoDTO.getUserName())
-			.createdUserId(userInfoDTO.getId())
-			.description(workspace.getDescription())
-			.users(applicationForm.getUserIds())
-			.build(), userInfoDTO);
-		workspaceAlertSetService.saveAlertSet(workspace.getResourceName());
-
-		//오너, 초대받은 유저들의 알림 초기 세팅
-		String ownerId = userInfoDTO.getId();
-		workspaceAlertService.initWorkspaceAlertMapping(AlertRole.OWNER, ownerId, workspace.getResourceName());
-		List<String> invitedUserIds = applicationForm.getUserIds();
-		if (applicationForm.getUserIds() != null) {
-			for (String invitedUserId : invitedUserIds) {
-				workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, invitedUserId,
-					workspace.getResourceName());
+	private static ByteArrayResource getByteArrayResource(String reportFile) {
+		Path targetPath = Paths.get(reportFile);
+		if (Files.exists(targetPath)) {
+			try {
+				byte[] bytes = Files.readAllBytes(targetPath);
+				return new ByteArrayResource(bytes);
+			} catch (IOException e) {
+				log.error("엑셀 파일 다운로드 실패");
+				throw new RestApiException(WorkspaceErrorCode.FAILED_DOWNLOAD_EXCEL_FILE);
 			}
-		}
-
-		// 롤 생성
-		workspaceService.editWorkspaceRole(workspace.getResourceName());
-		// 롤 바인딩
-		workspaceService.createPodAnnotationsRoleBinding(workspace.getResourceName());
-
-		PageNaviParam pageNaviParam = PageNaviParam.builder()
-			.workspaceResourceName(workspace.getResourceName())
-			.build();
-
-		// 관리자에게 워크스페이스 생성 알림 메시지 발송
-		AlertMessage workspaceCreateAdmin = AlertMessage.WORKSPACE_CREATE_ADMIN;
-		String workspaceName = workspace.getName();
-		String workspaceResourceName = workspace.getResourceName();
-		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());
-		String title = workspaceCreateAdmin.getTitle();
-		String message = String.format(workspaceCreateAdmin.getMessage(), userInfoDTO.getUserFullName(),
-			userInfoDTO.getEmail(), workspaceName);
-		eventPublisher.publishEvent(
-			new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_CREATE, userInfoDTO.getId(), mailTitle, title, message,
-				pageNaviParam));
-
-		MailAttribute mail = MailAttribute.WORKSPACE_CREATE;
-
-		List<MailDTO.Content> contents = List.of(
-			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(applicationForm.getReqGPU()) + "개").build(),
-			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(applicationForm.getReqCPU()) + "Core").build(),
-			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(applicationForm.getReqMEM()) + "GB").build()
-		);
-		List<UserDTO.UserInfo> adminList = userService.getAdminList();
-		for (UserDTO.UserInfo admin : adminList) {
-			mailService.sendMail(MailDTO.builder()
-				.subject(String.format(mail.getSubject(), workspaceName))
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-					workspaceName))
-				.subTitle(mail.getSubTitle())
-				.contentTitle(mail.getContentTitle())
-				.receiverEmail(admin.getEmail())
-				.contents(contents)
-				.footer(mail.getFooter())
-				.build());
-		}
-
-		// 워크스페이스 생성자에게 알림 메시지 발송
-		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_CREATE_OWNER;
-		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), applicationForm.getName());
-		String createOwnerTitle = workspaceCreateOwner.getTitle();
-		String createOwnerMessage = String.format(workspaceCreateOwner.getMessage(), applicationForm.getName());
-		if (!userInfoDTO.getAuth().equals(AuthType.ROLE_ADMIN)) {
-			eventPublisher.publishEvent(
-				new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_CREATE, userInfoDTO.getId(),
-					userInfoDTO.getId(), emailTitle, createOwnerTitle,
-					createOwnerMessage, workspaceResourceName, pageNaviParam));
-
-			mailService.sendMail(MailDTO.builder()
-				.subject(String.format(mail.getSubject(), workspaceName))
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-					workspaceName))
-				.subTitle(mail.getSubTitle())
-				.contentTitle(mail.getContentTitle())
-				.receiverEmail(userInfoDTO.getEmail())
-				.contents(contents)
-				.footer(mail.getFooter())
-				.build());
+		} else {
+			log.error("다운로드할 엑셀 파일이 존재하지않습니다.");
+			throw new RestApiException(WorkspaceErrorCode.NOT_FOUND_EXCEL_FILE);
 		}
 	}
 
-	@Override
-	public PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition,
-		int pageNum, UserDTO.UserInfo userInfoDTO) {
-		Set<String> userWorkspaceList = userInfoDTO.getWorkspaceList(isMyWorkspace);
-		//전체 workspace 리스트 조회
-		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
-		//user의 pin 리스트 조회
-		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
-		//조건절 처리
-		workspaceList = workspaceList.stream()
-			.filter(workspace -> userWorkspaceList.contains(workspace.getResourceName()))
-			.filter(workspace -> searchCondition == null || workspace.getName().contains(searchCondition))
-			.sorted(Comparator.comparing(WorkspaceDTO.ResponseDTO::getCreatedAt).reversed())
-			.toList();
-		//페이지네이션 진행
-		PageDTO<WorkspaceDTO.ResponseDTO> pageDTO = new PageDTO<>(workspaceList, pageNum, 9);
-		//pinYN 처리 및 최근 워크로드 불러오기 진행
-		//최적화를 위해 pageNation 후에 최근워크로드 조회 작업을 진행
-		List<WorkspaceDTO.TotalResponseDTO> resultList = pageDTO.getContent()
-			.stream()
-			.map(workspace -> new WorkspaceDTO.TotalResponseDTO(workspace.getId(), workspace.getName(),
-				workspace.getResourceName(), workspace.getDescription(),
-				userWorkspacePinList.contains(workspace.getResourceName()), workspace.getCreatedAt(),
-				getUserRecentlyWorkload(workspace.getResourceName(), userInfoDTO.getUserName())))
-			.toList();
-		return new PageDTO<>(pageDTO.getTotalSize(), pageDTO.getTotalPageNum(), pageDTO.getCurrentPage(), resultList);
+	private static void createReportFile(List<WorkloadResDTO.WorkloadReportDTO> workloadReports, String reportFile) {
+		try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(reportFile)) {
+			Sheet sheet = workbook.createSheet("프로젝트 통계");
+
+			//title 작업
+			Row titleRow = sheet.createRow(1);
+			Cell titleCell = titleRow.createCell(1);
+			titleCell.setCellValue("Astrago Project Report");
+			setTitleCellStyle(titleCell);
+
+			//헤더 작업
+			Row headerRow = sheet.createRow(2);
+			String[] headers = {"USERNAME", "USERID", "GROUP", "WORKSPACE NAME", "WORKLOAD NAME", "STARTDATE",
+				"ENDDATE", "STATUS"};
+			for (int i = 0; i < headers.length; i++) {
+				Cell headerCell = headerRow.createCell(i + 1);
+				headerCell.setCellValue(headers[i]);
+				setHeaderCellStyle(headerCell);
+			}
+
+			CellStyle dateStyle = workbook.createCellStyle();
+			dateStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
+			dateStyle.setAlignment(HorizontalAlignment.CENTER);
+			dateStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+			int rowCount = 3;
+			for (WorkloadResDTO.WorkloadReportDTO reportDTO : workloadReports) {
+				Row dataRow = sheet.createRow(rowCount++);
+				setCellValueAndStyle(dataRow.createCell(1), reportDTO.getUserName(), null);
+				setCellValueAndStyle(dataRow.createCell(2), reportDTO.getUserEmail(), null);
+				setCellValueAndStyle(dataRow.createCell(3), reportDTO.getGroup(), null);
+				setCellValueAndStyle(dataRow.createCell(4), reportDTO.getWorkspaceName(), null);
+				setCellValueAndStyle(dataRow.createCell(5), reportDTO.getWorkloadName(), null);
+				setCellDateValueAndStyle(dataRow.createCell(6), reportDTO.getStartDate(), dateStyle);
+				setCellDateValueAndStyle(dataRow.createCell(7), reportDTO.getEndDate(), dateStyle);
+				setCellValueAndStyle(dataRow.createCell(8), "END", null);
+			}
+			workbook.write(fos);
+		} catch (IOException e) {
+			log.error("엑셀 파일 생성 실패");
+			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_EXCEL_FILE);
+		}
 	}
 
-	private ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
-		List<ModuleWorkloadResDTO> serverWorkloadList = workloadModuleFacadeService.getWorkloadList(workspaceName);
-		Optional<ModuleWorkloadResDTO> moduleWorkloadResDTO =
-			CollectionUtils.isEmpty(serverWorkloadList) ? Optional.empty() : serverWorkloadList.stream()
-				.filter(workload -> workload.getCreatorUserName().equals(username))
-				.max(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt));
-
-		return moduleWorkloadResDTO.orElseGet(
-			() -> workloadHistoryService.findByWorkspaceAndRecently(workspaceName, username));
+	private static void setTitleCellStyle(Cell titleCell) {
+		Sheet sheet = titleCell.getSheet();
+		Workbook workbook = sheet.getWorkbook();
+		sheet.addMergedRegion(new CellRangeAddress(1, 1, 1, 8)); //첫행, 마지막행, 첫열, 마지막열( 0번째 행의 0~8번째 컬럼을 병합한다)
+		CellStyle titleStyle = workbook.createCellStyle();
+		titleStyle.setAlignment(HorizontalAlignment.CENTER);
+		titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+		titleCell.setCellStyle(titleStyle);
 	}
 
-	@Override
-	public void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
-		workspaceModuleFacadeService.updateWorkspaceInfoByName(workspaceName, updateDTO);
+	private static void setHeaderCellStyle(Cell cell) {
+		Sheet sheet = cell.getSheet();
+		int[] columnWidths = {25, 25, 25, 35, 25, 25, 25, 25};
+		for (int i = 0; i < columnWidths.length; i++) {
+			sheet.setColumnWidth(i + 1, columnWidths[i] * 256);
+		}
+		Workbook workbook = sheet.getWorkbook();
+		CellStyle style = workbook.createCellStyle();
+		style.setAlignment(HorizontalAlignment.CENTER);
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+		style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+		style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		cell.setCellStyle(style);
 	}
 
 	@Override
@@ -346,6 +286,169 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	}
 
+	private static void setCellValueAndStyle(Cell cell, String value, CellStyle style) {
+		cell.setCellValue(value);
+		cell.setCellStyle(style);
+	}
+
+	private static void setCellDateValueAndStyle(Cell cell, LocalDateTime value, CellStyle style) {
+		cell.setCellValue(value);
+		cell.setCellStyle(style);
+	}
+
+	@Override
+	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserDTO.UserInfo userInfoDTO) {
+		//워크스페이스 생성
+		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
+			.name(applicationForm.getName())
+			.description(applicationForm.getDescription())
+			.creatorId(userInfoDTO.getId())
+			.creatorUserName(userInfoDTO.getUserName())
+			.creatorFullName(userInfoDTO.getUserFullName())
+			.reqCPU(applicationForm.getReqCPU())
+			.reqMEM(applicationForm.getReqMEM())
+			.reqGPU(applicationForm.getReqGPU())
+			.build());
+		//group 추가
+		groupService.createWorkspaceGroup(GroupReqDTO.builder()
+			.name(workspace.getResourceName())
+			// .createdBy(workspace.getCreatorUserName())
+			.createdBy(userInfoDTO.getUserName())
+			.createdUserId(userInfoDTO.getId())
+			.description(workspace.getDescription())
+			.users(applicationForm.getUserIds())
+			.build(), userInfoDTO);
+		workspaceAlertSetService.saveAlertSet(workspace.getResourceName());
+
+		//오너, 초대받은 유저들의 알림 초기 세팅
+		String ownerId = userInfoDTO.getId();
+		workspaceAlertService.initWorkspaceAlertMapping(AlertRole.OWNER, ownerId, workspace.getResourceName());
+		List<String> invitedUserIds = applicationForm.getUserIds();
+		if (applicationForm.getUserIds() != null) {
+			for (String invitedUserId : invitedUserIds) {
+				workspaceAlertService.initWorkspaceAlertMapping(AlertRole.USER, invitedUserId,
+					workspace.getResourceName());
+			}
+		}
+
+		// 롤 생성
+		workspaceService.editWorkspaceRole(workspace.getResourceName());
+		// 롤 바인딩
+		workspaceService.createPodAnnotationsRoleBinding(workspace.getResourceName());
+
+		PageNaviParam pageNaviParam = PageNaviParam.builder()
+			.workspaceResourceName(workspace.getResourceName())
+			.build();
+
+		// 관리자에게 워크스페이스 생성 알림 메시지 발송
+		AlertMessage workspaceCreateAdmin = AlertMessage.WORKSPACE_CREATE_ADMIN;
+		String workspaceName = workspace.getName();
+		String workspaceResourceName = workspace.getResourceName();
+		String mailTitle = String.format(workspaceCreateAdmin.getMailTitle(), applicationForm.getName());
+		String title = workspaceCreateAdmin.getTitle();
+		String message = String.format(workspaceCreateAdmin.getMessage(), userInfoDTO.getUserFullName(),
+			userInfoDTO.getEmail(), workspaceName);
+		eventPublisher.publishEvent(
+			new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_CREATE, userInfoDTO.getId(), mailTitle, title, message,
+				pageNaviParam));
+
+		MailAttribute mail = MailAttribute.WORKSPACE_CREATE;
+
+		List<MailDTO.Content> contents = List.of(
+			MailDTO.Content.builder().col1("GPU :").col2(String.valueOf(applicationForm.getReqGPU()) + " 개").build(),
+			MailDTO.Content.builder().col1("CPU :").col2(String.valueOf(applicationForm.getReqCPU()) + " Core").build(),
+			MailDTO.Content.builder().col1("MEM :").col2(String.valueOf(applicationForm.getReqMEM()) + " GB").build()
+		);
+
+		// 워크스페이스 생성자에게 알림 메시지 발송
+		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_CREATE_OWNER;
+		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), applicationForm.getName());
+		String createOwnerTitle = workspaceCreateOwner.getTitle();
+		String createOwnerMessage = String.format(workspaceCreateOwner.getMessage(), applicationForm.getName());
+		if (!userInfoDTO.getAuth().equals(AuthType.ROLE_ADMIN)) {
+			eventPublisher.publishEvent(
+				new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_CREATE, userInfoDTO.getId(),
+					userInfoDTO.getId(), emailTitle, createOwnerTitle,
+					createOwnerMessage, workspaceResourceName, pageNaviParam));
+		}
+
+		// 워크스페이스 생성자에게 메일 전송
+		mailService.sendMail(MailDTO.builder()
+			.subject(String.format(mail.getSubject(), workspaceName))
+			.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
+				workspaceName))
+			.subTitle(mail.getSubTitle())
+			.contentTitle(mail.getContentTitle())
+			.receiverEmail(userInfoDTO.getEmail())
+			.contents(contents)
+			.footer(mail.getFooter())
+			.build());
+
+		// 관리자가 아닌경우 관리자에게 전송
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+
+			List<UserDTO.UserInfo> adminList = userService.getAdminList();
+
+			for (UserDTO.UserInfo admin : adminList) {
+				mailService.sendMail(MailDTO.builder()
+					.subject(String.format(mail.getSubject(), workspaceName))
+					.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
+						workspaceName))
+					.subTitle(mail.getSubTitle())
+					.contentTitle(mail.getContentTitle())
+					.receiverEmail(admin.getEmail())
+					.contents(contents)
+					.footer(mail.getFooter())
+					.build());
+			}
+		}
+
+	}
+
+	@Override
+	public PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition,
+		int pageNum, UserDTO.UserInfo userInfoDTO) {
+		Set<String> userWorkspaceList = userInfoDTO.getWorkspaceList(isMyWorkspace);
+		//전체 workspace 리스트 조회
+		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
+		//user의 pin 리스트 조회
+		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
+		//조건절 처리
+		workspaceList = workspaceList.stream()
+			.filter(workspace -> userWorkspaceList.contains(workspace.getResourceName()))
+			.filter(workspace -> searchCondition == null || workspace.getName().contains(searchCondition))
+			.sorted(Comparator.comparing(WorkspaceDTO.ResponseDTO::getCreatedAt).reversed())
+			.toList();
+		//페이지네이션 진행
+		PageDTO<WorkspaceDTO.ResponseDTO> pageDTO = new PageDTO<>(workspaceList, pageNum, 9);
+		//pinYN 처리 및 최근 워크로드 불러오기 진행
+		//최적화를 위해 pageNation 후에 최근워크로드 조회 작업을 진행
+		List<WorkspaceDTO.TotalResponseDTO> resultList = pageDTO.getContent()
+			.stream()
+			.map(workspace -> new WorkspaceDTO.TotalResponseDTO(workspace.getId(), workspace.getName(),
+				workspace.getResourceName(), workspace.getDescription(),
+				userWorkspacePinList.contains(workspace.getResourceName()), workspace.getCreatedAt(),
+				getUserRecentlyWorkload(workspace.getResourceName(), userInfoDTO.getUserName())))
+			.toList();
+		return new PageDTO<>(pageDTO.getTotalSize(), pageDTO.getTotalPageNum(), pageDTO.getCurrentPage(), resultList);
+	}
+
+	private ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
+		List<ModuleWorkloadResDTO> serverWorkloadList = workloadModuleFacadeService.getWorkloadList(workspaceName);
+		Optional<ModuleWorkloadResDTO> moduleWorkloadResDTO =
+			CollectionUtils.isEmpty(serverWorkloadList) ? Optional.empty() : serverWorkloadList.stream()
+				.filter(workload -> workload.getCreatorUserName().equals(username))
+				.max(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt));
+
+		return moduleWorkloadResDTO.orElseGet(
+			() -> workloadHistoryService.findByWorkspaceAndRecently(workspaceName, username));
+	}
+
+	@Override
+	public void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
+		workspaceModuleFacadeService.updateWorkspaceInfoByName(workspaceName, updateDTO);
+	}
+
 	@Override
 	public List<WorkspaceDTO.TotalResponseDTO> getWorkspaceOverView(UserDTO.UserInfo userInfoDTO) {
 		//전체 workspace 리스트 조회
@@ -382,6 +485,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		UserDTO.UserInfo userInfoDTO) {
 		WorkspaceDTO.ResponseDTO workspaceInfo = workspaceService.getWorkspaceByName(
 			workspaceResourceReqDTO.getWorkspace());
+
 		//관리자가 요청 했을 경우 승인 프로세스를 건너뛰고 바로 적용
 		if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN) {
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(workspaceResourceReqDTO.getWorkspace(),
@@ -408,34 +512,21 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		eventPublisher.publishEvent(
 			new AdminAlertEvent(AlertName.ADMIN_USER_RESOURCE_REQUEST, userInfoDTO.getId(), mailTitle, title, message,
 				pageNaviParam));
-		// 관리자
-		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_REQUEST;
 		List<MailDTO.Content> contents = List.of(
 			MailDTO.Content.builder()
 				.col1("GPU :")
-				.col2(String.valueOf(workspaceResourceReqDTO.getGpuReq()) + "개")
+				.col2(String.valueOf(workspaceResourceReqDTO.getGpuReq()) + " 개")
 				.build(),
 			MailDTO.Content.builder()
 				.col1("CPU :")
-				.col2(String.valueOf(workspaceResourceReqDTO.getCpuReq()) + "Core")
+				.col2(String.valueOf(workspaceResourceReqDTO.getCpuReq()) + " Core")
 				.build(),
 			MailDTO.Content.builder()
 				.col1("MEM :")
-				.col2(String.valueOf(workspaceResourceReqDTO.getMemReq()) + "GB")
+				.col2(String.valueOf(workspaceResourceReqDTO.getMemReq()) + " GB")
 				.build()
 		);
-		List<UserDTO.UserInfo> adminList = userService.getAdminList();
-		for (UserDTO.UserInfo admin : adminList) {
-			mailService.sendMail(MailDTO.builder()
-				.subject(String.format(mail.getSubject(), workspaceInfo.getName()))
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-					workspaceInfo.getName()))
-				.contentTitle(mail.getContentTitle())
-				.contents(contents)
-				.footer(mail.getFooter())
-				.receiverEmail(admin.getEmail())
-				.build());
-		}
+
 		// 워크스페이스 리소스 요청한 사용자에게 알림 발송
 		AlertMessage workspaceCreateOwner = AlertMessage.WORKSPACE_RESOURCE_REQUEST_OWNER;
 		String emailTitle = String.format(workspaceCreateOwner.getMailTitle(), workspaceInfo.getName());
@@ -447,16 +538,35 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_RESOURCE_REQUEST, userInfoDTO.getId(),
 					workspaceInfo.getCreatorId(), emailTitle, createOwnerTitle,
 					createOwnerMessage, workspaceResourceReqDTO.getWorkspace(), pageNaviParam));
-			// 사용자
+		}
+
+		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
+			// 메일 메시지 조회
+			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_REQUEST;
+			// 본인에게 요청 전송 메일
 			mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), workspaceInfo.getName()))
 				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-					workspaceInfo.getResourceName()))
+					workspaceInfo.getName()))
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
-				.receiverEmail(userInfoDTO.getEmail())
 				.footer(mail.getFooter())
+				.receiverEmail(userInfoDTO.getEmail())
 				.build());
+			// 관리자 리스트 출력
+			List<UserDTO.UserInfo> adminList = userService.getAdminList();
+			// 관리자에게 요청 메일
+			for (UserDTO.UserInfo admin : adminList) {
+				mailService.sendMail(MailDTO.builder()
+					.subject(String.format(mail.getSubject(), workspaceInfo.getName()))
+					.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
+						workspaceInfo.getName()))
+					.contentTitle(mail.getContentTitle())
+					.contents(contents)
+					.footer(mail.getFooter())
+					.receiverEmail(admin.getEmail())
+					.build());
+			}
 		}
 	}
 
@@ -545,9 +655,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		}
 		eventPublisher.publishEvent(workspaceUserAlertEvent);
 		List<MailDTO.Content> contents = List.of(
-			MailDTO.Content.builder().col1("GPU : ").col2(gpu + "개").build(),
-			MailDTO.Content.builder().col1("CPU : ").col2(cpu + "Core").build(),
-			MailDTO.Content.builder().col1("MEM : ").col2(mem + "GB").build()
+			MailDTO.Content.builder().col1("GPU : ").col2(gpu + " 개").build(),
+			MailDTO.Content.builder().col1("CPU : ").col2(cpu + " Core").build(),
+			MailDTO.Content.builder().col1("MEM : ").col2(mem + " GB").build()
 		);
 		mailService.sendMail(MailDTO.builder()
 			.subject(String.format(mail.getSubject(), resourceQuotaEntity.getWorkspaceName()))
@@ -616,6 +726,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				case CREATOR_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed();
 				case CREATED_AT_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt);
 				case CREATED_AT_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed();
+				case WORKSPACE_NAME_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getName);
+				case WORKSPACE_NAME_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getName).reversed();
 			};
 			workspaceList = workspaceList.stream().sorted(comparator).toList();
 		}
@@ -645,6 +757,41 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.toList();
 
 		return new PageDTO<>(list, pageNum, pageSize);
+	}
+
+	@Override
+	public ByteArrayResource downloadReport(List<String> workspaceIds, LocalDate startDate, LocalDate endDate) {
+		List<WorkloadResDTO.WorkloadReportDTO> workloadReports = workloadHistoryService.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+			workspaceIds, startDate, endDate);
+		// 유저 정보 설정
+		workloadReports.forEach(reportDTO -> {
+			UserDTO.UserInfo user = userService.getUserInfoById(reportDTO.getUserId());
+			List<String> groups = user.getGroups();
+			String groupList = groups.stream()
+				.filter(group -> !group.equals("default"))
+				.collect(Collectors.joining(", "));
+			reportDTO.setGroup(groupList);
+		});
+		String downloadReportPath = FileUtils.getUserFolderPath("downloadReport");
+		try {
+			Files.createDirectories(Path.of(downloadReportPath));
+		} catch (IOException e) {
+			log.error("엑셀 파일을 저장할 폴더 생성을 실패했습니다.");
+			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_FOLDER);
+		}
+		String reportFile =
+			downloadReportPath + File.separator + UUID.randomUUID().toString().substring(6) + "_report.xlsx";
+		createReportFile(workloadReports, reportFile);
+		ByteArrayResource resource = getByteArrayResource(reportFile);
+		deleteReportFile(reportFile);
+		return resource;
+	}
+
+	private void deleteReportFile(String reportFile) {
+		File file = new File(reportFile);
+		if (file.exists()) {
+			file.delete();
+		}
 	}
 
 	@Override
@@ -725,135 +872,5 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		} catch (K8sException e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public ByteArrayResource downloadReport(List<String> workspaceIds, LocalDate startDate, LocalDate endDate) {
-		List<WorkloadResDTO.WorkloadReportDTO> workloadReports = workloadHistoryService.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
-			workspaceIds, startDate, endDate);
-		// 유저 정보 설정
-		workloadReports.forEach(reportDTO -> {
-			UserDTO.UserInfo user = userService.getUserInfoById(reportDTO.getUserId());
-			List<String> groups = user.getGroups();
-			String groupList = groups.stream()
-				.filter(group -> !group.equals("default"))
-				.collect(Collectors.joining(", "));
-			reportDTO.setGroup(groupList);
-		});
-		String downloadReportPath = FileUtils.getUserFolderPath("downloadReport");
-		try {
-			Files.createDirectories(Path.of(downloadReportPath));
-		} catch (IOException e) {
-			log.error("엑셀 파일을 저장할 폴더 생성을 실패했습니다.");
-			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_FOLDER);
-		}
-		String reportFile =
-			downloadReportPath + File.separator + UUID.randomUUID().toString().substring(6) + "_report.xlsx";
-		createReportFile(workloadReports, reportFile);
-		ByteArrayResource resource = getByteArrayResource(reportFile);
-		deleteReportFile(reportFile);
-		return resource;
-	}
-
-	private void deleteReportFile(String reportFile) {
-		File file = new File(reportFile);
-		if (file.exists()) {
-			file.delete();
-		}
-	}
-
-	private static ByteArrayResource getByteArrayResource(String reportFile) {
-		Path targetPath = Paths.get(reportFile);
-		if (Files.exists(targetPath)) {
-			try {
-				byte[] bytes = Files.readAllBytes(targetPath);
-				return new ByteArrayResource(bytes);
-			} catch (IOException e) {
-				log.error("엑셀 파일 다운로드 실패");
-				throw new RestApiException(WorkspaceErrorCode.FAILED_DOWNLOAD_EXCEL_FILE);
-			}
-		} else {
-			log.error("다운로드할 엑셀 파일이 존재하지않습니다.");
-			throw new RestApiException(WorkspaceErrorCode.NOT_FOUND_EXCEL_FILE);
-		}
-	}
-
-	private static void createReportFile(List<WorkloadResDTO.WorkloadReportDTO> workloadReports, String reportFile) {
-		try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(reportFile)) {
-			Sheet sheet = workbook.createSheet("프로젝트 통계");
-
-			//title 작업
-			Row titleRow = sheet.createRow(1);
-			Cell titleCell = titleRow.createCell(1);
-			titleCell.setCellValue("Astrago Project Report");
-			setTitleCellStyle(titleCell);
-
-			//헤더 작업
-			Row headerRow = sheet.createRow(2);
-			String[] headers = {"USERNAME", "USERID", "GROUP", "WORKSPACE NAME", "WORKLOAD NAME", "STARTDATE",
-				"ENDDATE", "STATUS"};
-			for (int i = 0; i < headers.length; i++) {
-				Cell headerCell = headerRow.createCell(i + 1);
-				headerCell.setCellValue(headers[i]);
-				setHeaderCellStyle(headerCell);
-			}
-
-			CellStyle dateStyle = workbook.createCellStyle();
-			dateStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
-			dateStyle.setAlignment(HorizontalAlignment.CENTER);
-			dateStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
-			int rowCount = 3;
-			for (WorkloadResDTO.WorkloadReportDTO reportDTO : workloadReports) {
-				Row dataRow = sheet.createRow(rowCount++);
-				setCellValueAndStyle(dataRow.createCell(1), reportDTO.getUserName(), null);
-				setCellValueAndStyle(dataRow.createCell(2), reportDTO.getUserEmail(), null);
-				setCellValueAndStyle(dataRow.createCell(3), reportDTO.getGroup(), null);
-				setCellValueAndStyle(dataRow.createCell(4), reportDTO.getWorkspaceName(), null);
-				setCellValueAndStyle(dataRow.createCell(5), reportDTO.getWorkloadName(), null);
-				setCellDateValueAndStyle(dataRow.createCell(6), reportDTO.getStartDate(), dateStyle);
-				setCellDateValueAndStyle(dataRow.createCell(7), reportDTO.getEndDate(), dateStyle);
-				setCellValueAndStyle(dataRow.createCell(8), "END", null);
-			}
-			workbook.write(fos);
-		} catch (IOException e) {
-			log.error("엑셀 파일 생성 실패");
-			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_EXCEL_FILE);
-		}
-	}
-
-	private static void setTitleCellStyle(Cell titleCell) {
-		Sheet sheet = titleCell.getSheet();
-		Workbook workbook = sheet.getWorkbook();
-		sheet.addMergedRegion(new CellRangeAddress(1, 1, 1, 8)); //첫행, 마지막행, 첫열, 마지막열( 0번째 행의 0~8번째 컬럼을 병합한다)
-		CellStyle titleStyle = workbook.createCellStyle();
-		titleStyle.setAlignment(HorizontalAlignment.CENTER);
-		titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-		titleCell.setCellStyle(titleStyle);
-	}
-
-	private static void setHeaderCellStyle(Cell cell) {
-		Sheet sheet = cell.getSheet();
-		int[] columnWidths = {25, 25, 25, 35, 25, 25, 25, 25};
-		for (int i = 0; i < columnWidths.length; i++) {
-			sheet.setColumnWidth(i + 1, columnWidths[i] * 256);
-		}
-		Workbook workbook = sheet.getWorkbook();
-		CellStyle style = workbook.createCellStyle();
-		style.setAlignment(HorizontalAlignment.CENTER);
-		style.setVerticalAlignment(VerticalAlignment.CENTER);
-		style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-		style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-		cell.setCellStyle(style);
-	}
-
-	private static void setCellValueAndStyle(Cell cell, String value, CellStyle style) {
-		cell.setCellValue(value);
-		cell.setCellStyle(style);
-	}
-
-	private static void setCellDateValueAndStyle(Cell cell, LocalDateTime value, CellStyle style) {
-		cell.setCellValue(value);
-		cell.setCellStyle(style);
 	}
 }

@@ -14,8 +14,8 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
-import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulecommon.util.ValidUtils;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.image.entity.BuiltInImageEntity;
@@ -155,7 +155,7 @@ public class ImageServiceImpl implements ImageService {
 			.max(Float::compareTo)
 			.orElseGet(null);
 		if (maxCudaVersion == null) {
-			return ;
+			return;
 		}
 
 		// 쿠다버전 내림차순으로 정렬

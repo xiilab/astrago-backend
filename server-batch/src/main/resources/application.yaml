@@ -24,7 +24,7 @@ spring:
     password: root
     hikari:
       max-lifetime: 3595000 #59분50초 default 30분
-      maximum-pool-size: 24
+      maximum-pool-size: 36
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:

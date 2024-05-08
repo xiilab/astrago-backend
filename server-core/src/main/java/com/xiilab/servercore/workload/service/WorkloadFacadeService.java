@@ -40,6 +40,7 @@ import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -64,7 +65,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -226,25 +226,23 @@ public class WorkloadFacadeService {
 			List<MailDTO.Content> contents = List.of(
 				MailDTO.Content.builder()
 					.col1("GPU : ")
-					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed() + "개")
+					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed() + " 개")
 					.build(),
-				MailDTO.Content.builder().col1("CPU : ").col2(String.valueOf(cpuUsed) + "Core").build(),
-				MailDTO.Content.builder().col1("MEM : ").col2(String.valueOf(memUsed) + "GB").build()
+				MailDTO.Content.builder().col1("CPU : ").col2(cpuUsed + "Core").build(),
+				MailDTO.Content.builder().col1("MEM : ").col2(memUsed + "GB").build()
 			);
-			List<UserDTO.UserInfo> adminList = userFacadeService.getAdminList();
-			for (UserDTO.UserInfo admin : adminList) {
-				// Mail 전송
-				mailService.sendMail(MailDTO.builder()
-					.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
-					.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-						moduleCreateWorkloadReqDTO.getWorkspace()))
-					.subTitle(mail.getSubTitle())
-					.contentTitle(mail.getContentTitle())
-					.contents(contents)
-					.footer(mail.getFooter())
-					.receiverEmail(admin.getEmail())
-					.build());
-			}
+
+			// 리소스 초과 요청 Owner에게 전송
+			mailService.sendMail(MailDTO.builder()
+				.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
+				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
+					moduleCreateWorkloadReqDTO.getWorkspace()))
+				.subTitle(mail.getSubTitle())
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+				.receiverEmail(userFacadeService.getUserInfoById(workspaceResourceStatus.getCreatorId()).getEmail())
+				.build());
 		}
 	}
 
@@ -442,7 +440,8 @@ public class WorkloadFacadeService {
 			pageNum, 10);
 		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		moduleWorkloadResDTOPageDTO.getContent()
-			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
+			.forEach(
+				moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
 		return moduleWorkloadResDTOPageDTO;
 	}
 
@@ -707,7 +706,8 @@ public class WorkloadFacadeService {
 		// }
 	}
 
-	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName, UserDTO.UserInfo userInfoDTO) throws
+	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName,
+		UserDTO.UserInfo userInfoDTO) throws
 		IOException {
 		try {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,

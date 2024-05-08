@@ -12,5 +12,6 @@ public interface WorkloadHistoryRepoCustom {
 		WorkloadType workloadType);
 	JobEntity findByWorkspaceNameRecently(String workspace, String username);
 
-	List<WorkloadEntity> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);
+	List<WorkloadEntity> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds, LocalDate startDate,
+		LocalDate endDate);
 }

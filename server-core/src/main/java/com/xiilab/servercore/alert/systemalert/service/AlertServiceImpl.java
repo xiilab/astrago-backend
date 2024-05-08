@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
@@ -23,8 +25,6 @@ import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
@@ -35,7 +35,6 @@ import com.xiilab.servercore.alert.systemalert.dto.request.SystemAlertReqDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindAdminAlertMappingResDTO;
 import com.xiilab.servercore.alert.systemalert.dto.response.FindSystemAlertResDTO;
 
-import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -146,9 +145,11 @@ public class AlertServiceImpl implements AlertService {
 
 		if (findAdminAlertMappings.isEmpty()) {
 			List<AlertEntity> findAlertEntities = alertRepository.findByAlertRole(AlertRole.ADMIN);
-			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromDefaultAlerts(findAlertEntities, findAlertEntities.size());
+			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromDefaultAlerts(findAlertEntities,
+				findAlertEntities.size());
 		} else {
-			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromAdminAlertsMappings(findAdminAlertMappings, findAdminAlertMappings.size());
+			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromAdminAlertsMappings(findAdminAlertMappings,
+				findAdminAlertMappings.size());
 		}
 	}
 
