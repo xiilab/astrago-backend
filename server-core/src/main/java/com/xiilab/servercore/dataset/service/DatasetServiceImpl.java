@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
@@ -86,10 +87,10 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
-		UserDTO.UserInfo userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO, PageMode pageMode) {
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
-			userInfoDTO.getAuth(), repositorySearchCondition);
+			userInfoDTO.getAuth(), repositorySearchCondition, pageMode);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 

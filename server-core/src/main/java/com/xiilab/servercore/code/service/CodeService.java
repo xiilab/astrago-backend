@@ -3,6 +3,7 @@ package com.xiilab.servercore.code.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -15,7 +16,7 @@ public interface CodeService {
 	Boolean isCodeURLValid(String codeURL, Long credentialId);
 
 	Page<CodeResDTO> getCodeList(String workspaceName, UserDTO.UserInfo userInfoDTO, Pageable pageable,
-		CodeSearchCondition codeSearchCondition);
+		CodeSearchCondition codeSearchCondition, PageMode pageMode);
 
 	CodeResDTO getCodeById(long id);
 
