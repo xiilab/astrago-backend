@@ -603,6 +603,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		if (userInfoDTO.getAuth() != AuthType.ROLE_ADMIN) {
 			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
 		}
+
 		ResourceQuotaEntity resourceQuotaEntity = resourceQuotaHistoryRepository.findById(id).orElseThrow();
 		int cpu = 0;
 		int mem = 0;
