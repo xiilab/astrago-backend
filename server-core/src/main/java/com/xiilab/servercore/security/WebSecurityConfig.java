@@ -39,6 +39,7 @@ public class WebSecurityConfig {
 			.requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/alertManager/receive").permitAll()
 			.requestMatchers("/ws/**").permitAll()
+			.requestMatchers("/api/v1/core/tus").permitAll()
 			.anyRequest().authenticated());
 
 		http.oauth2ResourceServer(oauth2 -> oauth2
