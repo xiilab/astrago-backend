@@ -27,6 +27,7 @@ import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
@@ -34,7 +35,6 @@ import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
-import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
@@ -81,7 +81,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class WorkloadHandlerImpl implements WorkloadHandler {
-	private final K8sAdapter k8sAdapter;
 	private final WorkloadHistoryRepo workloadHistoryRepo;
 	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
 	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
@@ -142,6 +141,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			return;
 		}
 
+		updateDeleteJobStatusAndNoti(job);
+
 		List<Volume> volumes = job.getSpec().getTemplate().getSpec().getVolumes();
 		volumes.stream()
 			.filter(volume -> volume.getPersistentVolumeClaim() != null)
@@ -167,7 +168,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	@Override
 	public void interactiveJobAddHandler(Deployment deployment) {
 		if (isAstragoResource(deployment)) {
-			log.info("batch job {}가 생성되었습니다.", deployment.getMetadata().getName());
+			log.info("interactive job {}가 생성되었습니다.", deployment.getMetadata().getName());
 			String namespace = deployment.getMetadata().getNamespace();
 			Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
 			K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
@@ -189,7 +190,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	@Override
-	@Transactional
 	public void interactiveJobUpdateHandler(Deployment beforeDeployment, Deployment afterDeployment) {
 		if (isAstragoResource(afterDeployment) && isResourceUpdate(beforeDeployment, afterDeployment)) {
 			// 인터렉티브 상태 조회
@@ -212,6 +212,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (jobMetaData == null) {
 			return;
 		}
+
+		updateDeleteJobStatusAndNoti(deployment);
 
 		List<Volume> volumes = deployment.getSpec().getTemplate().getSpec().getVolumes();
 		volumes.stream()
@@ -248,6 +250,23 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		});
 	}
 
+	private void updateDeleteJobStatusAndNoti(Job job) {
+		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(job.getMetadata().getName());
+		workload.ifPresent(wl -> {
+			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END, job.getMetadata().getName());
+			handleNotificationsAndLog(wl, WorkloadStatus.END);
+		});
+	}
+
+	private void updateDeleteJobStatusAndNoti(Deployment deployment) {
+		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(deployment.getMetadata().getName());
+		workload.ifPresent(wl -> {
+			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END,
+				deployment.getMetadata().getName());
+			handleNotificationsAndLog(wl, WorkloadStatus.END);
+		});
+	}
+
 	private void checkJobStatusAndUpdateStatus(Deployment deployment) {
 		WorkloadStatus workloadStatus = getInteractiveWorkloadStatus(deployment.getStatus());
 		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(deployment.getMetadata().getName());
@@ -264,12 +283,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			sendErrorNotification(workload);
 		} else if (status == WorkloadStatus.END) {
 			sendJobSucceedNotification(workload);
-			saveWorkloadLogFile(workload);
+			//Batch Job일 때만 로그 저장
+			if (workload.getWorkloadType() == WorkloadType.BATCH) {
+				saveWorkloadLogFile(workload);
+			}
 		}
 	}
 
 	private void saveWorkloadLogFile(WorkloadEntity wl) {
-		String logResult = logService.getWorkloadLogByWorkloadName(wl.getWorkspaceName(), wl.getResourceName());
+		String logResult = logService.getWorkloadLogByWorkloadName(wl.getWorkspaceResourceName(), wl.getResourceName());
 		try {
 			FileUtils.saveLogFile(logResult, wl.getResourceName(), wl.getCreatorName());
 		} catch (IOException e) {
