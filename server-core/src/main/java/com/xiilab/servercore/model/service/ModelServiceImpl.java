@@ -16,37 +16,37 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
+import com.xiilab.modulecommon.util.CompressUtils;
+import com.xiilab.modulecommon.util.DecompressUtils;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
-import com.xiilab.modulek8sdb.common.enums.RepositorySortType;
-import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkSpaceMappingEntity;
-import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
-import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
-import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
-import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.entity.ModelWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
+import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkspaceRepository;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
+import com.xiilab.servercore.model.dto.ModelDTO;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ModelServiceImpl implements ModelService{
+public class ModelServiceImpl implements ModelService {
 
 	private final ModelRepository modelRepository;
 	private final ModelWorkspaceRepository modelWorkspaceRepository;
@@ -57,15 +57,16 @@ public class ModelServiceImpl implements ModelService{
 	public void insertAstragoModel(AstragoModelEntity astragoModel, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoModel.getStorageEntity().getHostPath();
-		String saveDirectoryName = astragoModel.getModelName().replace(" ", "") + "-" + UUID.randomUUID().toString().substring(6);
-		String modelPath = storageRootPath + "/" +  saveDirectoryName;
+		String saveDirectoryName =
+			astragoModel.getModelName().replace(" ", "") + "-" + UUID.randomUUID().toString().substring(6);
+		String modelPath = storageRootPath + "/" + saveDirectoryName;
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
 		Path uploadPath = Paths.get(modelPath);
 		try {
 			Files.createDirectories(uploadPath);
 			// 업로드된 각 파일에 대해 작업 수행
-			if(files != null){
+			if (files != null) {
 				for (MultipartFile file : files) {
 					Path targetPath = uploadPath.resolve(file.getOriginalFilename().replace(" ", "_"));
 					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
@@ -89,9 +90,12 @@ public class ModelServiceImpl implements ModelService{
 	}
 
 	@Override
-	public ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserDTO.UserInfo userInfoDTO) {
+	public ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
+		UserDTO.UserInfo userInfoDTO,
+		PageMode pageMode) {
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
-		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(), userInfoDTO.getAuth(), repositorySearchCondition);
+		Page<Model> models = modelRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
+			userInfoDTO.getAuth(), repositorySearchCondition, pageMode);
 		List<Model> entities = models.getContent();
 		long totalCount = models.getTotalElements();
 
@@ -101,7 +105,7 @@ public class ModelServiceImpl implements ModelService{
 	@Override
 	public ModelDTO.ResModelWithStorage getModelWithStorage(Long modelId) {
 		Model modelWithStorage = modelRepository.getModelWithStorage(modelId);
-		if(modelWithStorage == null){
+		if (modelWithStorage == null) {
 			throw new RestApiException(ModelErrorCode.MODEL_NOT_FOUND);
 		}
 		return ModelDTO.ResModelWithStorage.toDto(modelWithStorage);
@@ -137,14 +141,14 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	public DirectoryDTO getAstragoModelFiles(Long modelId, String filePath) {
-		modelRepository.findById(modelId).orElseThrow(()-> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
+		modelRepository.findById(modelId).orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		return CoreFileUtils.getAstragoFiles(filePath);
 	}
 
 	@Override
 	@Transactional
 	public void astragoModelUploadFile(Long modelId, String path, List<MultipartFile> files) {
-		AstragoModelEntity model = (AstragoModelEntity) modelRepository.findById(modelId)
+		AstragoModelEntity model = (AstragoModelEntity)modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		long size = CoreFileUtils.datasetUploadFiles(path, files);
 		model.setModelSize(size);
@@ -179,7 +183,7 @@ public class ModelServiceImpl implements ModelService{
 
 	@Override
 	@Transactional
-	public DownloadFileResDTO DownloadAstragoModelFile(Long modelId, String filePath) {
+	public DownloadFileResDTO downloadAstragoModelFile(Long modelId, String filePath) {
 		modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 		Path targetPath = Path.of(filePath);
@@ -199,7 +203,7 @@ public class ModelServiceImpl implements ModelService{
 				} catch (IOException e) {
 					throw new RestApiException(ModelErrorCode.MODEL_ZIP_DOWNLOAD_FAIL);
 				}
-			}else{
+			} else {
 				String fileName = CoreFileUtils.getFileName(filePath);
 				// 파일을 ByteArrayResource로 읽어와 ResponseEntity로 감싸서 반환
 				byte[] fileContent;
@@ -216,21 +220,36 @@ public class ModelServiceImpl implements ModelService{
 					.mediaType(mediaType)
 					.build();
 			}
-		}else{
+		} else {
 			throw new RestApiException(CommonErrorCode.FILE_NOT_FOUND);
 		}
 	}
 
 	@Override
+	public void compressAstragoModelFiles(Long modelId, List<String> filePaths, CompressFileType compressFileType) {
+		modelRepository.findById(modelId)
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
+		List<Path> pathList = filePaths.stream().map(Path::of).toList();
+		CompressUtils.saveCompressFile(pathList, null, compressFileType);
+	}
+
+	@Override
+	public void deCompressAstragoModelFile(Long modelId, String filePath) {
+		modelRepository.findById(modelId)
+			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
+		DecompressUtils.saveDecompressFile(Path.of(filePath), null);
+	}
+
+	@Override
 	public ModelDTO.ModelsInWorkspace getModelsByRepositoryType(String workspaceResourceName,
 		RepositoryType repositoryType, UserDTO.UserInfo userInfoDTO) {
-		if(repositoryType == RepositoryType.WORKSPACE){
+		if (repositoryType == RepositoryType.WORKSPACE) {
 			List<ModelWorkSpaceMappingEntity> models = modelWorkspaceRepository.findByWorkspaceResourceName(
 				workspaceResourceName);
-			if(models != null || models.size() != 0){
+			if (models != null || models.size() != 0) {
 				return ModelDTO.ModelsInWorkspace.mappingEntitiesToDtos(models);
 			}
-		}else{
+		} else {
 			List<Model> modelsByAuthority = modelRepository.findByAuthority(userInfoDTO.getId(), userInfoDTO.getAuth());
 			return ModelDTO.ModelsInWorkspace.entitiesToDtos(modelsByAuthority);
 		}
@@ -245,7 +264,7 @@ public class ModelServiceImpl implements ModelService{
 
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
-		if(workSpaceMappingEntity != null){
+		if (workSpaceMappingEntity != null) {
 			throw new RestApiException(ModelErrorCode.MODEL_WORKSPACE_MAPPING_ALREADY);
 		}
 
@@ -267,11 +286,13 @@ public class ModelServiceImpl implements ModelService{
 	public void deleteWorkspaceModel(String workspaceResourceName, Long modelId, UserDTO.UserInfo userInfoDTO) {
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
-		if(workSpaceMappingEntity == null){
+		if (workSpaceMappingEntity == null) {
 			throw new RestApiException(ModelErrorCode.MODEL_NOT_FOUND);
 		}
 		//owner or 본인 체크
-		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
+		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser()
+			.getRegUserId()
+			.equalsIgnoreCase(userInfoDTO.getId()))) {
 			throw new RestApiException(ModelErrorCode.MODEL_DELETE_FORBIDDEN);
 		}
 		modelWorkspaceRepository.deleteByModelIdAndWorkspaceResourceName(modelId, workspaceResourceName);
@@ -281,7 +302,7 @@ public class ModelServiceImpl implements ModelService{
 	public ModelDTO.ModelsInWorkspace getModelsByWorkspaceResourceName(String workspaceResourceName) {
 		List<ModelWorkSpaceMappingEntity> models = modelWorkspaceRepository.findByWorkspaceResourceName(
 			workspaceResourceName);
-		if(models != null || models.size() != 0){
+		if (models != null || models.size() != 0) {
 			return ModelDTO.ModelsInWorkspace.mappingEntitiesToDtos(models);
 		}
 		return null;
@@ -299,11 +320,13 @@ public class ModelServiceImpl implements ModelService{
 		Long modelId, UserDTO.UserInfo userInfoDTO) {
 		ModelWorkSpaceMappingEntity workSpaceMappingEntity = modelWorkspaceRepository.findByWorkspaceResourceNameAndModelId(
 			workspaceResourceName, modelId);
-		if(workSpaceMappingEntity == null){
+		if (workSpaceMappingEntity == null) {
 			throw new RestApiException(ModelErrorCode.MODEL_NOT_FOUND);
 		}
 		//owner or 본인 체크
-		if(!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser().getRegUserId().equalsIgnoreCase(userInfoDTO.getId()))){
+		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser()
+			.getRegUserId()
+			.equalsIgnoreCase(userInfoDTO.getId()))) {
 			throw new RestApiException(ModelErrorCode.MODEL_FIX_FORBIDDEN);
 		}
 		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceModelDTO.getDefaultPath());

@@ -158,7 +158,7 @@ create table if not exists TB_CODE
     CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')  null,
     CODE_CMD                varchar(255)                 null,
     DELETE_YN               enum ('Y', 'N')              null,
-    REPOSITORY_TYPE         enum ('WORKSPACE', 'USER')   null,
+    REPOSITORY_TYPE enum ('WORKSPACE', 'USER', 'CUSTOM') null,
     CODE_DEFAULT_MOUNT_PATH varchar(255) charset utf8mb4 null
 );
 

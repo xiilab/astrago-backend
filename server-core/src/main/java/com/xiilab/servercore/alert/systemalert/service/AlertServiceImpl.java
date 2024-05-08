@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
@@ -23,8 +25,6 @@ import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AdminAlertMappingRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.SystemAlertRepository;
@@ -138,10 +138,19 @@ public class AlertServiceImpl implements AlertService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public FindAdminAlertMappingResDTO.AdminAlertMappings findAdminAlertMappings(String adminId) {
-		List<AlertEntity> adminAlertMappingList = alertRepository.findAdminAlertMappingsByAdminId(adminId,
-			AlertRole.ADMIN);
-		return FindAdminAlertMappingResDTO.AdminAlertMappings.from(adminAlertMappingList, adminAlertMappingList.size());
+		List<AdminAlertMappingEntity> findAdminAlertMappings = adminAlertMappingRepository.findAdminAlertMappingsByAdminId(
+			adminId, AlertRole.ADMIN);
+
+		if (findAdminAlertMappings.isEmpty()) {
+			List<AlertEntity> findAlertEntities = alertRepository.findByAlertRole(AlertRole.ADMIN);
+			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromDefaultAlerts(findAlertEntities,
+				findAlertEntities.size());
+		} else {
+			return FindAdminAlertMappingResDTO.AdminAlertMappings.fromAdminAlertsMappings(findAdminAlertMappings,
+				findAdminAlertMappings.size());
+		}
 	}
 
 	@Override
@@ -156,11 +165,11 @@ public class AlertServiceImpl implements AlertService {
 			// getAdminAlertMappingId 없으면 새로 등록
 			if (ValidUtils.isNullOrZero(saveAdminAlertMapping.getAdminAlertMappingId())
 				&& !ValidUtils.isNullOrZero(saveAdminAlertMapping.getAlertId())) {
+
 				AlertEntity alertEntity = alertRepository.findById(saveAdminAlertMapping.getAlertId())
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
 				AdminAlertMappingEntity newAdminAlertMappingEntity = AdminAlertMappingEntity.saveBuilder()
 					.alert(alertEntity)
-					// .adminId(saveAdminAlertMapping.getAdminId())
 					.adminId(adminId)
 					.emailAlertStatus(saveAdminAlertMapping.getEmailAlertStatus())
 					.systemAlertStatus(saveAdminAlertMapping.getSystemAlertStatus())
@@ -171,6 +180,7 @@ public class AlertServiceImpl implements AlertService {
 				AdminAlertMappingEntity findAdminAlertMappingEntity = adminAlertMappingRepository.findById(
 						saveAdminAlertMapping.getAdminAlertMappingId())
 					.orElseThrow(() -> new RuntimeException("Hello world!"));
+
 				findAdminAlertMappingEntity.updateAlertMappingEntity(saveAdminAlertMapping.getEmailAlertStatus(),
 					saveAdminAlertMapping.getSystemAlertStatus());
 				adminAlertMappingRepository.save(findAdminAlertMappingEntity);

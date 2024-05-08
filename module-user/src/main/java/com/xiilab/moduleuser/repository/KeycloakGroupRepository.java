@@ -378,7 +378,17 @@ public class KeycloakGroupRepository implements GroupRepository {
 			.members(0, Integer.MAX_VALUE);
 
 		owner.addAll(members);
-		return owner.stream().filter(
+		// 중복된 객체를 제거한 새로운 리스트 생성
+		List<UserRepresentation> uniqueMemberList = new ArrayList<>();
+		// 중복된 name 값을 가진 객체를 저장할 Set 생성
+		Set<String> memberIdSet = new HashSet<>();
+		for (UserRepresentation user : owner) {
+			if (!memberIdSet.contains(user.getId())) {
+				memberIdSet.add(user.getId());
+				uniqueMemberList.add(user);
+			}
+		}
+		return uniqueMemberList.stream().filter(
 				userRepresentation ->
 					(userRepresentation.getLastName() + userRepresentation.getFirstName()).contains(search)
 						|| userRepresentation.getEmail().contains(search))

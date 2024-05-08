@@ -2,12 +2,11 @@ package com.xiilab.servercore.alert.systemalert.dto.response;
 
 import java.util.List;
 
-import org.springframework.util.CollectionUtils;
-
-import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.enums.AlertType;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
+import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -26,15 +25,24 @@ public class FindAdminAlertMappingResDTO {
 	public static FindAdminAlertMappingResDTO of(AlertEntity alertEntity) {
 		return FindAdminAlertMappingResDTO.builder()
 			.alertId(alertEntity.getAlertId())
-			.adminAlertMappingId(!CollectionUtils.isEmpty(alertEntity.getAdminAlertMappingEntities()) ?
-				alertEntity.getAdminAlertMappingEntities().get(0).getAdminAlertMappingId() : null)
+			.adminAlertMappingId(null)
 			.title(alertEntity.getAlertName())
 			.alertType(alertEntity.getAlertType())
 			.alertRole(alertEntity.getAlertRole())
-			.systemYN(!CollectionUtils.isEmpty(alertEntity.getAdminAlertMappingEntities()) ?
-				alertEntity.getAdminAlertMappingEntities().get(0).getSystemAlertStatus() : AlertStatus.OFF)
-			.emailYN(!CollectionUtils.isEmpty(alertEntity.getAdminAlertMappingEntities()) ?
-				alertEntity.getAdminAlertMappingEntities().get(0).getEmailAlertStatus() : AlertStatus.OFF)
+			.systemYN(AlertStatus.OFF)
+			.emailYN(AlertStatus.OFF)
+			.build();
+	}
+
+	public static FindAdminAlertMappingResDTO of(AdminAlertMappingEntity adminAlertMappingEntity) {
+		return FindAdminAlertMappingResDTO.builder()
+			.alertId(adminAlertMappingEntity.getAlert().getAlertId())
+			.adminAlertMappingId(adminAlertMappingEntity.getAdminAlertMappingId())
+			.title(adminAlertMappingEntity.getAlert().getAlertName())
+			.alertType(adminAlertMappingEntity.getAlert().getAlertType())
+			.alertRole(adminAlertMappingEntity.getAlert().getAlertRole())
+			.systemYN(adminAlertMappingEntity.getSystemAlertStatus())
+			.emailYN(adminAlertMappingEntity.getEmailAlertStatus())
 			.build();
 	}
 
@@ -44,9 +52,17 @@ public class FindAdminAlertMappingResDTO {
 		private List<FindAdminAlertMappingResDTO> adminAlertMappingsDTO;
 		private long totalCount;
 
-		public static AdminAlertMappings from(List<AlertEntity> alertEntities, long totalCount) {
+		public static AdminAlertMappings fromDefaultAlerts(List<AlertEntity> alertEntities, long totalCount) {
 			return AdminAlertMappings.builder()
 				.adminAlertMappingsDTO(alertEntities.stream().map(FindAdminAlertMappingResDTO::of).toList())
+				.totalCount(totalCount)
+				.build();
+		}
+
+		public static AdminAlertMappings fromAdminAlertsMappings(
+			List<AdminAlertMappingEntity> adminAlertMappingEntities, long totalCount) {
+			return AdminAlertMappings.builder()
+				.adminAlertMappingsDTO(adminAlertMappingEntities.stream().map(FindAdminAlertMappingResDTO::of).toList())
 				.totalCount(totalCount)
 				.build();
 		}

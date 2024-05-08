@@ -1,10 +1,12 @@
 package com.xiilab.servercore.workload.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
@@ -24,4 +26,7 @@ public interface WorkloadHistoryService {
 	List<JobEntity> getWorkloadByResourceName(String workspaceResourceName);
 
 	void deleteWorkload(String workspaceName);
+
+	List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds,
+		LocalDate startDate, LocalDate endDate);
 }

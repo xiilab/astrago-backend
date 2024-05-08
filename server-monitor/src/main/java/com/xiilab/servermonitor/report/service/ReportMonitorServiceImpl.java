@@ -114,7 +114,6 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 			default:
 				throw new IllegalArgumentException("Invalid period: " + period);
 		}
+
 	}
-
-
 }
