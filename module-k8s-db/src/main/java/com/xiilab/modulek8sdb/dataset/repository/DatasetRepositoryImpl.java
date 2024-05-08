@@ -17,6 +17,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -33,7 +34,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 
 	@Override
 	public Page<Dataset> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType userAuth,
-		RepositorySearchCondition repositorySearchCondition) {
+		RepositorySearchCondition repositorySearchCondition, PageMode pageMode) {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 		OrderSpecifier<? extends Serializable> sort =
 			sortType == RepositorySortType.NAME ? dataset.datasetName.desc() :
@@ -41,7 +42,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
 			.where(
-				creatorEq(userId, userAuth),
+				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
 				deleteYNEqN()
@@ -54,7 +55,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 		Long count = queryFactory.select(dataset.count())
 			.from(dataset)
 			.where(
-				creatorEq(userId, userAuth),
+				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
 				deleteYNEqN()
@@ -75,7 +76,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 	@Override
 	public List<Dataset> findByAuthority(String userId, AuthType userAuth) {
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
-			.where(creatorEq(userId, userAuth),
+			.where(creatorEq(userId, userAuth, PageMode.USER),
 				deleteYNEqN())
 			.orderBy(dataset.regDate.desc())
 			.fetch();
@@ -98,8 +99,8 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom{
 		return datasetId != null ? dataset.datasetId.eq(datasetId) : null;
 	}
 
-	private Predicate creatorEq(String creator, AuthType authType) {
-		if(authType == AuthType.ROLE_USER){
+	private Predicate creatorEq(String creator, AuthType authType, PageMode pageMode) {
+		if(authType == AuthType.ROLE_USER || pageMode == PageMode.USER){
 			return StringUtils.hasText(creator) ? dataset.regUser.regUserId.eq(creator) : null;
 		}
 		return null;

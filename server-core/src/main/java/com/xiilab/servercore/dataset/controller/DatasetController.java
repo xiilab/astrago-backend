@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -66,8 +67,9 @@ public class DatasetController {
 	public ResponseEntity<DatasetDTO.ResDatasets> getDatasets(
 		PageInfo pageInfo,
 		RepositorySearchCondition repositorySearchCondition,
-		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
-		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageInfo, repositorySearchCondition, userInfoDTO);
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO,
+		@RequestParam(value = "pageMode") PageMode pageMode) {
+		DatasetDTO.ResDatasets datasets = datasetService.getDatasets(pageInfo, repositorySearchCondition, userInfoDTO, pageMode);
 		return new ResponseEntity(datasets, HttpStatus.OK);
 	}
 
