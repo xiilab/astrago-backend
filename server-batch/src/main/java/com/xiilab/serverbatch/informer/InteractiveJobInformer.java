@@ -212,7 +212,7 @@ public class InteractiveJobInformer extends JobInformer {
 			.workloadType(interactiveWorkloadInfoFromResource.getWorkloadType())
 			.build();
 
-		//워크로드 생성 알림 발송
+		//워크로드 실행 알림 발송
 		String workloadName = interactiveWorkloadInfoFromResource.getWorkloadName();
 		String emailTitle = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
 		String title = AlertMessage.WORKLOAD_START_CREATOR.getTitle();
