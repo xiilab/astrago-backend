@@ -445,12 +445,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 					createOwnerMessage, workspaceResourceReqDTO.getWorkspace(), pageNaviParam));
 		}
 
-		// 메일 메시지 조회
-		MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_REQUEST;
-		// 관리자 리스트 출력
-		List<UserDTO.UserInfo> adminList = userService.getAdminList();
-
 		if(userInfoDTO.getAuth() != AuthType.ROLE_ADMIN){
+			// 메일 메시지 조회
+			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_REQUEST;
 			// 본인에게 요청 전송 메일
 			mailService.sendMail(MailDTO.builder()
 				.subject(String.format(mail.getSubject(), workspaceInfo.getName()))
@@ -461,7 +458,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				.footer(mail.getFooter())
 				.receiverEmail(userInfoDTO.getEmail())
 				.build());
-
+			// 관리자 리스트 출력
+			List<UserDTO.UserInfo> adminList = userService.getAdminList();
 			// 관리자에게 요청 메일
 			for (UserDTO.UserInfo admin : adminList) {
 				mailService.sendMail(MailDTO.builder()
