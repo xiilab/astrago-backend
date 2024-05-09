@@ -433,7 +433,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.gpuIndexs(gpuIndex)
 					.migEnable(false)
 					.build()))
-				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get(MIG_GPU_NAME)))
+				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get(GPU_NAME)))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		} else {
