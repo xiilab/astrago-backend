@@ -10,7 +10,7 @@
     </appender>
 
     <timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
-    <property name="LOG_PATH" value="/root/astrago/backend_logs"/>
+    <property name="LOG_PATH" value="./logs"/>
     <property name="FILE_LOG_PATTERN"
               value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{36}:%L - %msg%n"/>
 
