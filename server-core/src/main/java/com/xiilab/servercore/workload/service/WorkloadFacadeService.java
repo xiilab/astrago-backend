@@ -413,21 +413,21 @@ public class WorkloadFacadeService {
 		List<ModuleWorkloadResDTO> workloadResDTOList = new ArrayList<>();
 		if (workloadType == WorkloadType.BATCH) {
 			//k8s cluster에 생성되어있는 batchJob list
-			List<ModuleBatchJobResDTO> batchJobListFromCluster = workloadModuleService.getBatchWorkloadListByCondition(
-				workspaceName, isCreatedByMe, userInfoDTO.getId());
+			// List<ModuleBatchJobResDTO> batchJobListFromCluster = workloadModuleService.getBatchWorkloadListByCondition(
+			// 	workspaceName, isCreatedByMe, userInfoDTO.getId());
 			//종료된 batchJob list
 			List<ModuleBatchJobResDTO> batchWorkloadHistoryList = workloadHistoryService.getBatchWorkloadHistoryList(
 				workspaceName, null, isCreatedByMe, userInfoDTO.getId());
-			workloadResDTOList.addAll(batchJobListFromCluster);
+			// workloadResDTOList.addAll(batchJobListFromCluster);
 			workloadResDTOList.addAll(batchWorkloadHistoryList);
 		} else {
 			//k8s cluster에서 생성되어있는 interactive job list 조회
-			List<ModuleInteractiveJobResDTO> interactiveJobFromCluster = workloadModuleService.getInteractiveWorkloadListByCondition(
-				workspaceName, isCreatedByMe, userInfoDTO.getId());
+			// List<ModuleInteractiveJobResDTO> interactiveJobFromCluster = workloadModuleService.getInteractiveWorkloadListByCondition(
+			// 	workspaceName, isCreatedByMe, userInfoDTO.getId());
 			//종료된 interactive job list 조회
 			List<ModuleInteractiveJobResDTO> interactiveWorkloadHistoryList = workloadHistoryService.getInteractiveWorkloadHistoryList(
 				workspaceName, null, isCreatedByMe, userInfoDTO.getId());
-			workloadResDTOList.addAll(interactiveJobFromCluster);
+			// workloadResDTOList.addAll(interactiveJobFromCluster);
 			workloadResDTOList.addAll(interactiveWorkloadHistoryList);
 		}
 		//핀 워크로드 목록 필터링
