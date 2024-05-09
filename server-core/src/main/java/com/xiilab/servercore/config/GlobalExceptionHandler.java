@@ -87,6 +87,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(makeErrorResponse(errorCode));
 	}
+
 	private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode));
@@ -101,6 +102,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode, message));
 	}
+
 	private ResponseEntity<Object> handleExceptionInternal(BindException e, ErrorCode errorCode) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(e, errorCode));
