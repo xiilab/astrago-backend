@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %highlight(%-5level) %cyan(%logger{36}:%L) -
+                %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
+    <property name="LOG_PATH" value="/root/astrago/backend_logs"/>
+    <property name="FILE_LOG_PATTERN"
+              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{36}:%L - %msg%n"/>
+
+    <!-- 특정 마커(클래스)가 로그 메시지에 포함되었을 때, 로깅을 제어하기 위한 설정 -->
+    <turboFilter class="ch.qos.logback.classic.turbo.MarkerFilter">
+        <!-- Log4J 로깅을 거부 (메시지 출력 X) -->
+        <Marker>LOG4JDBC_NON_STATEMENT</Marker>
+        <OnMatch>DENY</OnMatch>
+        <OnMismatch>NEUTRAL</OnMismatch>
+    </turboFilter>
+
+    <include resource="logback/info-appender.xml"/>
+    <include resource="logback/warn-appender.xml"/>
+    <include resource="logback/error-appender.xml"/>
+
+    <logger name="jdbc.sqltiming" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="INFO_LOG"/>
+        <appender-ref ref="WARN_LOG"/>
+        <appender-ref ref="ERROR_LOG"/>
+    </root>
+</configuration>
