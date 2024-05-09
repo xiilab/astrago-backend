@@ -85,5 +85,5 @@ prometheus:
   url: http://10.61.3.12:30090/
 
 tus:
-  upload-path: /root/astrago
+  upload-path: /root/astrago/tus/meta
   expire-period: 60000
