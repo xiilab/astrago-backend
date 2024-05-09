@@ -32,6 +32,7 @@ public class WebSecurityConfig {
 		http.authorizeHttpRequests(authorize -> authorize
 			.requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 			// .requestMatchers( "/api/v1/**").permitAll()
+			.requestMatchers("/error").permitAll()
 			.requestMatchers(HttpMethod.GET, "/api/v1/core/user").permitAll()
 			.requestMatchers(HttpMethod.GET, "/api/v1/core/group").permitAll()
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/user/join").permitAll()
@@ -51,11 +52,5 @@ public class WebSecurityConfig {
 
 		http.addFilterBefore(licenseFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
-	}
-
-	@Bean
-	public WebSecurityCustomizer webSecurityCustomizer() {
-		return web -> web.ignoring()
-			.requestMatchers("/api/v1/core/tus/**");
 	}
 }
