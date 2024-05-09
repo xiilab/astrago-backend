@@ -207,12 +207,15 @@ ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 -- 허브 초기값
 INSERT INTO TB_HUB (HUB_ID, MOD_DATE, REG_DATE, ENVS, PORTS, COMMAND, DATASET_MOUNT_PATH, DESCRIPTION, MODEL_MOUNT_PATH,
                     REG_USER_ID, REG_USER_NAME, REG_USER_REAL_NAME, SOURCE_CODE_BRANCH, SOURCE_CODE_MOUNT_PATH,
-                    SOURCE_CODE_URL_GITHUB, SOURCE_CODE_URL_GITLAB, TITLE, IMAGE_ID, README_URL_GITHUB, README_URL_GITLAB, THUMBNAIL_URL_GITHUB, THUMBNAIL_URL_GITLAB, WORKLOAD_TYPE, PARAMETER)
+                    SOURCE_CODE_URL_GITHUB, SOURCE_CODE_URL_GITLAB, TITLE, IMAGE_ID, README_URL_GITHUB,
+                    README_URL_GITLAB, THUMBNAIL_URL_GITHUB, THUMBNAIL_URL_GITLAB, WORKLOAD_TYPE, PARAMETER)
 VALUES (1, null, now(),
         '{     "DB_HOST": "astrago-mariadb.astrago.svc",     "DB_PORT": "3306",     "DB_USER": "root",     "DB_PASSWORD": "root",     "DB_DATABASE": "astrago" }',
         null,
         'python train.py',
-        '/tmp/datasets', 'TEST1', '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master', '/usr/src/ultralytics',
+        '/tmp/datasets',
+        'YOLO(You Only Look Once)는 Object detection 모델 중 하나로, 높은 속도와 정확도를 가집니다. YOLO의 핵심 아이디어는 이미지를 단 한번만 보고 (Object detection을 위해 이미지를 단일 네트워크 패스를 통해 처리함으로써) 객체의 위치와 분류를 동시에 예측하는 것입니다. 해당 모델은 실시간 처리가 필요한 응용 프로그램에서 특히 유용합니다.',
+        '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master', '/usr/src/ultralytics',
         'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null, 'YOLOv8', 1,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/Readme.md',
         null,
@@ -223,8 +226,11 @@ VALUES (1, null, now(),
        (2, null, now(),
         '{     "DB_HOST": "astrago-mariadb.astrago.svc",     "DB_PORT": "3306",     "DB_USER": "root",     "DB_PASSWORD": "root",     "DB_DATABASE": "astrago" }',
         null,
-        'python train.py', '/tmp/datasets', 'TEST2', '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master', '/usr/src/ultralytics',
-        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null,'YOLOv5', 2,
+        'python train.py', '/tmp/datasets',
+        'YOLO(You Only Look Once)는 Object detection 모델 중 하나로, 높은 속도와 정확도를 가집니다. YOLO의 핵심 아이디어는 이미지를 단 한번만 보고 (Object detection을 위해 이미지를 단일 네트워크 패스를 통해 처리함으로써) 객체의 위치와 분류를 동시에 예측하는 것입니다. 해당 모델은 실시간 처리가 필요한 응용 프로그램에서 특히 유용합니다.',
+        '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master',
+        '/usr/src/ultralytics',
+        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null, 'YOLOv5', 2,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv5/Readme.md',
         null,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif',
@@ -241,8 +247,10 @@ VALUES (1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'OBJECT_DETECTION'),
 ON DUPLICATE KEY UPDATE HUB_CATEGORY_ID= HUB_CATEGORY_ID;
 
 INSERT INTO TB_NETWORK
-(NETWORK_ID,CONNECTION_TEST_HARBOR, CONNECTION_TEST_HUB, INIT_CONTAINER_HARBOR, INIT_CONTAINER_HUB, LOCAL_VOLUME_HARBOR, LOCAL_VOLUME_HUB, NETWORK_CLOSE_YN)
-VALUES(1, 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx', 'harbor.xiilab.com:32443/astrago/init-container-image',
-       'k8s.gcr.io/git-sync/git-sync:v3.6.0', 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx',
-       'xiilab/astrago-dataset-nginx', 'N')
+(NETWORK_ID, CONNECTION_TEST_HARBOR, CONNECTION_TEST_HUB, INIT_CONTAINER_HARBOR, INIT_CONTAINER_HUB,
+ LOCAL_VOLUME_HARBOR, LOCAL_VOLUME_HUB, NETWORK_CLOSE_YN)
+VALUES (1, 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx',
+        'harbor.xiilab.com:32443/astrago/init-container-image',
+        'k8s.gcr.io/git-sync/git-sync:v3.6.0', 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx',
+        'xiilab/astrago-dataset-nginx', 'N')
 ON DUPLICATE KEY UPDATE NETWORK_ID= NETWORK_ID;
