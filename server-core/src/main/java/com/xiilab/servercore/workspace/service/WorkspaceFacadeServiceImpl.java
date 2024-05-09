@@ -42,6 +42,7 @@ import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
@@ -476,7 +477,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName) {
-		return workspaceModuleFacadeService.getWorkspaceInfoByName(workspaceResourceName);
+		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(
+			workspaceResourceName);
+		//종료된 워크로드 개수 추가
+		List<JobEntity> endStatusWorkloads = workloadHistoryService.getWorkloadByResourceNameAndStatus(
+			workspaceResourceName, WorkloadStatus.END);
+		workspaceInfoByName.addEndStatusWorkloadCnt(endStatusWorkloads.size());
+		return workspaceInfoByName;
 	}
 
 	@Override

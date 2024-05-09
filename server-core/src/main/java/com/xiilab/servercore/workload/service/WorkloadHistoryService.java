@@ -3,6 +3,7 @@ package com.xiilab.servercore.workload.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
@@ -29,4 +30,6 @@ public interface WorkloadHistoryService {
 
 	List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds,
 		LocalDate startDate, LocalDate endDate);
+
+	List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName, WorkloadStatus workloadStatus);
 }

@@ -383,6 +383,12 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			.toList();
 	}
 
+	@Override
+	public List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName,
+		WorkloadStatus workloadStatus) {
+		return workloadHistoryRepo.getWorkloadByResourceNameAndStatus(workspaceResourceName, workloadStatus);
+	}
+
 	private String[] getSplitIds(String ids) {
 		return ids != null ? ids.split(",") : null;
 	}

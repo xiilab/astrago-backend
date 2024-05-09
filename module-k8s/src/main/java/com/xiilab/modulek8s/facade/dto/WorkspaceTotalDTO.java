@@ -54,5 +54,7 @@ public class WorkspaceTotalDTO {
 	private int getWorkloadCountByStatus(List<ModuleWorkloadResDTO> workloadList, WorkloadStatus status) {
 		return (int) workloadList.stream().filter(workload -> workload.getStatus() == status).count();
 	}
-
+	public void addEndStatusWorkloadCnt(int endCnt){
+		this.endCnt += endCnt;
+	}
 }
