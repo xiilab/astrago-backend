@@ -33,7 +33,8 @@ public class WorkspaceTotalDTO {
 	private String creatorName;
 	private LocalDateTime createAt;
 
-	public WorkspaceTotalDTO(WorkspaceDTO.ResponseDTO workspaceDTO, ResourceQuotaResDTO resourceQuotaResDTO, List<ModuleWorkloadResDTO> workloadList) {
+	public WorkspaceTotalDTO(WorkspaceDTO.ResponseDTO workspaceDTO, ResourceQuotaResDTO resourceQuotaResDTO,
+		List<ModuleWorkloadResDTO> workloadList) {
 		this.uid = workspaceDTO.getId();
 		this.name = workspaceDTO.getName();
 		this.resourceName = workspaceDTO.getResourceName();
@@ -52,9 +53,10 @@ public class WorkspaceTotalDTO {
 	}
 
 	private int getWorkloadCountByStatus(List<ModuleWorkloadResDTO> workloadList, WorkloadStatus status) {
-		return (int) workloadList.stream().filter(workload -> workload.getStatus() == status).count();
+		return (int)workloadList.stream().filter(workload -> workload.getStatus() == status).count();
 	}
-	public void addEndStatusWorkloadCnt(int endCnt){
+
+	public void addEndStatusWorkloadCnt(int endCnt) {
 		this.endCnt += endCnt;
 	}
 }
