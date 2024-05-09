@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -37,10 +38,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		if (!target.isBlank()) {
 			String msg = String.format(errorCode.getMessage(), target);
 			log.error("restApiException :" + msg);
-			return handleExceptionInternal(errorCode, msg);
+			return customExceptionInternal(errorCode, msg);
 		}
 		log.error("restApiException :" + errorCode.getMessage());
-		return handleExceptionInternal(errorCode);
+		return customExceptionInternal(errorCode);
 	}
 
 	@ExceptionHandler(K8sException.class)
@@ -82,16 +83,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleExceptionInternal(ex, errorCode);
 	}
 
+	private ResponseEntity<Object> customExceptionInternal(ErrorCode errorCode) {
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(makeErrorResponse(errorCode));
+	}
 	private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode));
+	}
+
+	private ResponseEntity<Object> customExceptionInternal(ErrorCode errorCode, String message) {
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(makeErrorResponse(errorCode, message));
 	}
 
 	private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode, String message) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode, message));
 	}
-
 	private ResponseEntity<Object> handleExceptionInternal(BindException e, ErrorCode errorCode) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(e, errorCode));
