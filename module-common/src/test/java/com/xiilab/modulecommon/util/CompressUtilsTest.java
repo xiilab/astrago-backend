@@ -16,7 +16,7 @@
 // 	void compressFolder() {
 // 		ClassLoader classLoader = this.getClass().getClassLoader();
 //
-// 		String targetFolder1 = "coco2/";
+// 		String targetFolder1 = "zip/";
 // 		// String targetFolder2 = "zip2/";
 // 		// String targetFolder3 = "zip3/";
 // 		// String targetFolder4 = "zip4/";
