@@ -2,7 +2,8 @@ name: Deploy to Production Workflow
 run-name: ${{ github.actor }} Deploys to Production 🚀
 on:
   push:
-    tags: [ 'v*.*.*' ]
+    branches:
+    - seoul-tech
 
 env:
   DOCKER_REPOSITORY: xiilab/astrago
@@ -39,7 +40,7 @@ jobs:
       - name: Set Image Tag
         id: extract_image_tag
         run: |
-          IMAGE_TAG=${{ github.ref_name }}
+          IMAGE_TAG=seoultech-$(git rev-parse --short=4 HEAD)
           echo "image-tag=$IMAGE_TAG"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
@@ -98,12 +99,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.core.imageTag = "core-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.batch.imageTag = "batch-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/seoultech/values.yaml'
+            yq -i '.astrago.core.imageTag = "core-${{ needs.integration.outputs.image-tag }}"' 'environments/seoultech/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/seoultech/values.yaml'
+            yq -i '.astrago.batch.imageTag = "batch-${{ needs.integration.outputs.image-tag }}"' 'environments/seoultech/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/seoultech/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/seoultech/values.yaml'
 
       - name: Commit and Push
         run: |
