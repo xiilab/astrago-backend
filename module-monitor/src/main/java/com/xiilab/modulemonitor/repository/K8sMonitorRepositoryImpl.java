@@ -48,12 +48,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	private final String NVIDIA_GPU = "requests.nvidia.com/gpu";
 	private final String REQUEST_CPU = "requests.cpu";
 	private final String GPU = "GPU";
-	private final List<K8sErrorStatus> targetReasons = Arrays.asList(
-		K8sErrorStatus.CrashLoopBackOff,
-		K8sErrorStatus.ImagePullBackOff,
-		K8sErrorStatus.ErrImagePull,
-		K8sErrorStatus.InvalidImageName
-	);
+	private final List<K8sErrorStatus> targetReasons = Arrays.asList(K8sErrorStatus.CrashLoopBackOff,
+		K8sErrorStatus.ImagePullBackOff, K8sErrorStatus.ErrImagePull, K8sErrorStatus.InvalidImageName);
 
 	/**
 	 * Workload Error 개수 조회
@@ -76,16 +72,13 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 * @return 조회된 Error Count
 	 */
 	private long convertErrorCountByPodList(List<Pod> pods) {
-		return pods.stream()
-			.map(pod -> {
-				try {
-					return pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason();
-				} catch (NullPointerException | IndexOutOfBoundsException | IllegalStateException e) {
-					return null;
-				}
-			})
-			.filter(reason -> reason != null && targetReasons.contains(K8sErrorStatus.valueOf(reason)))
-			.count();
+		return pods.stream().map(pod -> {
+			try {
+				return pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason();
+			} catch (NullPointerException | IndexOutOfBoundsException | IllegalStateException e) {
+				return null;
+			}
+		}).filter(reason -> reason != null && targetReasons.contains(K8sErrorStatus.valueOf(reason))).count();
 	}
 
 	/**
@@ -135,11 +128,15 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public List<ResponseDTO.EventDTO> getEventList(String namespace, String podName) {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 
-			List<Event> events = kubernetesClient.v1().events().inNamespace(namespace).list().getItems().stream()
+			List<Event> events = kubernetesClient.v1()
+				.events()
+				.inNamespace(namespace)
+				.list()
+				.getItems()
+				.stream()
 				.filter(event -> event.getKind().equalsIgnoreCase("pod"))
-				.filter(event ->
-					event.getInvolvedObject().getName().equals(podName)
-				).toList();
+				.filter(event -> event.getInvolvedObject().getName().equals(podName))
+				.toList();
 			return eventToDTO(events);
 		}
 	}
@@ -149,15 +146,15 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	 * @param eventList 변환될 K8s Event List
 	 */
 	private List<ResponseDTO.EventDTO> eventToDTO(List<Event> eventList) {
-		return eventList.stream().map(event ->
-			ResponseDTO.EventDTO.builder()
+		return eventList.stream()
+			.map(event -> ResponseDTO.EventDTO.builder()
 				.type(event.getType())
 				.workloadName(event.getMetadata().getNamespace())
 				.time(event.getEventTime() == null ? event.getLastTimestamp() : event.getEventTime().getTime())
 				.reason(event.getReason())
 				.message(event.getMessage())
-				.build()
-		).toList();
+				.build())
+			.toList();
 	}
 
 	/**
@@ -166,8 +163,11 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public List<ResponseDTO.NodeResponseDTO> getNodeList() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			return kubernetesClient.nodes().list().getItems().stream().map(node ->
-				ResponseDTO.NodeResponseDTO.builder()
+			return kubernetesClient.nodes()
+				.list()
+				.getItems()
+				.stream()
+				.map(node -> ResponseDTO.NodeResponseDTO.builder()
 					.nodeName(node.getMetadata().getName())
 					.ip(node.getStatus().getAddresses().get(0).getAddress())
 					.status(node.getStatus()
@@ -175,9 +175,12 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 						.stream()
 						.filter(nodeCondition -> nodeCondition.getStatus().equals("True"))
 						.toList()
-						.stream().findFirst().orElse(new NodeCondition().toBuilder().withType("NotReady").build())
+						.stream()
+						.findFirst()
+						.orElse(new NodeCondition().toBuilder().withType("NotReady").build())
 						.getType())
-					.build()).toList();
+					.build())
+				.toList();
 		}
 	}
 
@@ -188,13 +191,18 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public List<ResponseDTO.WorkloadResponseDTO> getWlList() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			// K8s 워크로드 리스트 조회
-			return kubernetesClient.pods().inAnyNamespace().list().getItems().stream()
+			return kubernetesClient.pods()
+				.inAnyNamespace()
+				.list()
+				.getItems()
+				.stream()
 				.filter(pod -> pod.getMetadata().getName().contains("wl-"))
 				.map(pod -> ResponseDTO.WorkloadResponseDTO.builder()
 					.wlName(pod.getMetadata().getName())
 					.wsName(pod.getMetadata().getNamespace())
 					.status(pod.getStatus().getPhase())
-					.build()).toList();
+					.build())
+				.toList();
 		}
 	}
 
@@ -214,12 +222,16 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.get(0)
 				.getStatus();
 			// Workspace별 Workload List
-			List<ResponseDTO.WorkloadResponseDTO> wlList = kubernetesClient.pods().list().getItems().stream()
+			List<ResponseDTO.WorkloadResponseDTO> wlList = kubernetesClient.pods()
+				.list()
+				.getItems()
+				.stream()
 				.filter(pod -> pod.getMetadata().getNamespace().equals(namespace))
 				.map(pod -> ResponseDTO.WorkloadResponseDTO.builder()
 					.wlName(pod.getMetadata().getNamespace())
 					.status(pod.getStatus().getPhase())
-					.build()).toList();
+					.build())
+				.toList();
 
 			return ResponseDTO.WorkspaceResponseDTO.builder()
 				.wsName(namespace)
@@ -346,17 +358,15 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	private long totalCapacity(List<Node> nodeList, String resourceName) {
 		return switch (resourceName) {
 			case CPU -> nodeList.stream()
-				.mapToInt(node ->
-					Integer.parseInt(node.getStatus().getCapacity().get("cpu").toString()))
+				.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("cpu").toString()))
 				.sum();
 			case "MEM" -> nodeList.stream()
-				.mapToLong(node ->
-					Integer.parseInt(node.getStatus().getCapacity().get(MEM).toString().replace("Ki", "")))
+				.mapToLong(
+					node -> Integer.parseInt(node.getStatus().getCapacity().get(MEM).toString().replace("Ki", "")))
 				.sum();
 			case GPU -> nodeList.stream()
 				.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu")))
-				.mapToInt(node ->
-					Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
+				.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
 				.sum();
 			default -> 0;
 		};
@@ -364,43 +374,33 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 	private String totalRequests(List<Node> nodeList, List<Pod> podList, String resourceName) {
 		return switch (resourceName) {
-			case "CPU" -> nodeList.stream()
-				.map(node -> {
-					List<Pod> runningPodsOnNode = podList.stream()
-						.filter(pod ->
-							!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec()
-								.getNodeName()
-								.equals(node.getMetadata().getName()))
-						.toList();
+			case "CPU" -> nodeList.stream().map(node -> {
+				List<Pod> runningPodsOnNode = podList.stream()
+					.filter(pod -> !StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec()
+						.getNodeName()
+						.equals(node.getMetadata().getName()))
+					.toList();
 
-					return calculateTotalCpuRequests(runningPodsOnNode);
-				})
-				.reduce("0", (x, y) ->
-					String.valueOf(DataConverterUtil.parseAndSum(x, y)));
-			case GPU -> nodeList.stream()
-				.map(node -> {
-					List<Pod> runningPodsOnNode = podList.stream()
-						.filter(pod ->
-							!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec()
-								.getNodeName()
-								.equals(node.getMetadata().getName()))
-						.toList();
+				return calculateTotalCpuRequests(runningPodsOnNode);
+			}).reduce("0", (x, y) -> String.valueOf(DataConverterUtil.parseAndSum(x, y)));
+			case GPU -> nodeList.stream().map(node -> {
+				List<Pod> runningPodsOnNode = podList.stream()
+					.filter(pod -> !StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec()
+						.getNodeName()
+						.equals(node.getMetadata().getName()))
+					.toList();
 
-					return calculateTotalGpuRequests(runningPodsOnNode);
-				}).reduce("0", (x, y) -> String.valueOf(Integer.parseInt(x) + Integer.parseInt(y)));
-			case "MEM" -> nodeList.stream()
-				.map(node -> {
-					List<Pod> runningPodsOnNode = podList.stream()
-						.filter(pod ->
-							!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec()
-								.getNodeName()
-								.equals(node.getMetadata().getName()))
-						.toList();
+				return calculateTotalGpuRequests(runningPodsOnNode);
+			}).reduce("0", (x, y) -> String.valueOf(Integer.parseInt(x) + Integer.parseInt(y)));
+			case "MEM" -> nodeList.stream().map(node -> {
+				List<Pod> runningPodsOnNode = podList.stream()
+					.filter(pod -> !StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec()
+						.getNodeName()
+						.equals(node.getMetadata().getName()))
+					.toList();
 
-					return calculateTotalMemRequests(runningPodsOnNode);
-				})
-				.reduce("0", (x, y) ->
-					String.valueOf(DataConverterUtil.parseAndSum(x, y)));
+				return calculateTotalMemRequests(runningPodsOnNode);
+			}).reduce("0", (x, y) -> String.valueOf(DataConverterUtil.parseAndSum(x, y)));
 			default -> "";
 		};
 	}
@@ -492,28 +492,28 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			List<ResponseDTO.ClusterReasonDTO> clusterReasonDTOList = eventList.stream()
 				.filter(event -> event.getType().equals("Warning"))
 				.map(event -> {
-						String eventTime =
-							!StringUtils.isBlank(event.getDeprecatedLastTimestamp()) ? event.getDeprecatedLastTimestamp() :
-								event.getEventTime().getTime();
+					String eventTime =
+						!StringUtils.isBlank(event.getDeprecatedLastTimestamp()) ? event.getDeprecatedLastTimestamp() :
+							event.getEventTime().getTime();
 
-						long fewMinutesAgo = DataConverterUtil.fewMinutesAgo(now, eventTime);
-						return ResponseDTO.ClusterReasonDTO.builder()
-							.reason(event.getReason())
-							.time(DataConverterUtil.datetimeFormatter(fewMinutesAgo))
-							.lastSEEN(fewMinutesAgo)
-							.build();
-					}
-				).toList();
+					long fewMinutesAgo = DataConverterUtil.fewMinutesAgo(now, eventTime);
+					return ResponseDTO.ClusterReasonDTO.builder()
+						.reason(event.getReason())
+						.time(DataConverterUtil.datetimeFormatter(fewMinutesAgo))
+						.lastSEEN(fewMinutesAgo)
+						.build();
+				})
+				.toList();
 			// lastSEEN으로 정렬된 맵 반환
 			return clusterReasonDTOList.stream()
 				.filter(clusterReasonDTO -> clusterReasonDTO.lastSEEN() < minute)
 				.collect(Collectors.groupingBy(ResponseDTO.ClusterReasonDTO::time,
-					Collectors.groupingBy(ResponseDTO.ClusterReasonDTO::reason, Collectors.counting())
-				))
-				.entrySet().stream()
+					Collectors.groupingBy(ResponseDTO.ClusterReasonDTO::reason, Collectors.counting())))
+				.entrySet()
+				.stream()
 				.sorted(Map.Entry.comparingByKey()) // 시간별로 정렬
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-					(oldValue, newValue) -> oldValue, LinkedHashMap::new));
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue,
+					LinkedHashMap::new));
 		}
 	}
 
@@ -522,8 +522,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			return Objects.nonNull(kubernetesClient.pods().inNamespace(namespace).withName(podName).get()) ?
 				kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() != null ?
-					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() : ""
-				: "";
+					kubernetesClient.pods().inNamespace(namespace).withName(podName).get().getSpec().getNodeName() :
+					"" : "";
 		}
 	}
 
@@ -570,15 +570,17 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
 			return pods.stream()
-				.filter(pod ->
-					pod.getStatus().getConditions().stream()
-						.anyMatch(podCondition -> podCondition.getType().equals("Ready") && podCondition.getStatus()
-							.equals("True")))
+				.filter(pod -> pod.getStatus()
+					.getConditions()
+					.stream()
+					.anyMatch(podCondition -> podCondition.getType().equals("Ready") && podCondition.getStatus()
+						.equals("True")))
 				.map(pod -> ClusterObjectDTO.builder()
 					.podName(pod.getMetadata().getName())
 					.namespace(pod.getMetadata().getNamespace())
 					.nodeName(pod.getSpec().getNodeName())
-					.build()).toList();
+					.build())
+				.toList();
 		}
 	}
 
@@ -587,14 +589,13 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
 			return pods.stream()
-				.filter(pod ->
-					pod.getStatus().getPhase().equals("Pending")
-				)
+				.filter(pod -> pod.getStatus().getPhase().equals("Pending"))
 				.map(pod -> ClusterObjectDTO.builder()
 					.podName(pod.getMetadata().getName())
 					.namespace(pod.getMetadata().getNamespace())
 					.nodeName(pod.getSpec().getNodeName())
-					.build()).toList();
+					.build())
+				.toList();
 		}
 	}
 
@@ -620,31 +621,41 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public List<ClusterObjectDTO> getReadyNodes() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			return kubernetesClient.nodes().list().getItems().stream()
-				.filter(node -> node.getStatus().getConditions().stream()
+			return kubernetesClient.nodes()
+				.list()
+				.getItems()
+				.stream()
+				.filter(node -> node.getStatus()
+					.getConditions()
+					.stream()
 					.anyMatch(nodeCondition -> nodeCondition.getType().equals("Ready") && nodeCondition.getStatus()
 						.equals("True")))
-				.map(node -> ClusterObjectDTO.builder()
-					.nodeName(node.getMetadata().getName())
-					.status("Ready")
-					.build()).toList();
+				.map(node -> ClusterObjectDTO.builder().nodeName(node.getMetadata().getName()).status("Ready").build())
+				.toList();
 		}
 	}
 
 	@Override
 	public List<ClusterObjectDTO> getUnhealthyDeployments() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			return kubernetesClient.apps().deployments().inAnyNamespace().list().getItems().stream()
-				.filter(deployment -> deployment.getStatus().getConditions().stream()
+			return kubernetesClient.apps()
+				.deployments()
+				.inAnyNamespace()
+				.list()
+				.getItems()
+				.stream()
+				.filter(deployment -> deployment.getStatus()
+					.getConditions()
+					.stream()
 					.anyMatch(deploymentCondition -> deploymentCondition.getType().equals("Available")
 						&& deploymentCondition.getStatus().equals("False")))
-				.map(deployment ->
-					ClusterObjectDTO.builder()
-						.deploymentName(deployment.getMetadata().getName())
-						.namespace(deployment.getMetadata().getNamespace())
-						.reason(deployment.getStatus().getConditions().get(0).getReason())
-						.message(deployment.getStatus().getConditions().get(0).getMessage())
-						.build()).toList();
+				.map(deployment -> ClusterObjectDTO.builder()
+					.deploymentName(deployment.getMetadata().getName())
+					.namespace(deployment.getMetadata().getNamespace())
+					.reason(deployment.getStatus().getConditions().get(0).getReason())
+					.message(deployment.getStatus().getConditions().get(0).getMessage())
+					.build())
+				.toList();
 		}
 	}
 
@@ -657,11 +668,12 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.horizontalPodAutoscalers()
 				.inAnyNamespace()
 				.list()
-				.getItems().stream().filter(hpa ->
-					hpa.getMetadata()
-						.getAnnotations()
-						.get("autoscaling.alpha.kubernetes.io/conditions")
-						.contains("\"type\":\"AbleToScale\",\"status\":\"False\""))
+				.getItems()
+				.stream()
+				.filter(hpa -> hpa.getMetadata()
+					.getAnnotations()
+					.get("autoscaling.alpha.kubernetes.io/conditions")
+					.contains("\"type\":\"AbleToScale\",\"status\":\"False\""))
 				.toList();
 
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -708,11 +720,16 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	public List<ClusterObjectDTO> getUnhealthyStatefulSets() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<ClusterObjectDTO> result = new ArrayList<>();
-			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems().stream().filter(pod ->
-				!pod.getStatus().getPhase().equals("Running")).toList();
-			for(Pod pod : pods){
-				for(OwnerReference ownerReference : pod.getMetadata().getOwnerReferences()){
-					if(ownerReference.getKind().equals("StatefulSet")){
+			List<Pod> pods = kubernetesClient.pods()
+				.inAnyNamespace()
+				.list()
+				.getItems()
+				.stream()
+				.filter(pod -> !pod.getStatus().getPhase().equals("Running"))
+				.toList();
+			for (Pod pod : pods) {
+				for (OwnerReference ownerReference : pod.getMetadata().getOwnerReferences()) {
+					if (ownerReference.getKind().equals("StatefulSet")) {
 						result.add(ClusterObjectDTO.builder()
 							.statefulsetName(ownerReference.getName())
 							.reason(pod.getStatus().getContainerStatuses().get(0).getState().getWaiting().getReason())
@@ -748,12 +765,15 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<ClusterObjectDTO> result = new ArrayList<>();
 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
-			for(Pod pod : pods){
-				for(ContainerStatus containerStatus : pod.getStatus().getContainerStatuses()){
-					if(containerStatus.getState().getWaiting() != null && containerStatus.getState().getWaiting().getReason().equals("ImagePullBackOff")){
+			for (Pod pod : pods) {
+				for (ContainerStatus containerStatus : pod.getStatus().getContainerStatuses()) {
+					if (containerStatus.getState().getWaiting() != null && containerStatus.getState()
+						.getWaiting()
+						.getReason()
+						.equals("ImagePullBackOff")) {
 						result.add(ClusterObjectDTO.builder()
-								.containerName(containerStatus.getName())
-								.reason(containerStatus.getState().getWaiting().getReason())
+							.containerName(containerStatus.getName())
+							.reason(containerStatus.getState().getWaiting().getReason())
 							.build());
 					}
 				}

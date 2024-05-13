@@ -1,7 +1,11 @@
 package com.xiilab.modulek8sdb.workload.history.repository;
 
 import static com.xiilab.modulek8sdb.workload.history.entity.QJobEntity.*;
+import static com.xiilab.modulek8sdb.workload.history.entity.QWorkloadEntity.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -11,6 +15,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +47,21 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 			.orderBy(jobEntity.createdAt.desc())
 			.limit(1)
 			.fetchOne();
+	}
+
+	@Override
+	public List<WorkloadEntity> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds,
+		LocalDate startDate,
+		LocalDate endDate) {
+		LocalDateTime startTime = startDate.atStartOfDay();
+		LocalDateTime endTime = endDate.atTime(LocalTime.MAX);
+		return queryFactory.selectFrom(workloadEntity)
+			.where(
+				workloadEntity.workspaceResourceName.in(workspaceIds),
+				workloadEntity.createdAt.between(startTime, endTime)
+			)
+			.orderBy(workloadEntity.creatorRealName.asc())
+			.fetch();
 	}
 
 	private BooleanExpression eqName(String searchName) {

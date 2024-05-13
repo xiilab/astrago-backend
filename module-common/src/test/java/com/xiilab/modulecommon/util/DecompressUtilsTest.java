@@ -1,5 +1,7 @@
 // package com.xiilab.modulecommon.util;
 //
+// import static org.junit.jupiter.api.Assertions.*;
+//
 // import java.net.URL;
 // import java.nio.file.Path;
 // import java.util.ArrayList;
@@ -10,30 +12,16 @@
 // import com.xiilab.modulecommon.enums.CompressFileType;
 // import com.xiilab.modulecommon.exception.RestApiException;
 //
-// class CompressUtilsTest {
-//
+// class DecompressUtilsTest {
 // 	@Test
-// 	void compressFolder() {
+// 	void decompressZip() {
 // 		ClassLoader classLoader = this.getClass().getClassLoader();
-//
-// 		String targetFolder1 = "zip/";
-// 		// String targetFolder2 = "zip2/";
-// 		// String targetFolder3 = "zip3/";
-// 		// String targetFolder4 = "zip4/";
-// 		URL srcZip1 = classLoader.getResource(targetFolder1);
-// 		// URL srcZip2 = classLoader.getResource(targetFolder2);
-// 		// URL srcZip3 = classLoader.getResource(targetFolder3);
-// 		// URL srcZip4 = classLoader.getResource(targetFolder4);
+// 		String target = "coco2.zip";
+// 		URL srcZip = classLoader.getResource(target);
 //
 // 		try {
-// 			List<Path> pathList = new ArrayList<>();
-// 			pathList.add(Path.of(srcZip1.toURI()));
-// 			// pathList.add(Path.of(srcZip2.toURI()));
-// 			// pathList.add(Path.of(srcZip3.toURI()));
-// 			// pathList.add(Path.of(srcZip4.toURI()));
-//
 // 			long startTime = System.currentTimeMillis();
-// 			CompressUtils.saveCompressFile(pathList, null, CompressFileType.TAR);
+// 			DecompressUtils.saveDecompressFile(Path.of(srcZip.toURI()), null);
 // 			long endTime = System.currentTimeMillis();
 // 			long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //
@@ -47,4 +35,5 @@
 // 			e.printStackTrace();
 // 		}
 // 	}
+//
 // }

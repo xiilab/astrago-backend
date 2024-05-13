@@ -134,7 +134,7 @@ public class BatchJobInformer extends JobInformer {
 								"SYSTEM";
 
 						//워크로드 종료 알림 발송
-						sendJobSucceedNotification(metadataFromResource);
+						sendJobEndNotification(metadataFromResource);
 
 						Pod pod = kubernetesClient.pods()
 							.inNamespace(namespace)
@@ -181,26 +181,6 @@ public class BatchJobInformer extends JobInformer {
 				// 서비스 삭제
 				deleteServices(metadataFromResource.getWorkspaceResourceName(),
 					metadataFromResource.getWorkloadResourceName());
-
-				//워크로드 종료 알림 발송
-				// String workloadName = metadataFromResource.getWorkloadName();
-				// String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
-				// String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
-				// String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				// WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-				// 	AlertName.USER_WORKLOAD_DELETE, null, metadataFromResource.getCreatorId(),
-				// 	emailTitle, title, message, metadataFromResource.getWorkspaceResourceName(), null);
-				//
-				// publisher.publishEvent(workspaceUserAlertEvent);
-
-				MailAttribute mail = MailAttribute.WORKLOAD_DELETE;
-				mailService.sendMail(MailDTO.builder()
-					.subject(String.format(mail.getSubject(), metadataFromResource.getWorkloadName()))
-					.title(String.format(mail.getTitle(), metadataFromResource.getWorkloadName()))
-					.subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-					.footer(mail.getFooter())
-					.receiverEmail(userService.getUserById(metadataFromResource.getCreatorId()).getEmail())
-					.build());
 			}
 		});
 
@@ -208,7 +188,7 @@ public class BatchJobInformer extends JobInformer {
 		informers.startAllRegisteredInformers();
 	}
 
-	private void sendJobSucceedNotification(K8SResourceMetadataDTO metadataFromResource) {
+	private void sendJobEndNotification(K8SResourceMetadataDTO metadataFromResource) {
 		PageNaviParam pageNaviParam = PageNaviParam.builder()
 			.workspaceResourceName(metadataFromResource.getWorkspaceResourceName())
 			.workloadResourceName(metadataFromResource.getWorkloadResourceName())
@@ -238,13 +218,7 @@ public class BatchJobInformer extends JobInformer {
 
 	private void sendRunningNotification(Job job) {
 		K8SResourceMetadataDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
-		// try (KubernetesClient client = k8sAdapter.configServer()) {
-		// 	client.pods()
-		// 		.inNamespace(workspaceName)
-		// 		.withName(podName);
-		// }
 
-		// PodStatusUtil.getContainerStatus()
 		PageNaviParam pageNaviParam = PageNaviParam.builder()
 			.workspaceResourceName(batchWorkloadInfoFromResource.getWorkspaceResourceName())
 			.workloadResourceName(batchWorkloadInfoFromResource.getWorkloadResourceName())

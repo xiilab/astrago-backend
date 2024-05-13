@@ -238,3 +238,6 @@ server-core/src/main/resources/static/
 /.idea/dataSources.xml
 /.idea/jpa-buddy.xml
 /.idea/
+
+# log 제외
+*.log

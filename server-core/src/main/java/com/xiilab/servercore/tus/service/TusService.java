@@ -53,17 +53,20 @@ public class TusService {
 						.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
 					Dataset findDataset = datasetRepository.findById(datasetId)
 						.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+
 					// 파일 저장
 					Long fileSize = CoreFileUtils.saveInputStreamToFile(uploadInfo.getMetadata().get("filePath"),
 						filename,
 						tusFileUploadService.getUploadedBytes(request.getRequestURI()));
 					findDataset.setDatasetSize(fileSize);
+
 				} else if ("MODEL".equals(uploadType)) {
 					Long modelId = Optional.ofNullable(uploadInfo.getMetadata().get("modelId"))
 						.map(Long::valueOf)
 						.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
 					Model findModel = modelRepository.findById(modelId)
 						.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
+
 					// 파일 저장
 					Long fileSize = CoreFileUtils.saveInputStreamToFile(uploadInfo.getMetadata().get("filePath"),
 						filename,
