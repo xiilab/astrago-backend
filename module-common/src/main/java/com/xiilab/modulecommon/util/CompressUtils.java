@@ -120,6 +120,17 @@ public class CompressUtils {
 			);
 		}
 
+		// 파일명 중복되면 파일명 수정
+		int cnt = 1;
+		String baseName = FileNameUtils.getBaseName(destinationPath);
+		String extension = FileNameUtils.getExtension(destinationPath);
+
+		while (destinationPath.toFile().exists()) {
+			String changeFileName = baseName + "_" + cnt + "." + extension;
+			destinationPath = destinationPath.resolveSibling(changeFileName);
+			cnt++;
+		}
+
 		return destinationPath;
 	}
 
