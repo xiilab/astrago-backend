@@ -567,6 +567,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				case CREATOR_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed();
 				case CREATED_AT_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt);
 				case CREATED_AT_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed();
+				case WORKSPACE_NAME_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getName);
+				case WORKSPACE_NAME_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getName).reversed();
 			};
 			workspaceList = workspaceList.stream().sorted(comparator).toList();
 		}
