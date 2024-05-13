@@ -1,5 +1,5 @@
-name: Deploy to Production Workflow
-run-name: ${{ github.actor }} Deploys to Production 🚀
+name: Deploy to Seoultech Workflow
+run-name: ${{ github.actor }} Deploys to Seoultech 🚀
 on:
   push:
     branches:
