@@ -62,21 +62,4 @@ public class WorkloadResDTO {
 			this.resourceType = resourceType;
 		}
 	}
-
-	@Getter
-	@Builder
-	public static class WorkloadReportDTO {
-		private String userName;
-		private String userId;
-		private String userEmail;
-		private String group;
-		private String workspaceName;
-		private String workloadName;
-		private LocalDateTime startDate;
-		private LocalDateTime endDate;
-
-		public void setGroup(String group) {
-			this.group = group;
-		}
-	}
 }

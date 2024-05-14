@@ -364,26 +364,6 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
-		List<String> workspaceIds, LocalDate startDate,
-		LocalDate endDate) {
-		List<WorkloadEntity> workloads = workloadHistoryRepoCustom.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
-			workspaceIds, startDate, endDate);
-		return workloads.stream()
-			.map(workloadEntity -> WorkloadResDTO.WorkloadReportDTO.builder()
-				.userName(workloadEntity.getCreatorRealName())
-				.userId(workloadEntity.getCreatorId())
-				.userEmail(workloadEntity.getCreatorName())
-				.workspaceName(workloadEntity.getWorkspaceName())
-				.workloadName(workloadEntity.getName())
-				.startDate(workloadEntity.getCreatedAt())
-				.endDate(workloadEntity.getDeletedAt())
-				.build()
-			)
-			.toList();
-	}
-
-	@Override
 	public List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName,
 		WorkloadStatus workloadStatus) {
 		return workloadHistoryRepo.getWorkloadByResourceNameAndStatus(workspaceResourceName, workloadStatus);
