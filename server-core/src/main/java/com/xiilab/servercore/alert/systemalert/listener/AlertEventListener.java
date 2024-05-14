@@ -207,11 +207,7 @@ public class AlertEventListener {
 			}
 
 			// 메일 발송 로직 추가
-			// mailService.sendMail(MailDTO.builder()
-			// 	.title(userAlertEvent.mailTitle())
-			// 	.content(userAlertEvent.message())
-			// 	.receiverEmail(findUser.getEmail())
-			// 	.build());
+			mailService.sendMail(userAlertEvent.mailDTO());
 		}
 	}
 
