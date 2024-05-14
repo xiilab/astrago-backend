@@ -14,9 +14,6 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // excel
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
-
     // KeyCloak
     implementation 'org.keycloak:keycloak-admin-client:23.0.1'
     implementation 'org.keycloak:keycloak-spring-boot-starter:23.0.1'
