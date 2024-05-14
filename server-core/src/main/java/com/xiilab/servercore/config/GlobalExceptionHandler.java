@@ -84,7 +84,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	private ResponseEntity<Object> customExceptionInternal(ErrorCode errorCode) {
-		return ResponseEntity.status(HttpStatus.OK)
+		// return ResponseEntity.status(HttpStatus.OK)
+		// 	.body(makeErrorResponse(errorCode));
+		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode));
 	}
 
@@ -94,7 +96,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	private ResponseEntity<Object> customExceptionInternal(ErrorCode errorCode, String message) {
-		return ResponseEntity.status(HttpStatus.OK)
+		// return ResponseEntity.status(HttpStatus.OK)
+		// 	.body(makeErrorResponse(errorCode, message));
+		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(errorCode, message));
 	}
 
