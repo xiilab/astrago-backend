@@ -104,6 +104,13 @@ jobs:
             yq -i '.astrago.batch.imageTag = "batch-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
             yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
             yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            
+            yq -i '.core.image.repository = "${{ env.DOCKER_REPOSITORY }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.core.image.tag = "core-${{ needs.integration.outputs.image-tag }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.batch.image.repository = "${{ env.DOCKER_REPOSITORY }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.batch.image.tag = "batch-${{ needs.integration.outputs.image-tag }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.monitor.image.repository = "${{ env.DOCKER_REPOSITORY }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.monitor.image.tag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'applications/astrago/astrago/values.yaml'
 
       - name: Commit and Push
         run: |
