@@ -151,18 +151,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 		deleteServices(jobMetaData.getWorkspaceResourceName(), jobMetaData.getWorkloadResourceName());
 
-		UserDTO.UserInfo userInfo = userService.getUserById(jobMetaData.getCreatorId());
-		if (userInfo != null) {
-			MailDTO mail = MailDTO.builder()
-				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), jobMetaData.getWorkloadName()))
-				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), jobMetaData.getWorkloadName()))
-				.subTitle(String.format(MailAttribute.WORKLOAD_DELETE.getSubTitle(),
-					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-				.footer(MailAttribute.WORKLOAD_DELETE.getFooter())
-				.receiverEmail(userInfo.getEmail())
-				.build();
-			mailService.sendMail(mail);
-		}
 	}
 
 	@Override
@@ -311,21 +299,22 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			workloadName);
 		String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
 		String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-			AlertName.USER_WORKLOAD_END, null, workload.getCreatorId(), emailTitle, title, message,
-			workload.getWorkspaceResourceName(), pageNaviParam);
-
-		publisher.publishEvent(workspaceUserAlertEvent);
 
 		MailAttribute mail = MailAttribute.WORKLOAD_END;
-		mailService.sendMail(MailDTO.builder()
+		MailDTO mailDTO = MailDTO.builder()
 			.subject(String.format(mail.getSubject(), workload.getName()))
 			.title(String.format(mail.getTitle(), workload.getName()))
 			.subTitle(String.format(mail.getSubTitle(),
 				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 			.footer(mail.getFooter())
 			.receiverEmail(userService.getUserById(workload.getCreatorId()).getEmail())
-			.build());
+			.build();
+
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+			AlertName.USER_WORKLOAD_END, null, workload.getCreatorId(), emailTitle, title, message,
+			workload.getWorkspaceResourceName(), pageNaviParam, mailDTO);
+
+		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
 	private void sendRunningNotification(WorkloadEntity workload) {
@@ -341,23 +330,25 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		String emailTitle = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMailTitle(), workloadName);
 		String title = AlertMessage.WORKLOAD_START_CREATOR.getTitle();
 		String message = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-			AlertName.USER_WORKLOAD_START,
-			null, workload.getCreatorId(), emailTitle, title, message,
-			workload.getWorkspaceResourceName(), pageNaviParam);
-
-		publisher.publishEvent(workspaceUserAlertEvent);
 
 		MailAttribute mail = MailAttribute.WORKLOAD_START;
 
-		mailService.sendMail(MailDTO.builder()
+		MailDTO mailDTO = MailDTO.builder()
 			.subject(String.format(mail.getSubject(), workloadName))
 			.title(String.format(mail.getTitle(), workloadName))
 			.subTitle(String.format(mail.getSubTitle(),
 				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 			.footer(mail.getFooter())
 			.receiverEmail(userService.getUserById(workload.getCreatorId()).getEmail())
-			.build());
+			.build();
+
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+			AlertName.USER_WORKLOAD_START,
+			null, workload.getCreatorId(), emailTitle, title, message,
+			workload.getWorkspaceResourceName(), pageNaviParam, mailDTO);
+
+		publisher.publishEvent(workspaceUserAlertEvent);
+
 
 	}
 
@@ -374,22 +365,23 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		String emailTitle = String.format(workloadErrorCreator.getMailTitle(), workloadName);
 		String title = workloadErrorCreator.getTitle();
 		String message = String.format(workloadErrorCreator.getMessage(), workloadName);
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-			AlertName.USER_WORKLOAD_ERROR,
-			null, workload.getCreatorId(), emailTitle, title, message, workload.getWorkspaceResourceName(),
-			pageNaviParam);
-
-		publisher.publishEvent(workspaceUserAlertEvent);
 
 		MailAttribute mail = MailAttribute.WORKLOAD_ERROR;
-		mailService.sendMail(MailDTO.builder()
+		MailDTO mailDTO = MailDTO.builder()
 			.subject(String.format(mail.getSubject(), workload.getName()))
 			.title(String.format(mail.getTitle(), workload.getName()))
 			.subTitle(String.format(mail.getSubTitle(),
 				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 			.footer(mail.getFooter())
 			.receiverEmail(userService.getUserById(workload.getCreatorId()).getEmail())
-			.build());
+			.build();
+
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+			AlertName.USER_WORKLOAD_ERROR,
+			null, workload.getCreatorId(), emailTitle, title, message, workload.getWorkspaceResourceName(),
+			pageNaviParam, mailDTO);
+
+		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
 	private void saveJobHistory(String namespace, Container container,

@@ -122,7 +122,6 @@ public class UserServiceImpl implements UserService {
 			String emailTitle = String.format(userEnabled.getMailTitle());
 			String title = userEnabled.getTitle();
 			String message = String.format(userEnabled.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
-			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
 			mail = MailAttribute.USER_ENABLE;
 			contents = List.of(
 				MailDTO.Content.builder()
@@ -135,28 +134,36 @@ public class UserServiceImpl implements UserService {
 					.col2(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 					.build()
 			);
+			MailDTO mailDTO = MailDTO.builder()
+				.subject(mail.getSubject())
+				.title(
+					String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
+				.subTitle(mail.getSubTitle())
+				.receiverEmail(userInfo.getEmail())
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+				.build();
+			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id, mailDTO);
 		} else {//false 비활성화
 			String emailTitle = String.format(AlertMessage.USER_DISABLED.getMailTitle());
 			String title = AlertMessage.USER_DISABLED.getTitle();
 			String message = String.format(AlertMessage.USER_DISABLED.getMessage(),
 				userInfo.getLastName() + userInfo.getFirstName());
-			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id);
 			mail = MailAttribute.USER_UNABLE;
+			MailDTO mailDTO = MailDTO.builder()
+				.subject(mail.getSubject())
+				.title(
+					String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
+				.subTitle(mail.getSubTitle())
+				.receiverEmail(userInfo.getEmail())
+				.contentTitle(mail.getContentTitle())
+				.contents(contents)
+				.footer(mail.getFooter())
+				.build();
+			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id, mailDTO);
 		}
-
 		eventPublisher.publishEvent(userAlertEvent);
-		// 사용자 활성화 정보 사용자에게 전성
-		// Mail 전송
-		mailService.sendMail(MailDTO.builder()
-			.subject(mail.getSubject())
-			.title(
-				String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
-			.subTitle(mail.getSubTitle())
-			.receiverEmail(userInfo.getEmail())
-			.contentTitle(mail.getContentTitle())
-			.contents(contents)
-			.footer(mail.getFooter())
-			.build());
 	}
 
 	@Override

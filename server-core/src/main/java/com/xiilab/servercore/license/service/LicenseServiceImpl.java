@@ -61,19 +61,15 @@ public class LicenseServiceImpl implements LicenseService {
 			String mailTitle = licenseExpiration.getMailTitle();
 			String title = licenseExpiration.getTitle();
 			String message = String.format(licenseExpiration.getMessage(), licenseDTO.getEndDate());
-			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null));
 			MailAttribute mail = MailAttribute.LICENSE;
 			List<UserDTO.UserInfo> adminList = userService.getAdminList();
-			for (UserDTO.UserInfo admin : adminList) {
-				mailService.sendMail(MailDTO.builder()
-					.subject(mail.getSubject())
-					.title(String.format(mail.getTitle(), licenseDTO.getEndDate()))
-					.footer(mail.getFooter())
-					.receiverEmail(admin.getEmail())
-					.build());
-			}
-			throw e;
+			MailDTO mailDTO = MailDTO.builder()
+				.subject(mail.getSubject())
+				.title(String.format(mail.getTitle(), licenseDTO.getEndDate()))
+				.footer(mail.getFooter())
+				.build();
+			eventPublisher.publishEvent(
+				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null, mailDTO));			throw e;
 		}
 	}
 
