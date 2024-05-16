@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.PinErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulek8sdb.pin.entity.PinEntity;
@@ -71,7 +72,7 @@ public class PinServiceImpl implements PinService {
 		List<PinEntity> workspaceList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKSPACE,
 			userInfoDTO.getId());
 		if (workspaceList.size() >= 6) {
-			throw new IllegalArgumentException("");
+			throw new RestApiException(PinErrorCode.PIN_ADD_ERROR_MESSAGE);
 		}
 		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
 	}
@@ -82,6 +83,13 @@ public class PinServiceImpl implements PinService {
 
 		if (pinEntity != null) {
 			throw new RestApiException(WorkloadErrorCode.WORKLOAD_MESSAGE_ERROR);
+		}
+
+		//해당 유저가 pin을 6개 이상 생성했는지 검사
+		List<PinEntity> pinList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKLOAD,
+			userInfoDTO.getId());
+		if (pinList.size() >= 6) {
+			throw new RestApiException(PinErrorCode.PIN_ADD_ERROR_MESSAGE);
 		}
 
 		pinRepository.save(new PinEntity(PinType.WORKLOAD, resourceName));
