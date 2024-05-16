@@ -58,8 +58,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		String title = userCreate.getTitle();
 		String message = String.format(userCreate.getMessage(), userReqVO.getLastName() + userReqVO.getFirstName(),
 			userReqVO.getEmail());
-		eventPublisher.publishEvent(
-			new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), mailTitle, title, message, null));
+
 		MailAttribute mail = MailAttribute.USER_JOIN;
 		// Mail Contents 작성
 		List<MailDTO.Content> contents = List.of(MailDTO.Content.builder()
@@ -71,20 +70,16 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 				.col1("가입 일시 : ")
 				.col2(userInfo.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.build());
-		List<UserDTO.UserInfo> adminList = userService.getAdminList();
-		// 회원 가입시 관리자에게 메일 전송
-		for (UserDTO.UserInfo admin : adminList) {
-			// Mail 전송
-			mailService.sendMail(MailDTO.builder()
-				.subject(mail.getSubject())
-				.title(String.format(mail.getTitle(), userReqVO.getLastName() + userReqVO.getFirstName(),
-					userReqVO.getEmail()))
-				.contents(contents)
-				.subTitle(mail.getSubTitle())
-				.footer(mail.getFooter())
-				.receiverEmail(admin.getEmail())
-				.build());
-		}
+
+		MailDTO mailDTO = MailDTO.builder()
+			.subject(mail.getSubject())
+			.title(String.format(mail.getTitle(), userReqVO.getLastName() + userReqVO.getFirstName(),
+				userReqVO.getEmail()))
+			.contents(contents)
+			.subTitle(mail.getSubTitle())
+			.footer(mail.getFooter())
+			.build();
+		eventPublisher.publishEvent(new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), mailTitle, title, message, null, mailDTO));
 	}
 
 	@Override
@@ -158,9 +153,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		String mailTitle = userUpdate.getMailTitle();
 		String title = userUpdate.getTitle();
 		String message = String.format(userUpdate.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
-		eventPublisher.publishEvent(
-			new UserAlertEvent(AlertName.USER_UPDATE, mailTitle, title, message, userInfo.getId())
-		);
+
 		MailAttribute mail = MailAttribute.USER_UPDATE;
 		// Mail Contents 작성
 		List<MailDTO.Content> contents = List.of(
@@ -169,7 +162,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 
 		);
 		// Mail 전송
-		mailService.sendMail(MailDTO.builder()
+		MailDTO mailDTO = MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(
 				String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
@@ -178,8 +171,10 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 			.receiverEmail(userInfo.getEmail())
 			.contents(contents)
 			.footer(mail.getFooter())
-			.build());
-
+			.build();
+		eventPublisher.publishEvent(
+			new UserAlertEvent(AlertName.USER_UPDATE, mailTitle, title, message, userInfo.getId(), mailDTO)
+		);
 	}
 
 	@Override

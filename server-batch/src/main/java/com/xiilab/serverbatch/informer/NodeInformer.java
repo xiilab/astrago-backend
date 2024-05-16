@@ -80,20 +80,15 @@ public class NodeInformer {
 										String mailTitle = nodeMigApply.getMailTitle();
 										String title = nodeMigApply.getTitle();
 										String message = String.format(nodeMigApply.getMessage(), nodeName);
+										MailAttribute mail = MailAttribute.MIG_ON;
+										MailDTO mailDTO = MailDTO.builder()
+											.subject(mail.getSubject())
+											.title(String.format(mail.getTitle(), nodeName))
+											.footer(mail.getFooter())
+											.build();
 										eventPublisher.publishEvent(
 											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_APPLY, null, mailTitle, title,
-												message, null));
-										MailAttribute mail = MailAttribute.MIG_ON;
-										List<UserDTO.UserInfo> adminList = userService.getAdminList();
-										// MIG ON 관리자에게 메일 전송
-										for (UserDTO.UserInfo admin : adminList) {
-											mailService.sendMail(MailDTO.builder()
-												.subject(mail.getSubject())
-												.title(String.format(mail.getTitle(), nodeName))
-												.footer(mail.getFooter())
-												.receiverEmail(admin.getEmail())
-												.build());
-										}
+												message, null, mailDTO));
 									}
 									// String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
 									case PENDING ->
@@ -103,20 +98,18 @@ public class NodeInformer {
 										String mailTitle = nodeMigError.getMailTitle();
 										String title = nodeMigError.getTitle();
 										String message = String.format(nodeMigError.getMessage(), nodeName);
-										eventPublisher.publishEvent(
-											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_ERROR, null, mailTitle, title,
-												message, null));
+
 										MailAttribute mail = MailAttribute.MIG_ERROR;
 										List<UserDTO.UserInfo> adminList = userService.getAdminList();
 										// MIG 적용 실패 에러 관리자에게 전송
-										for (UserDTO.UserInfo admin : adminList) {
-											mailService.sendMail(MailDTO.builder()
-												.subject(mail.getSubject())
-												.title(String.format(mail.getTitle(), nodeName))
-												.footer(mail.getFooter())
-												.receiverEmail(admin.getEmail())
-												.build());
-										}
+										MailDTO mailDTO = MailDTO.builder()
+											.subject(mail.getSubject())
+											.title(String.format(mail.getTitle(), nodeName))
+											.footer(mail.getFooter())
+											.build();
+										eventPublisher.publishEvent(
+											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_ERROR, null, mailTitle, title,
+												message, null, mailDTO));
 									}
 									// String.format("node %S의 MIG 적용을 실패하였습니다.", node2.getMetadata().getName());
 									case REBOOTING -> log.info("node {}의 MIG 적용을 위해 관련 pod 및 노드가 재부팅 중입니다.",

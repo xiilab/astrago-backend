@@ -312,22 +312,19 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName) {
-		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
-			List<Node> nodeList = getNodeList(nodeName);
-			List<Pod> podList = kubernetesClient.pods().inAnyNamespace().list().getItems();
+		List<Node> nodeList = getNodeList(nodeName);
+		List<Pod> podList = getRunningPod();
+		// 모든 노드의 GPU total 값을 합산
+		long totalGpuCapacity = totalCapacity(nodeList, GPU);
 
-			// 모든 노드의 GPU total 값을 합산
-			long totalGpuCapacity = totalCapacity(nodeList, GPU);
+		// 모든 노드의 cpuRequest 값을 합산
+		String totalGpuRequests = totalRequests(nodeList, podList, GPU);
 
-			// 모든 노드의 cpuRequest 값을 합산
-			String totalGpuRequests = totalRequests(nodeList, podList, GPU);
-
-			return ResponseDTO.ResponseClusterDTO.builder()
-				.name(GPU)
-				.total(totalGpuCapacity)
-				.usage(Long.parseLong(totalGpuRequests))
-				.build();
-		}
+		return ResponseDTO.ResponseClusterDTO.builder()
+			.name(GPU)
+			.total(totalGpuCapacity)
+			.usage(Long.parseLong(totalGpuRequests))
+			.build();
 	}
 
 	@Override
@@ -385,9 +382,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			}).reduce("0", (x, y) -> String.valueOf(DataConverterUtil.parseAndSum(x, y)));
 			case GPU -> nodeList.stream().map(node -> {
 				List<Pod> runningPodsOnNode = podList.stream()
-					.filter(pod -> !StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec()
-						.getNodeName()
-						.equals(node.getMetadata().getName()))
+					.filter(pod ->
+						!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
 					.toList();
 
 				return calculateTotalGpuRequests(runningPodsOnNode);
@@ -442,8 +438,9 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			.flatMap(pod -> pod.getSpec().getContainers().stream())
 			.filter(container -> container.getResources().getRequests().get("nvidia.com/gpu") != null)
 			.map(container -> {
-				String cpuAmount = container.getResources().getRequests().get("nvidia.com/gpu").getAmount();
-				return cpuAmount;
+				String gpuAmount = container.getResources().getRequests().get("nvidia.com/gpu").getAmount();
+				System.out.println(gpuAmount + "  ::  " + container.getName());
+				return gpuAmount;
 			})
 			.reduce("0", (acc, val) -> String.valueOf(Integer.parseInt(acc) + Integer.parseInt(val)));
 
@@ -779,6 +776,18 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				}
 			}
 			return result;
+		}
+	}
+
+	private List<Pod> getRunningPod(){
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
+			return pods.stream()
+				.filter(pod -> pod.getStatus()
+					.getConditions()
+					.stream()
+					.anyMatch(podCondition -> podCondition.getType().equals("Ready") && podCondition.getStatus()
+						.equals("True"))).toList();
 		}
 	}
 }

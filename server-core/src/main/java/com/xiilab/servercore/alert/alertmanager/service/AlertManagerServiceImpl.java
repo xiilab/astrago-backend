@@ -25,7 +25,7 @@ import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.AlertManagerEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -224,7 +224,7 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 								if (findAlertManagerDTO.isSystemYN()) {
 									// 노드 장애 알림 발송
 									eventPublisher.publishEvent(
-										new AdminAlertEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
+										new AlertManagerEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
 											pageNaviParam));
 								}
 								if (findAlertManagerDTO.isEmailYN()) {
