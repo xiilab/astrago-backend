@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DecompressUtils {
+
 	/**
 	 * 지정된 압축 형식으로 파일이나 디렉토리 목록을 압축 해제해 지정된 대상 경로에 저장
 	 *
@@ -43,7 +44,6 @@ public class DecompressUtils {
 
 		String extension = FileNameUtils.getExtension(targetPath);
 		destinationPath = initializeDestPath(targetPath, destinationPath);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		if (CompressFileType.ZIP.getExtension().equals(extension)) {
 			try (InputStream is = new BufferedInputStream(new FileInputStream(targetPath.toFile()));
@@ -74,10 +74,23 @@ public class DecompressUtils {
 	 * @return
 	 */
 	private static Path initializeDestPath(Path targetPath, Path destinationPath) {
-		String saveDecompressDirName = FileNameUtils.getBaseName(targetPath);
 		// destinationPath 없으면, 압축할 파일과 동일한 경로 반환
-		return ObjectUtils.isEmpty(destinationPath) ? Path.of(targetPath.getParent().toString()) :
-			Path.of(destinationPath + File.separator + saveDecompressDirName);
+		destinationPath = ObjectUtils.isEmpty(destinationPath) ?
+			Path.of(targetPath.getParent().toString()) :
+			destinationPath;
+
+		// 상위 디렉토리 생성
+		String targetFileName = FileNameUtils.getBaseName(targetPath);
+		Path parentDirPath = Path.of(targetPath.getParent() + File.separator + targetFileName);
+
+		int cnt = 1;
+		while (parentDirPath.toFile().exists()) {
+			parentDirPath = parentDirPath.resolveSibling(targetFileName + "_" + cnt);
+			cnt++;
+		}
+
+		parentDirPath.toFile().mkdirs();
+		return parentDirPath;
 	}
 
 	/**
@@ -90,12 +103,17 @@ public class DecompressUtils {
 		try {
 			ArchiveEntry entry = ais.getNextEntry();
 			do {
-				File saveFilePath = new File(destinationPath.toFile(), entry.getName());
+				if (ValidUtils.isCheckExtensionForMac(entry.getName())) {
+					entry = ais.getNextEntry();
+					continue;
+				}
+
+				File saveFile = new File(destinationPath.toFile(), entry.getName());
 
 				if (entry.isDirectory()) {
-					saveFilePath.mkdirs();
+					saveFile.mkdirs();
 				} else {
-					try (OutputStream os = new BufferedOutputStream(new FileOutputStream(saveFilePath))) {
+					try (OutputStream os = new BufferedOutputStream(new FileOutputStream(saveFile))) {
 						IOUtils.copy(ais, os);
 					}
 				}

@@ -162,9 +162,15 @@ public class CompressUtils {
 	private static <T extends ArchiveOutputStream<?>> void compressDirectoriesAndFiles(List<Path> targetPaths, T os) {
 		for (Path targetPath : targetPaths) {
 			if (Files.exists(targetPath)) {
-				if (targetPath.toFile().isDirectory()) {
+
+				File targetFile = targetPath.toFile();
+				if (ValidUtils.isCheckExtensionForMac(targetFile.getName())) {
+					return ;
+				}
+
+				if (targetFile.isDirectory()) {
 					addFolder(targetPath, "", os);
-				} else if (targetPath.toFile().isFile()) {
+				} else if (targetFile.isFile()) {
 					addFile(targetPath, "", os);
 				}
 			} else {
@@ -183,6 +189,7 @@ public class CompressUtils {
 	private static <T extends ArchiveOutputStream<?>> void addFolder(Path targetFolderPath, String entryName,
 		T os) {
 		File folder = targetFolderPath.toFile();
+
 		entryName = entryName + folder.getName() + File.separator;
 		putArchiveEntry(entryName, targetFolderPath.toFile().length(), os);
 
@@ -204,10 +211,6 @@ public class CompressUtils {
 	 */
 	private static <T extends ArchiveOutputStream<?>> void addFile(Path targetFilePath, String entryFolderPath, T os) {
 		File targetFile = targetFilePath.toFile();
-
-		if (targetFile.getName().contains(".DS_Store")) {
-			return;
-		}
 
 		long fileSize = targetFilePath.toFile().length();
 		try (InputStream is = new BufferedInputStream(new FileInputStream(targetFile))) {
