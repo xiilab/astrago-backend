@@ -152,7 +152,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 			//astrago 데이터 셋은 db 삭제(astragodataset, workspacedatasetmapping
 			if (model.isAstragoModel()) {
 				//workspace mapping 삭제
-				modelService.deleteModelWorkspaceMappingById(modelId);
+				// modelService.deleteModelWorkspaceMappingById(modelId);
 				//dataset 삭제
 				modelService.deleteModelById(modelId);
 			} else if (model.isLocalModel()) {
@@ -167,7 +167,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 					.build();
 				workloadModuleFacadeService.deleteLocalModel(deleteLocalModelDTO);
 				//workspace mapping 삭제
-				modelService.deleteModelWorkspaceMappingById(modelId);
+				// modelService.deleteModelWorkspaceMappingById(modelId);
 				//db 삭제 - TB_localDataset
 				modelService.deleteModelById(modelId);
 			}
