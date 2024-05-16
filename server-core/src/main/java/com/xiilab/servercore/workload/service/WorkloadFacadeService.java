@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -215,12 +217,6 @@ public class WorkloadFacadeService {
 			String message = String.format(workspaceResourceOverAdmin.getMessage(),
 				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorUserName(),
 				workspaceResourceStatus.getName());
-
-			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
-					message,
-					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build()));
-
 			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
 			// Mail Contents 작성
 			List<MailDTO.Content> contents = List.of(
@@ -233,7 +229,7 @@ public class WorkloadFacadeService {
 			);
 
 			// 리소스 초과 요청 Owner에게 전송
-			mailService.sendMail(MailDTO.builder()
+			MailDTO mailDTO = MailDTO.builder()
 				.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
 				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
 					moduleCreateWorkloadReqDTO.getWorkspace()))
@@ -241,8 +237,13 @@ public class WorkloadFacadeService {
 				.contentTitle(mail.getContentTitle())
 				.contents(contents)
 				.footer(mail.getFooter())
-				.receiverEmail(userFacadeService.getUserInfoById(workspaceResourceStatus.getCreatorId()).getEmail())
-				.build());
+				.build();
+
+			eventPublisher.publishEvent(
+				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
+					message,
+					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build(), mailDTO));
+
 		}
 	}
 
@@ -383,9 +384,18 @@ public class WorkloadFacadeService {
 			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
 			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
 				activeWorkloadDetail.getWorkloadName());
+			MailAttribute mail = MailAttribute.WORKLOAD_END;
+			MailDTO mailDTO = MailDTO.builder()
+				.subject(String.format(mail.getSubject(), activeWorkloadDetail.getWorkloadName()))
+				.title(String.format(mail.getTitle(), activeWorkloadDetail.getWorkloadName()))
+				.subTitle(String.format(mail.getSubTitle(),
+					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.footer(mail.getFooter())
+				.receiverEmail(userFacadeService.getUserInfoById(activeWorkloadDetail.getRegUserId()).getEmail())
+				.build();
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(), emailTitle,
-				title, message, workspaceName, pageNaviParam);
+				title, message, workspaceName, pageNaviParam, mailDTO );
 			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
 	}
