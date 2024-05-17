@@ -254,7 +254,11 @@ public class WorkloadFacadeService {
 	}
 
 	private void setCodeCredentialReqDTO(List<ModuleCodeReqDTO> codes) {
-		List<Long> credentialIds = findCredentials(codes);
+		// 코드 목록에 있는 크레덴셜 ID만 추출
+		List<Long> credentialIds = codes.stream()
+			.map(ModuleCodeReqDTO::getCredentialId)
+			.filter(credentialId -> !ValidUtils.isNullOrZero(credentialId))
+			.toList();
 		if (CollectionUtils.isEmpty(credentialIds)) {
 			return;
 		}
@@ -262,7 +266,7 @@ public class WorkloadFacadeService {
 		// 크레덴셜 목록 조회
 		CredentialResDTO.CredentialInfos credentialInfos = credentialService.findCredentialByIdIn(credentialIds,
 			PageRequest.of(1, Integer.MAX_VALUE));
-		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = convertListToMap(
+		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = convertCredentialListToMap(
 			!CollectionUtils.isEmpty(credentialInfos.getCredentials()) ? credentialInfos.getCredentials() :
 				new ArrayList<>());
 
@@ -276,35 +280,9 @@ public class WorkloadFacadeService {
 		});
 	}
 
-	private List<Long> findCredentials(List<ModuleCodeReqDTO> codes) {
-		Set<Long> credentialIds = new HashSet<>();
-
-		// CUSTOM이 아닌 코드 목록 크레덴셜ID만 추출
-		List<Long> codeIds = codes.stream()
-			.filter(code -> !ValidUtils.isNullOrZero(code.getCredentialId()) && code.getRepositoryType() != RepositoryType.CUSTOM)
-			.map(ModuleCodeReqDTO::getCodeId)
-			.toList();
-		List<Long> findCredentialIds = codeRepository.findAllById(codeIds).stream()
-			.map(CodeEntity::getCredentialEntity)
-			.map(CredentialEntity::getId)
-			.toList();
-
-		// CUSTOM인 코드 목록 크레덴셜ID 추출
-		List<Long> findCustomCredentialIds = codes.stream()
-			.filter(code -> !ValidUtils.isNullOrZero(code.getCredentialId())
-				&& code.getRepositoryType() == RepositoryType.CUSTOM)
-			.map(ModuleCodeReqDTO::getCredentialId)
-			.toList();
-
-		credentialIds.addAll(findCustomCredentialIds);
-		credentialIds.addAll(findCredentialIds);
-
-		return credentialIds.stream().toList();
-	}
-
-	private Map<Long, CredentialResDTO.CredentialInfo> convertListToMap(
-		List<CredentialResDTO.CredentialInfo> datasets) {
-		return datasets.stream().collect(Collectors.toMap(CredentialResDTO::getId, credentialInfo -> credentialInfo));
+	private Map<Long, CredentialResDTO.CredentialInfo> convertCredentialListToMap(
+		List<CredentialResDTO.CredentialInfo> credentials) {
+		return credentials.stream().collect(Collectors.toMap(CredentialResDTO::getId, credentialInfo -> credentialInfo));
 	}
 
 	private void setImageCredentialReqDTO(ModuleImageReqDTO moduleImageReqDTO, UserDTO.UserInfo userInfoDTO) {
