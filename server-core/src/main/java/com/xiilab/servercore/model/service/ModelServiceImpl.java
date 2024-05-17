@@ -331,4 +331,9 @@ public class ModelServiceImpl implements ModelService {
 		}
 		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceModelDTO.getDefaultPath());
 	}
+
+	@Override
+	public void deleteModelWorkloadMappingById(Long modelId) {
+		modelWorkLoadMappingRepository.deleteByModelId(modelId);
+	}
 }

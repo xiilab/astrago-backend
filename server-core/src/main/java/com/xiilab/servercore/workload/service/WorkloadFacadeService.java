@@ -888,6 +888,7 @@ public class WorkloadFacadeService {
 					.regUserRealName(findModel.getRegUser().getRegUserRealName())
 					.regDate(findModel.getRegDate())
 					.modDate(findModel.getModDate())
+					.deleteYN(findModel.getDeleteYn())
 					.build();
 				models.add(modelVol);
 			}
@@ -917,6 +918,7 @@ public class WorkloadFacadeService {
 					.storageType(findDataset.isAstragoDataset() ?
 						((AstragoDatasetEntity)findDataset).getStorageEntity().getStorageType() :
 						((LocalDatasetEntity)findDataset).getStorageType())
+					.deleteYN(findDataset.getDeleteYn())
 					.build();
 				datasets.add(datasetVol);
 			}

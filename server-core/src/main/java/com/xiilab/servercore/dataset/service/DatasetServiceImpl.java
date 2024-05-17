@@ -342,4 +342,8 @@ public class DatasetServiceImpl implements DatasetService {
 		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceDatasetDTO.getDefaultPath());
 	}
 
+	public void deleteDatasetWorkloadMappingById(Long datasetId) {
+		datasetWorkLoadMappingRepository.deleteByDatasetId(datasetId);
+	}
+
 }
