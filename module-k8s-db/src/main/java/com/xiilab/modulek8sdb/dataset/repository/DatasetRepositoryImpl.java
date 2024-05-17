@@ -84,8 +84,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 	@Override
 	public Dataset getDatasetWithStorage(Long datasetId) {
 		return queryFactory.selectFrom(dataset)
-			.where(datasetIdEq(datasetId),
-				deleteYNEqN())
+			.where(datasetIdEq(datasetId))
 			.fetchOne();
 	}
 
