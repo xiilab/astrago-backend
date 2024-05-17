@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -71,7 +72,10 @@ import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.code.entity.CodeEntity;
+import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
+import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
@@ -117,6 +121,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @RequiredArgsConstructor
 public class WorkloadFacadeService {
+	private final CodeRepository codeRepository;
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final SvcModuleFacadeService svcModuleFacadeService;
@@ -242,17 +247,14 @@ public class WorkloadFacadeService {
 			eventPublisher.publishEvent(
 				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
 					message,
-					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build(), mailDTO));
+					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build(),
+					mailDTO));
 
 		}
 	}
 
 	private void setCodeCredentialReqDTO(List<ModuleCodeReqDTO> codes) {
-		// 코드 목록에 있는 크레덴셜 ID만 추출
-		List<Long> credentialIds = codes.stream()
-			.map(ModuleCodeReqDTO::getCredentialId)
-			.filter(credentialId -> !ValidUtils.isNullOrZero(credentialId))
-			.toList();
+		List<Long> credentialIds = findCredentials(codes);
 		if (CollectionUtils.isEmpty(credentialIds)) {
 			return;
 		}
@@ -272,6 +274,32 @@ public class WorkloadFacadeService {
 				moduleCodeReqDTO.setCredentialReqDTO(credentialInfo.toModuleCredentialReqDTO());
 			}
 		});
+	}
+
+	private List<Long> findCredentials(List<ModuleCodeReqDTO> codes) {
+		Set<Long> credentialIds = new HashSet<>();
+
+		// CUSTOM이 아닌 코드 목록 크레덴셜ID만 추출
+		List<Long> codeIds = codes.stream()
+			.filter(code -> !ValidUtils.isNullOrZero(code.getCredentialId()) && code.getRepositoryType() != RepositoryType.CUSTOM)
+			.map(ModuleCodeReqDTO::getCodeId)
+			.toList();
+		List<Long> findCredentialIds = codeRepository.findAllById(codeIds).stream()
+			.map(CodeEntity::getCredentialEntity)
+			.map(CredentialEntity::getId)
+			.toList();
+
+		// CUSTOM인 코드 목록 크레덴셜ID 추출
+		List<Long> findCustomCredentialIds = codes.stream()
+			.filter(code -> !ValidUtils.isNullOrZero(code.getCredentialId())
+				&& code.getRepositoryType() == RepositoryType.CUSTOM)
+			.map(ModuleCodeReqDTO::getCredentialId)
+			.toList();
+
+		credentialIds.addAll(findCustomCredentialIds);
+		credentialIds.addAll(findCredentialIds);
+
+		return credentialIds.stream().toList();
 	}
 
 	private Map<Long, CredentialResDTO.CredentialInfo> convertListToMap(
@@ -395,7 +423,7 @@ public class WorkloadFacadeService {
 				.build();
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(), emailTitle,
-				title, message, workspaceName, pageNaviParam, mailDTO );
+				title, message, workspaceName, pageNaviParam, mailDTO);
 			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
 	}
