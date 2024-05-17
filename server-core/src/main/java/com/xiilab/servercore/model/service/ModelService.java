@@ -63,4 +63,6 @@ public interface ModelService {
 	void deleteModelWorkloadMapping(Long jobId);
 
 	void updateWorkspaceModel(UpdateWorkspaceModelDTO updateWorkspaceModelDTO, String workspaceResourceName, Long modelId, UserDTO.UserInfo userInfoDTO);
+
+	void deleteModelWorkloadMappingById(Long modelId);
 }
