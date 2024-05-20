@@ -238,3 +238,4 @@ server-core/src/main/resources/static/
 /.idea/dataSources.xml
 /.idea/jpa-buddy.xml
 /.idea/
+*.log
