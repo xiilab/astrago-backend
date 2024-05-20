@@ -1,5 +1,6 @@
 package com.xiilab.servercore.pin.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,6 +59,17 @@ public class PinServiceImpl implements PinService {
 	@Override
 	public void deletePin(String resourceName, PinType pinType) {
 		pinRepository.deleteByResourceNameAndType(resourceName, pinType);
+	}
+
+	@Override
+	public List<String> getWorkloadPinListByUserId(String userId, String workspaceName) {
+		List<PinEntity> pinList;
+		if(workspaceName != null){
+			pinList = pinRepository.findByTypeAndRegUserIdAndWorkspaceResourceName(userId, workspaceName, PinType.WORKLOAD.name());
+		}else{
+			pinList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKLOAD,userId);
+		}
+		return pinList.stream().map(pinEntity -> pinEntity.getResourceName()).toList();
 	}
 
 	private void createWorkspacePin(String resourceName, UserDTO.UserInfo userInfoDTO) {

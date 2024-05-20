@@ -20,7 +20,7 @@
 // import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 // import com.xiilab.moduleuser.dto.UserInfoDTO;
 // import com.xiilab.servercore.pin.service.PinService;
-// import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
+// import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 // import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 //
 // @SpringBootTest
