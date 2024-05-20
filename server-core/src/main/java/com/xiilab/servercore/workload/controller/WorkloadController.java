@@ -57,11 +57,10 @@ public class WorkloadController {
 	private final ModelService modelService;
 	private final HubService hubService;
 
-	@PostMapping("/{type}")
+	@PostMapping("/")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
 		@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
-		@PathVariable(value = "type") WorkloadType workloadType,
 		UserDTO.UserInfo userInfoDTO) {
 		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
