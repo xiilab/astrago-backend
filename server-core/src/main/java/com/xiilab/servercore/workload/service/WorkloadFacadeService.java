@@ -223,6 +223,7 @@ public class WorkloadFacadeService {
 				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorUserName(),
 				workspaceResourceStatus.getName());
 			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
+
 			// Mail Contents 작성
 			List<MailDTO.Content> contents = List.of(
 				MailDTO.Content.builder()
