@@ -66,6 +66,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
@@ -304,8 +305,6 @@ public class WorkloadFacadeService {
 					workloadResourceName);
 				// 삭제권한 업데이트
 				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
-				// 파드 조회, 실제 실행시간 set
-				// updatePodStartTime(workloadType, workspaceName, workloadResourceName, moduleBatchJobResDTO);
 
 				return getActiveWorkloadDetail(moduleBatchJobResDTO);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
@@ -428,13 +427,22 @@ public class WorkloadFacadeService {
 		Boolean isCreatedByMe, UserDTO.UserInfo userInfoDTO) {
 		//통합용 리스트 선언
 		List<ModuleWorkloadResDTO> workloadResDTOList = new ArrayList<>();
+		Optional<ResponseDTO.NodeDTO> connectedNode = getConnectedNode();
 		if (workloadType == WorkloadType.BATCH) {
 			//k8s cluster에 생성되어있는 batchJob list
 			// List<ModuleBatchJobResDTO> batchJobListFromCluster = workloadModuleService.getBatchWorkloadListByCondition(
 			// 	workspaceName, isCreatedByMe, userInfoDTO.getId());
+
 			//종료된 batchJob list
 			List<ModuleBatchJobResDTO> batchWorkloadHistoryList = workloadHistoryService.getBatchWorkloadHistoryList(
 				workspaceName, null, isCreatedByMe, userInfoDTO.getId());
+			batchWorkloadHistoryList.forEach(moduleBatchJobResDTO -> updatePortResDTO(connectedNode, moduleBatchJobResDTO));
+
+			// updatePortResDTO(getConnectedNode())
+			// 서비스 포트 찾기
+			// SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
+			// 	moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
+
 			// workloadResDTOList.addAll(batchJobListFromCluster);
 			workloadResDTOList.addAll(batchWorkloadHistoryList);
 		} else {
@@ -444,6 +452,7 @@ public class WorkloadFacadeService {
 			//종료된 interactive job list 조회
 			List<ModuleInteractiveJobResDTO> interactiveWorkloadHistoryList = workloadHistoryService.getInteractiveWorkloadHistoryList(
 				workspaceName, null, isCreatedByMe, userInfoDTO.getId());
+			interactiveWorkloadHistoryList.forEach(moduleInteractiveJobResDTO -> updatePortResDTO(connectedNode, moduleInteractiveJobResDTO));
 			// workloadResDTOList.addAll(interactiveJobFromCluster);
 			workloadResDTOList.addAll(interactiveWorkloadHistoryList);
 		}
@@ -985,8 +994,7 @@ public class WorkloadFacadeService {
 	}
 
 	private <T extends ModuleWorkloadResDTO> List<FindWorkloadResDTO.Port> generatePortResDTO(T moduleJobResDTO) {
-		ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
-		Optional<ResponseDTO.NodeDTO> node = nodeList.getNodes().stream().findFirst();
+		Optional<ResponseDTO.NodeDTO> node = getConnectedNode();
 		List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
 		if (node.isPresent()) {
 			// 서비스 포트 찾기
@@ -1011,5 +1019,30 @@ public class WorkloadFacadeService {
 		}
 
 		return ports;
+	}
+
+	private <T extends ModuleWorkloadResDTO> void updatePortResDTO(Optional<ResponseDTO.NodeDTO> node, T moduleJobResDTO) {
+		if (node.isPresent()) {
+			// 서비스 포트 찾기
+			SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
+				moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
+
+			for (SvcResDTO.FindSvcDetail findSvcDetail : findSvcs.getServices()) {
+				List<ModulePortResDTO> modulePortResDTOS = findSvcDetail.getPorts()
+					.stream()
+					.map(port -> ModulePortResDTO.builder()
+						.name(port.getName())
+						.originPort(port.getPort())
+						.url(node.get().getIp() + ":" + port.getNodePort())
+						.build())
+					.toList();
+				moduleJobResDTO.updatePort(modulePortResDTOS);
+			}
+		}
+	}
+
+	private Optional<ResponseDTO.NodeDTO> getConnectedNode() {
+		ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
+		return nodeList.getNodes().stream().findFirst();
 	}
 }

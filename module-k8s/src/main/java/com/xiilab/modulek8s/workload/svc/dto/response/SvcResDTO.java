@@ -23,7 +23,10 @@ public class SvcResDTO {
 		public static SvcResDTO.FindSvcDetail from(Service service) {
 			return FindSvcDetail.builder()
 				.svcResourceName(service.getMetadata().getName())
-				.svcType(Arrays.stream(SvcType.values()).filter(svcType -> svcType.getType().equals(service.getSpec().getType())).findFirst().orElseGet(null))
+				.svcType(Arrays.stream(SvcType.values())
+					.filter(svcType -> svcType.getType().equals(service.getSpec().getType()))
+					.findFirst()
+					.orElseGet(() -> null))
 				.ports(service.getSpec()
 					.getPorts()
 					.stream()
@@ -46,7 +49,6 @@ public class SvcResDTO {
 				.build();
 		}
 	}
-
 
 	@Getter
 	@AllArgsConstructor
