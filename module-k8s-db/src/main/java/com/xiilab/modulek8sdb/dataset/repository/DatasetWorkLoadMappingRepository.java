@@ -14,5 +14,9 @@ public interface DatasetWorkLoadMappingRepository extends JpaRepository<DatasetW
 		+ "where dwme.workload.id =:jobId")
 	void deleteByWorkloadId(@Param("jobId") Long jobId);
 
-
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("update DatasetWorkLoadMappingEntity dwm "
+		+ "set dwm.deleteYN = 'Y' "
+		+ "where dwm.dataset.datasetId = :datasetId")
+	void deleteByDatasetId(@Param("datasetId") Long datasetId);
 }

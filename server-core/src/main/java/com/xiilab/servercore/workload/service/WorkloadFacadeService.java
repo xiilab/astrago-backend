@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -71,7 +72,10 @@ import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.code.entity.CodeEntity;
+import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
+import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
@@ -117,6 +121,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @RequiredArgsConstructor
 public class WorkloadFacadeService {
+	private final CodeRepository codeRepository;
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final SvcModuleFacadeService svcModuleFacadeService;
@@ -242,7 +247,8 @@ public class WorkloadFacadeService {
 			eventPublisher.publishEvent(
 				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
 					message,
-					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build(), mailDTO));
+					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build(),
+					mailDTO));
 
 		}
 	}
@@ -260,7 +266,7 @@ public class WorkloadFacadeService {
 		// 크레덴셜 목록 조회
 		CredentialResDTO.CredentialInfos credentialInfos = credentialService.findCredentialByIdIn(credentialIds,
 			PageRequest.of(1, Integer.MAX_VALUE));
-		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = convertListToMap(
+		Map<Long, CredentialResDTO.CredentialInfo> credentialInfoMap = convertCredentialListToMap(
 			!CollectionUtils.isEmpty(credentialInfos.getCredentials()) ? credentialInfos.getCredentials() :
 				new ArrayList<>());
 
@@ -274,9 +280,9 @@ public class WorkloadFacadeService {
 		});
 	}
 
-	private Map<Long, CredentialResDTO.CredentialInfo> convertListToMap(
-		List<CredentialResDTO.CredentialInfo> datasets) {
-		return datasets.stream().collect(Collectors.toMap(CredentialResDTO::getId, credentialInfo -> credentialInfo));
+	private Map<Long, CredentialResDTO.CredentialInfo> convertCredentialListToMap(
+		List<CredentialResDTO.CredentialInfo> credentials) {
+		return credentials.stream().collect(Collectors.toMap(CredentialResDTO::getId, credentialInfo -> credentialInfo));
 	}
 
 	private void setImageCredentialReqDTO(ModuleImageReqDTO moduleImageReqDTO, UserDTO.UserInfo userInfoDTO) {
@@ -395,7 +401,7 @@ public class WorkloadFacadeService {
 				.build();
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(), emailTitle,
-				title, message, workspaceName, pageNaviParam, mailDTO );
+				title, message, workspaceName, pageNaviParam, mailDTO);
 			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
 	}
@@ -882,6 +888,7 @@ public class WorkloadFacadeService {
 					.regUserRealName(findModel.getRegUser().getRegUserRealName())
 					.regDate(findModel.getRegDate())
 					.modDate(findModel.getModDate())
+					.deleteYN(findModel.getDeleteYn())
 					.build();
 				models.add(modelVol);
 			}
@@ -911,6 +918,7 @@ public class WorkloadFacadeService {
 					.storageType(findDataset.isAstragoDataset() ?
 						((AstragoDatasetEntity)findDataset).getStorageEntity().getStorageType() :
 						((LocalDatasetEntity)findDataset).getStorageType())
+					.deleteYN(findDataset.getDeleteYn())
 					.build();
 				datasets.add(datasetVol);
 			}

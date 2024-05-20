@@ -98,6 +98,7 @@ public class KeycloakUserRepository implements UserRepository {
 							Comparator.comparing(UserRepresentation::isEnabled).reversed()
 			)
 			.toList();
+		int userSize = users.size();
 
 		List<UserSummary> userSummaries = users.stream().map(userRepresentation -> {
 				// 워크스페이스 관련 그룹 제외
@@ -127,7 +128,7 @@ public class KeycloakUserRepository implements UserRepository {
 			)
 			.toList();
 
-		return getPageUsersDTO(pageNo, pageSize, users, userSummaries);
+		return getPageUsersDTO(pageNo, pageSize, userSize, userSummaries);
 	}
 
 	private boolean enableEq(UserEnable userEnable, UserRepresentation user) {
@@ -187,6 +188,7 @@ public class KeycloakUserRepository implements UserRepository {
 	public UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize,
 		UserSearchCondition searchCondition) {
 		RealmResource realmClient = keycloakConfig.getRealmClient();
+		int userSize;
 		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
 			.stream().filter(user
 				-> user.getAttributes() != null
@@ -200,15 +202,27 @@ public class KeycloakUserRepository implements UserRepository {
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp)
 			)
 			.toList();
+		userSize = users.size();
 		List<UserSummary> userSummaries = users.stream()
-			.map(userRepresentation -> new UserSummary(userRepresentation))
+			.map(userRepresentation -> {
+				List<GroupRepresentation> groups = realmClient.users().get(userRepresentation.getId()).groups(0, Integer.MAX_VALUE)
+					.stream()
+					.filter(groupRepresentation -> !groupRepresentation.getName().equals("ws") &&
+						!groupRepresentation.getName().equals("owner") &&
+						!groupRepresentation.getName().equals("user") &&
+						!groupRepresentation.getName().equals("default"))
+					.toList();
+				UserSummary userSummary = new UserSummary(userRepresentation);
+				userSummary.setGroup(groups.size() == 0 ? null : groups.get(0).getName());
+				return userSummary;
+			})
 			.toList();
-		return getPageUsersDTO(pageNo, pageSize, users, userSummaries);
+		return getPageUsersDTO(pageNo, pageSize, userSize, userSummaries);
 	}
 
 	private static UserDTO.PageUsersDTO getPageUsersDTO(Integer pageNo, Integer pageSize,
-		List<UserRepresentation> users, List<UserSummary> userSummaries) {
-		int totalCount = users.size();
+		int userSize, List<UserSummary> userSummaries) {
+		int totalCount = userSize;
 		int startIndex = (pageNo - 1) * pageSize;
 		int endIndex = Math.min(startIndex + pageSize, totalCount);
 		if (startIndex >= totalCount || endIndex <= startIndex) {

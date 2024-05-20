@@ -66,7 +66,8 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 	@Override
 	public Model getModelWithStorage(Long modelId) {
 		return queryFactory.selectFrom(model)
-			.where(modelIdEq(modelId))
+			.where(modelIdEq(modelId),
+				deleteYnEqN())
 			.fetchOne();
 	}
 

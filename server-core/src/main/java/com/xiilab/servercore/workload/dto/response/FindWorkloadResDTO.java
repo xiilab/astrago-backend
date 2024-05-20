@@ -20,6 +20,7 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
@@ -244,6 +245,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private String size;
 		private RepositoryDivision division;
 		private StorageType storageType;
+		private DeleteYN deleteYN;
 
 		public Volume(DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity) {
 			super(datasetWorkLoadMappingEntity.getDataset().getRegUser().getRegUserId(),
@@ -268,6 +270,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				this.storageType = ((LocalDatasetEntity)Hibernate.unproxy(
 					datasetWorkLoadMappingEntity.getDataset())).getStorageType();
 			}
+			this.deleteYN = datasetWorkLoadMappingEntity.getDeleteYN();
 		}
 
 		public Volume(ModelWorkLoadMappingEntity modelWorkLoadMappingEntity) {
@@ -292,12 +295,13 @@ public class FindWorkloadResDTO extends ResDTO {
 				this.storageType = ((LocalModelEntity)Hibernate.unproxy(
 					modelWorkLoadMappingEntity.getModel())).getStorageType();
 			}
+			this.deleteYN = modelWorkLoadMappingEntity.getDeleteYN();
 		}
 
 		@Builder(builderClassName = "VolumeResDTO", builderMethodName = "volumeResDTO")
 		public Volume(String regUserId, String regUserName, String regUserRealName, LocalDateTime regDate,
 			LocalDateTime modDate, Long id, String name, String mountPath, Long size,
-			RepositoryDivision division, StorageType storageType) {
+			RepositoryDivision division, StorageType storageType, DeleteYN deleteYN) {
 			super(regUserId, regUserName, regUserRealName, regDate, modDate);
 			this.id = id;
 			this.name = name;
@@ -305,6 +309,7 @@ public class FindWorkloadResDTO extends ResDTO {
 			this.size = CoreFileUtils.formatFileSize(size);
 			this.division = division;
 			this.storageType = storageType;
+			this.deleteYN = deleteYN;
 		}
 	}
 

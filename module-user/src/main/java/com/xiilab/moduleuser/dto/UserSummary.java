@@ -27,6 +27,7 @@ public class UserSummary{
 	private final String approval;
 	private final List<UserGroupDTO> userGroupDTOList;
 	private AuthType authType;
+	private String group;
 
 	public UserSummary(UserRepresentation userRepresentation, List<GroupRepresentation> groupRepresentationList) {
 		this.uid = userRepresentation.getId();
@@ -63,7 +64,9 @@ public class UserSummary{
 	public void setAuthType(AuthType authType){
 		this.authType = authType;
 	}
-
+	public void setGroup(String group){
+		this.group = group;
+	}
 	@Builder
 	@Getter
 	public static class UserGroupDTO {

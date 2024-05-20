@@ -64,4 +64,6 @@ public interface DatasetService {
 
 	void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName,
 		Long datasetId, UserDTO.UserInfo userInfoDTO);
+
+	void deleteDatasetWorkloadMappingById(Long datasetId);
 }
