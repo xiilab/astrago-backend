@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.ImageType;
@@ -148,15 +149,16 @@ public class ImageServiceImpl implements ImageService {
 	private void getRecommendAndSetAvailableBuiltInImages(List<ImageEntity> images) {
 		List<CompatibleFrameworkVersionEntity> findComFrameworkVersionEntities = compatibleFrameWorkVersionRepository.findAll();
 
+		if (CollectionUtils.isEmpty(findComFrameworkVersionEntities)) {
+			return ;
+		}
+
 		// 사용가능한 쿠다 maximum 버전
 		Float maxCudaVersion = findComFrameworkVersionEntities.stream()
 			.map(compatibleFrameworkVersionEntity -> Float.parseFloat(
 				compatibleFrameworkVersionEntity.getFrameWorkVersionEntity().getCudaVersion()))
 			.max(Float::compareTo)
-			.orElseGet(null);
-		if (maxCudaVersion == null) {
-			return;
-		}
+			.orElseGet(() -> 0.0f);
 
 		// 쿠다버전 내림차순으로 정렬
 		List<ImageEntity> sortImages = new ArrayList<>(images);

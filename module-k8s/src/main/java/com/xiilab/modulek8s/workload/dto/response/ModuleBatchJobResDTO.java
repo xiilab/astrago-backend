@@ -37,8 +37,6 @@ public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
 		this.workingDir = container.getWorkingDir();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = K8sInfoPicker.getBatchWorkloadStatus(job.getStatus());
-		// 파드 시작 시간
-		// .subTitle(String.format(mail.getSubTitle(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		// 최초 종료 시간 예측
 		Optional.ofNullable(job.getMetadata()
 				.getAnnotations()
