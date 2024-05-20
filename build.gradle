@@ -9,6 +9,10 @@ allprojects {
     group = 'com.xiilab'
     version = '0.0.1-SNAPSHOT'
 
+    java {
+        sourceCompatibility = '17'
+    }
+
     repositories {
         mavenCentral()
     }
@@ -18,11 +22,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
-    apply plugin: "org.sonarqube"
-
-    java {
-        sourceCompatibility = '17'
-    }
+    apply plugin: 'org.sonarqube'
 
     configurations {
         compileOnly {
