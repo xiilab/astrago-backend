@@ -37,6 +37,7 @@ import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
+import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
@@ -99,6 +100,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
 	private VolumeRepository volumeRepository;
+	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 
 	@Override
 	public void batchJobAddHandler(Job job) {
@@ -124,6 +126,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			WorkloadStatus beforeStatus = K8sInfoPicker.getBatchWorkloadStatus(beforeJob.getStatus());
 			WorkloadStatus afterStatus = K8sInfoPicker.getBatchWorkloadStatus(afterJob.getStatus());
 			if (isStatusChanged(beforeStatus, afterStatus)) {
+				if (afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END) {
+					// 로그 저장
+					workloadHistoryRepo.findByResourceName(
+						afterJob.getMetadata().getName()).ifPresent(wl -> {
+						if (wl.getWorkloadType() == WorkloadType.BATCH) {
+							saveWorkloadLogFile(wl);
+						}
+					});
+				}
 				//job 상태에 따른 status 업데이트 및 노티 발송
 				checkJobStatusAndUpdateStatus(afterJob);
 			}
@@ -150,7 +161,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 				volume.getPersistentVolumeClaim().getClaimName()));
 
 		deleteServices(jobMetaData.getWorkspaceResourceName(), jobMetaData.getWorkloadResourceName());
-
 	}
 
 	@Override
@@ -270,16 +280,13 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		} else if (status == WorkloadStatus.ERROR) {
 			sendErrorNotification(workload);
 		} else if (status == WorkloadStatus.END) {
-			//Batch Job일 때만 로그 저장
-			if (workload.getWorkloadType() == WorkloadType.BATCH) {
-				saveWorkloadLogFile(workload);
-			}
 			sendJobSucceedNotification(workload);
 		}
 	}
 
 	private void saveWorkloadLogFile(WorkloadEntity wl) {
-		String logResult = logService.getWorkloadLogByWorkloadName(wl.getWorkspaceResourceName(), wl.getResourceName());
+		String logResult = workloadModuleFacadeService.getWorkloadLogByWorkloadName(
+			wl.getWorkspaceResourceName(), wl.getResourceName(), wl.getWorkloadType());
 		try {
 			FileUtils.saveLogFile(logResult, wl.getResourceName(), wl.getCreatorName());
 		} catch (IOException e) {
@@ -348,7 +355,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			workload.getWorkspaceResourceName(), pageNaviParam, mailDTO);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
-
 
 	}
 
