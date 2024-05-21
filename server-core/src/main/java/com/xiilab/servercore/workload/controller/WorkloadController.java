@@ -41,7 +41,7 @@ import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;

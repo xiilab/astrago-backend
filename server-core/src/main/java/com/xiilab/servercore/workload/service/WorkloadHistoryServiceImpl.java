@@ -2,7 +2,6 @@ package com.xiilab.servercore.workload.service;
 
 import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -14,6 +13,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -36,7 +37,6 @@ import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
-import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -55,7 +55,6 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
-import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -63,6 +62,8 @@ import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
+import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -87,7 +88,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
 		Boolean isCreatedByMe, String userId) {
 		List<JobEntity> batchJobEntityList = null;
-		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) { //overview 페이지에서 요청 시
 			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
 				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, BATCH);
 		} else {
@@ -390,6 +391,79 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	public List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName,
 		WorkloadStatus workloadStatus) {
 		return workloadHistoryRepo.getWorkloadByResourceNameAndStatus(workspaceResourceName, workloadStatus);
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList,
+		WorkloadType workloadType, WorkloadSortCondition sortCondition) {
+		List<JobEntity> workloads = workloadHistoryRepoCustom.getWorkloadHistoryInResourceNames(pinResourceNameList, workloadType, sortCondition);
+
+		return workloads.stream().map(job -> ModuleBatchJobResDTO.builder()
+				.uid(String.valueOf(job.getId()))
+				.name(job.getName())
+				.resourceName(job.getResourceName())
+				.description(job.getDescription())
+				.status(job.getWorkloadStatus())
+				.workspaceName(job.getWorkspaceName())
+				.workspaceResourceName(job.getWorkspaceResourceName())
+				.type(workloadType)
+				.creatorId(job.getCreatorId())
+				.creatorUserName(job.getCreatorName())
+				.creatorFullName(job.getCreatorRealName())
+				.createdAt(job.getCreatedAt())
+				.deletedAt(job.getDeletedAt())
+				.age(new AgeDTO(job.getCreatedAt()))
+				.command(job.getWorkloadCMD())
+				.cpuRequest(String.valueOf(job.getCpuRequest()))
+				.memRequest(String.valueOf(job.getMemRequest()))
+				.gpuRequest(String.valueOf(job.getGpuRequest()))
+				.remainTime(0)
+				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+				.build())
+			.collect(Collectors.toList());
+	}
+
+	@Override
+	public OverViewWorkloadResDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
+		Boolean isCreatedByMe, String userId, List<String> pinResourceNameList, WorkloadStatus workloadStatus,
+		WorkloadSortCondition workloadSortCondition, PageRequest pageRequest) {
+		//overview 페이지에서 요청 or 워크로드 전체 조회 페이지에서 내가 생성한 워크로드 체크 해제 시
+		List<ModuleWorkloadResDTO> workloads;
+		Page<JobEntity> workloadEntities;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			workloadEntities = workloadHistoryRepoCustom.getOverViewWorkloadList(
+				workspaceName, workloadType, searchName, StringUtils.hasText(workspaceName) ? null : userId, pinResourceNameList, workloadSortCondition, pageRequest, workloadStatus);
+		} else {
+			workloadEntities = workloadHistoryRepoCustom.getOverViewWorkloadList(
+				workspaceName, workloadType, searchName, userId, pinResourceNameList, workloadSortCondition, pageRequest,
+				workloadStatus);
+		}
+		workloads = workloadEntities.getContent().stream().map(job ->
+			ModuleBatchJobResDTO.builder()
+						.uid(String.valueOf(job.getId()))
+						.name(job.getName())
+						.resourceName(job.getResourceName())
+						.description(job.getDescription())
+						.status(job.getWorkloadStatus())
+						.workspaceName(job.getWorkspaceName())
+						.workspaceResourceName(job.getWorkspaceResourceName())
+						.type(workloadType)
+						.creatorId(job.getCreatorId())
+						.creatorUserName(job.getCreatorName())
+						.creatorFullName(job.getCreatorRealName())
+						.createdAt(job.getCreatedAt())
+						.deletedAt(job.getDeletedAt())
+						.age(new AgeDTO(job.getCreatedAt()))
+						.command(job.getWorkloadCMD())
+						.cpuRequest(String.valueOf(job.getCpuRequest()))
+						.memRequest(String.valueOf(job.getMemRequest()))
+						.gpuRequest(String.valueOf(job.getGpuRequest()))
+						.remainTime(0)
+						.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+						.build()
+			).collect(Collectors.toList());
+		long totalCount = workloadEntities.getTotalElements();
+		return new OverViewWorkloadResDTO<>(totalCount, workloads);
 	}
 
 	private String[] getSplitIds(String ids) {
