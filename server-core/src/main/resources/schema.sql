@@ -757,7 +757,7 @@ create table if not exists TB_WORKLOAD
     WORKSPACE_RESOURCE_NAME    varchar(255)                            null,
     WORKLOAD_TYPE              enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
     WORKLOAD_UID               varchar(255)                            null,
-    REMAIN_TIME                int                                     0,
+    REMAIN_TIME                int                                     DEFAULT 0,
     DELETE_YN                  enum ('Y', 'N')                         null
 );
 
