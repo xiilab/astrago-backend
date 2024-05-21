@@ -270,11 +270,11 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		} else if (status == WorkloadStatus.ERROR) {
 			sendErrorNotification(workload);
 		} else if (status == WorkloadStatus.END) {
-			sendJobSucceedNotification(workload);
 			//Batch Job일 때만 로그 저장
 			if (workload.getWorkloadType() == WorkloadType.BATCH) {
 				saveWorkloadLogFile(workload);
 			}
+			sendJobSucceedNotification(workload);
 		}
 	}
 
