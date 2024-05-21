@@ -1058,4 +1058,71 @@ public class WorkloadFacadeService {
 		ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
 		return nodeList.getNodes().stream().findFirst();
 	}
+
+	public PageDTO<ModuleWorkloadResDTO> getAdminOverViewWorkloadList(WorkloadType workloadType, String workspaceName, String searchName,
+		WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, int pageNum, Boolean isCreatedByMe,
+		UserDTO.UserInfo userInfoDTO) {
+		//통합용 리스트 선언
+		List<ModuleWorkloadResDTO> workloadResDTOList = new ArrayList<>();
+
+		Optional<ResponseDTO.NodeDTO> connectedNode = getConnectedNode();
+		//pin 워크로드 조회 - 검색 x, sort만 적용
+		List<String> pinResourceNameList = pinService.getWorkloadPinListByUserId(userInfoDTO.getId(), workspaceName);
+
+		List<ModuleWorkloadResDTO> pinList = workloadHistoryService.getWorkloadHistoryInResourceNames(pinResourceNameList, workloadType, workloadSortCondition);
+		markPinnedWorkloads(pinList);
+		workloadResDTOList.addAll(pinList);
+		//(pageSize - pin)개수만큼 normal 워크로드 조회 - 검색, sort 적용 - not in pin 워크로드 resourceName
+		int pageSize = 10;
+		int normalPageSize = pageSize - pinList.size();
+		PageRequest pageRequest = PageRequest.of(pageNum - 1, normalPageSize);
+		OverViewWorkloadResDTO<ModuleWorkloadResDTO> overViewWorkloadResDTO = workloadHistoryService.getOverViewWorkloadList(
+			workspaceName, workloadType, searchName, isCreatedByMe, userInfoDTO.getId(), pinResourceNameList,
+			workloadStatus, workloadSortCondition, pageRequest);
+
+		//workload 삭제 권한 체크
+		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		overViewWorkloadResDTO.getContent()
+			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
+
+		//page 계산
+		int totalSize = (int)(pinList.size() + overViewWorkloadResDTO.getTotalSize());
+		int totalPageNum = (int) Math.ceil(totalSize / (double) pageSize);
+		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
+
+		workloadResDTOList.forEach(moduleJobResDTO -> updatePortResDTO(connectedNode, moduleJobResDTO));
+		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
+	}
+
+	public FindWorkloadResDTO.WorkloadDetail getAdminWorkloadInfoByResourceName(WorkloadType workloadType, String workspaceName,
+		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
+		// 실행중일 떄
+		try {
+			UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
+			Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
+			if (workloadType == WorkloadType.BATCH) {
+				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+					workloadResourceName);
+				// 삭제권한 업데이트
+				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
+
+				return getActiveWorkloadDetail(moduleBatchJobResDTO);
+			} else if (workloadType == WorkloadType.INTERACTIVE) {
+				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+					workspaceName, workloadResourceName);
+				//삭제권한 업데이트
+				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+			}
+		} catch (Exception e) {
+			try {
+				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
+					userInfoDTO);
+			} catch (Exception e2) {
+				throw e2;
+			}
+		}
+		return null;
+	}
 }
