@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.storage.repository.StorageRepository;
@@ -33,9 +34,9 @@ public class StorageServiceImpl implements StorageService {
 	}
 
 	@Override
-	public StorageDTO.ResStorages getStorages(int pageNo, int pageSize) {
+	public StorageDTO.ResStorages getStorages(int pageNo, int pageSize, DeleteYN deleteYN) {
 		PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize);
-		Page<StorageEntity> storages = storageRepository.findAll(pageRequest);
+		Page<StorageEntity> storages = storageRepository.findByDeleteYN(deleteYN, pageRequest);
 		List<StorageEntity> entities = storages.getContent();
 		long totalCount = storages.getTotalElements();
 

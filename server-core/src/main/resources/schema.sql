@@ -104,10 +104,10 @@ create table if not exists TB_ALERT_SETTING
 
 create table if not exists TB_ASTRAGO_DATASET
 (
-    DATASET_ID   bigint       not null
+    DATASET_ID          bigint       not null
         primary key,
-    STORAGE_ID   bigint       null,
-    DATASET_PATH varchar(255) null,
+    STORAGE_ID          bigint       null,
+    DATASET_PATH        varchar(255) null,
     SAVE_DIRECTORY_NAME varchar(255) null
 );
 
@@ -116,10 +116,10 @@ create index if not exists FKpaj2vxklkof11g5sqlcbdwlo2
 
 create table if not exists TB_ASTRAGO_MODEL
 (
-    MODEL_ID   bigint       not null
+    MODEL_ID            bigint       not null
         primary key,
-    STORAGE_ID bigint       null,
-    MODEL_PATH varchar(255) null,
+    STORAGE_ID          bigint       null,
+    MODEL_PATH          varchar(255) null,
     SAVE_DIRECTORY_NAME varchar(255) null
 );
 
@@ -145,21 +145,21 @@ create table if not exists TB_CODE
 (
     CODE_ID                 bigint auto_increment
         primary key,
-    CREDENTIAL_ID           bigint                       null,
-    MOD_DATE                datetime(6)                  null,
-    CODE_ARGS               varchar(1000)                null,
-    REG_DATE                datetime(6)                  null,
-    CODE_URL                varchar(255)                 null,
-    REG_USER_ID             varchar(255)                 null,
-    REG_USER_NAME           varchar(255)                 null,
-    REG_USER_REAL_NAME      varchar(255)                 null,
-    TITLE                   varchar(255)                 null,
-    WORKSPACE_NAME          varchar(255)                 null,
-    CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')  null,
-    CODE_CMD                varchar(255)                 null,
-    DELETE_YN               enum ('Y', 'N')              null,
-    REPOSITORY_TYPE enum ('WORKSPACE', 'USER', 'CUSTOM') null,
-    CODE_DEFAULT_MOUNT_PATH varchar(255) charset utf8mb4 null
+    CREDENTIAL_ID           bigint                               null,
+    MOD_DATE                datetime(6)                          null,
+    CODE_ARGS               varchar(1000)                        null,
+    REG_DATE                datetime(6)                          null,
+    CODE_URL                varchar(255)                         null,
+    REG_USER_ID             varchar(255)                         null,
+    REG_USER_NAME           varchar(255)                         null,
+    REG_USER_REAL_NAME      varchar(255)                         null,
+    TITLE                   varchar(255)                         null,
+    WORKSPACE_NAME          varchar(255)                         null,
+    CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')          null,
+    CODE_CMD                varchar(255)                         null,
+    DELETE_YN               enum ('Y', 'N')                      null,
+    REPOSITORY_TYPE         enum ('WORKSPACE', 'USER', 'CUSTOM') null,
+    CODE_DEFAULT_MOUNT_PATH varchar(255) charset utf8mb4         null
 );
 
 create index if not exists FKfhqjmmbm3u5illhwv2axw3q5m
@@ -311,16 +311,16 @@ create table if not exists TB_HUB
     REG_USER_REAL_NAME     varchar(255)                            null,
     SOURCE_CODE_BRANCH     varchar(255)                            null,
     SOURCE_CODE_MOUNT_PATH varchar(255)                            null,
-    SOURCE_CODE_URL_GITHUB        varchar(255)                            null,
-    SOURCE_CODE_URL_GITLAB        varchar(255)                            null,
+    SOURCE_CODE_URL_GITHUB varchar(255)                            null,
+    SOURCE_CODE_URL_GITLAB varchar(255)                            null,
     TITLE                  varchar(255)                            null,
     IMAGE_ID               bigint                                  null,
-    README_URL_GITHUB             varchar(255)                            null,
-    README_URL_GITLAB             varchar(255)                            null,
-    THUMBNAIL_URL_GITHUB          varchar(255)                            null,
-    THUMBNAIL_URL_GITLAB          varchar(255)                            null,
+    README_URL_GITHUB      varchar(255)                            null,
+    README_URL_GITLAB      varchar(255)                            null,
+    THUMBNAIL_URL_GITHUB   varchar(255)                            null,
+    THUMBNAIL_URL_GITLAB   varchar(255)                            null,
     WORKLOAD_TYPE          enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
-    PARAMETER           varchar(1000)                           null
+    PARAMETER              varchar(1000)                           null
 );
 
 create index if not exists FKqu0nc3vfvgnvh9ro3pyuqwd9f
@@ -367,8 +367,8 @@ create table if not exists TB_IMAGE
     MOD_DATE             datetime(6)                             null,
     REG_DATE             datetime(6)                             null,
     IMAGE_TYPE           varchar(31)                             not null,
-    IMAGE_NAME_HUB           varchar(255)                            null,
-    IMAGE_NAME_HARBOR           varchar(255)                            null,
+    IMAGE_NAME_HUB       varchar(255)                            null,
+    IMAGE_NAME_HARBOR    varchar(255)                            null,
     REG_USER_ID          varchar(255)                            null,
     REG_USER_NAME        varchar(255)                            null,
     REG_USER_REAL_NAME   varchar(255)                            null,
@@ -449,10 +449,10 @@ create table if not exists TB_JOB_PREDICTION_PARAMETER
 
 create table if not exists TB_LICENSE
 (
-    LICENSE_ID         bigint auto_increment
+    LICENSE_ID       bigint auto_increment
         primary key,
-    LICENSE_KEY        varchar(255) null,
-    LICENSE_REG_DATE   datetime(6)  null
+    LICENSE_KEY      varchar(255) null,
+    LICENSE_REG_DATE datetime(6)  null
 );
 
 create table if not exists TB_LOCAL_DATASET
@@ -673,6 +673,7 @@ create table if not exists TB_STORAGE
     NAME_SPACE              varchar(255)                  null,
     PVC_NAME                varchar(255)                  null,
     PV_NAME                 varchar(255)                  null,
+    DELETE_YN               enum ('Y', 'N')               null,
     REG_USER_ID             varchar(255)                  null,
     REG_USER_NAME           varchar(255)                  null,
     REG_USER_REAL_NAME      varchar(255)                  null,
@@ -757,7 +758,7 @@ create table if not exists TB_WORKLOAD
     WORKSPACE_RESOURCE_NAME    varchar(255)                            null,
     WORKLOAD_TYPE              enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
     WORKLOAD_UID               varchar(255)                            null,
-    REMAIN_TIME                int                                     DEFAULT 0,
+    REMAIN_TIME                int DEFAULT 0,
     DELETE_YN                  enum ('Y', 'N')                         null
 );
 
@@ -803,14 +804,15 @@ create table if not exists TB_WORKSPACE_SETTING
     id  bigint auto_increment primary key
 );
 
-CREATE TABLE if not exists TB_NETWORK (
-      NETWORK_ID bigint(20) NOT NULL AUTO_INCREMENT,
-      CONNECTION_TEST_HARBOR varchar(255) DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 폐쇄망 도커 이미지 경로',
-      CONNECTION_TEST_HUB varchar(255) DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 도커 이미지 경로',
-      INIT_CONTAINER_HARBOR varchar(255) DEFAULT NULL COMMENT 'init container 용 폐쇄망 도커 이미지 경로',
-      INIT_CONTAINER_HUB varchar(255) DEFAULT NULL COMMENT 'init container 용 도커 이미지 경로',
-      LOCAL_VOLUME_HARBOR varchar(255) DEFAULT NULL COMMENT '로컬 데이터 셋, 모델 용 폐쇄망 도커 이미지 경로',
-      LOCAL_VOLUME_HUB varchar(255) DEFAULT NULL COMMENT '로컬 데이터 셋, 모델 용 도커 이미지 경로',
-      NETWORK_CLOSE_YN enum('Y','N') DEFAULT NULL,
-      PRIMARY KEY (`NETWORK_ID`)
+CREATE TABLE if not exists TB_NETWORK
+(
+    NETWORK_ID             bigint(20) NOT NULL AUTO_INCREMENT,
+    CONNECTION_TEST_HARBOR varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 폐쇄망 도커 이미지 경로',
+    CONNECTION_TEST_HUB    varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 도커 이미지 경로',
+    INIT_CONTAINER_HARBOR  varchar(255)   DEFAULT NULL COMMENT 'init container 용 폐쇄망 도커 이미지 경로',
+    INIT_CONTAINER_HUB     varchar(255)   DEFAULT NULL COMMENT 'init container 용 도커 이미지 경로',
+    LOCAL_VOLUME_HARBOR    varchar(255)   DEFAULT NULL COMMENT '로컬 데이터 셋, 모델 용 폐쇄망 도커 이미지 경로',
+    LOCAL_VOLUME_HUB       varchar(255)   DEFAULT NULL COMMENT '로컬 데이터 셋, 모델 용 도커 이미지 경로',
+    NETWORK_CLOSE_YN       enum ('Y','N') DEFAULT NULL,
+    PRIMARY KEY (`NETWORK_ID`)
 );
