@@ -819,7 +819,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				setCellValueAndStyle(dataRow.createCell(5), reportDTO.getWorkloadName(), null);
 				setCellDateValueAndStyle(dataRow.createCell(6), reportDTO.getStartDate(), dateStyle);
 				setCellDateValueAndStyle(dataRow.createCell(7), reportDTO.getEndDate(), dateStyle);
-				setCellValueAndStyle(dataRow.createCell(8), "END", null);
+				setCellValueAndStyle(dataRow.createCell(8), reportDTO.getWorkloadStatus().name(), null);
 			}
 			workbook.write(fos);
 		} catch (IOException e) {

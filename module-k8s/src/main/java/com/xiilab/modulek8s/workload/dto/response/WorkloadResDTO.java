@@ -72,6 +72,7 @@ public class WorkloadResDTO {
 		private String group;
 		private String workspaceName;
 		private String workloadName;
+		private WorkloadStatus workloadStatus;
 		private LocalDateTime startDate;
 		private LocalDateTime endDate;
 

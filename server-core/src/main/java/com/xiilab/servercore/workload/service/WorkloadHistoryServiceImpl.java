@@ -594,6 +594,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.workloadName(workloadEntity.getName())
 				.startDate(workloadEntity.getCreatedAt())
 				.endDate(workloadEntity.getDeletedAt())
+				.workloadStatus(workloadEntity.getWorkloadStatus())
 				.build()
 			)
 			.toList();
