@@ -79,7 +79,7 @@ public class ImageServiceImpl implements ImageService {
 		}
 
 		Page<ImageEntity> images = imageRepository.findByImages(findSearchCondition.getImageType(),
-			findSearchCondition.getWorkloadType(), pageRequest);
+			findSearchCondition.getWorkloadType(), findSearchCondition.isMultiNode(), pageRequest);
 
 		if (findSearchCondition.getImageType() == ImageType.BUILT) {
 			getRecommendAndSetAvailableBuiltInImages(images.getContent());

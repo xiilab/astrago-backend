@@ -135,33 +135,33 @@ ON DUPLICATE KEY UPDATE ALERT_ID = ALERT_ID;
 
 -- 이미지 초기값
 INSERT INTO TB_IMAGE (IMAGE_TYPE, IMAGE_ID, MOD_DATE, REG_DATE, REG_USER_ID, REG_USER_NAME, REG_USER_REAL_NAME,
-                      DELETE_YN, IMAGE_NAME_HUB, IMAGE_NAME_HARBOR, REPOSITORY_AUTH_TYPE, WORKLOAD_TYPE)
-VALUES ('HUB', 1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH'),
-       ('HUB', 2, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH'),
+                      DELETE_YN, IMAGE_NAME_HUB, IMAGE_NAME_HARBOR, REPOSITORY_AUTH_TYPE, WORKLOAD_TYPE, MULTI_NODE)
+VALUES ('HUB', 1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH', false),
+       ('HUB', 2, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH', false),
        ('BUILT', 3, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 4, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 5, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 6, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 7, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 8, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 9, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 10, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 11, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'BATCH'),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'BATCH', false),
        ('BUILT', 12, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'BATCH'),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'BATCH', false),
        ('BUILT', 13, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'BATCH'),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'BATCH', false),
        ('BUILT', 14, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'BATCH')
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'BATCH', false)
 ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 
 -- 허브 이미지 초기값
