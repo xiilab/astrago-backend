@@ -1,11 +1,22 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import org.kubeflow.v2beta1.MPIJob;
+import org.kubeflow.v2beta1.MPIJobSpec;
+import org.kubeflow.v2beta1.mpijobspec.MpiReplicaSpecs;
+import org.kubeflow.v2beta1.mpijobspec.RunPolicy;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.Template;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.Metadata;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.Spec;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.Containers;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Env;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Ports;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Resources;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -15,38 +26,17 @@ import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulek8s.workload.enums.SchedulingType;
 
-import io.fabric8.kubernetes.api.model.ContainerPort;
-import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.api.model.PodSpecBuilder;
-import io.fabric8.kubernetes.api.model.PodSpecFluent;
-import io.fabric8.kubernetes.api.model.PodTemplateSpec;
-import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
-import io.fabric8.kubernetes.api.model.Quantity;
-import io.fabric8.kubernetes.api.model.ResourceRequirements;
-import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
-import io.fabric8.kubernetes.api.model.apps.StatefulSet;
-import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
-import io.fabric8.kubernetes.api.model.apps.StatefulSetSpec;
-import io.fabric8.kubernetes.api.model.apps.StatefulSetSpecBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpecBuilder;
 import io.micrometer.common.util.StringUtils;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class DistributedJobVO extends WorkloadVO {
-	private static final String ASTRAGO_HOROVOD_SSH_KEY = "astrago-horovod-ssh-key";
-	private static final String ASTRAGO_HOROVOD_SCRIPT = "astrago-horovod-script";
+public class DistributedJobVO extends DistributedWorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
 	private String workingDir;        // 명령어를 실행 할 path
@@ -54,70 +44,72 @@ public class DistributedJobVO extends WorkloadVO {
 	private Map<String, String> parameter;        // 사용자가 입력한 hyper parameter
 	private String jobName;
 
-	@PostConstruct
-	void createUniqueName() {
-		this.jobName = getUniqueResourceName();
+	@Override
+	public MPIJobSpec createSpec() {
+		MPIJobSpec mpiJobSpec = new MPIJobSpec();
+		mpiJobSpec.setSlotsPerWorker(1);
+		mpiJobSpec.setMpiReplicaSpecs(Map.of("Launcher", createLaucherSpec(), "Worker", this.createWorkerSpec()));
+		RunPolicy runPolicy = new RunPolicy();
+		runPolicy.setTtlSecondsAfterFinished(10);
+		mpiJobSpec.setRunPolicy(runPolicy);
+		return mpiJobSpec;
 	}
 
 	@Override
-	public JobSpec createSpec() {
-		return new JobSpecBuilder()
-			.withTtlSecondsAfterFinished(10)
-			.withNewTemplate()
-			.withNewMetadata()
-			.withAnnotations(getPodAnnotationMap())
-			.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
-			.withSpec(createPodSpec())
-			.endTemplate()
-			.withBackoffLimit(0)
-			.build();
-	}
-
-	@Override
-	public PodSpec createPodSpec() {
-		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
-		podSpecBuilder.withHostname("astrago");
-		// 스케줄러 지정
-		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
-		if (!ObjectUtils.isEmpty(this.secretName)) {
-			podSpecBuilder.addNewImagePullSecret(this.secretName);
+	public List<Ports> convertContainerPort() {
+		List<Ports> portsList = new ArrayList<>();
+		if (!CollectionUtils.isEmpty(ports)) {
+			for (JobPortVO port : ports) {
+				Ports portInstance = new Ports();
+				portInstance.setName(port.name());
+				portInstance.setContainerPort(port.port());
+				portsList.add(portInstance);
+			}
 		}
-		cloneGitRepo(podSpecBuilder, this.codes);
-		addDefaultVolume(podSpecBuilder);
-		addVolumes(podSpecBuilder, this.datasets);
-		addVolumes(podSpecBuilder, this.models);
-
-		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
-			.withRestartPolicy("Never")
-			.withTerminationGracePeriodSeconds(20L)
-			.addNewContainer()
-			.withName(this.jobName)
-			.withImage(image.name());
-
-		addContainerPort(podSpecContainer);
-		addContainerEnv(podSpecContainer);
-		addContainerCommand(podSpecContainer);
-		addDefaultVolumeMountPath(podSpecContainer);
-		addVolumeMount(podSpecContainer, datasets);
-		addVolumeMount(podSpecContainer, models);
-		addContainerSourceCode(podSpecContainer);
-
-		return podSpecContainer.endContainer().build();
+		return portsList;
 	}
 
 	@Override
-	public List<ContainerPort> convertContainerPort() {
-		return List.of();
-	}
-
-	@Override
-	public List<EnvVar> convertEnv() {
-		return List.of();
+	public List<Env> convertEnv() {
+		List<Env> envList = new ArrayList<>();
+		if (!CollectionUtils.isEmpty(envs)) {
+			for (JobEnvVO envInfo : envs) {
+				Env env = new Env();
+				env.setName(envInfo.name());
+				env.setValue(envInfo.value());
+				envList.add(env);
+			}
+		}
+		return envList;
 	}
 
 	@Override
 	public List<String> convertCmd() {
-		return List.of();
+		List<String> commandList = new ArrayList<>();
+		commandList.add("mpirun");
+		commandList.add("--allow-run-as-root");
+		commandList.add("-np");
+		commandList.add(String.valueOf(gpuRequest));
+		commandList.add("-bind-to");
+		commandList.add("none");
+		commandList.add("-map-by");
+		commandList.add("slot");
+		commandList.add("-x");
+		commandList.add("NCCL_DEBUG=INFO");
+		commandList.add("-x");
+		commandList.add("LD_LIBRARY_PATH");
+		commandList.add("-x");
+		commandList.add("PATH");
+		commandList.add("-mca");
+		commandList.add("pml");
+		commandList.add("ob1");
+		commandList.add("-mca");
+		commandList.add("btl");
+		commandList.add("^openib");
+		commandList.add("sh");
+		commandList.add("-c");
+		commandList.add(command);
+		return commandList;
 	}
 
 	@Override
@@ -126,23 +118,133 @@ public class DistributedJobVO extends WorkloadVO {
 	}
 
 	@Override
-	public HasMetadata createResource() {
-		return new JobBuilder()
-			.withMetadata(createMeta())
-			.withSpec(createSpec())
-			.build();
+	public MpiReplicaSpecs createLaucherSpec() {
+		MpiReplicaSpecs launcherSpec = new MpiReplicaSpecs();
+		//launcher는 replicas는 1개로 고정한다.
+		launcherSpec.setReplicas(1);
+		launcherSpec.setTemplate(createLauncherTemplate());
+		return launcherSpec;
+	}
+
+	@Override
+	public MpiReplicaSpecs createWorkerSpec() {
+		MpiReplicaSpecs workerReplicaSpec = new MpiReplicaSpecs();
+		//요청한 gpu개수 만큼 replicas를 분할한다.(ex. 5개 요청 -> 5개의 한개의 gpu를 할당 받은 worker가 생성된다.)
+		workerReplicaSpec.setReplicas(gpuRequest);
+		workerReplicaSpec.setTemplate(createWorkerTemplate());
+		return workerReplicaSpec;
+	}
+
+	@Override
+	public Template createLauncherTemplate() {
+		Template template = new Template();
+		template.setMetadata(getMpiReplicasMetadata());
+		template.setSpec(createLauncherTemplateSpec());
+		return template;
+	}
+
+	@Override
+	public Spec createLauncherTemplateSpec() {
+		Spec spec = new Spec();
+		createGitCloneInitContainers(spec, jobName);
+		spec.setContainers(List.of(createLauncherContainers()));
+		addVolume(spec, datasets);
+		addVolume(spec, models);
+		return spec;
+	}
+
+	@Override
+	public Template createWorkerTemplate() {
+		Template template = new Template();
+		template.setMetadata(getMpiReplicasMetadata());
+		template.setSpec(createWorkerTemplateSpec());
+		return template;
+	}
+
+	@Override
+	public Spec createWorkerTemplateSpec() {
+		Spec spec = new Spec();
+		createGitCloneInitContainers(spec, jobName);
+		spec.setContainers(List.of(createWorkerContainers()));
+		addVolume(spec, datasets);
+		addVolume(spec, models);
+		return spec;
+	}
+
+	@Override
+	public Containers createLauncherContainers() {
+		Containers launcherContainer = new Containers();
+		launcherContainer.setName(jobName);
+		launcherContainer.setImage(image.name());
+		launcherContainer.setResources(createLauncherResources());
+		launcherContainer.setEnv(convertEnv());
+		launcherContainer.setCommand(convertCmd());
+		launcherContainer.setWorkingDir(workingDir);
+		launcherContainer.setImagePullPolicy("IfNotPresent");
+		launcherContainer.setPorts(convertContainerPort());
+		addVolumeMounts(launcherContainer, datasets);
+		addVolumeMounts(launcherContainer, models);
+		addCloneCodeVolumeMounts(launcherContainer, codes);
+		if (StringUtils.isNotBlank(workingDir)) {
+			launcherContainer.setWorkingDir(workingDir);
+		}
+		return launcherContainer;
+	}
+
+	@Override
+	public Containers createWorkerContainers() {
+		Containers workerContainer = new Containers();
+		workerContainer.setName(jobName);
+		workerContainer.setImage(image.name());
+		workerContainer.setResources(createWorkerResources());
+		workerContainer.setEnv(convertEnv());
+		workerContainer.setImagePullPolicy("IfNotPresent");
+		workerContainer.setPorts(convertContainerPort());
+		addVolumeMounts(workerContainer, datasets);
+		addVolumeMounts(workerContainer, models);
+		addCloneCodeVolumeMounts(workerContainer, codes);
+		return workerContainer;
+	}
+
+	@Override
+	public Resources createLauncherResources() {
+		Resources resources = new Resources();
+		Map<String, IntOrString> resourceMap = Map.of(
+			"cpu", new IntOrString(String.valueOf(cpuRequest)),
+			"memory", new IntOrString(convertGiToBytes(memRequest)));
+		resources.setRequests(resourceMap);
+		resources.setLimits(resourceMap);
+		return resources;
+	}
+
+	@Override
+	public Resources createWorkerResources() {
+		Resources resources = new Resources();
+		Map<String, IntOrString> resourceMap = Map.of(
+			"cpu", new IntOrString(String.valueOf(cpuRequest)),
+			"memory", new IntOrString(convertGiToBytes(memRequest)),
+			"nvidia.com/gpu", new IntOrString(String.valueOf(gpuRequest)));
+		resources.setRequests(resourceMap);
+		resources.setLimits(resourceMap);
+		return resources;
+	}
+
+	@Override
+	public MPIJob createResource() {
+		MPIJob mpiJob = new MPIJob();
+		mpiJob.setMetadata(createMeta());
+		mpiJob.setSpec(createSpec());
+		return mpiJob;
 	}
 
 	@Override
 	protected ObjectMeta createMeta() {
+		jobName = getUniqueResourceName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
-			.withAnnotations(
-				getAnnotationMap()
-			).withLabels(
-				getLabelMap()
-			)
+			.withAnnotations(getAnnotationMap())
+			.withLabels(getLabelMap())
 			.build();
 	}
 
@@ -151,146 +253,10 @@ public class DistributedJobVO extends WorkloadVO {
 		return ResourceType.WORKLOAD;
 	}
 
-	public StatefulSet createWorker() {
-		return new StatefulSetBuilder()
-			.withMetadata(createWorkderMeta())
-			.withSpec(createWorkderSpec())
-			.build();
-	}
-
-	private ObjectMeta createWorkderMeta() {
-		return new ObjectMetaBuilder()
-			.withName(jobName + "-worker")
-			.withNamespace(workspace)
-			.withAnnotations(getAnnotationMap())
-			.withLabels(getLabelMap())
-			.build();
-	}
-
-	private StatefulSetSpec createWorkderSpec() {
-		return new StatefulSetSpecBuilder()
-			.withReplicas(this.gpuRequest)
-			.withPodManagementPolicy("Parallel")
-			.withTemplate(createWorkerPodTemplateSpec())
-			.build();
-	}
-
-	private PodTemplateSpec createWorkerPodTemplateSpec() {
-		return new PodTemplateSpecBuilder()
-			.withSpec(createWorkerPodSpec())
-			.build();
-	}
-
-	private PodSpec createWorkerPodSpec() {
-		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
-		podSpecBuilder.withHostname("astrago");
-		//스케줄러 지정
-		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
-
-		if (!ObjectUtils.isEmpty(this.secretName)) {
-			podSpecBuilder.addNewImagePullSecret(this.secretName);
-		}
-
-		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
-			.withRestartPolicy("Never")
-			.withTerminationGracePeriodSeconds(20L)
-			.addNewContainer()
-			.withName(this.jobName + "worker")
-			.withImage(image.name());
-
-		addContainerPort(podSpecContainer);
-		addContainerEnv(podSpecContainer);
-		addContainerCommand(podSpecContainer);
-		addDefaultVolumeMountPath(podSpecContainer);
-		addVolumeMount(podSpecContainer, datasets);
-		addVolumeMount(podSpecContainer, models);
-		addContainerSourceCode(podSpecContainer);
-
-		return podSpecContainer.endContainer().build();
-	}
-
-	private void addDefaultVolumeMountPath(
-		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
-		podSpecContainer.addNewVolumeMount()
-			.withName("shmdir")
-			.withMountPath("/dev/shm")
-			.endVolumeMount();
-		// podSpecContainer.addNewVolumeMount()
-		// 	.withName("tz-seoul")
-		// 	.withMountPath("/etc/localtime")
-		// 	.endVolumeMount();
-	}
-
-	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
-		List<JobVolumeVO> volumes) {
-		if (!CollectionUtils.isEmpty(volumes)) {
-			volumes.forEach(volume -> podSpecContainer
-				.addNewVolumeMount()
-				.withName(volume.pvName())
-				.withMountPath(volume.mountPath())
-				.endVolumeMount());
-		}
-	}
-
-	private void addContainerResource(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
-		podSpecContainer.withNewResources()
-			.addToRequests(getWorkloadResourceMap())
-			.addToLimits(getWorkloadResourceMap())
-			.endResources();
-	}
-
-	private ResourceRequirements getLauncherResourceRequirements() {
-		return new ResourceRequirementsBuilder()
-			.addToRequests("cpu", new Quantity(String.valueOf(cpuRequest)))
-			.addToRequests("cpu", new Quantity(String.valueOf(cpuRequest)))
-			.build();
-	}
-
-	private ResourceRequirements getWorkerResourceRequirements() {
-		return new ResourceRequirementsBuilder()
-			.addToRequests(getWorkloadResourceMap())
-			.addToRequests(getWorkloadResourceMap())
-			.build();
-	}
-
-	/**
-	 * init컨테이너와 연결된 볼륨을 컨테이너와 연결
-	 *
-	 * @param podSpecContainer
-	 */
-	private void addContainerSourceCode(
-		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
-		if (!CollectionUtils.isEmpty(codes)) {
-			AtomicInteger index = new AtomicInteger(1);
-			codes.forEach(codeReq ->
-				podSpecContainer
-					.addNewVolumeMount()
-					.withName("git-clone-" + index.getAndIncrement())
-					.withMountPath(codeReq.mountPath())
-					.withSubPath("code")
-					.endVolumeMount());
-		}
-	}
-
-	private void addContainerCommand(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
-		if (StringUtils.isNotBlank(command)) {
-			podSpecContainer.addAllToCommand(convertCmd());
-		}
-		if (StringUtils.isNotBlank(workingDir)) {
-			podSpecContainer.withWorkingDir(workingDir);
-		}
-	}
-
-	private void addContainerEnv(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
-		if (envs != null && !envs.isEmpty()) {
-			podSpecContainer.addAllToEnv(convertEnv());
-		}
-	}
-
-	private void addContainerPort(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
-		if (ports != null && !ports.isEmpty()) {
-			podSpecContainer.addAllToPorts(convertContainerPort());
-		}
+	private Metadata getMpiReplicasMetadata() {
+		Metadata metadata = new Metadata();
+		metadata.setAnnotations(Map.of("sidecar.istio.io/inject", String.valueOf(false)));
+		return metadata;
 	}
 
 	private Map<String, String> getAnnotationMap() {
@@ -328,10 +294,15 @@ public class DistributedJobVO extends WorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
-		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
-		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
-		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
-
+		if (!CollectionUtils.isEmpty(datasets)) {
+			this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
+		}
+		if (!CollectionUtils.isEmpty(models)) {
+			this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
+		}
+		if (!CollectionUtils.isEmpty(codes)) {
+			this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
+		}
 		return map;
 	}
 
@@ -340,4 +311,5 @@ public class DistributedJobVO extends WorkloadVO {
 			map.put(prefix + id, "true");
 		}
 	}
+
 }
