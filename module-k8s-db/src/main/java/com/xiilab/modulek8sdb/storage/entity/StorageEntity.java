@@ -1,8 +1,11 @@
 package com.xiilab.modulek8sdb.storage.entity;
 
 
+import org.hibernate.annotations.SQLDelete;
+
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "TB_STORAGE")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE TB_STORAGE ts SET ts.DELETE_YN = 'Y' WHERE ts.STORAGE_ID = ?")
 @Getter
 public class StorageEntity extends BaseEntity {
 	@Id
@@ -51,6 +55,10 @@ public class StorageEntity extends BaseEntity {
 	private String pvName;
 	@Column(name = "PVC_NAME")
 	private String pvcName;
+
+	@Column(name = "DELETE_YN")
+	@Enumerated(EnumType.STRING)
+	private DeleteYN deleteYN = DeleteYN.N;
 
 	@Builder
 	public StorageEntity(String storageName, int requestVolume, String description,

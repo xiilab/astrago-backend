@@ -226,11 +226,11 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	@Override
-	public void compressAstragoModelFiles(Long modelId, List<String> filePaths, CompressFileType compressFileType) {
+	public void compressAstragoModelFiles(Long modelId, ModelDTO.ReqCompressDTO reqCompressDTO) {
 		modelRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
-		List<Path> pathList = filePaths.stream().map(Path::of).toList();
-		CompressUtils.saveCompressFile(pathList, null, compressFileType);
+		List<Path> pathList = reqCompressDTO.getFilePaths().stream().map(Path::of).toList();
+		CompressUtils.saveCompressFile(pathList, null, reqCompressDTO.getCompressFileType());
 	}
 
 	@Override

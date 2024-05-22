@@ -41,7 +41,7 @@ import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.servercore.workload.enumeration.WorkloadSortCondition;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,7 +49,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/core/workloads")
+@RequestMapping("/api/v1/core")
 @RequiredArgsConstructor
 public class WorkloadController {
 	private final WorkloadFacadeService workloadFacadeService;
@@ -57,7 +57,7 @@ public class WorkloadController {
 	private final ModelService modelService;
 	private final HubService hubService;
 
-	@PostMapping("/{type}")
+	@PostMapping("/workloads/{type}")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
 		@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
@@ -67,7 +67,7 @@ public class WorkloadController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PatchMapping("/{workloadType}")
+	@PatchMapping("/workloads/{workloadType}")
 	@Operation(summary = "워크로드 수정")
 	public ResponseEntity<HttpStatus> updateWorkload(
 		@PathVariable("workloadType") WorkloadType workloadType,
@@ -76,7 +76,7 @@ public class WorkloadController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/{type}")
+	@GetMapping("/workloads/{type}")
 	@Operation(summary = "워크로드 상세 조회")
 	public ResponseEntity<FindWorkloadResDTO.WorkloadDetail> getWorkloadInfo(
 		@PathVariable("type") WorkloadType workloadType,
@@ -88,7 +88,7 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
-	@PostMapping("/{type}/event")
+	@PostMapping("/workloads/{type}/event")
 	@Operation(summary = "워크로드 이벤트 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadEventDTO>> getWorkloadEventList(
 		@PathVariable("type") WorkloadType workloadType,
@@ -100,7 +100,7 @@ public class WorkloadController {
 		);
 	}
 
-	@GetMapping("/jobList")
+	@GetMapping("/workloads/jobList")
 	@Operation(summary = "워크로드 리스트 조회")
 	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getWorkloadList(
 		@RequestParam(value = "workloadType") WorkloadType workloadType,
@@ -117,7 +117,7 @@ public class WorkloadController {
 				workloadSortCondition, pageNum, isCreatedByMe, userInfoDTO), HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{type}")
+	@DeleteMapping("/workloads/{type}")
 	@Operation(summary = "워크로드 종료 api")
 	public ResponseEntity<HttpStatus> stopWorkload(
 		@PathVariable(value = "type") WorkloadType workloadType,
@@ -129,7 +129,7 @@ public class WorkloadController {
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/history/{id}")
+	@DeleteMapping("/workloads/history/{id}")
 	@Operation(summary = "워크로드 삭제 api")
 	public ResponseEntity<HttpStatus> deleteWorkloadHistory(
 		@PathVariable(value = "id") long id,
@@ -139,7 +139,7 @@ public class WorkloadController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/datasets")
+	@GetMapping("/workloads/datasets")
 	@Operation(summary = "워크로드 생성 시 데이터 셋 전체 조회")
 	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
@@ -151,7 +151,7 @@ public class WorkloadController {
 		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
-	@GetMapping("/models")
+	@GetMapping("/workloads/models")
 	@Operation(summary = "워크로드 생성 시 model 전체 조회")
 	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
@@ -163,13 +163,13 @@ public class WorkloadController {
 		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
-	@GetMapping("/hubs")
+	@GetMapping("/workloads/hubs")
 	@Operation(summary = "워크로드 생성 시 hub 전체 조회")
 	public ResponseEntity<FindHubInWorkloadResDTO.Hubs> getHubs(@RequestParam("workloadType") WorkloadType workloadType) {
 		return new ResponseEntity<>(hubService.getHubListInWorkload(workloadType), HttpStatus.OK);
 	}
 
-	@GetMapping("/{workloadName}/files/list")
+	@GetMapping("/workloads/{workloadName}/files/list")
 	@Operation(summary = "workload 파일리스트 조회")
 	public ResponseEntity<DirectoryDTO> getFileListInWorkloadContainer(
 		@PathVariable("workloadName") String workloadName,
@@ -182,7 +182,7 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
-	@GetMapping("/{workloadName}/files/download")
+	@GetMapping("/workloads/{workloadName}/files/download")
 	@Operation(summary = "workload 파일 다운로드")
 	public ResponseEntity<Resource> downloadWorkloadFile(
 		@PathVariable(value = "workloadName") String workloadName,
@@ -197,7 +197,7 @@ public class WorkloadController {
 			.body(workloadFacadeService.downloadFileFromWorkload(workloadName, workspaceName, workloadType, path));
 	}
 
-	@DeleteMapping("/{workloadName}/files")
+	@DeleteMapping("/workloads/{workloadName}/files")
 	@Operation(summary = "workload 파일 삭제")
 	public ResponseEntity<HttpStatus> deleteFileFromWorkload(
 		@PathVariable(value = "workloadName") String workloadName,
@@ -209,7 +209,7 @@ public class WorkloadController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("/{workloadName}/files/upload")
+	@PostMapping("/workloads/{workloadName}/files/upload")
 	@Operation(summary = "workload 파일 업로드")
 	public ResponseEntity<FileUploadResultDTO> workloadFileUpload(
 		@PathVariable(name = "workloadName") String workloadName,
@@ -221,7 +221,7 @@ public class WorkloadController {
 			workloadFacadeService.workloadFileUpload(workloadName, workspaceName, workloadType, path, files));
 	}
 
-	@PostMapping("/{workloadName}/folder")
+	@PostMapping("/workloads/{workloadName}/folder")
 	@Operation(summary = "workload 폴더 생성")
 	public ResponseEntity<Boolean> workloadMkdir(
 		@PathVariable(name = "workloadName") String workloadName,
@@ -232,7 +232,7 @@ public class WorkloadController {
 		return ResponseEntity.ok(workloadFacadeService.workloadMkdir(workloadName, workspaceName, workloadType, path));
 	}
 
-	@GetMapping("/{workloadName}/files/info")
+	@GetMapping("/workloads/{workloadName}/files/info")
 	@Operation(summary = "workload 파일 상세 조회")
 	public ResponseEntity<FileInfoDTO> getWorkloadFileInfo(
 		@PathVariable(name = "workloadName") String workloadName,
@@ -243,7 +243,7 @@ public class WorkloadController {
 			.body(workloadFacadeService.getWorkloadFileInfo(workloadName, workspaceName, workloadType, path));
 	}
 
-	@GetMapping("/{workloadName}/files/preview")
+	@GetMapping("/workloads/{workloadName}/files/preview")
 	@Operation(summary = "workload 파일 미리보기")
 	public ResponseEntity<byte[]> getWorkloadFilePreview(
 		@PathVariable(name = "workloadName") String workloadName,
@@ -257,7 +257,7 @@ public class WorkloadController {
 			.body(workloadFacadeService.getWorkloadFilePreview(workloadName, workspaceName, workloadType, path));
 	}
 
-	@GetMapping("/{workloadName}/history/log")
+	@GetMapping("/workloads/{workloadName}/history/log")
 	@Operation(summary = "종료된 워크로드의 로그 조회하기")
 	public ResponseEntity<byte[]> getEndWorkloadHistoryLog(
 		@PathVariable(name = "workloadName") String workloadName,
@@ -265,5 +265,54 @@ public class WorkloadController {
 	) {
 		return ResponseEntity.ok()
 				.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
+	}
+	//관리자 api
+	@GetMapping("/admin/workloads/jobList")
+	@Operation(summary = "관리자 워크로드 리스트 조회")
+	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getAdminWorkloadList(
+		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(value = "workspaceName", required = false) String workspaceName,
+		@RequestParam(value = "searchName", required = false) String searchName,
+		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
+		@RequestParam(value = "workloadSortCondition", required = false) WorkloadSortCondition workloadSortCondition,
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "isCreatedByMe", required = false) Boolean isCreatedByMe,
+		UserDTO.UserInfo userInfoDTO
+	) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getAdminOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
+				workloadSortCondition, pageNum, isCreatedByMe, userInfoDTO), HttpStatus.OK);
+	}
+
+	@GetMapping("/admin/workloads/{type}")
+	@Operation(summary = "관리자 워크로드 상세 조회")
+	public ResponseEntity<FindWorkloadResDTO.WorkloadDetail> getAdminWorkloadInfo(
+		@PathVariable("type") WorkloadType workloadType,
+		@RequestParam("workspaceResourceName") String workspaceResourceName,
+		@RequestParam("workloadResourceName") String workloadResourceName,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getAdminWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, userInfoDTO),
+			HttpStatus.OK);
+	}
+	@GetMapping("/admin/workloads/{workloadName}/history/log")
+	@Operation(summary = "관리자 종료된 워크로드의 로그 조회하기")
+	public ResponseEntity<byte[]> getAdminEndWorkloadHistoryLog(
+		@PathVariable(name = "workloadName") String workloadName,
+		UserDTO.UserInfo userInfoDTO
+	) {
+		return ResponseEntity.ok()
+			.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
+	}
+	@PostMapping("/admin/workloads/{type}/event")
+	@Operation(summary = "워크로드 이벤트 리스트 조회")
+	public ResponseEntity<PageDTO<WorkloadEventDTO>> getAdminWorkloadEventList(
+		@PathVariable("type") WorkloadType workloadType,
+		@RequestBody WorkloadEventReqDTO workloadEventDTO
+	) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadEvent(workloadType, workloadEventDTO),
+			HttpStatus.OK
+		);
 	}
 }

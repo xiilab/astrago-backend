@@ -80,10 +80,13 @@ gitlab:
 
 mig-profile-path: src/main/resources/MigProfile.json
 server:
-  max-http-request-header-size: 40KB
+  max-http-request-header-size: 100KB
 prometheus:
   url: http://10.61.3.12:30090/
 
 tus:
   upload-path: /root/astrago/tus/meta
   expire-period: 60000
+
+springdoc:
+  use-fqn: true

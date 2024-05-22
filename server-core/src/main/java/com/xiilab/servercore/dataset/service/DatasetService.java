@@ -45,7 +45,7 @@ public interface DatasetService {
 
 	DownloadFileResDTO downloadAstragoDatasetFile(Long datasetId, String reqFilePathDTO);
 
-	void compressAstragoDatasetFiles(Long datasetId, List<String> filePaths, CompressFileType compressFileType);
+	void compressAstragoDatasetFiles(Long datasetId, DatasetDTO.ReqCompressDTO reqCompressDTO);
 
 	void deCompressAstragoDatasetFile(Long datasetId, String filePath);
 

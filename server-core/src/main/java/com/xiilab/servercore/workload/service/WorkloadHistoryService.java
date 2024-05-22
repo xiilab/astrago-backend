@@ -2,7 +2,10 @@ package com.xiilab.servercore.workload.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+
 import com.xiilab.modulecommon.enums.WorkloadStatus;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
@@ -11,6 +14,8 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
+import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 
 public interface WorkloadHistoryService {
 	List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
@@ -37,4 +42,10 @@ public interface WorkloadHistoryService {
 	void deleteWorkload(String workspaceName);
 
 	List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName, WorkloadStatus workloadStatus);
+
+	List<ModuleWorkloadResDTO> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList, WorkloadType workloadType,
+		WorkloadSortCondition sortCondition);
+
+	OverViewWorkloadResDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, Boolean isCreatedByMe, String id,
+		List<String> pinResourceNameList, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.servercore.storage.service.StorageFacadeService;
 import com.xiilab.servercore.storage.service.StorageService;
@@ -38,8 +39,9 @@ public class StorageController {
 	@GetMapping("")
 	@Operation(summary = "스토리지 목록 조회")
 	public ResponseEntity<StorageDTO.ResStorages> getStorages(@RequestParam(required = false, defaultValue = "1", value = "page") int pageNo,
-		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize){
-		StorageDTO.ResStorages storages = storageService.getStorages(pageNo, pageSize);
+		@RequestParam(required = false, defaultValue = "10", value = "pageSize") int pageSize,
+		@RequestParam(required = false, defaultValue = "N", value = "deleteYN") DeleteYN deleteYN){
+		StorageDTO.ResStorages storages = storageService.getStorages(pageNo, pageSize, deleteYN);
 		return new ResponseEntity<>(storages, HttpStatus.OK);
 	}
 

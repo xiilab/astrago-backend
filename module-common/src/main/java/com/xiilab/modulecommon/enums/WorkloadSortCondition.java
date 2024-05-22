@@ -1,4 +1,4 @@
-package com.xiilab.servercore.workload.enumeration;
+package com.xiilab.modulecommon.enums;
 
 public enum WorkloadSortCondition {
 	REMAIN_TIME_DESC,
