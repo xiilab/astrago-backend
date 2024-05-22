@@ -292,6 +292,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			log.info("{}의 {} 로그가 저장 되었습니다.", wl.getWorkspaceResourceName(), wl.getResourceName());
 		} catch (IOException e) {
 			log.error("An error occurred while saving the log file.\n" + e.getMessage());
+			log.info("{}의 {} 로그가 저장에 실패하였습니다.", wl.getWorkspaceResourceName(), wl.getResourceName());
 		}
 	}
 

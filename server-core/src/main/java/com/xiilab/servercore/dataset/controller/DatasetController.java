@@ -185,7 +185,7 @@ public class DatasetController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PostMapping("/datasets/astrago/{datasetId}/decompress")
+	@GetMapping("/datasets/astrago/{datasetId}/decompress")
 	@Operation(summary = "astrago 데이터 셋 압축해제")
 	public ResponseEntity<HttpStatus> deCompressAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath) {
