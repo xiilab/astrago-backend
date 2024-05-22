@@ -39,4 +39,8 @@ public interface WorkloadHistoryRepo extends JpaRepository<JobEntity, Long> {
 
 	@Query("select t from TB_WORKLOAD_JOB t where t.workspaceResourceName in(:pinResourceNameList) and t.workloadType = :workloadType")
 	List<JobEntity> getWorkloadHistoryInResourceNames(@Param("pinResourceNameList") List<String> pinResourceNameList, @Param("workloadType") WorkloadType workloadType);
+
+	@Modifying
+	@Query("update TB_WORKLOAD_JOB t set t.startTime = current_timestamp where t.resourceName = :resourceName")
+	void insertWorkloadStartTime(@Param("resourceName") String resourceName);
 }
