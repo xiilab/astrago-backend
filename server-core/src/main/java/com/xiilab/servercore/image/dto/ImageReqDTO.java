@@ -67,6 +67,7 @@ public class ImageReqDTO {
 	public static class FindSearchCondition {
 		private WorkloadType workloadType;
 		private ImageType imageType;
+		private boolean multiNode;
 		private Integer page;
 		private Integer size;
 
