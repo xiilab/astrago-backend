@@ -128,13 +128,16 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			if (isStatusChanged(beforeStatus, afterStatus)) {
 				if (afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END) {
 					// 로그 저장
-					workloadHistoryRepo.findByResourceName(
-						afterJob.getMetadata().getName()).ifPresent(wl -> {
+					workloadHistoryRepo.findByResourceName(afterJob.getMetadata().getName())
+						.ifPresent(wl -> {
 						if (wl.getWorkloadType() == WorkloadType.BATCH) {
 							saveWorkloadLogFile(wl);
 						}
 					});
+				}else if(afterStatus == WorkloadStatus.RUNNING){
+					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName());
 				}
+
 				//job 상태에 따른 status 업데이트 및 노티 발송
 				checkJobStatusAndUpdateStatus(afterJob);
 			}
