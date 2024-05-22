@@ -103,9 +103,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe,
 		String userId) {
 		List<ModuleBatchJobResDTO> workloadList;
+		// 노드 찾기
 		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(1, 1, null);
 		List<ResponseDTO.NodeDTO> nodes = nodeList.getNodes();
 		ResponseDTO.NodeDTO nodeDTO = nodes.get(0);
+
 		if (workspaceName != null && ValidUtils.isNullOrFalse(isCreatedByMe)) {
 			workloadList = workloadRepository.getBatchWorkloadListByWorkspaceName(workspaceName);
 		} else if (workspaceName != null && !ValidUtils.isNullOrFalse(isCreatedByMe)) {
@@ -117,6 +119,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			throw new IllegalArgumentException("workspace, creatorId 둘 중 하나의 조건을 입력해주세요");
 		}
 
+		// 포트 업데이트
 		workloadList.forEach(workload -> {
 			ServiceList servicesByResourceName = svcRepository.getServicesByResourceName(
 				workload.getWorkspaceResourceName(),
@@ -126,6 +129,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 				io.fabric8.kubernetes.api.model.Service service = items.get(0);
 				workload.updatePort(nodeDTO.getIp(), service);
 			}
+
 			updateJopPodStartTime(workload.getWorkspaceResourceName(), workload.getResourceName(), WorkloadType.BATCH,
 				workload);
 		});

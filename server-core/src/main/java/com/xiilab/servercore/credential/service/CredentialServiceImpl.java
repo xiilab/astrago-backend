@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
@@ -47,12 +46,8 @@ public class CredentialServiceImpl implements CredentialService {
 
 	@Override
 	public Page<CredentialResDTO> getCredentialList(Pageable pageable, UserDTO.UserInfo userInfoDTO) {
-		Page<CredentialEntity> credentialEntities = null;
-		if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN) {
-			credentialEntities = credentialRepository.findAll(pageable);
-		} else {
-			credentialEntities = credentialRepository.findByRegUser_RegUserId(userInfoDTO.getId(), pageable);
-		}
+		Page<CredentialEntity> credentialEntities = credentialRepository.findByRegUser_RegUserId(
+			userInfoDTO.getId(), pageable);
 		return Objects.requireNonNull(credentialEntities).map(CredentialResDTO::new);
 	}
 

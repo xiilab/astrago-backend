@@ -62,8 +62,8 @@ public class ImageReqDTO {
 	}
 
 	@Getter
-	@NoArgsConstructor
 	@Setter
+	@NoArgsConstructor
 	public static class FindSearchCondition {
 		private WorkloadType workloadType;
 		private ImageType imageType;

@@ -1,10 +1,20 @@
 package com.xiilab.modulecommon.util;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.IOUtils;
@@ -16,14 +26,6 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UtilsErrorCode;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Slf4j
 public class CompressUtils {
@@ -118,7 +120,6 @@ public class CompressUtils {
 			);
 		}
 
-
 		// 파일명 중복되면 파일명 수정
 		int cnt = 1;
 		String baseName = FileNameUtils.getBaseName(destinationPath);
@@ -161,9 +162,15 @@ public class CompressUtils {
 	private static <T extends ArchiveOutputStream<?>> void compressDirectoriesAndFiles(List<Path> targetPaths, T os) {
 		for (Path targetPath : targetPaths) {
 			if (Files.exists(targetPath)) {
-				if (targetPath.toFile().isDirectory()) {
+
+				File targetFile = targetPath.toFile();
+				if (ValidUtils.isCheckExtensionForMac(targetFile.getName())) {
+					return ;
+				}
+
+				if (targetFile.isDirectory()) {
 					addFolder(targetPath, "", os);
-				} else if (targetPath.toFile().isFile()) {
+				} else if (targetFile.isFile()) {
 					addFile(targetPath, "", os);
 				}
 			} else {
@@ -176,12 +183,13 @@ public class CompressUtils {
 	 * 폴더 및 폴더의 하위항목 내용을 zipOutputStream에 추가
 	 *
 	 * @param targetFolderPath 압축할 폴더의 경로
-	 * @param entryName		압축 파일 내에서 저장될 이름
+	 * @param entryName        압축 파일 내에서 저장될 이름
 	 * @param os            출력 스트림
 	 */
 	private static <T extends ArchiveOutputStream<?>> void addFolder(Path targetFolderPath, String entryName,
 		T os) {
 		File folder = targetFolderPath.toFile();
+
 		entryName = entryName + folder.getName() + File.separator;
 		putArchiveEntry(entryName, targetFolderPath.toFile().length(), os);
 
@@ -199,14 +207,10 @@ public class CompressUtils {
 	 *
 	 * @param targetFilePath 압축할 파일의 경로
 	 * @param entryFolderPath 파일이 압축 파일 내에서 저장될 상위폴더명
-	 * @param os	출력 스트림
+	 * @param os    출력 스트림
 	 */
 	private static <T extends ArchiveOutputStream<?>> void addFile(Path targetFilePath, String entryFolderPath, T os) {
 		File targetFile = targetFilePath.toFile();
-
-		if (targetFile.getName().contains(".DS_Store")) {
-			return;
-		}
 
 		long fileSize = targetFilePath.toFile().length();
 		try (InputStream is = new BufferedInputStream(new FileInputStream(targetFile))) {

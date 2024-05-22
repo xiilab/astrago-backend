@@ -7,9 +7,9 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertType;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
 
 import lombok.RequiredArgsConstructor;
 

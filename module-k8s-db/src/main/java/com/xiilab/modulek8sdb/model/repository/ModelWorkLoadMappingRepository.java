@@ -13,4 +13,10 @@ public interface ModelWorkLoadMappingRepository extends JpaRepository<ModelWorkL
 		+ "set dwme.deleteYN = 'Y'"
 		+ "where dwme.workload.id =:jobId")
 	void deleteByWorkloadId(@Param("jobId") Long jobId);
+
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("update ModelWorkLoadMappingEntity mwm "
+		+ "set mwm.deleteYN = 'Y' "
+		+ "where mwm.model.modelId = :modelId")
+	void deleteByModelId(@Param("modelId") Long modelId);
 }

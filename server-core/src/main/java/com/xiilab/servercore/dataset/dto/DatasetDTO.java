@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -27,6 +28,13 @@ public class DatasetDTO {
 	public static class ReqFilePathsDTO {
 		private String[] paths;
 	}
+
+	@Getter
+	public static class ReqCompressDTO {
+		private List<String> filePaths;
+		private CompressFileType compressFileType;
+	}
+
 	@Getter
 	public static class CreateAstragoDataset {
 		private String datasetName;

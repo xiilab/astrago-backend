@@ -6,6 +6,5 @@ import lombok.Builder;
 public record ModulePortResDTO(
 	String name,
 	Integer originPort,
-	String url
-) {
+	String url) {
 }

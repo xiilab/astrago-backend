@@ -3,6 +3,8 @@ package com.xiilab.servercore.workload.service;
 import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,6 +14,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -21,7 +25,10 @@ import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -32,7 +39,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -59,6 +65,8 @@ import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
+import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -83,7 +91,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadHistoryList(String workspaceName, String searchName,
 		Boolean isCreatedByMe, String userId) {
 		List<JobEntity> batchJobEntityList = null;
-		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) { //overview 페이지에서 요청 시
 			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
 				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, BATCH);
 		} else {
@@ -96,7 +104,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.name(job.getName())
 				.resourceName(job.getResourceName())
 				.description(job.getDescription())
-				.status(WorkloadStatus.END)
+				.status(job.getWorkloadStatus())
 				.workspaceName(job.getWorkspaceName())
 				.workspaceResourceName(job.getWorkspaceResourceName())
 				.type(BATCH)
@@ -133,7 +141,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.name(job.getName())
 				.resourceName(job.getResourceName())
 				.description(job.getDescription())
-				.status(WorkloadStatus.END)
+				.status(job.getWorkloadStatus())
 				.workspaceName(job.getWorkspaceName())
 				.workspaceResourceName(job.getWorkspaceResourceName())
 				.type(WorkloadType.INTERACTIVE)
@@ -230,9 +238,19 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
 			String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
 			String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
+
+			MailDTO mail = MailDTO.builder()
+				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), jobEntity.getName()))
+				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), jobEntity.getName()))
+				.subTitle(String.format(MailAttribute.WORKLOAD_DELETE.getSubTitle(),
+					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.footer(MailAttribute.WORKLOAD_DELETE.getFooter())
+				.receiverEmail(userFacadeService.getUserInfoById(jobEntity.getCreatorId()).getEmail())
+				.build();
+
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
-				jobEntity.getWorkspaceResourceName(), null);
+				jobEntity.getWorkspaceResourceName(), null, mail);
 
 		} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || loginUserOwnerWorkspaceList.contains(
 			jobEntity.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
@@ -241,9 +259,18 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			String title = AlertMessage.WORKLOAD_DELETE_ADMIN.getTitle();
 			String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(),
 				userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
+			MailDTO mailDTo = MailDTO.builder()
+				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), jobEntity.getName()))
+				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), jobEntity.getName()))
+				.subTitle(String.format(MailAttribute.WORKLOAD_DELETE.getSubTitle(),
+					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.footer(MailAttribute.WORKLOAD_DELETE.getFooter())
+				.receiverEmail(userFacadeService.getUserInfoById(jobEntity.getCreatorId()).getEmail())
+				.build();
+
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
-				jobEntity.getWorkspaceResourceName(), null);
+				jobEntity.getWorkspaceResourceName(), null, mailDTo);
 		} else {
 			throw new IllegalArgumentException("해당 유저는 워크스페이스 삭제 권한이 없습니다.");
 		}
@@ -364,23 +391,135 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
-		List<String> workspaceIds, LocalDate startDate,
-		LocalDate endDate) {
-		List<WorkloadEntity> workloads = workloadHistoryRepoCustom.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
-			workspaceIds, startDate, endDate);
-		return workloads.stream()
-			.map(workloadEntity -> WorkloadResDTO.WorkloadReportDTO.builder()
-				.userName(workloadEntity.getCreatorRealName())
-				.userId(workloadEntity.getCreatorId())
-				.userEmail(workloadEntity.getCreatorName())
-				.workspaceName(workloadEntity.getWorkspaceName())
-				.workloadName(workloadEntity.getName())
-				.startDate(workloadEntity.getCreatedAt())
-				.endDate(workloadEntity.getDeletedAt())
-				.build()
-			)
-			.toList();
+	public List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName,
+		WorkloadStatus workloadStatus) {
+		return workloadHistoryRepo.getWorkloadByResourceNameAndStatus(workspaceResourceName, workloadStatus);
+	}
+
+	@Override
+	public List<ModuleWorkloadResDTO> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList,
+		WorkloadType workloadType, WorkloadSortCondition sortCondition) {
+		List<JobEntity> workloads = workloadHistoryRepoCustom.getWorkloadHistoryInResourceNames(pinResourceNameList, workloadType, sortCondition);
+		if(workloadType == BATCH){
+			return workloads.stream().map(job -> ModuleBatchJobResDTO.builder()
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(job.getWorkloadStatus())
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(workloadType)
+					.creatorId(job.getCreatorId())
+					.creatorUserName(job.getCreatorName())
+					.creatorFullName(job.getCreatorRealName())
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.remainTime(0)
+					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+					.build())
+				.collect(Collectors.toList());
+		}else{
+			return workloads.stream().map(job -> ModuleInteractiveJobResDTO.builder()
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(job.getWorkloadStatus())
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(workloadType)
+					.creatorId(job.getCreatorId())
+					.creatorUserName(job.getCreatorName())
+					.creatorFullName(job.getCreatorRealName())
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.remainTime(0)
+					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+					.build())
+				.collect(Collectors.toList());
+		}
+
+	}
+
+	@Override
+	public OverViewWorkloadResDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
+		Boolean isCreatedByMe, String userId, List<String> pinResourceNameList, WorkloadStatus workloadStatus,
+		WorkloadSortCondition workloadSortCondition, PageRequest pageRequest) {
+		//overview 페이지에서 요청 or 워크로드 전체 조회 페이지에서 내가 생성한 워크로드 체크 해제 시
+		List<ModuleWorkloadResDTO> workloads;
+		Page<JobEntity> workloadEntities;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			workloadEntities = workloadHistoryRepoCustom.getOverViewWorkloadList(
+				workspaceName, workloadType, searchName, StringUtils.hasText(workspaceName) ? null : userId, pinResourceNameList, workloadSortCondition, pageRequest, workloadStatus);
+		} else {
+			workloadEntities = workloadHistoryRepoCustom.getOverViewWorkloadList(
+				workspaceName, workloadType, searchName, userId, pinResourceNameList, workloadSortCondition, pageRequest,
+				workloadStatus);
+		}
+		if(workloadType == BATCH){
+			workloads = workloadEntities.getContent().stream().map(job ->
+				ModuleBatchJobResDTO.builder()
+							.uid(String.valueOf(job.getId()))
+							.name(job.getName())
+							.resourceName(job.getResourceName())
+							.description(job.getDescription())
+							.status(job.getWorkloadStatus())
+							.workspaceName(job.getWorkspaceName())
+							.workspaceResourceName(job.getWorkspaceResourceName())
+							.type(workloadType)
+							.creatorId(job.getCreatorId())
+							.creatorUserName(job.getCreatorName())
+							.creatorFullName(job.getCreatorRealName())
+							.createdAt(job.getCreatedAt())
+							.deletedAt(job.getDeletedAt())
+							.age(new AgeDTO(job.getCreatedAt()))
+							.command(job.getWorkloadCMD())
+							.cpuRequest(String.valueOf(job.getCpuRequest()))
+							.memRequest(String.valueOf(job.getMemRequest()))
+							.gpuRequest(String.valueOf(job.getGpuRequest()))
+							.remainTime(0)
+							.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+							.build()
+				).collect(Collectors.toList());
+		}else{
+			workloads = workloadEntities.getContent().stream().map(job ->
+				ModuleInteractiveJobResDTO.builder()
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(job.getWorkloadStatus())
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(workloadType)
+					.creatorId(job.getCreatorId())
+					.creatorUserName(job.getCreatorName())
+					.creatorFullName(job.getCreatorRealName())
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.remainTime(0)
+					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+					.build()
+			).collect(Collectors.toList());
+		}
+		long totalCount = workloadEntities.getTotalElements();
+		return new OverViewWorkloadResDTO<>(totalCount, workloads);
 	}
 
 	private String[] getSplitIds(String ids) {
@@ -440,4 +579,23 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		}
 	}
 
+	@Override
+	public List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+		List<String> workspaceIds, LocalDate startDate,
+		LocalDate endDate) {
+		List<WorkloadEntity> workloads = workloadHistoryRepoCustom.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+			workspaceIds, startDate, endDate);
+		return workloads.stream()
+			.map(workloadEntity -> WorkloadResDTO.WorkloadReportDTO.builder()
+				.userName(workloadEntity.getCreatorRealName())
+				.userId(workloadEntity.getCreatorId())
+				.userEmail(workloadEntity.getCreatorName())
+				.workspaceName(workloadEntity.getWorkspaceName())
+				.workloadName(workloadEntity.getName())
+				.startDate(workloadEntity.getCreatedAt())
+				.endDate(workloadEntity.getDeletedAt())
+				.build()
+			)
+			.toList();
+	}
 }

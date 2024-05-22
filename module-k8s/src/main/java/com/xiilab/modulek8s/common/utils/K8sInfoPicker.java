@@ -9,11 +9,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
@@ -21,7 +23,6 @@ import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -45,6 +46,29 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class K8sInfoPicker {
+
+	/**
+	 * 해당 k8s resource가 astrago에서 생성되었는지 체크하는 메소드
+	 *
+	 * @param resource 조회 할 k8s resource
+	 * @return true -> astrago에서 생성한 resource, false -> astrago에서 생성하지 않은 resource
+	 */
+	public static boolean isAstragoResource(HasMetadata resource) {
+		return resource.getMetadata().getName().contains("wl-");
+	}
+
+	/**
+	 * 두 k8s resource를 비교하여, resource version이 변경되었는지 체크 -> resource version이 달라지면 update 되었다는 것을 의미
+	 *
+	 * @param resource1 before resource info
+	 * @param resource2 after resource info
+	 * @return true -> 변경됨, false -> 변경되지않음
+	 */
+	public static boolean isResourceUpdate(HasMetadata resource1, HasMetadata resource2) {
+		return !Objects.equals(resource1.getMetadata().getResourceVersion(),
+			resource2.getMetadata().getResourceVersion());
+	}
+
 	/**
 	 * k8s container에서 환경변수를 조회하는 메소드
 	 *
@@ -132,10 +156,11 @@ public class K8sInfoPicker {
 
 	/**
 	 * job annotation에 등록되어있는 argsMap을 가져오는 메소드
+	 *
 	 * @param annotationMap k8s annotation map
 	 * @return
 	 */
-	public static Map<String,String> getParameterMap(Map<String,String> annotationMap) {
+	public static Map<String, String> getParameterMap(Map<String, String> annotationMap) {
 		String argStr = annotationMap.get(AnnotationField.PARAMETER.getField());
 		if (StringUtils.isEmpty(argStr)) {
 			return null;

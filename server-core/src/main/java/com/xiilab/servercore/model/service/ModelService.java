@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -23,7 +24,9 @@ public interface ModelService {
 
 	void insertLocalModel(LocalModelEntity localModelEntity);
 
-	ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition, UserDTO.UserInfo userInfoDTO);
+	ModelDTO.ResModels getModels(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
+		UserDTO.UserInfo userInfoDTO,
+		PageMode pageMode);
 
 	ModelDTO.ResModelWithStorage getModelWithStorage(Long modelId);
 
@@ -45,7 +48,7 @@ public interface ModelService {
 
 	DownloadFileResDTO downloadAstragoModelFile(Long modelId, String filePath);
 
-	void compressAstragoModelFiles(Long modelId, List<String> filePaths, CompressFileType compressFileType);
+	void compressAstragoModelFiles(Long modelId, ModelDTO.ReqCompressDTO reqCompressDTO);
 
 	void deCompressAstragoModelFile(Long modelId, String filePath);
 
@@ -60,4 +63,6 @@ public interface ModelService {
 	void deleteModelWorkloadMapping(Long jobId);
 
 	void updateWorkspaceModel(UpdateWorkspaceModelDTO updateWorkspaceModelDTO, String workspaceResourceName, Long modelId, UserDTO.UserInfo userInfoDTO);
+
+	void deleteModelWorkloadMappingById(Long modelId);
 }

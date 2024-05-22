@@ -16,7 +16,7 @@
 // 	@Test
 // 	void decompressZip() {
 // 		ClassLoader classLoader = this.getClass().getClassLoader();
-// 		String target = "coco2.zip";
+// 		String target = "zip/loopy.zip";
 // 		URL srcZip = classLoader.getResource(target);
 //
 // 		try {
@@ -37,3 +37,4 @@
 // 	}
 //
 // }
+//

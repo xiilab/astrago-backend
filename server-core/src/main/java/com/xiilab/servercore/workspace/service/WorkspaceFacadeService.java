@@ -43,23 +43,31 @@ public interface WorkspaceFacadeService {
 
 	void deleteResourceQuota(long id);
 
-	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName, UserDTO.UserInfo userInfoDTO);
+	List<WorkspaceDTO.WorkspaceResourceStatus> getUserWorkspaceResourceStatus(String workspaceName,
+		UserDTO.UserInfo userInfoDTO);
 
 	WorkspaceAlertSetDTO.ResponseDTO getWorkspaceAlertSet(String workspaceName);
 
-	WorkspaceAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName, WorkspaceAlertSetDTO workspaceAlertSetDTO);
+	WorkspaceAlertSetDTO.ResponseDTO updateWorkspaceAlertSet(String workspaceName,
+		WorkspaceAlertSetDTO workspaceAlertSetDTO);
 
 	boolean workspaceAccessAuthority(String workspaceResourceName, UserDTO.UserInfo userInfoDTO);
 
 	PageDTO<WorkspaceDTO.AdminResponseDTO> getAdminWorkspaceList(String searchCondition,
 		WorkspaceSortCondition sortCondition, int pageNum, int pageSize, UserDTO.UserInfo userInfoDTO);
 
-	PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize, UserDTO.UserInfo userInfoDTO);
+	PageDTO<ResourceQuotaFormDTO> getAdminResourceQuotaRequests(int pageNum, int pageSize,
+		UserDTO.UserInfo userInfoDTO);
 
 	WorkspaceDTO.AdminInfoDTO getAdminWorkspaceInfo(String name);
+
 	ClusterResourceCompareDTO requestResourceComparedClusterResource();
+
 	WorkspaceResourceSettingDTO getWorkspaceResourceSetting();
-	void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO, UserDTO.UserInfo userInfoDTO);
+
+	void updateWorkspaceResourceSetting(WorkspaceResourceSettingDTO workspaceResourceSettingDTO,
+		UserDTO.UserInfo userInfoDTO);
+
 	void validRedirectWorkspace(String workspaceResourceName);
 
 	ByteArrayResource downloadReport(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);

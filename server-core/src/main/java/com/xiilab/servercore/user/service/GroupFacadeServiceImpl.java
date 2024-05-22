@@ -116,10 +116,6 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		String message = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
 
 		UserDTO.UserInfo creator = userService.getUserInfoById(workspace.getCreatorId());
-		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_MEMBER_UPDATE,
-			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam);
-
-		publisher.publishEvent(workspaceUserAlertEvent);
 
 		MailAttribute mail = MailAttribute.WORKSPACE_MEMBER_UPDATE;
 
@@ -141,7 +137,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 			contentMessage += addUser.getLastName() + addUser.getFirstName() + "(" + addUser.getEmail() + "), ";
 
 		}
-		mailService.sendMail(MailDTO.builder()
+
+		MailDTO mailDTO = MailDTO.builder()
 			.subject(String.format(mail.getSubject(), workspace.getName()))
 			.title(String.format(mail.getTitle(), workspace.getName()))
 			.subTitle(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
@@ -149,8 +146,10 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 			.contentTitle(contentMessage)
 			.receiverEmail(creator.getEmail())
 			.footer(mail.getFooter())
-			.build());
-
+			.build();
+		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_MEMBER_UPDATE,
+			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam, mailDTO);
+		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
 	@Override

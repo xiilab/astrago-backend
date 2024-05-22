@@ -6,12 +6,14 @@ import java.util.List;
 import org.springframework.util.CollectionUtils;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PageDTO<T> {
 	private int totalSize;
 	private int totalPageNum;
@@ -31,6 +33,12 @@ public class PageDTO<T> {
 		this.totalPageNum = (int)Math.ceil((double)list.size() / pageSize);
 		currentPage = pageNum;
 		this.content = list.subList(startIndex, endIndex);
+	}
+
+	public PageDTO(int totalSize, int totalPageNum, List<T> contents){
+		this.totalSize = totalSize;
+		this.totalPageNum = totalPageNum;
+		this.content = contents;
 	}
 
 	/**

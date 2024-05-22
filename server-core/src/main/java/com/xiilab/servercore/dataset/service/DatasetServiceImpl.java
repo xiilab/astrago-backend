@@ -16,7 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
+import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
@@ -24,21 +27,19 @@ import com.xiilab.modulecommon.util.CompressUtils;
 import com.xiilab.modulecommon.util.DecompressUtils;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
-import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
-import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
-import com.xiilab.modulecommon.dto.DirectoryDTO;
-import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
+import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkspaceRepository;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
+import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,10 +87,10 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
-		UserDTO.UserInfo userInfoDTO) {
+		UserDTO.UserInfo userInfoDTO, PageMode pageMode) {
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
-			userInfoDTO.getAuth(), repositorySearchCondition);
+			userInfoDTO.getAuth(), repositorySearchCondition, pageMode);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 
@@ -214,11 +215,11 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public void compressAstragoDatasetFiles(Long datasetId, List<String> filePaths, CompressFileType compressFileType) {
+	public void compressAstragoDatasetFiles(Long datasetId, DatasetDTO.ReqCompressDTO reqCompressDTO) {
 		datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
-		List<Path> pathList = filePaths.stream().map(Path::of).toList();
-		CompressUtils.saveCompressFile(pathList, null, compressFileType);
+		List<Path> pathList = reqCompressDTO.getFilePaths().stream().map(Path::of).toList();
+		CompressUtils.saveCompressFile(pathList, null, reqCompressDTO.getCompressFileType());
 	}
 
 	@Override
@@ -339,6 +340,10 @@ public class DatasetServiceImpl implements DatasetService {
 			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceDatasetDTO.getDefaultPath());
+	}
+
+	public void deleteDatasetWorkloadMappingById(Long datasetId) {
+		datasetWorkLoadMappingRepository.deleteByDatasetId(datasetId);
 	}
 
 }

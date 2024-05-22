@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -32,7 +33,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;

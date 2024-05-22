@@ -1,9 +1,8 @@
-name: Deploy to Seoultech Workflow
-run-name: ${{ github.actor }} Deploys to Seoultech 🚀
+name: Deploy to Production Workflow
+run-name: ${{ github.actor }} Deploys to Production 🚀
 on:
   push:
-    branches:
-    - seoul-tech
+    tags: [ 'v*.*.*' ]
 
 env:
   DOCKER_REPOSITORY: xiilab/astrago
@@ -40,7 +39,7 @@ jobs:
       - name: Set Image Tag
         id: extract_image_tag
         run: |
-          IMAGE_TAG=seoultech-$(git rev-parse --short=4 HEAD)
+          IMAGE_TAG=${{ github.ref_name }}
           echo "image-tag=$IMAGE_TAG"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
@@ -99,12 +98,19 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/seoultech/values.yaml'
-            yq -i '.astrago.core.imageTag = "core-${{ needs.integration.outputs.image-tag }}"' 'environments/seoultech/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/seoultech/values.yaml'
-            yq -i '.astrago.batch.imageTag = "batch-${{ needs.integration.outputs.image-tag }}"' 'environments/seoultech/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/seoultech/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/seoultech/values.yaml'
+            yq -i '.astrago.core.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.core.imageTag = "core-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.batch.imageTag = "batch-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.repository = "${{ env.DOCKER_REPOSITORY }}"' 'environments/prod/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/prod/values.yaml'
+            
+            yq -i '.core.image.repository = "${{ env.DOCKER_REPOSITORY }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.core.image.tag = "core-${{ needs.integration.outputs.image-tag }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.batch.image.repository = "${{ env.DOCKER_REPOSITORY }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.batch.image.tag = "batch-${{ needs.integration.outputs.image-tag }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.monitor.image.repository = "${{ env.DOCKER_REPOSITORY }}"' 'applications/astrago/astrago/values.yaml'
+            yq -i '.monitor.image.tag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'applications/astrago/astrago/values.yaml'
 
       - name: Commit and Push
         run: |

@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
@@ -22,7 +23,7 @@ public interface DatasetService {
 	void insertAstragoDataset(AstragoDatasetEntity astragoDatasetEntity, List<MultipartFile> files);
 
 	DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
-		UserDTO.UserInfo userInfoDTO);
+		UserDTO.UserInfo userInfoDTO, PageMode pageMode);
 
 	DatasetDTO.ResDatasetWithStorage getDatasetWithStorage(Long datasetId);
 
@@ -44,7 +45,7 @@ public interface DatasetService {
 
 	DownloadFileResDTO downloadAstragoDatasetFile(Long datasetId, String reqFilePathDTO);
 
-	void compressAstragoDatasetFiles(Long datasetId, List<String> filePaths, CompressFileType compressFileType);
+	void compressAstragoDatasetFiles(Long datasetId, DatasetDTO.ReqCompressDTO reqCompressDTO);
 
 	void deCompressAstragoDatasetFile(Long datasetId, String filePath);
 
@@ -63,4 +64,6 @@ public interface DatasetService {
 
 	void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName,
 		Long datasetId, UserDTO.UserInfo userInfoDTO);
+
+	void deleteDatasetWorkloadMappingById(Long datasetId);
 }
