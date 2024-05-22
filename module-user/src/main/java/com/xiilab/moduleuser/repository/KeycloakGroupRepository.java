@@ -383,7 +383,7 @@ public class KeycloakGroupRepository implements GroupRepository {
 		// 중복된 name 값을 가진 객체를 저장할 Set 생성
 		Set<String> memberIdSet = new HashSet<>();
 		for (UserRepresentation user : owner) {
-			if(!memberIdSet.contains(user.getId())){
+			if (!memberIdSet.contains(user.getId())) {
 				memberIdSet.add(user.getId());
 				uniqueMemberList.add(user);
 			}

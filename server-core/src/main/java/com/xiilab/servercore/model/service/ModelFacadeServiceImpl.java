@@ -153,6 +153,8 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 			if (model.isAstragoModel()) {
 				//workspace mapping 삭제
 				modelService.deleteModelWorkspaceMappingById(modelId);
+				//workload mapping 삭제
+				modelService.deleteModelWorkloadMappingById(modelId);
 				//dataset 삭제
 				modelService.deleteModelById(modelId);
 			} else if (model.isLocalModel()) {
@@ -168,6 +170,8 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 				workloadModuleFacadeService.deleteLocalModel(deleteLocalModelDTO);
 				//workspace mapping 삭제
 				modelService.deleteModelWorkspaceMappingById(modelId);
+				//workload mapping 삭제
+				modelService.deleteModelWorkloadMappingById(modelId);
 				//db 삭제 - TB_localDataset
 				modelService.deleteModelById(modelId);
 			}

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
@@ -20,7 +21,6 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.utils.DateUtils;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulek8s.workload.enums.WorkloadStatus;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -49,7 +49,7 @@ public abstract class ModuleWorkloadResDTO {
 	protected String cpuRequest;                   // 워크로드 cpu 요청량
 	protected String memRequest;                   // 워크로드 mem 요청량
 	protected LocalDateTime createdAt;             // 워크로드 생성일시
-	protected LocalDateTime statedAt;			   // 워크로드 시작일시
+	protected LocalDateTime statedAt;              // 워크로드 시작일시
 	protected LocalDateTime deletedAt;             // 워크로드 종료일시
 	protected SchedulingType schedulingType;       // 스케줄링 방식
 	protected List<ModuleEnvResDTO> envs;          // env 정의
@@ -71,13 +71,14 @@ public abstract class ModuleWorkloadResDTO {
 	protected boolean canBeDeleted;
 	protected String ide;
 	protected String workingDir;
-	protected Map<String,String> parameter;
+	protected Map<String, String> parameter;
 	// 최초 예측 시간
 	String estimatedInitialTime;
 	// 실시간 예측 시간
 	String estimatedRemainingTime;
 	@Setter
-	private String startTime;	// 파드 실행시간
+	private String startTime;    // 파드 실행시간
+
 	protected ModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		if (hasMetadata != null) {
 			uid = hasMetadata.getMetadata().getUid();
@@ -161,5 +162,9 @@ public abstract class ModuleWorkloadResDTO {
 				.url(String.format("%s:%s", nodeIp, servicePort.getNodePort()))
 				.build()).toList();
 		}
+	}
+
+	public void updatePort(List<ModulePortResDTO> modulePortResDTOS) {
+		this.ports = modulePortResDTOS;
 	}
 }

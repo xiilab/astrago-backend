@@ -156,6 +156,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			if (dataset.isAstragoDataset()) {
 				//workspace mapping 삭제
 				datasetService.deleteDatasetWorkspaceMappingById(datasetId);
+				//workload mapping 삭제
+				datasetService.deleteDatasetWorkloadMappingById(datasetId);
 				//dataset 삭제
 				datasetService.deleteDatasetById(datasetId);
 			} else if (dataset.isLocalDataset()) {
@@ -171,6 +173,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				workloadModuleFacadeService.deleteLocalDataset(deleteLocalDatasetDTO);
 				//workspace mapping 삭제
 				datasetService.deleteDatasetWorkspaceMappingById(datasetId);
+				//workload mapping 삭제
+				datasetService.deleteDatasetWorkloadMappingById(datasetId);
 				//db 삭제 - TB_localDataset
 				datasetService.deleteDatasetById(datasetId);
 			}

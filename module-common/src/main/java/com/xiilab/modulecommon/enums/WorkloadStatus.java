@@ -1,4 +1,4 @@
-package com.xiilab.modulek8s.workload.enums;
+package com.xiilab.modulecommon.enums;
 
 public enum WorkloadStatus {
 	PENDING,

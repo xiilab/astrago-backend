@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -19,6 +20,12 @@ import lombok.Builder;
 import lombok.Getter;
 
 public class ModelDTO {
+	@Getter
+	public static class ReqCompressDTO {
+		private List<String> filePaths;
+		private CompressFileType compressFileType;
+	}
+
 	@Getter
 	public static class CreateAstragoModel {
 		private String modelName;

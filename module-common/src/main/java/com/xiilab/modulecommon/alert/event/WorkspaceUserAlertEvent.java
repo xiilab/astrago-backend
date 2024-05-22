@@ -2,6 +2,7 @@ package com.xiilab.modulecommon.alert.event;
 
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 
 public record WorkspaceUserAlertEvent(AlertRole alertRole,
@@ -12,5 +13,6 @@ public record WorkspaceUserAlertEvent(AlertRole alertRole,
 									  String title,
 									  String message,
 									  String workspaceResourceName,
-									  PageNaviParam pageNaviParam){
+									  PageNaviParam pageNaviParam,
+									  MailDTO mailDTO){
 }

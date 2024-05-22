@@ -30,4 +30,14 @@ public class MailDTO {
 		private String col1;
 		private String col2;
 	}
+	public void setReceiverEmail(String receiverEmail) {
+ 		this.receiverEmail = receiverEmail;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public void setSubTitle(String subTitle) {
+		this.subTitle = subTitle;
+	}
 }
