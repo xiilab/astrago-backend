@@ -158,7 +158,7 @@ public class DatasetController {
 	@PostMapping("/datasets/astrago/{datasetId}/files/delete")
 	@Operation(summary = "astrago 데이터 셋 파일, 디렉토리 삭제")
 	public ResponseEntity<HttpStatus> astragoDatasetDeleteFiles(@PathVariable(name = "datasetId") Long datasetId,
-		@RequestBody DatasetDTO.ReqFilePathsDTO reqFilePathsDTO){
+		@RequestBody DatasetDTO.ReqFilePathsDTO reqFilePathsDTO) {
 		datasetService.astragoDatasetDeleteFiles(datasetId, reqFilePathsDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -175,18 +175,17 @@ public class DatasetController {
 		return new ResponseEntity<>(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
-	@GetMapping("/datasets/astrago/{datasetId}/compress")
+	@PostMapping("/datasets/astrago/{datasetId}/compress")
 	@Operation(summary = "astrago 데이터 셋 압축")
 	public ResponseEntity<HttpStatus> compressAstragoDatasetFiles(@PathVariable(name = "datasetId") Long datasetId,
-		@RequestParam(value = "filePath") List<String> filePaths,
-		@RequestParam(value = "compressFileType") CompressFileType compressFileType) {
+		@RequestBody DatasetDTO.ReqCompressDTO reqCompressDTO) {
 
-		datasetService.compressAstragoDatasetFiles(datasetId, filePaths, compressFileType);
+		datasetService.compressAstragoDatasetFiles(datasetId, reqCompressDTO);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@GetMapping("/datasets/astrago/{datasetId}/decompress")
+	@PostMapping("/datasets/astrago/{datasetId}/decompress")
 	@Operation(summary = "astrago 데이터 셋 압축해제")
 	public ResponseEntity<HttpStatus> deCompressAstragoDatasetFile(@PathVariable(name = "datasetId") Long datasetId,
 		@RequestParam(value = "filePath") String filePath) {

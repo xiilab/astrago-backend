@@ -215,11 +215,11 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public void compressAstragoDatasetFiles(Long datasetId, List<String> filePaths, CompressFileType compressFileType) {
+	public void compressAstragoDatasetFiles(Long datasetId, DatasetDTO.ReqCompressDTO reqCompressDTO) {
 		datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
-		List<Path> pathList = filePaths.stream().map(Path::of).toList();
-		CompressUtils.saveCompressFile(pathList, null, compressFileType);
+		List<Path> pathList = reqCompressDTO.getFilePaths().stream().map(Path::of).toList();
+		CompressUtils.saveCompressFile(pathList, null, reqCompressDTO.getCompressFileType());
 	}
 
 	@Override

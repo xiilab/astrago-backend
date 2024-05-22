@@ -48,7 +48,7 @@ public interface ModelService {
 
 	DownloadFileResDTO downloadAstragoModelFile(Long modelId, String filePath);
 
-	void compressAstragoModelFiles(Long modelId, List<String> filePaths, CompressFileType compressFileType);
+	void compressAstragoModelFiles(Long modelId, ModelDTO.ReqCompressDTO reqCompressDTO);
 
 	void deCompressAstragoModelFile(Long modelId, String filePath);
 

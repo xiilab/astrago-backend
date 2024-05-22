@@ -170,19 +170,18 @@ public class ModelController {
 		return new ResponseEntity<>(downloadFileResDTO.getByteArrayResource(), headers, HttpStatus.OK);
 	}
 
-	@GetMapping("/models/astrago/{modelId}/compress")
-	@Operation(summary = "astrago 데이터 셋 압축")
+	@PostMapping("/models/astrago/{modelId}/compress")
+	@Operation(summary = "astrago 모델 압축")
 	public ResponseEntity<HttpStatus> compressAstragoDatasetFiles(@PathVariable(name = "modelId") Long modelId,
-		@RequestParam(value = "filePath") List<String> filePaths,
-		@RequestParam(value = "compressFileType") CompressFileType compressFileType) {
+		@RequestBody ModelDTO.ReqCompressDTO reqCompressDTO) {
 
-		modelService.compressAstragoModelFiles(modelId, filePaths, compressFileType);
+		modelService.compressAstragoModelFiles(modelId, reqCompressDTO);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/models/astrago/{modelId}/decompress")
-	@Operation(summary = "astrago 데이터 셋 압축해제")
+	@Operation(summary = "astrago 모델 압축해제")
 	public ResponseEntity<HttpStatus> compressAstragoDatasetFiles(@PathVariable(name = "modelId") Long modelId,
 		@RequestParam(value = "filePath") String filePath) {
 
