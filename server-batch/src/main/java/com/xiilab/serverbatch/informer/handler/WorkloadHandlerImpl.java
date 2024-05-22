@@ -288,7 +288,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		String logResult = workloadModuleFacadeService.getWorkloadLogByWorkloadName(
 			wl.getWorkspaceResourceName(), wl.getResourceName(), wl.getWorkloadType());
 		try {
-			FileUtils.saveLogFile(logResult, wl.getResourceName(), wl.getCreatorName());
+			FileUtils.saveLogFile(logResult, wl.getResourceName(), wl.getCreatorId());
+			log.info("{}의 {} 로그가 저장 되었습니다.", wl.getWorkspaceResourceName(), wl.getResourceName());
 		} catch (IOException e) {
 			log.error("An error occurred while saving the log file.\n" + e.getMessage());
 		}
