@@ -374,7 +374,8 @@ create table if not exists TB_IMAGE
     REG_USER_REAL_NAME   varchar(255)                            null,
     DELETE_YN            enum ('Y', 'N')                         null,
     REPOSITORY_AUTH_TYPE enum ('PRIVATE', 'PUBLIC')              null,
-    WORKLOAD_TYPE        enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null
+    WORKLOAD_TYPE        enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
+    MULTI_NODE           tinyint(1)                                 null
 );
 
 create table if not exists TB_IMAGE_WORKLOAD_MAPPING

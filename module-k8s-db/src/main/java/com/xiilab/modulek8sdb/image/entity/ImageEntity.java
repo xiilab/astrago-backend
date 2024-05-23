@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulecommon.enums.ImageType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -60,6 +60,9 @@ public abstract class ImageEntity extends BaseEntity {
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYN = DeleteYN.N;
+
+	@Column(name = "MULTI_NODE")
+	private boolean multiNode;
 
 	protected ImageEntity(String imageNameHub, RepositoryAuthType repositoryAuthType, ImageType imageType,
 		WorkloadType workloadType) {
