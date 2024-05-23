@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,4 +40,8 @@ public interface WorkloadHistoryRepo extends JpaRepository<JobEntity, Long> {
 
 	@Query("select t from TB_WORKLOAD_JOB t where t.workspaceResourceName in(:pinResourceNameList) and t.workloadType = :workloadType")
 	List<JobEntity> getWorkloadHistoryInResourceNames(@Param("pinResourceNameList") List<String> pinResourceNameList, @Param("workloadType") WorkloadType workloadType);
+
+	@Modifying
+	@Query("update TB_WORKLOAD_JOB t set t.startTime = :now where t.resourceName = :resourceName")
+	void insertWorkloadStartTime(@Param("resourceName") String resourceName, @Param("now") LocalDateTime now);
 }

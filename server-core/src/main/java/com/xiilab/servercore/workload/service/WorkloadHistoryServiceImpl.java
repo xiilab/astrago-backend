@@ -115,7 +115,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.cpuRequest(String.valueOf(job.getCpuRequest()))
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
-				.remainTime(0)
+				.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+				.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
+					job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
@@ -178,7 +180,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.cpuRequest(String.valueOf(job.getCpuRequest()))
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
-				.remainTime(0)
+				.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+				.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
+					job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 				.build();
 		} else {
 			return ModuleInteractiveJobResDTO.builder()
@@ -348,7 +352,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.remainTime(0)
+					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
+						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 					.build();
 			} else {
 				return ModuleInteractiveJobResDTO.builder()
@@ -417,7 +423,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.remainTime(0)
+					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
+						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build())
 				.collect(Collectors.toList());
@@ -441,7 +449,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.remainTime(0)
+					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
+						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build())
 				.collect(Collectors.toList());
@@ -485,7 +495,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 							.cpuRequest(String.valueOf(job.getCpuRequest()))
 							.memRequest(String.valueOf(job.getMemRequest()))
 							.gpuRequest(String.valueOf(job.getGpuRequest()))
-							.remainTime(0)
+					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
+						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 							.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 							.build()
 				).collect(Collectors.toList());
@@ -510,7 +522,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.remainTime(0)
+					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
+						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build()
 			).collect(Collectors.toList());
