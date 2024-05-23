@@ -97,7 +97,9 @@ public abstract class WorkloadEntity {
 	@Enumerated(EnumType.STRING)
 	protected DeleteYN deleteYN;
 	@Column(name = "REMAIN_TIME")
-	protected int remainTime; // 잔여시간
+	protected int remainTime;
+	@Column(name = "START_TIME")
+	protected LocalDateTime startTime;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();
