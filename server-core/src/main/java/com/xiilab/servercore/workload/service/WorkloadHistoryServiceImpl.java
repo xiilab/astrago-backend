@@ -116,8 +116,8 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
-				.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
-					job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.estimatedRemainingTime(job.getRemainTime() != 0 ?
+					LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
@@ -181,8 +181,8 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
-				.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
-					job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+				.estimatedRemainingTime(job.getRemainTime() != 0 ?
+					LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 				.build();
 		} else {
 			return ModuleInteractiveJobResDTO.builder()
@@ -353,8 +353,8 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
 					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
-					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
-						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.estimatedRemainingTime(job.getRemainTime() != 0 ?
+						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.build();
 			} else {
 				return ModuleInteractiveJobResDTO.builder()
@@ -424,8 +424,8 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
 					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
-					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
-						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.estimatedRemainingTime(job.getRemainTime() != 0 ?
+						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build())
 				.collect(Collectors.toList());
@@ -450,8 +450,8 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
 					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
-					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
-						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.estimatedRemainingTime(job.getRemainTime() != 0 ?
+						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build())
 				.collect(Collectors.toList());
@@ -496,8 +496,8 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 							.memRequest(String.valueOf(job.getMemRequest()))
 							.gpuRequest(String.valueOf(job.getGpuRequest()))
 					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
-					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
-						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.estimatedRemainingTime(job.getRemainTime() != 0 ?
+						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 							.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 							.build()
 				).collect(Collectors.toList());
@@ -523,8 +523,8 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
 					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
-					.estimatedRemainingTime(LocalDateTime.now().plusSeconds(
-						job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+					.estimatedRemainingTime(job.getRemainTime() != 0 ?
+						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build()
 			).collect(Collectors.toList());
