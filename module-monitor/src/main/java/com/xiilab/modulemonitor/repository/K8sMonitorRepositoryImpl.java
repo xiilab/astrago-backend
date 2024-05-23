@@ -196,7 +196,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.list()
 				.getItems()
 				.stream()
-				.filter(pod -> pod.getMetadata().getName().contains("wl-"))
+				.filter(pod -> pod.getMetadata().getName().contains("wl-") && pod.getMetadata().getNamespace().contains("ws-"))
 				.map(pod -> ResponseDTO.WorkloadResponseDTO.builder()
 					.wlName(pod.getMetadata().getName())
 					.wsName(pod.getMetadata().getNamespace())
