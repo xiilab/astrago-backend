@@ -135,9 +135,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 						}
 					});
 				}else if(afterStatus == WorkloadStatus.RUNNING){
-					LocalDateTime now = LocalDateTime.now();
-					log.info("update running status time : " + now);
-					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), now);
+					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 				}
 
 				//job 상태에 따른 status 업데이트 및 노티 발송
