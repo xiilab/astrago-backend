@@ -482,7 +482,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.map(event -> {
 					String eventTime =
 						!StringUtils.isBlank(event.getDeprecatedLastTimestamp()) ? event.getDeprecatedLastTimestamp() :
-							event.getEventTime().getTime();
+							event.getSeries().getLastObservedTime().getTime();
 
 					long fewMinutesAgo = DataConverterUtil.fewMinutesAgo(now, eventTime);
 					return ResponseDTO.ClusterReasonDTO.builder()
