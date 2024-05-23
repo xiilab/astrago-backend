@@ -65,6 +65,13 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
+	public CreateJobResDTO createDistributedJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName) {
+		return workloadRepository.createDistributedJobWorkload(
+			moduleCreateWorkloadReqDTO.toDistributedJobVO(workspaceName));
+	}
+
+	@Override
 	public void createConnectTestDeployment(ConnectTestDTO connectTestDTO) {
 		workloadRepository.createConnectTestDeployment(connectTestDTO);
 	}

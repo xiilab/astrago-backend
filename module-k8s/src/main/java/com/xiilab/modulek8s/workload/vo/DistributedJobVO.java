@@ -24,6 +24,7 @@ import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 
@@ -48,9 +49,11 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 	public MPIJobSpec createSpec() {
 		MPIJobSpec mpiJobSpec = new MPIJobSpec();
 		mpiJobSpec.setSlotsPerWorker(1);
-		mpiJobSpec.setMpiReplicaSpecs(Map.of("Launcher", createLaucherSpec(), "Worker", this.createWorkerSpec()));
+		mpiJobSpec.setMpiReplicaSpecs(Map.of(
+			DistributedJobRole.LAUNCHER.getName(), createLaucherSpec(),
+			DistributedJobRole.WORKER.getName(), createWorkerSpec()));
 		RunPolicy runPolicy = new RunPolicy();
-		runPolicy.setTtlSecondsAfterFinished(10);
+		// runPolicy.setTtlSecondsAfterFinished(10);
 		mpiJobSpec.setRunPolicy(runPolicy);
 		return mpiJobSpec;
 	}
@@ -211,7 +214,7 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		Resources resources = new Resources();
 		Map<String, IntOrString> resourceMap = Map.of(
 			"cpu", new IntOrString(String.valueOf(cpuRequest)),
-			"memory", new IntOrString(convertGiToBytes(memRequest)));
+			"memory", new IntOrString(memRequest + "Gi"));
 		resources.setRequests(resourceMap);
 		resources.setLimits(resourceMap);
 		return resources;
@@ -222,8 +225,8 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		Resources resources = new Resources();
 		Map<String, IntOrString> resourceMap = Map.of(
 			"cpu", new IntOrString(String.valueOf(cpuRequest)),
-			"memory", new IntOrString(convertGiToBytes(memRequest)),
-			"nvidia.com/gpu", new IntOrString(String.valueOf(gpuRequest)));
+			"memory", new IntOrString(memRequest + "Gi"),
+			"nvidia.com/gpu", new IntOrString(1));
 		resources.setRequests(resourceMap);
 		resources.setLimits(resourceMap);
 		return resources;

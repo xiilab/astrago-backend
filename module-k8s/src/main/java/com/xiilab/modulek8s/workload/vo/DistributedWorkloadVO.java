@@ -85,7 +85,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 			AtomicInteger index = new AtomicInteger(1);
 			for (JobCodeVO codeInfo : codes) {
 				org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.VolumeMounts volumeMounts = new org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.VolumeMounts();
-				volumeMounts.setName("git-clone-" + index.getAndIncrement());
+				volumeMounts.setName(container.getName() + "-git-clone-" + index.getAndIncrement());
 				volumeMounts.setMountPath(codeInfo.mountPath());
 				volumeMounts.setSubPath("code");
 				volumeMountsList.add(volumeMounts);
@@ -105,7 +105,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 				volumeMounts.setName(jobName + "-git-clone-" + index);
 				volumeMounts.setMountPath("/git");
 				InitContainers initContainers = new InitContainers();
-				initContainers.setName(jobName + "-git-clone-" + index);
+				initContainers.setName(jobName + "-git-clone-" + index.getAndIncrement());
 				initContainers.setImage(code.initContainerImageUrl());
 				initContainers.setVolumeMounts(List.of(volumeMounts));
 				initContainers.setEnv(getGithubEnvVarList(code));
@@ -113,7 +113,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 				initContainerList.add(initContainers);
 
 				Volumes volumes = new Volumes();
-				volumes.setName("git-clone-" + volumeIndex.getAndIncrement());
+				volumes.setName(jobName + "-git-clone-" + volumeIndex.getAndIncrement());
 				volumes.setEmptyDir(new EmptyDir());
 				initContainerVolumeList.add(volumes);
 			}
@@ -166,10 +166,10 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 
 	protected org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Resources createInitContainerResources() {
 		org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Resources resources = new org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Resources();
-		resources.setRequests(Map.of("cpu", new IntOrString(String.valueOf(0.5)), "memory",
-			new IntOrString(convertGiToBytes(0.5f))));
-		resources.setLimits(Map.of("cpu", new IntOrString(String.valueOf(0.5)), "memory",
-			new IntOrString(convertGiToBytes(0.5f))));
+		resources.setRequests(Map.of("cpu", new IntOrString("0.5"), "memory",
+			new IntOrString("0.5Gi")));
+		resources.setLimits(Map.of("cpu", new IntOrString("0.5"), "memory",
+			new IntOrString("0.5Gi")));
 		return resources;
 	}
 
@@ -204,13 +204,6 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 		});
 
 		return map;
-	}
-
-	protected String convertGiToBytes(float memoryInGI) {
-		if (memoryInGI == 0) {
-			return "0";
-		}
-		return String.valueOf((memoryInGI * (1L << 30)));
 	}
 
 	public abstract KubernetesResource createSpec();

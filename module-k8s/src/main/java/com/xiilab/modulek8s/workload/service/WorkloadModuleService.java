@@ -33,6 +33,9 @@ public interface WorkloadModuleService {
 
 	CreateJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName);
 
+	CreateJobResDTO createDistributedJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName);
+
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
 	boolean isAvailableTestConnectPod(String connectTestLabelName, String namespace);

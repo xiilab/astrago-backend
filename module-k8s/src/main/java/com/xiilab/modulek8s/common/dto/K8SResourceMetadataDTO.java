@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Ports;
+import org.springframework.util.CollectionUtils;
+
 import com.xiilab.modulecommon.dto.RegexPatterns;
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.GitEnvType;
@@ -14,6 +17,7 @@ import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -59,6 +63,19 @@ public class K8SResourceMetadataDTO {
 	public static class Env {
 		private String name;
 		private String value;
+
+		public Env(Object object) {
+			if (object instanceof EnvVar env) {
+				this.name = env.getName();
+				this.value = env.getValue();
+			} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Env env) {
+				this.name = env.getName();
+				this.value = env.getValue();
+			} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Env env) {
+				this.name = env.getName();
+				this.value = env.getValue();
+			}
+		}
 	}
 
 	@Getter
@@ -66,6 +83,19 @@ public class K8SResourceMetadataDTO {
 	public static class Port {
 		private String name;
 		private Integer port;
+
+		public Port(Object object) {
+			if (object instanceof Port portInstance) {
+				this.name = portInstance.getName();
+				this.port = portInstance.getPort();
+			} else if (object instanceof Ports portInstance) {
+				this.name = portInstance.getName();
+				this.port = portInstance.getContainerPort();
+			} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Ports portInstance) {
+				this.name = portInstance.getName();
+				this.port = portInstance.getContainerPort();
+			}
+		}
 	}
 
 	@Getter
@@ -82,46 +112,76 @@ public class K8SResourceMetadataDTO {
 		private String credentialUserName;
 		private String credentialPassword;
 
-		public Code(List<EnvVar> envs) {
-			for (EnvVar envVar : envs) {
-				String envVarName = envVar.getName();
-				GitEnvType gitEnvType = GitEnvType.valueOf(envVarName);
+		public Code(List<? extends KubernetesResource> resources) {
+			if (!CollectionUtils.isEmpty(resources)) {
+				KubernetesResource kubernetesResource = resources.get(0);
+				if (kubernetesResource instanceof EnvVar) {
+					convertFromEnvVars(resources);
+				} else if (kubernetesResource instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Env) {
+					convertFromEnvVars(resources);
+				} else if (kubernetesResource instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Env) {
+					convertFromEnvVars(resources);
+				}
+			}
+		}
 
+		private void convertFromEnvVars(List<?> envVars) {
+			for (Object envVar : envVars) {
+				Map<String, String> stringStringMap = convertEnvString(envVar);
+
+				if (CollectionUtils.isEmpty(stringStringMap)) {
+					continue;
+				}
+
+				String envVarName = stringStringMap.get("key");
+				String envVarValue = stringStringMap.get("value");
+
+				GitEnvType gitEnvType = GitEnvType.valueOf(envVarName);
 				switch (gitEnvType) {
 					case GIT_SYNC_REPO:
-						this.repositoryUrl = envVar.getValue();
-						if (Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, envVar.getValue())) {
-							this.codeType = CodeType.GIT_HUB;
-						} else {
-							this.codeType = CodeType.GIT_LAB;
-						}
+						this.repositoryUrl = envVarValue;
+						this.codeType =
+							Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, envVarValue) ? CodeType.GIT_HUB :
+								CodeType.GIT_LAB;
 						break;
 					case GIT_SYNC_BRANCH:
-						this.branch = envVar.getValue();
+						this.branch = envVarValue;
 						break;
 					case GIT_SYNC_ROOT:
-						this.mountPath = envVar.getValue().substring(0, envVar.getValue().lastIndexOf("/"));
+						this.mountPath = envVarValue.substring(0, envVarValue.lastIndexOf("/"));
 						break;
-					case SOURCE_CODE_ID:	// 공유 코드 아니면 환경변수 없음
-						this.sourceCodeId = Long.valueOf(envVar.getValue());
+					case SOURCE_CODE_ID:    // 공유 코드 아니면 환경변수 없음
+						this.sourceCodeId = Long.valueOf(envVarValue);
 						// this.repositoryType = RepositoryType.WORKSPACE;
 						break;
 					case CREDENTIAL_ID: // private repository 아니면 환경변수 없음
-						this.credentialId = Long.valueOf(envVar.getValue());
+						this.credentialId = Long.valueOf(envVarValue);
 						this.repositoryAuthType = RepositoryAuthType.PRIVATE;
 						break;
 					case GIT_SYNC_USERNAME:
-						this.credentialUserName = envVar.getValue();
+						this.credentialUserName = envVarValue;
 						break;
 					case GIT_SYNC_PASSWORD:
-						this.credentialPassword = envVar.getValue();
+						this.credentialPassword = envVarValue;
 						break;
 					case REPOSITORY_TYPE:
-						this.repositoryType = RepositoryType.valueOf(envVar.getValue());
+						this.repositoryType = RepositoryType.valueOf(envVarValue);
 						break;
 					default:
 						break;
 				}
+			}
+		}
+
+		private Map<String, String> convertEnvString(Object object) {
+			if (object instanceof EnvVar env) {
+				return Map.of("key", env.getName(), "value", env.getValue() == null ? "" : env.getValue());
+			} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Env env) {
+				return Map.of("key", env.getName(), "value", env.getValue() == null ? "" : env.getValue());
+			} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Env env) {
+				return Map.of("key", env.getName(), "value", env.getValue() == null ? "" : env.getValue());
+			} else {
+				return Map.of();
 			}
 		}
 	}

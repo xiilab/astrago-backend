@@ -10,11 +10,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
@@ -31,12 +31,11 @@ import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
+import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
@@ -86,6 +85,9 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					workspaceByName.getName());
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
 				createJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO,
+					workspaceByName.getName());
+			} else if (workloadType == WorkloadType.DISTRIBUTED) {
+				return workloadModuleService.createDistributedJobWorkload(moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			}
 

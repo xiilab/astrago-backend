@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.kubeflow.v2beta1.MPIJob;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
@@ -35,6 +36,7 @@ import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
+import com.xiilab.modulek8s.workload.vo.DistributedJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
@@ -89,6 +91,15 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVOJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+	}
+
+	@Override
+	public CreateJobResDTO createDistributedJobWorkload(DistributedJobVO distributedJobVO) {
+		MPIJob resource = (MPIJob)createResource(distributedJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(distributedJobVO.getCodes());
+		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(distributedJobVO.getDatasets());
+		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(distributedJobVO.getModels());
 		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
