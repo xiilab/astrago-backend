@@ -190,8 +190,8 @@ public enum Promql {
 	DASHBOARD_WS_GPU_USAGE("round(((sum(kube_resourcequota{type=\"used\", resource=~\"requests.nvidia.com/gpu\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.nvidia.com/gpu\"} > 0) by(namespace)) * 100, 0.01)", "", "DASHBOARD"),
 	DASHBOARD_WS_CPU_USAGE("round(((sum(kube_resourcequota{type=\"used\", resource=~\"requests.cpu\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.cpu\"} > 0) by(namespace)) * 100 , 0.01)", "", "DASHBOARD"),
 	DASHBOARD_WS_MEM_USAGE("round(((sum(kube_resourcequota{type=\"used\", resource=~\"requests.memory\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.memory\"} > 0) by(namespace)) * 100, 0.01)", "", "DASHBOARD"),
-	DASHBOARD_WS_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\", namespace =~ \"ws.*\"} > 0 and kube_pod_container_status_waiting_reason{namespace =~ \"ws.*\"} < 0) by(namespace)", "", "DASHBOARD"),
-	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_container_status_waiting_reason{namespace =~ \"ws.*\"} > 0) by(namespace) or count(kube_pod_status_reason{reason != \"\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
+	DASHBOARD_WS_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
+	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_status_phase{namespace =~ \"ws.*\", phase !=\"Pending\", phase !=\"Running\", phase=\"Succeeded\"} > 0) by(namespace)", "", "DASHBOARD"),
 	DASHBOARD_WS_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
 	// TERMINAL
 	TERMINAL_GPU_UTILIZATION("DCGM_FI_DEV_GPU_UTIL{%s}", "", "TERMINAL"),
