@@ -227,6 +227,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceName(String workSpaceName) {
 		JobList batchJobList = getBatchJobList(workSpaceName);
 		return batchJobList.getItems().stream()
+			.filter(job -> job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField()))
 			.map(ModuleBatchJobResDTO::new)
 			.toList();
 	}
@@ -235,6 +236,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByCreator(String userId) {
 		JobList batchJobList = getBatchJobListByCreator(userId);
 		return batchJobList.getItems().stream()
+			.filter(job -> job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField()))
 			.map(ModuleBatchJobResDTO::new)
 			.toList();
 	}
@@ -244,6 +246,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
 			workspaceResourceName, workloadName);
 		return batchJobList.getItems().stream()
+			.filter(job -> job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField()))
 			.map(ModuleBatchJobResDTO::new)
 			.toList();
 	}
