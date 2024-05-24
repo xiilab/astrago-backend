@@ -325,6 +325,28 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public ExecListenable connectDistributeJobTerminal(String workspaceName, String workloadName) {
+		KubernetesClient kubernetesClient = k8sAdapter.configServer();
+		MPIJob mpiJob = kubernetesClient.resources(MPIJob.class)
+			.inNamespace(workspaceName)
+			.withName(workloadName)
+			.get();
+		Pod pod = kubernetesClient.pods()
+			.inNamespace(workspaceName)
+			.withLabel("job-name", mpiJob.getMetadata().getName())
+			.list()
+			.getItems()
+			.get(0);
+		return kubernetesClient.pods()
+			.inNamespace(workspaceName)
+			.withName(pod.getMetadata().getName())
+			.redirectingInput()
+			.redirectingOutput()
+			.redirectingError()
+			.withTTY();
+	}
+
+	@Override
 	public Pod getBatchJobPod(String workspaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Job job = kubernetesClient.batch().v1().jobs().inNamespace(workspaceName).withName(workloadName).get();

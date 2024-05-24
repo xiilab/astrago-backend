@@ -129,6 +129,8 @@ public interface WorkloadRepository {
 
 	ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName);
 
+	ExecListenable connectDistributeJobTerminal(String workspaceName, String workloadName);
+
 	Pod getBatchJobPod(String workspaceName, String workloadName);
 
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
@@ -182,5 +184,4 @@ public interface WorkloadRepository {
 	Job getBatchJob(String workspaceName, String workloadName);
 
 	Deployment getInteractiveJob(String workspaceName, String workloadName);
-
 }
