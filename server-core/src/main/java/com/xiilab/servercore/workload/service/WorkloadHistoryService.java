@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
@@ -14,7 +16,6 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 
 public interface WorkloadHistoryService {
@@ -23,6 +24,9 @@ public interface WorkloadHistoryService {
 
 	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName,
 		Boolean isCreatedByMe, String userId);
+
+	List<ModuleDistributedJobResDTO> getDistributedWorkloadHistoryList(String workspaceName, String searchName,
+		Boolean isCreatedByMe, String id);
 
 	ModuleWorkloadResDTO getWorkloadHistoryById(long id);
 

@@ -19,6 +19,7 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
@@ -32,6 +33,9 @@ public interface WorkloadModuleService {
 	CreateJobResDTO createBatchJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName);
 
 	CreateJobResDTO createInteractiveJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String workspaceName);
+
+	CreateJobResDTO createDistributedJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName);
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
@@ -59,6 +63,8 @@ public interface WorkloadModuleService {
 	 */
 	ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
 
+	ModuleDistributedJobResDTO getDistributedJobWorkload(String workSpaceName, String workloadName);
+
 	List<ModuleBatchJobResDTO> getBatchWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe, String userId);
 
 	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByCondition(String workspaceName, Boolean isCreatedByMe, String userId);
@@ -78,6 +84,8 @@ public interface WorkloadModuleService {
 	 * @param workloadName
 	 */
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
+
+	void deleteDistributedWorkload(String workspaceName, String workloadName);
 
 	ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName, WorkloadType workloadType);
 
@@ -133,4 +141,5 @@ public interface WorkloadModuleService {
 	List<Event> getWorkloadEventList(String workloadName, String workspace, WorkloadType workloadType);
 
 	HasMetadata getJob(String workspaceName, String workloadName, WorkloadType workloadType);
+
 }

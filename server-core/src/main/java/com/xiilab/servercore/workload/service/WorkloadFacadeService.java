@@ -42,6 +42,7 @@ import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
@@ -64,6 +65,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
@@ -108,7 +110,6 @@ import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
-import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -222,7 +223,6 @@ public class WorkloadFacadeService {
 				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorUserName(),
 				workspaceResourceStatus.getName());
 			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
-
 			// Mail Contents 작성
 			List<MailDTO.Content> contents = List.of(
 				MailDTO.Content.builder()
@@ -311,6 +311,11 @@ public class WorkloadFacadeService {
 				//삭제권한 업데이트
 				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+			} else if (workloadType == WorkloadType.DISTRIBUTED) {
+				ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
+					workspaceName, workloadResourceName);
+				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
 			try {
@@ -368,12 +373,17 @@ public class WorkloadFacadeService {
 			ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 				workloadName);
 			activeWorkloadDetail = getActiveWorkloadDetail(moduleBatchJobResDTO);
-			stopBatchHobWorkload(workspaceName, workloadName, userInfoDTO);
+			stopBatchJobWorkload(workspaceName, workloadName, userInfoDTO);
 		} else if (workloadType == WorkloadType.INTERACTIVE) {
 			ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 				workspaceName, workloadName);
 			activeWorkloadDetail = getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			stopInteractiveJobWorkload(workspaceName, workloadName, userInfoDTO);
+		} else if (workloadType == WorkloadType.DISTRIBUTED) {
+			ModuleDistributedJobResDTO distributedWorkload = workloadModuleFacadeService.getDistributedWorkload(
+				workspaceName, workloadName);
+			activeWorkloadDetail = getActiveWorkloadDetail(distributedWorkload);
+			stopDistributedWorkload(workspaceName, workloadName, userInfoDTO);
 		}
 
 		if (!ObjectUtils.isEmpty(activeWorkloadDetail)) {
@@ -402,6 +412,18 @@ public class WorkloadFacadeService {
 				title, message, workspaceName, pageNaviParam, mailDTO);
 			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
+	}
+
+	private void stopDistributedWorkload(String workspaceName, String workloadName, UserDTO.UserInfo userInfoDTO) throws
+		IOException {
+		try {
+			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workspaceName, workloadName,
+				WorkloadType.DISTRIBUTED);
+			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
+		} catch (KubernetesClientException | K8sException ignored) {
+
+		}
+		workloadModuleFacadeService.deleteDistributedWorkload(workspaceName, workloadName);
 	}
 
 	public void deleteWorkloadHistory(long id, UserDTO.UserInfo userInfoDTO) {
@@ -453,33 +475,6 @@ public class WorkloadFacadeService {
 
 		workloadResDTOList.forEach(moduleJobResDTO -> updatePortResDTO(connectedNode, moduleJobResDTO));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
-		//
-		//
-		// if (workloadType == WorkloadType.BATCH) {
-		// 	//종료된 batchJob list
-		// 	List<ModuleBatchJobResDTO> batchWorkloadHistoryList = workloadHistoryService.getBatchWorkloadHistoryList(
-		// 		workspaceName, null, isCreatedByMe, userInfoDTO.getId());
-		// 	workloadResDTOList.addAll(batchWorkloadHistoryList);
-		// } else {
-		// 	//종료된 interactive job list 조회
-		// 	List<ModuleInteractiveJobResDTO> interactiveWorkloadHistoryList = workloadHistoryService.getInteractiveWorkloadHistoryList(
-		// 		workspaceName, null, isCreatedByMe, userInfoDTO.getId());
-		// 	workloadResDTOList.addAll(interactiveWorkloadHistoryList);
-		// }
-		// //핀 워크로드 목록 필터링
-		// List<ModuleWorkloadResDTO> pinWorkloadList = filterAndMarkPinnedWorkloads(workloadResDTOList,
-		// 	userInfoDTO.getId());
-		// //일반 워크로드 목록 필터링
-		// List<ModuleWorkloadResDTO> normalWorkloadList = filterNormalWorkloads(workloadResDTOList, searchName,
-		// 	workloadStatus, workloadSortCondition, userInfoDTO.getId());
-		//
-		// PageDTO<ModuleWorkloadResDTO> moduleWorkloadResDTOPageDTO = new PageDTO<>(pinWorkloadList, normalWorkloadList,
-		// 	pageNum, 10);
-		//
-		// Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
-		// moduleWorkloadResDTOPageDTO.getContent()
-		// 	.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
-		// return moduleWorkloadResDTOPageDTO;
 	}
 
 	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
@@ -721,7 +716,7 @@ public class WorkloadFacadeService {
 		}
 	}
 
-	private void stopBatchHobWorkload(String workSpaceName, String workloadName, UserDTO.UserInfo userInfoDTO) throws
+	private void stopBatchJobWorkload(String workSpaceName, String workloadName, UserDTO.UserInfo userInfoDTO) throws
 		IOException {
 		try {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
@@ -730,7 +725,7 @@ public class WorkloadFacadeService {
 		} catch (KubernetesClientException | K8sException ignored) {
 
 		}
-		workloadModuleFacadeService.deleteBatchHobWorkload(workSpaceName, workloadName);
+		workloadModuleFacadeService.deleteBatchJobWorkload(workSpaceName, workloadName);
 
 		// WorkspaceAlertSetDTO.ResponseDTO workspaceAlertSet = workspaceAlertSetService.getWorkspaceAlertSet(
 		// 	workloadName);
@@ -951,51 +946,52 @@ public class WorkloadFacadeService {
 
 	private <T extends ModuleWorkloadResDTO> List<FindWorkloadResDTO.Code> generateCodeResDTO(T moduleJobResDTO) {
 		List<FindWorkloadResDTO.Code> codes = new ArrayList<>();
-		for (ModuleCodeResDTO code : moduleJobResDTO.getCodes()) {
-			FindWorkloadResDTO.Code addCode = null;
-			CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(code.getCredentialId());
-			// 커스텀 코드일 경우
-			if (ValidUtils.isNullOrZero(code.getSourceCodeId())
-				&& code.getRepositoryType() == RepositoryType.USER) {
-				addCode = FindWorkloadResDTO.Code.codeResDTO()
-					.id(null)
-					.regUserId(moduleJobResDTO.getCreatorId())
-					.regUserName(moduleJobResDTO.getCreatorUserName())
-					.regUserRealName(moduleJobResDTO.getCreatorFullName())
-					.regDate(moduleJobResDTO.getCreatedAt())
-					.title(code.getRepositoryUrl())
-					.repositoryURL(code.getRepositoryUrl())
-					.branch(code.getBranch())
-					.mountPath(code.getMountPath())
-					.codeType(code.getCodeType())
-					.repositoryAuthType(code.getRepositoryAuthType())
-					.credentialId(findCredential != null ? findCredential.getId() : null)
-					.credentialName(findCredential != null ? findCredential.getName() : null)
-					.repositoryType(code.getRepositoryType())
-					.build();
-			} else {    // 공유 코드일 경우
-				CodeResDTO findCode = codeService.getCodeById(code.getSourceCodeId());
-				addCode = FindWorkloadResDTO.Code.codeResDTO()
-					.id(findCode.getId())
-					.regUserId(findCode.getRegUser().getRegUserId())
-					.regUserName(findCode.getRegUser().getRegUserName())
-					.regUserRealName(findCode.getRegUser().getRegUserRealName())
-					.regDate(findCode.getRegDate())
-					.title(code.getRepositoryUrl())
-					.repositoryURL(code.getRepositoryUrl())
-					.branch(code.getBranch())
-					.mountPath(code.getMountPath())
-					.codeType(code.getCodeType())
-					.repositoryAuthType(code.getRepositoryAuthType())
-					.credentialId(findCredential != null ? findCredential.getId() : null)
-					.credentialName(findCredential != null ? findCredential.getName() : null)
-					.repositoryType(code.getRepositoryType())
-					.build();
+		if (!CollectionUtils.isEmpty(moduleJobResDTO.getCodes())) {
+			for (ModuleCodeResDTO code : moduleJobResDTO.getCodes()) {
+				FindWorkloadResDTO.Code addCode = null;
+				CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(code.getCredentialId());
+				// 커스텀 코드일 경우
+				if (ValidUtils.isNullOrZero(code.getSourceCodeId())
+					&& code.getRepositoryType() == RepositoryType.USER) {
+					addCode = FindWorkloadResDTO.Code.codeResDTO()
+						.id(null)
+						.regUserId(moduleJobResDTO.getCreatorId())
+						.regUserName(moduleJobResDTO.getCreatorUserName())
+						.regUserRealName(moduleJobResDTO.getCreatorFullName())
+						.regDate(moduleJobResDTO.getCreatedAt())
+						.title(code.getRepositoryUrl())
+						.repositoryURL(code.getRepositoryUrl())
+						.branch(code.getBranch())
+						.mountPath(code.getMountPath())
+						.codeType(code.getCodeType())
+						.repositoryAuthType(code.getRepositoryAuthType())
+						.credentialId(findCredential != null ? findCredential.getId() : null)
+						.credentialName(findCredential != null ? findCredential.getName() : null)
+						.repositoryType(code.getRepositoryType())
+						.build();
+				} else {    // 공유 코드일 경우
+					CodeResDTO findCode = codeService.getCodeById(code.getSourceCodeId());
+					addCode = FindWorkloadResDTO.Code.codeResDTO()
+						.id(findCode.getId())
+						.regUserId(findCode.getRegUser().getRegUserId())
+						.regUserName(findCode.getRegUser().getRegUserName())
+						.regUserRealName(findCode.getRegUser().getRegUserRealName())
+						.regDate(findCode.getRegDate())
+						.title(code.getRepositoryUrl())
+						.repositoryURL(code.getRepositoryUrl())
+						.branch(code.getBranch())
+						.mountPath(code.getMountPath())
+						.codeType(code.getCodeType())
+						.repositoryAuthType(code.getRepositoryAuthType())
+						.credentialId(findCredential != null ? findCredential.getId() : null)
+						.credentialName(findCredential != null ? findCredential.getName() : null)
+						.repositoryType(code.getRepositoryType())
+						.build();
+				}
+
+				codes.add(addCode);
 			}
-
-			codes.add(addCode);
 		}
-
 		return codes;
 	}
 

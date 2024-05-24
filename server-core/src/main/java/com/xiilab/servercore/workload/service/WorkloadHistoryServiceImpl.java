@@ -4,6 +4,7 @@ import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +28,7 @@ import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -35,6 +37,7 @@ import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
@@ -62,7 +65,6 @@ import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.WorkloadHistoryReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -115,9 +117,12 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.cpuRequest(String.valueOf(job.getCpuRequest()))
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
-				.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+				.startTime(job.getStartTime() != null ?
+					job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
 				.estimatedRemainingTime(job.getRemainTime() != 0 ?
-					LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
+					LocalDateTime.now()
+						.plusSeconds(job.getRemainTime())
+						.format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
@@ -161,6 +166,43 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
+	public List<ModuleDistributedJobResDTO> getDistributedWorkloadHistoryList(String workspaceName, String searchName,
+		Boolean isCreatedByMe, String userId) {
+		List<JobEntity> batchJobEntityList = null;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, DISTRIBUTED);
+		} else {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, userId, DISTRIBUTED);
+		}
+
+		return batchJobEntityList.stream().map(job -> ModuleDistributedJobResDTO.builder()
+				.uid(String.valueOf(job.getId()))
+				.name(job.getName())
+				.resourceName(job.getResourceName())
+				.description(job.getDescription())
+				.status(job.getWorkloadStatus())
+				.workspaceName(job.getWorkspaceName())
+				.workspaceResourceName(job.getWorkspaceResourceName())
+				.type(BATCH)
+				.creatorId(job.getCreatorId())
+				.creatorUserName(job.getCreatorName())
+				.creatorFullName(job.getCreatorRealName())
+				.createdAt(job.getCreatedAt())
+				.deletedAt(job.getDeletedAt())
+				.age(new AgeDTO(job.getCreatedAt()))
+				.command(job.getWorkloadCMD())
+				.cpuRequest(String.valueOf(job.getCpuRequest()))
+				.memRequest(String.valueOf(job.getMemRequest()))
+				.gpuRequest(String.valueOf(job.getGpuRequest()))
+				.remainTime(0)
+				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+				.build())
+			.collect(Collectors.toList());
+	}
+
+	@Override
 	public ModuleWorkloadResDTO getWorkloadHistoryById(long id) {
 		JobEntity job = workloadHistoryRepo.findById(id).orElseThrow();
 		if (job.getWorkloadType() == BATCH) {
@@ -180,11 +222,14 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.cpuRequest(String.valueOf(job.getCpuRequest()))
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
-				.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+				.startTime(job.getStartTime() != null ?
+					job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
 				.estimatedRemainingTime(job.getRemainTime() != 0 ?
-					LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
+					LocalDateTime.now()
+						.plusSeconds(job.getRemainTime())
+						.format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 				.build();
-		} else {
+		} else if (job.getWorkloadType() == INTERACTIVE) {
 			return ModuleInteractiveJobResDTO.builder()
 				.uid(String.valueOf(job.getId()))
 				.name(job.getName())
@@ -202,6 +247,31 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.build();
+		} else if (job.getWorkloadType() == DISTRIBUTED) {
+			return ModuleDistributedJobResDTO.builder()
+				.uid(String.valueOf(job.getId()))
+				.name(job.getName())
+				.resourceName(job.getResourceName())
+				.description(job.getDescription())
+				.status(job.getWorkloadStatus())
+				.workspaceName(job.getWorkspaceName())
+				.workspaceResourceName(job.getWorkspaceResourceName())
+				.type(BATCH)
+				.creatorId(job.getCreatorId())
+				.creatorUserName(job.getCreatorName())
+				.creatorFullName(job.getCreatorRealName())
+				.createdAt(job.getCreatedAt())
+				.deletedAt(job.getDeletedAt())
+				.age(new AgeDTO(job.getCreatedAt()))
+				.command(job.getWorkloadCMD())
+				.cpuRequest(String.valueOf(job.getCpuRequest()))
+				.memRequest(String.valueOf(job.getMemRequest()))
+				.gpuRequest(String.valueOf(job.getGpuRequest()))
+				.remainTime(0)
+				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+				.build();
+		} else {
+			return null;
 		}
 	}
 
@@ -341,7 +411,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.name(job.getName())
 					.resourceName(job.getResourceName())
 					.description(job.getDescription())
-					.status(WorkloadStatus.END)
+					.status(job.getWorkloadStatus())
 					.workspaceName(job.getWorkspaceName())
 					.workspaceResourceName(job.getWorkspaceResourceName())
 					.type(BATCH)
@@ -352,20 +422,23 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.startTime(job.getStartTime() != null ?
+						job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
 					.estimatedRemainingTime(job.getRemainTime() != 0 ?
-						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
+						LocalDateTime.now()
+							.plusSeconds(job.getRemainTime())
+							.format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.build();
-			} else {
+			} else if (job.getWorkloadType() == INTERACTIVE) {
 				return ModuleInteractiveJobResDTO.builder()
 					.uid(String.valueOf(job.getId()))
 					.name(job.getName())
 					.resourceName(job.getResourceName())
 					.description(job.getDescription())
-					.status(WorkloadStatus.END)
+					.status(job.getWorkloadStatus())
 					.workspaceName(job.getWorkspaceName())
 					.workspaceResourceName(job.getWorkspaceResourceName())
-					.type(WorkloadType.INTERACTIVE)
+					.type(INTERACTIVE)
 					.createdAt(job.getCreatedAt())
 					.deletedAt(job.getDeletedAt())
 					.age(new AgeDTO(job.getCreatedAt()))
@@ -374,6 +447,26 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
 					.build();
+			} else if (job.getWorkloadType() == DISTRIBUTED) {
+				return ModuleDistributedJobResDTO.builder()
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(job.getWorkloadStatus())
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(DISTRIBUTED)
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.build();
+			} else {
+				return null;
 			}
 		} else {
 			return null;
@@ -402,8 +495,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	@Override
 	public List<ModuleWorkloadResDTO> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList,
 		WorkloadType workloadType, WorkloadSortCondition sortCondition) {
-		List<JobEntity> workloads = workloadHistoryRepoCustom.getWorkloadHistoryInResourceNames(pinResourceNameList, workloadType, sortCondition);
-		if(workloadType == BATCH){
+		List<JobEntity> workloads = workloadHistoryRepoCustom.getWorkloadHistoryInResourceNames(pinResourceNameList,
+			workloadType, sortCondition);
+		if (workloadType == BATCH) {
 			return workloads.stream().map(job -> ModuleBatchJobResDTO.builder()
 					.uid(String.valueOf(job.getId()))
 					.name(job.getName())
@@ -423,13 +517,16 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.startTime(job.getStartTime() != null ?
+						job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
 					.estimatedRemainingTime(job.getRemainTime() != 0 ?
-						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
+						LocalDateTime.now()
+							.plusSeconds(job.getRemainTime())
+							.format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build())
 				.collect(Collectors.toList());
-		}else{
+		} else if (workloadType == INTERACTIVE) {
 			return workloads.stream().map(job -> ModuleInteractiveJobResDTO.builder()
 					.uid(String.valueOf(job.getId()))
 					.name(job.getName())
@@ -449,59 +546,93 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.startTime(job.getStartTime() != null ?
+						job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
 					.estimatedRemainingTime(job.getRemainTime() != 0 ?
-						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
+						LocalDateTime.now()
+							.plusSeconds(job.getRemainTime())
+							.format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build())
 				.collect(Collectors.toList());
+		} else if (workloadType == DISTRIBUTED) {
+			return workloads.stream().map(job -> ModuleDistributedJobResDTO.builder()
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(job.getWorkloadStatus())
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(job.getWorkloadType())
+					.creatorId(job.getCreatorId())
+					.creatorUserName(job.getCreatorName())
+					.creatorFullName(job.getCreatorRealName())
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.remainTime(0)
+					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+					.build())
+				.collect(Collectors.toList());
+		} else {
+			return null;
 		}
-
 	}
 
 	@Override
-	public OverViewWorkloadResDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
+	public OverViewWorkloadResDTO<ModuleWorkloadResDTO> getOverViewWorkloadList(String workspaceName,
+		WorkloadType workloadType, String searchName,
 		Boolean isCreatedByMe, String userId, List<String> pinResourceNameList, WorkloadStatus workloadStatus,
 		WorkloadSortCondition workloadSortCondition, PageRequest pageRequest) {
 		//overview 페이지에서 요청 or 워크로드 전체 조회 페이지에서 내가 생성한 워크로드 체크 해제 시
-		List<ModuleWorkloadResDTO> workloads;
+		List<ModuleWorkloadResDTO> workloads = new ArrayList<>();
 		Page<JobEntity> workloadEntities;
 		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
 			workloadEntities = workloadHistoryRepoCustom.getOverViewWorkloadList(
-				workspaceName, workloadType, searchName, StringUtils.hasText(workspaceName) ? null : userId, pinResourceNameList, workloadSortCondition, pageRequest, workloadStatus);
+				workspaceName, workloadType, searchName, StringUtils.hasText(workspaceName) ? null : userId,
+				pinResourceNameList, workloadSortCondition, pageRequest, workloadStatus);
 		} else {
 			workloadEntities = workloadHistoryRepoCustom.getOverViewWorkloadList(
-				workspaceName, workloadType, searchName, userId, pinResourceNameList, workloadSortCondition, pageRequest,
+				workspaceName, workloadType, searchName, userId, pinResourceNameList, workloadSortCondition,
+				pageRequest,
 				workloadStatus);
 		}
-		if(workloadType == BATCH){
+		if (workloadType == BATCH) {
 			workloads = workloadEntities.getContent().stream().map(job ->
 				ModuleBatchJobResDTO.builder()
-							.uid(String.valueOf(job.getId()))
-							.name(job.getName())
-							.resourceName(job.getResourceName())
-							.description(job.getDescription())
-							.status(job.getWorkloadStatus())
-							.workspaceName(job.getWorkspaceName())
-							.workspaceResourceName(job.getWorkspaceResourceName())
-							.type(workloadType)
-							.creatorId(job.getCreatorId())
-							.creatorUserName(job.getCreatorName())
-							.creatorFullName(job.getCreatorRealName())
-							.createdAt(job.getCreatedAt())
-							.deletedAt(job.getDeletedAt())
-							.age(new AgeDTO(job.getCreatedAt()))
-							.command(job.getWorkloadCMD())
-							.cpuRequest(String.valueOf(job.getCpuRequest()))
-							.memRequest(String.valueOf(job.getMemRequest()))
-							.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.uid(String.valueOf(job.getId()))
+					.name(job.getName())
+					.resourceName(job.getResourceName())
+					.description(job.getDescription())
+					.status(job.getWorkloadStatus())
+					.workspaceName(job.getWorkspaceName())
+					.workspaceResourceName(job.getWorkspaceResourceName())
+					.type(workloadType)
+					.creatorId(job.getCreatorId())
+					.creatorUserName(job.getCreatorName())
+					.creatorFullName(job.getCreatorRealName())
+					.createdAt(job.getCreatedAt())
+					.deletedAt(job.getDeletedAt())
+					.age(new AgeDTO(job.getCreatedAt()))
+					.command(job.getWorkloadCMD())
+					.cpuRequest(String.valueOf(job.getCpuRequest()))
+					.memRequest(String.valueOf(job.getMemRequest()))
+					.gpuRequest(String.valueOf(job.getGpuRequest()))
+					.startTime(job.getStartTime() != null ?
+						job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
 					.estimatedRemainingTime(job.getRemainTime() != 0 ?
-						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
-							.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
-							.build()
-				).collect(Collectors.toList());
-		}else{
+						LocalDateTime.now()
+							.plusSeconds(job.getRemainTime())
+							.format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
+					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+					.build()
+			).collect(Collectors.toList());
+		} else if (workloadType == INTERACTIVE) {
 			workloads = workloadEntities.getContent().stream().map(job ->
 				ModuleInteractiveJobResDTO.builder()
 					.uid(String.valueOf(job.getId()))
@@ -522,12 +653,40 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 					.cpuRequest(String.valueOf(job.getCpuRequest()))
 					.memRequest(String.valueOf(job.getMemRequest()))
 					.gpuRequest(String.valueOf(job.getGpuRequest()))
-					.startTime(job.getStartTime() != null ? job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
+					.startTime(job.getStartTime() != null ?
+						job.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null)
 					.estimatedRemainingTime(job.getRemainTime() != 0 ?
-						LocalDateTime.now().plusSeconds(job.getRemainTime()).format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
+						LocalDateTime.now()
+							.plusSeconds(job.getRemainTime())
+							.format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : "0")
 					.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 					.build()
 			).collect(Collectors.toList());
+		} else if (workloadType == DISTRIBUTED) {
+			workloads = workloadEntities.getContent().stream().map(job ->
+					ModuleDistributedJobResDTO.builder()
+						.uid(String.valueOf(job.getId()))
+						.name(job.getName())
+						.resourceName(job.getResourceName())
+						.description(job.getDescription())
+						.status(job.getWorkloadStatus())
+						.workspaceName(job.getWorkspaceName())
+						.workspaceResourceName(job.getWorkspaceResourceName())
+						.type(DISTRIBUTED)
+						.creatorId(job.getCreatorId())
+						.creatorUserName(job.getCreatorName())
+						.creatorFullName(job.getCreatorRealName())
+						.createdAt(job.getCreatedAt())
+						.deletedAt(job.getDeletedAt())
+						.age(new AgeDTO(job.getCreatedAt()))
+						.command(job.getWorkloadCMD())
+						.cpuRequest(String.valueOf(job.getCpuRequest()))
+						.memRequest(String.valueOf(job.getMemRequest()))
+						.gpuRequest(String.valueOf(job.getGpuRequest()))
+						.remainTime(0)
+						.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+						.build())
+				.collect(Collectors.toList());
 		}
 		long totalCount = workloadEntities.getTotalElements();
 		return new OverViewWorkloadResDTO<>(totalCount, workloads);

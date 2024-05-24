@@ -9,7 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.kubeflow.v2beta1.MPIJob;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.Volumes;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
+import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
@@ -70,7 +74,6 @@ import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
-import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -105,15 +108,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	@Override
 	public void batchJobAddHandler(Job job) {
 		//astrago에서 생성된 job filtering
-		if (isAstragoResource(job)) {
+		if (isAstragoResource(job) && K8sInfoPicker.isBatchJobYN(job)) {
 			log.info("batch job {}가 생성되었습니다.", job.getMetadata().getName());
 			String namespace = job.getMetadata().getNamespace();
-			Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 			K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
 			// 잡 히스토리 저장
 			if (metadataFromResource != null) {
 				log.info(metadataFromResource.getCpuReq() + " " + metadataFromResource.getMemReq());
-				saveJobHistory(namespace, container, metadataFromResource);
+
+				saveJobHistory(namespace, metadataFromResource);
 			}
 		}
 	}
@@ -121,7 +124,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	@Override
 	@Transactional
 	public void batchJobUpdateHandler(Job beforeJob, Job afterJob) {
-		if (isAstragoResource(afterJob) && isResourceUpdate(beforeJob, afterJob)) {
+		if (isAstragoResource(afterJob) && isResourceUpdate(beforeJob, afterJob) && isBatchJobYN(afterJob)) {
 			// 잡상태 조회
 			WorkloadStatus beforeStatus = K8sInfoPicker.getBatchWorkloadStatus(beforeJob.getStatus());
 			WorkloadStatus afterStatus = K8sInfoPicker.getBatchWorkloadStatus(afterJob.getStatus());
@@ -146,7 +149,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 	@Override
 	public void batchJobDeleteHandler(Job job) {
-		if (!isAstragoResource(job)) {
+		if (!isAstragoResource(job) || !isBatchJobYN(job)) {
 			return;
 		}
 
@@ -171,12 +174,11 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (isAstragoResource(deployment)) {
 			log.info("interactive job {}가 생성되었습니다.", deployment.getMetadata().getName());
 			String namespace = deployment.getMetadata().getNamespace();
-			Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
 			K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
 			// 잡 히스토리 저장
 			if (metadataFromResource != null) {
 				log.info(metadataFromResource.getCpuReq() + " " + metadataFromResource.getMemReq());
-				saveJobHistory(namespace, container, metadataFromResource);
+				saveJobHistory(namespace, metadataFromResource);
 			}
 		} else if (deployment.getMetadata().getName().equals("astrago-backend-core")) {
 			List<StorageDto> storages = storageService.getStorages();
@@ -238,6 +240,62 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		}
 	}
 
+	@Override
+	public void distributedJobAddHandler(MPIJob mpiJob) {
+		//astrago에서 생성된 job filtering
+		if (isAstragoResource(mpiJob)) {
+			log.info("distributed job {}가 생성되었습니다.", mpiJob.getMetadata().getName());
+			String namespace = mpiJob.getMetadata().getNamespace();
+			K8SResourceMetadataDTO metadataFromResource = getDistirubtedWorkloadInfoFromResource(mpiJob);
+			// 잡 히스토리 저장
+			if (metadataFromResource != null) {
+				log.info(metadataFromResource.getCpuReq() + " " + metadataFromResource.getMemReq());
+				saveJobHistory(namespace, metadataFromResource);
+			}
+		}
+	}
+
+	@Override
+	public void distributedJobUpdateHandler(MPIJob beforeJob, MPIJob afterJob) {
+		if (isAstragoResource(beforeJob) && isResourceUpdate(beforeJob, afterJob)) {
+			WorkloadStatus beforeJobStatus = getDistributedWorkloadStatus(beforeJob.getStatus());
+			WorkloadStatus afterJobStatus = getDistributedWorkloadStatus(afterJob.getStatus());
+
+			if (isStatusChanged(beforeJobStatus, afterJobStatus)) {
+				//job 상태에 따른 status 업데이트 및 노티 발송
+				checkJobStatusAndUpdateStatus(afterJob);
+			}
+		}
+	}
+
+	@Override
+	public void distributedJobDeleteHandler(MPIJob mpiJob) {
+		if (!isAstragoResource(mpiJob)) {
+			return;
+		}
+
+		K8SResourceMetadataDTO jobMetaData = getDistirubtedWorkloadInfoFromResource(mpiJob);
+		if (jobMetaData == null) {
+			return;
+		}
+
+		updateDeleteDistributedJobStatusAndNoti(mpiJob);
+
+		List<Volumes> volumes = mpiJob.getSpec()
+			.getMpiReplicaSpecs()
+			.get(DistributedJobRole.LAUNCHER.getName())
+			.getTemplate()
+			.getSpec()
+			.getVolumes();
+
+		volumes.stream()
+			.filter(volume -> volume.getPersistentVolumeClaim() != null)
+			.forEach(volume -> deletePvAndPVC(mpiJob.getMetadata().getNamespace(), volume.getName(),
+				volume.getPersistentVolumeClaim().getClaimName()));
+
+		deleteServices(jobMetaData.getWorkspaceResourceName(), jobMetaData.getWorkloadResourceName());
+	}
+
 	private boolean isStatusChanged(WorkloadStatus beforeStatus, WorkloadStatus afterStatus) {
 		return beforeStatus != afterStatus;
 	}
@@ -268,11 +326,28 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		});
 	}
 
+	private void updateDeleteDistributedJobStatusAndNoti(MPIJob mpiJob) {
+		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(mpiJob.getMetadata().getName());
+		workload.ifPresent(wl -> {
+			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END, mpiJob.getMetadata().getName());
+			handleNotificationsAndLog(wl, WorkloadStatus.END);
+		});
+	}
+
 	private void checkJobStatusAndUpdateStatus(Deployment deployment) {
 		WorkloadStatus workloadStatus = getInteractiveWorkloadStatus(deployment.getStatus());
 		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(deployment.getMetadata().getName());
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(workloadStatus, deployment.getMetadata().getName());
+			handleNotificationsAndLog(wl, workloadStatus);
+		});
+	}
+
+	private void checkJobStatusAndUpdateStatus(MPIJob mpiJob) {
+		WorkloadStatus workloadStatus = getDistributedWorkloadStatus(mpiJob.getStatus());
+		Optional<JobEntity> job = workloadHistoryRepo.findByResourceName(mpiJob.getMetadata().getName());
+		job.ifPresent(wl -> {
+			workloadHistoryRepo.updateWorkloadStatusByResourceName(workloadStatus, mpiJob.getMetadata().getName());
 			handleNotificationsAndLog(wl, workloadStatus);
 		});
 	}
@@ -395,8 +470,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
-	private void saveJobHistory(String namespace, Container container,
-		K8SResourceMetadataDTO metadataFromResource) {
+	private void saveJobHistory(String namespace, K8SResourceMetadataDTO metadataFromResource) {
 		//이미 저장된 워크로드 일 경우 조기 리턴
 		if (workloadHistoryRepo.findByResourceName(metadataFromResource.getWorkloadResourceName()).isPresent()) {
 			return;
@@ -408,8 +482,13 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourceName(metadataFromResource.getWorkloadResourceName())
 			.workspaceName(metadataFromResource.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(getEnvFromContainer(container))
-			.ports(getPortFromContainer(container))
+			.envs(metadataFromResource.getEnvs().stream().collect(Collectors.toMap(
+				K8SResourceMetadataDTO.Env::getName,
+				K8SResourceMetadataDTO.Env::getValue)))
+			.ports(metadataFromResource.getPorts().stream().collect(Collectors.toMap(
+				K8SResourceMetadataDTO.Port::getName,
+				K8SResourceMetadataDTO.Port::getPort
+			)))
 			.cpuReq(metadataFromResource.getCpuReq())
 			.memReq(metadataFromResource.getMemReq())
 			.gpuReq(metadataFromResource.getGpuReq())

@@ -1,7 +1,10 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.dto.RegexPatterns;
 import com.xiilab.modulecommon.enums.CodeType;
@@ -10,8 +13,8 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class ModuleCodeResDTO {
@@ -26,39 +29,59 @@ public class ModuleCodeResDTO {
 	private String credentialUserName;
 	private String credentialPassword;
 
-	public ModuleCodeResDTO(List<EnvVar> envs) {
-		for (EnvVar envVar : envs) {
-			String envVarName = envVar.getName();
+	public ModuleCodeResDTO(List<? extends KubernetesResource> resources) {
+		if (!CollectionUtils.isEmpty(resources)) {
+			KubernetesResource kubernetesResource = resources.get(0);
+			if (kubernetesResource instanceof EnvVar) {
+				convertFromEnvVars(resources);
+			} else if (kubernetesResource instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Env) {
+				convertFromEnvVars(resources);
+			} else if (kubernetesResource instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Env) {
+				convertFromEnvVars(resources);
+			}
+		}
+	}
+
+	private void convertFromEnvVars(List<? extends KubernetesResource> envs) {
+		for (KubernetesResource envVar : envs) {
+			Map<String, String> stringStringMap = convertEnvString(envVar);
+			if (CollectionUtils.isEmpty(stringStringMap)) {
+				continue;
+			}
+
+			String envVarName = stringStringMap.get("key");
+			String envVarValue = stringStringMap.get("value");
+
 			GitEnvType gitEnvType = GitEnvType.valueOf(envVarName);
 
 			switch (gitEnvType) {
 				case GIT_SYNC_REPO:
-					this.repositoryUrl = envVar.getValue();
-					if (Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, envVar.getValue())) {
+					this.repositoryUrl = envVarValue;
+					if (Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, envVarValue)) {
 						this.codeType = CodeType.GIT_HUB;
 					} else {
 						this.codeType = CodeType.GIT_LAB;
 					}
 					break;
 				case GIT_SYNC_BRANCH:
-					this.branch = envVar.getValue();
+					this.branch = envVarValue;
 					break;
 				case GIT_SYNC_MOUNT_PATH:
-					this.mountPath = envVar.getValue();
+					this.mountPath = envVarValue;
 					break;
 				case SOURCE_CODE_ID:	// 공유 코드 아니면 SOURCE_CODE_ID 환경변수 없음
-					this.sourceCodeId = Long.valueOf(envVar.getValue());
+					this.sourceCodeId = Long.valueOf(envVarValue);
 					this.repositoryType = RepositoryType.WORKSPACE;
 					break;
 				case CREDENTIAL_ID: // private repository 아니면 CREDENTIAL_ID 환경변수 없음
-					this.credentialId = Long.valueOf(envVar.getValue());
+					this.credentialId = Long.valueOf(envVarValue);
 					this.repositoryAuthType = RepositoryAuthType.PRIVATE;
 					break;
 				case GIT_SYNC_USERNAME:
-					this.credentialUserName = envVar.getValue();
+					this.credentialUserName = envVarValue;
 					break;
 				case GIT_SYNC_PASSWORD:
-					this.credentialPassword = envVar.getValue();
+					this.credentialPassword = envVarValue;
 					break;
 				default:
 					break;
@@ -66,10 +89,15 @@ public class ModuleCodeResDTO {
 		}
 	}
 
-	// public static ModuleCodeResDTO of(List<EnvVar> env) {
-	// 	for (EnvVar envVar : env) {
-	// 		if (envVar.getName().equals("GIT_SYNC_REPO")) {
-	// 		}
-	// 	}
-	// }
+	private Map<String, String> convertEnvString(Object object) {
+		if (object instanceof EnvVar env) {
+			return Map.of("key", env.getName(), "value", env.getValue() == null ? "" : env.getValue());
+		} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Env env) {
+			return Map.of("key", env.getName(), "value", env.getValue() == null ? "" : env.getValue());
+		} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Env env) {
+			return Map.of("key", env.getName(), "value", env.getValue() == null ? "" : env.getValue());
+		} else {
+			return Map.of();
+		}
+	}
 }

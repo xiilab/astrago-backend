@@ -14,10 +14,12 @@ import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
+import com.xiilab.modulek8s.workload.vo.DistributedJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -45,6 +47,8 @@ public interface WorkloadRepository {
 	 */
 	CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO);
 
+	CreateJobResDTO createDistributedJobWorkload(DistributedJobVO distributedJobVO);
+
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
 	boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace);
@@ -54,6 +58,7 @@ public interface WorkloadRepository {
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
 
 	void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description);
+
 	void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description);
 
 	/**
@@ -74,6 +79,8 @@ public interface WorkloadRepository {
 	 */
 	ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
 
+	ModuleDistributedJobResDTO getDistributedJobWorkload(String workSpaceName, String workloadName);
+
 	/**
 	 * batch job workload list 조회
 	 *
@@ -83,7 +90,9 @@ public interface WorkloadRepository {
 	List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceName(String workSpaceName);
 
 	List<ModuleBatchJobResDTO> getBatchWorkloadListByCreator(String userId);
-	List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId);
+
+	List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName,
+		String userId);
 
 	/**
 	 * interactive job workload list 조회
@@ -95,7 +104,8 @@ public interface WorkloadRepository {
 
 	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadByCreator(String creator);
 
-	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId);
+	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String userId);
 
 	/**
 	 * batch job workload 삭제
@@ -113,6 +123,8 @@ public interface WorkloadRepository {
 	 */
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 
+	void deleteDistributedWorkload(String workspaceName, String workloadName);
+
 	ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName);
 
 	ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName);
@@ -120,6 +132,8 @@ public interface WorkloadRepository {
 	Pod getBatchJobPod(String workspaceName, String workloadName);
 
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
+
+	Pod getDistributedLauncherPod(String workspaceName, String workloadName);
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
@@ -162,9 +176,11 @@ public interface WorkloadRepository {
 	boolean optimizationResource(String pod, String namespace);
 
 	ModuleWorkloadResDTO getParentController(String pod, String namespace);
+
 	List<Event> getWorkloadEventList(String pod, String namespace);
 
 	Job getBatchJob(String workspaceName, String workloadName);
 
 	Deployment getInteractiveJob(String workspaceName, String workloadName);
+
 }

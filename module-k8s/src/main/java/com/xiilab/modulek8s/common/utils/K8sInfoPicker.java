@@ -5,12 +5,19 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.kubeflow.v2beta1.MPIJob;
+import org.kubeflow.v2beta1.MPIJobStatus;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.Spec;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.Containers;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.InitContainers;
+import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Resources;
+import org.kubeflow.v2beta1.mpijobstatus.Conditions;
+import org.kubeflow.v2beta1.mpijobstatus.ReplicaStatuses;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -22,12 +29,13 @@ import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.dto.ResourceDTO;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
+import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 
 import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.ContainerPort;
-import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -69,40 +77,9 @@ public class K8sInfoPicker {
 			resource2.getMetadata().getResourceVersion());
 	}
 
-	/**
-	 * k8s container에서 환경변수를 조회하는 메소드
-	 *
-	 * @param container
-	 * @return
-	 */
-	public static Map<String, String> getEnvFromContainer(Container container) {
-		try {
-			List<EnvVar> env = container.getEnv();
-			Map<String, String> map = new HashMap<>();
-			env.forEach(envVar -> map.put(envVar.getName(), envVar.getValue()));
-			return map;
-		} catch (NullPointerException e) {
-			log.debug("{} container env 출력 중 npe", container.getName());
-			return Collections.emptyMap();
-		}
-	}
-
-	/**
-	 * k8s container에서 환경변수를 조회하는 메소드
-	 *
-	 * @param container
-	 * @return
-	 */
-	public static Map<String, Integer> getPortFromContainer(Container container) {
-		try {
-			Map<String, Integer> map = new HashMap<>();
-			List<ContainerPort> ports = container.getPorts();
-			ports.forEach(port -> map.put(port.getName(), port.getContainerPort()));
-			return map;
-		} catch (NullPointerException e) {
-			log.debug("{} container env 출력 중 npe", container.getName());
-			return Collections.emptyMap();
-		}
+	public static boolean isResourceUpdate(MPIJob mpijob1, MPIJob mpiJob2) {
+		return !Objects.equals(mpijob1.getMetadata().getResourceVersion(),
+			mpiJob2.getMetadata().getResourceVersion());
 	}
 
 	/**
@@ -138,6 +115,16 @@ public class K8sInfoPicker {
 		return k8SResourceMetadataDTO;
 	}
 
+	public static K8SResourceMetadataDTO getDistirubtedWorkloadInfoFromResource(MPIJob mpiJob) {
+		K8SResourceMetadataDTO k8SResourceMetadataDTO;
+		if (isCreatedByAstra(mpiJob)) {
+			k8SResourceMetadataDTO = getDistributedWorkloadFromAstraResource(mpiJob);
+		} else {
+			k8SResourceMetadataDTO = getDistirubtedWorkloadInfoFromResource(mpiJob);
+		}
+		return k8SResourceMetadataDTO;
+	}
+
 	/**
 	 * Astra에서 생성되었는지 여부를 판별하는 메소드
 	 *
@@ -166,6 +153,20 @@ public class K8sInfoPicker {
 			return null;
 		}
 		return JsonConvertUtil.convertJsonToMap(argStr);
+	}
+
+	public static InitContainers getMpiJobInitContainers(MPIJob mpiJob) {
+		try {
+			return mpiJob.getSpec()
+				.getMpiReplicaSpecs()
+				.get(DistributedJobRole.LAUNCHER.getName())
+				.getTemplate()
+				.getSpec()
+				.getInitContainers()
+				.get(0);
+		} catch (NullPointerException e) {
+			return null;
+		}
 	}
 
 	/**
@@ -197,6 +198,73 @@ public class K8sInfoPicker {
 				.workspaceResourceName(metadata.getNamespace())
 				.description(annotations.get(AnnotationField.DESCRIPTION.getField()))
 				.workloadType(WorkloadType.BATCH)
+				.imageId(StringUtils.hasText(annotations.get(AnnotationField.IMAGE_ID.getField())) ?
+					Long.parseLong(annotations.get(AnnotationField.IMAGE_ID.getField())) : null)
+				.imageType(ImageType.valueOf(annotations.get(AnnotationField.IMAGE_TYPE.getField())))
+				.imageName(annotations.get(AnnotationField.IMAGE_NAME.getField()))
+				.imageCredentialId(
+					StringUtils.hasText(annotations.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField())) ?
+						Long.parseLong(annotations.get(AnnotationField.IMAGE_CREDENTIAL_ID.getField())) : null)
+				.createdAt(createTime)
+				.deletedAt(deleteTime)
+				.creatorId(metadata.getLabels().get(LabelField.CREATOR_ID.getField()))
+				.creatorUserName(annotations.get(AnnotationField.CREATOR_USER_NAME.getField()))
+				.creatorFullName(annotations.get(AnnotationField.CREATOR_FULL_NAME.getField()))
+				.cpuReq(containerResourceReq.getCpuReq())
+				.memReq(containerResourceReq.getMemReq())
+				.gpuReq(containerResourceReq.getGpuReq())
+				.datasetIds(annotations.get(AnnotationField.DATASET_IDS.getField()))
+				.modelIds(annotations.get(AnnotationField.MODEL_IDS.getField()))
+				.envs(getEnvs(container.getEnv()))
+				.ports(getPorts(container.getPorts()))
+				.workingDir(container.getWorkingDir())
+				.parameter(getParameterMap(annotations))
+				.codes(codes)
+				.datasetMountPathMap(getDatasetAndModelMountMap("ds-", mountAnnotationMap))
+				.modelMountPathMap(getDatasetAndModelMountMap("md-", mountAnnotationMap))
+				.codeMountPathMap(getCodeMountMap(codes))
+				.command(CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2))
+				.build();
+
+		} catch (NullPointerException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * astra에서 생성된 resource의 경우 값을 추출하는 메소드
+	 * astra에서 생성된 메소드의 경우 metadata에 정보를 저장하기에 해당 정보를 조회하여 매핑
+	 *
+	 * @param mpiJob k8s resource 객체
+	 * @return
+	 */
+	private static K8SResourceMetadataDTO getDistributedWorkloadFromAstraResource(MPIJob mpiJob) {
+		try {
+			ObjectMeta metadata = mpiJob.getMetadata();
+			Map<String, String> annotations = metadata.getAnnotations();
+			Containers container = getContainerFromMpiJob(mpiJob);
+			ResourceDTO containerResourceReq = getContainersResourceReq(container, getMpiJobReplicasCount(mpiJob));
+			List<InitContainers> initContainers = mpiJob.getSpec()
+				.getMpiReplicaSpecs()
+				.get(DistributedJobRole.LAUNCHER.getName())
+				.getTemplate()
+				.getSpec()
+				.getInitContainers();
+			Map<String, String> mountAnnotationMap = mpiJob.getMetadata().getAnnotations();
+			List<K8SResourceMetadataDTO.Code> codes = initializeCodesInfo(initContainers);
+			LocalDateTime createTime = metadata.getCreationTimestamp() == null ? LocalDateTime.now() :
+				DateUtils.convertK8sUtcTimeString(metadata.getCreationTimestamp());
+			LocalDateTime deleteTime = metadata.getDeletionTimestamp() == null ? LocalDateTime.now() :
+				DateUtils.convertK8sUtcTimeString(metadata.getDeletionTimestamp());
+
+			return K8SResourceMetadataDTO.builder()
+				.uid(metadata.getUid())
+				.workloadName(annotations.get(AnnotationField.NAME.getField()))
+				.workloadResourceName(metadata.getName())
+				.workspaceName(annotations.get(AnnotationField.WORKSPACE_NAME.getField()))
+				.workspaceResourceName(metadata.getNamespace())
+				.description(annotations.get(AnnotationField.DESCRIPTION.getField()))
+				.workloadType(WorkloadType.DISTRIBUTED)
 				.imageId(StringUtils.hasText(annotations.get(AnnotationField.IMAGE_ID.getField())) ?
 					Long.parseLong(annotations.get(AnnotationField.IMAGE_ID.getField())) : null)
 				.imageType(ImageType.valueOf(annotations.get(AnnotationField.IMAGE_TYPE.getField())))
@@ -350,6 +418,18 @@ public class K8sInfoPicker {
 		return null;
 	}
 
+	private static Containers getContainerFromMpiJob(MPIJob mpiJob) {
+		Spec specFromMpiJob = getSpecFromMpiJob(mpiJob);
+		if (specFromMpiJob != null && !CollectionUtils.isEmpty(specFromMpiJob.getContainers())) {
+			return specFromMpiJob.getContainers().get(0);
+		}
+		return null;
+	}
+
+	private static Spec getSpecFromMpiJob(MPIJob mpiJob) {
+		return mpiJob.getSpec().getMpiReplicaSpecs().get(DistributedJobRole.WORKER.getName()).getTemplate().getSpec();
+	}
+
 	public static LocalDateTime convertUnixTimestampToLocalDateTime(long unixTimestamp) {
 		Instant instant = Instant.ofEpochSecond(unixTimestamp);
 		return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
@@ -384,6 +464,38 @@ public class K8sInfoPicker {
 			}
 		}
 		return ResourceDTO.builder().build();
+	}
+
+	/**
+	 * 컨테이너에 할당된 자원을 조회하는 메소드
+	 * req가 설정되어있지 않다면 Null을 리턴함.
+	 *
+	 * @param container k8s container 객체
+	 * @return
+	 */
+	public static ResourceDTO getContainersResourceReq(Containers container, Integer gpuCount) {
+		Resources resources = container.getResources();
+		if (resources != null) {
+			Map<String, IntOrString> requests = resources.getRequests();
+			if (requests != null) {
+				IntOrString cpu = requests.get("cpu");
+				IntOrString mem = requests.get("memory");
+
+				Float cpuReq = cpu != null ? Float.valueOf(cpu.getStrVal()) : null;
+				Float memReq = mem != null ? Float.valueOf(mem.getStrVal().split("Gi")[0]) : null;
+
+				return ResourceDTO.builder()
+					.cpuReq(cpuReq)
+					.memReq(memReq)
+					.gpuReq(gpuCount)
+					.build();
+			}
+		}
+		return ResourceDTO.builder().build();
+	}
+
+	public static Integer getMpiJobReplicasCount(MPIJob mpiJob) {
+		return mpiJob.getSpec().getMpiReplicaSpecs().get(DistributedJobRole.WORKER.getName()).getReplicas();
 	}
 
 	public static ClusterResourceDTO getClusterResource(NodeList nodeList) {
@@ -490,6 +602,52 @@ public class K8sInfoPicker {
 		return WorkloadStatus.PENDING;
 	}
 
+	public static WorkloadStatus getDistributedWorkloadStatus(MPIJobStatus mpiJobStatus) {
+		if (mpiJobStatus == null) {
+			return WorkloadStatus.PENDING;
+		}
+
+		if (mpiJobStatus.getCompletionTime() != null) {
+			return WorkloadStatus.END;
+		}
+
+		boolean hasRunningCondition = mpiJobStatus.getConditions().stream()
+			.anyMatch(condition ->
+				"Running".equals(condition.getType()) &&
+					Conditions.Status.TRUE.equals(condition.getStatus()));
+
+		if (hasRunningCondition) {
+			return WorkloadStatus.RUNNING;
+		}
+
+		if (getMpiJobFailedYN(mpiJobStatus.getReplicaStatuses())) {
+			return WorkloadStatus.ERROR;
+		}
+		return WorkloadStatus.PENDING;
+	}
+
+	public static boolean isBatchJobYN(Job job) {
+		return job.getMetadata().getAnnotations().get("type").equals("BATCH");
+	}
+
+	private static boolean getMpiJobFailedYN(Map<String, ReplicaStatuses> replicaStatuses) {
+		boolean launcherFailedYN = getMpiJobReplicasFailedYN(
+			replicaStatuses.get(DistributedJobRole.LAUNCHER.getName()));
+		boolean workerFailedYN = getMpiJobReplicasFailedYN(
+			replicaStatuses.get(DistributedJobRole.WORKER.getName()));
+		return launcherFailedYN || workerFailedYN;
+	}
+
+	private static boolean getMpiJobReplicasFailedYN(ReplicaStatuses replicaStatuses) {
+		if (replicaStatuses == null) {
+			return false;
+		}
+		if (replicaStatuses.getFailed() == null) {
+			return false;
+		}
+		return replicaStatuses.getFailed() > 0;
+	}
+
 	private static boolean jobHasFailedCondition(List<JobCondition> conditions) {
 		return conditions.stream()
 			.anyMatch(condition -> "Failed".equals(condition.getType()));
@@ -526,32 +684,52 @@ public class K8sInfoPicker {
 			.anyMatch(condition -> "PodInitializing".equals(condition.getType()));
 	}
 
-	private static List<K8SResourceMetadataDTO.Env> getEnvs(List<EnvVar> envs) {
+	private static List<K8SResourceMetadataDTO.Env> getEnvs(List<? extends KubernetesResource> envs) {
 		if (!CollectionUtils.isEmpty(envs)) {
 			return envs.stream()
-				.map(env -> new K8SResourceMetadataDTO.Env(env.getName(), env.getValue()))
+				.map(K8SResourceMetadataDTO.Env::new)
 				.toList();
 		} else {
 			return new ArrayList<>();
 		}
 	}
 
-	private static List<K8SResourceMetadataDTO.Port> getPorts(List<ContainerPort> ports) {
+	private static List<K8SResourceMetadataDTO.Port> getPorts(List<? extends KubernetesResource> ports) {
 		if (!CollectionUtils.isEmpty(ports)) {
 			return ports.stream()
-				.map(port -> new K8SResourceMetadataDTO.Port(port.getName(), port.getContainerPort()))
+				.map(K8SResourceMetadataDTO.Port::new)
 				.toList();
 		} else {
 			return new ArrayList<>();
 		}
 	}
 
-	private static List<K8SResourceMetadataDTO.Code> initializeCodesInfo(List<Container> initContainers) {
-		if (!CollectionUtils.isEmpty(initContainers)) {
-			return initContainers.stream()
-				.map(initContainer -> new K8SResourceMetadataDTO.Code(initContainer.getEnv())).toList();
+	private static List<K8SResourceMetadataDTO.Code> initializeCodesInfo(
+		List<? extends KubernetesResource> containers) {
+		List<K8SResourceMetadataDTO.Code> codes = new ArrayList<>();
+		if (!CollectionUtils.isEmpty(containers)) {
+			codes.addAll(
+				containers.stream()
+					.map(K8sInfoPicker::extractCodeFromContainer)
+					.toList());
+		}
+
+		return codes;
+	}
+
+	private static K8SResourceMetadataDTO.Code extractCodeFromContainer(Object container) {
+		List<? extends KubernetesResource> envVars = null;
+		if (container instanceof Container containerInstance) {
+			envVars = containerInstance.getEnv();
+		} else if (container instanceof Containers containersInstance) {
+			envVars = containersInstance.getEnv();
+		} else if (container instanceof InitContainers initContainers) {
+			envVars = initContainers.getEnv();
+		}
+		if (envVars != null) {
+			return new K8SResourceMetadataDTO.Code(envVars);
 		} else {
-			return new ArrayList<>();
+			return null;
 		}
 	}
 

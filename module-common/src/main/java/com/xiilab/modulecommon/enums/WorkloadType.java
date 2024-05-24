@@ -1,6 +1,5 @@
 package com.xiilab.modulecommon.enums;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -9,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum WorkloadType {
 	BATCH("batch"),
 	INTERACTIVE("interactive"),
+	DISTRIBUTED("distributed"),
 	DEPLOY("deploy");
 
 	private final String type;
