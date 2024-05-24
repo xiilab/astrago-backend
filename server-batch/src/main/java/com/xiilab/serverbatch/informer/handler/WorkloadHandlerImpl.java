@@ -262,6 +262,17 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			WorkloadStatus afterJobStatus = getDistributedWorkloadStatus(afterJob.getStatus());
 
 			if (isStatusChanged(beforeJobStatus, afterJobStatus)) {
+				if (afterJobStatus == WorkloadStatus.ERROR || afterJobStatus == WorkloadStatus.END) {
+					// 로그 저장
+					workloadHistoryRepo.findByResourceName(afterJob.getMetadata().getName())
+						.ifPresent(wl -> {
+							if (wl.getWorkloadType() == WorkloadType.DISTRIBUTED) {
+								saveWorkloadLogFile(wl);
+							}
+						});
+				} else if (afterJobStatus == WorkloadStatus.RUNNING) {
+					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
+				}
 				//job 상태에 따른 status 업데이트 및 노티 발송
 				checkJobStatusAndUpdateStatus(afterJob);
 			}
