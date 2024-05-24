@@ -83,7 +83,8 @@ public class WorkloadController {
 		@RequestParam("workloadResourceName") String workloadResourceName,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, userInfoDTO),
+			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName,
+				workloadResourceName, userInfoDTO),
 			HttpStatus.OK);
 	}
 
@@ -164,7 +165,8 @@ public class WorkloadController {
 
 	@GetMapping("/workloads/hubs")
 	@Operation(summary = "워크로드 생성 시 hub 전체 조회")
-	public ResponseEntity<FindHubInWorkloadResDTO.Hubs> getHubs(@RequestParam("workloadType") WorkloadType workloadType) {
+	public ResponseEntity<FindHubInWorkloadResDTO.Hubs> getHubs(
+		@RequestParam("workloadType") WorkloadType workloadType) {
 		return new ResponseEntity<>(hubService.getHubListInWorkload(workloadType), HttpStatus.OK);
 	}
 
@@ -263,8 +265,9 @@ public class WorkloadController {
 		UserDTO.UserInfo userInfoDTO
 	) {
 		return ResponseEntity.ok()
-				.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
+			.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
+
 	//관리자 api
 	@GetMapping("/admin/workloads/jobList")
 	@Operation(summary = "관리자 워크로드 리스트 조회")
@@ -291,9 +294,11 @@ public class WorkloadController {
 		@RequestParam("workloadResourceName") String workloadResourceName,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getAdminWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, userInfoDTO),
+			workloadFacadeService.getAdminWorkloadInfoByResourceName(workloadType, workspaceResourceName,
+				workloadResourceName, userInfoDTO),
 			HttpStatus.OK);
 	}
+
 	@GetMapping("/admin/workloads/{workloadName}/history/log")
 	@Operation(summary = "관리자 종료된 워크로드의 로그 조회하기")
 	public ResponseEntity<byte[]> getAdminEndWorkloadHistoryLog(
@@ -303,6 +308,7 @@ public class WorkloadController {
 		return ResponseEntity.ok()
 			.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
+
 	@PostMapping("/admin/workloads/{type}/event")
 	@Operation(summary = "워크로드 이벤트 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadEventDTO>> getAdminWorkloadEventList(
