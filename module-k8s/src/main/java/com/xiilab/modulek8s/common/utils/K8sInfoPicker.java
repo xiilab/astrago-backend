@@ -155,6 +155,20 @@ public class K8sInfoPicker {
 		return JsonConvertUtil.convertJsonToMap(argStr);
 	}
 
+	public static InitContainers getMpiJobInitContainers(MPIJob mpiJob) {
+		try {
+			return mpiJob.getSpec()
+				.getMpiReplicaSpecs()
+				.get(DistributedJobRole.LAUNCHER.getName())
+				.getTemplate()
+				.getSpec()
+				.getInitContainers()
+				.get(0);
+		} catch (NullPointerException e) {
+			return null;
+		}
+	}
+
 	/**
 	 * astra에서 생성된 resource의 경우 값을 추출하는 메소드
 	 * astra에서 생성된 메소드의 경우 metadata에 정보를 저장하기에 해당 정보를 조회하여 매핑
@@ -229,7 +243,7 @@ public class K8sInfoPicker {
 			ObjectMeta metadata = mpiJob.getMetadata();
 			Map<String, String> annotations = metadata.getAnnotations();
 			Containers container = getContainerFromMpiJob(mpiJob);
-			ResourceDTO containerResourceReq = getContainersResourceReq(container);
+			ResourceDTO containerResourceReq = getContainersResourceReq(container, getMpiJobReplicasCount(mpiJob));
 			List<InitContainers> initContainers = mpiJob.getSpec()
 				.getMpiReplicaSpecs()
 				.get(DistributedJobRole.LAUNCHER.getName())
@@ -459,27 +473,29 @@ public class K8sInfoPicker {
 	 * @param container k8s container 객체
 	 * @return
 	 */
-	public static ResourceDTO getContainersResourceReq(Containers container) {
+	public static ResourceDTO getContainersResourceReq(Containers container, Integer gpuCount) {
 		Resources resources = container.getResources();
 		if (resources != null) {
 			Map<String, IntOrString> requests = resources.getRequests();
 			if (requests != null) {
 				IntOrString cpu = requests.get("cpu");
 				IntOrString mem = requests.get("memory");
-				IntOrString gpu = requests.get("nvidia.com/gpu");
 
 				Float cpuReq = cpu != null ? Float.valueOf(cpu.getStrVal()) : null;
 				Float memReq = mem != null ? Float.valueOf(mem.getStrVal().split("Gi")[0]) : null;
-				Integer gpuReq = gpu != null ? gpu.getIntVal() : null;
 
 				return ResourceDTO.builder()
 					.cpuReq(cpuReq)
 					.memReq(memReq)
-					.gpuReq(gpuReq)
+					.gpuReq(gpuCount)
 					.build();
 			}
 		}
 		return ResourceDTO.builder().build();
+	}
+
+	public static Integer getMpiJobReplicasCount(MPIJob mpiJob) {
+		return mpiJob.getSpec().getMpiReplicaSpecs().get(DistributedJobRole.WORKER.getName()).getReplicas();
 	}
 
 	public static ClusterResourceDTO getClusterResource(NodeList nodeList) {

@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
@@ -78,6 +79,8 @@ public interface WorkloadRepository {
 	 */
 	ModuleInteractiveJobResDTO getInteractiveJobWorkload(String workSpaceName, String workloadName);
 
+	ModuleDistributedJobResDTO getDistributedJobWorkload(String workSpaceName, String workloadName);
+
 	/**
 	 * batch job workload list 조회
 	 *
@@ -120,6 +123,8 @@ public interface WorkloadRepository {
 	 */
 	String deleteInteractiveJobWorkload(String workSpaceName, String workloadName);
 
+	void deleteDistributedWorkload(String workspaceName, String workloadName);
+
 	ExecListenable connectBatchJobTerminal(String workspaceName, String workloadName);
 
 	ExecListenable connectInteractiveJobTerminal(String workspaceName, String workloadName);
@@ -127,6 +132,8 @@ public interface WorkloadRepository {
 	Pod getBatchJobPod(String workspaceName, String workloadName);
 
 	Pod getInteractiveJobPod(String workspaceName, String workloadName);
+
+	Pod getDistributedLauncherPod(String workspaceName, String workloadName);
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
@@ -175,4 +182,5 @@ public interface WorkloadRepository {
 	Job getBatchJob(String workspaceName, String workloadName);
 
 	Deployment getInteractiveJob(String workspaceName, String workloadName);
+
 }

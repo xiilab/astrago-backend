@@ -29,6 +29,7 @@ import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
@@ -104,6 +105,14 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			workloadName);
 		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.INTERACTIVE, interactiveJobWorkload);
 		return interactiveJobWorkload;
+	}
+
+	@Override
+	public ModuleDistributedJobResDTO getDistributedJobWorkload(String workSpaceName, String workloadName) {
+		ModuleDistributedJobResDTO distributedJobResDTO = workloadRepository.getDistributedJobWorkload(workSpaceName,
+			workloadName);
+		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.INTERACTIVE, distributedJobResDTO);
+		return distributedJobResDTO;
 	}
 
 	@Override
@@ -194,6 +203,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
+	public void deleteDistributedWorkload(String workspaceName, String workloadName) {
+		workloadRepository.deleteDistributedWorkload(workspaceName, workloadName);
+	}
+
+	@Override
 	public ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName,
 		WorkloadType workloadType) {
 		if (workloadType == WorkloadType.INTERACTIVE) {
@@ -211,6 +225,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return workloadRepository.getInteractiveJobPod(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.BATCH) {
 			return workloadRepository.getBatchJobPod(workspaceName, workloadName);
+		} else if (workloadType == WorkloadType.DISTRIBUTED) {
+			return workloadRepository.getDistributedLauncherPod(workspaceName, workloadName);
 		} else {
 			return null;
 		}

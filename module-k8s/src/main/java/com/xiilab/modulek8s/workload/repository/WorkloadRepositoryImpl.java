@@ -30,6 +30,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
@@ -217,6 +218,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public ModuleDistributedJobResDTO getDistributedJobWorkload(String workSpaceName, String workloadName) {
+		MPIJob distributedJob = getDistributedJob(workSpaceName, workloadName);
+		return new ModuleDistributedJobResDTO(distributedJob);
+	}
+
+	@Override
 	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceName(String workSpaceName) {
 		JobList batchJobList = getBatchJobList(workSpaceName);
 		return batchJobList.getItems().stream()
@@ -274,6 +281,11 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public String deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
 		return deleteInteractiveJob(workSpaceName, workloadName);
+	}
+
+	@Override
+	public void deleteDistributedWorkload(String workspaceName, String workloadName) {
+		deleteMpiJob(workspaceName, workloadName);
 	}
 
 	@Override
@@ -335,6 +347,26 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			String app = deployment.getMetadata().getLabels().get("app");
 			String namespace = deployment.getMetadata().getNamespace();
 			return kubernetesClient.pods().inNamespace(namespace).withLabel("app", app).list().getItems().get(0);
+		} catch (Exception e) {
+			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
+		}
+	}
+
+	@Override
+	public Pod getDistributedLauncherPod(String workspaceName, String workloadName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			MPIJob mpiJob = kubernetesClient.resources(MPIJob.class)
+				.inNamespace(workspaceName)
+				.withName(workloadName)
+				.get();
+			String app = mpiJob.getMetadata().getLabels().get("app");
+			String namespace = mpiJob.getMetadata().getNamespace();
+			return kubernetesClient.pods()
+				.inNamespace(namespace)
+				.withLabel("job-name", app + "-launcher")
+				.list()
+				.getItems()
+				.get(0);
 		} catch (Exception e) {
 			throw new K8sException(WorkloadErrorCode.NOT_FOUND_WORKLOAD_POD);
 		}
@@ -900,6 +932,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	public MPIJob getDistributedJob(String workSpaceName, String workloadName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.resources(MPIJob.class).inNamespace(workSpaceName).withName(workloadName).get();
+		}
+	}
+
 	private JobList getBatchJobList(String workSpaceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).list();
@@ -965,6 +1003,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			kubernetesClient.apps().deployments().inNamespace(workSpaceName).withName(workloadName).delete();
 			return workloadName;
+		}
+	}
+
+	private void deleteMpiJob(String workspaceName, String workloadName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resources(MPIJob.class).inNamespace(workspaceName).withName(workloadName).delete();
 		}
 	}
 

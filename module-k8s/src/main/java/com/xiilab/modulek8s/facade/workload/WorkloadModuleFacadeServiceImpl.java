@@ -33,6 +33,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
@@ -156,7 +157,12 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public void deleteBatchHobWorkload(String workSpaceName, String workloadName) {
+	public ModuleDistributedJobResDTO getDistributedWorkload(String workspaceName, String workloadResourceName) {
+		return workloadModuleService.getDistributedJobWorkload(workspaceName, workloadResourceName);
+	}
+
+	@Override
+	public void deleteBatchJobWorkload(String workSpaceName, String workloadName) {
 		workloadModuleService.deleteBatchJobWorkload(workSpaceName, workloadName);
 		svcService.deleteService(workSpaceName, workloadName);
 	}
@@ -165,6 +171,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public void deleteInteractiveJobWorkload(String workSpaceName, String workloadName) {
 		workloadModuleService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 		svcService.deleteService(workSpaceName, workloadName);
+	}
+
+	@Override
+	public void deleteDistributedWorkload(String workspaceName, String workloadName) {
+		workloadModuleService.deleteDistributedWorkload(workspaceName, workloadName);
 	}
 
 	@Override

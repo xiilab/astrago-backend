@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
@@ -18,6 +19,9 @@ public interface WorkloadHistoryService {
 
 	List<ModuleInteractiveJobResDTO> getInteractiveWorkloadHistoryList(String workspaceName, String searchName,
 		Boolean isCreatedByMe, String userId);
+
+	List<ModuleDistributedJobResDTO> getDistributedWorkloadHistoryList(String workspaceName, String searchName,
+		Boolean isCreatedByMe, String id);
 
 	ModuleWorkloadResDTO getWorkloadHistoryById(long id);
 
@@ -37,4 +41,5 @@ public interface WorkloadHistoryService {
 	void deleteWorkload(String workspaceName);
 
 	List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName, WorkloadStatus workloadStatus);
+
 }

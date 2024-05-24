@@ -2,7 +2,6 @@ package com.xiilab.servercore.workload.service;
 
 import static com.xiilab.modulecommon.enums.WorkloadType.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,9 +33,9 @@ import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
-import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
@@ -55,7 +54,6 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
-import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -152,6 +150,43 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				.memRequest(String.valueOf(job.getMemRequest()))
 				.gpuRequest(String.valueOf(job.getGpuRequest()))
 				.ide(job.getIde())
+				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
+				.build())
+			.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ModuleDistributedJobResDTO> getDistributedWorkloadHistoryList(String workspaceName, String searchName,
+		Boolean isCreatedByMe, String userId) {
+		List<JobEntity> batchJobEntityList = null;
+		if (ValidUtils.isNullOrFalse(isCreatedByMe)) {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, StringUtils.hasText(workspaceName) ? null : userId, DISTRIBUTED);
+		} else {
+			batchJobEntityList = workloadHistoryRepoCustom.findBatchWorkloadHistoryByCondition(
+				workspaceName, searchName, userId, DISTRIBUTED);
+		}
+
+		return batchJobEntityList.stream().map(job -> ModuleDistributedJobResDTO.builder()
+				.uid(String.valueOf(job.getId()))
+				.name(job.getName())
+				.resourceName(job.getResourceName())
+				.description(job.getDescription())
+				.status(job.getWorkloadStatus())
+				.workspaceName(job.getWorkspaceName())
+				.workspaceResourceName(job.getWorkspaceResourceName())
+				.type(BATCH)
+				.creatorId(job.getCreatorId())
+				.creatorUserName(job.getCreatorName())
+				.creatorFullName(job.getCreatorRealName())
+				.createdAt(job.getCreatedAt())
+				.deletedAt(job.getDeletedAt())
+				.age(new AgeDTO(job.getCreatedAt()))
+				.command(job.getWorkloadCMD())
+				.cpuRequest(String.valueOf(job.getCpuRequest()))
+				.memRequest(String.valueOf(job.getMemRequest()))
+				.gpuRequest(String.valueOf(job.getGpuRequest()))
+				.remainTime(0)
 				.imageType(!ObjectUtils.isEmpty(job.getImage()) ? job.getImage().getImageType().name() : null)
 				.build())
 			.collect(Collectors.toList());
