@@ -16,6 +16,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 
+import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.KubernetesResource;
 import lombok.AllArgsConstructor;
@@ -94,6 +95,9 @@ public class K8SResourceMetadataDTO {
 			} else if (object instanceof org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.initcontainers.Ports portInstance) {
 				this.name = portInstance.getName();
 				this.port = portInstance.getContainerPort();
+			} else if (object instanceof ContainerPort containerPort){
+				this.name = containerPort.getName();
+				this.port = containerPort.getContainerPort();
 			}
 		}
 	}

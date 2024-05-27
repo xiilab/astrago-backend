@@ -17,9 +17,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
+import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.util.CompressUtils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
