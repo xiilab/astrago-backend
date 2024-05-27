@@ -17,4 +17,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     // zip 라이브러리
     implementation 'org.apache.commons:commons-compress:1.26.1'
+    // tus 프로토콜
+    implementation "me.desair.tus:tus-java-server:1.0.0-3.0"
+
 }
