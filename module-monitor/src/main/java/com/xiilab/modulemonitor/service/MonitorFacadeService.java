@@ -414,25 +414,27 @@ public class MonitorFacadeService {
 	}
 
 	public List<ResponseDTO.HistoryDTO> getMultiCPUUtilization(RequestDTO requestDTO) {
-		Long cpuCore = k8sMonitorService.getCpuCore(requestDTO.nodeName());
 		List<ResponseDTO.HistoryDTO> historyMetric = prometheusService.getHistoryMetric(requestDTO);
 
 		// Process the list to divide each value by 3
 		return historyMetric.stream()
-			.map(historyDTO -> new ResponseDTO.HistoryDTO(
-				historyDTO.metricName(),
-				historyDTO.nameSpace(),
-				historyDTO.internalIp(),
-				historyDTO.nodeName(),
-				historyDTO.podName(),
-				historyDTO.kubeNodeName(),
-				historyDTO.modelName(),
-				historyDTO.gpuIndex(),
-				historyDTO.instance(),
-				historyDTO.prettyName(),
-				historyDTO.valueDTOS().stream()
-					.map(valueDTO -> new ResponseDTO.ValueDTO(valueDTO.dateTime(), String.valueOf(Long.parseLong(valueDTO.value()) / cpuCore)))
-					.collect(Collectors.toList())))
-			.collect(Collectors.toList());
+			.map(historyDTO -> {
+				Long cpuCore = k8sMonitorService.getCpuCore(historyDTO.nodeName());
+				return new ResponseDTO.HistoryDTO(
+					historyDTO.metricName(),
+					historyDTO.nameSpace(),
+					historyDTO.internalIp(),
+					historyDTO.nodeName(),
+					historyDTO.podName(),
+					historyDTO.kubeNodeName(),
+					historyDTO.modelName(),
+					historyDTO.gpuIndex(),
+					historyDTO.instance(),
+					historyDTO.prettyName(),
+					historyDTO.valueDTOS().stream()
+						.map(valueDTO -> new ResponseDTO.ValueDTO(valueDTO.dateTime(), String.valueOf(Long.parseLong(valueDTO.value()) / cpuCore)))
+						.toList());
+			})
+			.toList();
 	}
 }
