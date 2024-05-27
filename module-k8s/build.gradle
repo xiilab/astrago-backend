@@ -16,7 +16,7 @@ dependencies {
     implementation group: 'io.fabric8', name: 'openshift-server-mock', version: '5.12.4'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
     // K8S CRD
-    implementation 'io.fabric8:kubernetes-httpclient-vertx:6.9.2'
+//    implementation 'io.fabric8:kubernetes-httpclient-vertx:6.9.2'
     implementation 'io.fabric8:generator-annotations:6.9.2'
 
 }
