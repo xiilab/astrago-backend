@@ -1,6 +1,5 @@
-package com.xiilab.servercore.config;
+package com.xiilab.modulecommon.config;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;

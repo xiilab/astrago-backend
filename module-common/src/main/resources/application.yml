@@ -10,3 +10,7 @@ spring:
           auth: true
           starttls:
             enable: true
+
+tus:
+  upload-path: /root/astrago/tus/meta
+  expire-period: 43200000 # 12시간
