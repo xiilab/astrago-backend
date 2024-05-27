@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulemonitor.dto.ClusterObjectDTO;
+import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.ClusterObject;
 import com.xiilab.modulemonitor.enumeration.Promql;
@@ -410,5 +411,28 @@ public class MonitorFacadeService {
 			case CONTAINER_IMAGE_RESTART ->
 				k8sMonitorService.getContainerImageRestart();
 		};
+	}
+
+	public List<ResponseDTO.HistoryDTO> getMultiCPUUtilization(RequestDTO requestDTO) {
+		Long cpuCore = k8sMonitorService.getCpuCore(requestDTO.nodeName());
+		List<ResponseDTO.HistoryDTO> historyMetric = prometheusService.getHistoryMetric(requestDTO);
+
+		// Process the list to divide each value by 3
+		return historyMetric.stream()
+			.map(historyDTO -> new ResponseDTO.HistoryDTO(
+				historyDTO.metricName(),
+				historyDTO.nameSpace(),
+				historyDTO.internalIp(),
+				historyDTO.nodeName(),
+				historyDTO.podName(),
+				historyDTO.kubeNodeName(),
+				historyDTO.modelName(),
+				historyDTO.gpuIndex(),
+				historyDTO.instance(),
+				historyDTO.prettyName(),
+				historyDTO.valueDTOS().stream()
+					.map(valueDTO -> new ResponseDTO.ValueDTO(valueDTO.dateTime(), String.valueOf(Long.parseLong(valueDTO.value()) / cpuCore)))
+					.collect(Collectors.toList())))
+			.collect(Collectors.toList());
 	}
 }
