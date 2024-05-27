@@ -172,6 +172,7 @@ public class DatasetServiceImpl implements DatasetService {
 		datasetRepository.findById(datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		Path targetPath = Path.of(filePath);
+
 		// 파일이 존재하는지 확인
 		if (Files.exists(targetPath)) {
 			if (Files.isDirectory(targetPath)) {
