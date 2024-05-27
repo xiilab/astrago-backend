@@ -198,5 +198,23 @@ public class MonitorController {
 		return new ResponseEntity<>(monitorService.getClusterObjectByObject(object), HttpStatus.OK);
 	}
 
-
+	@GetMapping("/multi-cpu-utilization")
+	@Operation(summary = "Get Prometheus History Metric")
+	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getMultiCPUUtilization(
+		@RequestParam(name = "metricName") String metricName,
+		@RequestParam(name = "startDate", required = false) String startDate,
+		@RequestParam(name = "endDate", required = false) String endDate,
+		@RequestParam(name = "namespace", required = false) String namespace,
+		@RequestParam(name = "podName", required = false) String podName,
+		@RequestParam(name = "nodeName", required = false) String nodeName) {
+		RequestDTO requestDTO = RequestDTO.builder()
+			.metricName(metricName)
+			.startDate(startDate)
+			.endDate(endDate)
+			.namespace(namespace)
+			.podName(podName)
+			.nodeName(nodeName)
+			.build();
+		return new ResponseEntity<>(monitorService.getMultiCPUUtilization(requestDTO), HttpStatus.OK);
+	}
 }
