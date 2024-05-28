@@ -432,7 +432,8 @@ public class MonitorFacadeService {
 					historyDTO.instance(),
 					historyDTO.prettyName(),
 					historyDTO.valueDTOS().stream()
-						.map(valueDTO -> new ResponseDTO.ValueDTO(valueDTO.dateTime(), String.valueOf(Long.parseLong(valueDTO.value()) / cpuCore)))
+						.map(valueDTO ->
+							new ResponseDTO.ValueDTO(valueDTO.dateTime(), String.valueOf(Double.parseDouble(valueDTO.value()) / cpuCore)))
 						.toList());
 			})
 			.toList();
