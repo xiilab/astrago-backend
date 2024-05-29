@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
-import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
 @Repository
@@ -34,7 +33,9 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 	void updateWorkloadStatusByResourceName(@NonNull WorkloadStatus workloadStatus, String resourceName);
 
 	@Query("select t from TB_WORKLOAD t where t.workspaceResourceName = :workspaceResourceName and t.workloadStatus = :workloadStatus")
-	List<JobEntity> getWorkloadByResourceNameAndStatus(@Param("workspaceResourceName") String workspaceResourceName, @Param("workloadStatus") WorkloadStatus workloadStatus);
+	List<WorkloadEntity> getWorkloadByResourceNameAndStatus(
+		@Param("workspaceResourceName") String workspaceResourceName,
+		@Param("workloadStatus") WorkloadStatus workloadStatus);
 
 	@Transactional
 	@Modifying

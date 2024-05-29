@@ -49,7 +49,6 @@ import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
-import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
@@ -366,7 +365,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(
 			workspaceResourceName);
 		//종료된 워크로드 개수 추가
-		List<JobEntity> endStatusWorkloads = workloadHistoryService.getWorkloadByResourceNameAndStatus(
+		List<WorkloadEntity> endStatusWorkloads = workloadHistoryService.getWorkloadByResourceNameAndStatus(
 			workspaceResourceName, WorkloadStatus.END);
 		workspaceInfoByName.addEndStatusWorkloadCnt(endStatusWorkloads.size());
 		return workspaceInfoByName;
