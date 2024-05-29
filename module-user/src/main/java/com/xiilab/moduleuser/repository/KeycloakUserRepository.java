@@ -14,9 +14,12 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
+import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.moduleuser.common.KeycloakConfig;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.SearchDTO;
@@ -39,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KeycloakUserRepository implements UserRepository {
 	private final KeycloakConfig keycloakConfig;
+	private final MailService mailService;
 	private final String KEY_APPROVAL_YN = "approvalYN";
 	@Value("${admin.init-password}")
 	private String initPassword;
@@ -274,13 +278,27 @@ public class KeycloakUserRepository implements UserRepository {
 			UserRepresentation representation = userResource.toRepresentation();
 			representation.setEnabled(activationYN);
 			userResource.update(representation);
+			MailDTO mailDTO = MailServiceUtils.approvalUserMail(
+				representation.getLastName() + representation.getFirstName(),
+				representation.getEmail());
+			mailService.sendMail(mailDTO);
 		});
 	}
 
 	@Override
 	public void deleteUserById(List<String> userIdList) {
-		userIdList.forEach(user -> {
+		userIdList.forEach(user ->
+			getUserResourceById(user).remove()
+		);
+	}
+	@Override
+	public void refuseUserById(List<String> userIdList) {
+		userIdList.forEach(user ->{
+			UserDTO.UserInfo userInfo = getUserById(user);
 			getUserResourceById(user).remove();
+			MailDTO mailDTO = MailServiceUtils.refuseUserMail(
+				userInfo.getUserFullName(),userInfo.getEmail());
+			mailService.sendMail(mailDTO);
 		});
 	}
 

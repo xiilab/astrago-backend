@@ -26,12 +26,11 @@ import org.springframework.util.StringUtils;
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AlertManagerEvent;
-import com.xiilab.modulecommon.dto.MailDTO;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerDTO;
 import com.xiilab.modulek8sdb.alert.alertmanager.dto.AlertManagerReceiveDTO;
@@ -209,7 +208,6 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 							AlertMessage nodeError = AlertMessage.NODE_ERROR;
 							String mailTitle = nodeError.getMailTitle();
 							String title = nodeError.getTitle();
-							MailAttribute mail = MailAttribute.NODE_ERROR;
 							for (AlertManagerReceiveDTO.ReceiveDTO alertManagerReceiveDTO : alertReceive.getValue()) {
 								if (!StringUtils.hasText(alertManagerReceiveDTO.getNodeName())) {
 									continue;
@@ -224,18 +222,15 @@ public class AlertManagerServiceImpl implements AlertManagerService {
 								if (findAlertManagerDTO.isSystemYN()) {
 									// 노드 장애 알림 발송
 									eventPublisher.publishEvent(
-										new AlertManagerEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title, message,
+										new AlertManagerEvent(AlertName.ADMIN_NODE_ERROR, null, mailTitle, title,
+											message,
 											pageNaviParam));
 								}
 								if (findAlertManagerDTO.isEmailYN()) {
 									List<AlertManagerDTO.UserDTO> userDTOList = findAlertManagerDTO.getUserDTOList();
 									for (AlertManagerDTO.UserDTO user : userDTOList) {
-										mailService.sendMail(MailDTO.builder()
-											.subject(mail.getSubject())
-											.title(String.format(mail.getTitle(), alertManagerReceiveDTO.getNodeName()))
-											.footer(mail.getFooter())
-											.receiverEmail(user.getEmail())
-											.build());
+										MailServiceUtils.nodeErrorMail(alertManagerReceiveDTO.getNodeName(),
+											user.getEmail());
 									}
 								}
 							}

@@ -1,7 +1,5 @@
 package com.xiilab.servercore.license.service;
 
-import java.util.List;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +10,10 @@ import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LicenseErrorCode;
 import com.xiilab.modulecommon.service.MailService;
-import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.servercore.license.dto.LicenseDTO;
 import com.xiilab.servercore.license.entity.LicenseEntity;
@@ -61,15 +58,11 @@ public class LicenseServiceImpl implements LicenseService {
 			String mailTitle = licenseExpiration.getMailTitle();
 			String title = licenseExpiration.getTitle();
 			String message = String.format(licenseExpiration.getMessage(), licenseDTO.getEndDate());
-			MailAttribute mail = MailAttribute.LICENSE;
-			List<UserDTO.UserInfo> adminList = userService.getAdminList();
-			MailDTO mailDTO = MailDTO.builder()
-				.subject(mail.getSubject())
-				.title(String.format(mail.getTitle(), licenseDTO.getEndDate()))
-				.footer(mail.getFooter())
-				.build();
+
+			MailDTO mailDTO = MailServiceUtils.licenseMail(licenseDTO.getEndDate());
 			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null, mailDTO));			throw e;
+				new AdminAlertEvent(AlertName.ADMIN_LICENSE_EXPIRATION, null, mailTitle, title, message, null, mailDTO));
+			throw e;
 		}
 	}
 

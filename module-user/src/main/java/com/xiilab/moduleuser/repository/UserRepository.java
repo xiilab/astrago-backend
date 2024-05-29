@@ -29,6 +29,8 @@ public interface UserRepository {
 
 	void deleteUserById(List<String> userIdList);
 
+	void refuseUserById(List<String> userIdList);
+
 	void updateUserRole(String userId, AuthType authType);
 
 	void joinGroup(String groupId, String userId);
@@ -45,7 +47,8 @@ public interface UserRepository {
 
 	UserDTO.UserInfo getUserById(String id);
 
-	UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize, UserSearchCondition searchCondition);
+	UserDTO.PageUsersDTO getWaitingApprovalUserList(Integer pageNo, Integer pageSize,
+		UserSearchCondition searchCondition);
 
 	List<UserDTO.UserInfo> getAdminList();
 
