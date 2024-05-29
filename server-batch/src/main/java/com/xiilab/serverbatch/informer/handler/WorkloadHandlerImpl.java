@@ -278,6 +278,11 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								saveWorkloadLogFile(wl);
 							}
 						});
+					//job이 완료될 경우 mpiJob Resource 삭제
+					if (afterJobStatus == WorkloadStatus.END) {
+						workloadModuleFacadeService.deleteDistributedWorkload(afterJob.getMetadata().getNamespace(),
+							afterJob.getMetadata().getName());
+					}
 				} else if (afterJobStatus == WorkloadStatus.RUNNING) {
 					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 				}

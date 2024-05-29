@@ -113,7 +113,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public ModuleDistributedJobResDTO getDistributedJobWorkload(String workSpaceName, String workloadName) {
 		ModuleDistributedJobResDTO distributedJobResDTO = workloadRepository.getDistributedJobWorkload(workSpaceName,
 			workloadName);
-		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.INTERACTIVE, distributedJobResDTO);
+		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.DISTRIBUTED, distributedJobResDTO);
 		return distributedJobResDTO;
 	}
 
