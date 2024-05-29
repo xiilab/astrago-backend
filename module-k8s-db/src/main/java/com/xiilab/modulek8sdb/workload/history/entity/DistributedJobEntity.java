@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Entity(name = "TB_DISTRIBUTED_WORKLOAD_JOB")
+@Entity(name = "TB_WORKLOAD_DISTRIBUTED_JOB")
 @SuperBuilder
 @NoArgsConstructor
 @Getter
