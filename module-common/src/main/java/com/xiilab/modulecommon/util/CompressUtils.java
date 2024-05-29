@@ -165,7 +165,7 @@ public class CompressUtils {
 
 				File targetFile = targetPath.toFile();
 				if (ValidUtils.isCheckExtensionForMac(targetFile.getName())) {
-					return ;
+					return;
 				}
 
 				if (targetFile.isDirectory()) {
@@ -183,14 +183,14 @@ public class CompressUtils {
 	 * 폴더 및 폴더의 하위항목 내용을 zipOutputStream에 추가
 	 *
 	 * @param targetFolderPath 압축할 폴더의 경로
-	 * @param entryName        압축 파일 내에서 저장될 이름
+	 * @param parentEntryName        압축 파일 내에서 저장될 이름
 	 * @param os            출력 스트림
 	 */
-	private static <T extends ArchiveOutputStream<?>> void addFolder(Path targetFolderPath, String entryName,
+	private static <T extends ArchiveOutputStream<?>> void addFolder(Path targetFolderPath, String parentEntryName,
 		T os) {
 		File folder = targetFolderPath.toFile();
 
-		entryName = entryName + folder.getName() + File.separator;
+		String entryName = parentEntryName + folder.getName() + File.separator;
 		putArchiveEntry(entryName, targetFolderPath.toFile().length(), os);
 
 		for (File file : folder.listFiles()) {
@@ -206,15 +206,15 @@ public class CompressUtils {
 	 * 파일을 zipOutputStream에 추가
 	 *
 	 * @param targetFilePath 압축할 파일의 경로
-	 * @param entryFolderPath 파일이 압축 파일 내에서 저장될 상위폴더명
+	 * @param parentEntryName 파일이 압축 파일 내에서 저장될 상위폴더명
 	 * @param os    출력 스트림
 	 */
-	private static <T extends ArchiveOutputStream<?>> void addFile(Path targetFilePath, String entryFolderPath, T os) {
+	private static <T extends ArchiveOutputStream<?>> void addFile(Path targetFilePath, String parentEntryName, T os) {
 		File targetFile = targetFilePath.toFile();
 
 		long fileSize = targetFilePath.toFile().length();
 		try (InputStream is = new BufferedInputStream(new FileInputStream(targetFile))) {
-			String entryName = entryFolderPath + targetFile.getName();
+			String entryName = parentEntryName + targetFile.getName();
 			putArchiveEntry(entryName, fileSize, os);
 
 			IOUtils.copy(is, os);
