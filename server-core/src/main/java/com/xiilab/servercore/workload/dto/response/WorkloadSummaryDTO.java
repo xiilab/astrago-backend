@@ -55,7 +55,7 @@ public class WorkloadSummaryDTO {
 		this.type = workload.getWorkloadType();
 		this.createdAt = workload.getCreatedAt();
 		this.status = workload.getWorkloadStatus();
-		this.age = new AgeDTO(workload.getCreatedAt());
+		this.age = workload.getCreatedAt() != null ? new AgeDTO(workload.getCreatedAt()) : null;
 		this.remainTime = workload.getRemainTime();
 		this.imageType = !ObjectUtils.isEmpty(workload.getImage()) ? workload.getImage().getImageType() : null;
 		this.canBeDeleted = workload.isCanBeDeleted();

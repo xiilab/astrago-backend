@@ -153,8 +153,10 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		if (workload == null) {
 			return null;
 		}
-		return new RecentlyWorkloadDTO(workload.getName(), workload.getWorkloadStatus(),
-			new AgeDTO(workload.getStartTime()));
+		return new RecentlyWorkloadDTO(
+			workload.getName(),
+			workload.getWorkloadStatus(),
+			workload.getStartTime() != null ? new AgeDTO(workload.getStartTime()) : null);
 	}
 
 	@Override
