@@ -13,11 +13,15 @@ import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 @SuperBuilder
 public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	protected String workspace;    // 워크스페이스명
