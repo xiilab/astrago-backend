@@ -28,6 +28,8 @@ import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.ModuleCreateDistributedWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
@@ -35,8 +37,8 @@ import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
@@ -64,7 +66,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final SecretService secretService;
 
 	@Override
-	public CreateJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+	public CreateJobResDTO createJobWorkload(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		//생성 요청한 workspace가 존재하는지 확인
 		WorkspaceDTO.ResponseDTO workspaceByName = workspaceService.getWorkspaceByName(
 			moduleCreateWorkloadReqDTO.getWorkspace());
@@ -82,13 +84,16 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			// Model PV 생성
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
 			if (workloadType == WorkloadType.BATCH) {
-				createJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO,
+				createJobResDTO = workloadModuleService.createBatchJobWorkload(
+					(ModuleCreateWorkloadReqDTO)moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
-				createJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO,
+				createJobResDTO = workloadModuleService.createInteractiveJobWorkload(
+					(ModuleCreateWorkloadReqDTO)moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			} else if (workloadType == WorkloadType.DISTRIBUTED) {
-				return workloadModuleService.createDistributedJobWorkload(moduleCreateWorkloadReqDTO,
+				return workloadModuleService.createDistributedJobWorkload(
+					(ModuleCreateDistributedWorkloadReqDTO)moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			}
 
@@ -131,7 +136,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		}
 	}
 
-	private void createAndSetImageSecret(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+	private void createAndSetImageSecret(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		ModuleCredentialReqDTO credentialReqDTO = moduleCreateWorkloadReqDTO.getImage().getCredentialReqDTO();
 		String imageSecretName = null;
 		if (credentialReqDTO != null && credentialReqDTO.credentialId() != null
@@ -179,8 +184,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
-		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
+	public List<AbstractModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
+		List<AbstractModuleWorkloadResDTO> workloadList = new ArrayList<>();
 		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchWorkloadListByCondition(
 			workSpaceName, null, null);
 		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveWorkloadListByCondition(
@@ -200,12 +205,12 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return logService.watchLogByWorkload(workspaceName, podName);
 	}
 
-	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
-		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
+	public AbstractModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
+		List<AbstractModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
 			return workloadList.stream()
 				.filter(workload -> workload.getCreatorUserName().equals(username))
-				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
+				.sorted(Comparator.comparing(AbstractModuleWorkloadResDTO::getCreatedAt).reversed())
 				.toList()
 				.get(0);
 		} catch (Exception e) {

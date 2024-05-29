@@ -32,8 +32,8 @@ import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
@@ -703,7 +703,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getAstraBatchWorkload() {
+	public List<AbstractModuleWorkloadResDTO> getAstraBatchWorkload() {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			List<Job> items = kubernetesClient.batch()
 				.v1()
@@ -716,7 +716,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getAstraInteractiveWorkload() {
+	public List<AbstractModuleWorkloadResDTO> getAstraInteractiveWorkload() {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			List<Deployment> items = kubernetesClient.apps()
 				.deployments()
@@ -768,7 +768,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public ModuleWorkloadResDTO getParentController(String pod, String namespace) {
+	public AbstractModuleWorkloadResDTO getParentController(String pod, String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			Pod podResult = kubernetesClient.pods().inNamespace(namespace).withName(pod).get();
 

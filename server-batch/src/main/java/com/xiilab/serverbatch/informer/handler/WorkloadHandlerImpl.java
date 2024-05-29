@@ -35,7 +35,6 @@ import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
-import com.xiilab.modulek8s.common.dto.K8SResourceMetadataDTO;
 import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
@@ -43,6 +42,13 @@ import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleEnvResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
@@ -68,6 +74,7 @@ import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
 import com.xiilab.modulek8sdb.storage.service.StorageService;
+import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
@@ -111,12 +118,10 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (isAstragoResource(job) && K8sInfoPicker.isBatchJobYN(job)) {
 			log.info("batch job {}가 생성되었습니다.", job.getMetadata().getName());
 			String namespace = job.getMetadata().getNamespace();
-			K8SResourceMetadataDTO metadataFromResource = getBatchWorkloadInfoFromResource(job);
+			ModuleBatchJobResDTO batchWorkloadInfoFromResource = getBatchWorkloadInfoFromResource(job);
 			// 잡 히스토리 저장
-			if (metadataFromResource != null) {
-				log.info(metadataFromResource.getCpuReq() + " " + metadataFromResource.getMemReq());
-
-				saveJobHistory(namespace, metadataFromResource);
+			if (batchWorkloadInfoFromResource != null) {
+				saveBatchWorkloadHistory(namespace, batchWorkloadInfoFromResource);
 			}
 		}
 	}
@@ -133,11 +138,11 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					// 로그 저장
 					workloadHistoryRepo.findByResourceName(afterJob.getMetadata().getName())
 						.ifPresent(wl -> {
-						if (wl.getWorkloadType() == WorkloadType.BATCH) {
-							saveWorkloadLogFile(wl);
-						}
-					});
-				}else if(afterStatus == WorkloadStatus.RUNNING){
+							if (wl.getWorkloadType() == WorkloadType.BATCH) {
+								saveWorkloadLogFile(wl);
+							}
+						});
+				} else if (afterStatus == WorkloadStatus.RUNNING) {
 					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 				}
 
@@ -153,8 +158,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			return;
 		}
 
-		K8SResourceMetadataDTO jobMetaData = getBatchWorkloadInfoFromResource(job);
-		if (jobMetaData == null) {
+		ModuleBatchJobResDTO batchJobResDTO = getBatchWorkloadInfoFromResource(job);
+		if (batchJobResDTO == null) {
 			return;
 		}
 
@@ -166,7 +171,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.forEach(volume -> deletePvAndPVC(job.getMetadata().getNamespace(), volume.getName(),
 				volume.getPersistentVolumeClaim().getClaimName()));
 
-		deleteServices(jobMetaData.getWorkspaceResourceName(), jobMetaData.getWorkloadResourceName());
+		deleteServices(batchJobResDTO.getWorkspaceResourceName(), batchJobResDTO.getResourceName());
 	}
 
 	@Override
@@ -174,11 +179,10 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (isAstragoResource(deployment)) {
 			log.info("interactive job {}가 생성되었습니다.", deployment.getMetadata().getName());
 			String namespace = deployment.getMetadata().getNamespace();
-			K8SResourceMetadataDTO metadataFromResource = getInteractiveWorkloadInfoFromResource(deployment);
+			ModuleInteractiveJobResDTO interactiveJobResDTO = getInteractiveWorkloadInfoFromResource(deployment);
 			// 잡 히스토리 저장
-			if (metadataFromResource != null) {
-				log.info(metadataFromResource.getCpuReq() + " " + metadataFromResource.getMemReq());
-				saveJobHistory(namespace, metadataFromResource);
+			if (interactiveJobResDTO != null) {
+				saveInteractiveWorkloadHistory(namespace, interactiveJobResDTO);
 			}
 		} else if (deployment.getMetadata().getName().equals("astrago-backend-core")) {
 			List<StorageDto> storages = storageService.getStorages();
@@ -211,8 +215,9 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			return;
 		}
 
-		K8SResourceMetadataDTO jobMetaData = getInteractiveWorkloadInfoFromResource(deployment);
-		if (jobMetaData == null) {
+		ModuleInteractiveJobResDTO interactiveJobResDTO = getInteractiveWorkloadInfoFromResource(
+			deployment);
+		if (interactiveJobResDTO == null) {
 			return;
 		}
 
@@ -224,13 +229,13 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.forEach(volume -> deletePvAndPVC(deployment.getMetadata().getNamespace(), volume.getName(),
 				volume.getPersistentVolumeClaim().getClaimName()));
 
-		deleteServices(jobMetaData.getWorkspaceResourceName(), jobMetaData.getWorkloadResourceName());
+		deleteServices(interactiveJobResDTO.getWorkspaceResourceName(), interactiveJobResDTO.getResourceName());
 
-		UserDTO.UserInfo userInfo = userService.getUserById(jobMetaData.getCreatorId());
+		UserDTO.UserInfo userInfo = userService.getUserById(interactiveJobResDTO.getCreatorId());
 		if (userInfo != null) {
 			MailDTO mail = MailDTO.builder()
-				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), jobMetaData.getWorkloadName()))
-				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), jobMetaData.getWorkloadName()))
+				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), interactiveJobResDTO.getName()))
+				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), interactiveJobResDTO.getName()))
 				.subTitle(String.format(MailAttribute.WORKLOAD_DELETE.getSubTitle(),
 					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 				.footer(MailAttribute.WORKLOAD_DELETE.getFooter())
@@ -246,11 +251,10 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (isAstragoResource(mpiJob)) {
 			log.info("distributed job {}가 생성되었습니다.", mpiJob.getMetadata().getName());
 			String namespace = mpiJob.getMetadata().getNamespace();
-			K8SResourceMetadataDTO metadataFromResource = getDistirubtedWorkloadInfoFromResource(mpiJob);
+			ModuleDistributedJobResDTO distributedJobResDTO = getDistirubtedWorkloadInfoFromResource(mpiJob);
 			// 잡 히스토리 저장
-			if (metadataFromResource != null) {
-				log.info(metadataFromResource.getCpuReq() + " " + metadataFromResource.getMemReq());
-				saveJobHistory(namespace, metadataFromResource);
+			if (distributedJobResDTO != null) {
+				saveDistributedWorkloadHistory(namespace, distributedJobResDTO);
 			}
 		}
 	}
@@ -285,8 +289,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			return;
 		}
 
-		K8SResourceMetadataDTO jobMetaData = getDistirubtedWorkloadInfoFromResource(mpiJob);
-		if (jobMetaData == null) {
+		ModuleDistributedJobResDTO distributedJobResDTO = getDistirubtedWorkloadInfoFromResource(mpiJob);
+		if (distributedJobResDTO == null) {
 			return;
 		}
 
@@ -298,13 +302,12 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.getTemplate()
 			.getSpec()
 			.getVolumes();
-
-		volumes.stream()
-			.filter(volume -> volume.getPersistentVolumeClaim() != null)
-			.forEach(volume -> deletePvAndPVC(mpiJob.getMetadata().getNamespace(), volume.getName(),
-				volume.getPersistentVolumeClaim().getClaimName()));
-
-		deleteServices(jobMetaData.getWorkspaceResourceName(), jobMetaData.getWorkloadResourceName());
+		if (!CollectionUtils.isEmpty(volumes)) {
+			volumes.stream()
+				.filter(volume -> volume.getPersistentVolumeClaim() != null)
+				.forEach(volume -> deletePvAndPVC(mpiJob.getMetadata().getNamespace(), volume.getName(),
+					volume.getPersistentVolumeClaim().getClaimName()));
+		}
 	}
 
 	private boolean isStatusChanged(WorkloadStatus beforeStatus, WorkloadStatus afterStatus) {
@@ -313,7 +316,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 	private void checkJobStatusAndUpdateStatus(Job job) {
 		WorkloadStatus workloadStatus = getBatchWorkloadStatus(job.getStatus());
-		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(job.getMetadata().getName());
+		Optional<WorkloadEntity> workload = workloadHistoryRepo.findByResourceName(job.getMetadata().getName());
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(workloadStatus, job.getMetadata().getName());
 			handleNotificationsAndLog(wl, workloadStatus);
@@ -321,7 +324,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	private void updateDeleteJobStatusAndNoti(Job job) {
-		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(job.getMetadata().getName());
+		Optional<WorkloadEntity> workload = workloadHistoryRepo.findByResourceName(job.getMetadata().getName());
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END, job.getMetadata().getName());
 			handleNotificationsAndLog(wl, WorkloadStatus.END);
@@ -329,7 +332,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	private void updateDeleteJobStatusAndNoti(Deployment deployment) {
-		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(deployment.getMetadata().getName());
+		Optional<WorkloadEntity> workload = workloadHistoryRepo.findByResourceName(deployment.getMetadata().getName());
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END,
 				deployment.getMetadata().getName());
@@ -338,7 +341,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	private void updateDeleteDistributedJobStatusAndNoti(MPIJob mpiJob) {
-		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(mpiJob.getMetadata().getName());
+		Optional<WorkloadEntity> workload = workloadHistoryRepo.findByResourceName(mpiJob.getMetadata().getName());
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END, mpiJob.getMetadata().getName());
 			handleNotificationsAndLog(wl, WorkloadStatus.END);
@@ -347,7 +350,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 	private void checkJobStatusAndUpdateStatus(Deployment deployment) {
 		WorkloadStatus workloadStatus = getInteractiveWorkloadStatus(deployment.getStatus());
-		Optional<JobEntity> workload = workloadHistoryRepo.findByResourceName(deployment.getMetadata().getName());
+		Optional<WorkloadEntity> workload = workloadHistoryRepo.findByResourceName(deployment.getMetadata().getName());
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(workloadStatus, deployment.getMetadata().getName());
 			handleNotificationsAndLog(wl, workloadStatus);
@@ -356,7 +359,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 	private void checkJobStatusAndUpdateStatus(MPIJob mpiJob) {
 		WorkloadStatus workloadStatus = getDistributedWorkloadStatus(mpiJob.getStatus());
-		Optional<JobEntity> job = workloadHistoryRepo.findByResourceName(mpiJob.getMetadata().getName());
+		Optional<WorkloadEntity> job = workloadHistoryRepo.findByResourceName(mpiJob.getMetadata().getName());
 		job.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(workloadStatus, mpiJob.getMetadata().getName());
 			handleNotificationsAndLog(wl, workloadStatus);
@@ -481,67 +484,160 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
-	private void saveJobHistory(String namespace, K8SResourceMetadataDTO metadataFromResource) {
+	private void saveInteractiveWorkloadHistory(String namespace, ModuleInteractiveJobResDTO interactiveJobResDTO) {
 		//이미 저장된 워크로드 일 경우 조기 리턴
-		if (workloadHistoryRepo.findByResourceName(metadataFromResource.getWorkloadResourceName()).isPresent()) {
+		if (workloadHistoryRepo.findByResourceName(interactiveJobResDTO.getResourceName()).isPresent()) {
 			return;
 		}
 		JobEntity jobEntity = JobEntity.jobBuilder()
-			.uid(metadataFromResource.getUid())
-			.name(metadataFromResource.getWorkloadName())
-			.description(metadataFromResource.getDescription())
-			.resourceName(metadataFromResource.getWorkloadResourceName())
-			.workspaceName(metadataFromResource.getWorkspaceName())
+			.uid(interactiveJobResDTO.getUid())
+			.name(interactiveJobResDTO.getName())
+			.description(interactiveJobResDTO.getDescription())
+			.resourceName(interactiveJobResDTO.getResourceName())
+			.workspaceName(interactiveJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(metadataFromResource.getEnvs().stream().collect(Collectors.toMap(
-				K8SResourceMetadataDTO.Env::getName,
-				K8SResourceMetadataDTO.Env::getValue)))
-			.ports(metadataFromResource.getPorts().stream().collect(Collectors.toMap(
-				K8SResourceMetadataDTO.Port::getName,
-				K8SResourceMetadataDTO.Port::getPort
+			.envs(interactiveJobResDTO.getEnvs().stream().collect(Collectors.toMap(
+				ModuleEnvResDTO::getName,
+				ModuleEnvResDTO::getValue)))
+			.ports(interactiveJobResDTO.getPorts().stream().collect(Collectors.toMap(
+				ModulePortResDTO::getName,
+				ModulePortResDTO::getOriginPort
 			)))
-			.cpuReq(metadataFromResource.getCpuReq())
-			.memReq(metadataFromResource.getMemReq())
-			.gpuReq(metadataFromResource.getGpuReq())
-			.workloadCmd(metadataFromResource.getCommand())
-			.workingDir(metadataFromResource.getWorkingDir())
-			.createdAt(metadataFromResource.getCreatedAt())
-			.deletedAt(metadataFromResource.getDeletedAt())
-			.creatorName(metadataFromResource.getCreatorUserName())
-			.creatorId(metadataFromResource.getCreatorId())
-			.creatorRealName(metadataFromResource.getCreatorFullName())
-			.workloadType(metadataFromResource.getWorkloadType())
-			.workspaceName(metadataFromResource.getWorkspaceName())
+			.cpuReq(interactiveJobResDTO.getCpuRequest())
+			.memReq(interactiveJobResDTO.getMemRequest())
+			.gpuReq(interactiveJobResDTO.getGpuRequest())
+			.workloadCmd(interactiveJobResDTO.getCommand())
+			.workingDir(interactiveJobResDTO.getWorkingDir())
+			.createdAt(interactiveJobResDTO.getCreatedAt())
+			.deletedAt(interactiveJobResDTO.getDeletedAt())
+			.creatorName(interactiveJobResDTO.getCreatorUserName())
+			.creatorId(interactiveJobResDTO.getCreatorId())
+			.creatorRealName(interactiveJobResDTO.getCreatorFullName())
+			.workloadType(interactiveJobResDTO.getType())
+			.workspaceName(interactiveJobResDTO.getWorkspaceName())
 			.deleteYN(DeleteYN.N)
-			.ide(metadataFromResource.getIde())
-			.parameter(metadataFromResource.getParameter())
+			.ide(interactiveJobResDTO.getIde())
+			.parameter(interactiveJobResDTO.getParameter())
 			.workloadStatus(WorkloadStatus.PENDING)
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
 
+		saveMappings(interactiveJobResDTO, jobEntity);
+	}
+
+	private void saveBatchWorkloadHistory(String namespace, ModuleBatchJobResDTO batchJobResDTO) {
+		//이미 저장된 워크로드 일 경우 조기 리턴
+		if (workloadHistoryRepo.findByResourceName(batchJobResDTO.getResourceName()).isPresent()) {
+			return;
+		}
+
+		JobEntity jobEntity = JobEntity.jobBuilder()
+			.uid(batchJobResDTO.getUid())
+			.name(batchJobResDTO.getName())
+			.description(batchJobResDTO.getDescription())
+			.resourceName(batchJobResDTO.getResourceName())
+			.workspaceName(batchJobResDTO.getWorkspaceName())
+			.workspaceResourceName(namespace)
+			.envs(batchJobResDTO.getEnvs().stream().collect(Collectors.toMap(
+				ModuleEnvResDTO::getName,
+				ModuleEnvResDTO::getValue)))
+			.ports(batchJobResDTO.getPorts().stream().collect(Collectors.toMap(
+				ModulePortResDTO::getName,
+				ModulePortResDTO::getOriginPort
+			)))
+			.cpuReq(batchJobResDTO.getCpuRequest())
+			.memReq(batchJobResDTO.getMemRequest())
+			.gpuReq(batchJobResDTO.getGpuRequest())
+			.workloadCmd(batchJobResDTO.getCommand())
+			.workingDir(batchJobResDTO.getWorkingDir())
+			.createdAt(batchJobResDTO.getCreatedAt())
+			.deletedAt(batchJobResDTO.getDeletedAt())
+			.creatorName(batchJobResDTO.getCreatorUserName())
+			.creatorId(batchJobResDTO.getCreatorId())
+			.creatorRealName(batchJobResDTO.getCreatorFullName())
+			.workloadType(batchJobResDTO.getType())
+			.workspaceName(batchJobResDTO.getWorkspaceName())
+			.deleteYN(DeleteYN.N)
+			.ide(batchJobResDTO.getIde())
+			.parameter(batchJobResDTO.getParameter())
+			.workloadStatus(WorkloadStatus.PENDING)
+			.build();
+
+		workloadHistoryRepo.save(jobEntity);
+
+		saveMappings(batchJobResDTO, jobEntity);
+	}
+
+	private void saveDistributedWorkloadHistory(String namespace, ModuleDistributedJobResDTO distributedJobResDTO) {
+		//이미 저장된 워크로드 일 경우 조기 리턴
+		if (workloadHistoryRepo.findByResourceName(distributedJobResDTO.getResourceName()).isPresent()) {
+			return;
+		}
+
+		DistributedJobEntity distributedJob = DistributedJobEntity.jobBuilder()
+			.uid(distributedJobResDTO.getUid())
+			.name(distributedJobResDTO.getName())
+			.description(distributedJobResDTO.getDescription())
+			.resourceName(distributedJobResDTO.getResourceName())
+			.workspaceName(distributedJobResDTO.getWorkspaceName())
+			.workspaceResourceName(namespace)
+			.envs(distributedJobResDTO.getEnvs().stream().collect(Collectors.toMap(
+				ModuleEnvResDTO::getName,
+				ModuleEnvResDTO::getValue)))
+			.ports(distributedJobResDTO.getPorts().stream().collect(Collectors.toMap(
+				ModulePortResDTO::getName,
+				ModulePortResDTO::getOriginPort
+			)))
+			.launcherCpuRequest(distributedJobResDTO.getLauncherInfo().getCpuRequest())
+			.launcherMemRequest(distributedJobResDTO.getLauncherInfo().getMemRequest())
+			.workerCpuRequest(distributedJobResDTO.getWorkerInfo().getCpuRequest())
+			.workerMemRequest(distributedJobResDTO.getWorkerInfo().getMemRequest())
+			.workerGpuRequest(distributedJobResDTO.getWorkerInfo().getGpuRequest())
+			.workerCount(distributedJobResDTO.getWorkerInfo().getWorkerCnt())
+			.workloadCmd(distributedJobResDTO.getCommand())
+			.workingDir(distributedJobResDTO.getWorkingDir())
+			.createdAt(distributedJobResDTO.getCreatedAt())
+			.deletedAt(distributedJobResDTO.getDeletedAt())
+			.creatorName(distributedJobResDTO.getCreatorUserName())
+			.creatorId(distributedJobResDTO.getCreatorId())
+			.creatorRealName(distributedJobResDTO.getCreatorFullName())
+			.workloadType(distributedJobResDTO.getType())
+			.workspaceName(distributedJobResDTO.getWorkspaceName())
+			.deleteYN(DeleteYN.N)
+			.ide(distributedJobResDTO.getIde())
+			.parameter(distributedJobResDTO.getParameter())
+			.workloadStatus(WorkloadStatus.PENDING)
+			.build();
+
+		workloadHistoryRepo.save(distributedJob);
+
+		saveMappings(distributedJobResDTO, distributedJob);
+	}
+
+	private void saveMappings(AbstractModuleWorkloadResDTO jobResDTO, WorkloadEntity workload) {
 		// dataset, model mapping insert
-		String datasetIds = metadataFromResource.getDatasetIds();
-		saveDataMapping(getSplitIds(datasetIds), datasetRepository::findById, jobEntity, EntityMappingType.DATASET,
-			metadataFromResource.getDatasetMountPathMap(), null);
+		String datasetIds = jobResDTO.getDatasetIds();
+		saveDataMapping(getSplitIds(datasetIds), datasetRepository::findById, workload, EntityMappingType.DATASET,
+			jobResDTO.getDatasetMountPathMap(), null);
 
 		// 모델 mapping insert
-		String modelIds = metadataFromResource.getModelIds();
-		saveDataMapping(getSplitIds(modelIds), modelRepository::findById, jobEntity, EntityMappingType.MODEL,
-			metadataFromResource.getModelMountPathMap(), null);
+		String modelIds = jobResDTO.getModelIds();
+		saveDataMapping(getSplitIds(modelIds), modelRepository::findById, workload, EntityMappingType.MODEL,
+			jobResDTO.getModelMountPathMap(), null);
 
-		RegUser regUser = new RegUser(metadataFromResource.getCreatorId(), metadataFromResource.getCreatorUserName(),
-			metadataFromResource.getCreatorFullName());
+		RegUser regUser = new RegUser(jobResDTO.getCreatorId(), jobResDTO.getCreatorUserName(),
+			jobResDTO.getCreatorFullName());
 
 		// 커스텀 소스코드 등록 후 코드 mapping insert
-		String codeIds = saveCustomCode(regUser, namespace, metadataFromResource.getCodeIds(),
-			metadataFromResource.getCodes());
-		saveDataMapping(getSplitIds(codeIds), codeRepository::findById, jobEntity, EntityMappingType.CODE,
-			null, metadataFromResource.getCodeMountPathMap());
+		String codeIds = saveCustomCode(regUser, jobResDTO.getWorkspaceResourceName(), jobResDTO.getCodeIds(),
+			jobResDTO.getCodes());
+		saveDataMapping(getSplitIds(codeIds), codeRepository::findById, workload, EntityMappingType.CODE,
+			null, jobResDTO.getCodeMountPathMap());
 
 		// 커스텀 이미지 등록 후 이미지 mapping insert
-		Long imageId = saveCustomImage(regUser, metadataFromResource);
-		saveDataMapping(getSplitIds(String.valueOf(imageId)), imageRepository::findById, jobEntity,
+		Long imageId = saveCustomImage(regUser, jobResDTO);
+		saveDataMapping(getSplitIds(String.valueOf(imageId)), imageRepository::findById, workload,
 			EntityMappingType.IMAGE, null, null);
 	}
 
@@ -564,10 +660,10 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 	// 커스텀 소스코드 DB에 등록 후 ID 추가해서 반환
 	private String saveCustomCode(RegUser regUser, String namespace, String codeIds,
-		List<K8SResourceMetadataDTO.Code> codes) {
+		List<ModuleCodeResDTO> codes) {
 		StringBuilder result = StringUtils.hasText(codeIds) ? new StringBuilder(codeIds) : new StringBuilder();
 		if (!CollectionUtils.isEmpty(codes)) {
-			for (K8SResourceMetadataDTO.Code code : codes) {
+			for (ModuleCodeResDTO code : codes) {
 				// 커스텀 소스코드일 경우
 				if (ValidUtils.isNullOrZero(code.getSourceCodeId())
 					&& code.getRepositoryType() == RepositoryType.CUSTOM) {
@@ -595,23 +691,23 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		return result.toString();
 	}
 
-	private Long saveCustomImage(RegUser regUser, K8SResourceMetadataDTO metadataFromResource) {
-		Long id = metadataFromResource.getImageId();
-		if (ValidUtils.isNullOrZero(metadataFromResource.getImageId()) &&
-			metadataFromResource.getImageType() == ImageType.CUSTOM) {
+	private Long saveCustomImage(RegUser regUser, AbstractModuleWorkloadResDTO workloadResDTO) {
+		Long id = workloadResDTO.getImageId();
+		if (ValidUtils.isNullOrZero(workloadResDTO.getImageId()) &&
+			workloadResDTO.getImageType() == ImageType.CUSTOM) {
 
 			Optional<CredentialEntity> findCredential = Optional.empty();
-			if (!ObjectUtils.isEmpty(metadataFromResource.getImageCredentialId())
-				&& metadataFromResource.getImageCredentialId() > 0) {
+			if (!ObjectUtils.isEmpty(workloadResDTO.getImageCredentialId())
+				&& workloadResDTO.getImageCredentialId() > 0) {
 				// 이미지 크레덴셜 조회
-				findCredential = findCredentialById(metadataFromResource.getImageCredentialId());
+				findCredential = findCredentialById(workloadResDTO.getImageCredentialId());
 			}
 
 			CustomImageEntity customImageEntity = CustomImageEntity.informerBuilder()
 				.regUser(regUser)
-				.imageName(metadataFromResource.getImageName())
-				.imageType(metadataFromResource.getImageType())
-				.workloadType(metadataFromResource.getWorkloadType())
+				.imageName(workloadResDTO.getImage())
+				.imageType(workloadResDTO.getImageType())
+				.workloadType(workloadResDTO.getType())
 				.repositoryAuthType(findCredential.isPresent() ? RepositoryAuthType.PRIVATE : RepositoryAuthType.PUBLIC)
 				.credentialEntity(findCredential.orElseGet(() -> null))
 				.build();
@@ -631,7 +727,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		return findCredential;
 	}
 
-	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, JobEntity jobEntity,
+	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, WorkloadEntity jobEntity,
 		EntityMappingType type, Map<Long, String> mdAnddsMountPathMap, Map<String, Map<String, String>> codeInfoMap) {
 		if (ids != null) {
 			for (String id : ids) {

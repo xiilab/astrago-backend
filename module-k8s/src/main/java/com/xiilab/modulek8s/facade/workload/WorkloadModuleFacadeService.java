@@ -11,13 +11,13 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
-import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
@@ -28,8 +28,7 @@ public interface WorkloadModuleFacadeService {
 	 * @param moduleCreateWorkloadReqDTO
 	 * @return
 	 */
-	CreateJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
-
+	CreateJobResDTO createJobWorkload(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 	/**
 	 * 배치 워크로드 조회
 	 * @param workSpaceName
@@ -54,9 +53,9 @@ public interface WorkloadModuleFacadeService {
 
 	void deleteDistributedWorkload(String workspaceName, String workloadName);
 
-	List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
+	List<AbstractModuleWorkloadResDTO> getWorkloadList(String workSpaceName);
 
-	ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username);
+	AbstractModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username);
 
 	LogWatch watchLogByWorkload(String workspaceId, String workloadId);
 

@@ -1,9 +1,9 @@
 package com.xiilab.modulek8sdb.workload.history.entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.annotations.SQLDelete;
 
@@ -63,12 +63,6 @@ public abstract class WorkloadEntity {
 	protected String workspaceName;
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	protected String workspaceResourceName;
-	@Column(name = "WORKLOAD_REQ_GPU")
-	protected Integer gpuRequest;
-	@Column(name = "WORKLOAD_REQ_CPU", precision = 10, scale = 1)
-	protected BigDecimal cpuRequest;
-	@Column(name = "WORKLOAD_REQ_MEM", precision = 10, scale = 1)
-	protected BigDecimal memRequest;
 	@Column(name = "WORKLOAD_CREATOR")
 	protected String creatorName;
 	@Column(name = "WORKLOAD_CREATOR_REAL_NAME")
@@ -96,10 +90,10 @@ public abstract class WorkloadEntity {
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	protected DeleteYN deleteYN;
-	@Column(name = "REMAIN_TIME")
-	protected int remainTime;
 	@Column(name = "START_TIME")
 	protected LocalDateTime startTime;
+	@Column(name = "REMAIN_TIME")
+	protected int remainTime;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();
@@ -123,12 +117,18 @@ public abstract class WorkloadEntity {
 	@Transient
 	protected boolean canBeDeleted;
 
-	/**
-	 * 워크로드 상태 업데이트를 위한 메소드
-	 *
-	 * @param status 변경 할 워크로드 상태 값
-	 */
-	public void updateStatus(WorkloadStatus status) {
-		this.workloadStatus = status;
+	public void updateImage(ImageEntity image) {
+		this.image = image;
+	}
+
+	public void updateJob(String name, String description) {
+		this.name = name;
+		this.description = description;
+	}
+
+	public void updateCanBeDeleted(String creator, Set<String> ownerWorkspace) {
+		if (this.creatorId.equals(creator) || ownerWorkspace.contains(this.workspaceResourceName)) {
+			this.canBeDeleted = true;
+		}
 	}
 }
