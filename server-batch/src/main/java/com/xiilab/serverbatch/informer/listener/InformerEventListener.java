@@ -3,8 +3,6 @@ package com.xiilab.serverbatch.informer.listener;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
@@ -17,7 +15,6 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
-import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
@@ -95,15 +92,6 @@ public class InformerEventListener {
 						systemAlertRepository.save(saveSystemAlert);
 						log.info("관리자[{}] - 시스템 알림 발송 성공!", adminAlertEvent.title());
 					}
-					if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
-						// 메일 발송 로직 추가
-						// mailService.sendMail(MailDTO.builder()
-						// 	.title(adminAlertEvent.mailTitle())
-						// 	.content(adminAlertEvent.message())
-						// 	.receiverEmail(findUser.getEmail())
-						// 	.build());
-						// log.info("관리자[{}] - 메일 알림 발송 성공!", adminAlertEvent.title());
-					}
 				}
 			} catch (Exception e) {
 				log.error("관리자[{}] 알림 발송 실패!", adminAlertEvent.title());
@@ -156,13 +144,8 @@ public class InformerEventListener {
 						.build();
 					systemAlertRepository.save(saveSystemAlert);
 				}
-				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON) {
-					// 메일 발송 로직 추가
-					// mailService.sendMail(MailDTO.builder()
-					// 	.title(workspaceUserAlertEvent.mailTitle())
-					// 	.content(workspaceUserAlertEvent.message())
-					// 	.receiverEmail(findRecipientUser.getEmail())
-					// 	.build());
+				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON && workspaceUserAlertEvent.mailDTO() != null) {
+					mailService.sendMail(workspaceUserAlertEvent.mailDTO());
 				}
 				log.info("워크스페이스 유저[{}] 알림 발송 성공", workspaceUserAlertEvent.title());
 			} catch (Exception e) {

@@ -1,7 +1,5 @@
 package com.xiilab.servercore.user.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 
@@ -13,9 +11,7 @@ import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
-import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -115,40 +111,8 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		String title = AlertMessage.WORKSPACE_MEMBER_UPDATE.getTitle();
 		String message = String.format(AlertMessage.WORKSPACE_MEMBER_UPDATE.getMessage(), workspaceName);
 
-		UserDTO.UserInfo creator = userService.getUserInfoById(workspace.getCreatorId());
-
-		MailAttribute mail = MailAttribute.WORKSPACE_MEMBER_UPDATE;
-
-		String contentMessage = "[";
-		String contentTitle;
-		if (result) {
-			contentTitle = "추가된 멤버";
-		} else {
-			contentTitle = "삭제된 멤버";
-		}
-		int i = 0;
-		for (String userId : userIdList) {
-			UserDTO.UserInfo addUser = userService.getUserById(userId);
-			i++;
-			if (userIdList.size() == i) {
-				contentMessage += addUser.getLastName() + addUser.getFirstName() + "(" + addUser.getEmail() + ") ]";
-				break;
-			}
-			contentMessage += addUser.getLastName() + addUser.getFirstName() + "(" + addUser.getEmail() + "), ";
-
-		}
-
-		MailDTO mailDTO = MailDTO.builder()
-			.subject(String.format(mail.getSubject(), workspace.getName()))
-			.title(String.format(mail.getTitle(), workspace.getName()))
-			.subTitle(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-			.contentTitle(contentTitle)
-			.contentTitle(contentMessage)
-			.receiverEmail(creator.getEmail())
-			.footer(mail.getFooter())
-			.build();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER, AlertName.OWNER_WORKSPACE_MEMBER_UPDATE,
-			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam, mailDTO);
+			userInfoDTO.getId(), workspace.getCreatorId(), emailTitle, title, message, groupName, pageNaviParam, null);
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
