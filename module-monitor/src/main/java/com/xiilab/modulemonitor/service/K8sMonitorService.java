@@ -61,5 +61,6 @@ public interface K8sMonitorService {
 	List<ClusterObjectDTO> getContainerRestart();
 
 	List<ClusterObjectDTO> getContainerImageRestart();
+
 	Long getCpuCore(String nodeName);
 }

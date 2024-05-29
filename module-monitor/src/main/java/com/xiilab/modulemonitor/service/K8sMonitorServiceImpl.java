@@ -131,7 +131,7 @@ public class K8sMonitorServiceImpl implements K8sMonitorService{
 		return k8sMonitorRepository.getContainerImageRestart();
 	}
 
-	public Long getCpuCore(String nodeName){
+	public Long getCpuCore(String nodeName) {
 		return k8sMonitorRepository.getCpuCore(nodeName);
 	}
 }

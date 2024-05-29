@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
 import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
@@ -68,11 +67,11 @@ public class WorkspaceDTO {
 		private String description;
 		private boolean isPinYN;
 		private AgeDTO age;
-		private ModuleWorkloadResDTO recentlyWorkload;
+		private RecentlyWorkloadDTO recentlyWorkload;
 
 		public TotalResponseDTO(String id, String name, String resourceName, String description, boolean isPinYN,
 			LocalDateTime createdTime,
-			ModuleWorkloadResDTO recentlyWorkload) {
+			RecentlyWorkloadDTO recentlyWorkload) {
 			this.id = id;
 			this.name = name;
 			this.resourceName = resourceName;

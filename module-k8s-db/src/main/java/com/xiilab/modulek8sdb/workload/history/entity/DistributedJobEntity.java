@@ -17,23 +17,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Entity(name = "TB_WORKLOAD_JOB")
+@Entity(name = "TB_DISTRIBUTED_WORKLOAD_JOB")
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-public class JobEntity extends WorkloadEntity {
-	@Column(name = "WORKLOAD_IDE")
-	private String ide;
-	@Column(name = "WORKLOAD_REQ_CPU")
-	private Float cpuRequest;
-	@Column(name = "WORKLOAD_REQ_MEM")
-	private Float memRequest;
-	@Column(name = "WORKLOAD_REQ_GPU")
-	private Integer gpuRequest;
+public class DistributedJobEntity extends WorkloadEntity {
+	@Column(name = "LAUNCHER_CPU_REQUEST")
+	private float launcherCpuRequest;
+	@Column(name = "LAUNCHER_MEM_REQUEST")
+	private float launcherMemRequest;
+	@Column(name = "WORKER_CPU_REQUEST")
+	private float workerCpuRequest;
+	@Column(name = "WORKER_MEM_REQUEST")
+	private float workerMemRequest;
+	@Column(name = "WORKER_GPU_REQUEST")
+	private int workerGpuRequest;
+	@Column(name = "WORKER_COUNT")
+	private int workerCount;
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
-	JobEntity(String uid, String name, String description, String resourceName, String workspaceName,
-		String workspaceResourceName, Float cpuReq, Integer gpuReq, Float memReq,
+	DistributedJobEntity(String uid, String name, String description, String resourceName, String workspaceName,
+		String workspaceResourceName, float launcherCpuRequest, float launcherMemRequest, float workerCpuRequest,
+		float workerMemRequest, int workerGpuRequest, int workerCount,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
 		Map<String, String> envs,
 		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
@@ -45,9 +50,6 @@ public class JobEntity extends WorkloadEntity {
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
-		this.cpuRequest = cpuReq;
-		this.gpuRequest = gpuReq;
-		this.memRequest = memReq;
 		this.createdAt = createdAt;
 		this.deletedAt = deletedAt;
 		this.creatorId = creatorId;
@@ -60,9 +62,14 @@ public class JobEntity extends WorkloadEntity {
 		this.workingDir = workingDir;
 		this.workloadCMD = workloadCmd;
 		this.image = image;
-		this.ide = ide;
 		this.deleteYN = deleteYN;
 		this.workloadStatus = workloadStatus;
 		this.parameter = JsonConvertUtil.convertMapToJson(parameter);
+		this.launcherCpuRequest = launcherCpuRequest;
+		this.launcherMemRequest = launcherMemRequest;
+		this.workerCpuRequest = workerCpuRequest;
+		this.workerMemRequest = workerMemRequest;
+		this.workerGpuRequest = workerGpuRequest;
+		this.workerCount = workerCount;
 	}
 }

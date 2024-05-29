@@ -16,8 +16,8 @@ import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
 import com.xiilab.modulek8s.workload.vo.DistributedJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -171,13 +171,13 @@ public interface WorkloadRepository {
 
 	boolean mkdirToPod(String podName, String namespace, String path);
 
-	List<ModuleWorkloadResDTO> getAstraBatchWorkload();
+	List<AbstractModuleWorkloadResDTO> getAstraBatchWorkload();
 
-	List<ModuleWorkloadResDTO> getAstraInteractiveWorkload();
+	List<AbstractModuleWorkloadResDTO> getAstraInteractiveWorkload();
 
 	boolean optimizationResource(String pod, String namespace);
 
-	ModuleWorkloadResDTO getParentController(String pod, String namespace);
+	AbstractModuleWorkloadResDTO getParentController(String pod, String namespace);
 
 	List<Event> getWorkloadEventList(String pod, String namespace);
 

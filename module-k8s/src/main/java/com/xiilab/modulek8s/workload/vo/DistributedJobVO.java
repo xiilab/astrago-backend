@@ -53,7 +53,6 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 			DistributedJobRole.LAUNCHER.getName(), createLaucherSpec(),
 			DistributedJobRole.WORKER.getName(), createWorkerSpec()));
 		RunPolicy runPolicy = new RunPolicy();
-		// runPolicy.setTtlSecondsAfterFinished(10);
 		mpiJobSpec.setRunPolicy(runPolicy);
 		return mpiJobSpec;
 	}
@@ -92,7 +91,7 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		commandList.add("mpirun");
 		commandList.add("--allow-run-as-root");
 		commandList.add("-np");
-		commandList.add(String.valueOf(gpuRequest));
+		commandList.add(String.valueOf(workerCnt));
 		commandList.add("-bind-to");
 		commandList.add("none");
 		commandList.add("-map-by");
@@ -133,7 +132,7 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 	public MpiReplicaSpecs createWorkerSpec() {
 		MpiReplicaSpecs workerReplicaSpec = new MpiReplicaSpecs();
 		//요청한 gpu개수 만큼 replicas를 분할한다.(ex. 5개 요청 -> 5개의 한개의 gpu를 할당 받은 worker가 생성된다.)
-		workerReplicaSpec.setReplicas(gpuRequest);
+		workerReplicaSpec.setReplicas(workerCnt);
 		workerReplicaSpec.setTemplate(createWorkerTemplate());
 		return workerReplicaSpec;
 	}
@@ -213,8 +212,8 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 	public Resources createLauncherResources() {
 		Resources resources = new Resources();
 		Map<String, IntOrString> resourceMap = Map.of(
-			"cpu", new IntOrString(String.valueOf(cpuRequest)),
-			"memory", new IntOrString(memRequest + "Gi"));
+			"cpu", new IntOrString(String.valueOf(this.launcherCpuRequest)),
+			"memory", new IntOrString(this.launcherMemRequest + "Gi"));
 		resources.setRequests(resourceMap);
 		resources.setLimits(resourceMap);
 		return resources;
@@ -224,9 +223,9 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 	public Resources createWorkerResources() {
 		Resources resources = new Resources();
 		Map<String, IntOrString> resourceMap = Map.of(
-			"cpu", new IntOrString(String.valueOf(cpuRequest)),
-			"memory", new IntOrString(memRequest + "Gi"),
-			"nvidia.com/gpu", new IntOrString(1));
+			"cpu", new IntOrString(String.valueOf(this.workerCpuRequest)),
+			"memory", new IntOrString(this.workerMemRequest + "Gi"),
+			"nvidia.com/gpu", new IntOrString(this.workerGpuRequest));
 		resources.setRequests(resourceMap);
 		resources.setLimits(resourceMap);
 		return resources;

@@ -782,7 +782,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 		}
 	}
 
-	public Long getCpuCore(String nodeName){
+	public Long getCpuCore(String nodeName) {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			Node node = kubernetesClient.nodes().withName(nodeName).get();
 			return Long.parseLong(node.getStatus().getAllocatable().get("cpu").getAmount());

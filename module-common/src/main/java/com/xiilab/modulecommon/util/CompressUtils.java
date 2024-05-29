@@ -186,7 +186,8 @@ public class CompressUtils {
 	 * @param parentEntryName        압축 파일 내에서 저장될 이름
 	 * @param os            출력 스트림
 	 */
-	private static <T extends ArchiveOutputStream<?>> void addFolder(Path targetFolderPath, String parentEntryName, T os) {
+	private static <T extends ArchiveOutputStream<?>> void addFolder(Path targetFolderPath, String parentEntryName,
+		T os) {
 		File folder = targetFolderPath.toFile();
 
 		String entryName = parentEntryName + folder.getName() + File.separator;

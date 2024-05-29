@@ -357,7 +357,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		if(promql.getType().equals("TERMINAL") && Promql.TERMINAL_CPU_UTILIZATION.name().equals(requestDTO.metricName())){
 			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"", "node =~ \"" + requestDTO.nodeName() + ".*\"");
 		}
-		if(Promql.TERMINAL_MULTI_CPU_UTILIZATION.name().equals(requestDTO.metricName())){
+		if (Promql.TERMINAL_MULTI_CPU_UTILIZATION.name().equals(requestDTO.metricName())) {
 			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"");
 		}
 		return String.format(promql.getQuery(), result.toLowerCase());

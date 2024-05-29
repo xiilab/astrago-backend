@@ -3,7 +3,7 @@ package com.xiilab.modulek8s.workload.svc.dto.request;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
-import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 
 import lombok.Getter;
@@ -19,7 +19,7 @@ public class CreateSvcReqDTO extends K8SResourceReqDTO {
 	private List<CreateSvcPortReqDTO> ports;
 
 	public static CreateSvcReqDTO createWorkloadReqDTOToCreateServiceDto(
-		ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String jobName, String workloadResourceName) {
+		CreateWorkloadReqDTO moduleCreateWorkloadReqDTO, String jobName, String workloadResourceName) {
 		return CreateSvcReqDTO.builder()
 			.name(moduleCreateWorkloadReqDTO.getName())
 // 			.workloadResourceName(moduleCreateWorkloadReqDTO.get)

@@ -9,6 +9,7 @@ import org.springframework.util.CollectionUtils;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadResDTO;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -17,12 +18,12 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Getter
-public class ModuleBatchJobResDTO extends ModuleWorkloadResDTO {
+public class ModuleBatchJobResDTO extends AbstractSingleWorkloadResDTO {
 	public ModuleBatchJobResDTO(Job job) {
 		super(job);
 		Container container = job.getSpec().getTemplate().getSpec().getContainers().get(0);
 		// 리소스 정보
-		super.initializeResources(container.getResources().getLimits());
+		initializeResources(container.getResources().getLimits());
 		// 데이터셋, 모델 마운트 패스 정보
 		super.initializeVolumeMountPath(job.getSpec().getTemplate().getMetadata().getAnnotations());
 		// 코드 정보
