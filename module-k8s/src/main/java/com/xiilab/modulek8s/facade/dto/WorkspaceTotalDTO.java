@@ -42,7 +42,7 @@ public class WorkspaceTotalDTO {
 		this.limitCPU = resourceQuotaResDTO.getLimitCPU();
 		this.limitMEM = resourceQuotaResDTO.getLimitMEM();
 		this.limitGPU = resourceQuotaResDTO.getLimitGPU();
-		this.age = new AgeDTO(workspaceDTO.getCreatedAt());
+		this.age = workspaceDTO.getCreatedAt() != null ? new AgeDTO(workspaceDTO.getCreatedAt()) : null;
 		this.runningCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.RUNNING);
 		this.errCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.ERROR);
 		this.pendingCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.PENDING);

@@ -95,7 +95,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 			workspaceResourceName = hasMetadata.getMetadata().getNamespace();
 			workspaceName = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.WORKSPACE_NAME.getField());
 			createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
-			age = new AgeDTO(createdAt);
+			age = createdAt != null ? new AgeDTO(createdAt) : null;
 			type = getType();
 			datasetIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.DATASET_IDS.getField());
 			modelIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.MODEL_IDS.getField());

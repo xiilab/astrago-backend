@@ -77,7 +77,7 @@ public class WorkspaceDTO {
 			this.resourceName = resourceName;
 			this.description = description;
 			this.isPinYN = isPinYN;
-			this.age = new AgeDTO(createdTime);
+			this.age = createdTime != null ? new AgeDTO(createdTime) : null;
 			this.recentlyWorkload = recentlyWorkload;
 		}
 	}
