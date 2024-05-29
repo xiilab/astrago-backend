@@ -8,7 +8,6 @@ import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
-import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
@@ -32,7 +31,8 @@ public interface WorkloadHistoryService {
 
 	void deleteWorkload(String workspaceName);
 
-	List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName, WorkloadStatus workloadStatus);
+	List<WorkloadEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName,
+		WorkloadStatus workloadStatus);
 
 	List<WorkloadSummaryDTO> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList,
 		WorkloadType workloadType,

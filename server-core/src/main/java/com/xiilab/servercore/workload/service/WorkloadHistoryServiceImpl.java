@@ -173,7 +173,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public List<JobEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName,
+	public List<WorkloadEntity> getWorkloadByResourceNameAndStatus(String workspaceResourceName,
 		WorkloadStatus workloadStatus) {
 		return workloadHistoryRepo.getWorkloadByResourceNameAndStatus(workspaceResourceName, workloadStatus);
 	}
