@@ -205,6 +205,10 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			//status가 변경되었는지 체크
 			if (isStatusChanged(beforeStatus, afterStatus)) {
 				checkJobStatusAndUpdateStatus(afterDeployment);
+				if (afterStatus == WorkloadStatus.RUNNING) {
+					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
+						LocalDateTime.now());
+				}
 			}
 		}
 	}
