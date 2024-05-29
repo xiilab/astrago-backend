@@ -150,6 +150,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	@Override
 	public RecentlyWorkloadDTO findByWorkspaceAndRecently(String workspaceName, String username) {
 		WorkloadEntity workload = workloadHistoryRepoCustom.findByWorkspaceNameRecently(workspaceName, username);
+		if (workload == null) {
+			return null;
+		}
 		return new RecentlyWorkloadDTO(workload.getName(), workload.getWorkloadStatus(),
 			new AgeDTO(workload.getStartTime()));
 	}
