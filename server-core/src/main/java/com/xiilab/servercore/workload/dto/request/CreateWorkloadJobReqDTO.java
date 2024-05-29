@@ -5,74 +5,49 @@ import java.util.Map;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
-import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleEnvReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
-	private String workspace;    // 워크스페이스명
-	private WorkloadType workloadType;
-	private ModuleImageReqDTO image;
-	private List<ModulePortReqDTO> ports;
-	private List<ModuleEnvReqDTO> envs;
-	private List<ModuleVolumeReqDTO> datasets;
-	private List<ModuleVolumeReqDTO> models;
-	private List<ModuleCodeReqDTO> codes;
-	private String workingDir;
-	private String command;
-	private Map<String,String> parameter;
-	private Float cpuRequest;
-	private Integer gpuRequest;
-	private Float memRequest;
-	private String creatorId;
-	private String creatorUserName;
-	private String creatorFullName;
+@SuperBuilder
+public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
+	protected String workspace;    // 워크스페이스명
+	protected WorkloadType workloadType;
+	protected ModuleImageReqDTO image;
+	protected List<ModulePortReqDTO> ports;
+	protected List<ModuleEnvReqDTO> envs;
+	protected List<ModuleVolumeReqDTO> datasets;
+	protected List<ModuleVolumeReqDTO> models;
+	protected List<ModuleCodeReqDTO> codes;
+	protected String workingDir;
+	protected String command;
+	protected Map<String, String> parameter;
+	protected String creatorId;
+	protected String creatorUserName;
+	protected String creatorFullName;
 	@Setter
-	private FrameWorkType ide;
-	// SchedulingType schedulingType;        // 스케줄링 방식
+	protected FrameWorkType ide;
 
-
-	public ModuleCreateWorkloadReqDTO toModuleDTO(String initContainerUrl) {
-		return ModuleCreateWorkloadReqDTO.builder()
-			.name(getName())
-			.description(getDescription())
-			.workspace(workspace)
-			.workloadType(workloadType)
-			.image(image)
-			.datasets(datasets)
-			.models(models)
-			.ports(ports)
-			.envs(envs)
-			.codes(codes)
-			.workingDir(workingDir)
-			.command(command)
-			.parameter(parameter)
-			.cpuRequest(cpuRequest)
-			.gpuRequest(gpuRequest)
-			.memRequest(memRequest)
-			.creatorId(creatorId)
-			.creatorUserName(creatorUserName)
-			.creatorFullName(creatorFullName)
-			.ide(ide.name())
-			.initContainerUrl(initContainerUrl)
-			.build();
-	}
+	public abstract CreateWorkloadReqDTO toModuleDTO(String initContainerUrl);
 
 	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {
 		this.creatorId = creatorId;
 		this.creatorUserName = creatorName;
 		this.creatorFullName = creatorFullName;
 	}
+
+	public abstract float getTotalCpuRequest();
+
+	public abstract float getTotalMemoryRequest();
+
+	public abstract int getTotalGpuRequest();
 }

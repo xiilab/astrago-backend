@@ -34,18 +34,20 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
-	String workspace;        //워크스페이스
-	String workspaceName;     //워크스페이스 이름
-	WorkloadType workloadType;        // 워크로드 타입
-	JobImageVO image;        //사용할 image
-	Integer gpuRequest;        // 워크로드 gpu 요청량
-	Float cpuRequest;        // 워크로드 cpu 요청량
-	Float memRequest;        // 워크로드 mem 요청량
-	//SchedulingType schedulingType;        // 스케줄링 방식
-	List<JobCodeVO> codes;    // code 정의
-	List<JobVolumeVO> datasets;
-	List<JobVolumeVO> models;
-	String secretName;
+	protected String workspace;                    //워크스페이스
+	protected String workspaceName;                //워크스페이스 이름
+	protected WorkloadType workloadType;            // 워크로드 타입
+	protected JobImageVO image;                    //사용할 image
+	protected float launcherCpuRequest;    //launcher cpu request
+	protected float launcherMemRequest;    //launcher mem request
+	protected float workerCpuRequest;        //worker cpu request
+	protected float workerMemRequest;        //worker mem request
+	protected Integer workerGpuRequest;    //worker gpu request
+	protected int workerCnt;                //worker count
+	protected List<JobCodeVO> codes;                // code 정의
+	protected List<JobVolumeVO> datasets;
+	protected List<JobVolumeVO> models;
+	protected String secretName;
 
 	protected void addVolume(Spec spec, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
