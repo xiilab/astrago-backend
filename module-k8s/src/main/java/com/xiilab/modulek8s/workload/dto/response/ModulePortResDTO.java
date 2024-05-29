@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.workload.dto.response;
 
 import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.Ports;
 
+import io.fabric8.kubernetes.api.model.ContainerPort;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +23,9 @@ public class ModulePortResDTO {
 			this.name = portInstance.getName();
 			this.originPort = portInstance.getContainerPort();
 		} else if (object instanceof Ports portInstance) {
+			this.name = portInstance.getName();
+			this.originPort = portInstance.getContainerPort();
+		} else if (object instanceof ContainerPort portInstance) {
 			this.name = portInstance.getName();
 			this.originPort = portInstance.getContainerPort();
 		}

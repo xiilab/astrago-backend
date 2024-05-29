@@ -289,6 +289,22 @@ public class WorkloadFacadeService {
 		moduleImageReqDTO.setCredentialReqDTO(findCredential.toModuleCredentialReqDTO());
 	}
 
+	public List<FindWorkloadResDTO.Port> getWorkloadPortInfo(WorkloadType workloadType, String workspaceName,
+		String workloadResourceName) {
+		AbstractModuleWorkloadResDTO moduleWorkloadResDTO = null;
+		if (workloadType == WorkloadType.BATCH) {
+			moduleWorkloadResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+				workloadResourceName);
+		} else if (workloadType == WorkloadType.INTERACTIVE) {
+			moduleWorkloadResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+				workspaceName, workloadResourceName);
+		} else if (workloadType == WorkloadType.DISTRIBUTED) {
+			moduleWorkloadResDTO = workloadModuleFacadeService.getDistributedWorkload(
+				workspaceName, workloadResourceName);
+		}
+		return generatePortResDTO(moduleWorkloadResDTO);
+	}
+
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 		// 실행중일 떄

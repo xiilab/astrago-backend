@@ -99,6 +99,19 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
+	@GetMapping("/workloads/ports/{type}")
+	@Operation(summary = "워크로드에 접근 할 수 있는 포트 조회")
+	public ResponseEntity<List<FindWorkloadResDTO.Port>> getWorkloadsPorts(
+		@PathVariable("type") WorkloadType workloadType,
+		@RequestParam("workspaceResourceName") String workspaceResourceName,
+		@RequestParam("workloadResourceName") String workloadResourceName
+	) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadPortInfo(workloadType, workspaceResourceName, workloadResourceName),
+			HttpStatus.OK
+		);
+	}
+
 	@PostMapping("/workloads/{type}/event")
 	@Operation(summary = "워크로드 이벤트 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadEventDTO>> getWorkloadEventList(
