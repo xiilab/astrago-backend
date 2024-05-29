@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
@@ -18,10 +17,10 @@ import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.dto.ReportType;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
@@ -49,6 +48,7 @@ public class ReportJob extends QuartzJobBean {
 	@Value("${frontend.url}")
 	private String frontendUrl;
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+
 	@Override
 	@Transactional
 	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
@@ -57,7 +57,7 @@ public class ReportJob extends QuartzJobBean {
 		ReportReservationEntity reportReservation = getReportReservationEntityById(
 			jobDataMap.get("reportId").hashCode());
 		// 발송 주기
-		long sendCycle= jobDataMap.get("sendCycle").hashCode();
+		long sendCycle = jobDataMap.get("sendCycle").hashCode();
 		// 예약 종료일
 		LocalDateTime reservationEndDate = LocalDateTime.parse(jobDataMap.get("endDate").toString(), formatter);
 		// 검색 조건 startDate ~ endDate
@@ -65,7 +65,7 @@ public class ReportJob extends QuartzJobBean {
 		LocalDateTime startDate = getStartDate(ReportType.valueOf(jobDataMap.get("reportType").toString()), endDate);
 
 		// (발송일 - 예약종료일) < 주기
-		if(Math.abs(Duration.between(endDate, reservationEndDate).toDays()) < sendCycle){
+		if (Math.abs(Duration.between(endDate, reservationEndDate).toDays()) < sendCycle) {
 			reportMonitorService.reportOnOff((long)jobDataMap.get("reportId").hashCode(), false);
 			// 종료
 			return;
@@ -78,29 +78,27 @@ public class ReportJob extends QuartzJobBean {
 		sendMail(reportReservation, start, end, pdfLink);
 	}
 
-
-	private LocalDateTime getStartDate(ReportType reportType, LocalDateTime endDate){
-		return switch (reportType){
+	private LocalDateTime getStartDate(ReportType reportType, LocalDateTime endDate) {
+		return switch (reportType) {
 			case WEEKLY_CLUSTER, WEEKLY_SYSTEM -> endDate.minusWeeks(1);
 			case MONTHLY_CLUSTER, MONTHLY_SYSTEM -> endDate.minusMonths(1);
 		};
 	}
 
-	private ReportReservationEntity getReportReservationEntityById(long id){
+	private ReportReservationEntity getReportReservationEntityById(long id) {
 		return repository.findById(id).orElseThrow(() ->
 			new RestApiException(ReportErrorCode.REPORT_NOT_FOUND));
 	}
 
-	private String createPDFLink(ReportReservationEntity reportReservation, String start, String end){
+	private String createPDFLink(ReportReservationEntity reportReservation, String start, String end) {
 		return String.format("%s/preview/report/result?reportTypeResult=%s&startDate=%s&endDate=%s",
 			frontendUrl, reportReservation.getReportType(), start, end);
 	}
 
-	private void sendMail(ReportReservationEntity reportReservation, String start, String end, String pdfLink){
-		MailAttribute mail = MailAttribute.REPORT;
+	private void sendMail(ReportReservationEntity reportReservation, String start, String end, String pdfLink) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		// 수신자에게 발송
-		for(ReportReservationUserEntity user : reportReservation.getReservationUserEntities()){
+		for (ReportReservationUserEntity user : reportReservation.getReservationUserEntities()) {
 			ReportReservationHistoryEntity saveHistory = historyRepository.save(ReportReservationHistoryEntity.builder()
 				.email(user.getEmail())
 				.userName(user.getUserName())
@@ -110,28 +108,23 @@ public class ReportJob extends QuartzJobBean {
 				.report(reportReservation)
 				.result(true)
 				.build());
-			if(network.getNetworkCloseYN() == NetworkCloseYN.N){
-				try{
-					mailService.sendMail(MailDTO.builder()
-						.subject(String.format(mail.getSubject(), reportReservation.getReportType().getName()))
-						.title(mail.getTitle())
-						.subTitle(String.format(mail.getSubTitle(), reportReservation.getReportType().getName(), LocalDateTime.now(), start + end))
-						.contentTitle(mail.getContentTitle())
-						.contents(List.of(MailDTO.Content.builder().col1("링크 : ").col2(pdfLink).build()))
-						.footer(mail.getFooter())
-						.receiverEmail(user.getEmail())
-						.build());
-				}catch (Exception e){
+			if (network.getNetworkCloseYN() == NetworkCloseYN.N) {
+
+				try {
+					MailDTO mailDTO = MailServiceUtils.reportMail(reportReservation.getReportType().getName(),
+						start + end, pdfLink, user.getEmail());
+					mailService.sendMail(mailDTO);
+				} catch (Exception e) {
 					saveHistory.falseResult();
 				}
 			}
 		}
 	}
 
-	private String getEndDate(ReportType reportType, LocalDateTime endDate){
-		return switch (reportType){
-			case MONTHLY_SYSTEM, MONTHLY_CLUSTER ->
-			LocalDate.of(endDate.getYear(), endDate.getMonth(), 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+	private String getEndDate(ReportType reportType, LocalDateTime endDate) {
+		return switch (reportType) {
+			case MONTHLY_SYSTEM, MONTHLY_CLUSTER -> LocalDate.of(endDate.getYear(), endDate.getMonth(), 1)
+				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 			case WEEKLY_SYSTEM, WEEKLY_CLUSTER -> endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 		};
 	}

@@ -1,8 +1,5 @@
 package com.xiilab.moduleuser.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,9 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
-import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
@@ -60,9 +55,10 @@ public class UserServiceImpl implements UserService {
 			userRepository.updateUserAttribute(userIdList, Map.of("approvalYN", String.valueOf(approvalYN)));
 			//사용자 활성화 처리
 			userRepository.updateUserActivationYN(userIdList, true);
+
 		} else {
-			//사용자 삭제 처리
-			userRepository.deleteUserById(userIdList);
+			//사용자 반려 처리
+			userRepository.refuseUserById(userIdList);
 		}
 	}
 
@@ -111,9 +107,6 @@ public class UserServiceImpl implements UserService {
 		UserAlertEvent userAlertEvent = null;
 		userRepository.updateUserEnable(id, enable);
 		UserDTO.UserInfo userInfo = userRepository.getUserInfoById(id);
-		MailAttribute mail;
-		// Mail Contents 작성
-		List<MailDTO.Content> contents = new ArrayList<>();
 		String result;
 		//알림 발송 해야함
 		//true 활성화
@@ -122,46 +115,15 @@ public class UserServiceImpl implements UserService {
 			String emailTitle = String.format(userEnabled.getMailTitle());
 			String title = userEnabled.getTitle();
 			String message = String.format(userEnabled.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
-			mail = MailAttribute.USER_ENABLE;
-			contents = List.of(
-				MailDTO.Content.builder()
-					.col1("사용자 이름 : ")
-					.col2(userInfo.getLastName() + userInfo.getFirstName())
-					.build(),
-				MailDTO.Content.builder().col1("이메일 주소 : ").col2(userInfo.getEmail()).build(),
-				MailDTO.Content.builder()
-					.col1("활성화 일시 : ")
-					.col2(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-					.build()
-			);
-			MailDTO mailDTO = MailDTO.builder()
-				.subject(mail.getSubject())
-				.title(
-					String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
-				.subTitle(mail.getSubTitle())
-				.receiverEmail(userInfo.getEmail())
-				.contentTitle(mail.getContentTitle())
-				.contents(contents)
-				.footer(mail.getFooter())
-				.build();
-			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id, mailDTO);
+
+			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id, null);
 		} else {//false 비활성화
 			String emailTitle = String.format(AlertMessage.USER_DISABLED.getMailTitle());
 			String title = AlertMessage.USER_DISABLED.getTitle();
 			String message = String.format(AlertMessage.USER_DISABLED.getMessage(),
 				userInfo.getLastName() + userInfo.getFirstName());
-			mail = MailAttribute.USER_UNABLE;
-			MailDTO mailDTO = MailDTO.builder()
-				.subject(mail.getSubject())
-				.title(
-					String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
-				.subTitle(mail.getSubTitle())
-				.receiverEmail(userInfo.getEmail())
-				.contentTitle(mail.getContentTitle())
-				.contents(contents)
-				.footer(mail.getFooter())
-				.build();
-			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id, mailDTO);
+
+			userAlertEvent = new UserAlertEvent(null, emailTitle, title, message, id, null);
 		}
 		eventPublisher.publishEvent(userAlertEvent);
 	}

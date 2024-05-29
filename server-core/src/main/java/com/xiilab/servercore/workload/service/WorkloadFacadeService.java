@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -38,10 +36,10 @@ import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.K8sContainerReason;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
@@ -49,6 +47,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
@@ -108,7 +107,6 @@ import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
-import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -221,34 +219,12 @@ public class WorkloadFacadeService {
 			String message = String.format(workspaceResourceOverAdmin.getMessage(),
 				workspaceResourceStatus.getCreatorFullName(), workspaceResourceStatus.getCreatorUserName(),
 				workspaceResourceStatus.getName());
-			MailAttribute mail = MailAttribute.WORKSPACE_RESOURCE_OVER;
-
-			// Mail Contents 작성
-			List<MailDTO.Content> contents = List.of(
-				MailDTO.Content.builder()
-					.col1("GPU : ")
-					.col2(workspaceResourceStatus.getResourceStatus().getGpuUsed() + " 개")
-					.build(),
-				MailDTO.Content.builder().col1("CPU : ").col2(cpuUsed + "Core").build(),
-				MailDTO.Content.builder().col1("MEM : ").col2(memUsed + "GB").build()
-			);
-
-			// 리소스 초과 요청 Owner에게 전송
-			MailDTO mailDTO = MailDTO.builder()
-				.subject(String.format(mail.getSubject(), moduleCreateWorkloadReqDTO.getWorkspace()))
-				.title(String.format(mail.getTitle(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail(),
-					moduleCreateWorkloadReqDTO.getWorkspace()))
-				.subTitle(mail.getSubTitle())
-				.contentTitle(mail.getContentTitle())
-				.contents(contents)
-				.footer(mail.getFooter())
-				.build();
 
 			eventPublisher.publishEvent(
 				new AdminAlertEvent(AlertName.ADMIN_WORKSPACE_RESOURCE_OVER, userInfoDTO.getId(), mailTitle, title,
 					message,
 					PageNaviParam.builder().workspaceResourceName(moduleCreateWorkloadReqDTO.getWorkspace()).build(),
-					mailDTO));
+					null));
 
 		}
 	}
@@ -388,15 +364,10 @@ public class WorkloadFacadeService {
 			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
 			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
 				activeWorkloadDetail.getWorkloadName());
-			MailAttribute mail = MailAttribute.WORKLOAD_END;
-			MailDTO mailDTO = MailDTO.builder()
-				.subject(String.format(mail.getSubject(), activeWorkloadDetail.getWorkloadName()))
-				.title(String.format(mail.getTitle(), activeWorkloadDetail.getWorkloadName()))
-				.subTitle(String.format(mail.getSubTitle(),
-					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-				.footer(mail.getFooter())
-				.receiverEmail(userFacadeService.getUserInfoById(activeWorkloadDetail.getRegUserId()).getEmail())
-				.build();
+
+			String receiverMail = userFacadeService.getUserInfoById(activeWorkloadDetail.getRegUserId()).getEmail();
+			MailDTO mailDTO = MailServiceUtils.endWorkloadMail(activeWorkloadDetail.getWorkloadName(), receiverMail);
+
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeWorkloadDetail.getRegUserId(), emailTitle,
 				title, message, workspaceName, pageNaviParam, mailDTO);

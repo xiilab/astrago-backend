@@ -23,10 +23,10 @@ public class WorkspaceAlertSetServiceImpl implements WorkspaceAlertSetService {
 		try{
 			workspaceAlertSetRepository.save(WorkspaceAlertSetEntity.builder()
 				.workspaceName(workspaceName)
-				.workloadStartAlert(true)
-				.workloadEndAlert(true)
-				.workloadErrorAlert(true)
-				.resourceApprovalAlert(true)
+				.workloadStartAlert(false)
+				.workloadEndAlert(false)
+				.workloadErrorAlert(false)
+				.resourceApprovalAlert(false)
 				.build());
 		}catch (IllegalArgumentException e){
 			throw new RestApiException(CommonErrorCode.ALERT_SET_SAVE_FAIL);

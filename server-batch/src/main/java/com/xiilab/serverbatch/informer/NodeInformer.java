@@ -1,6 +1,5 @@
 package com.xiilab.serverbatch.informer;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -12,13 +11,12 @@ import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
-import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Node;
@@ -80,15 +78,9 @@ public class NodeInformer {
 										String mailTitle = nodeMigApply.getMailTitle();
 										String title = nodeMigApply.getTitle();
 										String message = String.format(nodeMigApply.getMessage(), nodeName);
-										MailAttribute mail = MailAttribute.MIG_ON;
-										MailDTO mailDTO = MailDTO.builder()
-											.subject(mail.getSubject())
-											.title(String.format(mail.getTitle(), nodeName))
-											.footer(mail.getFooter())
-											.build();
 										eventPublisher.publishEvent(
 											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_APPLY, null, mailTitle, title,
-												message, null, mailDTO));
+												message, null, null));
 									}
 									// String.format("node %S의 MIG 적용이 완료되었습니다.", node2.getMetadata().getName());
 									case PENDING ->
@@ -99,14 +91,8 @@ public class NodeInformer {
 										String title = nodeMigError.getTitle();
 										String message = String.format(nodeMigError.getMessage(), nodeName);
 
-										MailAttribute mail = MailAttribute.MIG_ERROR;
-										List<UserDTO.UserInfo> adminList = userService.getAdminList();
-										// MIG 적용 실패 에러 관리자에게 전송
-										MailDTO mailDTO = MailDTO.builder()
-											.subject(mail.getSubject())
-											.title(String.format(mail.getTitle(), nodeName))
-											.footer(mail.getFooter())
-											.build();
+										MailDTO mailDTO = MailServiceUtils.createMIGErrorMail(nodeName);
+
 										eventPublisher.publishEvent(
 											new AdminAlertEvent(AlertName.ADMIN_NODE_MIG_ERROR, null, mailTitle, title,
 												message, null, mailDTO));
