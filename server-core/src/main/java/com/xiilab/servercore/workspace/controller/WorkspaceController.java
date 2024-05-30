@@ -78,7 +78,7 @@ public class WorkspaceController {
 	}
 
 	@GetMapping("/resource/usage")
-	@Operation(summary = "sadf")
+	@Operation(summary = "워크스페이스 리소스 사용 현황 조회")
 	public ResponseEntity<WorkspaceResourceQuotaState> getWorkspaceResourceUsage(
 		@RequestParam(value = "workspaceName") String workspaceName) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceResourceUsage(workspaceName));
