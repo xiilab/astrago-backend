@@ -148,10 +148,7 @@ public class MailServiceImpl implements MailService {
                         padding-bottom: 13px;
                         font-weight: 700;
                         line-height: 24px;">
-                    <!--
-                    메인문구, 줄바꿈은 br tag 사용<br />
-                    강조 표시<span style="color: #5b29c7">span</span> tag 사용
-                     -->
+                     %s
 			    </td>
 			</tr>
 			""".formatted(text);

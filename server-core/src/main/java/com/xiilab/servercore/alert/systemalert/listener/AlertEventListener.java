@@ -97,7 +97,7 @@ public class AlertEventListener {
 						systemAlertRepository.save(saveSystemAlert);
 						log.info("관리자[{}] - 시스템 알림 발송 성공!", adminAlertEvent.title());
 					}
-					if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON) {
+					if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON && adminAlertEvent.mailDTO() != null) {
 						// 메일 발송 로직 추가
 						MailDTO mailDTO = adminAlertEvent.mailDTO();
 						mailDTO.setReceiverEmail(findUser.getEmail());
@@ -155,7 +155,7 @@ public class AlertEventListener {
 						.build();
 					systemAlertRepository.save(saveSystemAlert);
 				}
-				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON) {
+				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON && workspaceUserAlertEvent.mailDTO() != null ) {
 					mailService.sendMail(workspaceUserAlertEvent.mailDTO());
 				}
 				if (workspaceUserAlertEvent.alertName() == AlertName.USER_WORKSPACE_DELETE) {
@@ -205,9 +205,10 @@ public class AlertEventListener {
 					.build();
 				systemAlertRepository.save(saveSystemAlert);
 			}
-
-			// 메일 발송 로직 추가
-			mailService.sendMail(userAlertEvent.mailDTO());
+			if(userAlertEvent.mailDTO() != null ){
+				// 메일 발송 로직 추가
+				mailService.sendMail(userAlertEvent.mailDTO());
+			}
 		}
 	}
 

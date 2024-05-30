@@ -1,8 +1,12 @@
 package com.xiilab.modulek8sdb.common.enums;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@NoArgsConstructor
+@Setter
 public class PageInfo {
 	private Integer pageNo;
 	private Integer pageSize;
