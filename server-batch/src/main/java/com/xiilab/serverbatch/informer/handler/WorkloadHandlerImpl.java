@@ -77,7 +77,6 @@ import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
-import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.ServiceList;
@@ -233,12 +232,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 				volume.getPersistentVolumeClaim().getClaimName()));
 
 		deleteServices(interactiveJobResDTO.getWorkspaceResourceName(), interactiveJobResDTO.getResourceName());
-
-		UserDTO.UserInfo userInfo = userService.getUserById(interactiveJobResDTO.getCreatorId());
-		if (userInfo != null) {
-			MailDTO mailDTO = MailServiceUtils.deleteWorkloadMail(interactiveJobResDTO.getName(), userInfo.getEmail());
-			mailService.sendMail(mailDTO);
-		}
 	}
 
 	@Override
