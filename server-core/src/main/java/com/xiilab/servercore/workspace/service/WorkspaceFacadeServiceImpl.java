@@ -318,6 +318,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
+	public WorkspaceResourceQuotaState getWorkspaceResourceUsage(String workspaceResourceName) {
+		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
+			workspaceResourceName);
+		return new WorkspaceResourceQuotaState(workspaceResourceStatus);
+	}
+
+	@Override
 	public WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName) {
 		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(
 			workspaceResourceName);
@@ -571,12 +578,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.reqCPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getCpuReq())
 			.reqMEM(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getMemReq())
 			.reqGPU(recentlyResourceRequest == null ? 0 : recentlyResourceRequest.getGpuReq())
-			.useCPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getCpuUsed()))
-			.useMEM(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getMemUsed()))
-			.useGPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getGpuUsed()))
-			.allocCPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getCpuLimit()))
-			.allocMEM(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getMemLimit()))
-			.allocGPU(Integer.parseInt(workspaceResourceStatus.getResourceStatus().getGpuLimit()))
+			.useCPU(workspaceResourceStatus.getResourceStatus().getCpuUsed())
+			.useMEM(workspaceResourceStatus.getResourceStatus().getMemUsed())
+			.useGPU(workspaceResourceStatus.getResourceStatus().getGpuUsed())
+			.allocCPU(workspaceResourceStatus.getResourceStatus().getCpuLimit())
+			.allocMEM(workspaceResourceStatus.getResourceStatus().getMemLimit())
+			.allocGPU(workspaceResourceStatus.getResourceStatus().getGpuLimit())
 			.totalCPU(clusterResource.getCpu())
 			.totalMEM(clusterResource.getMem())
 			.totalGPU(clusterResource.getGpu())

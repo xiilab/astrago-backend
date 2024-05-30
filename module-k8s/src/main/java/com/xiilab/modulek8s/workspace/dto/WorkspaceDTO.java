@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workspace.dto;
 import java.time.LocalDateTime;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
+import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
@@ -128,12 +129,12 @@ public class WorkspaceDTO {
 		private int reqCPU;
 		private int reqMEM;
 		private int reqGPU;
-		private int useCPU;
-		private int useMEM;
-		private int useGPU;
-		private int allocCPU;
-		private int allocMEM;
-		private int allocGPU;
+		private float useCPU;
+		private float useMEM;
+		private float useGPU;
+		private float allocCPU;
+		private float allocMEM;
+		private float allocGPU;
 		private int totalCPU;
 		private int totalMEM;
 		private int totalGPU;
@@ -170,20 +171,20 @@ public class WorkspaceDTO {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class ResourceStatus {
-		private String cpuLimit;
-		private String cpuUsed;
-		private String gpuLimit;
-		private String gpuUsed;
-		private String memLimit;
-		private String memUsed;
+		private float cpuLimit;
+		private float memLimit;
+		private float gpuLimit;
+		private float cpuUsed;
+		private float memUsed;
+		private float gpuUsed;
 
 		public ResourceStatus(ResourceQuotaStatus resourceQuota) {
-			this.cpuLimit = resourceQuota.getHard().get("requests.cpu").getAmount();
-			this.cpuUsed = resourceQuota.getUsed().get("requests.cpu").getAmount();
-			this.gpuLimit = resourceQuota.getHard().get("requests.nvidia.com/gpu").getAmount();
-			this.gpuUsed = resourceQuota.getUsed().get("requests.nvidia.com/gpu").getAmount();
-			this.memLimit = resourceQuota.getHard().get("requests.memory").getAmount();
-			this.memUsed = resourceQuota.getUsed().get("requests.memory").getAmount();
+			this.cpuLimit = K8sInfoPicker.convertQuantity(resourceQuota.getHard().get("requests.cpu"));
+			this.cpuUsed = K8sInfoPicker.convertQuantity(resourceQuota.getUsed().get("requests.cpu"));
+			this.gpuLimit = Float.parseFloat(resourceQuota.getHard().get("requests.nvidia.com/gpu").getAmount());
+			this.gpuUsed = Float.parseFloat(resourceQuota.getUsed().get("requests.nvidia.com/gpu").getAmount());
+			this.memLimit = K8sInfoPicker.convertQuantity(resourceQuota.getHard().get("requests.memory"));
+			this.memUsed = K8sInfoPicker.convertQuantity(resourceQuota.getUsed().get("requests.memory"));
 		}
 	}
 }

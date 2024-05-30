@@ -30,6 +30,8 @@ public interface WorkspaceFacadeService {
 
 	WorkspaceResourceQuotaState getWorkspaceResourceQuotaState(String workspaceResourceName);
 
+	WorkspaceResourceQuotaState getWorkspaceResourceUsage(String workspaceResourceName);
+
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName);
 
 	void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserDTO.UserInfo userInfoDTO);
