@@ -141,7 +141,7 @@ public class MailServiceImpl implements MailService {
 
 	private String createSubTitle(String text){
 		return """
-            <tr>
+            <tr style="text-align: center">
                 <td
                     style="
                         text-align: center;
