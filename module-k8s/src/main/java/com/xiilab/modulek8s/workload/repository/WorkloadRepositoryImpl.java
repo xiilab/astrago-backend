@@ -336,7 +336,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			.get();
 		Pod pod = kubernetesClient.pods()
 			.inNamespace(workspaceName)
-			.withLabel("job-name", mpiJob.getMetadata().getName())
+			.withLabel("training.kubeflow.org/job-name", mpiJob.getMetadata().getName())
 			.withLabel("training.kubeflow.org/job-role", "launcher")
 			.list()
 			.getItems()
