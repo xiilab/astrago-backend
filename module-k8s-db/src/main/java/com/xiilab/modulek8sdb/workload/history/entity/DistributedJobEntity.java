@@ -23,17 +23,17 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class DistributedJobEntity extends WorkloadEntity {
 	@Column(name = "LAUNCHER_CPU_REQUEST")
-	private float launcherCpuRequest;
+	private Float launcherCpuRequest;
 	@Column(name = "LAUNCHER_MEM_REQUEST")
-	private float launcherMemRequest;
+	private Float launcherMemRequest;
 	@Column(name = "WORKER_CPU_REQUEST")
-	private float workerCpuRequest;
+	private Float workerCpuRequest;
 	@Column(name = "WORKER_MEM_REQUEST")
-	private float workerMemRequest;
+	private Float workerMemRequest;
 	@Column(name = "WORKER_GPU_REQUEST")
-	private int workerGpuRequest;
+	private Integer workerGpuRequest;
 	@Column(name = "WORKER_COUNT")
-	private int workerCount;
+	private Integer workerCount;
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	DistributedJobEntity(String uid, String name, String description, String resourceName, String workspaceName,
