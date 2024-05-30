@@ -55,7 +55,6 @@ public class UserServiceImpl implements UserService {
 			userRepository.updateUserAttribute(userIdList, Map.of("approvalYN", String.valueOf(approvalYN)));
 			//사용자 활성화 처리
 			userRepository.updateUserActivationYN(userIdList, true);
-
 		} else {
 			//사용자 반려 처리
 			userRepository.refuseUserById(userIdList);

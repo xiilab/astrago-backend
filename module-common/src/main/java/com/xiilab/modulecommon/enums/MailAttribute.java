@@ -19,8 +19,8 @@ public enum MailAttribute{
 	WORKSPACE_CREATE("[Astrago] 워크스페이스(%s) 생성 알림","%s(%s)님이 <br>워크스페이스(%s)을(를) 생성하였습니다.","워크스페이스 생성내역은 아래와 같습니다.","<리소스 신청량>","감사합니다."),
 	// WORKSPACE_RESOURCE_OVER("[Astrago] 워크스페이스(%s) 리소스 초과 알림","%s(%s)님의 <br>워크스페이스(%s)이(가) <br>리소스 초과되었습니다.","","<현재 사용 리소스>","감사합니다."),
 	WORKSPACE_RESOURCE_REQUEST("[Astrago] 워크스페이스(%s) 리소스 요청 알림","%s(%s)님의 <br>워크스페이스(%s) <br>리소스 추가 요청을 하였습니다.","","<리소스 신청량>","감사합니다."),
-	WORKSPACE_RESOURCE_APPROVE("[Astrago] 워크스페이스(%s) 리소스 결과 알림","%s(%s)님이 <br>워크스페이스(%s) 리소스 요청을 승인 하였습니다","승인 일시 : %s","<리소스 신청량>",""),
-	WORKSPACE_RESOURCE_REFUSE("[Astrago] 워크스페이스(%s) 리소스 결과 알림","%s(%s)님이 <br>워크스페이스(%s) 리소스 요청을 반려 하였습니다","반려 일시 : %s  <br> 반려 사유 : %s","","감사합니다."),
+	WORKSPACE_RESOURCE_APPROVE("[Astrago] 워크스페이스(%s) 리소스 결과 알림","%s(%s)님이 <br>워크스페이스(%s) 리소스 요청을 승인 하였습니다","승인 일시 : %s","<리소스 신청량>","감사합니다."),
+	WORKSPACE_RESOURCE_REFUSE("[Astrago] 워크스페이스(%s) 리소스 결과 알림","%s(%s)님이 <br>워크스페이스(%s) 리소스 요청을 반려 하였습니다","반려 일시 : %s  <br> 반려 사유 : %s","",""),
 	WORKSPACE_DELETE("[Astrago] 워크스페이스(%s) 삭제 알림","%s워크스페이스(%s)을(를) 삭제하였습니다.","삭제 일시 : %s ","",""),
 	// WORKSPACE_MEMBER_UPDATE("[Astrago] 워크스페이스(%s) 멤버 변경 알림","워크스페이스(%s) <br>멤버를 변경하였습니다.","변경 일시 : %s","","감사합니다."),
 	// 워크로드

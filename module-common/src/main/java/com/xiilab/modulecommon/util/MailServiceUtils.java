@@ -54,6 +54,7 @@ public class MailServiceUtils {
 		return MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(String.format(mail.getTitle(), userName, email))
+			.subTitle(mail.getSubTitle())
 			.receiverEmail(email)
 			.footer(mail.getFooter())
 			.build();
@@ -64,6 +65,7 @@ public class MailServiceUtils {
 		return MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(String.format(mail.getTitle(), userName, email))
+			.subTitle(mail.getSubTitle())
 			.receiverEmail(email)
 			.footer(mail.getFooter())
 			.build();
