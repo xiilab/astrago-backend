@@ -2,11 +2,15 @@ package com.xiilab.servercore.workload.dto.request;
 
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 	private float cpuRequest;
 	private float memRequest;
