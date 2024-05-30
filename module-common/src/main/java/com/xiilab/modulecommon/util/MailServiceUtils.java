@@ -30,6 +30,7 @@ public class MailServiceUtils {
 
 		return MailDTO.builder()
 			.subject(mail.getSubject())
+			.subTitle(mail.getSubTitle())
 			.title(String.format(mail.getTitle(), userName, email))
 			.contents(contents)
 			.subTitle(mail.getSubTitle())
@@ -44,6 +45,7 @@ public class MailServiceUtils {
 		return MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(String.format(mail.getTitle(), nodeName))
+			.subTitle(mail.getSubTitle())
 			.footer(mail.getFooter())
 			.build();
 	}
@@ -54,6 +56,7 @@ public class MailServiceUtils {
 		return MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(String.format(mail.getTitle(), userName, email))
+			.subTitle(mail.getSubTitle())
 			.receiverEmail(email)
 			.footer(mail.getFooter())
 			.build();
@@ -64,6 +67,7 @@ public class MailServiceUtils {
 		return MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(String.format(mail.getTitle(), userName, email))
+			.subTitle(mail.getSubTitle())
 			.receiverEmail(email)
 			.footer(mail.getFooter())
 			.build();
@@ -224,6 +228,7 @@ public class MailServiceUtils {
 		return MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(String.format(mail.getTitle(), endDate))
+			.subTitle(mail.getSubTitle())
 			.footer(mail.getFooter())
 			.build();
 	}
@@ -234,6 +239,7 @@ public class MailServiceUtils {
 		return MailDTO.builder()
 			.subject(mail.getSubject())
 			.title(String.format(mail.getTitle(), nodeName))
+			.subTitle(mail.getSubTitle())
 			.footer(mail.getFooter())
 			.receiverEmail(receiverMail)
 			.build();
