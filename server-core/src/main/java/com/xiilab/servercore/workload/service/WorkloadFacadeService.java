@@ -190,25 +190,25 @@ public class WorkloadFacadeService {
 		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(
 			moduleCreateWorkloadReqDTO.getWorkspace());
 		// CPU
-		float cpuUsed = Float.parseFloat(workspaceResourceStatus.getResourceStatus().getCpuUsed());
+		float cpuUsed = workspaceResourceStatus.getResourceStatus().getCpuUsed();
 		if (cpuUsed != 0.0f) {
 			cpuUsed = cpuUsed / 1000.0f;
 		}
 
 		// MEM
-		float memUsed = Float.parseFloat(workspaceResourceStatus.getResourceStatus().getMemUsed());
+		float memUsed = workspaceResourceStatus.getResourceStatus().getMemUsed();
 		if (memUsed != 0.0f) {
 			memUsed = memUsed / 1000.0f;
 		}
 
-		boolean isCpuOverResource = isOverResource(String.valueOf(cpuUsed),
+		boolean isCpuOverResource = isOverResource(cpuUsed,
 			moduleCreateWorkloadReqDTO.getTotalCpuRequest(),
 			workspaceResourceStatus.getResourceStatus().getCpuLimit());
 		// GPU
 		boolean isGpuOverResource = isOverResource(workspaceResourceStatus.getResourceStatus().getGpuUsed(),
 			moduleCreateWorkloadReqDTO.getTotalGpuRequest(), workspaceResourceStatus.getResourceStatus().getGpuLimit());
 
-		boolean isMemOverResource = isOverResource(String.valueOf(memUsed),
+		boolean isMemOverResource = isOverResource(memUsed,
 			moduleCreateWorkloadReqDTO.getTotalMemoryRequest(),
 			workspaceResourceStatus.getResourceStatus().getMemLimit());
 
@@ -996,11 +996,10 @@ public class WorkloadFacadeService {
 		return codes;
 	}
 
-	private boolean isOverResource(String workspaceResourceUsed, float createWorkloadResourceUsed,
-		String workspaceResourceLimit) {
-		float totalUsed = Float.parseFloat(workspaceResourceUsed) + createWorkloadResourceUsed;
-		float resourceLimit = Float.parseFloat(workspaceResourceLimit);
-		return totalUsed > resourceLimit;
+	private boolean isOverResource(float workspaceResourceUsed, float createWorkloadResourceUsed,
+		float workspaceResourceLimit) {
+		float totalUsed = workspaceResourceUsed + createWorkloadResourceUsed;
+		return totalUsed > workspaceResourceLimit;
 	}
 
 	private <T extends AbstractModuleWorkloadResDTO> List<FindWorkloadResDTO.Port> generatePortResDTO(
