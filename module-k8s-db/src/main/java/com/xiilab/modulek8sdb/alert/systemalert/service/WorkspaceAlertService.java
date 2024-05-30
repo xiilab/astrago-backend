@@ -5,14 +5,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
+import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.enums.AlertSendType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AlertEntity;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.WorkspaceAlertMappingEntity;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
-import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.AlertRepository;
 import com.xiilab.modulek8sdb.alert.systemalert.repository.WorkspaceAlertMappingRepository;
 
@@ -39,7 +39,7 @@ public class WorkspaceAlertService {
 					.workspaceResourceName(workspaceResourceName)
 					.userId(userId)
 					.systemAlertStatus(AlertStatus.ON)
-					.emailAlertStatus(AlertStatus.ON)
+					.emailAlertStatus(AlertStatus.OFF)
 					.build();
 				workspaceAlertMappingRepository.save(workspaceAlertMappingEntity);
 			}

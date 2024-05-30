@@ -24,6 +24,7 @@ import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
@@ -96,18 +97,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
 			String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
 
-			MailDTO mail = MailDTO.builder()
-				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), jobEntity.getName()))
-				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), jobEntity.getName()))
-				.subTitle(String.format(MailAttribute.WORKLOAD_DELETE.getSubTitle(),
-					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-				.footer(MailAttribute.WORKLOAD_DELETE.getFooter())
-				.receiverEmail(userFacadeService.getUserInfoById(jobEntity.getCreatorId()).getEmail())
-				.build();
-
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
-				jobEntity.getWorkspaceResourceName(), null, mail);
+				jobEntity.getWorkspaceResourceName(), null, null);
 
 		} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || loginUserOwnerWorkspaceList.contains(
 			jobEntity.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
@@ -116,18 +108,13 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			String title = AlertMessage.WORKLOAD_DELETE_ADMIN.getTitle();
 			String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(),
 				userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
-			MailDTO mailDTo = MailDTO.builder()
-				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), jobEntity.getName()))
-				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), jobEntity.getName()))
-				.subTitle(String.format(MailAttribute.WORKLOAD_DELETE.getSubTitle(),
-					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-				.footer(MailAttribute.WORKLOAD_DELETE.getFooter())
-				.receiverEmail(userFacadeService.getUserInfoById(jobEntity.getCreatorId()).getEmail())
-				.build();
+
+			String receiverMail = userFacadeService.getUserInfoById(jobEntity.getCreatorId()).getEmail();
+			MailDTO mailDTO = MailServiceUtils.deleteWorkloadMail(jobEntity.getName(), receiverMail);
 
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
 				userInfoDTO.getId(), jobEntity.getCreatorId(), emailTitle, title, message,
-				jobEntity.getWorkspaceResourceName(), null, mailDTo);
+				jobEntity.getWorkspaceResourceName(), null, mailDTO);
 		} else {
 			throw new IllegalArgumentException("해당 유저는 워크스페이스 삭제 권한이 없습니다.");
 		}

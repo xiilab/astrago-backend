@@ -4,7 +4,6 @@ import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,13 +25,13 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
@@ -78,7 +77,6 @@ import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
-import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.ServiceList;
@@ -234,19 +232,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 				volume.getPersistentVolumeClaim().getClaimName()));
 
 		deleteServices(interactiveJobResDTO.getWorkspaceResourceName(), interactiveJobResDTO.getResourceName());
-
-		UserDTO.UserInfo userInfo = userService.getUserById(interactiveJobResDTO.getCreatorId());
-		if (userInfo != null) {
-			MailDTO mail = MailDTO.builder()
-				.subject(String.format(MailAttribute.WORKLOAD_DELETE.getSubject(), interactiveJobResDTO.getName()))
-				.title(String.format(MailAttribute.WORKLOAD_DELETE.getTitle(), interactiveJobResDTO.getName()))
-				.subTitle(String.format(MailAttribute.WORKLOAD_DELETE.getSubTitle(),
-					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-				.footer(MailAttribute.WORKLOAD_DELETE.getFooter())
-				.receiverEmail(userInfo.getEmail())
-				.build();
-			mailService.sendMail(mail);
-		}
 	}
 
 	@Override
@@ -410,15 +395,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
 		String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(), workloadName);
 
-		MailAttribute mail = MailAttribute.WORKLOAD_END;
-		MailDTO mailDTO = MailDTO.builder()
-			.subject(String.format(mail.getSubject(), workload.getName()))
-			.title(String.format(mail.getTitle(), workload.getName()))
-			.subTitle(String.format(mail.getSubTitle(),
-				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-			.footer(mail.getFooter())
-			.receiverEmail(userService.getUserById(workload.getCreatorId()).getEmail())
-			.build();
+		String receiverMail = userService.getUserById(workload.getCreatorId()).getEmail();
+		MailDTO mailDTO = MailServiceUtils.endWorkloadMail(workload.getName(), receiverMail);
 
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 			AlertName.USER_WORKLOAD_END, null, workload.getCreatorId(), emailTitle, title, message,
@@ -441,16 +419,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		String title = AlertMessage.WORKLOAD_START_CREATOR.getTitle();
 		String message = String.format(AlertMessage.WORKLOAD_START_CREATOR.getMessage(), workloadName);
 
-		MailAttribute mail = MailAttribute.WORKLOAD_START;
-
-		MailDTO mailDTO = MailDTO.builder()
-			.subject(String.format(mail.getSubject(), workloadName))
-			.title(String.format(mail.getTitle(), workloadName))
-			.subTitle(String.format(mail.getSubTitle(),
-				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-			.footer(mail.getFooter())
-			.receiverEmail(userService.getUserById(workload.getCreatorId()).getEmail())
-			.build();
+		String receiverMail = userService.getUserById(workload.getCreatorId()).getEmail();
+		MailDTO mailDTO = MailServiceUtils.startWorkloadMail(workloadName, receiverMail);
 
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 			AlertName.USER_WORKLOAD_START,
@@ -458,7 +428,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			workload.getWorkspaceResourceName(), pageNaviParam, mailDTO);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
-
 	}
 
 	private void sendErrorNotification(WorkloadEntity workload) {
@@ -475,15 +444,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		String title = workloadErrorCreator.getTitle();
 		String message = String.format(workloadErrorCreator.getMessage(), workloadName);
 
-		MailAttribute mail = MailAttribute.WORKLOAD_ERROR;
-		MailDTO mailDTO = MailDTO.builder()
-			.subject(String.format(mail.getSubject(), workload.getName()))
-			.title(String.format(mail.getTitle(), workload.getName()))
-			.subTitle(String.format(mail.getSubTitle(),
-				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
-			.footer(mail.getFooter())
-			.receiverEmail(userService.getUserById(workload.getCreatorId()).getEmail())
-			.build();
+		String receiverMail = userService.getUserById(workload.getCreatorId()).getEmail();
+		MailDTO mailDTO = MailServiceUtils.errorWorkloadMail(workloadName, receiverMail);
 
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 			AlertName.USER_WORKLOAD_ERROR,
