@@ -197,8 +197,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		JsonNode metricData = result.path("metric");
 
 		// 결과 값 추출
-		double value = result.path("value").get(1).asDouble();
-
+		String value = result.path("value").get(1).textValue();
 		// ResponseDTO 객체 생성하여 반환
 		return new ResponseDTO.RealTimeDTO(
 			metric,
