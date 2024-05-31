@@ -58,6 +58,7 @@ public class WorkloadController {
 	private final ModelService modelService;
 	private final HubService hubService;
 
+
 	@PostMapping("/workloads")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
