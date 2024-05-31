@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.kubeflow.v2beta1.MPIJob;
 import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.Volumes;
@@ -44,9 +43,7 @@ import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleEnvResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
@@ -467,13 +464,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourceName(interactiveJobResDTO.getResourceName())
 			.workspaceName(interactiveJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(interactiveJobResDTO.getEnvs().stream().collect(Collectors.toMap(
-				ModuleEnvResDTO::getName,
-				ModuleEnvResDTO::getValue)))
-			.ports(interactiveJobResDTO.getPorts().stream().collect(Collectors.toMap(
-				ModulePortResDTO::getName,
-				ModulePortResDTO::getOriginPort
-			)))
+			.envs(interactiveJobResDTO.getEnvsMap())
+			.ports(interactiveJobResDTO.getPortsMap())
 			.cpuReq(interactiveJobResDTO.getCpuRequest())
 			.memReq(interactiveJobResDTO.getMemRequest())
 			.gpuReq(interactiveJobResDTO.getGpuRequest())
@@ -510,13 +502,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourceName(batchJobResDTO.getResourceName())
 			.workspaceName(batchJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(batchJobResDTO.getEnvs().stream().collect(Collectors.toMap(
-				ModuleEnvResDTO::getName,
-				ModuleEnvResDTO::getValue)))
-			.ports(batchJobResDTO.getPorts().stream().collect(Collectors.toMap(
-				ModulePortResDTO::getName,
-				ModulePortResDTO::getOriginPort
-			)))
+			.envs(batchJobResDTO.getEnvsMap())
+			.ports(batchJobResDTO.getPortsMap())
 			.cpuReq(batchJobResDTO.getCpuRequest())
 			.memReq(batchJobResDTO.getMemRequest())
 			.gpuReq(batchJobResDTO.getGpuRequest())
@@ -553,13 +540,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourceName(distributedJobResDTO.getResourceName())
 			.workspaceName(distributedJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(distributedJobResDTO.getEnvs().stream().collect(Collectors.toMap(
-				ModuleEnvResDTO::getName,
-				ModuleEnvResDTO::getValue)))
-			.ports(distributedJobResDTO.getPorts().stream().collect(Collectors.toMap(
-				ModulePortResDTO::getName,
-				ModulePortResDTO::getOriginPort
-			)))
+			.envs(distributedJobResDTO.getEnvsMap())
+			.ports(distributedJobResDTO.getPortsMap())
 			.launcherCpuRequest(distributedJobResDTO.getLauncherInfo().getCpuRequest())
 			.launcherMemRequest(distributedJobResDTO.getLauncherInfo().getMemRequest())
 			.workerCpuRequest(distributedJobResDTO.getWorkerInfo().getCpuRequest())

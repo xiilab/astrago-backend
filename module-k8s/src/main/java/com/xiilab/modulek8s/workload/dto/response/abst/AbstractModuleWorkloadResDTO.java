@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.ImageType;
@@ -159,6 +160,37 @@ public abstract class AbstractModuleWorkloadResDTO {
 
 	public void updatePort(List<ModulePortResDTO> modulePortResDTOS) {
 		this.ports = modulePortResDTOS;
+	}
+
+	public Map<String, String> getEnvsMap() {
+		Map<String, String> envsMap = new HashMap<>();
+		if (CollectionUtils.isEmpty(this.envs)) {
+			return envsMap;
+		}
+
+		for (ModuleEnvResDTO env : envs) {
+			String name = StringUtils.hasText(env.getName()) ? env.getName() : "";
+			String value = StringUtils.hasText(env.getValue()) ? env.getValue() : "";
+
+			envsMap.put(name, value);
+		}
+
+		return envsMap;
+	}
+
+	public Map<String, Integer> getPortsMap() {
+		Map<String, Integer> portsMap = new HashMap<>();
+		if (CollectionUtils.isEmpty(this.ports)) {
+			return portsMap;
+		}
+		for (ModulePortResDTO port : ports) {
+			String name = StringUtils.hasText(port.getName()) ? port.getName() : "";
+			int value = port.getOriginPort() != null ? port.getOriginPort() : 0;
+
+			portsMap.put(name, value);
+		}
+
+		return portsMap;
 	}
 
 	public abstract WorkloadType getType();
