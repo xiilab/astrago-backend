@@ -444,7 +444,7 @@ public class K8sInfoPicker {
 	}
 
 	public static boolean isBatchJobYN(Job job) {
-		return job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField());
+		return job.getMetadata().getLabels().containsKey(LabelField.CONTROL_BY.getField());
 	}
 
 	private static boolean getMpiJobFailedYN(Map<String, ReplicaStatuses> replicaStatuses) {

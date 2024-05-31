@@ -854,28 +854,32 @@
 // 		String gpuCount = "nvidia.com/gpu.count";
 // 		String address = "projectcalico.org/IPv4Address";
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {
-// 			Node node1 = client.nodes().withName("gpu-titan-2").get();
-// 			Node node2 = client.nodes().list().getItems().stream().filter(node ->
-// 				node.getMetadata().getName().equals("gpu-titan-2")).findFirst().get();
-// 			List<Node> nodes = client.nodes().list().getItems();
-// 			for (Node node : nodes) {
-// 				String nodeName = node.getMetadata().getName(); //"gpu-titan-2"
-// 				node.getSpec().getUnschedulable(); // true = cordon or null, false = uncordon
-// 				//mem, cpu, disk, gpu
-// 				//request cpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="cpu"})by(node)
-// 				//request gpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="gpu"})
-// 				//request memory => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="memory"})/1024 = ki
-// 				//총 cpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="cpu"})by(node)
-// 				//총 gpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="nvidia_com_gpu"})by(node)
-// 				//총 mem => sum(kube_node_status_capacity{node="gpu-titan-2",resource="memory"})by(node)/1024 = ki
+// 			Node node = client.nodes().withName("gpu-titan-2").get();
+// 			// Node node2 = client.nodes().list().getItems().stream().filter(node ->
+// 			// 	node.getMetadata().getName().equals("gpu-titan-2")).findFirst().get();
+// 			// List<Node> nodes = client.nodes().list().getItems();
+// 			// for (Node node : nodes) {
+// 			// 	String nodeName = node.getMetadata().getName(); //"gpu-titan-2"
+// 			// 	node.getSpec().getUnschedulable(); // true = cordon or null, false = uncordon
+// 			// 	//mem, cpu, disk, gpu
+// 			// 	//request cpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="cpu"})by(node)
+// 			// 	//request gpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="gpu"})
+// 			// 	//request memory => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="memory"})/1024 = ki
+// 			// 	//총 cpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="cpu"})by(node)
+// 			// 	//총 gpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="nvidia_com_gpu"})by(node)
+// 			// 	//총 mem => sum(kube_node_status_capacity{node="gpu-titan-2",resource="memory"})by(node)/1024 = ki
+// 			//
+// 			// 	//총 disk => max by (mountpoint) (label_replace(node_filesystem_size_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
+// 			// 	//사용량 disk => max by (mountpoint) (label_replace(node_filesystem_avail_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
+// 			// }
 //
-// 				//총 disk => max by (mountpoint) (label_replace(node_filesystem_size_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
-// 				//사용량 disk => max by (mountpoint) (label_replace(node_filesystem_avail_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
-//
-//
-// 			}
-//
-// 			System.out.println(nodes);
+// 			//1. gpu 종류 별 개수 조회
+// 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
+// 			String gpuCnt = node.getMetadata().getLabels().get("nvidia.com/gpu.count"); // gpu 개수
+// 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
+// 			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable"); // mps 설정 유무
+// 			String mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"); // mps 설정 개수
+// 			System.out.println(node);
 // 		}
 // 	}
 // 	@Test
