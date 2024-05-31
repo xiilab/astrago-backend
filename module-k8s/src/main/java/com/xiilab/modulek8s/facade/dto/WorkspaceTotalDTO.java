@@ -6,7 +6,7 @@ import java.util.List;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 
 import lombok.AllArgsConstructor;
@@ -34,7 +34,7 @@ public class WorkspaceTotalDTO {
 	private LocalDateTime createAt;
 
 	public WorkspaceTotalDTO(WorkspaceDTO.ResponseDTO workspaceDTO, ResourceQuotaResDTO resourceQuotaResDTO,
-		List<ModuleWorkloadResDTO> workloadList) {
+		List<AbstractModuleWorkloadResDTO> workloadList) {
 		this.uid = workspaceDTO.getId();
 		this.name = workspaceDTO.getName();
 		this.resourceName = workspaceDTO.getResourceName();
@@ -42,7 +42,7 @@ public class WorkspaceTotalDTO {
 		this.limitCPU = resourceQuotaResDTO.getLimitCPU();
 		this.limitMEM = resourceQuotaResDTO.getLimitMEM();
 		this.limitGPU = resourceQuotaResDTO.getLimitGPU();
-		this.age = new AgeDTO(workspaceDTO.getCreatedAt());
+		this.age = workspaceDTO.getCreatedAt() != null ? new AgeDTO(workspaceDTO.getCreatedAt()) : null;
 		this.runningCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.RUNNING);
 		this.errCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.ERROR);
 		this.pendingCnt = getWorkloadCountByStatus(workloadList, WorkloadStatus.PENDING);
@@ -52,7 +52,7 @@ public class WorkspaceTotalDTO {
 		this.createAt = workspaceDTO.getCreatedAt();
 	}
 
-	private int getWorkloadCountByStatus(List<ModuleWorkloadResDTO> workloadList, WorkloadStatus status) {
+	private int getWorkloadCountByStatus(List<AbstractModuleWorkloadResDTO> workloadList, WorkloadStatus status) {
 		return (int)workloadList.stream().filter(workload -> workload.getStatus() == status).count();
 	}
 

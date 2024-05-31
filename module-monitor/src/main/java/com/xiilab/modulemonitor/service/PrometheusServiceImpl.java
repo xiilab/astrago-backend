@@ -197,8 +197,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		JsonNode metricData = result.path("metric");
 
 		// 결과 값 추출
-		double value = result.path("value").get(1).asDouble();
-
+		String value = result.path("value").get(1).textValue();
 		// ResponseDTO 객체 생성하여 반환
 		return new ResponseDTO.RealTimeDTO(
 			metric,
@@ -356,6 +355,9 @@ public class PrometheusServiceImpl implements PrometheusService{
 		}
 		if(promql.getType().equals("TERMINAL") && Promql.TERMINAL_CPU_UTILIZATION.name().equals(requestDTO.metricName())){
 			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"", "node =~ \"" + requestDTO.nodeName() + ".*\"");
+		}
+		if (Promql.TERMINAL_MULTI_CPU_UTILIZATION.name().equals(requestDTO.metricName())) {
+			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"");
 		}
 		return String.format(promql.getQuery(), result.toLowerCase());
 	}

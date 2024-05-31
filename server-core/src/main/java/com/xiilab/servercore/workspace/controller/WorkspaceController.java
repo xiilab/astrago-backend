@@ -1,13 +1,8 @@
 package com.xiilab.servercore.workspace.controller;
 
-import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,6 +75,13 @@ public class WorkspaceController {
 		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok(workspaceService.getUserWorkspaceResourceStatus(workspaceName, userInfoDTO));
+	}
+
+	@GetMapping("/resource/usage")
+	@Operation(summary = "워크스페이스 리소스 사용 현황 조회")
+	public ResponseEntity<WorkspaceResourceQuotaState> getWorkspaceResourceUsage(
+		@RequestParam(value = "workspaceName") String workspaceName) {
+		return ResponseEntity.ok(workspaceService.getWorkspaceResourceUsage(workspaceName));
 	}
 
 	@GetMapping("")

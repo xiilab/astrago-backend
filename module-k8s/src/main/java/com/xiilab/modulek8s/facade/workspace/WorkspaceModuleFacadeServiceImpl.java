@@ -14,7 +14,7 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaReqDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 
@@ -82,7 +82,7 @@ public class WorkspaceModuleFacadeServiceImpl implements WorkspaceModuleFacadeSe
 	@Override
 	public WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceName) {
 		WorkspaceDTO.ResponseDTO workspace = workspaceService.getWorkspaceByName(workspaceName);
-		List<ModuleWorkloadResDTO> workloadList = workloadModuleFacadeService.getWorkloadList(
+		List<AbstractModuleWorkloadResDTO> workloadList = workloadModuleFacadeService.getWorkloadList(
 			workspace.getResourceName());
 		ResourceQuotaResDTO resourceQuotas = resourceQuotaService.getResourceQuotas(workspaceName);
 		return new WorkspaceTotalDTO(workspace, resourceQuotas, workloadList);

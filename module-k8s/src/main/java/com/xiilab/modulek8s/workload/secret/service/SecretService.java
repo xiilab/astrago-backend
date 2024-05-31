@@ -1,7 +1,7 @@
 package com.xiilab.modulek8s.workload.secret.service;
 
-import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 
 public interface SecretService {
-	String createSecret(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
+	String createSecret(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 }

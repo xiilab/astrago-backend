@@ -8,6 +8,7 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -18,8 +19,11 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class CreateJobResDTO extends ModuleWorkloadResDTO {
+public class CreateJobResDTO extends AbstractModuleWorkloadResDTO {
 	private WorkloadStatus status;
+	private String gpuRequest;                   // 워크로드 gpu 요청량
+	private String cpuRequest;                   // 워크로드 cpu 요청량
+	private String memRequest;                   // 워크로드 mem 요청량
 	private Map<Long, Map<String, String>> codesInfoMap;
 	private Map<Long, Map<String, String>> datasetInfoMap;
 	private Map<Long, Map<String, String>> modelInfoMap;

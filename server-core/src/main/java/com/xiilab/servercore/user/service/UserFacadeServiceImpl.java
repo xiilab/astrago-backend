@@ -1,6 +1,5 @@
 package com.xiilab.servercore.user.service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,9 +16,9 @@ import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.enums.MailAttribute;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
@@ -59,26 +58,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		String message = String.format(userCreate.getMessage(), userReqVO.getLastName() + userReqVO.getFirstName(),
 			userReqVO.getEmail());
 
-		MailAttribute mail = MailAttribute.USER_JOIN;
-		// Mail Contents 작성
-		List<MailDTO.Content> contents = List.of(MailDTO.Content.builder()
-				.col1("사용자 이름 : ")
-				.col2(userReqVO.getLastName() + userReqVO.getFirstName())
-				.build(),
-			MailDTO.Content.builder().col1("이메일 주소 : ").col2(userReqVO.getEmail()).build(),
-			MailDTO.Content.builder()
-				.col1("가입 일시 : ")
-				.col2(userInfo.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-				.build());
+		MailDTO mailDTO = MailServiceUtils.createUserMail(userReqVO.getLastName() + userReqVO.getFirstName(),
+			userReqVO.getEmail(), userInfo.getJoinDate());
 
-		MailDTO mailDTO = MailDTO.builder()
-			.subject(mail.getSubject())
-			.title(String.format(mail.getTitle(), userReqVO.getLastName() + userReqVO.getFirstName(),
-				userReqVO.getEmail()))
-			.contents(contents)
-			.subTitle(mail.getSubTitle())
-			.footer(mail.getFooter())
-			.build();
 		eventPublisher.publishEvent(new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), mailTitle, title, message, null, mailDTO));
 	}
 
@@ -154,26 +136,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		String title = userUpdate.getTitle();
 		String message = String.format(userUpdate.getMessage(), userInfo.getLastName() + userInfo.getFirstName());
 
-		MailAttribute mail = MailAttribute.USER_UPDATE;
-		// Mail Contents 작성
-		List<MailDTO.Content> contents = List.of(
-			MailDTO.Content.builder().col1("사용자 이름 : ").col2(userInfo.getLastName() + userInfo.getFirstName()).build(),
-			MailDTO.Content.builder().col1("이메일 주소 : ").col2(userInfo.getEmail()).build()
-
-		);
-		// Mail 전송
-		MailDTO mailDTO = MailDTO.builder()
-			.subject(mail.getSubject())
-			.title(
-				String.format(mail.getTitle(), userInfo.getLastName() + userInfo.getFirstName(), userInfo.getEmail()))
-			.subTitle(mail.getSubTitle())
-			.contentTitle(mail.getContentTitle())
-			.receiverEmail(userInfo.getEmail())
-			.contents(contents)
-			.footer(mail.getFooter())
-			.build();
 		eventPublisher.publishEvent(
-			new UserAlertEvent(AlertName.USER_UPDATE, mailTitle, title, message, userInfo.getId(), mailDTO)
+			new UserAlertEvent(AlertName.USER_UPDATE, mailTitle, title, message, userInfo.getId(), null)
 		);
 	}
 
