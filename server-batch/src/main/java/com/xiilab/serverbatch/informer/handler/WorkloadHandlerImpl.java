@@ -13,7 +13,6 @@ import org.kubeflow.v2beta1.MPIJob;
 import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.Volumes;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -122,7 +121,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	@Override
-	@Transactional
 	public void batchJobUpdateHandler(Job beforeJob, Job afterJob) {
 		if (isAstragoResource(afterJob) && isResourceUpdate(beforeJob, afterJob) && isBatchJobYN(afterJob)) {
 			// 잡상태 조회
