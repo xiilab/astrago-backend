@@ -15,7 +15,6 @@ import me.desair.tus.server.TusFileUploadService;
 
 @Slf4j
 @Component
-// @RequiredArgsConstructor
 public class TusCleanUpJob extends QuartzJobBean {
 	@Autowired
 	private TusFileUploadService tusFileUploadService;

@@ -27,8 +27,7 @@ public class TusBatchQuartzConfig extends CommonQuartzConfig {
 	private void tusScheduler() throws SchedulerException {
 		JobDataMap jobDataMap = new JobDataMap();
 		JobDetail tusCleanUpJobDetail = createJobDetail(TusCleanUpJob.class, "tusCleanUpJob", jobDataMap);
-		Trigger tusCleanUpJobTrigger = createCronTrigger(tusCleanUpJobDetail, "tusCleanUpJobTrigger",
-			"* 0/3 * * * ?"); //매일 새벽 1시
+		Trigger tusCleanUpJobTrigger = createCronTrigger(tusCleanUpJobDetail, "tusCleanUpJobTrigger", "0 0 1 * * ?"); //매일 새벽 1시
 		scheduler.scheduleJob(tusCleanUpJobDetail, tusCleanUpJobTrigger);
 	}
 }

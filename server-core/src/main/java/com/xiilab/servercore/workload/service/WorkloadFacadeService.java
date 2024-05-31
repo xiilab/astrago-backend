@@ -305,20 +305,18 @@ public class WorkloadFacadeService {
 					workspaceName, workloadResourceName);
 				//삭제권한 업데이트
 				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			} else if (workloadType == WorkloadType.DISTRIBUTED) {
 				ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
 					workspaceName, workloadResourceName);
 				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
-			try {
-				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
-					userInfoDTO);
-			} catch (Exception e2) {
-				throw e2;
-			}
+			return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
+				userInfoDTO);
 		}
 
 		return null;
@@ -397,8 +395,10 @@ public class WorkloadFacadeService {
 			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
 				activeSingleWorkloadDetail.getWorkloadName());
 
-			String receiverMail = userFacadeService.getUserInfoById(activeSingleWorkloadDetail.getRegUserId()).getEmail();
-			MailDTO mailDTO = MailServiceUtils.endWorkloadMail(activeSingleWorkloadDetail.getWorkloadName(), receiverMail);
+			String receiverMail = userFacadeService.getUserInfoById(activeSingleWorkloadDetail.getRegUserId())
+				.getEmail();
+			MailDTO mailDTO = MailServiceUtils.endWorkloadMail(activeSingleWorkloadDetail.getWorkloadName(),
+				receiverMail);
 
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeSingleWorkloadDetail.getRegUserId(), emailTitle,
@@ -543,6 +543,21 @@ public class WorkloadFacadeService {
 	}
 
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
+		// workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
+		// try {
+		// 	if (workloadType == WorkloadType.BATCH) {
+		// 		workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
+		// 			workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+		// 			workloadUpdateDTO.getDescription());
+		// 	} else if (workloadType == WorkloadType.INTERACTIVE) {
+		// 		workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
+		// 			workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
+		// 			workloadUpdateDTO.getDescription());
+		// 	}
+		// } catch (Exception e) {
+		//
+		// }
+
 		try {
 			if (workloadType == WorkloadType.BATCH) {
 				workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
@@ -553,12 +568,8 @@ public class WorkloadFacadeService {
 					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
 					workloadUpdateDTO.getDescription());
 			}
-		} catch (Exception e) {
-			try {
-				workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
-			} catch (RestApiException e2) {
-				throw e2;
-			}
+		} finally {
+			workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
 		}
 	}
 
