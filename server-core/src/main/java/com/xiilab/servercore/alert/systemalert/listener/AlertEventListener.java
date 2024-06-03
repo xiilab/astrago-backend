@@ -20,6 +20,7 @@ import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceAlertMappingDeleteEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
@@ -37,6 +38,8 @@ import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
+import com.xiilab.modulek8sdb.smtp.entity.SmtpEntity;
+import com.xiilab.modulek8sdb.smtp.repository.SmtpRepository;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.UserRepository;
 
@@ -56,6 +59,7 @@ public class AlertEventListener {
 	private final WorkspaceAlertService workspaceAlertService;
 	private final ApplicationEventPublisher publisher;
 	private final NetworkRepository networkRepository;
+	private final SmtpRepository smtpRepository;
 
 	@Async
 	@EventListener
@@ -101,8 +105,7 @@ public class AlertEventListener {
 						// 메일 발송 로직 추가
 						MailDTO mailDTO = adminAlertEvent.mailDTO();
 						mailDTO.setReceiverEmail(findUser.getEmail());
-						mailService.sendMail(mailDTO);
-
+						sendMail(mailDTO);
 					}
 				}
 			} catch (Exception e) {
@@ -156,7 +159,7 @@ public class AlertEventListener {
 					systemAlertRepository.save(saveSystemAlert);
 				}
 				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON && workspaceUserAlertEvent.mailDTO() != null ) {
-					mailService.sendMail(workspaceUserAlertEvent.mailDTO());
+					sendMail(workspaceUserAlertEvent.mailDTO());
 				}
 				if (workspaceUserAlertEvent.alertName() == AlertName.USER_WORKSPACE_DELETE) {
 					WorkspaceAlertMappingDeleteEvent workspaceAlertMappingDeleteEvent = new WorkspaceAlertMappingDeleteEvent(
@@ -207,7 +210,7 @@ public class AlertEventListener {
 			}
 			if(userAlertEvent.mailDTO() != null ){
 				// 메일 발송 로직 추가
-				mailService.sendMail(userAlertEvent.mailDTO());
+				sendMail(userAlertEvent.mailDTO());
 			}
 		}
 	}
@@ -275,6 +278,25 @@ public class AlertEventListener {
 				}
 			} catch (Exception e) {
 				log.error("관리자[{}] 알림 발송 실패!", adminAlertEvent.title());
+			}
+		}
+	}
+
+	private void sendMail(MailDTO mailDTO){
+		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
+
+		for(SmtpEntity smtpEntity : smtpEntities){
+			SmtpDTO smtpDTO = SmtpDTO.builder()
+				.host(smtpEntity.getHost())
+				.port(smtpEntity.getPort())
+				.username(smtpEntity.getUserName())
+				.password(smtpEntity.getPassword())
+				.build();
+
+			boolean result = mailService.sendMail(mailDTO, smtpDTO);
+
+			if(result){
+				break;
 			}
 		}
 	}
