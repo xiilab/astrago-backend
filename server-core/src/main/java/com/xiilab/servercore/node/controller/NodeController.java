@@ -1,5 +1,6 @@
 package com.xiilab.servercore.node.controller;
 
+import org.keycloak.authorization.client.util.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
+import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
@@ -92,4 +94,20 @@ public class NodeController {
 		@RequestParam(name = "giCount") int giCount) {
 		return new ResponseEntity<>(nodeFacadeService.getNodeMIGProfiles(nodeName, giCount), HttpStatus.OK);
 	}
+
+	@GetMapping("/{nodeName}/mps")
+	@Operation(summary = "node mps 설정 정보 조회")
+	public ResponseEntity<MPSGpuDTO.MPSInfoDTO> getMpsConfig(
+		@PathVariable(name = "nodeName") String nodeName) {
+		return new ResponseEntity<>(nodeFacadeService.getMpsConfig(nodeName), HttpStatus.OK);
+	}
+
+	@PostMapping("/{nodeName}/mps")
+	@Operation(summary = "node mps 설정")
+	public ResponseEntity<HttpStatus> setMpsConfig(@PathVariable(value = "nodeName") String nodeName,
+		@RequestBody MPSGpuDTO.SetMPSDTO setMPSDTO){
+		nodeFacadeService.setMpsConfig(nodeName, setMPSDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 }

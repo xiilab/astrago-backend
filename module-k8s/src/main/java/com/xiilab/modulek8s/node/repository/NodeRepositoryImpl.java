@@ -20,12 +20,15 @@ import org.yaml.snakeyaml.Yaml;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
+import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.modulek8s.node.enumeration.MPSCapable;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
 import io.fabric8.kubernetes.api.model.Node;
@@ -83,6 +86,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 			for (Node node : nodes) {
 				boolean migCapable = getMigCapable(node);
+				boolean mpsCapable = getMpsCapable(node);
 				boolean isActiveMIG = isActiveMIG(node);
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
@@ -98,6 +102,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 							false)
 					.migCapable(migCapable)
 					.isActiveMIG(isActiveMIG)
+					.mpsCapable(mpsCapable)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -314,6 +319,14 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 		return Boolean.parseBoolean(capable);
 	}
+	private boolean getMpsCapable(Node node) {
+		String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family");
+		if (Objects.nonNull(gpuType) && gpuType.equalsIgnoreCase("volta")) {
+			return true;
+		}
+		return false;
+	}
+
 
 	/**
 	 * 해당 노드의 gpu의 productName을 리턴하는 메소드
@@ -479,6 +492,55 @@ public class NodeRepositoryImpl implements NodeRepository {
 				if (name.contains("nvidia-mig-manager")) {
 					kubernetesClient.resource(pod).delete();
 				}
+			}
+		}
+	}
+
+	@Override
+	public MPSGpuDTO.MPSInfoDTO getMpsConfig(String nodeName) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			Node node = client.nodes().withName(nodeName).get();
+			if (node == null) {
+				throw new RestApiException(NodeErrorCode.NODE_NOT_FOUND);
+			}
+			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
+			String gpuCnt = node.getMetadata().getLabels().get("nvidia.com/gpu.count"); // gpu 개수
+			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable"); // mps 설정 유무
+			String mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"); // mps 설정 개수
+			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
+			return MPSGpuDTO.MPSInfoDTO.builder()
+				.nodeName(nodeName)
+				.gpuName(gpu)
+				.gpuCnt(gpuCnt)
+				.mpsCapable(mpsCapable.equals("true") ? MPSCapable.TRUE : MPSCapable.FALSE)
+				.mpsReplicas(mpsReplicas)
+				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
+				.build();
+		}
+	}
+
+	@Override
+	public void setMpsConfig(MPSGpuDTO.SetMPSDTO setMPSDTO) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String nodeName = setMPSDTO.getNodeName();
+			//volta 검사해야함
+			Node nodeInfo = client.nodes().withName(nodeName).get();
+			String gpuType = nodeInfo.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
+			if(!gpuType.equalsIgnoreCase("volta")){
+				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_GPU);
+			}
+			if(setMPSDTO.getMpsCapable() == MPSCapable.FALSE){
+				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
+					.editMetadata()
+					.removeFromLabels("nvidia.com/device-plugin.config")
+					.endMetadata()
+					.build());
+			}else{
+				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
+					.editMetadata()
+					.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
+					.endMetadata()
+					.build());
 			}
 		}
 	}

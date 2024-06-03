@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
+import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
@@ -41,4 +42,8 @@ public interface NodeRepository {
 	void saveGpuProductTOLabel(String nodeName);
 
 	void restartMIGManager();
+
+	MPSGpuDTO.MPSInfoDTO getMpsConfig(String nodeName);
+
+	void setMpsConfig(MPSGpuDTO.SetMPSDTO setMPSDTO);
 }

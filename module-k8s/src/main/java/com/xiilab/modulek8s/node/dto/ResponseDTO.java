@@ -47,6 +47,8 @@ public class ResponseDTO {
 		private boolean migCapable;
 		//mig 적용 유무
 		private boolean isActiveMIG;
+		//mps 사용가능 유무
+		private boolean mpsCapable;
 
 		public void setTotalGPU(double totalGPU){
 			this.totalGPU = roundToFirstDecimalPlace(totalGPU);
