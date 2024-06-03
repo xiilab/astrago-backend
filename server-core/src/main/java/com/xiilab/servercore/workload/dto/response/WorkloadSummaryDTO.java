@@ -22,7 +22,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class WorkloadSummaryDTO {
-	private String uid;                          // 워크로드 고유 ID
+	private Long id;                          // 워크로드 고유 ID
 	private String name;                         // 사용자가 입력한 워크로드의 이름
 	private String resourceName;                 // 워크로드 실제 이름
 	private String creatorId;                    // 생성자 ID
@@ -44,7 +44,7 @@ public class WorkloadSummaryDTO {
 	private String startTime;    // 파드 실행시간
 
 	public WorkloadSummaryDTO(WorkloadEntity workload) {
-		this.uid = workload.getUid();
+		this.id = workload.getId();
 		this.name = workload.getName();
 		this.resourceName = workload.getResourceName();
 		this.creatorId = workload.getCreatorId();

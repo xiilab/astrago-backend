@@ -453,14 +453,12 @@ public class WorkloadFacadeService {
 
 		//workload 삭제 권한 체크
 		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
-		overViewWorkloadResDTO.getContent()
-			.forEach(
-				moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
 
 		//page 계산
 		int totalSize = (int)(pinList.size() + overViewWorkloadResDTO.getTotalSize());
 		int totalPageNum = (int)Math.ceil(totalSize / (double)pageSize);
 		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
+		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
 	}
 
