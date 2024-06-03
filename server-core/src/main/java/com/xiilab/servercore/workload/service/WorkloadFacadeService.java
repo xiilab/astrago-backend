@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -446,7 +444,7 @@ public class WorkloadFacadeService {
 		markPinnedWorkloads(pinList);
 		List<WorkloadSummaryDTO> workloadResDTOList = new ArrayList<>(pinList);
 		//(pageSize - pin)개수만큼 normal 워크로드 조회 - 검색, sort 적용 - not in pin 워크로드 resourceName
-		int pageSize = 10;
+		int pageSize = 8;
 		int normalPageSize = pageSize - pinList.size();
 		PageRequest pageRequest = PageRequest.of(pageNum - 1, normalPageSize);
 		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getOverViewWorkloadList(

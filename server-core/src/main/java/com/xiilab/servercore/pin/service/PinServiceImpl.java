@@ -1,6 +1,5 @@
 package com.xiilab.servercore.pin.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -100,7 +99,7 @@ public class PinServiceImpl implements PinService {
 		//해당 유저가 pin을 6개 이상 생성했는지 검사
 		List<PinEntity> pinList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKLOAD,
 			userInfoDTO.getId());
-		if (pinList.size() >= 6) {
+		if (pinList.size() >= 4) {
 			throw new RestApiException(PinErrorCode.PIN_ADD_ERROR_MESSAGE);
 		}
 
