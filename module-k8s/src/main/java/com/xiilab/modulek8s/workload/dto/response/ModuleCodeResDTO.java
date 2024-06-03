@@ -24,7 +24,7 @@ public class ModuleCodeResDTO {
 	private CodeType codeType;
 	private String mountPath;
 	private RepositoryAuthType repositoryAuthType = RepositoryAuthType.PUBLIC;
-	private RepositoryType repositoryType = RepositoryType.USER;
+	private RepositoryType repositoryType;
 	private Long credentialId;
 	private String credentialUserName;
 	private String credentialPassword;
@@ -71,7 +71,7 @@ public class ModuleCodeResDTO {
 					break;
 				case SOURCE_CODE_ID:	// 공유 코드 아니면 SOURCE_CODE_ID 환경변수 없음
 					this.sourceCodeId = Long.valueOf(envVarValue);
-					this.repositoryType = RepositoryType.WORKSPACE;
+					// this.repositoryType = RepositoryType.WORKSPACE;
 					break;
 				case CREDENTIAL_ID: // private repository 아니면 CREDENTIAL_ID 환경변수 없음
 					this.credentialId = Long.valueOf(envVarValue);
@@ -82,6 +82,9 @@ public class ModuleCodeResDTO {
 					break;
 				case GIT_SYNC_PASSWORD:
 					this.credentialPassword = envVarValue;
+					break;
+				case REPOSITORY_TYPE:
+					this.repositoryType = RepositoryType.valueOf(envVarValue);
 					break;
 				default:
 					break;
