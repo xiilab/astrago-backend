@@ -879,19 +879,25 @@
 // 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
 // 			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable"); // mps 설정 유무
 // 			String mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"); // mps 설정 개수
+//
 // 			System.out.println(node);
 // 		}
 // 	}
 // 	@Test
 // 	@DisplayName("노드 스케쥴 설정")
 // 	void nodeSchedule(){
-// 		String resourceName = "master-x3250m5-1";
-// 		ScheduleType scheduleType = ScheduleType.OFF;
+// 		String resourceName = "gpu-titan-2";
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {
 // 			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
-// 				.editSpec()
-// 				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
-// 				.endSpec()
+// 				.editMetadata()
+// 				.addToLabels("nvidia.com/device-plugin.config", "mps_2")
+// 				.endMetadata()
+// 				.build());
+//
+// 			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
+// 				.editMetadata()
+// 				.removeFromLabels("nvidia.com/device-plugin.config")
+// 				.endMetadata()
 // 				.build());
 // 		}
 // 	}
