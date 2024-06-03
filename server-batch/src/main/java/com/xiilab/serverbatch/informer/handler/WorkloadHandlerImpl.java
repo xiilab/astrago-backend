@@ -569,27 +569,33 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private void saveMappings(AbstractModuleWorkloadResDTO jobResDTO, WorkloadEntity workload) {
 		// dataset, model mapping insert
 		String datasetIds = jobResDTO.getDatasetIds();
-		saveDataMapping(getSplitIds(datasetIds), datasetRepository::findById, workload, EntityMappingType.DATASET,
-			jobResDTO.getDatasetMountPathMap(), null);
+		if (StringUtils.hasText(datasetIds)) {
+			saveDataMapping(getSplitIds(datasetIds), datasetRepository::findById, workload, EntityMappingType.DATASET,
+				jobResDTO.getDatasetMountPathMap(), null);
+		}
 
 		// 모델 mapping insert
 		String modelIds = jobResDTO.getModelIds();
-		saveDataMapping(getSplitIds(modelIds), modelRepository::findById, workload, EntityMappingType.MODEL,
-			jobResDTO.getModelMountPathMap(), null);
-
+		if (StringUtils.hasText(modelIds)) {
+			saveDataMapping(getSplitIds(modelIds), modelRepository::findById, workload, EntityMappingType.MODEL,
+				jobResDTO.getModelMountPathMap(), null);
+		}
 		RegUser regUser = new RegUser(jobResDTO.getCreatorId(), jobResDTO.getCreatorUserName(),
 			jobResDTO.getCreatorFullName());
 
 		// 커스텀 소스코드 등록 후 코드 mapping insert
 		String codeIds = saveCustomCode(regUser, jobResDTO.getWorkspaceResourceName(), jobResDTO.getCodeIds(),
 			jobResDTO.getCodes());
-		saveDataMapping(getSplitIds(codeIds), codeRepository::findById, workload, EntityMappingType.CODE,
-			null, jobResDTO.getCodeMountPathMap());
-
+		if (StringUtils.hasText(codeIds)) {
+			saveDataMapping(getSplitIds(codeIds), codeRepository::findById, workload, EntityMappingType.CODE,
+				null, jobResDTO.getCodeMountPathMap());
+		}
 		// 커스텀 이미지 등록 후 이미지 mapping insert
 		Long imageId = saveCustomImage(regUser, jobResDTO);
-		saveDataMapping(getSplitIds(String.valueOf(imageId)), imageRepository::findById, workload,
-			EntityMappingType.IMAGE, null, null);
+		if (imageId != null) {
+			saveDataMapping(getSplitIds(String.valueOf(imageId)), imageRepository::findById, workload,
+				EntityMappingType.IMAGE, null, null);
+		}
 	}
 
 	private void deleteServices(String workspaceResourceName, String workloadResourceName) {
