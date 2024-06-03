@@ -42,7 +42,7 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 		WorkloadType workloadType, WorkloadSortCondition sortCondition) {
 		return queryFactory.selectFrom(workloadEntity)
 			.where(workloadEntity.resourceName.in(pinResourceNameList),
-				workloadEntity.workloadType.eq(workloadType))
+				eqWorkloadType(workloadType))
 			.orderBy(createOrderSpecifier(sortCondition))
 			.fetch();
 	}
