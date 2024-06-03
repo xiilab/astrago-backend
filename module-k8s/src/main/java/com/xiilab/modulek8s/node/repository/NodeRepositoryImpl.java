@@ -28,7 +28,6 @@ import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
-import com.xiilab.modulek8s.node.enumeration.MPSCapable;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 
 import io.fabric8.kubernetes.api.model.Node;
@@ -511,9 +510,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return MPSGpuDTO.MPSInfoDTO.builder()
 				.nodeName(nodeName)
 				.gpuName(gpu)
-				.gpuCnt(gpuCnt)
-				.mpsCapable(mpsCapable.equals("true") ? MPSCapable.TRUE : MPSCapable.FALSE)
-				.mpsReplicas(mpsReplicas)
+				.gpuCnt(Integer.parseInt(gpuCnt))
+				.mpsCapable(mpsCapable.equals("true") ? true : false)
+				.mpsReplicas(Integer.parseInt(mpsReplicas))
 				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
 		}
@@ -529,7 +528,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			if(!gpuType.equalsIgnoreCase("volta")){
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_GPU);
 			}
-			if(setMPSDTO.getMpsCapable() == MPSCapable.FALSE){
+			if(!setMPSDTO.isMpsCapable()){
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.removeFromLabels("nvidia.com/device-plugin.config")
