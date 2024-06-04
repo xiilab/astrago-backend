@@ -136,7 +136,8 @@ public class NodeFacadeService {
 			Promql.TOTAL_NODE_LIMIT_RESOURCE);
 
 		double totalCPUResource = getTotalResource(Promql.TOTAL_NODE_CPU_CORE.name());
-		double totalGPUResource = getTotalResource(Promql.TOTAL_NODE_GPU_COUNT.name());
+		double totalMPSGPUResource = getTotalResource(Promql.TOTAL_NODE_MPS_GPU_COUNT.name());
+		double totalGPUResource =  totalMPSGPUResource != 0 ? totalMPSGPUResource : getTotalResource(Promql.TOTAL_NODE_GPU_COUNT.name());
 		double totalMEMResource = getTotalResource(Promql.TOTAL_NODE_MEMORY_SIZE.name()) / 1024;
 
 		ResponseDTO.NodeResourceInfo.Requests requests = buildRequests(requestResource, totalCPUResource,
