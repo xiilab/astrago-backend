@@ -66,7 +66,9 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractDistributedWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -343,15 +345,15 @@ public class WorkloadFacadeService {
 			.toList();
 
 		if (moduleJobResDTO.getType() == WorkloadType.DISTRIBUTED) {
-			return FindWorkloadResDTO.DistributedWorkloadDetail.from((ModuleDistributedJobResDTO)moduleJobResDTO,
+			return FindWorkloadResDTO.DistributedWorkloadDetail.from((AbstractDistributedWorkloadResDTO)moduleJobResDTO,
 				image, models, datasets, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.BATCH) {
-			return FindWorkloadResDTO.SingleWorkloadDetail.from((ModuleBatchJobResDTO)moduleJobResDTO, image,
+			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
 				models, datasets, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
-			return FindWorkloadResDTO.SingleWorkloadDetail.from((ModuleInteractiveJobResDTO)moduleJobResDTO, image,
+			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
 				models, datasets, codes, ports, envs,
 				nodeName);
 		} else {
