@@ -4,6 +4,7 @@ import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -618,7 +619,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	// 커스텀 소스코드 DB에 등록 후 ID 추가해서 반환
 	private String saveCustomCode(RegUser regUser, String namespace, String codeIds,
 		List<ModuleCodeResDTO> codes) {
-		StringBuilder result = StringUtils.hasText(codeIds) ? new StringBuilder(codeIds) : new StringBuilder();
+		StringBuilder result =
+			StringUtils.hasText(codeIds) && !"null".equals(codeIds) ? new StringBuilder(codeIds) : new StringBuilder();
 		if (!CollectionUtils.isEmpty(codes)) {
 			for (ModuleCodeResDTO code : codes) {
 				// 커스텀 소스코드일 경우
@@ -639,8 +641,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 						DeleteYN.N
 					);
 					CodeEntity savedCode = codeRepository.save(saveCode);
-					result.append(
-						result.isEmpty() ? String.valueOf(savedCode.getId()) : "," + savedCode.getId());
+					result.append(result.isEmpty() ? String.valueOf(savedCode.getId()) : "," + savedCode.getId());
 				}
 			}
 		}
@@ -709,13 +710,14 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.CODE) {
 							CodeEntity code = (CodeEntity)entity;
-							Map<String, String> map = codeInfoMap.get(code.getCodeURL());
+							// Map<String, String> codeMountMap = codeInfoMap.get(code.getCodeURL());
+							Map<String, String> codeMountMap = codeInfoMap.putIfAbsent(code.getCodeURL(), new HashMap<>());
 
 							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
 								.workload(jobEntity)
 								.code(code)
-								.branch(map.getOrDefault("branch", ""))
-								.mountPath(map.getOrDefault("mountPath", ""))
+								.branch(codeMountMap.getOrDefault("branch", ""))
+								.mountPath(codeMountMap.getOrDefault("mountPath", ""))
 								.build();
 							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.IMAGE) {
