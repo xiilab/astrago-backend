@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -131,8 +132,24 @@ public abstract class AbstractModuleWorkloadResDTO {
 
 	// 소스코드 환경변수에 저장된 값 respone
 	protected List<ModuleCodeResDTO> initializeCodesInfo(List<Container> initContainers) {
-		return initContainers.stream()
+		List<ModuleCodeResDTO> moduleCodeResDTOS = initContainers.stream()
 			.map(initContainer -> new ModuleCodeResDTO(initContainer.getEnv())).toList();
+		// code mountpath map 추가
+		initializeCodeMountPath(moduleCodeResDTOS);
+		return moduleCodeResDTOS;
+	}
+
+	protected void initializeCodeMountPath(List<ModuleCodeResDTO> codes) {
+		this.codeMountPathMap = new HashMap<>();
+		for (ModuleCodeResDTO code : codes) {
+			// String repositoryUrl = code.getRepositoryUrl();
+			// String mountPath = code.getMountPath();
+			// String branch = code.getBranch();
+			codeMountPathMap.computeIfAbsent(code.getRepositoryUrl(), k -> new HashMap<>());
+			Map<String, String> pathMap = codeMountPathMap.get(code.getRepositoryUrl());
+			pathMap.put("mountPath", code.getMountPath());
+			pathMap.put("branch", code.getBranch());
+		}
 	}
 
 	protected void initializeVolumeMountPath(Map<String, String> annotations) {
@@ -192,6 +209,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 
 		return portsMap;
 	}
+
 
 	public abstract WorkloadType getType();
 }
