@@ -58,6 +58,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String GPU = "nvidia.com/gpu";
 
 	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
+	private final String MPS_CONFIG = "mps_capable";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
 	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
@@ -89,6 +90,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				boolean migCapable = getMigCapable(node);
 				boolean mpsCapable = getMpsCapable(node);
 				boolean isActiveMIG = isActiveMIG(node);
+				boolean isActiveMPS = isActiveMPS(node);
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
@@ -104,6 +106,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.migCapable(migCapable)
 					.isActiveMIG(isActiveMIG)
 					.mpsCapable(mpsCapable)
+					.isActiveMPS(isActiveMPS)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -138,6 +141,13 @@ public class NodeRepositoryImpl implements NodeRepository {
 			case SUCCESS,FAILED -> false;
 			case PENDING,REBOOTING -> true;
 		};
+	}
+	private boolean isActiveMPS(Node node) {
+		String migConfigStatus = node.getMetadata().getLabels().get(MPS_CONFIG);
+		if (Objects.isNull(migConfigStatus)) {
+			return false;
+		}
+		return true;
 	}
 
 	private boolean isStatus(List<NodeCondition> conditions) {
