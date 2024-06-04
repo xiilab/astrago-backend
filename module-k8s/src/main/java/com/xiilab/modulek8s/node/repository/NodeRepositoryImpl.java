@@ -92,6 +92,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				boolean mpsCapable = getMpsCapable(node);
 				boolean isActiveMIG = isActiveMIG(node);
 				boolean isActiveMPS = isActiveMPS(node);
+				boolean migStatus = getMigStatus(node);
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
@@ -108,6 +109,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.isActiveMIG(isActiveMIG)
 					.mpsCapable(mpsCapable)
 					.isActiveMPS(isActiveMPS)
+					.migStatus(migStatus)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -339,6 +341,15 @@ public class NodeRepositoryImpl implements NodeRepository {
 		return false;
 	}
 
+	/**
+	 * mig 설정 적용 유무 확인
+	 * @param node
+	 * @return
+	 */
+	private boolean getMigStatus(Node node) {
+		String migCapable = node.getMetadata().getLabels().get("mig_capable") != null ? node.getMetadata().getLabels().get("mig_capable") : "false";
+		return Boolean.parseBoolean(migCapable);
+	}
 
 	/**
 	 * 해당 노드의 gpu의 productName을 리턴하는 메소드
@@ -417,6 +428,11 @@ public class NodeRepositoryImpl implements NodeRepository {
 			Resource<Node> node = kubernetesClient.nodes().withName(nodeName);
 			HashMap<String, String> migConfig = new HashMap<>();
 			migConfig.put("nvidia.com/mig.config", profile);
+			if(profile.equals("all-disabled")){
+				migConfig.put("mig_capable", "false");
+			}else{
+				migConfig.put("mig_capable", "true");
+			}
 			node.edit(n ->
 				new NodeBuilder(n).editMetadata().addToLabels(migConfig).endMetadata().build());
 		}
