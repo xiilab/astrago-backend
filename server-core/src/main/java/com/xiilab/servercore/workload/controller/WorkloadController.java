@@ -297,7 +297,7 @@ public class WorkloadController {
 	@GetMapping("/admin/workloads/jobList")
 	@Operation(summary = "관리자 워크로드 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadSummaryDTO>> getAdminWorkloadList(
-		@RequestParam(value = "workloadType") WorkloadType workloadType,
+		@RequestParam(value = "workloadType", required = false) WorkloadType workloadType,
 		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		@RequestParam(value = "searchName", required = false) String searchName,
 		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
