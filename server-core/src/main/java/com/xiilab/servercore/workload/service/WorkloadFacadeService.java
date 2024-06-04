@@ -1049,25 +1049,15 @@ public class WorkloadFacadeService {
 		UserDTO.UserInfo userInfoDTO) {
 		//통합용 리스트 선언
 		List<WorkloadSummaryDTO> workloadResDTOList = new ArrayList<>();
-		//pin 워크로드 조회 - 검색 x, sort만 적용
-		List<String> pinResourceNameList = pinService.getWorkloadPinListByUserId(userInfoDTO.getId(), workspaceName);
 
-		List<WorkloadSummaryDTO> pinList = workloadHistoryService.getWorkloadHistoryInResourceNames(
-			pinResourceNameList, workloadType, workloadSortCondition);
-		markPinnedWorkloads(pinList);
-		workloadResDTOList.addAll(pinList);
-		//(pageSize - pin)개수만큼 normal 워크로드 조회 - 검색, sort 적용 - not in pin 워크로드 resourceName
-		int pageSize = 8;
-		int normalPageSize = pageSize - pinList.size();
-		PageRequest pageRequest = PageRequest.of(pageNum - 1, normalPageSize);
-		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getOverViewWorkloadList(
-			workspaceName, workloadType, searchName, isCreatedByMe, userInfoDTO.getId(), pinResourceNameList,
-			workloadStatus, workloadSortCondition, pageRequest);
+		PageRequest pageRequest = PageRequest.of(pageNum - 1, 10);
+		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getAdminWorkloadList(
+			workspaceName, workloadType, searchName, isCreatedByMe, workloadStatus, workloadSortCondition, pageRequest);
 		//workload 삭제 권한 체크
 		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		//page 계산
-		int totalSize = (int)(pinList.size() + overViewWorkloadResDTO.getTotalSize());
-		int totalPageNum = (int)Math.ceil(totalSize / (double)pageSize);
+		int totalSize = (int)overViewWorkloadResDTO.getTotalSize();
+		int totalPageNum = (int)Math.ceil(totalSize / (double)10);
 		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
 		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);

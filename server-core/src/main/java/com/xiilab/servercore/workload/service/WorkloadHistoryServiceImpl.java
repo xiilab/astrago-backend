@@ -197,4 +197,19 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		long totalCount = workloadEntities.getTotalElements();
 		return new OverViewWorkloadResDTO<>(totalCount, workloads);
 	}
+
+	@Override
+	public OverViewWorkloadResDTO<WorkloadSummaryDTO> getAdminWorkloadList(String workspaceName,
+		WorkloadType workloadType, String searchName, Boolean isCreatedByMe, WorkloadStatus workloadStatus,
+		WorkloadSortCondition workloadSortCondition, PageRequest pageRequest) {
+		Page<WorkloadEntity> workloadEntities = workloadHistoryRepoCustom.getAdminWorkloadList(
+			workspaceName, workloadType, searchName, workloadSortCondition,
+			pageRequest,
+			workloadStatus);
+		List<WorkloadSummaryDTO> workloads = workloadEntities
+			.map(WorkloadSummaryDTO::new)
+			.toList();
+		long totalCount = workloadEntities.getTotalElements();
+		return new OverViewWorkloadResDTO<>(totalCount, workloads);
+	}
 }
