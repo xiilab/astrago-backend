@@ -27,7 +27,6 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
@@ -44,7 +43,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
-import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
@@ -98,12 +96,10 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final CredentialRepository credentialRepository;
 	private final SvcRepository k8sSvcRepository;
 	private final ApplicationEventPublisher publisher;
-	private final MailService mailService;
 	private final UserService userService;
-	private final LogService logService;
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
-	private VolumeRepository volumeRepository;
+	private final VolumeRepository volumeRepository;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 
 	@Override
@@ -159,11 +155,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		updateDeleteJobStatusAndNoti(job);
 
 		List<Volume> volumes = job.getSpec().getTemplate().getSpec().getVolumes();
-		volumes.stream()
-			.filter(volume -> volume.getPersistentVolumeClaim() != null)
-			.forEach(volume -> deletePvAndPVC(job.getMetadata().getNamespace(), volume.getName(),
-				volume.getPersistentVolumeClaim().getClaimName()));
-
+		deleteVolume(volumes, job.getMetadata().getNamespace());
 		deleteServices(batchJobResDTO.getWorkspaceResourceName(), batchJobResDTO.getResourceName());
 	}
 
@@ -219,13 +211,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		}
 
 		updateDeleteJobStatusAndNoti(deployment);
-
 		List<Volume> volumes = deployment.getSpec().getTemplate().getSpec().getVolumes();
-		volumes.stream()
-			.filter(volume -> volume.getPersistentVolumeClaim() != null)
-			.forEach(volume -> deletePvAndPVC(deployment.getMetadata().getNamespace(), volume.getName(),
-				volume.getPersistentVolumeClaim().getClaimName()));
-
+		deleteVolume(volumes, deployment.getMetadata().getNamespace());
 		deleteServices(interactiveJobResDTO.getWorkspaceResourceName(), interactiveJobResDTO.getResourceName());
 	}
 
@@ -295,6 +282,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			volumes.stream()
 				.filter(volume -> volume.getPersistentVolumeClaim() != null)
 				.forEach(volume -> deletePvAndPVC(mpiJob.getMetadata().getNamespace(), volume.getName(),
+					volume.getPersistentVolumeClaim().getClaimName()));
+		}
+	}
+
+	private void deleteVolume(List<Volume> volumes, String namespace) {
+		if (!CollectionUtils.isEmpty(volumes)) {
+			volumes.stream()
+				.filter(volume -> volume.getPersistentVolumeClaim() != null)
+				.forEach(volume -> deletePvAndPVC(namespace, volume.getName(),
 					volume.getPersistentVolumeClaim().getClaimName()));
 		}
 	}
