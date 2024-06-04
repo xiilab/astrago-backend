@@ -142,9 +142,6 @@ public abstract class AbstractModuleWorkloadResDTO {
 	protected void initializeCodeMountPath(List<ModuleCodeResDTO> codes) {
 		this.codeMountPathMap = new HashMap<>();
 		for (ModuleCodeResDTO code : codes) {
-			// String repositoryUrl = code.getRepositoryUrl();
-			// String mountPath = code.getMountPath();
-			// String branch = code.getBranch();
 			codeMountPathMap.computeIfAbsent(code.getRepositoryUrl(), k -> new HashMap<>());
 			Map<String, String> pathMap = codeMountPathMap.get(code.getRepositoryUrl());
 			pathMap.put("mountPath", code.getMountPath());
