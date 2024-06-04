@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.node.repository;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiilab.modulecommon.enums.MPSStatus;
 import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -503,16 +505,29 @@ public class NodeRepositoryImpl implements NodeRepository {
 				throw new RestApiException(NodeErrorCode.NODE_NOT_FOUND);
 			}
 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
-			String gpuCnt = node.getMetadata().getLabels().get("nvidia.com/gpu.count"); // gpu 개수
-			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable"); // mps 설정 유무
-			String mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"); // mps 설정 개수
+			int gpuCnt = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count")); // gpu 개수
 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
+
+			int custom_mps_replicas = node.getMetadata().getLabels().get("mps_replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("mps_replicas")) : 1; // mps 설정 개수
+			String custom_mps_capable = node.getMetadata().getLabels().get("mps_capable") != null ? node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
+			int gpuCapacity = node.getStatus().getCapacity().get("nvidia.com/gpu.shared") != null ?
+				Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu.shared").getAmount()) : 0;
+			int updateCheck = gpuCapacity / gpuCnt ;
+
+			MPSStatus mpsStatus = MPSStatus.COMPLETE;
+			if(custom_mps_capable.equalsIgnoreCase("true")){
+				if(custom_mps_replicas != updateCheck){
+					mpsStatus = MPSStatus.UPDATE;
+				}
+			}
+
 			return MPSGpuDTO.MPSInfoDTO.builder()
 				.nodeName(nodeName)
 				.gpuName(gpu)
-				.gpuCnt(Integer.parseInt(gpuCnt))
-				.mpsCapable(mpsCapable.equals("true") ? true : false)
-				.mpsReplicas(Integer.parseInt(mpsReplicas))
+				.gpuCnt(gpuCnt)
+				.mpsCapable((custom_mps_capable.equals("true")) ? true : false)
+				.mpsReplicas(custom_mps_replicas)
+				.mpsStatus(mpsStatus)
 				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
 		}
@@ -532,12 +547,16 @@ public class NodeRepositoryImpl implements NodeRepository {
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.removeFromLabels("nvidia.com/device-plugin.config")
+					.removeFromLabels("mps_replicas")
+					.addToLabels("mps_capable", "false")
 					.endMetadata()
 					.build());
 			}else{
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
+					.addToLabels("mps_replicas", String.valueOf(setMPSDTO.getMpsReplicas()))
+					.addToLabels("mps_capable", "true")
 					.endMetadata()
 					.build());
 			}
