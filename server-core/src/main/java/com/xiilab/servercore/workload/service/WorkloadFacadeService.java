@@ -936,7 +936,7 @@ public class WorkloadFacadeService {
 				CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(code.getCredentialId());
 				// 커스텀 코드일 경우
 				if (ValidUtils.isNullOrZero(code.getSourceCodeId())
-					&& code.getRepositoryType() == RepositoryType.USER) {
+					&& code.getRepositoryType() == RepositoryType.CUSTOM) {
 					addCode = FindWorkloadResDTO.Code.codeResDTO()
 						.id(null)
 						.regUserId(moduleJobResDTO.getCreatorId())
@@ -953,7 +953,8 @@ public class WorkloadFacadeService {
 						.credentialName(findCredential != null ? findCredential.getName() : null)
 						.repositoryType(code.getRepositoryType())
 						.build();
-				} else {    // 공유 코드일 경우
+				} else if (code.getRepositoryType() == RepositoryType.USER
+					|| code.getRepositoryType() == RepositoryType.WORKSPACE) {    // 공유 코드일 경우
 					CodeResDTO findCode = codeService.getCodeById(code.getSourceCodeId());
 					addCode = FindWorkloadResDTO.Code.codeResDTO()
 						.id(findCode.getId())
