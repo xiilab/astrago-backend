@@ -393,10 +393,9 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 		String receiverMail = userService.getUserById(workload.getCreatorId()).getEmail();
 		MailDTO mailDTO = MailServiceUtils.endWorkloadMail(workload.getName(), receiverMail);
-
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 			AlertName.USER_WORKLOAD_END, null, workload.getCreatorId(), emailTitle, title, message,
-			workload.getWorkspaceResourceName(), pageNaviParam, mailDTO);
+			workload.getWorkspaceResourceName(), pageNaviParam, null);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}
