@@ -42,4 +42,6 @@ public interface WorkloadHistoryService {
 		WorkloadType workloadType, String searchName, Boolean isCreatedByMe, String id,
 		List<String> pinResourceNameList, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition,
 		PageRequest pageRequest);
+
+	OverViewWorkloadResDTO<WorkloadSummaryDTO> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, Boolean isCreatedByMe, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest);
 }
