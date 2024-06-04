@@ -37,7 +37,7 @@ public class CompressUtils {
 	 * @param destinationPath  압축된 파일을 저장할 대상 경로 (null 입력시, 압축하려는 파일이 위치한 경로에 압축파일 저장)
 	 * @param compressFileType 사용할 압축 형식 (ZIP, TAR)
 	 */
-	public static void saveCompressFile(List<Path> targetPaths, Path destinationPath,
+	public static Path saveCompressFile(List<Path> targetPaths, Path destinationPath,
 		CompressFileType compressFileType) {
 		// 압축할 파일 없으면 throw
 		if (CollectionUtils.isEmpty(targetPaths)) {
@@ -59,6 +59,8 @@ public class CompressUtils {
 				throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_TAR_FILE);
 			}
 		}
+
+		return destPath;
 	}
 
 	/**

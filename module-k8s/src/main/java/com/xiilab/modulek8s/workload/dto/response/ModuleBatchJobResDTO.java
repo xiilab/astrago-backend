@@ -28,6 +28,7 @@ public class ModuleBatchJobResDTO extends AbstractSingleWorkloadResDTO {
 		super.initializeVolumeMountPath(job.getSpec().getTemplate().getMetadata().getAnnotations());
 		// 코드 정보
 		super.codes = initializeCodesInfo(job.getSpec().getTemplate().getSpec().getInitContainers());
+		// code mountPathMap
 		super.image = container.getImage();
 		super.envs = container.getEnv().stream()
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
