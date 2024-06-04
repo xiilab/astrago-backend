@@ -58,6 +58,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String GPU = "nvidia.com/gpu";
 
 	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
+	private final String MIG_CAPABLE = "nvidia.com/mig.capable";
 	private final String MPS_CONFIG = "mps_capable";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
@@ -550,8 +551,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 			//volta 검사해야함
 			Node nodeInfo = client.nodes().withName(nodeName).get();
 			String gpuType = nodeInfo.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
+			String migCapable = nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) != null ? nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) : "false"; // gpu 종류(volta 등)
 			if(!gpuType.equalsIgnoreCase("volta")){
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_GPU);
+			}
+			if(migCapable.equalsIgnoreCase("true")){
+				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_WITH_MIG);
 			}
 			if(!setMPSDTO.isMpsCapable()){
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
