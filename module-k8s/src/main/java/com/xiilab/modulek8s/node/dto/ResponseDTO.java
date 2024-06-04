@@ -50,6 +50,7 @@ public class ResponseDTO {
 		private boolean isActiveMPS;
 		//mps 사용가능 유무
 		private boolean mpsCapable;
+		private boolean migStatus;
 
 		public void setTotalGPU(double totalGPU){
 			this.totalGPU = roundToFirstDecimalPlace(totalGPU);
