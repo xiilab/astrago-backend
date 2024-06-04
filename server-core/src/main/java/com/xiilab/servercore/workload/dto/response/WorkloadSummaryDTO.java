@@ -61,7 +61,7 @@ public class WorkloadSummaryDTO {
 		this.canBeDeleted = workload.isCanBeDeleted();
 		this.estimatedRemainingTime = workload.getRemainTime() != 0 ? LocalDateTime.now()
 			.plusSeconds(workload.getRemainTime())
-			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
+			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "0";
 		this.startTime = workload.getStartTime() != null ?
 			workload.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null;
 	}
