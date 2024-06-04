@@ -1050,7 +1050,7 @@ public class WorkloadFacadeService {
 		//통합용 리스트 선언
 		List<WorkloadSummaryDTO> workloadResDTOList = new ArrayList<>();
 
-		PageRequest pageRequest = PageRequest.of(pageNum - 1, 10);
+		PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
 		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getAdminWorkloadList(
 			workspaceName, workloadType, searchName, isCreatedByMe, workloadStatus, workloadSortCondition, pageRequest);
 		//workload 삭제 권한 체크
