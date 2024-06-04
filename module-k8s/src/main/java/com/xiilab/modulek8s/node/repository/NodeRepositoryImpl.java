@@ -56,6 +56,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String GPU_DRIVER_VER_REV = "nvidia.com/cuda.driver.rev";
 	private final String GPU_MEMORY = "nvidia.com/gpu.memory";
 	private final String GPU = "nvidia.com/gpu";
+	private final String MPS_GPU = "nvidia.com/gpu.shared";
 
 	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
 	private final String MIG_CAPABLE = "nvidia.com/mig.capable";
@@ -249,6 +250,11 @@ public class NodeRepositoryImpl implements NodeRepository {
 			if (node.getMetadata().getLabels().containsKey("nvidia.com/mig-count")) {
 				gpuCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/mig-count"));
 			}
+			boolean mpsCheck = false;
+			if (node.getMetadata().getLabels().get("mps_capable") != null) {
+				mpsCheck = Boolean.parseBoolean(node.getMetadata().getLabels().get("mps_capable"));
+			}
+
 			Map<String, String> labels = node.getMetadata().getLabels();
 			Map<String, Quantity> capacity = node.getStatus().getCapacity();
 			Map<String, Quantity> allocatable = node.getStatus().getAllocatable();
@@ -260,7 +266,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.capacityHugepages2Mi(getNonNullValueOrZero(capacity.get(HUGEPAGES_2Mi)))
 				.capacityMemory(getNonNullValueOrZero(capacity.get(MEMORY)))
 				.capacityPods(getNonNullValueOrZero(capacity.get(PODS)))
-				.capacityGpu(gpuCount > 0 ? String.valueOf(gpuCount) : getNonNullValueOrZero(capacity.get(GPU)))
+				.capacityGpu(gpuCount > 0 ? String.valueOf(gpuCount) : mpsCheck ?
+					String.valueOf(capacity.get(MPS_GPU)) : getNonNullValueOrZero(capacity.get(GPU)))
 				.build();
 			ResponseDTO.NodeResourceInfo.Allocatable allocatableResource = ResponseDTO.NodeResourceInfo.Allocatable.builder()
 				.allocatableCpu(getNonNullValueOrZero(allocatable.get(CPU)))
@@ -269,7 +276,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.allocatableHugepages2Mi(getNonNullValueOrZero(allocatable.get(HUGEPAGES_2Mi)))
 				.allocatableMemory(getNonNullValueOrZero(allocatable.get(MEMORY)))
 				.allocatablePods(getNonNullValueOrZero(allocatable.get(PODS)))
-				.allocatableGpu(gpuCount > 0 ? String.valueOf(gpuCount) : getNonNullValueOrZero(allocatable.get(GPU)))
+				.allocatableGpu(gpuCount > 0 ? String.valueOf(gpuCount) : mpsCheck ?
+					String.valueOf(capacity.get(MPS_GPU)) : getNonNullValueOrZero(capacity.get(GPU)))
 				.build();
 
 			String version = null;
@@ -537,8 +545,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 			int custom_mps_replicas = node.getMetadata().getLabels().get("mps_replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("mps_replicas")) : 1; // mps 설정 개수
 			String custom_mps_capable = node.getMetadata().getLabels().get("mps_capable") != null ? node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
-			int gpuCapacity = node.getStatus().getCapacity().get("nvidia.com/gpu.shared") != null ?
-				Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu.shared").getAmount()) : 0;
+			int gpuCapacity = node.getStatus().getCapacity().get(MPS_GPU) != null ?
+				Integer.parseInt(node.getStatus().getCapacity().get(MPS_GPU).getAmount()) : 0;
 			int updateCheck = gpuCapacity / gpuCnt ;
 
 			MPSStatus mpsStatus = MPSStatus.COMPLETE;
