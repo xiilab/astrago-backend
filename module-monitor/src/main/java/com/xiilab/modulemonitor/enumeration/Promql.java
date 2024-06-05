@@ -15,7 +15,7 @@ public enum Promql {
 	GPU_COUNT("DCGM_FI_DEV_COUNT{%s}","GPU 개수 조회 및 GPU Name 조회","GPU"),
 	GPU_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{%s}) by(gpu, kubernetes_node, modelName)", "GPU 사용률 조회", "GPU"),
 	GPU_AVG_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{%s})", "GPU 평균 사용량 조회", "GPU"),
-	GPU_MEM_USAGE("avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])) by(gpu, kubernetes_node, modelName))", "GPU MEM 사용률 조회", "GPU"),
+	GPU_MEM_USAGE("round((avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])) by(gpu, kubernetes_node, modelName))) * 100, 0.01)", "GPU MEM 사용률 조회", "GPU"),
 	GPU_MEM_AVG_USAGE("avg(max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%s}[1m])", "GPU MEM 평균 사용량 조회", "GPU"),
 	GPU_POWER_USAGE("avg(DCGM_FI_DEV_POWER_USAGE{%s}) by(gpu, kubernetes_node, modelName)","GPU 전력 사용률 조회","GPU"),
 	GPU_AVG_POWER_USAGE("DCGM_FI_DEV_POWER_USAGE{%s}","GPU 전력 사용량 조회","GPU"),
