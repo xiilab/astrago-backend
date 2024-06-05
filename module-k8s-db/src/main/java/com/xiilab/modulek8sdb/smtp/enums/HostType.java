@@ -1,5 +1,8 @@
 package com.xiilab.modulek8sdb.smtp.enums;
 
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -22,6 +25,6 @@ public enum HostType {
 				return type;
 			}
 		}
-		throw new IllegalArgumentException("No HostType found for host: " + host);
+		throw new RestApiException(SmtpErrorCode.SMTP_NOT_FOUND_HOST_TYPE);
 	}
 }

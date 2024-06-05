@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SmtpQuartzConfig{
 	private final SmtpRepository smtpRepository;
-	@Scheduled( cron = "0 0/1 * * * *")
+	@Scheduled(cron = "0 0 6 * * *")
 	@Transactional
 	public void sendEmail() {
 		List<SmtpEntity> smtpEntityList = smtpRepository.findAll();
