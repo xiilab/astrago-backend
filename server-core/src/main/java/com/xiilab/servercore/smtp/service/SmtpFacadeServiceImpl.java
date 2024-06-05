@@ -67,9 +67,12 @@ public class SmtpFacadeServiceImpl implements SmtpFacadeService {
 	}
 
 	private boolean validationCheckSmtp(SmtpEntity smtpEntity) {
-
-		com.xiilab.modulecommon.dto.SmtpDTO smtpDTO = new com.xiilab.modulecommon.dto.SmtpDTO(smtpEntity.getHost(),
-			smtpEntity.getPort(), smtpEntity.getUserName(), smtpEntity.getPassword());
+		com.xiilab.modulecommon.dto.SmtpDTO smtpDTO = com.xiilab.modulecommon.dto.SmtpDTO.builder()
+			.host(smtpEntity.getHost())
+			.port(smtpEntity.getPort())
+			.username(smtpEntity.getUserName())
+			.password(smtpEntity.getPassword())
+			.build();
 
 		MailAttribute mail = MailAttribute.SMTP_CHECK;
 
@@ -78,8 +81,7 @@ public class SmtpFacadeServiceImpl implements SmtpFacadeService {
 			.subject(mail.getSubject())
 			.subTitle(mail.getSubTitle())
 			.receiverEmail(smtpEntity.getUserName())
-			.footer(mail.getFooter())
-			.build();
+			.footer(mail.getFooter()).build();
 
 		return mailService.sendMail(mailDTO, smtpDTO);
 	}
