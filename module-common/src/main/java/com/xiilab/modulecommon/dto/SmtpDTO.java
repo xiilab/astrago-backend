@@ -14,5 +14,4 @@ public class SmtpDTO {
 	private int port;
 	private String username;
 	private String password;
-
 }
