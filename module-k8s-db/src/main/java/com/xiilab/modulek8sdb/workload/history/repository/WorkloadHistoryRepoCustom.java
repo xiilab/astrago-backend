@@ -21,4 +21,6 @@ public interface WorkloadHistoryRepoCustom {
 		String userId,
 		List<String> pinResourceNameList, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest,
 		WorkloadStatus workloadStatus);
+
+	Page<WorkloadEntity> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest, WorkloadStatus workloadStatus);
 }

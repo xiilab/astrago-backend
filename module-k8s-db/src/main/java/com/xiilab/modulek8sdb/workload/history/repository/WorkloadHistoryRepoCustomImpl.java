@@ -79,6 +79,34 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 			).fetchOne();
 		return new PageImpl<>(jobEntities, pageRequest, totalCount);
 	}
+
+	@Override
+	public Page<WorkloadEntity> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
+		WorkloadSortCondition workloadSortCondition, PageRequest pageRequest, WorkloadStatus workloadStatus) {
+		List<WorkloadEntity> jobEntities = queryFactory.selectFrom(workloadEntity)
+			.where(
+				eqWorkspaceName(workspaceName),
+				eqName(searchName),
+				eqWorkloadType(workloadType),
+				workloadStatusEq(workloadStatus),
+				workloadEntity.deleteYN.eq(DeleteYN.N)
+			).orderBy(createOrderSpecifier(workloadSortCondition))
+			.offset(pageRequest.getOffset())
+			.limit(pageRequest.getPageSize())
+			.fetch();
+
+		Long totalCount = queryFactory.select(workloadEntity.count())
+			.from(workloadEntity)
+			.where(
+				eqWorkspaceName(workspaceName),
+				eqName(searchName),
+				eqWorkloadType(workloadType),
+				workloadStatusEq(workloadStatus),
+				workloadEntity.deleteYN.eq(DeleteYN.N)
+			).fetchOne();
+		return new PageImpl<>(jobEntities, pageRequest, totalCount);
+	}
+
 	private Predicate workloadStatusEq(WorkloadStatus workloadStatus){
 		return workloadStatus != null ? workloadEntity.workloadStatus.eq(workloadStatus) : null;
 	}

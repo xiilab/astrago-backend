@@ -40,9 +40,15 @@ public class NodeFacadeService {
 		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalGpuMap = listToMap(
 			getMetricMap(requestDTO,
 				Promql.TOTAL_NODE_GPU_COUNT));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalMpsGpuMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.TOTAL_NODE_MPS_GPU_COUNT));
 		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageGpuMap = listToMap(
 			getMetricMap(requestDTO,
 				Promql.USAGE_NODE_GPU_COUNT));
+		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> usageMpsGpuMap = listToMap(
+			getMetricMap(requestDTO,
+				Promql.USAGE_NODE_MPS_GPU_COUNT));
 		Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalMemMap = listToMap(
 			getMetricMap(requestDTO,
 				Promql.TOTAL_NODE_MEMORY_SIZE));
@@ -62,6 +68,8 @@ public class NodeFacadeService {
 				nodeDTO.setRequestCPU(getValueFromMap(usageCpuMap, nodeName, Promql.USAGE_NODE_CPU_CORE));
 				nodeDTO.setTotalGPU(getValueFromMap(totalGpuMap, nodeName, Promql.TOTAL_NODE_GPU_COUNT));
 				nodeDTO.setRequestGPU(getValueFromMap(usageGpuMap, nodeName, Promql.USAGE_NODE_GPU_COUNT));
+				nodeDTO.setTotalMpsGPU(getValueFromMap(totalMpsGpuMap, nodeName, Promql.TOTAL_NODE_MPS_GPU_COUNT));
+				nodeDTO.setRequestMpsGPU(getValueFromMap(usageMpsGpuMap, nodeName, Promql.USAGE_NODE_MPS_GPU_COUNT));
 				nodeDTO.setTotalMEM(getValueFromMap(totalMemMap, nodeName, Promql.TOTAL_NODE_MEMORY_SIZE));
 				nodeDTO.setRequestMEM(getValueFromMap(usageMemMap, nodeName, Promql.USAGE_NODE_MEMORY_SIZE));
 				nodeDTO.setTotalDISK(getValueFromMap(totalDiskMap, nodeName, Promql.NODE_ROOT_DISK_SIZE));
@@ -84,7 +92,9 @@ public class NodeFacadeService {
 			case USAGE_NODE_CPU_CORE:
 				return DataConverterUtil.convertToCPU(value);
 			case TOTAL_NODE_GPU_COUNT:
+			case TOTAL_NODE_MPS_GPU_COUNT:
 			case USAGE_NODE_GPU_COUNT:
+			case USAGE_NODE_MPS_GPU_COUNT:
 				return (DataConverterUtil.convertToGPU(value));
 			case TOTAL_NODE_MEMORY_SIZE:
 			case USAGE_NODE_MEMORY_SIZE:
@@ -136,7 +146,9 @@ public class NodeFacadeService {
 			Promql.TOTAL_NODE_LIMIT_RESOURCE);
 
 		double totalCPUResource = getTotalResource(Promql.TOTAL_NODE_CPU_CORE.name());
-		double totalGPUResource = getTotalResource(Promql.TOTAL_NODE_GPU_COUNT.name());
+		double totalMPSGPUResource = getTotalResource(Promql.TOTAL_NODE_MPS_GPU_COUNT.name());
+		double totalGPUResource =
+			totalMPSGPUResource != 0 ? totalMPSGPUResource : getTotalResource(Promql.TOTAL_NODE_GPU_COUNT.name());
 		double totalMEMResource = getTotalResource(Promql.TOTAL_NODE_MEMORY_SIZE.name()) / 1024;
 
 		ResponseDTO.NodeResourceInfo.Requests requests = buildRequests(requestResource, totalCPUResource,

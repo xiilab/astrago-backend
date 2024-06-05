@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.node.dto;
 
+import com.xiilab.modulecommon.enums.MPSStatus;
+
 import lombok.Builder;
 import lombok.Getter;
 @Getter
@@ -19,6 +21,7 @@ public class MPSGpuDTO {
 		private int mpsReplicas;
 		// mps 최대 설정 개수
 		private int mpsMaxReplicas;
+		private MPSStatus mpsStatus;
 	}
 
 	@Getter

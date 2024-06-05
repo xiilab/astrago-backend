@@ -66,7 +66,9 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModulePortResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractDistributedWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -343,15 +345,15 @@ public class WorkloadFacadeService {
 			.toList();
 
 		if (moduleJobResDTO.getType() == WorkloadType.DISTRIBUTED) {
-			return FindWorkloadResDTO.DistributedWorkloadDetail.from((ModuleDistributedJobResDTO)moduleJobResDTO,
+			return FindWorkloadResDTO.DistributedWorkloadDetail.from((AbstractDistributedWorkloadResDTO)moduleJobResDTO,
 				image, models, datasets, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.BATCH) {
-			return FindWorkloadResDTO.SingleWorkloadDetail.from((ModuleBatchJobResDTO)moduleJobResDTO, image,
+			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
 				models, datasets, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
-			return FindWorkloadResDTO.SingleWorkloadDetail.from((ModuleInteractiveJobResDTO)moduleJobResDTO, image,
+			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
 				models, datasets, codes, ports, envs,
 				nodeName);
 		} else {
@@ -936,7 +938,7 @@ public class WorkloadFacadeService {
 				CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(code.getCredentialId());
 				// 커스텀 코드일 경우
 				if (ValidUtils.isNullOrZero(code.getSourceCodeId())
-					&& code.getRepositoryType() == RepositoryType.USER) {
+					&& code.getRepositoryType() == RepositoryType.CUSTOM) {
 					addCode = FindWorkloadResDTO.Code.codeResDTO()
 						.id(null)
 						.regUserId(moduleJobResDTO.getCreatorId())
@@ -953,7 +955,8 @@ public class WorkloadFacadeService {
 						.credentialName(findCredential != null ? findCredential.getName() : null)
 						.repositoryType(code.getRepositoryType())
 						.build();
-				} else {    // 공유 코드일 경우
+				} else if (code.getRepositoryType() == RepositoryType.USER
+					|| code.getRepositoryType() == RepositoryType.WORKSPACE) {    // 공유 코드일 경우
 					CodeResDTO findCode = codeService.getCodeById(code.getSourceCodeId());
 					addCode = FindWorkloadResDTO.Code.codeResDTO()
 						.id(findCode.getId())
@@ -1047,32 +1050,16 @@ public class WorkloadFacadeService {
 		//통합용 리스트 선언
 		List<WorkloadSummaryDTO> workloadResDTOList = new ArrayList<>();
 
-		Optional<ResponseDTO.NodeDTO> connectedNode = getConnectedNode();
-		//pin 워크로드 조회 - 검색 x, sort만 적용
-		List<String> pinResourceNameList = pinService.getWorkloadPinListByUserId(userInfoDTO.getId(), workspaceName);
-
-		List<WorkloadSummaryDTO> pinList = workloadHistoryService.getWorkloadHistoryInResourceNames(
-			pinResourceNameList, workloadType, workloadSortCondition);
-		markPinnedWorkloads(pinList);
-		workloadResDTOList.addAll(pinList);
-		//(pageSize - pin)개수만큼 normal 워크로드 조회 - 검색, sort 적용 - not in pin 워크로드 resourceName
-		int pageSize = 10;
-		int normalPageSize = pageSize - pinList.size();
-		PageRequest pageRequest = PageRequest.of(pageNum - 1, normalPageSize);
-		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getOverViewWorkloadList(
-			workspaceName, workloadType, searchName, isCreatedByMe, userInfoDTO.getId(), pinResourceNameList,
-			workloadStatus, workloadSortCondition, pageRequest);
-
+		PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
+		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getAdminWorkloadList(
+			workspaceName, workloadType, searchName, isCreatedByMe, workloadStatus, workloadSortCondition, pageRequest);
 		//workload 삭제 권한 체크
 		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
-		overViewWorkloadResDTO.getContent()
-			.forEach(
-				moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
-
 		//page 계산
-		int totalSize = (int)(pinList.size() + overViewWorkloadResDTO.getTotalSize());
-		int totalPageNum = (int)Math.ceil(totalSize / (double)pageSize);
+		int totalSize = (int)overViewWorkloadResDTO.getTotalSize();
+		int totalPageNum = (int)Math.ceil(totalSize / (double)10);
 		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
+		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
 	}
 

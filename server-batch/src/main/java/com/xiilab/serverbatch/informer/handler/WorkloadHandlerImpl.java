@@ -4,6 +4,7 @@ import static com.xiilab.modulek8s.common.utils.K8sInfoPicker.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +28,6 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
@@ -44,7 +44,6 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
-import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
@@ -98,12 +97,10 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final CredentialRepository credentialRepository;
 	private final SvcRepository k8sSvcRepository;
 	private final ApplicationEventPublisher publisher;
-	private final MailService mailService;
 	private final UserService userService;
-	private final LogService logService;
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
-	private VolumeRepository volumeRepository;
+	private final VolumeRepository volumeRepository;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 
 	@Override
@@ -159,11 +156,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		updateDeleteJobStatusAndNoti(job);
 
 		List<Volume> volumes = job.getSpec().getTemplate().getSpec().getVolumes();
-		volumes.stream()
-			.filter(volume -> volume.getPersistentVolumeClaim() != null)
-			.forEach(volume -> deletePvAndPVC(job.getMetadata().getNamespace(), volume.getName(),
-				volume.getPersistentVolumeClaim().getClaimName()));
-
+		deleteVolume(volumes, job.getMetadata().getNamespace());
 		deleteServices(batchJobResDTO.getWorkspaceResourceName(), batchJobResDTO.getResourceName());
 	}
 
@@ -219,13 +212,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		}
 
 		updateDeleteJobStatusAndNoti(deployment);
-
 		List<Volume> volumes = deployment.getSpec().getTemplate().getSpec().getVolumes();
-		volumes.stream()
-			.filter(volume -> volume.getPersistentVolumeClaim() != null)
-			.forEach(volume -> deletePvAndPVC(deployment.getMetadata().getNamespace(), volume.getName(),
-				volume.getPersistentVolumeClaim().getClaimName()));
-
+		deleteVolume(volumes, deployment.getMetadata().getNamespace());
 		deleteServices(interactiveJobResDTO.getWorkspaceResourceName(), interactiveJobResDTO.getResourceName());
 	}
 
@@ -295,6 +283,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			volumes.stream()
 				.filter(volume -> volume.getPersistentVolumeClaim() != null)
 				.forEach(volume -> deletePvAndPVC(mpiJob.getMetadata().getNamespace(), volume.getName(),
+					volume.getPersistentVolumeClaim().getClaimName()));
+		}
+	}
+
+	private void deleteVolume(List<Volume> volumes, String namespace) {
+		if (!CollectionUtils.isEmpty(volumes)) {
+			volumes.stream()
+				.filter(volume -> volume.getPersistentVolumeClaim() != null)
+				.forEach(volume -> deletePvAndPVC(namespace, volume.getName(),
 					volume.getPersistentVolumeClaim().getClaimName()));
 		}
 	}
@@ -618,7 +615,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	// 커스텀 소스코드 DB에 등록 후 ID 추가해서 반환
 	private String saveCustomCode(RegUser regUser, String namespace, String codeIds,
 		List<ModuleCodeResDTO> codes) {
-		StringBuilder result = StringUtils.hasText(codeIds) ? new StringBuilder(codeIds) : new StringBuilder();
+		StringBuilder result =
+			StringUtils.hasText(codeIds) && !"null".equals(codeIds) ? new StringBuilder(codeIds) : new StringBuilder();
 		if (!CollectionUtils.isEmpty(codes)) {
 			for (ModuleCodeResDTO code : codes) {
 				// 커스텀 소스코드일 경우
@@ -639,8 +637,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 						DeleteYN.N
 					);
 					CodeEntity savedCode = codeRepository.save(saveCode);
-					result.append(
-						result.isEmpty() ? String.valueOf(savedCode.getId()) : "," + savedCode.getId());
+					result.append(result.isEmpty() ? String.valueOf(savedCode.getId()) : "," + savedCode.getId());
 				}
 			}
 		}
@@ -709,13 +706,14 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.CODE) {
 							CodeEntity code = (CodeEntity)entity;
-							Map<String, String> map = codeInfoMap.get(code.getCodeURL());
+							// Map<String, String> codeMountMap = codeInfoMap.get(code.getCodeURL());
+							Map<String, String> codeMountMap = codeInfoMap.putIfAbsent(code.getCodeURL(), new HashMap<>());
 
 							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
 								.workload(jobEntity)
 								.code(code)
-								.branch(map.getOrDefault("branch", ""))
-								.mountPath(map.getOrDefault("mountPath", ""))
+								.branch(codeMountMap.getOrDefault("branch", ""))
+								.mountPath(codeMountMap.getOrDefault("mountPath", ""))
 								.build();
 							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.IMAGE) {
