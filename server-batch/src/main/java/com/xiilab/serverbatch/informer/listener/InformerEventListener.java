@@ -15,8 +15,11 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.enums.AlertStatus;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
@@ -31,6 +34,8 @@ import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
+import com.xiilab.modulek8sdb.smtp.entity.SmtpEntity;
+import com.xiilab.modulek8sdb.smtp.repository.SmtpRepository;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.repository.UserRepository;
 
@@ -48,6 +53,7 @@ public class InformerEventListener {
 	private final AdminAlertMappingRepository adminAlertMappingRepository;
 	private final WorkspaceAlertMappingRepository workspaceAlertMappingRepository;
 	private final NetworkRepository networkRepository;
+	private final SmtpRepository smtpRepository;
 
 	@Async
 	@EventListener
@@ -145,7 +151,7 @@ public class InformerEventListener {
 					systemAlertRepository.save(saveSystemAlert);
 				}
 				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON && workspaceUserAlertEvent.mailDTO() != null) {
-					mailService.sendMail(workspaceUserAlertEvent.mailDTO());
+					sendMail(workspaceUserAlertEvent.mailDTO());
 				}
 				log.info("워크스페이스 유저[{}] 알림 발송 성공", workspaceUserAlertEvent.title());
 			} catch (Exception e) {
@@ -164,5 +170,27 @@ public class InformerEventListener {
 		}
 
 		return regUser;
+	}
+	private void sendMail(MailDTO mailDTO){
+		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
+
+		if(ObjectUtils.isEmpty(smtpEntities)){
+			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
+		}
+
+		for(SmtpEntity smtpEntity : smtpEntities){
+			SmtpDTO smtpDTO = SmtpDTO.builder()
+				.host(smtpEntity.getHost())
+				.port(smtpEntity.getPort())
+				.username(smtpEntity.getUserName())
+				.password(smtpEntity.getPassword())
+				.build();
+
+			boolean result = mailService.sendMail(mailDTO, smtpDTO);
+
+			if(result){
+				break;
+			}
+		}
 	}
 }
