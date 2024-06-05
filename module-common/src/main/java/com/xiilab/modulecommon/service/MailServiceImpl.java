@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -85,7 +86,7 @@ public class MailServiceImpl implements MailService {
 			}
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
-		} catch (MailSendException e){
+		} catch (MailSendException | MailAuthenticationException e){
 			result = false;
 		}
 		return result;

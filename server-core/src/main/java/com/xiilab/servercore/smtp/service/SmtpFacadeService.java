@@ -11,4 +11,5 @@ public interface SmtpFacadeService {
 	List<SmtpDTO.ResponseDTO> getSmtp();
 
 	void deleteSmtpById(long id);
+
 }

@@ -56,7 +56,6 @@ public enum CommonErrorCode implements ErrorCode {
 	FAILED_CONNECT_GITLAB(HttpStatus.INTERNAL_SERVER_ERROR.value(), "GitLab API 연결에 실패하였습니다."),
 	FAILED_SEARCH_GITLAB_PROJECT(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당하는 프로젝트가 GitLab에 존재하지 않습니다."),
 	FAILED_UTC_TO_KOR_TIME(HttpStatus.INTERNAL_SERVER_ERROR.value(), "국제표준시(UTC)를 한국 시간으로 변환하는데 실패하였습니다."),
-	MAIL_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "메일 저장에 실패했습니다."),
 	;
 	private final int code;
 	private final String message;

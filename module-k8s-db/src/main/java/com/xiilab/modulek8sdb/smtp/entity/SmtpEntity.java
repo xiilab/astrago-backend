@@ -25,8 +25,17 @@ public class SmtpEntity {
 	private String host;
 	@Column(name = "PORT")
 	private int port;
-	@Column(name = "USERNAME")
+	@Column(name = "USERNAME", unique = true)
 	private String userName;
 	@Column(name = "PASSWORD")
 	private String password;
+	@Column(name = "SEND_COUNT")
+	private long sendCount;
+
+	public void increment(){
+		this.sendCount++;
+	}
+	public void setSendCount(){
+		this.sendCount = 0;
+	}
 }

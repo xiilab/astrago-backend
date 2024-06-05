@@ -23,6 +23,7 @@ import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.enums.ReadYN;
 import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.SystemAlertErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8sdb.alert.systemalert.entity.AdminAlertMappingEntity;
@@ -285,6 +286,9 @@ public class AlertEventListener {
 	private void sendMail(MailDTO mailDTO){
 		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
 
+		if(ObjectUtils.isEmpty(smtpEntities)){
+			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
+		}
 		for(SmtpEntity smtpEntity : smtpEntities){
 			SmtpDTO smtpDTO = SmtpDTO.builder()
 				.host(smtpEntity.getHost())
@@ -294,6 +298,8 @@ public class AlertEventListener {
 				.build();
 
 			boolean result = mailService.sendMail(mailDTO, smtpDTO);
+
+			smtpEntity.increment();
 
 			if(result){
 				break;

@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulek8sdb.smtp.dto.SmtpDTO;
-import com.xiilab.modulek8sdb.smtp.repository.SmtpRepository;
 import com.xiilab.servercore.smtp.service.SmtpFacadeService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,8 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/smtp")
 public class SmtpController {
 	private final SmtpFacadeService smtpFacadeService;
-	private final MailService mailService;
-	private final SmtpRepository smtpRepository;
+
 	@PostMapping()
 	public ResponseEntity<HttpStatus> saveSmtp(@RequestBody SmtpDTO.RequestDTO requestDTO) {
 		smtpFacadeService.saveSmtp(requestDTO);

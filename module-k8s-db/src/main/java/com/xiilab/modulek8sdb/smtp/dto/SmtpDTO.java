@@ -16,17 +16,23 @@ public class SmtpDTO {
 	private HostType hostType;
 	private String userName;
 
-	public SmtpEntity toEntity() {
-		return SmtpEntity.builder()
-			.host(hostType.getHost())
-			.port(hostType.getPort())
-			.userName(userName)
-			.build();
-	}
-
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class RequestDTO extends SmtpDTO{
-
 		private String password;
+		private String host;
+		private int port;
+
+		public SmtpEntity toEntity() {
+			return SmtpEntity.builder()
+				.host(getHostType() == null ? host : getHostType().getHost())
+				.port(getHostType() == null ? port : getHostType().getPort())
+				.userName(getUserName())
+				.password(getPassword())
+				.sendCount(0L)
+				.build();
+		}
 	}
 
 	@Getter
