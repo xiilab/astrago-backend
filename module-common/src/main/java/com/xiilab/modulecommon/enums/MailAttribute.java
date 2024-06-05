@@ -36,7 +36,8 @@ public enum MailAttribute{
 	MIG_ERROR("[Astrago] 노드 장애 알림","node1에 MIG 적용이 실패했습니다.","","", ""),
 	// 리포트
 	REPORT("[Astrago] %s", "예약 발송 내역 입니다. <br>리포팅 내용은 다음과 같습니다:", "• 리포팅 종류 : %s <br>• 발송일시 : %s <br>• 수집기간 : %s", "하위 링크를 클릭하시면 내용을 확인하실 수 있습니다.", "감사합니다."),
-
+	//SMTP
+	SMTP_CHECK("[Astrago] SMTP 확인 알림", "SMTP 등록 성공 하였습니다.", "", "", "감사합니다."),
 	;
 
 	private String subject;

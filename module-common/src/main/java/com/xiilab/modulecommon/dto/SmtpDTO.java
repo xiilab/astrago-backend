@@ -15,4 +15,10 @@ public class SmtpDTO {
 	private String username;
 	private String password;
 
+	public SmtpDTO(String host, int port, String username, String password) {
+		this.host = host;
+		this.port = port;
+		this.username = username;
+		this.password = password;
+	}
 }
