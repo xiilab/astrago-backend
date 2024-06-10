@@ -274,9 +274,13 @@ public class DataConverterUtil {
 			// Date -> 밀리세컨즈
 			long timeMil1 = start.getTime();
 			long timeMil2 = end.getTime();
-			long setp = (timeMil2 - timeMil1) / 200000;
-
-			return setp;
+			long step = timeMil2 - timeMil1;
+			if(step >= 200000){
+				step = step / 200000;
+			}else{
+				step = step / 60000;
+			}
+			return step;
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}

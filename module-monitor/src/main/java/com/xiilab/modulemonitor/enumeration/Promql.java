@@ -200,7 +200,7 @@ public enum Promql {
 	TERMINAL_GPU_MEM_USAGE(
 		"round((label_replace(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])), \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * 100) * on(node) group_left kube_node_info{}, 0.01)",
 		"", "TERMINAL"),
-	TERMINAL_MEM_UTILIZATION("sum(container_memory_usage_bytes{%s}) by (pod)", "", "TERMINAL"),
+	TERMINAL_MEM_UTILIZATION("avg(container_memory_usage_bytes{container != \"\", %s}) by (pod)", "", "TERMINAL"),
 	TERMINAL_CPU_UTILIZATION("round(sum (rate (container_cpu_usage_seconds_total{%s}[1m])) / sum (machine_cpu_cores{%s}) * 100)", "", "TERMINAL"),
 	TERMINAL_MULTI_CPU_UTILIZATION("round(sum (rate (container_cpu_usage_seconds_total{%s}[1m])) by(pod, node), 0.01)",
 		"", "TERMINAL")
