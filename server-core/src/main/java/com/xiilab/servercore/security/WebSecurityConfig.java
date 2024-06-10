@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -41,6 +40,7 @@ public class WebSecurityConfig {
 			.requestMatchers("/api/v1/core/license/**").permitAll()
 			.requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/alertManager/receive").permitAll()
+			.requestMatchers(HttpMethod.POST, "/api/v1/core/smtp").permitAll()
 			.requestMatchers("/ws/**").permitAll()
 			.requestMatchers("/api/v1/core/tus/**").permitAll()
 			.anyRequest().authenticated());
