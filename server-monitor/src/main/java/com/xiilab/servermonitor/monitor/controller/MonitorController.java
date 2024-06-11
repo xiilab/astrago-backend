@@ -30,7 +30,7 @@ public class MonitorController {
 	 * 실시간 모니터링 조회 API
 	 * @return 조회된 Monitor Metric
 	 */
-	@GetMapping()
+	@GetMapping("/realtime")
 	@Operation(summary = "Get Prometheus Real Time Metric")
 	public ResponseEntity<List<ResponseDTO.RealTimeDTO>> getPrometheusRealTimeMetric(
 		@RequestParam(name = "metricName") String metricName,
