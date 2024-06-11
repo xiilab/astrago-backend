@@ -35,9 +35,9 @@ public abstract class ResourcePresetResDTO {
 				.description(resourcePresetEntity.getDescription())
 				.launcherCpuUsage(TypeConversionUtils.toFloat(resourcePresetEntity.getLauncherCpuUsage()))
 				.launcherMemUsage(TypeConversionUtils.toFloat(resourcePresetEntity.getLauncherMemUsage()))
-				.gpuUsage(resourcePresetEntity.getGpuUsage())
 				.cpuUsage(TypeConversionUtils.toFloat(resourcePresetEntity.getCpuUsage()))
 				.memUsage(TypeConversionUtils.toFloat(resourcePresetEntity.getMemUsage()))
+				.gpuUsage(resourcePresetEntity.getGpuUsage())
 				.nodeType(resourcePresetEntity.getNodeType())
 				.build();
 		}

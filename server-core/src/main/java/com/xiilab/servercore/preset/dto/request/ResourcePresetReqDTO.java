@@ -1,5 +1,7 @@
 package com.xiilab.servercore.preset.dto.request;
 
+import org.springdoc.core.annotations.ParameterObject;
+
 import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulecommon.util.ValidUtils;
 
@@ -37,9 +39,10 @@ public abstract class ResourcePresetReqDTO {
 	@Getter
 	@Setter
 	@NoArgsConstructor
+	@ParameterObject
 	public static class FindSearchCondition {
-		private Integer page;
-		private Integer size;
+		private Integer page = 0;
+		private Integer size = Integer.MAX_VALUE;
 		private NodeType nodeType;
 
 		public void setPage(Integer page) {
