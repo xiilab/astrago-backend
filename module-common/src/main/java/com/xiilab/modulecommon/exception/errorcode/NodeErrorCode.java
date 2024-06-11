@@ -18,6 +18,7 @@ public enum NodeErrorCode implements ErrorCode {
 	NODE_IN_USE_NOT_MIG(HttpStatus.CONFLICT.value(), "해당 노드를 user가 사용중입니다. 사용중인 node는 mig 설정이 불가합니다."),
 	GPU_PRODUCT_MEMORY_NOT_EXIST(HttpStatus.INTERNAL_SERVER_ERROR.value(), "gpu product에 메모리가 존재하지 않습니다. ex)A100-PCIE-80GB"),
 	MIG_PROFILE_NOT_EXIST(HttpStatus.INTERNAL_SERVER_ERROR.value(), "MIG Profile 파일이 존재하지 않습니다. 관리자에게 문의바랍니다."),
+	NOT_FOUND_WORKER_NODE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "WORKER 노드를 찾을 수 없습니다. 관리자에게 문의바랍니다."),
 
 	;
 

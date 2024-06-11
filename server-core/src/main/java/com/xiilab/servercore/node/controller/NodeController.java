@@ -1,6 +1,5 @@
 package com.xiilab.servercore.node.controller;
 
-import org.keycloak.authorization.client.util.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
@@ -110,4 +109,9 @@ public class NodeController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@GetMapping("/gpus")
+	@Operation(summary = "node gpu 조회")
+	public ResponseEntity<ResponseDTO.NodeGPUs> getNodeGpuList(){
+		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(), HttpStatus.OK);
+	}
 }
