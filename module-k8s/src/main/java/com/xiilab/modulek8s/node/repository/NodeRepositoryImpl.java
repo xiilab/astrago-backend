@@ -260,10 +260,10 @@ public class NodeRepositoryImpl implements NodeRepository {
 		if (!getMigCapable(node)) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
-		//할당된 프로젝트가 존재하는지 체크한다.
-		// if (nodeAssignWorkloadCount(nodeName) > 0) {
-		// 	throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MIG);
-		// }
+		//할당된 프로젝트가 존재하는지 체크한다. - true : 사용중인 워크로드 존재
+		if (nodeAssignWorkloadCount(nodeName)) {
+			throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MIG);
+		}
 		updateMIGConfig(nodeName, option);
 
 	}
@@ -379,18 +379,47 @@ public class NodeRepositoryImpl implements NodeRepository {
 		return resource != null ? (resource.getAmount() + resource.getFormat()) : "0";
 	}
 
-	private long nodeAssignWorkloadCount(String nodeName) {
+	private boolean nodeAssignWorkloadCount(String nodeName) {
+		boolean isGpuUsed = false;
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			return client.pods()
-				.list()
-				.getItems()
-				.stream()
-				.filter(
-					pod -> pod.getSpec().getNodeName().equals(nodeName) && pod.getStatus().getPhase().equals("Running"))
-				.count();
+			List<Pod> pods = client.pods().list().getItems();
+			for (Pod pod : pods) {
+				if (isPodOnNodeAndRunning(pod, nodeName)) {
+					if (isGpuUsed(pod)) {
+						isGpuUsed = true;
+						break;
+					}
+				}
+			}
 		}
+		return isGpuUsed;
 	}
+	private boolean isPodOnNodeAndRunning(Pod pod, String nodeName) {
+		return pod.getSpec().getNodeName() != null &&
+			pod.getSpec().getNodeName().equals(nodeName) &&
+			"Running".equals(pod.getStatus().getPhase());
+	}
+	private boolean isGpuUsed(Pod pod) {
+		Quantity gpuQuantity = getGpuQuantity(pod, "nvidia.com/gpu");
+		Quantity sharedGpuQuantity = getGpuQuantity(pod, "nvidia.com/gpu.shared");
 
+		return isGpuQuantityUsed(gpuQuantity) || isGpuQuantityUsed(sharedGpuQuantity);
+	}
+	private Quantity getGpuQuantity(Pod pod, String resourceName) {
+		return pod.getSpec()
+			.getContainers()
+			.get(0)
+			.getResources()
+			.getRequests()
+			.get(resourceName);
+	}
+	private boolean isGpuQuantityUsed(Quantity gpuQuantity) {
+		if (gpuQuantity != null) {
+			int gpuCount = Integer.parseInt(gpuQuantity.getAmount());
+			return gpuCount > 0;
+		}
+		return false;
+	}
 	/**
 	 * 해당 node가 mig가 가능한지 확인하는 메소드
 	 *
@@ -610,28 +639,19 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
 			int gpuCnt = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count")); // gpu 개수
 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
+			String mps_status = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() : node.getMetadata().getLabels().get("mps_status"); // mps 상태
 
-			int custom_mps_replicas = node.getMetadata().getLabels().get("mps_replicas") != null ?
-				Integer.parseInt(node.getMetadata().getLabels().get("mps_replicas")) : 1; // mps 설정 개수
-			String custom_mps_capable = node.getMetadata().getLabels().get("mps_capable") != null ?
-				node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
-			int gpuCapacity = node.getStatus().getCapacity().get(MPS_GPU) != null ?
-				Integer.parseInt(node.getStatus().getCapacity().get(MPS_GPU).getAmount()) : 0;
-			int updateCheck = gpuCapacity / gpuCnt;
+			int mps_replicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
+			String mps_capable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ? node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
 
-			MPSStatus mpsStatus = MPSStatus.COMPLETE;
-			if (custom_mps_capable.equalsIgnoreCase("true")) {
-				if (custom_mps_replicas != updateCheck) {
-					mpsStatus = MPSStatus.UPDATE;
-				}
-			}
+			MPSStatus mpsStatus = MPSStatus.COMPLETE.name().equalsIgnoreCase(mps_status) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
 
 			return MPSGpuDTO.MPSInfoDTO.builder()
 				.nodeName(nodeName)
 				.gpuName(gpu)
 				.gpuCnt(gpuCnt)
-				.mpsCapable((custom_mps_capable.equals("true")) ? true : false)
-				.mpsReplicas(custom_mps_replicas)
+				.mpsCapable(Boolean.parseBoolean(mps_capable))
+				.mpsReplicas(mps_replicas)
 				.mpsStatus(mpsStatus)
 				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
@@ -645,28 +665,31 @@ public class NodeRepositoryImpl implements NodeRepository {
 			//volta 검사해야함
 			Node nodeInfo = client.nodes().withName(nodeName).get();
 			String gpuType = nodeInfo.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String migCapable = nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) != null ?
-				nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) : "false"; // gpu 종류(volta 등)
-			if (!gpuType.equalsIgnoreCase("volta")) {
+			String migCapable = nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) != null ? nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) : "false"; // gpu 종류(volta 등)
+			if(!gpuType.equalsIgnoreCase("volta")){
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_GPU);
 			}
-			if (migCapable.equalsIgnoreCase("true")) {
+			if(migCapable.equalsIgnoreCase("true")){
+				throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MPS);
+			}
+			//해당 노드에 생성된 Pod중 gpu를 사용하고있는 pod가 있는지 체크
+			boolean usedWorkloadCheck = nodeAssignWorkloadCount(nodeName);
+			if(usedWorkloadCheck){
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_WITH_MIG);
 			}
-			if (!setMPSDTO.isMpsCapable()) {
+
+			if(!setMPSDTO.isMpsCapable()){
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.removeFromLabels("nvidia.com/device-plugin.config")
-					.removeFromLabels("mps_replicas")
-					.addToLabels("mps_capable", "false")
+					.addToLabels("mps_status", "UPDATING")
 					.endMetadata()
 					.build());
-			} else {
+			}else{
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
-					.addToLabels("mps_replicas", String.valueOf(setMPSDTO.getMpsReplicas()))
-					.addToLabels("mps_capable", "true")
+					.addToLabels("mps_status", "UPDATING")
 					.endMetadata()
 					.build());
 			}
