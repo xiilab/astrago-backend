@@ -60,7 +60,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
 	private final String MIG_CAPABLE = "nvidia.com/mig.capable";
-	private final String MPS_CONFIG = "mps_capable";
+	private final String MPS_CONFIG = "nvidia.com/mps.capable";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
 	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
@@ -639,20 +639,23 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
 			int gpuCnt = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count")); // gpu 개수
 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String mps_status = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() : node.getMetadata().getLabels().get("mps_status"); // mps 상태
+			String mpsStatus = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() : node.getMetadata().getLabels().get("mps_status"); // mps 상태
 
-			int mps_replicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
-			String mps_capable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ? node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
+			int mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
+			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ? node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
+			String customMpsCapable = node.getMetadata().getLabels().get("mps_capable") != null ? node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
 
-			MPSStatus mpsStatus = MPSStatus.COMPLETE.name().equalsIgnoreCase(mps_status) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
-
+			MPSStatus status = MPSStatus.COMPLETE.name().equalsIgnoreCase(mpsStatus) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
+			if(status == MPSStatus.UPDATING){
+				status = customMpsCapable.equalsIgnoreCase("true") ? MPSStatus.UPDATING_ON : MPSStatus.UPDATING_OFF;
+			}
 			return MPSGpuDTO.MPSInfoDTO.builder()
 				.nodeName(nodeName)
 				.gpuName(gpu)
 				.gpuCnt(gpuCnt)
-				.mpsCapable(Boolean.parseBoolean(mps_capable))
-				.mpsReplicas(mps_replicas)
-				.mpsStatus(mpsStatus)
+				.mpsCapable(Boolean.parseBoolean(mpsCapable))
+				.mpsReplicas(mpsReplicas)
+				.mpsStatus(status)
 				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
 		}
@@ -683,6 +686,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.editMetadata()
 					.removeFromLabels("nvidia.com/device-plugin.config")
 					.addToLabels("mps_status", "UPDATING")
+					.addToLabels("mps_capable", "false")
 					.endMetadata()
 					.build());
 			}else{
@@ -690,6 +694,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.editMetadata()
 					.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
 					.addToLabels("mps_status", "UPDATING")
+					.addToLabels("mps_capable", "true")
 					.endMetadata()
 					.build());
 			}
