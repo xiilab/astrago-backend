@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.util.DataConverterUtil;
-import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
@@ -251,5 +251,9 @@ public class NodeFacadeService {
 	public void setMpsConfig(String nodeName, MPSGpuDTO.SetMPSDTO setMPSDTO) {
 		setMPSDTO.setNodeName(nodeName);
 		nodeRepository.setMpsConfig(setMPSDTO);
+	}
+
+	public ResponseDTO.NodeGPUs getNodeGpus() {
+		return nodeRepository.getNodeGPUs();
 	}
 }

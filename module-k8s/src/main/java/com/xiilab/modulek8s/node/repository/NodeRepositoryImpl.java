@@ -50,6 +50,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String GPU_NAME = "nvidia.com/gpu.product";
 	private final String MIG_GPU_NAME = "nvidia.com/mig.gpu.product";
 	private final String GPU_COUNT = "nvidia.com/gpu.count";
+	private final String MPS_GPU_COUNT = "nvidia.com/gpu.replicas";
 	private final String GPU_DRIVER_VER_MAJOR = "nvidia.com/cuda.driver.major";
 	private final String GPU_DRIVER_VER_MINOR = "nvidia.com/cuda.driver.minor";
 	private final String GPU_DRIVER_VER_REV = "nvidia.com/cuda.driver.rev";
@@ -75,12 +76,75 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String READY = "Ready";
 
 	@Override
+	public List<Node> getNodes(boolean isWorker) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			if (isWorker) {
+				return client.nodes().list().getItems().stream()
+					.filter(node ->
+						!node.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane") &&
+							(Objects.isNull(node.getSpec().getUnschedulable())
+								|| !Boolean.TRUE.equals(node.getSpec().getUnschedulable()))
+					)
+					.toList();
+			} else {
+				return client.nodes().list().getItems().stream().toList();
+			}
+
+			// !Objects.isNull(node.getSpec().getUnschedulable())
+			// 	&& node.getSpec().getUnschedulable().booleanValue() == Boolean.TRUE
+		}
+	}
+
+	@Override
+	public ResponseDTO.NodeGPUs getNodeGPUs() {
+		List<Node> nodes = getNodes(true);
+		if (CollectionUtils.isEmpty(nodes)) {
+			throw new RestApiException(NodeErrorCode.NOT_FOUND_WORKER_NODE);
+		}
+
+		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap = new HashMap<>();
+		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap = new HashMap<>();
+		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> normalGPUMap = new HashMap<>();
+
+		for (Node node : nodes) {
+			if (Objects.isNull(node.getMetadata().getLabels().get(GPU_NAME))) {
+				continue;
+			}
+
+			String gpuName = node.getMetadata().getLabels().get(GPU_NAME);
+			String nodeName = node.getMetadata().getName();
+			Integer notMpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_COUNT, "0"));
+			Integer mpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(MPS_GPU_COUNT, "0"));
+
+			if (isActiveMIG(node)) { // MIG
+				List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos = new ArrayList<>();
+				gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(gpuName, notMpsGPUCount));
+				migGPUMap.put(nodeName, gpuInfos);
+			} else if (isActiveMPS(node)) { // MPS
+				List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos = new ArrayList<>();
+				gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(gpuName, mpsGPUCount));
+				mpsGPUMap.put(nodeName, gpuInfos);
+			} else { // normal
+				List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos = new ArrayList<>();
+				gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(gpuName, notMpsGPUCount));
+				normalGPUMap.put(nodeName, gpuInfos);
+			}
+		}
+
+		return ResponseDTO.NodeGPUs.builder()
+			.normalGPU(normalGPUMap)
+			.migGPU(migGPUMap)
+			.mpsGPU(mpsGPUMap)
+			.build();
+	}
+
+	@Override
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText) {
 		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Node> nodes = client.nodes().list().getItems()
 				.stream().filter(node -> {
-					if(searchText == null || searchText.isBlank()){
+					if (searchText == null || searchText.isBlank()) {
 						return true;
 					}
 					return node.getMetadata().getName().toLowerCase().contains(searchText);
@@ -140,11 +204,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return false;
 		}
 		MigStatus migStatus = MigStatus.valueOf(migConfigStatus.toUpperCase());
-		return switch (migStatus){
-			case SUCCESS,FAILED -> false;
-			case PENDING,REBOOTING -> true;
+		return switch (migStatus) {
+			case SUCCESS, FAILED -> false;
+			case PENDING, REBOOTING -> true;
 		};
 	}
+
 	private boolean isActiveMPS(Node node) {
 		String migConfigStatus = node.getMetadata().getLabels().get(MPS_CONFIG);
 		if (Objects.isNull(migConfigStatus)) {
@@ -369,6 +434,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 		return Boolean.parseBoolean(capable);
 	}
+
 	private boolean getMpsCapable(Node node) {
 		String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family");
 		if (Objects.nonNull(gpuType) && gpuType.equalsIgnoreCase("volta")) {
@@ -383,7 +449,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 * @return
 	 */
 	private boolean getMigStatus(Node node) {
-		String migCapable = node.getMetadata().getLabels().get("mig_capable") != null ? node.getMetadata().getLabels().get("mig_capable") : "false";
+		String migCapable = node.getMetadata().getLabels().get("mig_capable") != null ?
+			node.getMetadata().getLabels().get("mig_capable") : "false";
 		return Boolean.parseBoolean(migCapable);
 	}
 
@@ -411,7 +478,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String chipset = extractGpuChipset(productName);
 			List<Map<String, Integer>> resProfile = new ArrayList<>();
 			//MIGProfile.json을 읽어온다.
-			InputStream inputStream = this.getClass().getResourceAsStream(String.format("/migProfile/%s.json", chipset));
+			InputStream inputStream = this.getClass()
+				.getResourceAsStream(String.format("/migProfile/%s.json", chipset));
 			//json 파일을 읽어옴
 			MIGProfileDTO migProfileList = objectMapper.readValue(inputStream, MIGProfileDTO.class);
 
@@ -464,9 +532,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 			Resource<Node> node = kubernetesClient.nodes().withName(nodeName);
 			HashMap<String, String> migConfig = new HashMap<>();
 			migConfig.put("nvidia.com/mig.config", profile);
-			if(profile.equals("all-disabled")){
+			if (profile.equals("all-disabled")) {
 				migConfig.put("mig_capable", "false");
-			}else{
+			} else {
 				migConfig.put("mig_capable", "true");
 			}
 			node.edit(n ->
@@ -498,7 +566,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 		String migProfile = node.getMetadata().getLabels().get("nvidia.com/mig.config");
 		String migProfileStatus = node.getMetadata().getLabels().get("nvidia.com/mig.config.state");
 		Map<String, Object> migConfigMap = getMigConfigMap();
-		if (migProfile.equals("all-disabled") || CollectionUtils.isEmpty((List<Map<String, Object>>)migConfigMap.get(migProfile))) {
+		if (migProfile.equals("all-disabled") || CollectionUtils.isEmpty(
+			(List<Map<String, Object>>)migConfigMap.get(migProfile))) {
 			int gpuCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count"));
 			List<Integer> gpuIndex = new ArrayList<>();
 			for (int i = 0; i < gpuCount; i++) {

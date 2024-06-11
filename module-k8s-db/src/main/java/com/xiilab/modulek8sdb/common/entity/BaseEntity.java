@@ -11,7 +11,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,12 +39,7 @@ public class BaseEntity {
 	protected LocalDateTime regDate;
 
 	@LastModifiedDate
-	@Column(name = "MOD_DATE")
+	@Column(name = "MOD_DATE", insertable = false)
 	protected LocalDateTime modDate;
-
-	@PrePersist
-	public void preUpdate() {
-		this.modDate = null;
-	}
 
 }

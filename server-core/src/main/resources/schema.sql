@@ -375,7 +375,7 @@ create table if not exists TB_IMAGE
     DELETE_YN            enum ('Y', 'N')                         null,
     REPOSITORY_AUTH_TYPE enum ('PRIVATE', 'PUBLIC')              null,
     WORKLOAD_TYPE        enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
-    MULTI_NODE           tinyint(1)                                 null
+    MULTI_NODE           tinyint(1)                              null
 );
 
 create table if not exists TB_IMAGE_WORKLOAD_MAPPING
@@ -817,3 +817,23 @@ CREATE TABLE if not exists TB_NETWORK
     NETWORK_CLOSE_YN       enum ('Y','N') DEFAULT NULL,
     PRIMARY KEY (`NETWORK_ID`)
 );
+
+create table if not exists TB_RESOURCE_PRESET
+(
+    RESOURCE_PRESET_ID bigint(20)               NOT NULL AUTO_INCREMENT,
+    TITLE              varchar(255)             null,
+    DESCRIPTION        varchar(255)             null,
+    LAUNCHER_CPU_USAGE decimal(5, 1)            null,
+    LAUNCHER_MEM_USAGE decimal(5, 1)            null,
+    GPU_USAGE          int                      null,
+    CPU_USAGE          decimal(5, 1)            null,
+    MEM_USAGE          decimal(5, 1)            null,
+    NODE_TYPE          enum ('SINGLE', 'MULTI') null,
+    REG_DATE           datetime(6)              null,
+    MOD_DATE           datetime(6)              null,
+    REG_USER_ID        varchar(255)             null,
+    REG_USER_NAME      varchar(255)             null,
+    REG_USER_REAL_NAME varchar(255)             null,
+    PRIMARY KEY (`RESOURCE_PRESET_ID`)
+);
+

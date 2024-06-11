@@ -2,12 +2,14 @@ package com.xiilab.modulek8s.node.dto;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Map;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 
 import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.NodeSystemInfo;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -236,6 +238,22 @@ public class ResponseDTO {
 			}
 		}
 	}
+
+	@Getter
+	@Builder
+	public static class NodeGPUs {
+		private Map<String, List<GPUInfo>> normalGPU;
+		private Map<String, List<GPUInfo>> migGPU;
+		private Map<String, List<GPUInfo>> mpsGPU;
+
+		@Getter
+		@AllArgsConstructor
+		public static class GPUInfo {
+			private String gpuName;
+			private Integer count;
+		}
+	}
+
 
 	@Builder
 	public record MIGProfile(MIGProduct migProduct,
