@@ -40,6 +40,8 @@ public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 			.creatorFullName(creatorFullName)
 			.ide(ide.name())
 			.initContainerUrl(initContainerUrl)
+			.nodeName(nodeName)
+			.gpuType(gpuType)
 			.build();
 	}
 
