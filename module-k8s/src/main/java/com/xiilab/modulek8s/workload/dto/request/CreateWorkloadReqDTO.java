@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
@@ -36,6 +37,8 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected String imageSecretName;
 	protected String ide;
 	protected String initContainerUrl;
+	protected String nodeName;
+	protected GPUType gpuType;
 
 	protected void initializeCollection() {
 		this.codes = getListIfNotEmpty(this.codes);

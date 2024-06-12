@@ -243,6 +243,14 @@ public class InteractiveJobVO extends WorkloadVO {
 				.withValue(env.value())
 				.build()
 			).toList();
+		// GPU 미사용시, GPU 접근 막는 환경변수
+		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
+			envVars.add(new EnvVarBuilder()
+				.withName("NVIDIA_VISIBLE_DEVICES")
+				.withValue("none")
+				.build()
+			);
+		}
 		if (super.image.imageType() == ImageType.HUB) {
 			envVars.add(new EnvVarBuilder()
 				.withName("POD_NAME")

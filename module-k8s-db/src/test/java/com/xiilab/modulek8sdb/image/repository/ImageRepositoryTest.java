@@ -1,8 +1,8 @@
 package com.xiilab.modulek8sdb.image.repository;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
+
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

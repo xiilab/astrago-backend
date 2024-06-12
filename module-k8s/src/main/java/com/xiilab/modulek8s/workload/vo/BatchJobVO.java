@@ -134,11 +134,16 @@ public class BatchJobVO extends WorkloadVO {
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
 		podSpecBuilder.withHostname("astrago");
+		// 노드 지정
+		if (!StringUtils.isEmpty(this.nodeName)) {
+			podSpecBuilder.withNodeSelector(Map.of("kubernetes.io/hostname", this.nodeName));
+		}
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
 		if (!ObjectUtils.isEmpty(this.secretName)) {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
+
 		cloneGitRepo(podSpecBuilder, this.codes);
 		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, this.datasets);
@@ -251,6 +256,14 @@ public class BatchJobVO extends WorkloadVO {
 				.build()
 			).toList();
 		List<EnvVar> result = new ArrayList<>(envVars);
+		// GPU 미사용시, GPU 접근 막는 환경변수
+		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
+			result.add(new EnvVarBuilder()
+				.withName("NVIDIA_VISIBLE_DEVICES")
+				.withValue("none")
+				.build()
+			);
+		}
 		if (super.image.imageType() == ImageType.HUB) {
 			result.add(new EnvVarBuilder()
 				.withName("POD_NAME")

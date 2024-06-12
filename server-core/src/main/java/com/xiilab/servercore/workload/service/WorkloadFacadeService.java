@@ -140,6 +140,7 @@ public class WorkloadFacadeService {
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserDTO.UserInfo userInfoDTO) {
 		createWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(), userInfoDTO.getUserFullName());
 
+		//
 		// 이미지 credential 세팅
 		if (!ObjectUtils.isEmpty(createWorkloadReqDTO.getImage().getCredentialId())
 			&& createWorkloadReqDTO.getImage().getCredentialId() > 0) {

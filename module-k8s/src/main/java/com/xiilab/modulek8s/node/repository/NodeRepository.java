@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
@@ -14,7 +15,7 @@ import io.fabric8.kubernetes.api.model.Node;
 
 public interface NodeRepository {
 	List<Node> getNodes(boolean isWorker);
-	ResponseDTO.NodeGPUs getNodeGPUs();
+	ResponseDTO.NodeGPUs getNodeGPUs(NodeType nodeType);
 	ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText);
 
 	MIGProfileDTO getNodeMIGProfiles(String nodeName, int giCount);

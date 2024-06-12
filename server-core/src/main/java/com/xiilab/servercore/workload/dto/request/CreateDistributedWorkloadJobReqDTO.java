@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.dto.request;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulek8s.common.dto.DistributedResourceDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateDistributedWorkloadReqDTO;
@@ -44,6 +45,7 @@ public class CreateDistributedWorkloadJobReqDTO extends CreateWorkloadJobReqDTO 
 			.creatorFullName(creatorFullName)
 			.ide(ide.name())
 			.initContainerUrl(initContainerUrl)
+			.gpuType(GPUType.NORMAL)
 			.build();
 	}
 
