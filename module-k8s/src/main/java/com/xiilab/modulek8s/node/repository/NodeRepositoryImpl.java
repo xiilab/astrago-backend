@@ -382,7 +382,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private boolean nodeAssignWorkloadCount(String nodeName) {
 		boolean isGpuUsed = false;
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			List<Pod> pods = client.pods().list().getItems();
+			List<Pod> pods = client.pods().inAnyNamespace().list().getItems();
 			for (Pod pod : pods) {
 				if (isPodOnNodeAndRunning(pod, nodeName)) {
 					if (isGpuUsed(pod)) {
