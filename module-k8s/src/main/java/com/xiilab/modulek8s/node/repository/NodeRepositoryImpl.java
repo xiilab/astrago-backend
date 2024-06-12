@@ -380,7 +380,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private boolean nodeAssignWorkloadCount(String nodeName) {
 		boolean isGpuUsed = false;
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			List<Pod> pods = client.pods().list().getItems();
+			List<Pod> pods = client.pods().inAnyNamespace().list().getItems();
 			for (Pod pod : pods) {
 				if (isPodOnNodeAndRunning(pod, nodeName)) {
 					if (isGpuUsed(pod)) {
@@ -629,24 +629,23 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
 			int gpuCnt = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count")); // gpu 개수
 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String mps_status = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() :
-				node.getMetadata().getLabels().get("mps_status"); // mps 상태
+			String mpsStatus = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() : node.getMetadata().getLabels().get("mps_status"); // mps 상태
 
-			int mps_replicas = node.getMetadata().getLabels().get(MPS_GPU_COUNT) != null ?
-				Integer.parseInt(node.getMetadata().getLabels().get(MPS_GPU_COUNT)) : 1; // mps 설정 개수
-			String mps_capable = node.getMetadata().getLabels().get(MPS_CAPABLE) != null ?
-				node.getMetadata().getLabels().get(MPS_CAPABLE) : "false"; // mps 설정 유무
+			int mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
+			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ? node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
+			String customMpsCapable = node.getMetadata().getLabels().get("mps_capable") != null ? node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
 
-			MPSStatus mpsStatus =
-				MPSStatus.COMPLETE.name().equalsIgnoreCase(mps_status) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
-
+			MPSStatus status = MPSStatus.COMPLETE.name().equalsIgnoreCase(mpsStatus) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
+			if(status == MPSStatus.UPDATING){
+				status = customMpsCapable.equalsIgnoreCase("true") ? MPSStatus.UPDATING_ON : MPSStatus.UPDATING_OFF;
+			}
 			return MPSGpuDTO.MPSInfoDTO.builder()
 				.nodeName(nodeName)
 				.gpuName(gpu)
 				.gpuCnt(gpuCnt)
-				.mpsCapable(Boolean.parseBoolean(mps_capable))
-				.mpsReplicas(mps_replicas)
-				.mpsStatus(mpsStatus)
+				.mpsCapable(Boolean.parseBoolean(mpsCapable))
+				.mpsReplicas(mpsReplicas)
+				.mpsStatus(status)
 				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
 		}
@@ -673,22 +672,22 @@ public class NodeRepositoryImpl implements NodeRepository {
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_WITH_MIG);
 			}
 
-			if (!setMPSDTO.isMpsCapable()) {
-				client.nodes()
-					.withName(nodeName)
-					.edit(node -> new NodeBuilder(node).editMetadata()
-						.removeFromLabels("nvidia.com/device-plugin.config")
-						.addToLabels("mps_status", "UPDATING")
-						.endMetadata()
-						.build());
-			} else {
-				client.nodes()
-					.withName(nodeName)
-					.edit(node -> new NodeBuilder(node).editMetadata()
-						.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
-						.addToLabels("mps_status", "UPDATING")
-						.endMetadata()
-						.build());
+			if(!setMPSDTO.isMpsCapable()){
+				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
+					.editMetadata()
+					.removeFromLabels("nvidia.com/device-plugin.config")
+					.addToLabels("mps_status", "UPDATING")
+					.addToLabels("mps_capable", "false")
+					.endMetadata()
+					.build());
+			}else{
+				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
+					.editMetadata()
+					.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
+					.addToLabels("mps_status", "UPDATING")
+					.addToLabels("mps_capable", "true")
+					.endMetadata()
+					.build());
 			}
 		}
 	}
@@ -701,7 +700,10 @@ public class NodeRepositoryImpl implements NodeRepository {
 				boolean migEnabled = (boolean)migInfo.get("mig-enabled");
 				List<Integer> devices = (List<Integer>)migInfo.get("devices");
 				if (migEnabled == false) {
-					return MIGGpuDTO.MIGInfoDTO.builder().migEnable(migEnabled).gpuIndexs(devices).build();
+					return MIGGpuDTO.MIGInfoDTO.builder()
+						.migEnable(migEnabled)
+						.gpuIndexs(devices)
+						.build();
 				} else {
 					Map<String, Integer> migProfiles = (Map<String, Integer>)migInfo.get("mig-devices");
 					return MIGGpuDTO.MIGInfoDTO.builder()
@@ -719,7 +721,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 			kubernetesClient.configMaps()
 				.inNamespace("gpu-operator")
 				.withName("custom-mig-parted-config")
-				.edit(config -> config.edit().addToData(data).build());
+				.edit(config ->
+					config.edit()
+						.addToData(data).build());
 		}
 	}
 
