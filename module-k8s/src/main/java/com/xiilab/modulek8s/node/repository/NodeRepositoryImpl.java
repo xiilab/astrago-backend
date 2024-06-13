@@ -94,9 +94,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 			} else {
 				return client.nodes().list().getItems().stream().toList();
 			}
-
-			// !Objects.isNull(node.getSpec().getUnschedulable())
-			// 	&& node.getSpec().getUnschedulable().booleanValue() == Boolean.TRUE
 		}
 	}
 
@@ -629,14 +626,19 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
 			int gpuCnt = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count")); // gpu 개수
 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String mpsStatus = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() : node.getMetadata().getLabels().get("mps_status"); // mps 상태
+			String mpsStatus = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() :
+				node.getMetadata().getLabels().get("mps_status"); // mps 상태
 
-			int mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
-			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ? node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
-			String customMpsCapable = node.getMetadata().getLabels().get("mps_capable") != null ? node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
+			int mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ?
+				Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
+			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ?
+				node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
+			String customMpsCapable = node.getMetadata().getLabels().get("mps_capable") != null ?
+				node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
 
-			MPSStatus status = MPSStatus.COMPLETE.name().equalsIgnoreCase(mpsStatus) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
-			if(status == MPSStatus.UPDATING){
+			MPSStatus status =
+				MPSStatus.COMPLETE.name().equalsIgnoreCase(mpsStatus) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
+			if (status == MPSStatus.UPDATING) {
 				status = customMpsCapable.equalsIgnoreCase("true") ? MPSStatus.UPDATING_ON : MPSStatus.UPDATING_OFF;
 			}
 			return MPSGpuDTO.MPSInfoDTO.builder()
@@ -672,7 +674,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_WITH_MIG);
 			}
 
-			if(!setMPSDTO.isMpsCapable()){
+			if (!setMPSDTO.isMpsCapable()) {
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.removeFromLabels("nvidia.com/device-plugin.config")
@@ -680,7 +682,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.addToLabels("mps_capable", "false")
 					.endMetadata()
 					.build());
-			}else{
+			} else {
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
@@ -802,7 +804,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private void putMigGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap, Node node,
 		List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos, String nodeName, String gpuName, Integer notMpsGPUCount) {
-		if (isMIGSingleStrategy(node)) {
+		if (isMIGSingleStrategy(node)) {	// mig 전략이 'single'이면
 			putGpuMap(migGPUMap, gpuInfos, nodeName, gpuName, notMpsGPUCount);
 		} else {
 			List<String> migGpuKeys = node.getMetadata()
