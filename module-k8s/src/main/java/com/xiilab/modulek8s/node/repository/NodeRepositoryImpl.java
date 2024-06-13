@@ -196,7 +196,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private boolean isActiveMIG(Node node) {
 		// product에 "MIG"가 포함되어 있거나 라벨에 "mig-"가 포함되어 있을 경우
-		String gpuName = node.getMetadata().getLabels().get(GPU_NAME);
+		String gpuName = node.getMetadata().getLabels().getOrDefault(GPU_NAME, "");
 		return "MIG".contains(gpuName) || node.getMetadata()
 			.getLabels()
 			.keySet()
