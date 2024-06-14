@@ -16,6 +16,7 @@ import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.servercore.node.dto.NodeResDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 
@@ -112,7 +113,7 @@ public class NodeController {
 
 	@GetMapping("/gpus")
 	@Operation(summary = "node gpu 조회")
-	public ResponseEntity<ResponseDTO.NodeGPUs> getNodeGpuList(
+	public ResponseEntity<NodeResDTO.FindGpuResources> getNodeGpuList(
 		@RequestParam(name = "nodeType") NodeType nodeType) {
 		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(nodeType), HttpStatus.OK);
 	}

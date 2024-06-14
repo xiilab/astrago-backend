@@ -17,6 +17,7 @@ import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
 import com.xiilab.modulemonitor.service.PrometheusService;
+import com.xiilab.servercore.node.dto.NodeResDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -254,7 +255,44 @@ public class NodeFacadeService {
 		nodeRepository.setMpsConfig(setMPSDTO);
 	}
 
-	public ResponseDTO.NodeGPUs getNodeGpus(NodeType nodeType) {
-		return nodeRepository.getNodeGPUs(nodeType);
+	public NodeResDTO.FindGpuResources getNodeGpus(NodeType nodeType) {
+		ResponseDTO.NodeGPUs nodeGPUs = nodeRepository.getNodeGPUs(nodeType);
+		Map<String, NodeResDTO.GPUInfo> normalGpuMap = getGpuInfos(nodeGPUs.getNormalGPU());
+		Map<String, NodeResDTO.GPUInfo> migGpuMap = getGpuInfos(nodeGPUs.getMigGPU());
+		Map<String, NodeResDTO.GPUInfo> mpsGpuMap = getGpuInfos(nodeGPUs.getMpsGPU());
+
+		return NodeResDTO.FindGpuResources.builder()
+			.normalGpuMap(normalGpuMap)
+			.migGpuMap(migGpuMap)
+			.mpsGpuMap(mpsGpuMap)
+			.build();
+	}
+
+
+	private Map<String, NodeResDTO.GPUInfo> getGpuInfos( Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList) {
+		return gpuList.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> NodeResDTO.GPUInfo.builder()
+						.onePerMemory(entry.getValue().get(0).getOnePerMemory())
+						.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
+						.totalGpuCount(getTotalGPUCount(entry.getValue()))
+						.useAllGPUStatus(false)
+						.build()
+			));
+
+	}
+
+	private Integer getMaximumGPUCount(List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos) {
+		return gpuInfos.stream()
+			.map(ResponseDTO.NodeGPUs.GPUInfo::getCount)
+			.max(Integer::compareTo)
+			.orElseGet(() -> 0);
+	}
+
+	private Integer getTotalGPUCount(List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos) {
+		return gpuInfos.stream()
+			.mapToInt(ResponseDTO.NodeGPUs.GPUInfo::getCount)
+			.sum();
 	}
 }
