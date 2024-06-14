@@ -19,6 +19,8 @@ public class MPSGpuDTO {
 		private boolean mpsCapable;
 		// mps 설정 개수
 		private int mpsReplicas;
+		// gpu 메모리 양
+		private int totalMemory;
 		// mps 최대 설정 개수
 		private int mpsMaxReplicas;
 		private MPSStatus mpsStatus;
