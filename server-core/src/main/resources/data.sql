@@ -161,7 +161,9 @@ VALUES ('HUB', 1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrag
        ('BUILT', 13, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
         'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'BATCH', false),
        ('BUILT', 14, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'BATCH', false)
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'BATCH', false),
+       ('BUILT', 15, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
+        'xiilab/horovod', null, 'PUBLIC', 'DISTRIBUTED', false)
 ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 
 -- 허브 이미지 초기값
