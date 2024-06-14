@@ -41,6 +41,7 @@ public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	protected String creatorFullName;
 	protected String nodeName;
 	protected GPUType gpuType;
+	protected String gpuName;
 	@Setter
 	protected FrameWorkType ide;
 

@@ -477,6 +477,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.ide(interactiveJobResDTO.getIde())
 			.parameter(interactiveJobResDTO.getParameter())
 			.workloadStatus(WorkloadStatus.PENDING)
+			.gpuType(interactiveJobResDTO.getGpuType() != null? interactiveJobResDTO.getGpuType() : null)
+			.gpuName(interactiveJobResDTO.getGpuName() != null? interactiveJobResDTO.getGpuName() : null)
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
@@ -515,6 +517,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.ide(batchJobResDTO.getIde())
 			.parameter(batchJobResDTO.getParameter())
 			.workloadStatus(WorkloadStatus.PENDING)
+			.gpuType(batchJobResDTO.getGpuType() != null? batchJobResDTO.getGpuType() : null)
+			.gpuName(batchJobResDTO.getGpuName() != null? batchJobResDTO.getGpuName() : null)
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
@@ -556,6 +560,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.ide(distributedJobResDTO.getIde())
 			.parameter(distributedJobResDTO.getParameter())
 			.workloadStatus(WorkloadStatus.PENDING)
+			.gpuType(distributedJobResDTO.getGpuType() != null? distributedJobResDTO.getGpuType() : null)
+			.gpuName(distributedJobResDTO.getGpuName() != null? distributedJobResDTO.getGpuName() : null)
 			.build();
 
 		workloadHistoryRepo.save(distributedJob);

@@ -95,6 +95,8 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
+		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
+		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);
 
 		return annotationMap;
 	}
@@ -137,6 +139,11 @@ public class BatchJobVO extends WorkloadVO {
 		// 노드 지정
 		if (!StringUtils.isEmpty(this.nodeName)) {
 			podSpecBuilder.withNodeSelector(Map.of("kubernetes.io/hostname", this.nodeName));
+		}
+		// GPU 지정
+		// TODO MIG mixed일 때 처리 필요함
+		if (!StringUtils.isEmpty(this.gpuName)) {
+			podSpecBuilder.withNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
 		}
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());

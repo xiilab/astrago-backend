@@ -43,6 +43,7 @@ public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 			.initContainerUrl(initContainerUrl)
 			.nodeName(nodeName)
 			.gpuType(gpuType != null? gpuType : GPUType.NORMAL)
+			.gpuName(gpuName)
 			.build();
 	}
 

@@ -285,15 +285,20 @@ public class NodeFacadeService {
 							.map(gpuInfo -> NodeResDTO.GPUInfo.builder()
 								.nodeName(getNodeName(gpuInfo.getNodeName(), gpuType))
 								.onePerMemory(gpuInfo.getOnePerMemory())
-								.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
+								.maximumGpuCount(1)
 								.useAllGPUStatus(false)
 								.build())
 							.collect(Collectors.toList());
-					} else {
+					} else if (gpuType == GPUType.NORMAL){
 						return List.of(NodeResDTO.GPUInfo.builder()
-							.nodeName(getNodeName(firstGpuInfo.getNodeName(), gpuType))
 							.onePerMemory(firstGpuInfo.getOnePerMemory())
 							.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
+							.useAllGPUStatus(false)
+							.build());
+					} else {
+						return List.of(NodeResDTO.GPUInfo.builder()
+							.onePerMemory(firstGpuInfo.getOnePerMemory())
+							.maximumGpuCount(1)
 							.useAllGPUStatus(false)
 							.build());
 					}
