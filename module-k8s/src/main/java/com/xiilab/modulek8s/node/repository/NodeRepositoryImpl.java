@@ -80,7 +80,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String MPS_CAPABLE = "nvidia.com/mps.capable";
 
 	@Override
-	public List<Node> getNodes(boolean isWorker) {
+	public List<Node> getGpuNodes(boolean isWorker) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			if (isWorker) {
 				return client.nodes()
@@ -92,15 +92,18 @@ public class NodeRepositoryImpl implements NodeRepository {
 						node.getSpec().getUnschedulable())))
 					.toList();
 			} else {
-				return client.nodes().list().getItems().stream().toList();
+				return client.nodes().list().getItems().stream()
+					.filter(node -> (Objects.isNull(node.getSpec().getUnschedulable()) || !Boolean.TRUE.equals(
+						node.getSpec().getUnschedulable())))
+					.toList();
 			}
 		}
 	}
 
 	@Override
 	public ResponseDTO.NodeGPUs getNodeGPUs(NodeType nodeType) {
-		List<Node> nodes = getNodes(true);
-		if (CollectionUtils.isEmpty(nodes)) {
+		List<Node> gpuNodes = getGpuNodes(false);
+		if (CollectionUtils.isEmpty(gpuNodes)) {
 			throw new RestApiException(NodeErrorCode.NOT_FOUND_WORKER_NODE);
 		}
 
@@ -108,24 +111,28 @@ public class NodeRepositoryImpl implements NodeRepository {
 		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap = new HashMap<>();
 		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> normalGPUMap = new HashMap<>();
 
-		for (Node node : nodes) {
+		for (Node gpuNode : gpuNodes) {
 			List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos = new ArrayList<>();
-			String nodeName = node.getMetadata().getName();
-			String gpuName = node.getMetadata().getLabels().get(GPU_NAME);
-			Integer notMpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_COUNT, "0"));
+			String nodeName = gpuNode.getMetadata().getName();
+			String gpuName = gpuNode.getMetadata().getLabels().getOrDefault(GPU_NAME, "");
+			Integer notMpsGPUCount = Integer.parseInt(gpuNode.getMetadata().getLabels().getOrDefault(GPU_COUNT, "0"));
+
+			if (StringUtils.isEmpty(gpuName)) {
+				continue;
+			}
 
 			if (nodeType == NodeType.SINGLE) {
-				if (isActiveMIG(node) && node.getMetadata()
+				if (isActiveMIG(gpuNode) && gpuNode.getMetadata()
 					.getLabels()
 					.containsKey(MIG_STRATEGY)) {    // MIG 적용 여부 && MIG 전략 키 존재여부 확인
-					putMigGpuMap(migGPUMap, node, gpuInfos, nodeName, gpuName, notMpsGPUCount);
-				} else if (isActiveMPS(node)) { // MIG 적용 여부 확인
-					putMpsGpuMap(mpsGPUMap, node, gpuInfos, nodeName, gpuName);
+					putMigGpuMap(migGPUMap, gpuNode, gpuInfos, nodeName, gpuName, notMpsGPUCount);
+				} else if (isActiveMPS(gpuNode)) { // MIG 적용 여부 확인
+					putMpsGpuMap(mpsGPUMap, gpuNode, gpuInfos, nodeName, gpuName);
 				} else {
 					putGpuMap(normalGPUMap, gpuInfos, nodeName, gpuName, notMpsGPUCount);
 				}
 			} else {    // 멀티노드일때, 분할안된 GPU만 반환
-				if (isActiveMPS(node) || isActiveMIG(node)) {
+				if (isActiveMPS(gpuNode) || isActiveMIG(gpuNode)) {
 					continue;
 				}
 
@@ -804,7 +811,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private void putMigGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap, Node node,
 		List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos, String nodeName, String gpuName, Integer notMpsGPUCount) {
-		if (isMIGSingleStrategy(node)) {	// mig 전략이 'single'이면
+		if (isMIGSingleStrategy(node)) {    // mig 전략이 'single'이면
 			putGpuMap(migGPUMap, gpuInfos, nodeName, gpuName, notMpsGPUCount);
 		} else {
 			List<String> migGpuKeys = node.getMetadata()
