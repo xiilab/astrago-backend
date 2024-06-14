@@ -830,7 +830,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.getLabels()
 				.entrySet()
 				.stream()
-				.filter(entry -> entry.getKey().endsWith(".count") || entry.getKey().endsWith(".memory"))
+				.filter(entry -> entry.getKey().startsWith("nvidia.com/mig-") && (entry.getKey().endsWith(".count") || entry.getKey().endsWith(".memory")))
 				.collect(Collectors.groupingBy(
 					entry -> entry.getKey().substring(entry.getKey().indexOf("mig-"), entry.getKey().lastIndexOf(".")),
 					Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)
