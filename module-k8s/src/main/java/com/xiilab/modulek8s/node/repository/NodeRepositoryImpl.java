@@ -62,7 +62,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
 	private final String MIG_CAPABLE = "nvidia.com/mig.capable";
-	private final String MPS_CONFIG = "mps_capable";
+	private final String MPS_CONFIG = "nvidia.com/mps.capable";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
 	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
@@ -160,6 +160,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 				boolean isActiveMIG = isActiveMIG(node);
 				boolean isActiveMPS = isActiveMPS(node);
 				boolean migStatus = getMigStatus(node);
+				boolean isMasterNode = isMasterNode(node);
+
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
@@ -177,6 +179,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.mpsCapable(mpsCapable)
 					.isActiveMPS(isActiveMPS)
 					.migStatus(migStatus)
+					.masterNode(isMasterNode)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -199,6 +202,11 @@ public class NodeRepositoryImpl implements NodeRepository {
 			.totalCount(totalCount)
 			.totalPageCount(totalPageSize)
 			.build();
+	}
+
+	private boolean isMasterNode(Node node) {
+		//false = worker, true = master
+		return node.getMetadata().getLabels().containsKey(ROLE);
 	}
 
 	private boolean isActiveMIG(Node node) {
@@ -633,9 +641,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
 			int gpuCnt = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count")); // gpu 개수
 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String mpsStatus = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() :
-				node.getMetadata().getLabels().get("mps_status"); // mps 상태
-
+			String mpsStatus = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() : node.getMetadata().getLabels().get("mps_status"); // mps 상태
+			int totalMemory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory")); // gpu memory
 			int mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ?
 				Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
 			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ?
@@ -655,6 +662,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.mpsCapable(Boolean.parseBoolean(mpsCapable))
 				.mpsReplicas(mpsReplicas)
 				.mpsStatus(status)
+				.totalMemory(totalMemory)
 				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
 		}
@@ -782,8 +790,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Node> items = client.nodes().list().getItems();
 			for (Node item : items) {
-				boolean isWorkerNode = item.getMetadata().getLabels().containsKey(ROLE);
-				if (!isWorkerNode) {
+				boolean isMasterNode = isMasterNode(item);
+				if (!isMasterNode) {
 					String driverMajor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.major");
 					String driverMinor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.minor");
 					String driverRev = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.rev");
