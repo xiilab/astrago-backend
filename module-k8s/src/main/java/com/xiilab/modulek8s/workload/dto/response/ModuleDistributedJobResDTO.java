@@ -47,8 +47,10 @@ public class ModuleDistributedJobResDTO extends AbstractDistributedWorkloadResDT
 	}
 
 	private List<ModuleCodeResDTO> initializeCodesInfoFromInitContainers(List<InitContainers> initContainers) {
-		return initContainers.stream()
+		List<ModuleCodeResDTO> moduleCodeResDTOS = initContainers.stream()
 			.map(initContainer -> new ModuleCodeResDTO(initContainer.getEnv())).toList();
+		initializeCodeMountPath(moduleCodeResDTOS);
+		return moduleCodeResDTOS;
 	}
 
 	private DistributedResourceDTO.LauncherInfo getLauncherContainerInfo(Containers containers) {
