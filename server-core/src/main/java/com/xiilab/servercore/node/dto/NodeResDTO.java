@@ -1,5 +1,6 @@
 package com.xiilab.servercore.node.dto;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
@@ -12,15 +13,17 @@ public abstract class NodeResDTO {
 	@Getter
 	@SuperBuilder
 	public static class FindGpuResources extends NodeResDTO {
-		Map<String, NodeResDTO.GPUInfo> normalGpuMap;
-		Map<String, NodeResDTO.GPUInfo> migGpuMap;
-		Map<String, NodeResDTO.GPUInfo> mpsGpuMap;
+		Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap;
+		Map<String, List<NodeResDTO.GPUInfo>> migGpuMap;
+		Map<String, List<NodeResDTO.GPUInfo>> mpsGpuMap;
 	}
 
 	@Getter
 	@SuperBuilder
 	public static class GPUInfo {
+		private String nodeName;
 		private String onePerMemory;
+		private Integer gpuCount;
 		private Integer maximumGpuCount;
 		private Integer totalGpuCount;
 		private Boolean useAllGPUStatus;

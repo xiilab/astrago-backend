@@ -256,10 +256,14 @@ public class NodeFacadeService {
 	}
 
 	public NodeResDTO.FindGpuResources getNodeGpus(NodeType nodeType) {
+		// Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap = new HashMap<>();
+		// Map<String, List<NodeResDTO.GPUInfo>> migGpuMap = new HashMap<>();
+		// Map<String, List<NodeResDTO.GPUInfo>> mpsGpuMap = new HashMap<>();
+
 		ResponseDTO.NodeGPUs nodeGPUs = nodeRepository.getNodeGPUs(nodeType);
-		Map<String, NodeResDTO.GPUInfo> normalGpuMap = getGpuInfos(nodeGPUs.getNormalGPU());
-		Map<String, NodeResDTO.GPUInfo> migGpuMap = getGpuInfos(nodeGPUs.getMigGPU());
-		Map<String, NodeResDTO.GPUInfo> mpsGpuMap = getGpuInfos(nodeGPUs.getMpsGPU());
+		Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap = getGpuInfos(nodeGPUs.getNormalGPU());
+		Map<String, List<NodeResDTO.GPUInfo>> migGpuMap = getGpuInfos(nodeGPUs.getMigGPU());
+		Map<String, List<NodeResDTO.GPUInfo>> mpsGpuMap = getGpuInfos(nodeGPUs.getMpsGPU());
 
 		return NodeResDTO.FindGpuResources.builder()
 			.normalGpuMap(normalGpuMap)
@@ -269,16 +273,20 @@ public class NodeFacadeService {
 	}
 
 
-	private Map<String, NodeResDTO.GPUInfo> getGpuInfos( Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList) {
+	private Map<String, List<NodeResDTO.GPUInfo>> getGpuInfos( Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList) {
 		return gpuList.entrySet().stream()
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
-				entry -> NodeResDTO.GPUInfo.builder()
-						.onePerMemory(entry.getValue().get(0).getOnePerMemory())
+				entry -> entry.getValue().stream()
+					.map(gpuInfo -> NodeResDTO.GPUInfo.builder()
+						.nodeName(gpuInfo.getNodeName())
+						.onePerMemory(gpuInfo.getOnePerMemory())
+						.gpuCount(gpuInfo.getCount())
 						.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
 						.totalGpuCount(getTotalGPUCount(entry.getValue()))
-						.useAllGPUStatus(false)
-						.build()
+						.useAllGPUStatus(true)
+						.build())
+					.collect(Collectors.toList())
 			));
 
 	}
