@@ -38,7 +38,6 @@ import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
-import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
@@ -95,10 +94,9 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final ApplicationEventPublisher publisher;
 	private final MailService mailService;
 	private final UserService userService;
-	private final LogService logService;
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
-	private VolumeRepository volumeRepository;
+	private final VolumeRepository volumeRepository;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 
 	@Override
