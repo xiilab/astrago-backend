@@ -4,12 +4,12 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 
 import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.NodeSystemInfo;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -247,10 +247,16 @@ public class ResponseDTO {
 		private Map<String, List<GPUInfo>> mpsGPU;
 
 		@Getter
-		@AllArgsConstructor
 		public static class GPUInfo {
-			private String gpuName;
+			private String nodeName;
+			private String onePerMemory;
 			private Integer count;
+
+			public GPUInfo(String nodeName, Integer onePerMemory, Integer count) {
+				this.nodeName = nodeName;
+				this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
+				this.count = count;
+			}
 		}
 	}
 

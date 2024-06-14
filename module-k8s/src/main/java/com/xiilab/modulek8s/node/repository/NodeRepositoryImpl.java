@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
@@ -116,6 +117,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String nodeName = gpuNode.getMetadata().getName();
 			String gpuName = gpuNode.getMetadata().getLabels().getOrDefault(GPU_NAME, "");
 			Integer notMpsGPUCount = Integer.parseInt(gpuNode.getMetadata().getLabels().getOrDefault(GPU_COUNT, "0"));
+			int memory = Integer.parseInt(gpuNode.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
 
 			if (StringUtils.isEmpty(gpuName)) {
 				continue;
@@ -125,18 +127,18 @@ public class NodeRepositoryImpl implements NodeRepository {
 				if (isActiveMIG(gpuNode) && gpuNode.getMetadata()
 					.getLabels()
 					.containsKey(MIG_STRATEGY)) {    // MIG 적용 여부 && MIG 전략 키 존재여부 확인
-					putMigGpuMap(migGPUMap, gpuNode, gpuInfos, nodeName, gpuName, notMpsGPUCount);
+					putMigGpuMap(migGPUMap, gpuNode, nodeName, gpuName, notMpsGPUCount);
 				} else if (isActiveMPS(gpuNode)) { // MIG 적용 여부 확인
-					putMpsGpuMap(mpsGPUMap, gpuNode, gpuInfos, nodeName, gpuName);
+					putMpsGpuMap(mpsGPUMap, gpuNode, nodeName, gpuName);
 				} else {
-					putGpuMap(normalGPUMap, gpuInfos, nodeName, gpuName, notMpsGPUCount);
+					putGpuMap(normalGPUMap, nodeName, gpuName, memory, notMpsGPUCount);
 				}
 			} else {    // 멀티노드일때, 분할안된 GPU만 반환
 				if (isActiveMPS(gpuNode) || isActiveMIG(gpuNode)) {
 					continue;
 				}
 
-				putGpuMap(normalGPUMap, gpuInfos, nodeName, gpuName, notMpsGPUCount);
+				putGpuMap(normalGPUMap, nodeName, gpuName, memory, notMpsGPUCount);
 			}
 		}
 
@@ -803,39 +805,56 @@ public class NodeRepositoryImpl implements NodeRepository {
 		return workerNodeDriverInfos;
 	}
 
-	private void putMpsGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap, Node node,
-		List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos, String nodeName, String gpuName) {
-		String mpsGPUCount = node.getMetadata().getLabels().getOrDefault(MPS_GPU_COUNT, "0");
-		putGpuMap(mpsGPUMap, gpuInfos, nodeName, gpuName, Integer.parseInt(mpsGPUCount));
+	private void putMpsGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap, Node node, String nodeName, String gpuName) {
+		int mpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(MPS_GPU_COUNT, "0"));
+		int memory = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
+		int onePerMemory = (mpsGPUCount != 0 || memory != 0)? memory / mpsGPUCount : 0;
+		putGpuMap(mpsGPUMap, nodeName, gpuName, onePerMemory, mpsGPUCount);
 	}
 
 	private void putMigGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap, Node node,
-		List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos, String nodeName, String gpuName, Integer notMpsGPUCount) {
+		String nodeName, String gpuName, Integer notMpsGPUCount) {
 		if (isMIGSingleStrategy(node)) {    // mig 전략이 'single'이면
-			putGpuMap(migGPUMap, gpuInfos, nodeName, gpuName, notMpsGPUCount);
+			int onePerMemory = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
+			putGpuMap(migGPUMap, nodeName, gpuName, onePerMemory, notMpsGPUCount);
 		} else {
-			List<String> migGpuKeys = node.getMetadata()
+			Map<String, Map<String, String>> migGpuInfoMap = node.getMetadata()
 				.getLabels()
-				.keySet()
+				.entrySet()
 				.stream()
-				.filter(key -> key.startsWith("nvidia.com/mig-") && key.endsWith(".count"))
-				.toList();
-			for (String migGpuKey : migGpuKeys) {
+				.filter(entry -> entry.getKey().endsWith(".count") || entry.getKey().endsWith(".memory"))
+				.collect(Collectors.groupingBy(
+					entry -> entry.getKey().substring(entry.getKey().indexOf("mig-"), entry.getKey().lastIndexOf(".")),
+					Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)
+				));
+
+			for (String key : migGpuInfoMap.keySet()) {
+				String nvidiaKey = "nvidia.com/" + key;
+				if (!migGpuInfoMap.get(key).containsKey(nvidiaKey + ".count") || !migGpuInfoMap.get(key).containsKey(nvidiaKey + ".memory")) {
+					continue;
+				}
+				int gpuCount = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(nvidiaKey + ".count", "0"));
+				int gpuMemory = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(nvidiaKey + ".memory", "0"));
+				migGPUMap.putIfAbsent(key, new ArrayList<>()).add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, gpuMemory, gpuCount));
+			}
+/*			for (String migGpuKey : migGpuKeys) {
 				String migName =
 					gpuName + "/" + migGpuKey.substring(migGpuKey.lastIndexOf("nvidia.com/") + 1,
 						migGpuKey.indexOf(".count"));
+				String migMemory =
+					gpuName + "/" + migGpuKey.substring(migGpuKey.lastIndexOf("nvidia.com/") + 1,
+						migGpuKey.indexOf(".count"));
 				Integer mixedGpuCount = Integer.parseInt(node.getMetadata().getLabels().get(migGpuKey));
-				gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(migName, mixedGpuCount));
-			}
-
-			migGPUMap.put(nodeName, gpuInfos);
+				// gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(migName, mixedGpuCount));
+				migGPUMap.putIfAbsent(migName, new ArrayList<>()).add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, mixedGpuCount));
+			}*/
 		}
 	}
 
-	private static void putGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> normalGPUMap,
-		List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos, String nodeName, String gpuName, Integer notMpsGPUCount) {
-		gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(gpuName, notMpsGPUCount));
-		normalGPUMap.put(nodeName, gpuInfos);
+	private static void putGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuMap, String nodeName,
+		String gpuName, Integer onePerMemory, Integer gpuCount) {
+		gpuMap.computeIfAbsent(gpuName, k -> new ArrayList<>())
+			.add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, onePerMemory, gpuCount));
 	}
 
 	/**

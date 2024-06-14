@@ -477,4 +477,9 @@ public class DataConverterUtil {
 			throw new RestApiException(CommonErrorCode.FAILED_UTC_TO_KOR_TIME);
 		}
 	}
+
+	// MB -> GB 변환 메서드
+	public static double convertMbToGb(int mb) {
+		return mb / 1024.0;
+	}
 }
