@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
@@ -261,9 +262,9 @@ public class NodeFacadeService {
 		// Map<String, List<NodeResDTO.GPUInfo>> mpsGpuMap = new HashMap<>();
 
 		ResponseDTO.NodeGPUs nodeGPUs = nodeRepository.getNodeGPUs(nodeType);
-		Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap = getGpuInfos(nodeGPUs.getNormalGPU());
-		Map<String, List<NodeResDTO.GPUInfo>> migGpuMap = getGpuInfos(nodeGPUs.getMigGPU());
-		Map<String, List<NodeResDTO.GPUInfo>> mpsGpuMap = getGpuInfos(nodeGPUs.getMpsGPU());
+		Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap = getGpuInfos(nodeGPUs.getNormalGPU(), GPUType.NORMAL);
+		Map<String, List<NodeResDTO.GPUInfo>> migGpuMap = getGpuInfos(nodeGPUs.getMigGPU(), GPUType.MIG);
+		Map<String, List<NodeResDTO.GPUInfo>> mpsGpuMap = getGpuInfos(nodeGPUs.getMpsGPU(), GPUType.MPS);
 
 		return NodeResDTO.FindGpuResources.builder()
 			.normalGpuMap(normalGpuMap)
@@ -273,22 +274,35 @@ public class NodeFacadeService {
 	}
 
 
-	private Map<String, List<NodeResDTO.GPUInfo>> getGpuInfos( Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList) {
+	private Map<String, List<NodeResDTO.GPUInfo>> getGpuInfos( Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList, GPUType gpuType) {
 		return gpuList.entrySet().stream()
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
-				entry -> entry.getValue().stream()
-					.map(gpuInfo -> NodeResDTO.GPUInfo.builder()
-						.nodeName(gpuInfo.getNodeName())
-						.onePerMemory(gpuInfo.getOnePerMemory())
-						.gpuCount(gpuInfo.getCount())
-						.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
-						.totalGpuCount(getTotalGPUCount(entry.getValue()))
-						.useAllGPUStatus(true)
-						.build())
-					.collect(Collectors.toList())
+				entry -> {
+					ResponseDTO.NodeGPUs.GPUInfo firstGpuInfo = entry.getValue().get(0);
+					if (gpuType == GPUType.MPS) {
+						return entry.getValue().stream()
+							.map(gpuInfo -> NodeResDTO.GPUInfo.builder()
+								.nodeName(getNodeName(gpuInfo.getNodeName(), gpuType))
+								.onePerMemory(gpuInfo.getOnePerMemory())
+								.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
+								.useAllGPUStatus(false)
+								.build())
+							.collect(Collectors.toList());
+					} else {
+						return List.of(NodeResDTO.GPUInfo.builder()
+							.nodeName(getNodeName(firstGpuInfo.getNodeName(), gpuType))
+							.onePerMemory(firstGpuInfo.getOnePerMemory())
+							.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
+							.useAllGPUStatus(false)
+							.build());
+					}
+				}
 			));
+	}
 
+	private String getNodeName(String nodeName, GPUType gpuType) {
+		return gpuType == GPUType.MPS ? nodeName : null;
 	}
 
 	private Integer getMaximumGPUCount(List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos) {
