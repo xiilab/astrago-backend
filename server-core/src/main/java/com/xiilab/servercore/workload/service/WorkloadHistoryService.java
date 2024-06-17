@@ -44,4 +44,6 @@ public interface WorkloadHistoryService {
 		PageRequest pageRequest);
 
 	OverViewWorkloadResDTO<WorkloadSummaryDTO> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, Boolean isCreatedByMe, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest);
+
+	List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(String workspaceResourceName);
 }

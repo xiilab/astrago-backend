@@ -68,6 +68,7 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected boolean canBeDeleted;
 	protected String startTime;
 
+
 	@Getter
 	@SuperBuilder
 	public static class SingleWorkloadDetail extends FindWorkloadResDTO {
