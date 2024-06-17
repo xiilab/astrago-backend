@@ -252,15 +252,22 @@ public class ResponseDTO {
 			private String nodeName;
 			private String onePerMemory;
 			private Integer count;
+			private boolean useAllGPUStatus;
 
 			public GPUInfo(String nodeName, Integer onePerMemory, Integer count) {
 				this.nodeName = nodeName;
 				this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
 				this.count = count;
 			}
+
+			public GPUInfo(String nodeName, Integer onePerMemory, Integer count, boolean useAllGPUStatus) {
+				this.nodeName = nodeName;
+				this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
+				this.count = count;
+				this.useAllGPUStatus = useAllGPUStatus;
+			}
 		}
 	}
-
 
 	@Builder
 	public record MIGProfile(MIGProduct migProduct,

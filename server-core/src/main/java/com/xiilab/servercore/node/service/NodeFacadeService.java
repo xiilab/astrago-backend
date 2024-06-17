@@ -270,8 +270,8 @@ public class NodeFacadeService {
 			.build();
 	}
 
-
-	private Map<String, List<NodeResDTO.GPUInfo>> getGpuInfos( Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList, GPUType gpuType) {
+	private Map<String, List<NodeResDTO.GPUInfo>> getGpuInfos(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList,
+		GPUType gpuType) {
 		return gpuList.entrySet().stream()
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
@@ -283,20 +283,24 @@ public class NodeFacadeService {
 								.nodeName(getNodeName(gpuInfo.getNodeName(), gpuType))
 								.onePerMemory(gpuInfo.getOnePerMemory())
 								.maximumGpuCount(1)
-								.useAllGPUStatus(false)
+								.useAllGPUStatus(gpuInfo.isUseAllGPUStatus())
 								.build())
 							.collect(Collectors.toList());
-					} else if (gpuType == GPUType.NORMAL){
+					} else if (gpuType == GPUType.NORMAL) {
 						return List.of(NodeResDTO.GPUInfo.builder()
+							.nodeName(firstGpuInfo.getNodeName())
+							.gpuCount(firstGpuInfo.getCount())
 							.onePerMemory(firstGpuInfo.getOnePerMemory())
 							.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
-							.useAllGPUStatus(false)
+							.useAllGPUStatus(firstGpuInfo.isUseAllGPUStatus())
 							.build());
 					} else {
 						return List.of(NodeResDTO.GPUInfo.builder()
+							.nodeName(firstGpuInfo.getNodeName())
+							.gpuCount(firstGpuInfo.getCount())
 							.onePerMemory(firstGpuInfo.getOnePerMemory())
 							.maximumGpuCount(1)
-							.useAllGPUStatus(false)
+							.useAllGPUStatus(firstGpuInfo.isUseAllGPUStatus())
 							.build());
 					}
 				}

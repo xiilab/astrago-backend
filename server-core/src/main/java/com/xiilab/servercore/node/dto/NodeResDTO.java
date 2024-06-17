@@ -25,8 +25,7 @@ public abstract class NodeResDTO {
 		private String onePerMemory;
 		private Integer gpuCount;
 		private Integer maximumGpuCount;
-		private Integer totalGpuCount;
-		private Boolean useAllGPUStatus;
+		private boolean useAllGPUStatus;
 	}
 
 }
