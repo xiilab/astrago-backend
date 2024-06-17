@@ -49,9 +49,9 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 	protected List<JobVolumeVO> datasets;
 	protected List<JobVolumeVO> models;
 	protected String secretName;
-	String nodeName;
-	GPUType gpuType;
-	String gpuName;
+	protected String nodeName;
+	protected GPUType gpuType;
+	protected String gpuName;
 
 	protected void addVolume(Spec spec, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
