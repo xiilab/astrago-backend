@@ -45,7 +45,8 @@ public class CreateDistributedWorkloadJobReqDTO extends CreateWorkloadJobReqDTO 
 			.creatorFullName(creatorFullName)
 			.ide(ide.name())
 			.initContainerUrl(initContainerUrl)
-			.gpuType(GPUType.NORMAL)
+			.nodeName(nodeName)
+			.gpuType(gpuType != null ? gpuType : GPUType.NORMAL)
 			.gpuName(gpuName)
 			.build();
 	}
