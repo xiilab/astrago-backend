@@ -150,6 +150,15 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		Spec spec = new Spec();
 		createGitCloneInitContainers(spec, jobName);
 		spec.setContainers(List.of(createLauncherContainers()));
+		// 노드 지정
+		if (!StringUtils.isEmpty(this.nodeName)) {
+			spec.setNodeSelector(Map.of("kubernetes.io/hostname", this.nodeName));
+		}
+		// GPU 지정
+		// TODO MIG mixed일 때 처리 필요함
+		if (!StringUtils.isEmpty(this.gpuName)) {
+			spec.setNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
+		}
 		addVolume(spec, datasets);
 		addVolume(spec, models);
 		return spec;
@@ -168,6 +177,15 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		Spec spec = new Spec();
 		createGitCloneInitContainers(spec, jobName);
 		spec.setContainers(List.of(createWorkerContainers()));
+		// 노드 지정
+		if (!StringUtils.isEmpty(this.nodeName)) {
+			spec.setNodeSelector(Map.of("kubernetes.io/hostname", this.nodeName));
+		}
+		// GPU 지정
+		// TODO MIG mixed일 때 처리 필요함
+		if (!StringUtils.isEmpty(this.gpuName)) {
+			spec.setNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
+		}
 		addVolume(spec, datasets);
 		addVolume(spec, models);
 		return spec;
@@ -285,7 +303,8 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
-
+		annotationMap.put(LabelField.GPU_NAME.getField(), gpuName);
+		annotationMap.put(LabelField.GPU_TYPE.getField(), gpuType.name());
 		return annotationMap;
 	}
 
