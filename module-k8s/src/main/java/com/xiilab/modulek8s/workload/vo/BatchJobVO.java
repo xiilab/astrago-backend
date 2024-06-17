@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
@@ -43,9 +44,9 @@ import lombok.experimental.SuperBuilder;
 public class BatchJobVO extends WorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
-	private String workingDir;		// 명령어를 실행 할 path
+	private String workingDir;        // 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
-	private Map<String,String> parameter;		// 사용자가 입력한 hyper parameter
+	private Map<String, String> parameter;        // 사용자가 입력한 hyper parameter
 	private String jobName;
 
 	@Override
@@ -168,7 +169,9 @@ public class BatchJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
-		addDefaultVolumeMountPath(podSpecContainer);
+		if (this.gpuType != GPUType.MPS) {
+			addDefaultVolumeMountPath(podSpecContainer);
+		}
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
@@ -177,15 +180,12 @@ public class BatchJobVO extends WorkloadVO {
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addDefaultVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+	private void addDefaultVolumeMountPath(
+		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.addNewVolumeMount()
 			.withName("shmdir")
 			.withMountPath("/dev/shm")
 			.endVolumeMount();
-		// podSpecContainer.addNewVolumeMount()
-		// 	.withName("tz-seoul")
-		// 	.withMountPath("/etc/localtime")
-		// 	.endVolumeMount();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
