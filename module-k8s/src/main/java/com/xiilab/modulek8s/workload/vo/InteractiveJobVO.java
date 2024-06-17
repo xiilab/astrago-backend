@@ -48,6 +48,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	private String command;        // 워크로드 명령
 	private String jobName;
 	private String ide;
+
 	@Override
 	public Deployment createResource() {
 		return new DeploymentBuilder()
@@ -167,7 +168,9 @@ public class InteractiveJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
-		addDefaultShmVolumeMountPath(podSpecContainer);
+		if (this.gpuType != GPUType.MPS) {
+			addDefaultShmVolumeMountPath(podSpecContainer);
+		}
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
@@ -176,7 +179,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addDefaultShmVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+	private void addDefaultShmVolumeMountPath(
+		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.addNewVolumeMount()
 			.withName("shmdir")
 			.withMountPath("/dev/shm")
@@ -312,7 +316,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		return ResourceType.WORKLOAD;
 	}
 
-	private void addVolumeMap(Map<String,String> map, String prefix, Long id) {
+	private void addVolumeMap(Map<String, String> map, String prefix, Long id) {
 		if (!ValidUtils.isNullOrZero(id)) {
 			map.put(prefix + id, "true");
 		}
