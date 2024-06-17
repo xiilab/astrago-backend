@@ -1,7 +1,5 @@
 package com.xiilab.servercore.workload.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 
@@ -18,7 +16,7 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.enums.MailAttribute;
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -211,5 +209,12 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			.toList();
 		long totalCount = workloadEntities.getTotalElements();
 		return new OverViewWorkloadResDTO<>(totalCount, workloads);
+	}
+
+	@Override
+	public List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(String workspaceResourceName) {
+		List<WorkloadStatus> statuses = List.of(WorkloadStatus.ERROR, WorkloadStatus.PENDING, WorkloadStatus.RUNNING);
+		List<GPUType> types = List.of(GPUType.MIG, GPUType.MPS);
+		return workloadHistoryRepo.getWorkloadHistoryByUsingDivisionGPU(workspaceResourceName, statuses, types);
 	}
 }
