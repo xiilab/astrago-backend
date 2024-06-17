@@ -11,6 +11,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.CodeType;
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
@@ -67,6 +68,8 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected String nodeName;
 	protected boolean canBeDeleted;
 	protected String startTime;
+	protected GPUType gpuType;
+	protected String gpuName;
 
 
 	@Getter
@@ -125,6 +128,8 @@ public class FindWorkloadResDTO extends ResDTO {
 					moduleJobResDTO.getEstimatedRemainingTime() : null)
 				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
 				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime()) ? moduleJobResDTO.getStartTime() : null)
+				.gpuName(moduleJobResDTO.getGpuName())
+				.gpuType(moduleJobResDTO.getGpuType())
 				.build();
 		}
 
@@ -158,6 +163,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				.status(WorkloadStatus.END)
 				.ide(workloadEntity.getIde())
 				.canBeDeleted(workloadEntity.isCanBeDeleted())
+				.gpuName(workloadEntity.getGpuName())
+				.gpuType(workloadEntity.getGpuType())
 				.build();
 		}
 	}
@@ -214,6 +221,8 @@ public class FindWorkloadResDTO extends ResDTO {
 					.gpuRequest(moduleJobResDTO.getWorkerInfo().getGpuRequest())
 					.workerCnt(moduleJobResDTO.getWorkerInfo().getWorkerCnt())
 					.build())
+				.gpuName(moduleJobResDTO.getGpuName())
+				.gpuType(moduleJobResDTO.getGpuType())
 				.build();
 		}
 
@@ -252,6 +261,8 @@ public class FindWorkloadResDTO extends ResDTO {
 					.gpuRequest(distributedJobEntity.getWorkerGpuRequest())
 					.workerCnt(distributedJobEntity.getWorkerCount())
 					.build())
+				.gpuName(null)
+				.gpuType(null)
 				.build();
 		}
 	}
