@@ -32,6 +32,11 @@ public class WorkspaceTotalDTO {
 	private String creatorId;
 	private String creatorName;
 	private LocalDateTime createAt;
+	private List<ResMIGDTO> migInfo;
+	private int migTotalCount;
+	private List<ResMPSDTO> mpsInfo;
+	private int mpsTotalCount;
+
 
 	public WorkspaceTotalDTO(WorkspaceDTO.ResponseDTO workspaceDTO, ResourceQuotaResDTO resourceQuotaResDTO,
 		List<AbstractModuleWorkloadResDTO> workloadList) {
@@ -58,5 +63,17 @@ public class WorkspaceTotalDTO {
 
 	public void addEndStatusWorkloadCnt(int endCnt) {
 		this.endCnt += endCnt;
+	}
+	public void addMigInfo(List<ResMIGDTO> migInfo){
+		this.migInfo = migInfo;
+	}
+	public void addMpsInfo(List<ResMPSDTO> mpsInfo){
+		this.mpsInfo = mpsInfo;
+	}
+	public void setMigTotalCount(int migTotalCount){
+		this.migTotalCount = migTotalCount;
+	}
+	public void setMpsTotalCount(int mpsTotalCount){
+		this.mpsTotalCount = mpsTotalCount;
 	}
 }
