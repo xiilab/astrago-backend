@@ -261,8 +261,8 @@ public class FindWorkloadResDTO extends ResDTO {
 					.gpuRequest(distributedJobEntity.getWorkerGpuRequest())
 					.workerCnt(distributedJobEntity.getWorkerCount())
 					.build())
-				.gpuName(null)
-				.gpuType(null)
+				.gpuName(distributedJobEntity.getGpuName())
+				.gpuType(distributedJobEntity.getGpuType())
 				.build();
 		}
 	}
