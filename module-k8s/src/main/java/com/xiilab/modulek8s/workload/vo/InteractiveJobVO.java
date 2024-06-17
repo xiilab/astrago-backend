@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
+		map.put(LabelField.GPU_NAME.getField(), gpuName);
+		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
 		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
 		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
 		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
@@ -255,16 +258,18 @@ public class InteractiveJobVO extends WorkloadVO {
 				.withValue(env.value())
 				.build()
 			).toList();
+
+		List<EnvVar> result = new ArrayList<>(envVars);
 		// GPU 미사용시, GPU 접근 막는 환경변수
 		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
-			envVars.add(new EnvVarBuilder()
+			result.add(new EnvVarBuilder()
 				.withName("NVIDIA_VISIBLE_DEVICES")
 				.withValue("none")
 				.build()
 			);
 		}
 		if (super.image.imageType() == ImageType.HUB) {
-			envVars.add(new EnvVarBuilder()
+			result.add(new EnvVarBuilder()
 				.withName("POD_NAME")
 				.withValueFrom(new EnvVarSourceBuilder()
 					.withFieldRef(new ObjectFieldSelectorBuilder()
@@ -276,7 +281,7 @@ public class InteractiveJobVO extends WorkloadVO {
 				.build()
 			);
 
-			envVars.add(new EnvVarBuilder()
+			result.add(new EnvVarBuilder()
 				.withName("POD_NAMESPACE")
 				.withValueFrom(new EnvVarSourceBuilder()
 					.withFieldRef(new ObjectFieldSelectorBuilder()
@@ -289,7 +294,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			);
 		}
 
-		return envVars;
+		return result;
 	}
 
 	@Override

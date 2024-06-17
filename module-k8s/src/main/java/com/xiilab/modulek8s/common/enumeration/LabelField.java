@@ -16,6 +16,8 @@ public enum LabelField {
 	STORAGE_NAME("storage-name"),
 	CONTROL_BY("control-by"),
 	JOB_NAME("job-name"),
+	GPU_NAME("gpu-name"),
+	GPU_TYPE("gpu-type"),
 	APP("app");
 
 	private final String field;

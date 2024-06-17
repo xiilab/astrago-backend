@@ -180,7 +180,7 @@ public class WorkloadFacadeService {
 			workloadModuleFacadeService.createJobWorkload(
 				createWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
 			// 워크로드
-		} catch (RestApiException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}

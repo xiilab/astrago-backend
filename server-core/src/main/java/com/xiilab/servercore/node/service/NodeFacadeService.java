@@ -257,9 +257,6 @@ public class NodeFacadeService {
 	}
 
 	public NodeResDTO.FindGpuResources getNodeGpus(NodeType nodeType) {
-		// Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap = new HashMap<>();
-		// Map<String, List<NodeResDTO.GPUInfo>> migGpuMap = new HashMap<>();
-		// Map<String, List<NodeResDTO.GPUInfo>> mpsGpuMap = new HashMap<>();
 
 		ResponseDTO.NodeGPUs nodeGPUs = nodeRepository.getNodeGPUs(nodeType);
 		Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap = getGpuInfos(nodeGPUs.getNormalGPU(), GPUType.NORMAL);
