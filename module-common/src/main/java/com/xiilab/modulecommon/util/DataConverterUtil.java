@@ -1,5 +1,7 @@
 package com.xiilab.modulecommon.util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -480,6 +482,8 @@ public class DataConverterUtil {
 
 	// MB -> GB 변환 메서드
 	public static double convertMbToGb(int mb) {
-		return mb / 1024.0;
+		double gb = mb / 1024.0;
+		BigDecimal bd = new BigDecimal(gb).setScale(1, RoundingMode.HALF_UP);
+		return bd.doubleValue();
 	}
 }

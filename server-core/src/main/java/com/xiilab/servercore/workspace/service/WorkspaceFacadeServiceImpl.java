@@ -353,12 +353,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		List<JobEntity> mpsList = jobMap.getOrDefault(GPUType.MPS, new ArrayList<>());
 		List<JobEntity> migList = jobMap.getOrDefault(GPUType.MIG, new ArrayList<>());
 		// MPS info
-		List<ResMPSDTO> resMPSDTOS = getMPSDTOs(mpsList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR, WorkloadStatus.PENDING);
+		List<ResMPSDTO> resMPSDTOS = getMPSDTOs(mpsList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
 
 		workspaceInfoByName.addMpsInfo(resMPSDTOS);
 
 		// MIG info
-		List<ResMIGDTO> resMIGDTOS = getMIGDTOs(migList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR, WorkloadStatus.PENDING);
+		List<ResMIGDTO> resMIGDTOS = getMIGDTOs(migList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
 		workspaceInfoByName.addMigInfo(resMIGDTOS);
 		workspaceInfoByName.setMpsTotalCount(mpsList.size());
 		workspaceInfoByName.setMigTotalCount(migList.size());
@@ -615,28 +617,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		List<JobEntity> migList = jobMap.getOrDefault(GPUType.MIG, new ArrayList<>());
 
 		// MPS info
-		List<ResMPSDTO> pendingMPSDTOS = getMPSDTOs(mpsList, WorkloadStatus.PENDING);
-		List<ResMPSDTO> runningMPSDTOS = getMPSDTOs(mpsList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR);
-		int pendingMpsSize = mpsList.stream()
-			.filter(jobEntity -> jobEntity.getWorkloadStatus() == WorkloadStatus.PENDING)
-			.toList()
-			.size();
-		int runningMpsSize = mpsList.stream()
-			.filter(jobEntity -> jobEntity.getWorkloadStatus() == WorkloadStatus.RUNNING || jobEntity.getWorkloadStatus() == WorkloadStatus.ERROR)
-			.toList()
-			.size();
+		List<ResMPSDTO> resMPSDTOS = getMPSDTOs(mpsList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
+		int mpsTotalCount = mpsList.size();
 		// MIG info
-		List<ResMIGDTO> pendingMIGDTOS = getMIGDTOs(migList, WorkloadStatus.PENDING);
-		List<ResMIGDTO> runningMIGDTOS = getMIGDTOs(migList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR);
-		int pendingMigSize = migList.stream()
-			.filter(jobEntity -> jobEntity.getWorkloadStatus() == WorkloadStatus.PENDING)
-			.toList()
-			.size();
-		int runningMigSize = migList.stream()
-			.filter(jobEntity -> jobEntity.getWorkloadStatus() == WorkloadStatus.RUNNING
-				|| jobEntity.getWorkloadStatus() == WorkloadStatus.ERROR)
-			.toList()
-			.size();
+		List<ResMIGDTO> resMIGDTOS = getMIGDTOs(migList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
+		int migTotalCount = migList.size();
 
 		return WorkspaceDTO.AdminInfoDTO.builder()
 			.id(workspaceInfo.getId())
@@ -657,16 +644,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.totalCPU(clusterResource.getCpu())
 			.totalMEM(clusterResource.getMem())
 			.totalGPU(clusterResource.getGpu())
-			.pendingMigInfo(pendingMIGDTOS)
-			.pendingMpsInfo(pendingMPSDTOS)
-			.runningMigInfo(runningMIGDTOS)
-			.runningMpsInfo(runningMPSDTOS)
-			.pendingMigTotalCount(pendingMigSize)
-			.pendingMpsTotalCount(pendingMpsSize)
-			.runningMigTotalCount(runningMigSize)
-			.runningMpsTotalCount(runningMpsSize)
+			.mpsInfo(resMPSDTOS)
+			.migInfo(resMIGDTOS)
+			.mpsTotalCount(mpsTotalCount)
+			.migTotalCount(migTotalCount)
 			.build();
 	}
+
 	private List<ResMPSDTO> getMPSDTOs(List<JobEntity> mpsList, WorkloadStatus... statuses) {
 		return mpsList.stream()
 			.filter(jobEntity -> Arrays.asList(statuses).contains(jobEntity.getWorkloadStatus()))
@@ -695,6 +679,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			))
 			.toList();
 	}
+
 	@Override
 	public ClusterResourceCompareDTO requestResourceComparedClusterResource() {
 		//cluster의 총 리소스 조회
