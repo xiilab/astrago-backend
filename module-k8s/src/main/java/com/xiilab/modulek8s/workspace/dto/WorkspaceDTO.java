@@ -141,14 +141,10 @@ public class WorkspaceDTO {
 		private int totalCPU;
 		private int totalMEM;
 		private int totalGPU;
-		private List<ResMIGDTO> pendingMigInfo;
-		private List<ResMIGDTO> runningMigInfo;
-		private List<ResMPSDTO> pendingMpsInfo;
-		private List<ResMPSDTO> runningMpsInfo;
-		private int pendingMigTotalCount;
-		private int pendingMpsTotalCount;
-		private int runningMigTotalCount;
-		private int runningMpsTotalCount;
+		private List<ResMIGDTO> migInfo;
+		private int migTotalCount;
+		private List<ResMPSDTO> mpsInfo;
+		private int mpsTotalCount;
 
 	}
 
