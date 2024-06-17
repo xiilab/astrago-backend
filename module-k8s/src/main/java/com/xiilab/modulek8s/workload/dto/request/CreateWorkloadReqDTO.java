@@ -38,6 +38,7 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected String ide;
 	protected String initContainerUrl;
 	protected String nodeName;
+	protected String gpuName;
 	protected GPUType gpuType;
 
 	protected void initializeCollection() {

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -94,6 +95,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.IDE.getField(), getIde());
+		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
+		annotationMap.put(AnnotationField.GPU_NAME.getField(), gpuName);
 		return annotationMap;
 	}
 
@@ -137,6 +140,15 @@ public class InteractiveJobVO extends WorkloadVO {
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
 		if (!ObjectUtils.isEmpty(this.secretName)) {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
+		}
+		// 노드 지정
+		if (!StringUtils.isEmpty(this.nodeName)) {
+			podSpecBuilder.withNodeSelector(Map.of("kubernetes.io/hostname", this.nodeName));
+		}
+		// GPU 지정
+		// TODO MIG MIXED일 때 처리 필요함
+		if (!StringUtils.isEmpty(this.gpuName) && gpuType != GPUType.MPS) {
+			podSpecBuilder.withNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
 		}
 		cloneGitRepo(podSpecBuilder, codes);
 		addDefaultVolume(podSpecBuilder);

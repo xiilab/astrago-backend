@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
@@ -12,6 +13,8 @@ import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,10 +37,15 @@ public class DistributedJobEntity extends WorkloadEntity {
 	private Integer workerGpuRequest;
 	@Column(name = "WORKER_COUNT")
 	private Integer workerCount;
+	@Column(name = "GPU_NAME")
+	private String gpuName;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "GPU_TYPE")
+	private GPUType gpuType;
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	DistributedJobEntity(String uid, String name, String description, String resourceName, String workspaceName,
-		String workspaceResourceName, float launcherCpuRequest, float launcherMemRequest, float workerCpuRequest,
+		String workspaceResourceName, String gpuName, GPUType gpuType, float launcherCpuRequest, float launcherMemRequest, float workerCpuRequest,
 		float workerMemRequest, int workerGpuRequest, int workerCount,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
 		Map<String, String> envs,
@@ -50,6 +58,8 @@ public class DistributedJobEntity extends WorkloadEntity {
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
+		this.gpuName = gpuName;
+		this.gpuType = gpuType;
 		this.createdAt = createdAt;
 		this.deletedAt = deletedAt;
 		this.creatorId = creatorId;

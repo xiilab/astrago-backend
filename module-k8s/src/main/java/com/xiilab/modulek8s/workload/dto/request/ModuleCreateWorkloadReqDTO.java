@@ -36,6 +36,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.secretName(this.imageSecretName)
 			.nodeName(this.nodeName)
 			.gpuType(this.gpuType)
+			.gpuName(this.gpuName)
 			.build();
 	}
 
@@ -65,6 +66,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.ide(this.ide)
 			.nodeName(this.nodeName)
 			.gpuType(this.gpuType)
+			.gpuName(this.gpuName)
 			.build();
 	}
 }
