@@ -713,11 +713,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 						} else if (type == EntityMappingType.CODE) {
 							CodeEntity code = (CodeEntity)entity;
 							// Map<String, String> codeMountMap = codeInfoMap.get(code.getCodeURL());
-							Map<String, String> codeMountMap = codeInfoMap.putIfAbsent(code.getCodeURL(), new HashMap<>());
-
-							if (codeMountMap == null) {
-								codeMountMap = codeInfoMap.get(code.getCodeURL());
-							}
+							Map<String, String> codeMountMap = codeInfoMap.computeIfAbsent(code.getCodeURL(), k -> new HashMap<>());
 
 							CodeWorkLoadMappingEntity codeWorkLoadMappingEntity = CodeWorkLoadMappingEntity.builder()
 								.workload(jobEntity)
