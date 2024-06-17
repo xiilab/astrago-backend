@@ -296,6 +296,8 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
+		map.put(LabelField.GPU_NAME.getField(), gpuName);
+		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
 		if (!CollectionUtils.isEmpty(datasets)) {
 			this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
 		}

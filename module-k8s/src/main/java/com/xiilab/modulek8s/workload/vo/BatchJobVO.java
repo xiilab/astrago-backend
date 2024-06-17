@@ -108,6 +108,8 @@ public class BatchJobVO extends WorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
+		map.put(LabelField.GPU_NAME.getField(), gpuName);
+		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
 		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
 		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
 		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
