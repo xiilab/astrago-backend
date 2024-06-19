@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
@@ -94,6 +95,11 @@ public abstract class WorkloadEntity {
 	protected LocalDateTime startTime;
 	@Column(name = "REMAIN_TIME")
 	protected int remainTime;
+	@Column(name = "GPU_NAME")
+	protected String gpuName;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "GPU_TYPE")
+	protected GPUType gpuType;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();

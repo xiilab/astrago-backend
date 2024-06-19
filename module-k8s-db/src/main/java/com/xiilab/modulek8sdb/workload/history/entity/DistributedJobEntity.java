@@ -37,12 +37,6 @@ public class DistributedJobEntity extends WorkloadEntity {
 	private Integer workerGpuRequest;
 	@Column(name = "WORKER_COUNT")
 	private Integer workerCount;
-	@Column(name = "GPU_NAME")
-	private String gpuName;
-	@Enumerated(EnumType.STRING)
-	@Column(name = "GPU_TYPE")
-	private GPUType gpuType;
-
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	DistributedJobEntity(String uid, String name, String description, String resourceName, String workspaceName,
 		String workspaceResourceName, String gpuName, GPUType gpuType, float launcherCpuRequest, float launcherMemRequest, float workerCpuRequest,
@@ -58,8 +52,8 @@ public class DistributedJobEntity extends WorkloadEntity {
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
-		this.gpuName = gpuName;
-		this.gpuType = gpuType;
+		super.gpuName = gpuName;
+		super.gpuType = gpuType;
 		this.createdAt = createdAt;
 		this.deletedAt = deletedAt;
 		this.creatorId = creatorId;

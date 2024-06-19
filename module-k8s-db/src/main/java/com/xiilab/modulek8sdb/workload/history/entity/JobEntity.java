@@ -27,11 +27,6 @@ import lombok.experimental.SuperBuilder;
 public class JobEntity extends WorkloadEntity {
 	@Column(name = "WORKLOAD_IDE")
 	private String ide;
-	@Column(name = "GPU_NAME")
-	private String gpuName;
-	@Enumerated(EnumType.STRING)
-	@Column(name = "GPU_TYPE")
-	private GPUType gpuType;
 	@Column(name = "WORKLOAD_REQ_CPU")
 	private Float cpuRequest;
 	@Column(name = "WORKLOAD_REQ_MEM")
@@ -53,8 +48,8 @@ public class JobEntity extends WorkloadEntity {
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
-		this.gpuName = gpuName;
-		this.gpuType = gpuType;
+		super.gpuName = gpuName;
+		super.gpuType = gpuType;
 		this.cpuRequest = cpuReq;
 		this.gpuRequest = gpuReq;
 		this.memRequest = memReq;
