@@ -34,6 +34,7 @@ import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
+import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -319,5 +320,15 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			}
 		}
 		return missingPVCs;
+	}
+
+	@Override
+	public StorageClass createIbmStorage(String secretName){
+		return storageClassService.createIbmStorage(secretName);
+	}
+
+	@Override
+	public void createIbmPvc(String storageName){
+		volumeService.createIbmPvc(storageName);
 	}
 }

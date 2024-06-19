@@ -3,16 +3,17 @@ package com.xiilab.modulek8s.storage.volume.repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
@@ -36,6 +37,7 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.PodSpecFluent;
 import io.fabric8.kubernetes.api.model.PodTemplateSpecFluent;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -56,6 +58,7 @@ import lombok.extern.slf4j.Slf4j;
 public class VolumeRepositoryImpl implements VolumeRepository {
 	private final K8sAdapter k8sAdapter;
 	private static final String ASTRA = "astra";
+
 	/**
 	 * 유저가 설정한 스토리지 이름 조회
 	 *
@@ -210,7 +213,10 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(pvcName, null))
 				.build();
 
-			client.apps().deployments().inNamespace(deleteStorageReqDTO.getNamespace()).withName(deleteStorageReqDTO.getAstragoDeploymentName())
+			client.apps()
+				.deployments()
+				.inNamespace(deleteStorageReqDTO.getNamespace())
+				.withName(deleteStorageReqDTO.getAstragoDeploymentName())
 				.edit(d -> new DeploymentBuilder(d)
 					.editSpec()
 					.editOrNewTemplate()
@@ -248,7 +254,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			List<Volume> volumes = new ArrayList<>();
 			for (AstragoDeploymentConnectPVC missingPVC : missingPVCs) {
-				volumes.add( new VolumeBuilder()
+				volumes.add(new VolumeBuilder()
 					.withName(missingPVC.getVolumeName())
 					.withPersistentVolumeClaim(
 						new PersistentVolumeClaimVolumeSource(missingPVC.getPvcName(), false))
@@ -259,7 +265,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.inNamespace("astrago")
 				.withName("astrago-backend-core")
 				.edit(d -> {
-					if(missingPVCs.size() != 0){
+					if (missingPVCs.size() != 0) {
 						PodSpecFluent<io.fabric8.kubernetes.api.model.PodTemplateSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>.ContainersNested<PodTemplateSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>
 							specNestedContainersNested = new DeploymentBuilder(d)
 							.editSpec()
@@ -270,14 +276,14 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 						PodSpecFluent<PodTemplateSpecFluent<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>.ContainersNested<PodTemplateSpecFluent<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>
 							depolymentBuilder = null;
 						for (AstragoDeploymentConnectPVC pvc : missingPVCs) {
-								depolymentBuilder = specNestedContainersNested.addNewVolumeMount()
+							depolymentBuilder = specNestedContainersNested.addNewVolumeMount()
 								.withName(pvc.getVolumeName())
 								.withMountPath(pvc.getHostPath())
 								.endVolumeMount();
 						}
 						return depolymentBuilder.endContainer().endSpec().endTemplate().endSpec().build();
 					}
-						return d;
+					return d;
 				});
 		}
 	}
@@ -286,7 +292,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	 * 스토리지 생성 - PVC 생성
 	 */
 	@Override
-	public void createPVC(CreatePVC createPVC){
+	public void createPVC(CreatePVC createPVC) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaimVO pvc = PersistentVolumeClaimVO.dtoToEntity(createPVC);
 			PersistentVolumeClaim resource = (PersistentVolumeClaim)pvc.createResource();
@@ -652,5 +658,25 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 
 	private boolean isControlledByAstra(Map<String, String> map) {
 		return map != null && ASTRA.equals(map.get("control-by"));
+	}
+
+	@Override
+	public void createIbmPvc(String storageName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			PersistentVolumeClaim persistentVolumeClaim = new PersistentVolumeClaimBuilder()
+				.withNewMetadata()
+				.withName("imb-pvc-" + UUID.randomUUID())
+				.endMetadata()
+				.withNewSpec()
+				.withVolumeMode("Filesystem")
+				.withAccessModes(List.of("ReadWriteOnce"))
+				.withNewResources()
+				.addToRequests("storage", new Quantity("1Gi"))
+				.endResources()
+				.withStorageClassName(storageName)
+				.endSpec()
+				.build();
+			client.persistentVolumeClaims().resource(persistentVolumeClaim).create();
+		}
 	}
 }

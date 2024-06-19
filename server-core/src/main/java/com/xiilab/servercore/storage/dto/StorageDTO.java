@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulek8s.facade.dto.SecretDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import lombok.Builder;
@@ -17,6 +18,7 @@ public class StorageDTO {
 	private String ip;
 	private String storagePath;
 	private int requestVolume;
+	private SecretDTO secretDTO;
 
 	@Getter
 	@Builder

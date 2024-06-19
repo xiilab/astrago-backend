@@ -51,4 +51,6 @@ public interface VolumeRepository {
 	List<VolumeMount> getAstragoVolumes();
 
 	void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVC);
+
+	void createIbmPvc(String storageName);
 }

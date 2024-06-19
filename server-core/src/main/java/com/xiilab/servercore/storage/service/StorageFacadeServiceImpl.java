@@ -1,9 +1,11 @@
 package com.xiilab.servercore.storage.service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,17 +13,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
+import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
-import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.servercore.storage.dto.StorageDTO;
 
+import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +38,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
 	private final NetworkRepository networkRepository;
-
+	private final SecretService secretService;
 	@Value("${astrago.namespace}")
 	private String namespace;
 	@Value("${astrago.deployment-name}")
@@ -41,54 +46,9 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	@Value("${astrago.storage-default-path}")
 	private String storageDefaultPath;
 
-	@Override
-	public void insertStorage(StorageDTO storageDTO) {
-		//1. host에 스토리지 path 디렉토리 생성
-		String storageName = storageDTO.getStorageName();
-		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
-			.toString()
-			.substring(6);
-
-		Path hostPath = Paths.get(path.replace(" ", ""));
-		try {
-			Files.createDirectories(hostPath);
-		} catch (IOException e) {
-			throw new K8sException(StorageErrorCode.STORAGE_DIRECTORY_CREATION_FAILED);
-		}
-
-		//폐쇄망 확인 후 connection image url 조회
-		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		log.info("폐쇄망 : " + network.getNetworkCloseYN());
-		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
-			.storageName(storageDTO.getStorageName())
-			.storageType(storageDTO.getStorageType())
-			.description(storageDTO.getDescription())
-			.ip(storageDTO.getIp())
-			.storagePath(storageDTO.getStoragePath())
-			.requestVolume(storageDTO.getRequestVolume())
-			.hostPath(String.valueOf(hostPath))
-			.astragoDeploymentName(astragoDeploymentName)
-			.namespace(namespace)
-			.connectionTestImageUrl(network.getConnectionTestURL())
-			.build();
-		StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
-
-		StorageDTO.Create createStorage = StorageDTO.Create.builder()
-			.storageName(storageDTO.getStorageName())
-			.description(storageDTO.getDescription())
-			.storageType(storageDTO.getStorageType())
-			.ip(storageDTO.getIp())
-			.storagePath(storageDTO.getStoragePath())
-			.namespace(storage.getNamespace())
-			.hostPath(storage.getHostPath())
-			.astragoDeploymentName(storage.getAstragoDeploymentName())
-			.volumeName(storage.getVolumeName())
-			.pvName(storage.getPvName())
-			.pvcName(storage.getPvcName())
-			.requestVolume(storageDTO.getRequestVolume())
-			.build();
-		//db 세팅
-		storageService.insertStorage(createStorage);
+	public static String getBase64EncodeString(String content){
+		// Base64 인코딩
+		return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
 	}
 	@Override
 	@Transactional
@@ -115,4 +75,81 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		//스토리지 테이블 수정
 		storageService.modifyStorage(storageId, modifyStorage);
 	}
+
+	public static String getBase64DecodeString(String content){
+		byte[] decodedBytes = Base64.getDecoder().decode(content);
+		return new String(decodedBytes, StandardCharsets.UTF_8);
+	}
+
+	@Override
+	public void insertStorage(StorageDTO storageDTO) {
+		//1. host에 스토리지 path 디렉토리 생성
+		Path hostPath = createPath(storageDTO.getStorageName());
+		//폐쇄망 확인 후 connection image url 조회
+		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		log.info("폐쇄망 : " + network.getNetworkCloseYN());
+		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
+			.storageName(storageDTO.getStorageName())
+			.storageType(storageDTO.getStorageType())
+			.description(storageDTO.getDescription())
+			.ip(storageDTO.getIp())
+			.storagePath(storageDTO.getStoragePath())
+			.requestVolume(storageDTO.getRequestVolume())
+			.hostPath(String.valueOf(hostPath))
+			.astragoDeploymentName(astragoDeploymentName)
+			.namespace(namespace)
+			.connectionTestImageUrl(network.getConnectionTestURL())
+			.secretDTO(storageDTO.getSecretDTO())
+			.build();
+		if(storageDTO.getStorageType() == StorageType.NFS){
+			StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
+
+			StorageDTO.Create createStorage = StorageDTO.Create.builder()
+				.storageName(storageDTO.getStorageName())
+				.description(storageDTO.getDescription())
+				.storageType(storageDTO.getStorageType())
+				.ip(storageDTO.getIp())
+				.storagePath(storageDTO.getStoragePath())
+				.namespace(storage.getNamespace())
+				.hostPath(storage.getHostPath())
+				.astragoDeploymentName(storage.getAstragoDeploymentName())
+				.volumeName(storage.getVolumeName())
+				.pvName(storage.getPvName())
+				.pvcName(storage.getPvcName())
+				.requestVolume(storageDTO.getRequestVolume())
+				.build();
+			//db 세팅
+			storageService.insertStorage(createStorage);
+		}else if(storageDTO.getStorageType() == StorageType.IBM){
+			String secretName = secretService.createIbmSecret(createStorageReqDTO.getSecretDTO());
+			StorageClass ibmStorage = storageModuleService.createIbmStorage(secretName);
+			storageModuleService.createIbmPvc(ibmStorage.getMetadata().getName());
+
+
+		}
+
+	}
+
+	private Path createPath(String storageName) {
+		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
+			.toString()
+			.substring(6);
+
+		Path hostPath = Paths.get(path.replace(" ", ""));
+
+		createDirectories(hostPath);
+
+		return hostPath;
+	}
+
+	private void createDirectories(Path hostPath){
+		try {
+			Files.createDirectories(hostPath);
+		} catch (IOException e) {
+			throw new K8sException(StorageErrorCode.STORAGE_DIRECTORY_CREATION_FAILED);
+		}
+	}
+
+
+
 }

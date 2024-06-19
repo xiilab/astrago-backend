@@ -51,4 +51,8 @@ public class StorageClassService {
 	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
 		return storageClassRepository.findStorageClassesWithVolumes();
 	}
+
+	public StorageClass createIbmStorage(String secretName){
+		return storageClassRepository.createIbmStorage(secretName);
+	}
 }

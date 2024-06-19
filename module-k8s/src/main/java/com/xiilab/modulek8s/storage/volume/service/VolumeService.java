@@ -118,4 +118,8 @@ public class VolumeService {
 	public void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVCs) {
 		volumeRepository.astragoCoreDeploymentConnectPVC(missingPVCs);
 	}
+
+	public void createIbmPvc(String storageName){
+		volumeRepository.createIbmPvc(storageName);
+	}
 }
