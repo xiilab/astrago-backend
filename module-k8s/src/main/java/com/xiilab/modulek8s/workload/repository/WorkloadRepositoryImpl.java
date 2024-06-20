@@ -402,11 +402,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingDatasetDTO> workloads,
+	private static void getWorkloadInfoUsingDataset(List<WorkloadResDTO.UsingWorkloadDTO> workloads,
 		HasMetadata hasMetadata,
 		WorkloadResourceType resourceType) {
-		WorkloadResDTO.UsingDatasetDTO usingDatasetDTO = WorkloadResDTO.UsingDatasetDTO.builder()
+		WorkloadResDTO.UsingWorkloadDTO usingWorkloadDTO = WorkloadResDTO.UsingWorkloadDTO.builder()
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
+			.resourceName(hasMetadata.getMetadata().getName())
+			.workspaceResourceName(hasMetadata.getMetadata().getNamespace())
 			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
 			.creatorName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_FULL_NAME.getField()))
@@ -415,25 +417,25 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		switch (resourceType) {
 			case JOB:
 				Job job = (Job)hasMetadata;
-				usingDatasetDTO.setStatus(getJobStatus(job.getStatus()));
+				usingWorkloadDTO.setStatus(getJobStatus(job.getStatus()));
 				break;
 			case DEPLOYMENT:
 				Deployment deployment = (Deployment)hasMetadata;
-				usingDatasetDTO.setStatus(getDeploymentStatus(deployment.getStatus()));
+				usingWorkloadDTO.setStatus(getDeploymentStatus(deployment.getStatus()));
 				break;
 			case STATEFULSET:
 				StatefulSet statefulSet = (StatefulSet)hasMetadata;
-				usingDatasetDTO.setStatus(getStatefulsetStatus(statefulSet.getStatus()));
+				usingWorkloadDTO.setStatus(getStatefulsetStatus(statefulSet.getStatus()));
 				break;
 			case DISTRIBUTED:
 				MPIJob mpiJob = (MPIJob)hasMetadata;
-				usingDatasetDTO.setStatus(K8sInfoPicker.getDistributedWorkloadStatus(mpiJob.getStatus()));
+				usingWorkloadDTO.setStatus(K8sInfoPicker.getDistributedWorkloadStatus(mpiJob.getStatus()));
 				break;
 			default:
-				usingDatasetDTO.setStatus(null);
+				usingWorkloadDTO.setStatus(null);
 		}
-		usingDatasetDTO.setResourceType(resourceType);
-		workloads.add(usingDatasetDTO);
+		usingWorkloadDTO.setResourceType(resourceType);
+		workloads.add(usingWorkloadDTO);
 	}
 
 	@Override
@@ -460,12 +462,16 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private static void getWorkloadInfoUsingModel(List<WorkloadResDTO.UsingModelDTO> workloads, HasMetadata hasMetadata,
+	private static void getWorkloadInfoUsingModel(List<WorkloadResDTO.UsingWorkloadDTO> workloads,
+		HasMetadata hasMetadata,
 		WorkloadResourceType resourceType) {
-		WorkloadResDTO.UsingModelDTO usingModelDTO = WorkloadResDTO.UsingModelDTO.builder()
+		WorkloadResDTO.UsingWorkloadDTO usingModelDTO = WorkloadResDTO.UsingWorkloadDTO.builder()
+			.resourceName(hasMetadata.getMetadata().getName())
+			.workspaceResourceName(hasMetadata.getMetadata().getNamespace())
 			.workloadName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NAME.getField()))
 			.creator(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_USER_NAME.getField()))
 			.createdAt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATED_AT.getField()))
+			.creatorName(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CREATOR_FULL_NAME.getField()))
 			.build();
 
 		switch (resourceType) {
@@ -818,7 +824,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
 			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(datasetId, client);
 
-			List<WorkloadResDTO.UsingDatasetDTO> workloads = new ArrayList<>();
+			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();
 			//워크로드 이름(사용자가 지정한 이름), 상태, job Type, 생성자 이름, 생성일자
 			for (Job job : jobsInUseDataset) {
 				getWorkloadInfoUsingDataset(workloads, job, WorkloadResourceType.JOB);
@@ -937,7 +943,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
 			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(datasetId, client);
 
-			List<WorkloadResDTO.UsingModelDTO> workloads = new ArrayList<>();
+			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();
 
 			//워크로드 이름(사용자가 지정한 이름), 상태, job Type, 생성자 이름, 생성일자
 			for (Job job : jobsInUseDataset) {

@@ -49,7 +49,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
-public class ModelFacadeServiceImpl implements ModelFacadeService{
+public class ModelFacadeServiceImpl implements ModelFacadeService {
 	@Value("${astrago.namespace}")
 	private String namespace;
 	@Value("${astrago.dataset.dockerImage.name}")
@@ -134,7 +134,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 				workloadModuleFacadeService.modifyLocalModelDeployment(modifyLocalDatasetDeploymentDTO);
 			}
 			modelService.modifyModel(modifyModel, modelId);
-		} else{
+		} else {
 			throw new RestApiException(ModelErrorCode.MODEL_FIX_FORBIDDEN);
 		}
 	}
@@ -236,7 +236,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 				.fileName(fileName)
 				.mediaType(mediaType)
 				.build();
-		}else{
+		} else {
 			throw new RestApiException(ModelErrorCode.MODEL_FILE_NOT_FOUND);
 		}
 	}
@@ -259,9 +259,9 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 				.path(FileType.D == file.getFileType() ? filePath + file.getName() + File.separator :
 					filePath + file.getName())
 				.build();
-			if(file.getFileType() == FileType.D){
+			if (file.getFileType() == FileType.D) {
 				directoryCnt += 1;
-			}else{
+			} else {
 				fileCnt += 1;
 			}
 			fileList.add(children);
@@ -330,8 +330,15 @@ public class ModelFacadeServiceImpl implements ModelFacadeService{
 	}
 
 	@Override
-	public WorkloadResDTO.PageUsingModelDTO getWorkloadsUsingModel(PageInfo pageInfo, Long modelId) {
-		 return workloadModuleFacadeService.workloadsUsingModel(pageInfo.getPageNo(), pageInfo.getPageSize(), modelId);
+	public WorkloadResDTO.PageUsingModelDTO getWorkloadsUsingModel(PageInfo pageInfo, Long modelId,
+		UserDTO.UserInfo userInfo) {
+		WorkloadResDTO.PageUsingModelDTO pageUsingModelDTO = workloadModuleFacadeService.workloadsUsingModel(
+			pageInfo.getPageNo(), pageInfo.getPageSize(), modelId);
+
+		pageUsingModelDTO.getUsingWorkloads().forEach(wl -> wl.updateIsAccessible(userInfo.getId(),
+			userInfo.getMyWorkspaces()));
+
+		return pageUsingModelDTO;
 	}
 
 	private static boolean checkAccessDataset(UserDTO.UserInfo userInfoDTO, Model model) {
