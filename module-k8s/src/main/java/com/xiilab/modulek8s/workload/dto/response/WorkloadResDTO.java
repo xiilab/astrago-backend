@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 
 import lombok.Builder;
@@ -32,7 +33,7 @@ public class WorkloadResDTO {
 		private String workloadName;
 		private String resourceName;
 		private String workspaceResourceName;
-		private WorkloadResourceType resourceType;
+		private WorkloadType resourceType;
 		private boolean isAccessible;
 		private String creator;
 		private String creatorName;
@@ -50,7 +51,11 @@ public class WorkloadResDTO {
 		}
 
 		public void setResourceType(WorkloadResourceType resourceType) {
-			this.resourceType = resourceType;
+			switch (resourceType) {
+				case JOB -> this.resourceType = WorkloadType.BATCH;
+				case DEPLOYMENT -> this.resourceType = WorkloadType.INTERACTIVE;
+				case DISTRIBUTED -> this.resourceType = WorkloadType.DISTRIBUTED;
+			}
 		}
 	}
 }
