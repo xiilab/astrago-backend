@@ -70,7 +70,7 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected String startTime;
 	protected GPUType gpuType;
 	protected String gpuName;
-
+	protected int gpuMemory;
 
 	@Getter
 	@SuperBuilder
@@ -160,11 +160,12 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regDate(workloadEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.modDate(null)
 				.workingDir(workloadEntity.getWorkingDir())
-				.status(WorkloadStatus.END)
+				.status(workloadEntity.getWorkloadStatus())
 				.ide(workloadEntity.getIde())
 				.canBeDeleted(workloadEntity.isCanBeDeleted())
 				.gpuName(workloadEntity.getGpuName())
 				.gpuType(workloadEntity.getGpuType())
+				.gpuMemory(workloadEntity.getGpuMemory())
 				.build();
 		}
 	}
@@ -249,7 +250,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regDate(distributedJobEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.workingDir(distributedJobEntity.getWorkingDir())
 				.modDate(null)
-				.status(WorkloadStatus.END)
+				.status(distributedJobEntity.getWorkloadStatus())
 				.canBeDeleted(distributedJobEntity.isCanBeDeleted())
 				.launcherInfo(DistributedResourceDTO.LauncherInfo.builder()
 					.cpuRequest(distributedJobEntity.getLauncherCpuRequest())
