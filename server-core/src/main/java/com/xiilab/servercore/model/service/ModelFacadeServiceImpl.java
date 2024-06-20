@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
@@ -334,10 +335,10 @@ public class ModelFacadeServiceImpl implements ModelFacadeService {
 		UserDTO.UserInfo userInfo) {
 		WorkloadResDTO.PageUsingModelDTO pageUsingModelDTO = workloadModuleFacadeService.workloadsUsingModel(
 			pageInfo.getPageNo(), pageInfo.getPageSize(), modelId);
-
-		pageUsingModelDTO.getUsingWorkloads().forEach(wl -> wl.updateIsAccessible(userInfo.getId(),
-			userInfo.getMyWorkspaces()));
-
+		if (!CollectionUtils.isEmpty(pageUsingModelDTO.getUsingWorkloads())) {
+			pageUsingModelDTO.getUsingWorkloads().forEach(wl -> wl.updateIsAccessible(userInfo.getId(),
+				userInfo.getMyWorkspaces()));
+		}
 		return pageUsingModelDTO;
 	}
 

@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
@@ -339,8 +340,10 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 		WorkloadResDTO.PageUsingDatasetDTO pageUsingDatasetDTO = workloadModuleFacadeService.workloadsUsingDataset(
 			pageInfo.getPageNo(), pageInfo.getPageSize(), datasetId);
 		//workload 권한 설정
-		pageUsingDatasetDTO.getUsingWorkloads()
-			.forEach(wl -> wl.updateIsAccessible(userInfo.getId(), userInfo.getMyWorkspaces()));
+		if (!CollectionUtils.isEmpty(pageUsingDatasetDTO.getUsingWorkloads())) {
+			pageUsingDatasetDTO.getUsingWorkloads()
+				.forEach(wl -> wl.updateIsAccessible(userInfo.getId(), userInfo.getMyWorkspaces()));
+		}
 		return pageUsingDatasetDTO;
 	}
 
