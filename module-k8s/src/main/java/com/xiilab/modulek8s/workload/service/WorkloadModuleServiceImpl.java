@@ -459,4 +459,9 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return null;
 		}
 	}
+
+	@Override
+	public List<Pod> getWorkloadByWorkloadName(String resourceName) {
+		return workloadRepository.getWorkloadsByWorkloadName(resourceName);
+	}
 }

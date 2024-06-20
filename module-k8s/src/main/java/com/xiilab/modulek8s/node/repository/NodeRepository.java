@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.xiilab.modulecommon.enums.NodeType;
+import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
+import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
 import io.fabric8.kubernetes.api.model.Node;
 
@@ -49,4 +51,6 @@ public interface NodeRepository {
 	MPSGpuDTO.MPSInfoDTO getMpsConfig(String nodeName);
 
 	void setMpsConfig(MPSGpuDTO.SetMPSDTO setMPSDTO);
+
+	GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName);
 }
