@@ -925,4 +925,61 @@
 // 			}
 // 		}
 // 	}
+// 	@Test
+// 	void test2(){
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			Job job = client.batch().v1().jobs().inAnyNamespace()
+// 				.withLabel("app", "wl-e8a6df95-163f-4f4b-9231-f2bf292b9723")
+// 				// .withLabel("app", "wl-982fe371-a3c2-4ec4-bf97-da1164ae2ad4-7675559c8f-vj7wf")
+// 				.list().getItems().get(0);
+// 			String label = job
+// 				.getMetadata().getLabels().get("app");
+//
+// 			List<Pod> pods = client.pods().inAnyNamespace().withLabel("app", label).list().getItems();
+// 			String nodeName = "";
+// 			for (Pod pod : pods) {
+// 				boolean isRunning = pod.getStatus().getPhase().equalsIgnoreCase("Running");
+// 				if(isRunning){
+// 					nodeName = pod.getSpec().getNodeName();
+// 					break;
+// 				}
+// 			}
+// 			Node node = client.nodes().withName(nodeName).get();
+// 			String migCapable = node.getMetadata().getLabels().get("nvidia.com/mig.capable");
+// 			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable");
+// 			int memory = 0;
+// 			String gpuName = "";
+// 			if(Boolean.valueOf(migCapable)){ //mig
+// 				String strategy = node.getMetadata().getLabels().get("nvidia.com/mig.strategy");
+// 				//single
+// 				if(strategy.equalsIgnoreCase("single")){
+// 					memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+// 				}else{
+// 				//mixed
+// 					//db에서 gpuName 조회 후 .memory 문자열 합쳐서 라벨 검색 후 memory 조회
+// 				}
+// 			}else if(Boolean.valueOf(mpsCapable)){//mps
+// 				int gpuMemory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+// 				int mpsCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"));
+// 				memory = gpuMemory / mpsCount;
+//
+// 			}else{//normal
+// 				memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+// 				gpuName = node.getMetadata().getLabels().get("nvidia.com/gpu.product");
+// 			}
+//
+// 			System.out.println(memory);
+//
+// 		}
+// 	}
+// 	@Test
+// 	void test3(){
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			List<Node> nodes = client.nodes()
+// 				.withLabel("nvidia.com/gpu.product", "Tesla-V100-PCIE-16GB")
+// 				.withLabel("nvidia.com/mps.capable", "true")
+// 				.list()
+// 				.getItems();
+// 		}
+// 	}
 // }

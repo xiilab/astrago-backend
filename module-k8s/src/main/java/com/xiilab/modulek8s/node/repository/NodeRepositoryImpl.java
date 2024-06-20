@@ -27,12 +27,14 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
+import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
@@ -737,6 +739,53 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.build());
 			}
 		}
+	}
+
+	@Override
+	public GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			Node node = client.nodes().withName(nodeName).get();
+			String migCapable = node.getMetadata().getLabels().get("nvidia.com/mig.capable");
+			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable");
+			int memory = 0;
+			if(Boolean.valueOf(migCapable)){ //mig
+				String strategy = node.getMetadata().getLabels().get("nvidia.com/mig.strategy");
+				//single
+				if(strategy.equalsIgnoreCase("single")){
+					memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+				}else{
+					//mixed
+					//mixedMigGpuName에 .memory 문자열 합쳐서 라벨 검색 후 memory 조회
+					//gpuName : A100-SXM4-40GB-MIG-1g.5gb
+					String pattern = "MIG-\\w+.\\w+";
+					String mixedGpuName = extractPattern(gpuName, pattern);
+					String mixedGpuMemoryLabelValue = "nvidia.com/" + mixedGpuName.toLowerCase() + ".memory";
+					memory = Integer.parseInt(node.getMetadata().getLabels().get(mixedGpuMemoryLabelValue));
+				}
+			}else if(Boolean.valueOf(mpsCapable)){//mps
+				int gpuMemory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+				int mpsCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"));
+				memory = gpuMemory / mpsCount;
+
+			}else{//normal
+				memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+				gpuName = node.getMetadata().getLabels().get("nvidia.com/gpu.product");
+			}
+			return GpuInfoDTO.builder()
+				.gpuName(gpuName)
+				.memory(memory)
+				.build();
+		}
+	}
+	public static String extractPattern(String input, String pattern) {
+		java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(pattern);
+		java.util.regex.Matcher matcher = regexPattern.matcher(input);
+
+		if (matcher.find()) {
+			return matcher.group();
+		}
+
+		return null;
 	}
 
 	private List<MIGGpuDTO.MIGInfoDTO> convertMapToMIGInfo(List<Map<String, Object>> migInfoList) {

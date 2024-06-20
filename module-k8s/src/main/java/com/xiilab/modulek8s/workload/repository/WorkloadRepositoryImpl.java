@@ -995,6 +995,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	@Override
+	public List<Pod> getWorkloadsByWorkloadName(String resourceName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			return kubernetesClient.pods().inAnyNamespace().withLabel("app", resourceName).list().getItems();
+		}
+	}
+
 	public MPIJob getDistributedJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.resources(MPIJob.class).inNamespace(workSpaceName).withName(workloadName).get();

@@ -100,6 +100,8 @@ public abstract class WorkloadEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "GPU_TYPE")
 	protected GPUType gpuType;
+	@Column(name = "GPU_MEMORY")
+	protected int gpuMemory;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();
