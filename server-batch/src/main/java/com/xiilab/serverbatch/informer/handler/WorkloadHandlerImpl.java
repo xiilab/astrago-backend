@@ -232,8 +232,11 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 						}
 					}
 					//db gpu, memory 정보 저장
+					WorkloadEntity workloadEntity = workloadHistoryRepo.findByResourceName(resourceName).get();
+					String gpuName = workloadEntity.getGpuName();
 					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
-						resourceName, nodeName);
+						gpuName, nodeName);
+
 					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory());
 
 					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
