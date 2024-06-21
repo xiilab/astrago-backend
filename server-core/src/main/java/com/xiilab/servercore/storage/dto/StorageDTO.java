@@ -35,6 +35,7 @@ public class StorageDTO {
 		private String pvcName;
 		private String volumeName;
 		private int requestVolume;
+		private String secretName;
 
 		public StorageEntity toEntity(){
 			return StorageEntity.builder()
@@ -50,6 +51,7 @@ public class StorageDTO {
 				.pvName(this.pvName)
 				.pvcName(this.pvcName)
 				.volumeName(this.volumeName)
+				.secretName(this.secretName)
 				.build();
 		}
 	}

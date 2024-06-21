@@ -22,6 +22,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +120,11 @@ public class VolumeService {
 		volumeRepository.astragoCoreDeploymentConnectPVC(missingPVCs);
 	}
 
-	public void createIbmPvc(String storageName){
-		volumeRepository.createIbmPvc(storageName);
+	public PersistentVolumeClaim createIbmPvc(String storageName) {
+		return volumeRepository.createIbmPvc(storageName);
+	}
+
+	public void deleteIbmPvc(String storageName) {
+		volumeRepository.deleteIbmPvc(storageName);
 	}
 }

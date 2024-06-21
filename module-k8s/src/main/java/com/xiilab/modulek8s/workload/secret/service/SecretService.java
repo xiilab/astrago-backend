@@ -7,4 +7,6 @@ public interface SecretService {
 	String createSecret(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO);
 
 	String createIbmSecret(SecretDTO secretDTO);
+
+	void deleteIbmSecret(String secretName);
 }

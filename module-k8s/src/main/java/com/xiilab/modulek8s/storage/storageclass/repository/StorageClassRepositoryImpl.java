@@ -223,4 +223,15 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 			.build();
 
 	}
+
+	@Override
+	public void deleteIbmStorage(String storageName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.storage()
+				.v1()
+				.storageClasses()
+				.withName(storageName)
+				.delete();
+		}
+	}
 }

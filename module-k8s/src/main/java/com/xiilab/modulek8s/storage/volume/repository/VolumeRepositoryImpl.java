@@ -661,7 +661,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	@Override
-	public void createIbmPvc(String storageName) {
+	public PersistentVolumeClaim createIbmPvc(String storageName) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim persistentVolumeClaim = new PersistentVolumeClaimBuilder()
 				.withNewMetadata()
@@ -676,7 +676,14 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.withStorageClassName(storageName)
 				.endSpec()
 				.build();
-			client.persistentVolumeClaims().resource(persistentVolumeClaim).create();
+			return client.persistentVolumeClaims().inNamespace("ibm").resource(persistentVolumeClaim).create();
+		}
+	}
+
+	@Override
+	public void deleteIbmPvc(String pvcName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.persistentVolumeClaims().inNamespace("ibm").withName(pvcName).delete();
 		}
 	}
 }

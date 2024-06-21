@@ -10,9 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.storage.repository.StorageRepository;
+import com.xiilab.servercore.storage.dto.StorageDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,7 +52,8 @@ public class StorageServiceImpl implements StorageService {
 
 	@Override
 	public StorageEntity findById(Long storageId) {
-		return storageRepository.findById(storageId).orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
+		return storageRepository.findById(storageId)
+			.orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
 	}
 
 	@Override
@@ -66,8 +67,8 @@ public class StorageServiceImpl implements StorageService {
 	public void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage) {
 		StorageEntity storageEntity = storageRepository.findById(storageId)
 			.orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
-
 		storageEntity.changeStorageName(modifyStorage.getStorageName());
 	}
+
 
 }

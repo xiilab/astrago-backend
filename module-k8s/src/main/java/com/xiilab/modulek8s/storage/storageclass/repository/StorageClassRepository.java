@@ -28,4 +28,6 @@ public interface StorageClassRepository {
 	List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes();
 
 	StorageClass createIbmStorage(String secretName);
+
+	void deleteIbmStorage(String storageName);
 }

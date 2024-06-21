@@ -24,4 +24,9 @@ public class SecretServiceImpl implements SecretService {
 	public String createIbmSecret(SecretDTO secretDTO) {
 		return secretRepository.createIbmSecret(secretDTO);
 	}
+
+	@Override
+	public void deleteIbmSecret(String secretName){
+		secretRepository.deleteIbmSecret(secretName);
+	}
 }

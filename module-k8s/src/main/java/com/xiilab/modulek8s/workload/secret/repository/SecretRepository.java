@@ -7,4 +7,6 @@ public interface SecretRepository {
 	String createSecret(CredentialVO credentialVO);
 
 	String createIbmSecret(SecretDTO secretDTO);
+
+	void deleteIbmSecret(String secretName);
 }

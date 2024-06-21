@@ -26,6 +26,7 @@ import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.servercore.storage.dto.StorageDTO;
 
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +57,6 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		StorageEntity storageEntity = storageService.findById(storageId);
 		//스토리지 db 데이터 삭제
 		storageService.deleteById(storageId);
-
 		//K8s 스토리지 삭제 로직
 		DeleteStorageReqDTO deleteStorageReqDTO = DeleteStorageReqDTO.builder()
 			.pvcName(storageEntity.getPvcName())
@@ -65,6 +65,9 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.namespace(storageEntity.getNamespace())
 			.hostPath(storageEntity.getHostPath())
 			.astragoDeploymentName(storageEntity.getAstragoDeploymentName())
+			.storageType(storageEntity.getStorageType())
+			.secretName(storageEntity.getSecretName())
+			.storageName(storageEntity.getStorageName())
 			.build();
 		storageModuleService.deleteStorage(deleteStorageReqDTO);
 	}
@@ -123,9 +126,20 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		}else if(storageDTO.getStorageType() == StorageType.IBM){
 			String secretName = secretService.createIbmSecret(createStorageReqDTO.getSecretDTO());
 			StorageClass ibmStorage = storageModuleService.createIbmStorage(secretName);
-			storageModuleService.createIbmPvc(ibmStorage.getMetadata().getName());
+			PersistentVolumeClaim ibmPvc = storageModuleService.createIbmPvc(ibmStorage.getMetadata().getName());
 
-
+			StorageDTO.Create createStorage = StorageDTO.Create.builder()
+				.storageName(storageDTO.getStorageName())
+				.description(storageDTO.getDescription())
+				.storageType(storageDTO.getStorageType())
+				.ip(storageDTO.getIp())
+				.storagePath(storageDTO.getStoragePath())
+				.namespace(ibmStorage.getMetadata().getNamespace())
+				.pvcName(ibmPvc.getMetadata().getName())
+				.requestVolume(storageDTO.getRequestVolume())
+				.secretName(secretName)
+				.build();
+			storageService.insertStorage(createStorage);
 		}
 
 	}
