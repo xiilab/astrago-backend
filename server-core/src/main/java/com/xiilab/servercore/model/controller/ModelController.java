@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
-import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
@@ -82,10 +81,11 @@ public class ModelController {
 	@Operation(summary = "모델을 사용중인 워크로드 리스트 조회")
 	public ResponseEntity<WorkloadResDTO.PageUsingModelDTO> getWorkloadsUsingModel(
 		PageInfo pageInfo,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO,
 		@PathVariable(name = "modelId") Long modelId
 	) {
 		WorkloadResDTO.PageUsingModelDTO workloadsUsingModel = modelFacadeService.getWorkloadsUsingModel(
-			pageInfo, modelId);
+			pageInfo, modelId, userInfoDTO);
 		return new ResponseEntity(workloadsUsingModel, HttpStatus.OK);
 	}
 

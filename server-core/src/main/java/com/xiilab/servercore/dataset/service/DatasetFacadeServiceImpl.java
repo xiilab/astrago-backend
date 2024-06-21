@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
@@ -137,7 +138,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				workloadModuleFacadeService.modifyLocalDatasetDeployment(modifyLocalDatasetDeploymentDTO);
 			}
 			datasetService.modifyDataset(modifyDataset, datasetId);
-		} else{
+		} else {
 			throw new RestApiException(DatasetErrorCode.DATASET_FIX_FORBIDDEN);
 		}
 	}
@@ -201,9 +202,9 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.path(FileType.D == file.getFileType() ? filePath + file.getName() + File.separator :
 					filePath + file.getName())
 				.build();
-			if(file.getFileType() == FileType.D){
+			if (file.getFileType() == FileType.D) {
 				directoryCnt += 1;
-			}else{
+			} else {
 				fileCnt += 1;
 			}
 			fileList.add(children);
@@ -327,14 +328,23 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.fileName(fileName)
 				.mediaType(mediaType)
 				.build();
-		}else{
+		} else {
 			throw new RestApiException(DatasetErrorCode.DATASET_FILE_NOT_FOUND);
 		}
 	}
 
 	@Override
-	public WorkloadResDTO.PageUsingDatasetDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId) {
-		return workloadModuleFacadeService.workloadsUsingDataset(pageInfo.getPageNo(), pageInfo.getPageSize(), datasetId);
+	public WorkloadResDTO.PageUsingDatasetDTO getWorkloadsUsingDataset(PageInfo pageInfo, Long datasetId,
+		UserDTO.UserInfo userInfo) {
+		//사용중인 워크로드 조회
+		WorkloadResDTO.PageUsingDatasetDTO pageUsingDatasetDTO = workloadModuleFacadeService.workloadsUsingDataset(
+			pageInfo.getPageNo(), pageInfo.getPageSize(), datasetId);
+		//workload 권한 설정
+		if (!CollectionUtils.isEmpty(pageUsingDatasetDTO.getUsingWorkloads())) {
+			pageUsingDatasetDTO.getUsingWorkloads()
+				.forEach(wl -> wl.updateIsAccessible(userInfo.getId(), userInfo.getMyWorkspaces()));
+		}
+		return pageUsingDatasetDTO;
 	}
 
 	private static boolean checkAccessDataset(UserDTO.UserInfo userInfoDTO, Dataset dataset) {

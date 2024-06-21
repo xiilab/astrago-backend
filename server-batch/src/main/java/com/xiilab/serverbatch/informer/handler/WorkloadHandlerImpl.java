@@ -38,6 +38,7 @@ import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
+import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
@@ -74,6 +75,7 @@ import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.UserService;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -133,6 +135,28 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 							}
 						});
 				} else if (afterStatus == WorkloadStatus.RUNNING) {
+					//label로 구분
+					//gpuName, gpuMemory 데이터 저장
+					//normal은 gpuName, memory 저장
+					//mps, mig는 memory 저장
+					String resourceName = afterJob.getMetadata().getName();
+					List<Pod> pods = workloadModuleFacadeService.getWorkloadByWorkloadName(
+						resourceName);
+					String nodeName = "";
+					for (Pod pod : pods) {
+						boolean isRunning = pod.getStatus().getPhase().equalsIgnoreCase("Running");
+						if(isRunning){
+							nodeName = pod.getSpec().getNodeName();
+							break;
+						}
+					}
+					//mixedMigGpuName 조회
+					WorkloadEntity workloadEntity = workloadHistoryRepo.findByResourceName(resourceName).get();
+					String gpuName = workloadEntity.getGpuName();
+					//db gpu, memory 정보 저장
+					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
+						gpuName, nodeName);
+					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory());
 					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 				}
 
@@ -192,6 +216,29 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			if (isStatusChanged(beforeStatus, afterStatus)) {
 				checkJobStatusAndUpdateStatus(afterDeployment);
 				if (afterStatus == WorkloadStatus.RUNNING) {
+					//label로 구분
+					//gpuName, gpuMemory 데이터 저장
+					//normal은 gpuName, memory 저장
+					//mps, mig는 memory 저장
+					String resourceName = afterDeployment.getMetadata().getName();
+					List<Pod> pods = workloadModuleFacadeService.getWorkloadByWorkloadName(
+						resourceName);
+					String nodeName = "";
+					for (Pod pod : pods) {
+						boolean isRunning = pod.getStatus().getPhase().equalsIgnoreCase("Running");
+						if(isRunning){
+							nodeName = pod.getSpec().getNodeName();
+							break;
+						}
+					}
+					//db gpu, memory 정보 저장
+					WorkloadEntity workloadEntity = workloadHistoryRepo.findByResourceName(resourceName).get();
+					String gpuName = workloadEntity.getGpuName();
+					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
+						gpuName, nodeName);
+
+					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory());
+
 					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
 						LocalDateTime.now());
 				}
