@@ -85,6 +85,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 	private String gpuName;
 	private String nodeName;
 	private Integer gpuOnePerMemory;
+	private Integer resourcePresetId;
 
 	protected AbstractModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		if (hasMetadata != null) {
@@ -128,6 +129,8 @@ public abstract class AbstractModuleWorkloadResDTO {
 				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NODE_NAME.getField()) : null;
 			gpuOnePerMemory = !ValidUtils.isNullOrEmpty(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_ONE_PER_MEMORY.getField()))?
 				Integer.parseInt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_ONE_PER_MEMORY.getField())) : null;
+			resourcePresetId = !ValidUtils.isNullOrEmpty(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.RESOURCE_PRESET_ID.getField()))?
+				Integer.parseInt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.RESOURCE_PRESET_ID.getField())) : null;
 
 		} else {
 			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);

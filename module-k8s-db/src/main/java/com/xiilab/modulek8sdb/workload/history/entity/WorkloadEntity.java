@@ -93,6 +93,8 @@ public abstract class WorkloadEntity {
 	protected DeleteYN deleteYN;
 	@Column(name = "START_TIME")
 	protected LocalDateTime startTime;
+	@Column(name = "END_TIME")
+	protected LocalDateTime endTime;
 	@Column(name = "REMAIN_TIME")
 	protected int remainTime;
 	@Column(name = "NODE_NAME")
@@ -104,6 +106,8 @@ public abstract class WorkloadEntity {
 	protected GPUType gpuType;
 	@Column(name = "GPU_ONE_PER_MEMORY")
 	protected Integer gpuOnePerMemory;
+	@Column(name = "RESOURCE_PRESET_ID")
+	protected Integer resourcePresetId;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();

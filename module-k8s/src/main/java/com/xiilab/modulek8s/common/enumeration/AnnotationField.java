@@ -32,6 +32,7 @@ public enum AnnotationField {
 	GPU_NAME("gpu-name"),
 	GPU_ONE_PER_MEMORY("gpu-one-per-memory"),
 	NODE_NAME("node-name"),
+	RESOURCE_PRESET_ID("resource-preset-id")
 	;
 
 	private final String field;
