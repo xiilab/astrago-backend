@@ -1,20 +1,19 @@
-package com.xiilab.modulek8s.storage.common.utils;
+package com.xiilab.modulek8s.storage.common.service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
+import com.xiilab.modulek8s.storage.common.utils.StorageUtils;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
-public class IbmUtils {
-	public static void ibmInstall(KubernetesClient client) {
+@Service
+public class IbmService extends StorageUtils {
+	public void ibmInstall(KubernetesClient client) {
 		long runningCount = getIbmPodCount(client);
 
 		if(runningCount == 4){
@@ -24,19 +23,15 @@ public class IbmUtils {
 			ibmOperatorInstall();
 			// driver 설치
 			ibmDriverInstall();
-
-			if(0 < runningCount && runningCount < 4){
-				throw new RestApiException(StorageErrorCode.STORAGE_AFTER_AGAIN_INSTALL_IBM);
-			}
 		}
 	}
 
-	public static void ibmDelete(KubernetesClient client){
+	public void ibmDelete(KubernetesClient client){
 		boolean  operatorInstallCheck= operatorInstallCheck(client);
-		if(operatorInstallCheck){
-			ibmDriverUnInstall();
+		ibmDriverUnInstall();
+		if(!operatorInstallCheck){
+			ibmOperatorUnInstall();
 		}
-		ibmOperatorUnInstall();
 	}
 
 	private long getIbmPodCount(KubernetesClient client) {
@@ -99,28 +94,6 @@ public class IbmUtils {
 		} catch (IOException | InterruptedException e) {
 			throw new RestApiException(StorageErrorCode.STORAGE_UNINSTALL_FAIL_IBM);
 		}
-	}
-
-	private String runShellCommand(String command) throws IOException, InterruptedException {
-		ProcessBuilder processBuilder = new ProcessBuilder();
-		processBuilder.command("sh", "-c", command);
-
-		Process process = processBuilder.start();
-		int exitCode = process.waitFor();
-
-		StringBuilder output = new StringBuilder();
-
- 		if (exitCode == 0) {
-			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-				String line;
-				while ((line = reader.readLine()) != null) {
-					output.append(line).append(System.lineSeparator());
-				}
-			}
-		} else {
-			throw new RestApiException(StorageErrorCode.STORAGE_AFTER_AGAIN_INSTALL_IBM);
-		}
-		return output.toString();
 	}
 
 }

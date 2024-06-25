@@ -17,6 +17,7 @@ public enum StorageErrorCode implements ErrorCode {
 	STORAGE_ALREADY_INSTALLED_IBM(HttpStatus.INTERNAL_SERVER_ERROR.value(), "IBM 스토리지가 이미 설치되어 있습니다."),
 	STORAGE_INSTALL_FAIL_IBM(HttpStatus.INTERNAL_SERVER_ERROR.value(), "IBM 스토리지가 설치 실패하였습니다."),
 	STORAGE_AFTER_AGAIN_INSTALL_IBM(HttpStatus.INTERNAL_SERVER_ERROR.value(), "IBM 스토리지 설치를 잠시 후 다시 해주세요."),
+	STORAGE_RETRY_AGAIN_INSTALL_IBM(HttpStatus.INTERNAL_SERVER_ERROR.value(), "IBM 스토리지 설치를 다시 해주세요."),
 	STORAGE_UNINSTALL_FAIL_IBM(HttpStatus.INTERNAL_SERVER_ERROR.value(), "IBM 스토리지가 삭제 실패하였습니다."),
 
 

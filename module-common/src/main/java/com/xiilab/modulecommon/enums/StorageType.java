@@ -8,6 +8,7 @@ public enum StorageType {
 	CLOUD,
 	PURE,
 	IBM,
-	WEKA_FS
+	WEKA_FS,
+	DELL
 	;
 }
