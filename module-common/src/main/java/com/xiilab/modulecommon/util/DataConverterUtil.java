@@ -486,4 +486,13 @@ public class DataConverterUtil {
 		BigDecimal bd = new BigDecimal(gb).setScale(1, RoundingMode.HALF_UP);
 		return bd.doubleValue();
 	}
+
+	// MB -> GB 변환 메서드
+	public static String convertLocalDateTimeToString(LocalDateTime date) {
+		try {
+			return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		} catch (Exception e) {
+			return null;
+		}
+	}
 }

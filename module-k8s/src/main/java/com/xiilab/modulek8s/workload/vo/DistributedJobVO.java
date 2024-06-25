@@ -307,7 +307,9 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);
 		annotationMap.put(AnnotationField.GPU_ONE_PER_MEMORY.getField(),
 			ValidUtils.isNullOrZero(this.gpuOnePerMemory) ? "" : String.valueOf(this.gpuOnePerMemory));
-		annotationMap.put(LabelField.GPU_TYPE.getField(), gpuType.name());
+		annotationMap.put(AnnotationField.GPU_TYPE.getField(), gpuType.name());
+		annotationMap.put(AnnotationField.RESOURCE_PRESET_ID.getField(),
+			ValidUtils.isNullOrZero(this.resourcePresetId) ? "" : String.valueOf(this.resourcePresetId));
 		return annotationMap;
 	}
 

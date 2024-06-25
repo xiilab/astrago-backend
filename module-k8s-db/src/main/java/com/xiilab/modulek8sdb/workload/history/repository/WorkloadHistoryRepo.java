@@ -43,6 +43,11 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 	@Query("update TB_WORKLOAD t set t.startTime = :now where t.resourceName = :resourceName")
 	void insertWorkloadStartTime(@Param("resourceName") String resourceName, @Param("now") LocalDateTime now);
 
+	@Transactional
+	@Modifying
+	@Query("update TB_WORKLOAD t set t.endTime = :now where t.resourceName = :resourceName")
+	void updateWorkloadEndTime(@Param("resourceName") String resourceName, @Param("now") LocalDateTime now);
+
 	@Query("""
   			select t
   			from TB_WORKLOAD t

@@ -130,6 +130,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					// 로그 저장
 					workloadHistoryRepo.findByResourceName(afterJob.getMetadata().getName())
 						.ifPresent(wl -> {
+							// 파드 종료시간 저장
+							workloadHistoryRepo.updateWorkloadEndTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 							if (wl.getWorkloadType() == WorkloadType.BATCH) {
 								saveWorkloadLogFile(wl);
 							}
@@ -570,6 +572,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.gpuName(batchJobResDTO.getGpuName() != null? batchJobResDTO.getGpuName() : null)
 			.nodeName(batchJobResDTO.getNodeName())
 			.gpuOnePerMemory(batchJobResDTO.getGpuOnePerMemory())
+			.resourcePresetId(batchJobResDTO.getResourcePresetId())
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
@@ -615,6 +618,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.gpuName(distributedJobResDTO.getGpuName() != null? distributedJobResDTO.getGpuName() : null)
 			.nodeName(distributedJobResDTO.getNodeName())
 			.gpuOnePerMemory(distributedJobResDTO.getGpuOnePerMemory())
+			.resourcePresetId(distributedJobResDTO.getResourcePresetId())
 			.build();
 
 		workloadHistoryRepo.save(distributedJob);
