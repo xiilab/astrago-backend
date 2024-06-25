@@ -95,13 +95,15 @@ public abstract class WorkloadEntity {
 	protected LocalDateTime startTime;
 	@Column(name = "REMAIN_TIME")
 	protected int remainTime;
+	@Column(name = "NODE_NAME")
+	protected String nodeName;
 	@Column(name = "GPU_NAME")
 	protected String gpuName;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "GPU_TYPE")
 	protected GPUType gpuType;
-	@Column(name = "GPU_MEMORY")
-	protected int gpuMemory;
+	@Column(name = "GPU_ONE_PER_MEMORY")
+	protected Integer gpuOnePerMemory;
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();

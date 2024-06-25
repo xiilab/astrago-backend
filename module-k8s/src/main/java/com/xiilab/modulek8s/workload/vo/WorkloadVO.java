@@ -50,6 +50,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	String nodeName;
 	GPUType gpuType;
 	String gpuName;
+	Integer gpuOnePerMemory;
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
