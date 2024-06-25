@@ -43,6 +43,7 @@ public class WebSecurityConfig {
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/smtp").permitAll()
 			.requestMatchers("/ws/**").permitAll()
 			.requestMatchers("/api/v1/core/tus/**").permitAll()
+			.requestMatchers("/actuator/**").permitAll()
 			.anyRequest().authenticated());
 
 		http.oauth2ResourceServer(oauth2 -> oauth2
