@@ -91,11 +91,11 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVOJobVO) {
-		Deployment resource = (Deployment)createResource(interactiveJobVOJobVO.createResource());
-		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVOJobVO.getCodes());
-		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getDatasets());
-		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVOJobVO.getModels());
+	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
+		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
+		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
+		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
 		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 

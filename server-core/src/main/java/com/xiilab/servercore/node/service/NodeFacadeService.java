@@ -277,28 +277,31 @@ public class NodeFacadeService {
 				Map.Entry::getKey,
 				entry -> {
 					ResponseDTO.NodeGPUs.GPUInfo firstGpuInfo = entry.getValue().get(0);
+
 					if (gpuType == GPUType.MPS) {
-						return entry.getValue().stream()
-							.map(gpuInfo -> NodeResDTO.GPUInfo.builder()
-								.nodeName(getNodeName(gpuInfo.getNodeName(), gpuType))
-								.onePerMemory(gpuInfo.getOnePerMemory())
+						// Group by onePerMemory value
+						Map<Integer, List<ResponseDTO.NodeGPUs.GPUInfo>> groupedByMemory = entry.getValue().stream()
+							.collect(Collectors.groupingBy(ResponseDTO.NodeGPUs.GPUInfo::getGpuOnePerMemory));
+
+						return groupedByMemory.entrySet().stream()
+							.map(memoryEntry -> NodeResDTO.GPUInfo.builder()
+								.nodeName(memoryEntry.getValue().stream()
+									.map(ResponseDTO.NodeGPUs.GPUInfo::getNodeName)
+									.collect(Collectors.joining(",")))
+								.gpuOnePerMemory(memoryEntry.getKey())
 								.maximumGpuCount(1)
-								.useAllGPUStatus(gpuInfo.isUseAllGPUStatus())
+								.useAllGPUStatus(memoryEntry.getValue().get(0).isUseAllGPUStatus())
 								.build())
 							.collect(Collectors.toList());
 					} else if (gpuType == GPUType.NORMAL) {
 						return List.of(NodeResDTO.GPUInfo.builder()
-							.nodeName(firstGpuInfo.getNodeName())
-							.gpuCount(firstGpuInfo.getCount())
-							.onePerMemory(firstGpuInfo.getOnePerMemory())
+							.gpuOnePerMemory(firstGpuInfo.getGpuOnePerMemory())
 							.maximumGpuCount(getMaximumGPUCount(entry.getValue()))
 							.useAllGPUStatus(firstGpuInfo.isUseAllGPUStatus())
 							.build());
 					} else {
 						return List.of(NodeResDTO.GPUInfo.builder()
-							.nodeName(firstGpuInfo.getNodeName())
-							.gpuCount(firstGpuInfo.getCount())
-							.onePerMemory(firstGpuInfo.getOnePerMemory())
+							.gpuOnePerMemory(firstGpuInfo.getGpuOnePerMemory())
 							.maximumGpuCount(1)
 							.useAllGPUStatus(firstGpuInfo.isUseAllGPUStatus())
 							.build());

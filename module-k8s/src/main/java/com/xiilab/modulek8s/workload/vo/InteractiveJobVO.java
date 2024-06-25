@@ -98,7 +98,11 @@ public class InteractiveJobVO extends WorkloadVO {
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.IDE.getField(), getIde());
 		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
-		annotationMap.put(AnnotationField.GPU_NAME.getField(), gpuName);
+		annotationMap.put(AnnotationField.NODE_NAME.getField(), this.nodeName);
+		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);
+		annotationMap.put(AnnotationField.GPU_ONE_PER_MEMORY.getField(),
+			ValidUtils.isNullOrZero(this.gpuOnePerMemory) ? "" : String.valueOf(this.gpuOnePerMemory));
+
 		return annotationMap;
 	}
 
