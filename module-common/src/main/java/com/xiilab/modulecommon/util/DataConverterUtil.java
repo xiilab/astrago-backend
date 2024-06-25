@@ -487,7 +487,7 @@ public class DataConverterUtil {
 		return bd.doubleValue();
 	}
 
-	// MB -> GB 변환 메서드
+	// LDT to "yyyy-MM-dd HH:mm:ss" 포맷 출력
 	public static String convertLocalDateTimeToString(LocalDateTime date) {
 		try {
 			return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

@@ -171,6 +171,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.gpuType(workloadEntity.getGpuType())
 				.gpuOnePerMemory(workloadEntity.getGpuOnePerMemory())
 				.resourcePresetId(workloadEntity.getResourcePresetId())
+				.nodeName(workloadEntity.getNodeName())
 				.startTime(DataConverterUtil.convertLocalDateTimeToString(workloadEntity.getStartTime()))
 				.endTime(DataConverterUtil.convertLocalDateTimeToString(workloadEntity.getEndTime()))
 				.build();
@@ -231,6 +232,7 @@ public class FindWorkloadResDTO extends ResDTO {
 					.build())
 				.gpuName(moduleJobResDTO.getGpuName())
 				.gpuType(moduleJobResDTO.getGpuType())
+				.nodeName(moduleJobResDTO.getNodeName())
 				.resourcePresetId(moduleJobResDTO.getResourcePresetId())
 				.startTime(moduleJobResDTO.getStartTime())
 				.build();
@@ -274,8 +276,9 @@ public class FindWorkloadResDTO extends ResDTO {
 				.gpuName(distributedJobEntity.getGpuName())
 				.gpuType(distributedJobEntity.getGpuType())
 				.resourcePresetId(distributedJobEntity.getResourcePresetId())
-				.startTime(distributedJobEntity.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-				.endTime(distributedJobEntity.getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.nodeName(distributedJobEntity.getNodeName())
+				.startTime(DataConverterUtil.convertLocalDateTimeToString(distributedJobEntity.getStartTime()))
+				.endTime(DataConverterUtil.convertLocalDateTimeToString(distributedJobEntity.getEndTime()))
 				.build();
 		}
 	}
