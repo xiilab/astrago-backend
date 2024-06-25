@@ -769,8 +769,6 @@ create index if not exists FK9pb3yd1r6r91gcs8crjhkhy8u
 create table if not exists TB_WORKLOAD_JOB
 (
     WORKLOAD_ID  bigint       not null primary key,
-    GPU_NAME         varchar(255)                  null,
-    GPU_TYPE         enum ('MIG', 'MPS', 'NORMAL') null,
     WORKLOAD_REQ_CPU float                         null,
     WORKLOAD_REQ_GPU int                           null,
     WORKLOAD_REQ_MEM float                         null,

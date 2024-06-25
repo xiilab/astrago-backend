@@ -57,7 +57,7 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 	@Modifying
 	@Query("""
 		update TB_WORKLOAD t 
-		set t.gpuMemory = :memory,
+		set t.gpuOnePerMemory = :memory,
 		t.gpuName = CASE WHEN :gpuName IS NULL THEN t.gpuName ELSE :gpuName END 
 		where t.resourceName = :resourceName
 """)

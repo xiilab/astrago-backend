@@ -29,7 +29,9 @@ public enum AnnotationField {
 	ESTIMATED_INITIAL_TIME("estimated_initial_time"),
 	ESTIMATED_REMAINING_TIME("estimated_remaining_time"),
 	GPU_TYPE("gpu-type"),
-	GPU_NAME("gpu-name")
+	GPU_NAME("gpu-name"),
+	GPU_ONE_PER_MEMORY("gpu-one-per-memory"),
+	NODE_NAME("node-name"),
 	;
 
 	private final String field;

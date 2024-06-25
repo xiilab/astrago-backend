@@ -13,8 +13,6 @@ import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,7 +37,7 @@ public class DistributedJobEntity extends WorkloadEntity {
 	private Integer workerCount;
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	DistributedJobEntity(String uid, String name, String description, String resourceName, String workspaceName,
-		String workspaceResourceName, String gpuName, GPUType gpuType, float launcherCpuRequest, float launcherMemRequest, float workerCpuRequest,
+		String workspaceResourceName, String nodeName, String gpuName, GPUType gpuType, Integer gpuOnePerMemory, float launcherCpuRequest, float launcherMemRequest, float workerCpuRequest,
 		float workerMemRequest, int workerGpuRequest, int workerCount,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
 		Map<String, String> envs,
@@ -52,8 +50,10 @@ public class DistributedJobEntity extends WorkloadEntity {
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
+		super.nodeName = nodeName;
 		super.gpuName = gpuName;
 		super.gpuType = gpuType;
+		super.gpuOnePerMemory = gpuOnePerMemory;
 		this.createdAt = createdAt;
 		this.deletedAt = deletedAt;
 		this.creatorId = creatorId;

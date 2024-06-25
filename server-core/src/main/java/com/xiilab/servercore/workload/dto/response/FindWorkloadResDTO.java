@@ -165,7 +165,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.canBeDeleted(workloadEntity.isCanBeDeleted())
 				.gpuName(workloadEntity.getGpuName())
 				.gpuType(workloadEntity.getGpuType())
-				.gpuMemory(workloadEntity.getGpuMemory())
+				.gpuMemory(workloadEntity.getGpuOnePerMemory())
 				.build();
 		}
 	}
