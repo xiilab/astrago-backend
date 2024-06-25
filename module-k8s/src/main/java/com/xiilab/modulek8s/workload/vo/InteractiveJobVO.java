@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -46,6 +48,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	private String command;        // 워크로드 명령
 	private String jobName;
 	private String ide;
+
 	@Override
 	public Deployment createResource() {
 		return new DeploymentBuilder()
@@ -94,6 +97,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.IDE.getField(), getIde());
+		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
+		annotationMap.put(AnnotationField.GPU_NAME.getField(), gpuName);
 		return annotationMap;
 	}
 
@@ -104,6 +109,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
+		map.put(LabelField.GPU_NAME.getField(), gpuName);
+		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
 		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
 		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
 		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
@@ -138,6 +145,15 @@ public class InteractiveJobVO extends WorkloadVO {
 		if (!ObjectUtils.isEmpty(this.secretName)) {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
+		// 노드 지정
+		if (!StringUtils.isEmpty(this.nodeName)) {
+			podSpecBuilder.withNodeSelector(Map.of("kubernetes.io/hostname", this.nodeName));
+		}
+		// GPU 지정
+		// TODO MIG MIXED일 때 처리 필요함
+		if (!StringUtils.isEmpty(this.gpuName) && gpuType != GPUType.MPS) {
+			podSpecBuilder.withNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
+		}
 		cloneGitRepo(podSpecBuilder, codes);
 		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, datasets);
@@ -152,7 +168,9 @@ public class InteractiveJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
-		addDefaultShmVolumeMountPath(podSpecContainer);
+		if (this.gpuType != GPUType.MPS) {
+			addDefaultShmVolumeMountPath(podSpecContainer);
+		}
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
@@ -161,7 +179,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addDefaultShmVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+	private void addDefaultShmVolumeMountPath(
+		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.addNewVolumeMount()
 			.withName("shmdir")
 			.withMountPath("/dev/shm")
@@ -243,8 +262,18 @@ public class InteractiveJobVO extends WorkloadVO {
 				.withValue(env.value())
 				.build()
 			).toList();
+
+		List<EnvVar> result = new ArrayList<>(envVars);
+		// GPU 미사용시, GPU 접근 막는 환경변수
+		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
+			result.add(new EnvVarBuilder()
+				.withName("NVIDIA_VISIBLE_DEVICES")
+				.withValue("none")
+				.build()
+			);
+		}
 		if (super.image.imageType() == ImageType.HUB) {
-			envVars.add(new EnvVarBuilder()
+			result.add(new EnvVarBuilder()
 				.withName("POD_NAME")
 				.withValueFrom(new EnvVarSourceBuilder()
 					.withFieldRef(new ObjectFieldSelectorBuilder()
@@ -256,7 +285,7 @@ public class InteractiveJobVO extends WorkloadVO {
 				.build()
 			);
 
-			envVars.add(new EnvVarBuilder()
+			result.add(new EnvVarBuilder()
 				.withName("POD_NAMESPACE")
 				.withValueFrom(new EnvVarSourceBuilder()
 					.withFieldRef(new ObjectFieldSelectorBuilder()
@@ -269,7 +298,7 @@ public class InteractiveJobVO extends WorkloadVO {
 			);
 		}
 
-		return envVars;
+		return result;
 	}
 
 	@Override
@@ -287,7 +316,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		return ResourceType.WORKLOAD;
 	}
 
-	private void addVolumeMap(Map<String,String> map, String prefix, Long id) {
+	private void addVolumeMap(Map<String, String> map, String prefix, Long id) {
 		if (!ValidUtils.isNullOrZero(id)) {
 			map.put(prefix + id, "true");
 		}

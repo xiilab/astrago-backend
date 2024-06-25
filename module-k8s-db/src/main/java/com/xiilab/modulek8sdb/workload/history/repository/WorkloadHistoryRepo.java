@@ -12,6 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
@@ -41,4 +42,24 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 	@Modifying
 	@Query("update TB_WORKLOAD t set t.startTime = :now where t.resourceName = :resourceName")
 	void insertWorkloadStartTime(@Param("resourceName") String resourceName, @Param("now") LocalDateTime now);
+
+	@Query("""
+  			select t
+  			from TB_WORKLOAD t
+  			join TB_WORKLOAD_JOB twj on t.id = twj.id 
+  			where t.workspaceResourceName = :workspaceResourceName 
+  				and t.workloadStatus in (:statuses)
+  				and twj.gpuType in (:types)
+		""")
+	List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(@Param("workspaceResourceName") String workspaceResourceName, @Param("statuses") List<WorkloadStatus> statuses, @Param("types") List<GPUType> types);
+
+	@Transactional
+	@Modifying
+	@Query("""
+		update TB_WORKLOAD t 
+		set t.gpuMemory = :memory,
+		t.gpuName = CASE WHEN :gpuName IS NULL THEN t.gpuName ELSE :gpuName END 
+		where t.resourceName = :resourceName
+""")
+	void insertGpuInfo(@Param("resourceName") String resourceName, @Param("gpuName") String gpuName, @Param("memory") int memory);
 }

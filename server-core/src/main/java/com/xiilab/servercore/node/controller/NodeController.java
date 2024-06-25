@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.servercore.node.dto.NodeResDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 
@@ -104,14 +106,15 @@ public class NodeController {
 	@PostMapping("/{nodeName}/mps")
 	@Operation(summary = "node mps 설정")
 	public ResponseEntity<HttpStatus> setMpsConfig(@PathVariable(value = "nodeName") String nodeName,
-		@RequestBody MPSGpuDTO.SetMPSDTO setMPSDTO){
+		@RequestBody MPSGpuDTO.SetMPSDTO setMPSDTO) {
 		nodeFacadeService.setMpsConfig(nodeName, setMPSDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/gpus")
 	@Operation(summary = "node gpu 조회")
-	public ResponseEntity<ResponseDTO.NodeGPUs> getNodeGpuList(){
-		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(), HttpStatus.OK);
+	public ResponseEntity<NodeResDTO.FindGpuResources> getNodeGpuList(
+		@RequestParam(name = "nodeType") NodeType nodeType) {
+		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(nodeType), HttpStatus.OK);
 	}
 }

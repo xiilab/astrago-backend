@@ -1,9 +1,12 @@
 package com.xiilab.modulek8s.workspace.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
+import com.xiilab.modulek8s.facade.dto.ResMIGDTO;
+import com.xiilab.modulek8s.facade.dto.ResMPSDTO;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.workspace.vo.WorkspaceVO;
 
@@ -138,6 +141,11 @@ public class WorkspaceDTO {
 		private int totalCPU;
 		private int totalMEM;
 		private int totalGPU;
+		private List<ResMIGDTO> migInfo;
+		private int migTotalCount;
+		private List<ResMPSDTO> mpsInfo;
+		private int mpsTotalCount;
+
 	}
 
 	@Getter

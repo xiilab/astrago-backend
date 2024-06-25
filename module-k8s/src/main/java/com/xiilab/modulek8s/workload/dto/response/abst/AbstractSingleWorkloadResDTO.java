@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.workload.dto.response.abst;
 
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -21,7 +22,7 @@ public abstract class AbstractSingleWorkloadResDTO extends AbstractModuleWorkloa
 	}
 
 	protected void initializeResources(Map<String, Quantity> resourceRequests) {
-		Quantity gpu = resourceRequests.get("nvidia.com/gpu");
+		Quantity gpu = super.getGpuType() != GPUType.MPS? resourceRequests.get("nvidia.com/gpu") : resourceRequests.get("nvidia.com/gpu.shared");
 		Quantity cpu = resourceRequests.get("cpu");
 		Quantity memory = resourceRequests.get("memory");
 		this.gpuRequest = gpu != null ? Integer.parseInt(gpu.getAmount()) : 0;

@@ -4,12 +4,12 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 
 import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.NodeSystemInfo;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -55,6 +55,7 @@ public class ResponseDTO {
 		//mps 사용가능 유무
 		private boolean mpsCapable;
 		private boolean migStatus;
+		private boolean masterNode;
 
 		public void setTotalGPU(double totalGPU) {
 			this.totalGPU = roundToFirstDecimalPlace(totalGPU);
@@ -247,13 +248,26 @@ public class ResponseDTO {
 		private Map<String, List<GPUInfo>> mpsGPU;
 
 		@Getter
-		@AllArgsConstructor
 		public static class GPUInfo {
-			private String gpuName;
+			private String nodeName;
+			private String onePerMemory;
 			private Integer count;
+			private boolean useAllGPUStatus;
+
+			public GPUInfo(String nodeName, Integer onePerMemory, Integer count) {
+				this.nodeName = nodeName;
+				this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
+				this.count = count;
+			}
+
+			public GPUInfo(String nodeName, Integer onePerMemory, Integer count, boolean useAllGPUStatus) {
+				this.nodeName = nodeName;
+				this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
+				this.count = count;
+				this.useAllGPUStatus = useAllGPUStatus;
+			}
 		}
 	}
-
 
 	@Builder
 	public record MIGProfile(MIGProduct migProduct,

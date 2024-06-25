@@ -23,6 +23,8 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
+import com.xiilab.modulek8s.node.service.NodeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
@@ -64,6 +66,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final SvcService svcService;
 	private final LogService logService;
 	private final SecretService secretService;
+	private final NodeService nodeService;
 
 	@Override
 	public CreateJobResDTO createJobWorkload(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -105,7 +108,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 				svcService.createNodePortService(createSvcReqDTO);
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			// log.error(e.getMessage());
+			e.printStackTrace();
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
@@ -432,6 +436,17 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
 		String description) {
 		workloadModuleService.editInteractiveJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
+	public List<Pod> getWorkloadByWorkloadName(String resourceName) {
+		return workloadModuleService.getWorkloadByWorkloadName(resourceName);
+	}
+
+	@Override
+	public GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName) {
+		//node를 통해 gpu 정보 조회
+		return nodeService.getGpuInfoByNodeName(gpuName, nodeName);
 	}
 
 	@Override

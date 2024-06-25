@@ -140,6 +140,7 @@ public class WorkloadFacadeService {
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserDTO.UserInfo userInfoDTO) {
 		createWorkloadReqDTO.setUserInfo(userInfoDTO.getId(), userInfoDTO.getUserName(), userInfoDTO.getUserFullName());
 
+		//
 		// 이미지 credential 세팅
 		if (!ObjectUtils.isEmpty(createWorkloadReqDTO.getImage().getCredentialId())
 			&& createWorkloadReqDTO.getImage().getCredentialId() > 0) {
@@ -179,7 +180,7 @@ public class WorkloadFacadeService {
 			workloadModuleFacadeService.createJobWorkload(
 				createWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
 			// 워크로드
-		} catch (RestApiException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
@@ -288,38 +289,42 @@ public class WorkloadFacadeService {
 
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
+
+		return workloadHistoryService.getWorkloadInfoByResourceName(
+			workspaceName, workloadResourceName,
+			userInfoDTO);
 		// 실행중일 떄
-		try {
-			UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
-			Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
-			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
-			if (workloadType == WorkloadType.BATCH) {
-				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
-					workloadResourceName);
-				// 삭제권한 업데이트
-				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
-
-				return getActiveWorkloadDetail(moduleBatchJobResDTO);
-			} else if (workloadType == WorkloadType.INTERACTIVE) {
-				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
-					workspaceName, workloadResourceName);
-				//삭제권한 업데이트
-				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-
-				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-			} else if (workloadType == WorkloadType.DISTRIBUTED) {
-				ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
-					workspaceName, workloadResourceName);
-				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-
-				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-			}
-		} catch (Exception e) {
-			return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
-				userInfoDTO);
-		}
-
-		return null;
+		// try {
+		// 	UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
+		// 	Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		// 	// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
+		// 	if (workloadType == WorkloadType.BATCH) {
+		// 		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+		// 			workloadResourceName);
+		// 		// 삭제권한 업데이트
+		// 		moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
+		//
+		// 		return getActiveWorkloadDetail(moduleBatchJobResDTO);
+		// 	} else if (workloadType == WorkloadType.INTERACTIVE) {
+		// 		ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+		// 			workspaceName, workloadResourceName);
+		// 		//삭제권한 업데이트
+		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+		//
+		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+		// 	} else if (workloadType == WorkloadType.DISTRIBUTED) {
+		// 		ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
+		// 			workspaceName, workloadResourceName);
+		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+		//
+		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+		// 	}
+		// } catch (Exception e) {
+		// 	return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
+		// 		userInfoDTO);
+		// }
+		//
+		// return null;
 	}
 
 	private <T extends AbstractModuleWorkloadResDTO> FindWorkloadResDTO getActiveWorkloadDetail(
@@ -1066,38 +1071,41 @@ public class WorkloadFacadeService {
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
+		return workloadHistoryService.getWorkloadInfoByResourceName(
+			workspaceName, workloadResourceName,
+			userInfoDTO);
 		// 실행중일 떄
-		try {
-			UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
-			Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
-			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
-			if (workloadType == WorkloadType.BATCH) {
-				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
-					workloadResourceName);
-				// 삭제권한 업데이트
-				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
-
-				return getActiveWorkloadDetail(moduleBatchJobResDTO);
-			} else if (workloadType == WorkloadType.INTERACTIVE) {
-				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
-					workspaceName, workloadResourceName);
-				//삭제권한 업데이트
-				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-			} else if (workloadType == WorkloadType.DISTRIBUTED) {
-				ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
-					workspaceName, workloadResourceName);
-				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-			}
-		} catch (Exception e) {
-			try {
-				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
-					userInfoDTO);
-			} catch (Exception e2) {
-				throw e2;
-			}
-		}
-		return null;
+		// try {
+		// 	UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
+		// 	Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		// 	// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
+		// 	if (workloadType == WorkloadType.BATCH) {
+		// 		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+		// 			workloadResourceName);
+		// 		// 삭제권한 업데이트
+		// 		moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
+		//
+		// 		return getActiveWorkloadDetail(moduleBatchJobResDTO);
+		// 	} else if (workloadType == WorkloadType.INTERACTIVE) {
+		// 		ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+		// 			workspaceName, workloadResourceName);
+		// 		//삭제권한 업데이트
+		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+		// 	} else if (workloadType == WorkloadType.DISTRIBUTED) {
+		// 		ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
+		// 			workspaceName, workloadResourceName);
+		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+		// 	}
+		// } catch (Exception e) {
+		// 	try {
+		// 		return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
+		// 			userInfoDTO);
+		// 	} catch (Exception e2) {
+		// 		throw e2;
+		// 	}
+		// }
+		// return null;
 	}
 }

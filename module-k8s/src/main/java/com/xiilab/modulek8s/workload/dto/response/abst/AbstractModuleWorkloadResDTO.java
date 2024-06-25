@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -80,6 +80,8 @@ public abstract class AbstractModuleWorkloadResDTO {
 	private Map<String, Map<String, String>> codeMountPathMap;        // model - mount path 맵
 	@Setter
 	private String startTime;    // 파드 실행시간
+	private GPUType gpuType;
+	private String gpuName;
 
 	protected AbstractModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		if (hasMetadata != null) {
@@ -115,6 +117,10 @@ public abstract class AbstractModuleWorkloadResDTO {
 				Long.valueOf(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_ID.getField())) :
 				null;
 			parameter = getParameterMap(hasMetadata.getMetadata().getAnnotations());
+			gpuType = StringUtils.hasText(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_TYPE.getField()))?
+				GPUType.valueOf(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_TYPE.getField())) : null;
+			gpuName = StringUtils.hasText(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_NAME.getField()))?
+				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_NAME.getField()) : null;
 		} else {
 			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
 		}

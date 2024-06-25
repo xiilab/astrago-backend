@@ -4,5 +4,8 @@ import lombok.Getter;
 
 public enum MPSStatus {
 	UPDATING,
-	COMPLETE
+	COMPLETE,
+	UPDATING_ON,
+	UPDATING_OFF
+
 }

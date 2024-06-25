@@ -21,6 +21,7 @@ import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.volumes.Emp
 import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.volumes.PersistentVolumeClaim;
 import org.springframework.util.CollectionUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.GitEnvType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.ValidUtils;
@@ -48,6 +49,9 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 	protected List<JobVolumeVO> datasets;
 	protected List<JobVolumeVO> models;
 	protected String secretName;
+	protected String nodeName;
+	protected GPUType gpuType;
+	protected String gpuName;
 
 	protected void addVolume(Spec spec, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {

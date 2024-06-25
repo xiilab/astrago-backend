@@ -43,6 +43,9 @@ public class ModuleCreateDistributedWorkloadReqDTO extends CreateWorkloadReqDTO 
 			.workerGpuRequest(this.workerGpuRequest)
 			.workerCnt(this.workerCnt)
 			.secretName(this.imageSecretName)
+			.nodeName(this.nodeName)
+			.gpuType(this.gpuType)
+			.gpuName(this.gpuName)
 			.build();
 	}
 }

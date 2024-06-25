@@ -11,6 +11,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.CodeType;
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
@@ -67,6 +68,9 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected String nodeName;
 	protected boolean canBeDeleted;
 	protected String startTime;
+	protected GPUType gpuType;
+	protected String gpuName;
+	protected int gpuMemory;
 
 	@Getter
 	@SuperBuilder
@@ -114,6 +118,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regUserRealName(moduleJobResDTO.getCreatorFullName())
 				.regDate(moduleJobResDTO.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.modDate(null)
+				.workingDir(moduleJobResDTO.getWorkingDir())
 				.status(moduleJobResDTO.getStatus())
 				.ide(moduleJobResDTO.getIde())
 				.nodeName(nodeName)
@@ -123,6 +128,8 @@ public class FindWorkloadResDTO extends ResDTO {
 					moduleJobResDTO.getEstimatedRemainingTime() : null)
 				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
 				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime()) ? moduleJobResDTO.getStartTime() : null)
+				.gpuName(moduleJobResDTO.getGpuName())
+				.gpuType(moduleJobResDTO.getGpuType())
 				.build();
 		}
 
@@ -152,9 +159,13 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regUserRealName(workloadEntity.getCreatorRealName())
 				.regDate(workloadEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.modDate(null)
-				.status(WorkloadStatus.END)
+				.workingDir(workloadEntity.getWorkingDir())
+				.status(workloadEntity.getWorkloadStatus())
 				.ide(workloadEntity.getIde())
 				.canBeDeleted(workloadEntity.isCanBeDeleted())
+				.gpuName(workloadEntity.getGpuName())
+				.gpuType(workloadEntity.getGpuType())
+				.gpuMemory(workloadEntity.getGpuMemory())
 				.build();
 		}
 	}
@@ -199,6 +210,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.status(moduleJobResDTO.getStatus())
 				.nodeName(nodeName)
 				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
+				.workingDir(moduleJobResDTO.getWorkingDir())
 				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime()) ? moduleJobResDTO.getStartTime() : null)
 				.launcherInfo(DistributedResourceDTO.LauncherInfo.builder()
 					.cpuRequest(moduleJobResDTO.getLauncherInfo().getCpuRequest())
@@ -210,6 +222,8 @@ public class FindWorkloadResDTO extends ResDTO {
 					.gpuRequest(moduleJobResDTO.getWorkerInfo().getGpuRequest())
 					.workerCnt(moduleJobResDTO.getWorkerInfo().getWorkerCnt())
 					.build())
+				.gpuName(moduleJobResDTO.getGpuName())
+				.gpuType(moduleJobResDTO.getGpuType())
 				.build();
 		}
 
@@ -234,8 +248,9 @@ public class FindWorkloadResDTO extends ResDTO {
 				.regUserName(distributedJobEntity.getCreatorName())
 				.regUserRealName(distributedJobEntity.getCreatorRealName())
 				.regDate(distributedJobEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.workingDir(distributedJobEntity.getWorkingDir())
 				.modDate(null)
-				.status(WorkloadStatus.END)
+				.status(distributedJobEntity.getWorkloadStatus())
 				.canBeDeleted(distributedJobEntity.isCanBeDeleted())
 				.launcherInfo(DistributedResourceDTO.LauncherInfo.builder()
 					.cpuRequest(distributedJobEntity.getLauncherCpuRequest())
@@ -247,6 +262,8 @@ public class FindWorkloadResDTO extends ResDTO {
 					.gpuRequest(distributedJobEntity.getWorkerGpuRequest())
 					.workerCnt(distributedJobEntity.getWorkerCount())
 					.build())
+				.gpuName(distributedJobEntity.getGpuName())
+				.gpuType(distributedJobEntity.getGpuType())
 				.build();
 		}
 	}

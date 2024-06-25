@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.dto.request;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 
 import lombok.AllArgsConstructor;
@@ -40,6 +41,9 @@ public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 			.creatorFullName(creatorFullName)
 			.ide(ide.name())
 			.initContainerUrl(initContainerUrl)
+			.nodeName(nodeName)
+			.gpuType(gpuType != null? gpuType : GPUType.NORMAL)
+			.gpuName(gpuName)
 			.build();
 	}
 

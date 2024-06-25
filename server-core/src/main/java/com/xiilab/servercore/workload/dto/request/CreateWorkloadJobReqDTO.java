@@ -3,6 +3,7 @@ package com.xiilab.servercore.workload.dto.request;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
@@ -38,6 +39,9 @@ public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	protected String creatorId;
 	protected String creatorUserName;
 	protected String creatorFullName;
+	protected String nodeName;
+	protected GPUType gpuType;
+	protected String gpuName;
 	@Setter
 	protected FrameWorkType ide;
 

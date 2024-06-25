@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
@@ -20,16 +21,20 @@ import org.yaml.snakeyaml.Yaml;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.enums.MPSStatus;
 import com.xiilab.modulecommon.enums.MigStatus;
+import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.modulek8s.node.enumeration.MIGStrategy;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
+import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
@@ -60,7 +65,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private final String MIG_CONFIG = "nvidia.com/mig.config.state";
 	private final String MIG_CAPABLE = "nvidia.com/mig.capable";
-	private final String MPS_CONFIG = "mps_capable";
+	private final String MPS_CONFIG = "nvidia.com/mps.capable";
 	private final String CPU = "cpu";
 	private final String EPHEMERAL_STORAGE = "ephemeral-storage";
 	private final String HUGEPAGES_1Gi = "hugepages-1Gi";
@@ -74,31 +79,34 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String DISK_PRESSURE = "DiskPressure";
 	private final String PID_PRESSURE = "PIDPressure";
 	private final String READY = "Ready";
+	private final String MIG_STRATEGY = "nvidia.com/mig.strategy";
+	private final String MPS_CAPABLE = "nvidia.com/mps.capable";
 
 	@Override
-	public List<Node> getNodes(boolean isWorker) {
+	public List<Node> getGpuNodes(boolean isWorker) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			if (isWorker) {
-				return client.nodes().list().getItems().stream()
-					.filter(node ->
-						!node.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane") &&
-							(Objects.isNull(node.getSpec().getUnschedulable())
-								|| !Boolean.TRUE.equals(node.getSpec().getUnschedulable()))
-					)
+				return client.nodes()
+					.list()
+					.getItems()
+					.stream()
+					.filter(node -> !node.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane")
+						&& (Objects.isNull(node.getSpec().getUnschedulable()) || !Boolean.TRUE.equals(
+						node.getSpec().getUnschedulable())))
 					.toList();
 			} else {
-				return client.nodes().list().getItems().stream().toList();
+				return client.nodes().list().getItems().stream()
+					.filter(node -> (Objects.isNull(node.getSpec().getUnschedulable()) || !Boolean.TRUE.equals(
+						node.getSpec().getUnschedulable())))
+					.toList();
 			}
-
-			// !Objects.isNull(node.getSpec().getUnschedulable())
-			// 	&& node.getSpec().getUnschedulable().booleanValue() == Boolean.TRUE
 		}
 	}
 
 	@Override
-	public ResponseDTO.NodeGPUs getNodeGPUs() {
-		List<Node> nodes = getNodes(true);
-		if (CollectionUtils.isEmpty(nodes)) {
+	public ResponseDTO.NodeGPUs getNodeGPUs(NodeType nodeType) {
+		List<Node> gpuNodes = getGpuNodes(false);
+		if (CollectionUtils.isEmpty(gpuNodes)) {
 			throw new RestApiException(NodeErrorCode.NOT_FOUND_WORKER_NODE);
 		}
 
@@ -106,50 +114,49 @@ public class NodeRepositoryImpl implements NodeRepository {
 		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap = new HashMap<>();
 		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> normalGPUMap = new HashMap<>();
 
-		for (Node node : nodes) {
-			if (Objects.isNull(node.getMetadata().getLabels().get(GPU_NAME))) {
+		for (Node gpuNode : gpuNodes) {
+			String nodeName = gpuNode.getMetadata().getName();
+			String gpuName = gpuNode.getMetadata().getLabels().getOrDefault(GPU_NAME, "");
+			Integer notMpsGPUCount = Integer.parseInt(gpuNode.getMetadata().getLabels().getOrDefault(GPU_COUNT, "0"));
+			int memory = Integer.parseInt(gpuNode.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
+
+			if (StringUtils.isEmpty(gpuName)) {
 				continue;
 			}
 
-			String gpuName = node.getMetadata().getLabels().get(GPU_NAME);
-			String nodeName = node.getMetadata().getName();
-			Integer notMpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_COUNT, "0"));
-			Integer mpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(MPS_GPU_COUNT, "0"));
-
-			if (isActiveMIG(node)) { // MIG
-				List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos = new ArrayList<>();
-				gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(gpuName, notMpsGPUCount));
-				migGPUMap.put(nodeName, gpuInfos);
-			} else if (isActiveMPS(node)) { // MPS
-				List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos = new ArrayList<>();
-				gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(gpuName, mpsGPUCount));
-				mpsGPUMap.put(nodeName, gpuInfos);
-			} else { // normal
-				List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos = new ArrayList<>();
-				gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(gpuName, notMpsGPUCount));
-				normalGPUMap.put(nodeName, gpuInfos);
+			if (nodeType == NodeType.SINGLE) {
+				if (isActiveMIG(gpuNode) && gpuNode.getMetadata()
+					.getLabels()
+					.containsKey(MIG_STRATEGY)) {    // MIG 적용 여부 && MIG 전략 키 존재여부 확인
+					putMigGpuMap(migGPUMap, gpuNode, nodeName, gpuName, notMpsGPUCount);
+				} else if (isActiveMPS(gpuNode)) { // MIG 적용 여부 확인
+					putMpsGpuMap(mpsGPUMap, gpuNode, nodeName, gpuName);
+				} else {
+					Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu");
+					putGpuMap(normalGPUMap, nodeName, gpuName, memory, notMpsGPUCount, gpuUsageCount);
+				}
+			} else {    // 멀티노드일때, 분할안된 GPU만 반환
+				if (isActiveMPS(gpuNode) || isActiveMIG(gpuNode)) {
+					continue;
+				}
+				Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu");
+				putGpuMap(normalGPUMap, nodeName, gpuName, memory, notMpsGPUCount, gpuUsageCount);
 			}
 		}
 
-		return ResponseDTO.NodeGPUs.builder()
-			.normalGPU(normalGPUMap)
-			.migGPU(migGPUMap)
-			.mpsGPU(mpsGPUMap)
-			.build();
+		return ResponseDTO.NodeGPUs.builder().normalGPU(normalGPUMap).migGPU(migGPUMap).mpsGPU(mpsGPUMap).build();
 	}
 
 	@Override
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText) {
 		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			List<Node> nodes = client.nodes().list().getItems()
-				.stream().filter(node -> {
-					if (searchText == null || searchText.isBlank()) {
-						return true;
-					}
-					return node.getMetadata().getName().toLowerCase().contains(searchText);
-				})
-				.toList();
+			List<Node> nodes = client.nodes().list().getItems().stream().filter(node -> {
+				if (searchText == null || searchText.isBlank()) {
+					return true;
+				}
+				return node.getMetadata().getName().toLowerCase().contains(searchText);
+			}).toList();
 
 			for (Node node : nodes) {
 				boolean migCapable = getMigCapable(node);
@@ -157,6 +164,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 				boolean isActiveMIG = isActiveMIG(node);
 				boolean isActiveMPS = isActiveMPS(node);
 				boolean migStatus = getMigStatus(node);
+				boolean isMasterNode = isMasterNode(node);
+
 				List<NodeCondition> conditions = node.getStatus().getConditions();
 				boolean status = isStatus(conditions);
 				ResponseDTO.NodeDTO dto = ResponseDTO.NodeDTO.builder()
@@ -174,6 +183,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 					.mpsCapable(mpsCapable)
 					.isActiveMPS(isActiveMPS)
 					.migStatus(migStatus)
+					.masterNode(isMasterNode)
 					.build();
 				nodeDtos.add(dto);
 			}
@@ -198,24 +208,54 @@ public class NodeRepositoryImpl implements NodeRepository {
 			.build();
 	}
 
-	private boolean isActiveMIG(Node node) {
-		String migConfigStatus = node.getMetadata().getLabels().get(MIG_CONFIG);
-		if (Objects.isNull(migConfigStatus)) {
-			return false;
+	public Integer getGpuUsageCount(String nodeName, String gpuKey) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			List<Pod> podList = kubernetesClient.pods()
+				.inAnyNamespace()
+				.list()
+				.getItems()
+				.stream()
+				.filter(pod -> pod.getMetadata().getNamespace().contains("ws-"))
+				.filter(pod -> pod.getSpec().getNodeName() != null)
+				.filter(pod -> pod.getSpec().getNodeName().equals(nodeName))
+				.toList();
+
+			return podList.stream()
+				.flatMap(pod -> pod.getSpec().getContainers().stream())
+				.mapToInt(container -> {
+					String gpuAmountStr = container.getResources()
+						.getLimits()
+						.getOrDefault(gpuKey, new Quantity("0"))
+						.getAmount();
+					return Integer.parseInt(gpuAmountStr);
+				})
+				.sum();
 		}
-		MigStatus migStatus = MigStatus.valueOf(migConfigStatus.toUpperCase());
-		return switch (migStatus) {
-			case SUCCESS, FAILED -> false;
-			case PENDING, REBOOTING -> true;
-		};
+	}
+
+	private boolean isMasterNode(Node node) {
+		//false = worker, true = master
+		return node.getMetadata().getLabels().containsKey(ROLE);
+	}
+
+	private boolean isActiveMIG(Node node) {
+		// product에 "MIG"가 포함되어 있거나 라벨에 "mig-"가 포함되어 있을 경우
+		String gpuName = node.getMetadata().getLabels().getOrDefault(GPU_NAME, "");
+		return "MIG".contains(gpuName) || node.getMetadata()
+			.getLabels()
+			.keySet()
+			.stream()
+			.anyMatch(key -> key.contains("mig-"));
 	}
 
 	private boolean isActiveMPS(Node node) {
-		String migConfigStatus = node.getMetadata().getLabels().get(MPS_CONFIG);
-		if (Objects.isNull(migConfigStatus)) {
+		if (!node.getMetadata().getLabels().containsKey(MPS_CAPABLE)) {
 			return false;
 		}
-		return true;
+
+		String mpsCapable = node.getMetadata().getLabels().get(MPS_CAPABLE);
+		String mpsStatus = node.getMetadata().getLabels().getOrDefault("mps_status", null);
+		return Boolean.parseBoolean(mpsCapable) && MPSStatus.COMPLETE.name().equals(mpsStatus);
 	}
 
 	private boolean isStatus(List<NodeCondition> conditions) {
@@ -224,11 +264,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String type = condition.getType();
 			String conditionStatus = condition.getStatus();
 
-			if ((type.equalsIgnoreCase(NETWORK_UNAVAILABLE) ||
-				type.equalsIgnoreCase(MEMORY_PRESSURE) ||
-				type.equalsIgnoreCase(DISK_PRESSURE) ||
-				type.equalsIgnoreCase(PID_PRESSURE)) &&
-				!conditionStatus.equalsIgnoreCase("false")) {
+			if ((type.equalsIgnoreCase(NETWORK_UNAVAILABLE) || type.equalsIgnoreCase(MEMORY_PRESSURE)
+				|| type.equalsIgnoreCase(DISK_PRESSURE) || type.equalsIgnoreCase(PID_PRESSURE))
+				&& !conditionStatus.equalsIgnoreCase("false")) {
 				status = false;
 				break;
 			}
@@ -330,8 +368,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.capacityHugepages2Mi(getNonNullValueOrZero(capacity.get(HUGEPAGES_2Mi)))
 				.capacityMemory(getNonNullValueOrZero(capacity.get(MEMORY)))
 				.capacityPods(getNonNullValueOrZero(capacity.get(PODS)))
-				.capacityGpu(gpuCount > 0 ? String.valueOf(gpuCount) : mpsCheck ?
-					String.valueOf(capacity.get(MPS_GPU)) : getNonNullValueOrZero(capacity.get(GPU)))
+				.capacityGpu(gpuCount > 0 ? String.valueOf(gpuCount) :
+					mpsCheck ? String.valueOf(capacity.get(MPS_GPU)) : getNonNullValueOrZero(capacity.get(GPU)))
 				.build();
 			ResponseDTO.NodeResourceInfo.Allocatable allocatableResource = ResponseDTO.NodeResourceInfo.Allocatable.builder()
 				.allocatableCpu(getNonNullValueOrZero(allocatable.get(CPU)))
@@ -340,13 +378,13 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.allocatableHugepages2Mi(getNonNullValueOrZero(allocatable.get(HUGEPAGES_2Mi)))
 				.allocatableMemory(getNonNullValueOrZero(allocatable.get(MEMORY)))
 				.allocatablePods(getNonNullValueOrZero(allocatable.get(PODS)))
-				.allocatableGpu(gpuCount > 0 ? String.valueOf(gpuCount) : mpsCheck ?
-					String.valueOf(capacity.get(MPS_GPU)) : getNonNullValueOrZero(capacity.get(GPU)))
+				.allocatableGpu(gpuCount > 0 ? String.valueOf(gpuCount) :
+					mpsCheck ? String.valueOf(capacity.get(MPS_GPU)) : getNonNullValueOrZero(capacity.get(GPU)))
 				.build();
 
 			String version = null;
-			if (!(labels.get(GPU_DRIVER_VER_MAJOR) == null || labels.get(GPU_DRIVER_VER_MINOR) == null || labels.get(
-				GPU_DRIVER_VER_REV) == null)) {
+			if (!(labels.get(GPU_DRIVER_VER_MAJOR) == null || labels.get(GPU_DRIVER_VER_MINOR) == null
+				|| labels.get(GPU_DRIVER_VER_REV) == null)) {
 				version = labels.get(GPU_DRIVER_VER_MAJOR) + "." + labels.get(GPU_DRIVER_VER_MINOR) + "." + labels.get(
 					GPU_DRIVER_VER_REV);
 			}
@@ -367,11 +405,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 	public void setSchedule(String resourceName, ScheduleType scheduleType) {
 		getNode(resourceName);
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
-				.editSpec()
-				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
-				.endSpec()
-				.build());
+			client.nodes()
+				.withName(resourceName)
+				.edit(node -> new NodeBuilder(node).editSpec()
+					.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
+					.endSpec()
+					.build());
 		}
 	}
 
@@ -382,7 +421,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private boolean nodeAssignWorkloadCount(String nodeName) {
 		boolean isGpuUsed = false;
 		try (KubernetesClient client = k8sAdapter.configServer()) {
-			List<Pod> pods = client.pods().list().getItems();
+			List<Pod> pods = client.pods().inAnyNamespace().list().getItems();
 			for (Pod pod : pods) {
 				if (isPodOnNodeAndRunning(pod, nodeName)) {
 					if (isGpuUsed(pod)) {
@@ -394,25 +433,23 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 		return isGpuUsed;
 	}
+
 	private boolean isPodOnNodeAndRunning(Pod pod, String nodeName) {
-		return pod.getSpec().getNodeName() != null &&
-			pod.getSpec().getNodeName().equals(nodeName) &&
-			"Running".equals(pod.getStatus().getPhase());
+		return pod.getSpec().getNodeName() != null && pod.getSpec().getNodeName().equals(nodeName) && "Running".equals(
+			pod.getStatus().getPhase());
 	}
+
 	private boolean isGpuUsed(Pod pod) {
 		Quantity gpuQuantity = getGpuQuantity(pod, "nvidia.com/gpu");
 		Quantity sharedGpuQuantity = getGpuQuantity(pod, "nvidia.com/gpu.shared");
 
 		return isGpuQuantityUsed(gpuQuantity) || isGpuQuantityUsed(sharedGpuQuantity);
 	}
+
 	private Quantity getGpuQuantity(Pod pod, String resourceName) {
-		return pod.getSpec()
-			.getContainers()
-			.get(0)
-			.getResources()
-			.getRequests()
-			.get(resourceName);
+		return pod.getSpec().getContainers().get(0).getResources().getRequests().get(resourceName);
 	}
+
 	private boolean isGpuQuantityUsed(Quantity gpuQuantity) {
 		if (gpuQuantity != null) {
 			int gpuCount = Integer.parseInt(gpuQuantity.getAmount());
@@ -420,6 +457,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 		return false;
 	}
+
 	/**
 	 * 해당 node가 mig가 가능한지 확인하는 메소드
 	 *
@@ -445,6 +483,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	/**
 	 * mig 설정 적용 유무 확인
+	 *
 	 * @param node
 	 * @return
 	 */
@@ -537,8 +576,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			} else {
 				migConfig.put("mig_capable", "true");
 			}
-			node.edit(n ->
-				new NodeBuilder(n).editMetadata().addToLabels(migConfig).endMetadata().build());
+			node.edit(n -> new NodeBuilder(n).editMetadata().addToLabels(migConfig).endMetadata().build());
 		}
 	}
 
@@ -575,10 +613,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			}
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
-				.migInfos(List.of(MIGGpuDTO.MIGInfoDTO.builder()
-					.gpuIndexs(gpuIndex)
-					.migEnable(false)
-					.build()))
+				.migInfos(List.of(MIGGpuDTO.MIGInfoDTO.builder().gpuIndexs(gpuIndex).migEnable(false).build()))
 				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get(GPU_NAME)))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
@@ -596,12 +631,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 	@Override
 	public void updateNodeLabel(String nodeName, Map<String, String> labels) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			kubernetesClient.nodes().withName(nodeName).edit(node ->
-				new NodeBuilder(node)
-					.editMetadata()
-					.addToLabels(labels)
-					.endMetadata()
-					.build());
+			kubernetesClient.nodes()
+				.withName(nodeName)
+				.edit(node -> new NodeBuilder(node).editMetadata().addToLabels(labels).endMetadata().build());
 		}
 	}
 
@@ -639,20 +671,30 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String gpu = node.getMetadata().getLabels().get("nvidia.com/gpu.product"); // gpu 종류
 			int gpuCnt = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.count")); // gpu 개수
 			String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String mps_status = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() : node.getMetadata().getLabels().get("mps_status"); // mps 상태
+			String mpsStatus = node.getMetadata().getLabels().get("mps_status") == null ? MPSStatus.COMPLETE.name() :
+				node.getMetadata().getLabels().get("mps_status"); // mps 상태
+			int totalMemory = Integer.parseInt(
+				node.getMetadata().getLabels().get("nvidia.com/gpu.memory")); // gpu memory
+			int mpsReplicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ?
+				Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
+			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ?
+				node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
+			String customMpsCapable = node.getMetadata().getLabels().get("mps_capable") != null ?
+				node.getMetadata().getLabels().get("mps_capable") : "false"; // mps 설정 유무
 
-			int mps_replicas = node.getMetadata().getLabels().get("nvidia.com/gpu.replicas") != null ? Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas")) : 1; // mps 설정 개수
-			String mps_capable = node.getMetadata().getLabels().get("nvidia.com/mps.capable") != null ? node.getMetadata().getLabels().get("nvidia.com/mps.capable") : "false"; // mps 설정 유무
-
-			MPSStatus mpsStatus = MPSStatus.COMPLETE.name().equalsIgnoreCase(mps_status) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
-
+			MPSStatus status =
+				MPSStatus.COMPLETE.name().equalsIgnoreCase(mpsStatus) ? MPSStatus.COMPLETE : MPSStatus.UPDATING;
+			if (status == MPSStatus.UPDATING) {
+				status = customMpsCapable.equalsIgnoreCase("true") ? MPSStatus.UPDATING_ON : MPSStatus.UPDATING_OFF;
+			}
 			return MPSGpuDTO.MPSInfoDTO.builder()
 				.nodeName(nodeName)
 				.gpuName(gpu)
 				.gpuCnt(gpuCnt)
-				.mpsCapable(Boolean.parseBoolean(mps_capable))
-				.mpsReplicas(mps_replicas)
-				.mpsStatus(mpsStatus)
+				.mpsCapable(Boolean.parseBoolean(mpsCapable))
+				.mpsReplicas(mpsReplicas)
+				.mpsStatus(status)
+				.totalMemory(totalMemory)
 				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
 		}
@@ -665,35 +707,85 @@ public class NodeRepositoryImpl implements NodeRepository {
 			//volta 검사해야함
 			Node nodeInfo = client.nodes().withName(nodeName).get();
 			String gpuType = nodeInfo.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String migCapable = nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) != null ? nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) : "false"; // gpu 종류(volta 등)
-			if(!gpuType.equalsIgnoreCase("volta")){
+			String migCapable = nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) != null ?
+				nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) : "false"; // gpu 종류(volta 등)
+			if (!gpuType.equalsIgnoreCase("volta")) {
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_GPU);
 			}
-			if(migCapable.equalsIgnoreCase("true")){
+			if (migCapable.equalsIgnoreCase("true")) {
 				throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MPS);
 			}
 			//해당 노드에 생성된 Pod중 gpu를 사용하고있는 pod가 있는지 체크
 			boolean usedWorkloadCheck = nodeAssignWorkloadCount(nodeName);
-			if(usedWorkloadCheck){
+			if (usedWorkloadCheck) {
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_WITH_MIG);
 			}
 
-			if(!setMPSDTO.isMpsCapable()){
+			if (!setMPSDTO.isMpsCapable()) {
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.removeFromLabels("nvidia.com/device-plugin.config")
 					.addToLabels("mps_status", "UPDATING")
+					.addToLabels("mps_capable", "false")
 					.endMetadata()
 					.build());
-			}else{
+			} else {
 				client.nodes().withName(nodeName).edit(node -> new NodeBuilder(node)
 					.editMetadata()
 					.addToLabels("nvidia.com/device-plugin.config", "mps_" + setMPSDTO.getMpsReplicas())
 					.addToLabels("mps_status", "UPDATING")
+					.addToLabels("mps_capable", "true")
 					.endMetadata()
 					.build());
 			}
 		}
+	}
+
+	@Override
+	public GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			Node node = client.nodes().withName(nodeName).get();
+			String migCapable = node.getMetadata().getLabels().get("nvidia.com/mig.capable");
+			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable");
+			int memory = 0;
+			if(Boolean.valueOf(migCapable)){ //mig
+				String strategy = node.getMetadata().getLabels().get("nvidia.com/mig.strategy");
+				//single
+				if(strategy.equalsIgnoreCase("single")){
+					memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+				}else{
+					//mixed
+					//mixedMigGpuName에 .memory 문자열 합쳐서 라벨 검색 후 memory 조회
+					//gpuName : A100-SXM4-40GB-MIG-1g.5gb
+					String pattern = "MIG-\\w+.\\w+";
+					String mixedGpuName = extractPattern(gpuName, pattern);
+					String mixedGpuMemoryLabelValue = "nvidia.com/" + mixedGpuName.toLowerCase() + ".memory";
+					memory = Integer.parseInt(node.getMetadata().getLabels().get(mixedGpuMemoryLabelValue));
+				}
+			}else if(Boolean.valueOf(mpsCapable)){//mps
+				int gpuMemory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+				int mpsCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"));
+				memory = gpuMemory / mpsCount;
+
+			}else{//normal
+				memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+				gpuName = node.getMetadata().getLabels().get("nvidia.com/gpu.product");
+			}
+			return GpuInfoDTO.builder()
+				.gpuName(gpuName)
+				.memory(memory)
+				.build();
+		}
+	}
+	public static String extractPattern(String input, String pattern) {
+		java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(pattern);
+		java.util.regex.Matcher matcher = regexPattern.matcher(input);
+
+		if (matcher.find()) {
+			return matcher.group();
+		}
+
+		return null;
 	}
 
 	private List<MIGGpuDTO.MIGInfoDTO> convertMapToMIGInfo(List<Map<String, Object>> migInfoList) {
@@ -777,8 +869,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Node> items = client.nodes().list().getItems();
 			for (Node item : items) {
-				boolean isWorkerNode = item.getMetadata().getLabels().containsKey(ROLE);
-				if (!isWorkerNode) {
+				boolean isMasterNode = isMasterNode(item);
+				if (!isMasterNode) {
 					String driverMajor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.major");
 					String driverMinor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.minor");
 					String driverRev = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.rev");
@@ -796,6 +888,76 @@ public class NodeRepositoryImpl implements NodeRepository {
 			}
 		}
 		return workerNodeDriverInfos;
+	}
+
+	private void putMpsGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap, Node node, String nodeName,
+		String gpuName) {
+		int mpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(MPS_GPU_COUNT, "0"));
+		int memory = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
+		int onePerMemory = (mpsGPUCount != 0 || memory != 0) ? memory / mpsGPUCount : 0;
+		Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu.shared");
+		putGpuMap(mpsGPUMap, nodeName, gpuName, onePerMemory, mpsGPUCount, gpuUsageCount);
+	}
+
+	private void putMigGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap, Node node,
+		String nodeName, String gpuName, Integer notMpsGPUCount) {
+		if (isMIGSingleStrategy(node)) {    // mig 전략이 'single'이면
+			int onePerMemory = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
+			Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu");
+			putGpuMap(migGPUMap, nodeName, gpuName, onePerMemory, notMpsGPUCount, gpuUsageCount);
+		} else {
+			Map<String, Map<String, String>> migGpuInfoMap = node.getMetadata()
+				.getLabels()
+				.entrySet()
+				.stream()
+				.filter(entry -> entry.getKey().startsWith("nvidia.com/mig-") && (entry.getKey().endsWith(".count")
+					|| entry.getKey().endsWith(".memory")))
+				.collect(Collectors.groupingBy(
+					entry -> entry.getKey().substring(entry.getKey().indexOf("mig-"), entry.getKey().lastIndexOf(".")),
+					Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)
+				));
+
+			for (String key : migGpuInfoMap.keySet()) {
+				String nvidiaKey = "nvidia.com/" + key;
+				if (!migGpuInfoMap.get(key).containsKey(nvidiaKey + ".count") || !migGpuInfoMap.get(key)
+					.containsKey(nvidiaKey + ".memory")) {
+					continue;
+				}
+				int gpuCount = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(nvidiaKey + ".count", "0"));
+				int gpuMemory = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(nvidiaKey + ".memory", "0"));
+				Integer gpuUsageCount = getGpuUsageCount(nodeName, nvidiaKey);
+				migGPUMap.putIfAbsent(key, new ArrayList<>())
+					.add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, gpuMemory, gpuCount, gpuCount <= gpuUsageCount));
+			}
+/*			for (String migGpuKey : migGpuKeys) {
+				String migName =
+					gpuName + "/" + migGpuKey.substring(migGpuKey.lastIndexOf("nvidia.com/") + 1,
+						migGpuKey.indexOf(".count"));
+				String migMemory =
+					gpuName + "/" + migGpuKey.substring(migGpuKey.lastIndexOf("nvidia.com/") + 1,
+						migGpuKey.indexOf(".count"));
+				Integer mixedGpuCount = Integer.parseInt(node.getMetadata().getLabels().get(migGpuKey));
+				// gpuInfos.add(new ResponseDTO.NodeGPUs.GPUInfo(migName, mixedGpuCount));
+				migGPUMap.putIfAbsent(migName, new ArrayList<>()).add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, mixedGpuCount));
+			}*/
+		}
+	}
+
+	private void putGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuMap, String nodeName,
+		String gpuName, Integer onePerMemory, Integer gpuCount, Integer gpuUsageCount) {
+		gpuMap.computeIfAbsent(gpuName, k -> new ArrayList<>())
+			.add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, onePerMemory, gpuCount, gpuCount <= gpuUsageCount));
+	}
+
+	/**
+	 * MIG 전략 "single"인지 확인
+	 */
+	private boolean isMIGSingleStrategy(Node node) {
+		if (!node.getMetadata().getLabels().containsKey(MIG_STRATEGY)) {
+			return false;
+		}
+
+		return MIGStrategy.SINGLE.name().equals(node.getMetadata().getLabels().get(MIG_STRATEGY).toUpperCase());
 	}
 
 }

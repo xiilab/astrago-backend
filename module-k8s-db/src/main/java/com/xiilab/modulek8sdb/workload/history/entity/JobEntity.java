@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
@@ -12,6 +13,8 @@ import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,7 +36,7 @@ public class JobEntity extends WorkloadEntity {
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	JobEntity(String uid, String name, String description, String resourceName, String workspaceName,
-		String workspaceResourceName, Float cpuReq, Integer gpuReq, Float memReq,
+		String workspaceResourceName, String gpuName, GPUType gpuType, Float cpuReq, Integer gpuReq, Float memReq,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
 		Map<String, String> envs,
 		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
@@ -45,6 +48,8 @@ public class JobEntity extends WorkloadEntity {
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
+		super.gpuName = gpuName;
+		super.gpuType = gpuType;
 		this.cpuRequest = cpuReq;
 		this.gpuRequest = gpuReq;
 		this.memRequest = memReq;

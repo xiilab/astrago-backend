@@ -4,10 +4,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ByteArrayResource;
@@ -21,6 +26,7 @@ import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -33,6 +39,8 @@ import com.xiilab.modulek8s.cluster.service.ClusterService;
 import com.xiilab.modulek8s.common.dto.ClusterResourceDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
+import com.xiilab.modulek8s.facade.dto.ResMIGDTO;
+import com.xiilab.modulek8s.facade.dto.ResMPSDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
@@ -46,6 +54,7 @@ import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
@@ -332,6 +341,30 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		List<WorkloadEntity> endStatusWorkloads = workloadHistoryService.getWorkloadByResourceNameAndStatus(
 			workspaceResourceName, WorkloadStatus.END);
 		workspaceInfoByName.addEndStatusWorkloadCnt(endStatusWorkloads.size());
+		//mps, mig 정보 추가
+		//1. workload 전체 조회 where wsname and mps, mig and 종료되지 않은 워크로드(run, pending)
+		List<WorkloadEntity> workloads = workloadHistoryService.getWorkloadHistoryByUsingDivisionGPU(
+			workspaceResourceName);
+		Map<GPUType, List<JobEntity>> jobMap = workloads.stream()
+			.filter(JobEntity.class::isInstance)
+			.map(JobEntity.class::cast)
+			.collect(Collectors.groupingBy(JobEntity::getGpuType));
+
+		List<JobEntity> mpsList = jobMap.getOrDefault(GPUType.MPS, new ArrayList<>());
+		List<JobEntity> migList = jobMap.getOrDefault(GPUType.MIG, new ArrayList<>());
+		// MPS info
+		List<ResMPSDTO> resMPSDTOS = getMPSDTOs(mpsList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
+
+		workspaceInfoByName.addMpsInfo(resMPSDTOS);
+
+		// MIG info
+		List<ResMIGDTO> resMIGDTOS = getMIGDTOs(migList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
+		workspaceInfoByName.addMigInfo(resMIGDTOS);
+		workspaceInfoByName.setMpsTotalCount(mpsList.size());
+		workspaceInfoByName.setMigTotalCount(migList.size());
+
 		return workspaceInfoByName;
 	}
 
@@ -370,7 +403,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				workspaceInfo.getName(), userInfoDTO.getUserFullName(), userInfoDTO.getEmail());
 
 			eventPublisher.publishEvent(
-				new AdminAlertEvent(AlertName.ADMIN_USER_RESOURCE_REQUEST, userInfoDTO.getId(), mailTitle, title, message,
+				new AdminAlertEvent(AlertName.ADMIN_USER_RESOURCE_REQUEST, userInfoDTO.getId(), mailTitle, title,
+					message,
 					pageNaviParam, mailDTO));
 
 			// 워크스페이스 리소스 요청한 사용자에게 알림 발송
@@ -444,7 +478,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			String message = String.format(AlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMessage(),
 				userInfoDTO.getUserFullName(), workspaceNm, "승인");
 
-			MailDTO mailDTO = MailServiceUtils.resourceApproveMail(gpu, cpu, mem, resourceQuotaEntity.getWorkspaceName(),
+			MailDTO mailDTO = MailServiceUtils.resourceApproveMail(gpu, cpu, mem,
+				resourceQuotaEntity.getWorkspaceName(),
 				userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), receiverEmail);
 
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER,
@@ -568,6 +603,28 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			name);
 		ResourceQuotaEntity recentlyResourceRequest = resourceQuotaCustomRepository.findByWorkspaceRecently(name);
 		ClusterResourceDTO clusterResource = clusterService.getClusterResource();
+
+		//mps, mig 정보 추가
+		//1. workload 전체 조회 where wsname and mps, mig and 종료되지 않은 워크로드(run, pending)
+		List<WorkloadEntity> workloads = workloadHistoryService.getWorkloadHistoryByUsingDivisionGPU(
+			name);
+		Map<GPUType, List<JobEntity>> jobMap = workloads.stream()
+			.filter(JobEntity.class::isInstance)
+			.map(JobEntity.class::cast)
+			.collect(Collectors.groupingBy(JobEntity::getGpuType));
+
+		List<JobEntity> mpsList = jobMap.getOrDefault(GPUType.MPS, new ArrayList<>());
+		List<JobEntity> migList = jobMap.getOrDefault(GPUType.MIG, new ArrayList<>());
+
+		// MPS info
+		List<ResMPSDTO> resMPSDTOS = getMPSDTOs(mpsList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
+		int mpsTotalCount = mpsList.size();
+		// MIG info
+		List<ResMIGDTO> resMIGDTOS = getMIGDTOs(migList, WorkloadStatus.RUNNING, WorkloadStatus.ERROR,
+			WorkloadStatus.PENDING);
+		int migTotalCount = migList.size();
+
 		return WorkspaceDTO.AdminInfoDTO.builder()
 			.id(workspaceInfo.getId())
 			.name(workspaceInfo.getName())
@@ -587,7 +644,40 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.totalCPU(clusterResource.getCpu())
 			.totalMEM(clusterResource.getMem())
 			.totalGPU(clusterResource.getGpu())
+			.mpsInfo(resMPSDTOS)
+			.migInfo(resMIGDTOS)
+			.mpsTotalCount(mpsTotalCount)
+			.migTotalCount(migTotalCount)
 			.build();
+	}
+
+	private List<ResMPSDTO> getMPSDTOs(List<JobEntity> mpsList, WorkloadStatus... statuses) {
+		return mpsList.stream()
+			.filter(jobEntity -> Arrays.asList(statuses).contains(jobEntity.getWorkloadStatus()))
+			.collect(Collectors.groupingBy(JobEntity::getGpuName, Collectors.counting()))
+			.entrySet().stream()
+			.map(entry -> new ResMPSDTO(entry.getKey(), entry.getValue()))
+			.toList();
+	}
+
+	private List<ResMIGDTO> getMIGDTOs(List<JobEntity> migList, WorkloadStatus... statuses) {
+		return migList.stream()
+			.filter(jobEntity -> Arrays.asList(statuses).contains(jobEntity.getWorkloadStatus()))
+			.collect(Collectors.groupingBy(
+				job -> job.getGpuName().split("-MIG-")[0],
+				Collectors.groupingBy(
+					job -> job.getGpuName().split("-MIG-")[1],
+					Collectors.counting()
+				)
+			))
+			.entrySet().stream()
+			.map(entry -> new ResMIGDTO(
+				entry.getKey(),
+				entry.getValue().entrySet().stream()
+					.map(migEntry -> new ResMIGDTO.MigInfo(migEntry.getKey(), Math.toIntExact(migEntry.getValue())))
+					.collect(Collectors.toList())
+			))
+			.toList();
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
@@ -43,9 +44,9 @@ import lombok.experimental.SuperBuilder;
 public class BatchJobVO extends WorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
-	private String workingDir;		// 명령어를 실행 할 path
+	private String workingDir;        // 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
-	private Map<String,String> parameter;		// 사용자가 입력한 hyper parameter
+	private Map<String, String> parameter;        // 사용자가 입력한 hyper parameter
 	private String jobName;
 
 	@Override
@@ -95,6 +96,8 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
+		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
+		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);
 
 		return annotationMap;
 	}
@@ -106,6 +109,8 @@ public class BatchJobVO extends WorkloadVO {
 		map.put(LabelField.CONTROL_BY.getField(), "astra");
 		map.put(LabelField.APP.getField(), jobName);
 		map.put(LabelField.JOB_NAME.getField(), jobName);
+		map.put(LabelField.GPU_NAME.getField(), gpuName);
+		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
 		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
 		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
 		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
@@ -134,11 +139,21 @@ public class BatchJobVO extends WorkloadVO {
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
 		podSpecBuilder.withHostname("astrago");
+		// 노드 지정
+		if (!StringUtils.isEmpty(this.nodeName)) {
+			podSpecBuilder.withNodeSelector(Map.of("kubernetes.io/hostname", this.nodeName));
+		}
+		// GPU 지정
+		// TODO MIG mixed일 때 처리 필요함
+		if (!StringUtils.isEmpty(this.gpuName)) {
+			podSpecBuilder.withNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
+		}
 		// 스케줄러 지정
 		podSpecBuilder.withSchedulerName(SchedulingType.BIN_PACKING.getType());
 		if (!ObjectUtils.isEmpty(this.secretName)) {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
+
 		cloneGitRepo(podSpecBuilder, this.codes);
 		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, this.datasets);
@@ -154,7 +169,9 @@ public class BatchJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
-		addDefaultVolumeMountPath(podSpecContainer);
+		if (this.gpuType != GPUType.MPS) {
+			addDefaultVolumeMountPath(podSpecContainer);
+		}
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		addContainerSourceCode(podSpecContainer);
@@ -163,15 +180,12 @@ public class BatchJobVO extends WorkloadVO {
 		return podSpecContainer.endContainer().build();
 	}
 
-	private void addDefaultVolumeMountPath(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+	private void addDefaultVolumeMountPath(
+		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.addNewVolumeMount()
 			.withName("shmdir")
 			.withMountPath("/dev/shm")
 			.endVolumeMount();
-		// podSpecContainer.addNewVolumeMount()
-		// 	.withName("tz-seoul")
-		// 	.withMountPath("/etc/localtime")
-		// 	.endVolumeMount();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
@@ -251,6 +265,14 @@ public class BatchJobVO extends WorkloadVO {
 				.build()
 			).toList();
 		List<EnvVar> result = new ArrayList<>(envVars);
+		// GPU 미사용시, GPU 접근 막는 환경변수
+		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
+			result.add(new EnvVarBuilder()
+				.withName("NVIDIA_VISIBLE_DEVICES")
+				.withValue("none")
+				.build()
+			);
+		}
 		if (super.image.imageType() == ImageType.HUB) {
 			result.add(new EnvVarBuilder()
 				.withName("POD_NAME")
