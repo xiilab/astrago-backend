@@ -124,7 +124,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.workingDir(moduleJobResDTO.getWorkingDir())
 				.status(moduleJobResDTO.getStatus())
 				.ide(moduleJobResDTO.getIde())
-				.nodeName(nodeName)
+				.nodeName(moduleJobResDTO.getNodeName())
 				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime()) ?
 					moduleJobResDTO.getEstimatedInitialTime() : null)
 				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime()) ?
