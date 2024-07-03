@@ -74,7 +74,7 @@ public class HubServiceImpl implements HubService {
 
 		hubDetail.changeSourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrlGitLab() : hubEntity.getSourceCodeUrlGitHub());
 		FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
-		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageNameHarbor() : hubEntity.getHubImageEntity().getImageNameHub());
+		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? network.getPrivateRepositoryUrl() + hubEntity.getHubImageEntity().getImageName() : hubEntity.getHubImageEntity().getImageName());
 		hubDetail.setHubImage(hubImage);
 		hubDetail.setReadmeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getReadmeUrlGitLab() : hubEntity.getReadmeUrlGitHub());
 		hubDetail.setThumbnailUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrlGitLab() : hubEntity.getThumbnailUrlGitHub());
@@ -88,7 +88,7 @@ public class HubServiceImpl implements HubService {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
-		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size(), networkCloseYN);
+		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size(), networkCloseYN, network.getPrivateRepositoryUrl());
 	}
 
 	@Override

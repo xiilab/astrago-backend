@@ -37,12 +37,12 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 	@Getter
 	@SuperBuilder
 	public static class HubDetail extends FindHubInWorkloadResDTO {
-		public static HubDetail of(HubEntity hubEntity, NetworkCloseYN networkCloseYN) {
+		public static HubDetail of(HubEntity hubEntity, NetworkCloseYN networkCloseYN, String privateRepositoryUrl) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
 				FindHubCommonResDTO.HubImage hubImageDto = new FindHubCommonResDTO.HubImage(
 					hubEntity.getHubImageEntity());
-				hubImageDto.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageNameHarbor() : hubEntity.getHubImageEntity().getImageNameHub());
+				hubImageDto.setImageName(networkCloseYN == NetworkCloseYN.Y ?  privateRepositoryUrl + hubEntity.getHubImageEntity().getImageName() : hubEntity.getHubImageEntity().getImageName());
 
 				return HubDetail.builder()
 					.id(hubEntity.getHubId())
@@ -75,9 +75,10 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 		private List<FindHubInWorkloadResDTO.HubDetail> hubsDto;
 		private int totalCount;
 
-		public static Hubs from(List<HubEntity> hubEntities, int totalCount, NetworkCloseYN networkCloseYN) {
+		public static Hubs from(List<HubEntity> hubEntities, int totalCount, NetworkCloseYN networkCloseYN,
+			String privateRepositoryUrl) {
 			return Hubs.builder()
-				.hubsDto(hubEntities.stream().map(hubEntity -> HubDetail.of(hubEntity, networkCloseYN)).toList())
+				.hubsDto(hubEntities.stream().map(hubEntity -> HubDetail.of(hubEntity, networkCloseYN, privateRepositoryUrl)).toList())
 				.totalCount(totalCount)
 				.build();
 		}

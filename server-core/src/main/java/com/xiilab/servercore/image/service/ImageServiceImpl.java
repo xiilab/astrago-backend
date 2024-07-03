@@ -66,7 +66,7 @@ public class ImageServiceImpl implements ImageService {
 			.orElseThrow(() -> new RestApiException(ImageErrorCode.NOT_FOUND_IMAGE));
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
-		return ImageResDTO.FindImage.from(findImage, networkCloseYN);
+		return ImageResDTO.FindImage.from(findImage, networkCloseYN, network.getPrivateRepositoryUrl());
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class ImageServiceImpl implements ImageService {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
-		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements(), networkCloseYN);
+		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements(), networkCloseYN, network.getPrivateRepositoryUrl());
 	}
 
 	@Override

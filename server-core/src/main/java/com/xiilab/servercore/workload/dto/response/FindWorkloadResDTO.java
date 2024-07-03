@@ -298,8 +298,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				imageEntity.getRegUser().getRegUserRealName(), imageEntity.getRegDate(), imageEntity.getModDate());
 			this.id = imageEntity.getId();
 			this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)imageEntity).getTitle() :
-				imageEntity.getImageNameHub();
-			this.name = imageEntity.getImageNameHub();
+				imageEntity.getImageName();
+			this.name = imageEntity.getImageName();
 			this.type = imageEntity.getImageType();
 			this.repositoryAuthType = imageEntity.getRepositoryAuthType();
 			if (imageEntity.getImageType() == ImageType.CUSTOM

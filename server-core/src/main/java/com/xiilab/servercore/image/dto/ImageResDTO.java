@@ -51,14 +51,15 @@ public class ImageResDTO {
 		private String command;
 		private FrameWorkType ide;
 
-		public static FindImage from(ImageEntity imageEntity, NetworkCloseYN networkCloseYN) {
+		public static FindImage from(ImageEntity imageEntity, NetworkCloseYN networkCloseYN,
+			String privateRepositoryUrl) {
 			if (imageEntity.isBuiltInImage()) {
 				BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)imageEntity;
 				ObjectMapper objectMapper = new ObjectMapper();
 				try {
 					return FindImage.builder()
 						.id(imageEntity.getId())
-						.imageName(networkCloseYN == NetworkCloseYN.Y ? imageEntity.getImageNameHarbor() : imageEntity.getImageNameHub())
+						.imageName(networkCloseYN == NetworkCloseYN.Y ? privateRepositoryUrl + imageEntity.getImageName() : imageEntity.getImageName())
 						.repositoryAuthType(imageEntity.getRepositoryAuthType())
 						.imageType(imageEntity.getImageType())
 						.workloadType(imageEntity.getWorkloadType())
@@ -87,7 +88,7 @@ public class ImageResDTO {
 			} else {
 				return FindImage.builder()
 					.id(imageEntity.getId())
-					.imageName(imageEntity.getImageNameHub())
+					.imageName(imageEntity.getImageName())
 					.repositoryAuthType(imageEntity.getRepositoryAuthType())
 					.imageType(imageEntity.getImageType())
 					.workloadType(imageEntity.getWorkloadType())
@@ -108,9 +109,10 @@ public class ImageResDTO {
 		private List<ImageResDTO.FindImage> findImages;
 		private long totalCount;
 
-		public static FindImages from(List<ImageEntity> imageEntities, Long totalCount, NetworkCloseYN networkCloseYN) {
+		public static FindImages from(List<ImageEntity> imageEntities, Long totalCount, NetworkCloseYN networkCloseYN,
+			String privateRepositoryUrl) {
 			return FindImages.builder()
-				.findImages(imageEntities.stream().map(imageEntity -> FindImage.from(imageEntity, networkCloseYN)).filter(Objects::nonNull).toList())
+				.findImages(imageEntities.stream().map(imageEntity -> FindImage.from(imageEntity, networkCloseYN, privateRepositoryUrl)).filter(Objects::nonNull).toList())
 				.totalCount(totalCount)
 				.build();
 		}
