@@ -88,7 +88,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService {
 			.ip(createLocalModel.getIp())
 			.storagePath(createLocalModel.getStoragePath())
 			// .dockerImage(dockerImage)
-			.dockerImage(network.getLocalVolumeURL())
+			.dockerImage(network.getLocalVolumeImageURL())
 			.hostPath(hostPath)
 			.build();
 

@@ -30,35 +30,22 @@ public class NetworkEntity {
 	@Column(name = "NETWORK_CLOSE_YN")
 	private NetworkCloseYN networkCloseYN;
 
-	@Column(name = "INIT_CONTAINER_HUB")
+	@Column(name = "PRIVATE_REPOSITORY_URL")
+	private String privateRepositoryUrl;
+
+	@Column(name = "INIT_CONTAINER_IMAGE_URL")
 	@Comment("init container 용 도커 이미지 경로")
-	private String initContainerHub;
-	@Column(name = "INIT_CONTAINER_HARBOR")
-	@Comment("init container 용 폐쇄망 도커 이미지 경로")
-	private String initContainerHarbor;
+	private String initContainerImageUrl;
 
-	@Column(name = "CONNECTION_TEST_HUB")
-	@Comment("스토리지 생성 시 연결 테스트 용 도커 이미지 경로")
-	private String connectionTestHub;
-	@Column(name = "CONNECTION_TEST_HARBOR")
-	@Comment("스토리지 생성 시 연결 테스트 용 폐쇄망 도커 이미지 경로")
-	private String connectionTestHarbor;
-
-	@Column(name = "LOCAL_VOLUME_HUB")
+	@Column(name = "LOCAL_VOLUME_IMAGE_URL")
 	@Comment("로컬 데이터 셋, 모델 용 도커 이미지 경로")
-	private String localVolumeHub;
-	@Column(name = "LOCAL_VOLUME_HARBOR")
-	@Comment("로컬 데이터 셋, 모델 용 폐쇄망 도커 이미지 경로")
-	private String localVolumeHarbor;
+	private String localVolumeImageUrl;
 
 	public String getInitContainerURL(){
-		return networkCloseYN == NetworkCloseYN.Y ? initContainerHarbor : initContainerHub;
+		return networkCloseYN == NetworkCloseYN.Y ? privateRepositoryUrl + initContainerImageUrl : initContainerImageUrl;
 	}
-	public String getConnectionTestURL(){
-		return networkCloseYN == NetworkCloseYN.Y ? connectionTestHarbor : connectionTestHub;
-	}
-	public String getLocalVolumeURL(){
-		return networkCloseYN == NetworkCloseYN.Y ? localVolumeHarbor : localVolumeHub;
+	public String getLocalVolumeImageURL(){
+		return networkCloseYN == NetworkCloseYN.Y ? privateRepositoryUrl + localVolumeImageUrl : localVolumeImageUrl;
 	}
 	public void modifyNetworkStatus(NetworkCloseYN networkCloseYN){
 		this.networkCloseYN = networkCloseYN;

@@ -69,7 +69,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.hostPath(String.valueOf(hostPath))
 			.astragoDeploymentName(astragoDeploymentName)
 			.namespace(namespace)
-			.connectionTestImageUrl(network.getConnectionTestURL())
+			.connectionTestImageUrl(network.getLocalVolumeImageURL())
 			.build();
 		StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
 

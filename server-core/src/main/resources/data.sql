@@ -249,10 +249,6 @@ VALUES (1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'OBJECT_DETECTION'),
 ON DUPLICATE KEY UPDATE HUB_CATEGORY_ID= HUB_CATEGORY_ID;
 
 INSERT INTO TB_NETWORK
-(NETWORK_ID, CONNECTION_TEST_HARBOR, CONNECTION_TEST_HUB, INIT_CONTAINER_HARBOR, INIT_CONTAINER_HUB,
- LOCAL_VOLUME_HARBOR, LOCAL_VOLUME_HUB, NETWORK_CLOSE_YN)
-VALUES (1, 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx',
-        'harbor.xiilab.com:32443/astrago/init-container-image',
-        'k8s.gcr.io/git-sync/git-sync:v3.6.0', 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx',
-        'xiilab/astrago-dataset-nginx', 'N')
+(NETWORK_ID, PRIVATE_REPOSITORY_URL, INIT_CONTAINER_IMAGE_URL, LOCAL_VOLUME_IMAGE_URL, NETWORK_CLOSE_YN)
+VALUES (1, null, 'k8s.gcr.io/git-sync/git-sync:v3.6.0', 'xiilab/astrago-dataset-nginx', 'N')
 ON DUPLICATE KEY UPDATE NETWORK_ID= NETWORK_ID;

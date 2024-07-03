@@ -97,7 +97,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			.ip(createDatasetDTO.getIp())
 			.storagePath(createDatasetDTO.getStoragePath())
 			// .dockerImage(dockerImage)
-			.dockerImage(network.getLocalVolumeURL())
+			.dockerImage(network.getLocalVolumeImageURL())
 			.hostPath(hostPath)
 			.build();
 		//1. nginx deployment, pvc, pv, svc 생성
