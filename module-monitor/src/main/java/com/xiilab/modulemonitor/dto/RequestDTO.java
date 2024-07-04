@@ -14,13 +14,15 @@ public class RequestDTO {
 	private String namespace;
 	private String podName;
 	private String nodeName;
+	private String instance;
 
 	public RequestDTO(String metricName,
 		String startDate,
 		String endDate,
 		String namespace,
 		String podName,
-		String nodeName
+		String nodeName,
+		String instance
 	) {
 		this.metricName = metricName;
 		this.startDate = startDate;
@@ -28,6 +30,7 @@ public class RequestDTO {
 		this.namespace = namespace;
 		this.podName = podName;
 		this.nodeName = nodeName;
+		this.instance = instance;
 	}
 
 	public String metricName() {
@@ -54,6 +57,10 @@ public class RequestDTO {
 		return nodeName;
 	}
 
+	public String instance() {
+		return instance;
+	}
+
 	public void changeMetricName(String metricName){
 		this.metricName = metricName;
 	}
@@ -69,12 +76,13 @@ public class RequestDTO {
 			Objects.equals(this.endDate, that.endDate) &&
 			Objects.equals(this.namespace, that.namespace) &&
 			Objects.equals(this.podName, that.podName) &&
-			Objects.equals(this.nodeName, that.nodeName);
+			Objects.equals(this.nodeName, that.nodeName) &&
+			Objects.equals(this.instance, that.instance);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(metricName, startDate, endDate, namespace, podName, nodeName);
+		return Objects.hash(metricName, startDate, endDate, namespace, podName, nodeName, instance);
 	}
 
 	@Override
@@ -85,7 +93,8 @@ public class RequestDTO {
 			"endDate=" + endDate + ", " +
 			"namespace=" + namespace + ", " +
 			"podName=" + podName + ", " +
-			"nodeName=" + nodeName + ']';
+			"nodeName=" + nodeName + ", " +
+			"instance=" + instance + ']';
 	}
 
 }

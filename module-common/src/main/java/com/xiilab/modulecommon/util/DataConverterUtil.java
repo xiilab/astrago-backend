@@ -63,9 +63,19 @@ public class DataConverterUtil {
 	 * @param fieldName 필드 이름
 	 * @return 가져온 필드 값 또는 Null
 	 */
-	public static String getStringOrNull(JsonNode node, String fieldName) {
+	public static String getStringOrNullByJsonNode(JsonNode node, String fieldName) {
 		JsonNode field = node.get(fieldName);
 		return field == null ? "" : field.asText();
+	}
+	public static String getInstance(String str) {
+		// JsonNode field = node.get(fieldName);
+		// return field == null ? "" : field.asText();
+		try {
+			JsonNode root = objectMapper.readTree(str);
+			return root.path("data").path("result").elements().next().get("metric").get("instance").asText();
+		} catch (JsonProcessingException e) {
+			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
+		}
 	}
 
 	/**
@@ -485,5 +495,14 @@ public class DataConverterUtil {
 		double gb = mb / 1024.0;
 		BigDecimal bd = new BigDecimal(gb).setScale(1, RoundingMode.HALF_UP);
 		return bd.doubleValue();
+	}
+
+	// LDT to "yyyy-MM-dd HH:mm:ss" 포맷 출력
+	public static String convertLocalDateTimeToString(LocalDateTime date) {
+		try {
+			return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

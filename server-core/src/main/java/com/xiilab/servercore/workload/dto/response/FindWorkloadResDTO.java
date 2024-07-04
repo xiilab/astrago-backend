@@ -18,6 +18,7 @@ import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8s.common.dto.DistributedResourceDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractDistributedWorkloadResDTO;
@@ -70,7 +71,9 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected String startTime;
 	protected GPUType gpuType;
 	protected String gpuName;
-	protected int gpuMemory;
+	protected Integer gpuOnePerMemory;
+	protected Integer resourcePresetId;
+	protected String endTime;
 
 	@Getter
 	@SuperBuilder
@@ -130,6 +133,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime()) ? moduleJobResDTO.getStartTime() : null)
 				.gpuName(moduleJobResDTO.getGpuName())
 				.gpuType(moduleJobResDTO.getGpuType())
+				.resourcePresetId(moduleJobResDTO.getResourcePresetId())
 				.build();
 		}
 
@@ -165,7 +169,11 @@ public class FindWorkloadResDTO extends ResDTO {
 				.canBeDeleted(workloadEntity.isCanBeDeleted())
 				.gpuName(workloadEntity.getGpuName())
 				.gpuType(workloadEntity.getGpuType())
-				.gpuMemory(workloadEntity.getGpuOnePerMemory())
+				.gpuOnePerMemory(workloadEntity.getGpuOnePerMemory())
+				.resourcePresetId(workloadEntity.getResourcePresetId())
+				.nodeName(workloadEntity.getNodeName())
+				.startTime(DataConverterUtil.convertLocalDateTimeToString(workloadEntity.getStartTime()))
+				.endTime(DataConverterUtil.convertLocalDateTimeToString(workloadEntity.getEndTime()))
 				.build();
 		}
 	}
@@ -224,6 +232,9 @@ public class FindWorkloadResDTO extends ResDTO {
 					.build())
 				.gpuName(moduleJobResDTO.getGpuName())
 				.gpuType(moduleJobResDTO.getGpuType())
+				.nodeName(moduleJobResDTO.getNodeName())
+				.resourcePresetId(moduleJobResDTO.getResourcePresetId())
+				.startTime(moduleJobResDTO.getStartTime())
 				.build();
 		}
 
@@ -264,6 +275,10 @@ public class FindWorkloadResDTO extends ResDTO {
 					.build())
 				.gpuName(distributedJobEntity.getGpuName())
 				.gpuType(distributedJobEntity.getGpuType())
+				.resourcePresetId(distributedJobEntity.getResourcePresetId())
+				.nodeName(distributedJobEntity.getNodeName())
+				.startTime(DataConverterUtil.convertLocalDateTimeToString(distributedJobEntity.getStartTime()))
+				.endTime(DataConverterUtil.convertLocalDateTimeToString(distributedJobEntity.getEndTime()))
 				.build();
 		}
 	}

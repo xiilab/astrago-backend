@@ -53,6 +53,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 	protected GPUType gpuType;
 	protected String gpuName;
 	protected Integer gpuOnePerMemory;
+	protected Integer resourcePresetId;
 
 	protected void addVolume(Spec spec, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {

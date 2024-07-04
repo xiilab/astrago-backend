@@ -108,6 +108,7 @@ public record ResponseDTO() {
 	 */
 	@Builder
 	public record NodeResourceDTO(String nodeName,
+								  String instance,
 								  long cpuTotal,
 								  double cpuRequest,
 								  double cpuUsage,
