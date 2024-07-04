@@ -48,7 +48,7 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.hubImage(hubImageDto)
-					.sourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrlGitLab() : hubEntity.getSourceCodeUrlGitHub())
+					.sourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() : hubEntity.getSourceCodeUrl())
 					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
 					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
