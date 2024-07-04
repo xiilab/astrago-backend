@@ -42,21 +42,26 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 			try {
 				FindHubCommonResDTO.HubImage hubImageDto = new FindHubCommonResDTO.HubImage(
 					hubEntity.getHubImageEntity());
-				hubImageDto.setImageName(networkCloseYN == NetworkCloseYN.Y ?  privateRepositoryUrl + hubEntity.getHubImageEntity().getImageName() : hubEntity.getHubImageEntity().getImageName());
+				hubImageDto.setImageName(networkCloseYN == NetworkCloseYN.Y ?
+					privateRepositoryUrl + hubEntity.getHubImageEntity().getImageName() :
+					hubEntity.getHubImageEntity().getImageName());
 
 				return HubDetail.builder()
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.hubImage(hubImageDto)
-					.sourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() : hubEntity.getSourceCodeUrl())
+					.sourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() :
+						hubEntity.getSourceCodeUrl())
 					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
 					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
-					.envs(StringUtils.hasText(hubEntity.getEnvs())? objectMapper.readValue(hubEntity.getEnvs(),
-						new TypeReference<>() {}) : null)
-					.ports(StringUtils.hasText(hubEntity.getPorts())? objectMapper.readValue(hubEntity.getPorts(),
-						new TypeReference<>() {}) : null)
+					.envs(StringUtils.hasText(hubEntity.getEnvs()) ? objectMapper.readValue(hubEntity.getEnvs(),
+						new TypeReference<>() {
+						}) : null)
+					.ports(StringUtils.hasText(hubEntity.getPorts()) ? objectMapper.readValue(hubEntity.getPorts(),
+						new TypeReference<>() {
+						}) : null)
 					.command(hubEntity.getCommand())
 					.regUserName(hubEntity.getRegUser().getRegUserName())
 					.regUserId(hubEntity.getRegUser().getRegUserId())
@@ -78,7 +83,9 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 		public static Hubs from(List<HubEntity> hubEntities, int totalCount, NetworkCloseYN networkCloseYN,
 			String privateRepositoryUrl) {
 			return Hubs.builder()
-				.hubsDto(hubEntities.stream().map(hubEntity -> HubDetail.of(hubEntity, networkCloseYN, privateRepositoryUrl)).toList())
+				.hubsDto(hubEntities.stream()
+					.map(hubEntity -> HubDetail.of(hubEntity, networkCloseYN, privateRepositoryUrl))
+					.toList())
 				.totalCount(totalCount)
 				.build();
 		}

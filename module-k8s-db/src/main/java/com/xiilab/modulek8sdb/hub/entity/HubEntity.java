@@ -77,7 +77,8 @@ public class HubEntity extends BaseEntity {
 
 	@Builder(builderMethodName = "saveBuilder", builderClassName = "saveBuilder")
 	public HubEntity(String title, String description,
-		String thumbnailUrl, String readmeUrl, String sourceCodeUrl, String sourceCodeBranch, String sourceCodeMountPath,
+		String thumbnailUrl, String readmeUrl, String sourceCodeUrl, String sourceCodeBranch,
+		String sourceCodeMountPath,
 		String datasetMountPath, String modelMountPath, String envs, String command, String parameter,
 		HubImageEntity hubImageEntity, WorkloadType workloadType) {
 		this.title = title;
