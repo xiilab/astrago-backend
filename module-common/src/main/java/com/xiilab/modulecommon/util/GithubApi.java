@@ -12,7 +12,6 @@ import org.kohsuke.github.GitHubBuilder;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
-import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 
 public class GithubApi {
 	private GitHub gitHub;

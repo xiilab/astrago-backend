@@ -19,4 +19,6 @@ public class CreateStorageReqDTO {
 	private String hostPath;
 	private String connectionTestImageUrl;
 	private int requestVolume;
+	private SecretDTO secretDTO;
+
 }

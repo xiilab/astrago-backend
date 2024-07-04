@@ -103,7 +103,7 @@ public class MonitorFacadeService {
 		String cpuMetric = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.NODE_CPU_USAGE.getQuery(), node));
 		String cpuResponse = DataConverterUtil.formatObjectMapper(cpuMetric);
-
+		String instance = DataConverterUtil.getInstance(cpuMetric);
 		String memMetric = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.REPORT_CLUSTER_MEM_USAGE.getQuery(), node));
 
@@ -126,6 +126,7 @@ public class MonitorFacadeService {
 
 		return ResponseDTO.NodeResourceDTO.builder()
 			.nodeName(nodeName)
+			.instance(instance)
 			.cpuTotal(clusterCPU.total())
 			.cpuRequest(clusterCPU.cpuRequest())
 			.cpuUsage(clusterCPU.cpuUsage())

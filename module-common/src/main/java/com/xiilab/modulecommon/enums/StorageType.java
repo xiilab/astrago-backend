@@ -6,5 +6,9 @@ import lombok.Getter;
 public enum StorageType {
 	NFS,
 	CLOUD,
-	PURE;
+	PURE,
+	IBM,
+	WEKA_FS,
+	DELL
+	;
 }
