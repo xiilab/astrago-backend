@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.workload.secret.service;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulek8s.facade.dto.SecretDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.secret.repository.SecretRepository;
 
@@ -17,5 +18,15 @@ public class SecretServiceImpl implements SecretService {
 	@Override
 	public String createSecret(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		return secretRepository.createSecret(moduleCreateWorkloadReqDTO.toCredentialVO());
+	}
+
+	@Override
+	public String createIbmSecret(SecretDTO secretDTO) {
+		return secretRepository.createIbmSecret(secretDTO);
+	}
+
+	@Override
+	public void deleteIbmSecret(String secretName){
+		secretRepository.deleteIbmSecret(secretName);
 	}
 }

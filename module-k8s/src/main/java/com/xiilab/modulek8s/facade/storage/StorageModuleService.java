@@ -21,6 +21,9 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.storage.StorageClass;
+
 public interface StorageModuleService {
 	void createVolume(CreateVolumeDTO requestDTO);
 
@@ -58,6 +61,10 @@ public interface StorageModuleService {
 	List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes();
 
 	StorageResDTO createStorage(CreateStorageReqDTO createStorageReqDTO);
+
+	StorageClass createIbmStorage(String secretName);
+
+	PersistentVolumeClaim createIbmPvc(String storageName);
 
 	void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO);
 
