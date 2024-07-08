@@ -27,7 +27,7 @@ public class FindHubCommonResDTO {
 			this.id = hubImageEntity.getId();
 			this.imageType = hubImageEntity.getImageType();
 			this.deleteYN = hubImageEntity.getDeleteYN();
-			this.imageName = hubImageEntity.getImageNameHub();
+			this.imageName = hubImageEntity.getImageName();
 			this.repositoryAuthType = hubImageEntity.getRepositoryAuthType();
 			this.workloadType = hubImageEntity.getWorkloadType();
 		}

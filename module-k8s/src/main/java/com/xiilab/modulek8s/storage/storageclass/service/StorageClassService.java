@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StorageClassService {
 	private final StorageClassRepository storageClassRepository;
+
 	public List<StorageClass> findStorageClassByType(StorageType storageType) {
 		return storageClassRepository.findStorageClassByType(storageType);
 	}
@@ -50,5 +51,13 @@ public class StorageClassService {
 
 	public List<StorageClassWithVolumesResDTO> findStorageClassesWithVolumes() {
 		return storageClassRepository.findStorageClassesWithVolumes();
+	}
+
+	public StorageClass createIbmStorage(String secretName) {
+		return storageClassRepository.createIbmStorage(secretName);
+	}
+
+	public void deleteIbmStorage(String storageName) {
+		storageClassRepository.deleteIbmStorage(storageName);
 	}
 }

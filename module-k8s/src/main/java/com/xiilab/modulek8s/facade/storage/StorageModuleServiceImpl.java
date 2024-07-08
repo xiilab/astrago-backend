@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
@@ -32,8 +33,11 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDT
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
+import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -42,6 +46,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	private final VolumeService volumeService;
 	private final StorageClassService storageClassService;
 	private final WorkloadModuleService workloadModuleService;
+	private final SecretService secretService;
 
 	/**
 	 * 워크스페이스(namespace)에 볼륨 생성
@@ -290,11 +295,20 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	@Override
 	public void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
-		//astrago deployment에 볼륨 제거
-		volumeService.deleteStorage(deleteStorageReqDTO);
-		//PVC, PV 삭제
-		volumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
-		volumeService.deletePV(deleteStorageReqDTO.getPvName());
+		if(deleteStorageReqDTO.getStorageType() == StorageType.IBM){
+			// pvc 삭제
+			volumeService.deleteIbmPvc(deleteStorageReqDTO.getPvcName());
+			// storage 삭제
+			storageClassService.deleteIbmStorage(deleteStorageReqDTO.getStorageName());
+			// secret 삭제
+			secretService.deleteIbmSecret(deleteStorageReqDTO.getSecretName());
+		}else{
+			//astrago deployment에 볼륨 제거
+			volumeService.deleteStorage(deleteStorageReqDTO);
+			//PVC, PV 삭제
+			volumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
+			volumeService.deletePV(deleteStorageReqDTO.getPvName());
+		}
 	}
 
 	@Override
@@ -319,5 +333,15 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			}
 		}
 		return missingPVCs;
+	}
+
+	@Override
+	public StorageClass createIbmStorage(String secretName){
+		return storageClassService.createIbmStorage(secretName);
+	}
+
+	@Override
+	public PersistentVolumeClaim createIbmPvc(String storageName){
+		return volumeService.createIbmPvc(storageName);
 	}
 }

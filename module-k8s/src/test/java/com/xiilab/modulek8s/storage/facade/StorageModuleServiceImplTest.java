@@ -1,11 +1,13 @@
 // package com.xiilab.modulek8s.storage.facade;
 //
 // import java.io.IOException;
+// import java.nio.charset.StandardCharsets;
 // import java.nio.file.Files;
 // import java.nio.file.Path;
 // import java.nio.file.Paths;
 // import java.time.LocalDateTime;
 // import java.util.ArrayList;
+// import java.util.Base64;
 // import java.util.Collections;
 // import java.util.HashMap;
 // import java.util.List;
@@ -925,6 +927,54 @@
 // 			}
 // 		}
 // 	}
+//
+// 	@Test
+// 	void insertIbmSec(){
+// 		SecretDTO secretDTO = SecretDTO.builder()
+// 			.secretName("test-secret")
+// 			.userName("testUserName")
+// 			.password("testPassword")
+// 			.build();
+//
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			Secret secret = new SecretBuilder()
+// 				.withNewMetadata()
+// 				.withName(secretDTO.getSecretName())
+// 				.withNamespace("ibm")
+// 				.endMetadata()
+// 				.withType("Opaque")
+// 				.addToData("username", secretDTO.getUserName())
+// 				.addToData("password", Base64.getEncoder()
+// 					.encodeToString(secretDTO.getPassword().getBytes(StandardCharsets.UTF_8)))
+// 				.build();
+// 			client.secrets()
+// 				.resource(secret)
+// 				.serverSideApply();
+// 			Secret ibmSecret = client.secrets().inNamespace("ibm").withName(secret.getMetadata().getName()).get();
+//
+// 			if(ibmSecret.getMetadata().getName().equals(secretDTO.getSecretName())){
+// 				client.secrets().inNamespace("ibm").withName(secret.getMetadata().getName()).delete();
+// 			}
+// 		}
+// 	}
+//
+// 	@Test
+// 	void createIbmStorage(){
+// 		StorageClass storageClass = new StorageClassBuilder()
+// 			.withNewMetadata()
+// 			.withName("ibm-block-" + "test-storage")
+// 			.endMetadata()
+// 			.withProvisioner("block.csi.ibm.com")
+// 			.addToParameters("pool", "demo-pool")
+// 			.addToParameters("SpaceEfficiency", "thin")
+// 			.addToParameters("virt_snap_func", "false")
+// 			.addToParameters("csi.storage.k8s.io/fstype", "xfs")
+// 			.addToParameters("csi.storage.k8s.io/secret-name", secretName)
+// 			.addToParameters("csi.storage.k8s.io/secret-namespace", "default")
+// 			.withAllowVolumeExpansion(true)
+// 			.build();
+// 	}
+//
 // 	@Test
 // 	void test2(){
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {

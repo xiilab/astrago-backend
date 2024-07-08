@@ -135,35 +135,35 @@ ON DUPLICATE KEY UPDATE ALERT_ID = ALERT_ID;
 
 -- 이미지 초기값
 INSERT INTO TB_IMAGE (IMAGE_TYPE, IMAGE_ID, MOD_DATE, REG_DATE, REG_USER_ID, REG_USER_NAME, REG_USER_REAL_NAME,
-                      DELETE_YN, IMAGE_NAME_HUB, IMAGE_NAME_HARBOR, REPOSITORY_AUTH_TYPE, WORKLOAD_TYPE, MULTI_NODE)
-VALUES ('HUB', 1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH', false),
-       ('HUB', 2, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', null, 'PUBLIC', 'BATCH', false),
+                      DELETE_YN, IMAGE_NAME, REPOSITORY_AUTH_TYPE, WORKLOAD_TYPE, MULTI_NODE)
+VALUES ('HUB', 1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', 'PUBLIC', 'BATCH', false),
+       ('HUB', 2, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N', 'xiilab/astrago:hub-yolov8', 'PUBLIC', 'BATCH', false),
        ('BUILT', 3, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 4, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 5, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 6, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 7, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 8, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 9, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 10, null, now(), 'b7b2a599-9ca0-4bed-b2bd-a015a568bd6d', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'INTERACTIVE', false),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', 'PUBLIC', 'INTERACTIVE', false),
        ('BUILT', 11, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', null, 'PUBLIC', 'BATCH', false),
+        'xiilab/astrago:torch1.7.1-tensorflow2.4.1-cuda11.0', 'PUBLIC', 'BATCH', false),
        ('BUILT', 12, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', null, 'PUBLIC', 'BATCH', false),
+        'xiilab/astrago:torch2.0.1-tensorflow2.11.0-cuda11.7', 'PUBLIC', 'BATCH', false),
        ('BUILT', 13, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', null, 'PUBLIC', 'BATCH', false),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda12.1', 'PUBLIC', 'BATCH', false),
        ('BUILT', 14, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', null, 'PUBLIC', 'BATCH', false),
+        'xiilab/astrago:torch2.2.1-tensorflow2.14.0-cuda11.8', 'PUBLIC', 'BATCH', false),
        ('BUILT', 15, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'xiilab/horovod', null, 'PUBLIC', 'DISTRIBUTED', false)
+        'xiilab/horovod', 'PUBLIC', 'DISTRIBUTED', false)
 ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 
 -- 허브 이미지 초기값
@@ -209,8 +209,8 @@ ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 -- 허브 초기값
 INSERT INTO TB_HUB (HUB_ID, MOD_DATE, REG_DATE, ENVS, PORTS, COMMAND, DATASET_MOUNT_PATH, DESCRIPTION, MODEL_MOUNT_PATH,
                     REG_USER_ID, REG_USER_NAME, REG_USER_REAL_NAME, SOURCE_CODE_BRANCH, SOURCE_CODE_MOUNT_PATH,
-                    SOURCE_CODE_URL_GITHUB, SOURCE_CODE_URL_GITLAB, TITLE, IMAGE_ID, README_URL_GITHUB,
-                    README_URL_GITLAB, THUMBNAIL_URL_GITHUB, THUMBNAIL_URL_GITLAB, WORKLOAD_TYPE, PARAMETER)
+                    SOURCE_CODE_URL, TITLE, IMAGE_ID, README_URL,
+                    THUMBNAIL_URL, WORKLOAD_TYPE, PARAMETER)
 VALUES (1, null, now(),
         '{     "DB_HOST": "astrago-mariadb.astrago.svc",     "DB_PORT": "3306",     "DB_USER": "root",     "DB_PASSWORD": "root",     "DB_DATABASE": "astrago" }',
         null,
@@ -218,11 +218,9 @@ VALUES (1, null, now(),
         '/tmp/datasets',
         'YOLO(You Only Look Once)는 Object detection 모델 중 하나로, 높은 속도와 정확도를 가집니다. YOLO의 핵심 아이디어는 이미지를 단 한번만 보고 (Object detection을 위해 이미지를 단일 네트워크 패스를 통해 처리함으로써) 객체의 위치와 분류를 동시에 예측하는 것입니다. 해당 모델은 실시간 처리가 필요한 응용 프로그램에서 특히 유용합니다.',
         '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master', '/usr/src/ultralytics',
-        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null, 'YOLOv8', 1,
+        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', 'YOLOv8', 1,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/Readme.md',
-        null,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif',
-        null,
         'BATCH',
         '{ "data_dir": "./ultralytics/cfg/datasets/coco128.yaml", "save_model_dir": "./default_train_result", "flops": 14, "t_img_num": 100, "v_img_num": 100, "image_size": 640, "batch": 16, "param_cnt": 43643718, "epoch": 120, "learning_rate": 0.01 }'),
        (2, null, now(),
@@ -232,11 +230,9 @@ VALUES (1, null, now(),
         'YOLO(You Only Look Once)는 Object detection 모델 중 하나로, 높은 속도와 정확도를 가집니다. YOLO의 핵심 아이디어는 이미지를 단 한번만 보고 (Object detection을 위해 이미지를 단일 네트워크 패스를 통해 처리함으로써) 객체의 위치와 분류를 동시에 예측하는 것입니다. 해당 모델은 실시간 처리가 필요한 응용 프로그램에서 특히 유용합니다.',
         '/tmp/models', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'master',
         '/usr/src/ultralytics',
-        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', null, 'YOLOv5', 2,
+        'https://github.com/xiilab/astrago-ultralytics-yolov8-train.git', 'YOLOv5', 2,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv5/Readme.md',
-        null,
         'https://raw.githubusercontent.com/xiilab/astrago-hub/master/YOLOv8/images/YOLOv8_Thumbnail.gif',
-        null,
         'BATCH',
         '{ "data_dir": "./ultralytics/cfg/datasets/coco128.yaml", "save_model_dir": "./default_train_result", "flops": 14, "t_img_num": 100, "v_img_num": 100, "image_size": 640, "batch": 16, "param_cnt": 53177222, "epoch": 120, "learning_rate": 0.01 }')
 ON DUPLICATE KEY UPDATE HUB_ID = HUB_ID;
@@ -249,10 +245,6 @@ VALUES (1, null, now(), 'SYSTEM', 'SYSTEM', 'SYSTEM', 'OBJECT_DETECTION'),
 ON DUPLICATE KEY UPDATE HUB_CATEGORY_ID= HUB_CATEGORY_ID;
 
 INSERT INTO TB_NETWORK
-(NETWORK_ID, CONNECTION_TEST_HARBOR, CONNECTION_TEST_HUB, INIT_CONTAINER_HARBOR, INIT_CONTAINER_HUB,
- LOCAL_VOLUME_HARBOR, LOCAL_VOLUME_HUB, NETWORK_CLOSE_YN)
-VALUES (1, 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx', 'xiilab/astrago-dataset-nginx',
-        'harbor.xiilab.com:32443/astrago/init-container-image',
-        'k8s.gcr.io/git-sync/git-sync:v3.6.0', 'harbor.xiilab.com:32443/astrago/astrago-dataset-nginx',
-        'xiilab/astrago-dataset-nginx', 'N')
+(NETWORK_ID, PRIVATE_REPOSITORY_URL, INIT_CONTAINER_IMAGE_URL, LOCAL_VOLUME_IMAGE_URL, NETWORK_CLOSE_YN)
+VALUES (1, null, 'k8s.gcr.io/git-sync/git-sync:v3.6.0', 'xiilab/astrago-dataset-nginx', 'N')
 ON DUPLICATE KEY UPDATE NETWORK_ID= NETWORK_ID;

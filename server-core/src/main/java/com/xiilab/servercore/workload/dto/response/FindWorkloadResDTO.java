@@ -124,7 +124,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.workingDir(moduleJobResDTO.getWorkingDir())
 				.status(moduleJobResDTO.getStatus())
 				.ide(moduleJobResDTO.getIde())
-				.nodeName(moduleJobResDTO.getNodeName())
+				.nodeName(nodeName)
 				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime()) ?
 					moduleJobResDTO.getEstimatedInitialTime() : null)
 				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime()) ?
@@ -298,8 +298,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				imageEntity.getRegUser().getRegUserRealName(), imageEntity.getRegDate(), imageEntity.getModDate());
 			this.id = imageEntity.getId();
 			this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)imageEntity).getTitle() :
-				imageEntity.getImageNameHub();
-			this.name = imageEntity.getImageNameHub();
+				imageEntity.getImageName();
+			this.name = imageEntity.getImageName();
 			this.type = imageEntity.getImageType();
 			this.repositoryAuthType = imageEntity.getRepositoryAuthType();
 			if (imageEntity.getImageType() == ImageType.CUSTOM
