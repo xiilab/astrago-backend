@@ -22,8 +22,7 @@ public abstract class NodeResDTO {
 	@SuperBuilder
 	public static class GPUInfo {
 		private String nodeName;
-		private String onePerMemory;
-		private Integer gpuCount;
+		private Integer gpuOnePerMemory;
 		private Integer maximumGpuCount;
 		private boolean useAllGPUStatus;
 	}

@@ -7,15 +7,18 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 import com.xiilab.modulek8s.storage.common.crd.NFS.status.History;
+import com.xiilab.modulek8s.storage.common.service.DellService;
+import com.xiilab.modulek8s.storage.common.service.IbmService;
+import com.xiilab.modulek8s.storage.common.service.WekaFsService;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
 import com.xiilab.modulek8s.storage.provisioner.vo.ProvisionerVO;
 
@@ -31,7 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 	private final K8sAdapter k8sAdapter;
-
+	private final IbmService ibmService;
+	private final DellService dellService;
+	private final WekaFsService wekaFsService;
 	private static void checkInstallation(StorageType storageType, KubernetesClient client) {
 		MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> nfsClient = client.resources(
 			HelmRelease.class);
@@ -116,13 +121,22 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 	@Override
 	public void installProvisioner(StorageType storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			if (storageType.equals(StorageType.NFS)) {
+			if (storageType == StorageType.NFS) {
 				//이미 설치된 provisioner가 있는지 확인
 				checkInstallation(storageType, client);
 				MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
 					HelmRelease.class);
 				HelmRelease nfsResource = ProvisionerVO.createNFSResource();
 				helmClient.inNamespace("csi").resource(nfsResource).create();
+			} else if (storageType == StorageType.IBM) {
+				// IBM Block 스토리지 설치
+				ibmService.ibmInstall(client);
+			} else if (storageType == StorageType.WEKA_FS) {
+				// WEKA 스토리지 설치
+				wekaFsService.wekaFsInstall(client);
+			} else if(storageType == StorageType.DELL){
+				// Dell CSI 스토리지 설치
+				dellService.dellCrdInstall();
 			}
 		}
 	}
@@ -130,10 +144,18 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 	@Override
 	public void unInstallProvisioner(StorageType storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
-				HelmRelease.class);
-			helmClient.inNamespace("csi").withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
-				.delete();
+			if(storageType == StorageType.NFS){
+				MixedOperation<HelmRelease, KubernetesResourceList<HelmRelease>, Resource<HelmRelease>> helmClient = client.resources(
+					HelmRelease.class);
+				helmClient.inNamespace("csi").withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
+					.delete();
+			}else if(storageType == StorageType.IBM){
+				ibmService.ibmDelete(client);
+			}else if(storageType == StorageType.DELL){
+				dellService.dellCsiUnInstall();
+			} else if (storageType == StorageType.WEKA_FS) {
+				wekaFsService.wekaFsUnInstall();
+			}
 		}
 	}
 }

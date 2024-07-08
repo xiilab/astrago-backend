@@ -11,6 +11,7 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
@@ -86,4 +87,9 @@ public interface WorkloadModuleFacadeService {
 	void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description);
 
 	void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name, String description);
+
+
+	List<Pod> getWorkloadByWorkloadName(String resourceName);
+
+	GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName);
 }

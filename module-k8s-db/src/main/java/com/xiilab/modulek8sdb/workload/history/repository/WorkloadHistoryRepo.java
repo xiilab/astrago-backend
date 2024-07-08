@@ -43,6 +43,11 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 	@Query("update TB_WORKLOAD t set t.startTime = :now where t.resourceName = :resourceName")
 	void insertWorkloadStartTime(@Param("resourceName") String resourceName, @Param("now") LocalDateTime now);
 
+	@Transactional
+	@Modifying
+	@Query("update TB_WORKLOAD t set t.endTime = :now where t.resourceName = :resourceName")
+	void updateWorkloadEndTime(@Param("resourceName") String resourceName, @Param("now") LocalDateTime now);
+
 	@Query("""
   			select t
   			from TB_WORKLOAD t
@@ -52,4 +57,14 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
   				and twj.gpuType in (:types)
 		""")
 	List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(@Param("workspaceResourceName") String workspaceResourceName, @Param("statuses") List<WorkloadStatus> statuses, @Param("types") List<GPUType> types);
+
+	@Transactional
+	@Modifying
+	@Query("""
+		update TB_WORKLOAD t 
+		set t.gpuOnePerMemory = :memory,
+		t.gpuName = CASE WHEN :gpuName IS NULL THEN t.gpuName ELSE :gpuName END 
+		where t.resourceName = :resourceName
+""")
+	void insertGpuInfo(@Param("resourceName") String resourceName, @Param("gpuName") String gpuName, @Param("memory") int memory);
 }

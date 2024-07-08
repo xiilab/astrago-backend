@@ -31,7 +31,7 @@ class ImageRepositoryTest {
 
 		assertThat(imageEntities.size()).isEqualTo(1);
 		assertThat(imageEntities.get(0).getId()).isEqualTo(1);
-		assertThat(imageEntities.get(0).getImageNameHub()).isEqualTo("test:v1");
+		assertThat(imageEntities.get(0).getImageName()).isEqualTo("test:v1");
 		assertThat(((BuiltInImageEntity)imageEntities.get(0)).getTitle()).isEqualTo("nginx 이미지");
 		assertThat(((BuiltInImageEntity)imageEntities.get(0)).getThumbnailSavePath()).isEqualTo("/usr/local/[uuid].png");
 		assertThat(((BuiltInImageEntity)imageEntities.get(0)).getThumbnailSaveFileName()).isEqualTo("test.png");

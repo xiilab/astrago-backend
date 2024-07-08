@@ -35,5 +35,5 @@ public interface ModelFacadeService {
 
 	DownloadFileResDTO getLocalModelFile(Long modelId, String filePath);
 
-	WorkloadResDTO.PageUsingModelDTO getWorkloadsUsingModel(PageInfo pageInfo, Long modelId);
+	WorkloadResDTO.PageUsingModelDTO getWorkloadsUsingModel(PageInfo pageInfo, Long modelId, UserDTO.UserInfo userInfo);
 }

@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
-import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.node.enumeration.MIGProduct;
 
@@ -250,19 +249,14 @@ public class ResponseDTO {
 		@Getter
 		public static class GPUInfo {
 			private String nodeName;
-			private String onePerMemory;
+			private Integer gpuOnePerMemory;
 			private Integer count;
 			private boolean useAllGPUStatus;
 
-			public GPUInfo(String nodeName, Integer onePerMemory, Integer count) {
+			public GPUInfo(String nodeName, Integer gpuOnePerMemory, Integer count, boolean useAllGPUStatus) {
 				this.nodeName = nodeName;
-				this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
-				this.count = count;
-			}
-
-			public GPUInfo(String nodeName, Integer onePerMemory, Integer count, boolean useAllGPUStatus) {
-				this.nodeName = nodeName;
-				this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
+				// this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
+				this.gpuOnePerMemory = gpuOnePerMemory;
 				this.count = count;
 				this.useAllGPUStatus = useAllGPUStatus;
 			}

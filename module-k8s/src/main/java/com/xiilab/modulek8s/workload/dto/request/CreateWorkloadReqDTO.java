@@ -40,6 +40,8 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected String nodeName;
 	protected String gpuName;
 	protected GPUType gpuType;
+	protected Integer gpuOnePerMemory;
+	protected Integer resourcePresetId;
 
 	protected void initializeCollection() {
 		this.codes = getListIfNotEmpty(this.codes);

@@ -202,14 +202,14 @@ public class PrometheusServiceImpl implements PrometheusService{
 		return new ResponseDTO.RealTimeDTO(
 			metric,
 			DataConverterUtil.formatDateTime(result.path("value").get(0).asDouble()),
-			DataConverterUtil.getStringOrNull(metricData, "namespace"),
-			DataConverterUtil.getStringOrNull(metricData, "node"),
-			DataConverterUtil.getStringOrNull(metricData, "kubernetes_node"),
-			DataConverterUtil.getStringOrNull(metricData, "pod"),
-			DataConverterUtil.getStringOrNull(metricData, "instance"),
-			DataConverterUtil.getStringOrNull(metricData, "modelName"),
-			DataConverterUtil.getStringOrNull(metricData, "gpu"),
-			DataConverterUtil.getStringOrNull(metricData, "resource"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "namespace"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "node"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "kubernetes_node"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "pod"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "instance"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "modelName"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "gpu"),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "resource"),
 			String.valueOf(value)
 		);
 	}
@@ -281,16 +281,16 @@ public class PrometheusServiceImpl implements PrometheusService{
 		JsonNode values = result.path("values");
 		// ResponseDTO 객체 생성하여 반환
 		return ResponseDTO.HistoryDTO.builder()
-			.nameSpace(DataConverterUtil.getStringOrNull(metricData, "namespace"))
-			.instance(DataConverterUtil.getStringOrNull(metricData, "instance"))
+			.nameSpace(DataConverterUtil.getStringOrNullByJsonNode(metricData, "namespace"))
+			.instance(DataConverterUtil.getStringOrNullByJsonNode(metricData, "instance"))
 			.metricName(metric)
-			.kubeNodeName(DataConverterUtil.getStringOrNull(metricData, "kubernetes_node"))
-			.gpuIndex(DataConverterUtil.getStringOrNull(metricData, "gpu"))
-			.modelName(DataConverterUtil.getStringOrNull(metricData, "modelName"))
-			.podName(DataConverterUtil.getStringOrNull(metricData, "pod"))
-			.nodeName(DataConverterUtil.getStringOrNull(metricData, "node"))
-			.prettyName(DataConverterUtil.getStringOrNull(metricData, "pretty_name"))
-			.internalIp(DataConverterUtil.getStringOrNull(metricData, "internal_ip"))
+			.kubeNodeName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "kubernetes_node"))
+			.gpuIndex(DataConverterUtil.getStringOrNullByJsonNode(metricData, "gpu"))
+			.modelName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "modelName"))
+			.podName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "pod"))
+			.nodeName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "node"))
+			.prettyName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "pretty_name"))
+			.internalIp(DataConverterUtil.getStringOrNullByJsonNode(metricData, "internal_ip"))
 			.valueDTOS(createHistoryValue(values))
 			.build();
 	}
@@ -354,11 +354,16 @@ public class PrometheusServiceImpl implements PrometheusService{
 			result = result + "pod=~\"" + requestDTO.podName() + ".*\"";
 		}
 		if(promql.getType().equals("TERMINAL") && Promql.TERMINAL_CPU_UTILIZATION.name().equals(requestDTO.metricName())){
-			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"", "node =~ \"" + requestDTO.nodeName() + ".*\"");
+			String nodeName = requestDTO.nodeName() == null ? "" : "node =~ \"" + requestDTO.nodeName() + ".*\"";
+			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"", nodeName);
 		}
 		if (Promql.TERMINAL_MULTI_CPU_UTILIZATION.name().equals(requestDTO.metricName())) {
 			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"");
 		}
+		if(promql.getType().equals("INSTANCE")){
+			return String.format(promql.getQuery(), "instance =~\"" + requestDTO.instance() + ".*\"");
+		}
+
 		return String.format(promql.getQuery(), result.toLowerCase());
 	}
 }

@@ -311,14 +311,11 @@ create table if not exists TB_HUB
     REG_USER_REAL_NAME     varchar(255)                            null,
     SOURCE_CODE_BRANCH     varchar(255)                            null,
     SOURCE_CODE_MOUNT_PATH varchar(255)                            null,
-    SOURCE_CODE_URL_GITHUB varchar(255)                            null,
-    SOURCE_CODE_URL_GITLAB varchar(255)                            null,
     TITLE                  varchar(255)                            null,
     IMAGE_ID               bigint                                  null,
-    README_URL_GITHUB      varchar(255)                            null,
-    README_URL_GITLAB      varchar(255)                            null,
-    THUMBNAIL_URL_GITHUB   varchar(255)                            null,
-    THUMBNAIL_URL_GITLAB   varchar(255)                            null,
+    SOURCE_CODE_URL varchar(255)                            null,
+    README_URL     varchar(255)                            null,
+    THUMBNAIL_URL   varchar(255)                            null,
     WORKLOAD_TYPE          enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
     PARAMETER              varchar(1000)                           null
 );
@@ -367,8 +364,7 @@ create table if not exists TB_IMAGE
     MOD_DATE             datetime(6)                             null,
     REG_DATE             datetime(6)                             null,
     IMAGE_TYPE           varchar(31)                             not null,
-    IMAGE_NAME_HUB       varchar(255)                            null,
-    IMAGE_NAME_HARBOR    varchar(255)                            null,
+    IMAGE_NAME       varchar(255)                            null,
     REG_USER_ID          varchar(255)                            null,
     REG_USER_NAME        varchar(255)                            null,
     REG_USER_REAL_NAME   varchar(255)                            null,
@@ -769,8 +765,6 @@ create index if not exists FK9pb3yd1r6r91gcs8crjhkhy8u
 create table if not exists TB_WORKLOAD_JOB
 (
     WORKLOAD_ID  bigint       not null primary key,
-    GPU_NAME         varchar(255)                  null,
-    GPU_TYPE         enum ('MIG', 'MPS', 'NORMAL') null,
     WORKLOAD_REQ_CPU float                         null,
     WORKLOAD_REQ_GPU int                           null,
     WORKLOAD_REQ_MEM float                         null,
@@ -812,13 +806,10 @@ create table if not exists TB_WORKSPACE_SETTING
 CREATE TABLE if not exists TB_NETWORK
 (
     NETWORK_ID             bigint(20) NOT NULL AUTO_INCREMENT,
-    CONNECTION_TEST_HARBOR varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 폐쇄망 도커 이미지 경로',
-    CONNECTION_TEST_HUB    varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 도커 이미지 경로',
-    INIT_CONTAINER_HARBOR  varchar(255)   DEFAULT NULL COMMENT 'init container 용 폐쇄망 도커 이미지 경로',
-    INIT_CONTAINER_HUB     varchar(255)   DEFAULT NULL COMMENT 'init container 용 도커 이미지 경로',
-    LOCAL_VOLUME_HARBOR    varchar(255)   DEFAULT NULL COMMENT '로컬 데이터 셋, 모델 용 폐쇄망 도커 이미지 경로',
-    LOCAL_VOLUME_HUB       varchar(255)   DEFAULT NULL COMMENT '로컬 데이터 셋, 모델 용 도커 이미지 경로',
     NETWORK_CLOSE_YN       enum ('Y','N') DEFAULT NULL,
+    PRIVATE_REPOSITORY_URL varchar(255)   DEFAULT NULL COMMENT 'private repository url',
+    INIT_CONTAINER_IMAGE_URL    varchar(255)   DEFAULT NULL COMMENT 'init container 용 폐쇄망 도커 이미지 경로',
+    LOCAL_VOLUME_IMAGE_URL  varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 도커 이미지 경로',
     PRIMARY KEY (`NETWORK_ID`)
 );
 

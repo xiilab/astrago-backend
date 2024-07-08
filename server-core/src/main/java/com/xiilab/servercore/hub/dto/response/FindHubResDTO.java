@@ -28,12 +28,14 @@ public class FindHubResDTO extends ResDTO {
 	private String[] types;
 	private String thumbnailUrl;
 
-	public static FindHubResDTO of(HubEntity hubEntity, Map<Long, Set<String>> typesMap, NetworkCloseYN networkCloseYN) {
+	public static FindHubResDTO of(HubEntity hubEntity, Map<Long, Set<String>> typesMap,
+		NetworkCloseYN networkCloseYN) {
 		return FindHubResDTO.builder()
 			.id(hubEntity.getHubId())
 			.title(hubEntity.getTitle())
 			.description(hubEntity.getDescription())
-			.thumbnailUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrlGitLab() : hubEntity.getThumbnailUrlGitHub())
+			.thumbnailUrl(
+				networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrl() : hubEntity.getThumbnailUrl())
 			.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
 			.regUserName(hubEntity.getRegUser().getRegUserName())
 			.regUserId(hubEntity.getRegUser().getRegUserId())
@@ -54,7 +56,7 @@ public class FindHubResDTO extends ResDTO {
 		private String modelMountPath;
 		private FindHubCommonResDTO.HubImage hubImage;
 		private Map<String, String> envs;
-		private Map<String,String> parameter;
+		private Map<String, String> parameter;
 		private Map<String, Integer> ports;
 		private String command;
 
@@ -65,10 +67,10 @@ public class FindHubResDTO extends ResDTO {
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.description(hubEntity.getDescription())
-					.thumbnailUrl(hubEntity.getThumbnailUrlGitHub())
-					.readmeUrl(hubEntity.getReadmeUrlGitHub())
+					.thumbnailUrl(hubEntity.getThumbnailUrl())
+					.readmeUrl(hubEntity.getReadmeUrl())
 					.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
-					.sourceCodeUrl(hubEntity.getSourceCodeUrlGitHub())
+					.sourceCodeUrl(hubEntity.getSourceCodeUrl())
 					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
 					.sourceCodeMountPath(hubEntity.getSourceCodeMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
@@ -81,7 +83,7 @@ public class FindHubResDTO extends ResDTO {
 						}) : null)
 					.command(hubEntity.getCommand())
 					.parameter(hubEntity.getParameter() != null ?
-						objectMapper.readValue(hubEntity.getParameter(), new TypeReference<Map<String,String>>() {
+						objectMapper.readValue(hubEntity.getParameter(), new TypeReference<Map<String, String>>() {
 						}) : null)
 					.regUserName(hubEntity.getRegUser().getRegUserName())
 					.regUserId(hubEntity.getRegUser().getRegUserId())
@@ -92,16 +94,20 @@ public class FindHubResDTO extends ResDTO {
 				throw new RestApiException(HubErrorCode.FAILED_ENV_MAP_TO_JSON);
 			}
 		}
-		public void setHubImage(FindHubCommonResDTO.HubImage findHubCommonResDTO){
+
+		public void setHubImage(FindHubCommonResDTO.HubImage findHubCommonResDTO) {
 			this.hubImage = findHubCommonResDTO;
 		}
-		public void setReadmeUrl(String readmeUrl){
+
+		public void setReadmeUrl(String readmeUrl) {
 			this.readmeUrl = readmeUrl;
 		}
-		public void setThumbnailUrl(String thumbnailUrl){
+
+		public void setThumbnailUrl(String thumbnailUrl) {
 			this.thumbnailUrl = thumbnailUrl;
 		}
-		public void changeSourceCodeUrl(String sourceCodeUrl){
+
+		public void changeSourceCodeUrl(String sourceCodeUrl) {
 			this.sourceCodeUrl = sourceCodeUrl;
 		}
 	}
@@ -112,9 +118,12 @@ public class FindHubResDTO extends ResDTO {
 		private List<FindHubResDTO> hubsDto;
 		private long totalCount;
 
-		public static Hubs from(List<HubEntity> hubEntities, Long totalCount, Map<Long, Set<String>> typesMap, NetworkCloseYN networkCloseYN) {
+		public static Hubs from(List<HubEntity> hubEntities, Long totalCount, Map<Long, Set<String>> typesMap,
+			NetworkCloseYN networkCloseYN) {
 			return FindHubResDTO.Hubs.builder()
-				.hubsDto(hubEntities.stream().map(hubEntity -> FindHubResDTO.of(hubEntity, typesMap, networkCloseYN)).toList())
+				.hubsDto(hubEntities.stream()
+					.map(hubEntity -> FindHubResDTO.of(hubEntity, typesMap, networkCloseYN))
+					.toList())
 				.totalCount(totalCount)
 				.build();
 		}

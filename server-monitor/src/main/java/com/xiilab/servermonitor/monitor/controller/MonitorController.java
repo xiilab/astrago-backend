@@ -36,12 +36,14 @@ public class MonitorController {
 		@RequestParam(name = "metricName") String metricName,
 		@RequestParam(name = "namespace", required = false) String namespace,
 		@RequestParam(name = "podName", required = false) String podName,
-		@RequestParam(name = "nodeName", required = false) String nodeName) {
+		@RequestParam(name = "nodeName", required = false) String nodeName,
+		@RequestParam(name = "instance", required = false) String instance) {
 		RequestDTO requestDTO = RequestDTO.builder()
 			.metricName(metricName)
 			.namespace(namespace)
 			.podName(podName)
 			.nodeName(nodeName)
+			.instance(instance)
 			.build();
 		return new ResponseEntity<>(monitorService.getRealTimeMetric(requestDTO), HttpStatus.OK);
 	}

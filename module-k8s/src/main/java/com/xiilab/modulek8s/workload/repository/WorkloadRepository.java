@@ -184,4 +184,6 @@ public interface WorkloadRepository {
 	Job getBatchJob(String workspaceName, String workloadName);
 
 	Deployment getInteractiveJob(String workspaceName, String workloadName);
+
+	List<Pod> getWorkloadsByWorkloadName(String resourceName);
 }

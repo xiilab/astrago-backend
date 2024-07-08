@@ -18,6 +18,7 @@ import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -82,6 +83,9 @@ public abstract class AbstractModuleWorkloadResDTO {
 	private String startTime;    // 파드 실행시간
 	private GPUType gpuType;
 	private String gpuName;
+	private String nodeName;
+	private Integer gpuOnePerMemory;
+	private Integer resourcePresetId;
 
 	protected AbstractModuleWorkloadResDTO(HasMetadata hasMetadata) {
 		if (hasMetadata != null) {
@@ -121,6 +125,13 @@ public abstract class AbstractModuleWorkloadResDTO {
 				GPUType.valueOf(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_TYPE.getField())) : null;
 			gpuName = StringUtils.hasText(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_NAME.getField()))?
 				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_NAME.getField()) : null;
+			nodeName = StringUtils.hasText(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NODE_NAME.getField()))?
+				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.NODE_NAME.getField()) : null;
+			gpuOnePerMemory = !ValidUtils.isNullOrEmpty(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_ONE_PER_MEMORY.getField()))?
+				Integer.parseInt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.GPU_ONE_PER_MEMORY.getField())) : null;
+			resourcePresetId = !ValidUtils.isNullOrEmpty(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.RESOURCE_PRESET_ID.getField()))?
+				Integer.parseInt(hasMetadata.getMetadata().getAnnotations().get(AnnotationField.RESOURCE_PRESET_ID.getField())) : null;
+
 		} else {
 			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO);
 		}
