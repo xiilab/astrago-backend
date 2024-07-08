@@ -1,4 +1,4 @@
-package com.xiilab.servercore.Statistics.controller;
+package com.xiilab.servercore.statistics.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +16,8 @@ import lombok.RequiredArgsConstructor;
 public class StatisticsController {
 	private final StatisticsRepository statisticsRepository;
 
-	@GetMapping("/test")
-	public ResponseEntity<HttpStatus> test() {
+	@GetMapping()
+	public ResponseEntity<HttpStatus> getStatistics() {
 
 		statisticsRepository.resourceUsageDTOList();
 		statisticsRepository.resourceRequestDTOList();
