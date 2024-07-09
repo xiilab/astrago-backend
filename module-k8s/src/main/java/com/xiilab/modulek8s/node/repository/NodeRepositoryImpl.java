@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -244,16 +243,18 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private boolean isActiveMIG(Node node) {
 		// product에 "MIG"가 포함되어 있거나 라벨에 "mig-"가 포함되어 있을 경우
-		String gpuName = node.getMetadata().getLabels().getOrDefault(GPU_NAME, "");
-		boolean migStrategyStatus = node.getMetadata()
-			.getLabels()
-			.containsKey(MIG_STRATEGY);
+		// String gpuName = node.getMetadata().getLabels().getOrDefault(GPU_NAME, "");
+		// boolean migStrategyStatus = node.getMetadata()
+		// 	.getLabels()
+		// 	.containsKey(MIG_STRATEGY);
 
-		return migStrategyStatus && ("MIG".contains(gpuName) || node.getMetadata()
-			.getLabels()
-			.keySet()
-			.stream()
-			.anyMatch(key -> key.contains("mig-")));
+		boolean migConfigStatus =
+			node.getMetadata().getLabels().containsKey("nvidia.com/mig.config") && !"all-disabled".equals(
+				node.getMetadata().getLabels().get("nvidia.com/mig.config"));
+		boolean migCapableStatus = node.getMetadata().getLabels().containsKey("nvidia.com/mig.capable") && "true".equals(
+			node.getMetadata().getLabels().get("nvidia.com/mig.capable"));
+
+		return migConfigStatus && migCapableStatus;
 	}
 
 	private boolean isActiveMPS(Node node) {
@@ -483,13 +484,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 
 	private boolean getMpsCapable(Node node) {
 		String gpuType = node.getMetadata().getLabels().get("nvidia.com/gpu.family");
-		List<String> gpuTypes = Arrays.asList("kepler", "maxwell", "pascal");
-		if (Objects.nonNull(gpuType) && !gpuTypes.stream().anyMatch(gpuType::equalsIgnoreCase)) {
+		if (Objects.nonNull(gpuType) && gpuType.equalsIgnoreCase("volta")) {
 			return true;
 		}
-		/*if (Objects.nonNull(gpuType) && gpuType.equalsIgnoreCase("volta")) {
-			return true;
-		}*/
 		return false;
 	}
 
@@ -699,11 +696,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 			if (status == MPSStatus.UPDATING) {
 				status = customMpsCapable.equalsIgnoreCase("true") ? MPSStatus.UPDATING_ON : MPSStatus.UPDATING_OFF;
 			}
-			boolean gpuVoltaCheck = false;
-			List<String> gpuTypes = Arrays.asList("kepler", "maxwell", "pascal");
-			if (Objects.nonNull(gpuType) && !gpuTypes.stream().anyMatch(gpuType::equalsIgnoreCase)) {
-				gpuVoltaCheck = true;
-			}
 			return MPSGpuDTO.MPSInfoDTO.builder()
 				.nodeName(nodeName)
 				.gpuName(gpu)
@@ -712,7 +704,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.mpsReplicas(mpsReplicas)
 				.mpsStatus(status)
 				.totalMemory(totalMemory)
-				.mpsMaxReplicas(gpuVoltaCheck ? 48 : 16)
+				.mpsMaxReplicas(gpuType.equalsIgnoreCase("volta") ? 48 : 16)
 				.build();
 		}
 	}
@@ -724,14 +716,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 			//volta 검사해야함
 			Node nodeInfo = client.nodes().withName(nodeName).get();
 			String gpuType = nodeInfo.getMetadata().getLabels().get("nvidia.com/gpu.family"); // gpu 종류(volta 등)
-			String migConfig = nodeInfo.getMetadata().getLabels().get("nvidia.com/mig.config"); // mig 설정 유무
 			String migCapable = nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) != null ?
 				nodeInfo.getMetadata().getLabels().get(MIG_CAPABLE) : "false"; // gpu 종류(volta 등)
-			List<String> gpuTypes = Arrays.asList("kepler", "maxwell", "pascal");
-			if (Objects.isNull(gpuType) || gpuTypes.stream().anyMatch(gpuType::equalsIgnoreCase)) {
+			if (!gpuType.equalsIgnoreCase("volta")) {
 				throw new K8sException(NodeErrorCode.NOT_SUPPORTED_MPS_GPU);
 			}
-			if (migCapable.equalsIgnoreCase("true") && !migConfig.equalsIgnoreCase("all-disabled")) {
+			if (migCapable.equalsIgnoreCase("true")) {
 				throw new K8sException(NodeErrorCode.NODE_IN_USE_NOT_MPS);
 			}
 			//해당 노드에 생성된 Pod중 gpu를 사용하고있는 pod가 있는지 체크
