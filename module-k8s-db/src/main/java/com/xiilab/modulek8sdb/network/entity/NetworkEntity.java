@@ -50,4 +50,7 @@ public class NetworkEntity {
 	public void modifyNetworkStatus(NetworkCloseYN networkCloseYN){
 		this.networkCloseYN = networkCloseYN;
 	}
+	public void modifyPrivateRepositoryUrl(String privateRepositoryUrl){
+		this.privateRepositoryUrl = privateRepositoryUrl;
+	}
 }

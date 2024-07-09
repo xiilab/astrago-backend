@@ -441,7 +441,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
 			AlertName.USER_WORKLOAD_END, null, workload.getCreatorId(), emailTitle, title, message,
-			workload.getWorkspaceResourceName(), pageNaviParam, mailDTO);
+			workload.getWorkspaceResourceName(), pageNaviParam, null);
 
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}

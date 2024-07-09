@@ -211,9 +211,7 @@ public enum Promql {
 	SYSTEM_CPU_CORE_COUNT("avg(machine_cpu_cores{%s}) by (node)", "NODE CPU 코어 총 갯수 조회, 필수 값 nodeName, 단위 : Core", "NODE"),
 	SYSTEM_MEMORY_BYTE("avg(machine_memory_bytes{%s}) by (node)", "NODE의 총 메모리, 필수 값 nodeName, 단위 : Byte", "NODE"),
 	SYSTEM_DISK_BYTE("max by (mountpoint) (node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint = \"/\", %s})", "NDOE의 총 DISK, 필수 값 nodeName, 단위 : Byte ", "INSTANCE"),
-	SYSTEM_GPU_MODEL("count(DCGM_FI_DEV_GPU_TEMP{%s}) by(kubernetes_node, modelName)", "GPU 모델명 및 개수 조회, 필수 값 instance, 단위 : 개", "GPU"),
-
-
+	SYSTEM_GPU_MODEL("count(DCGM_FI_DEV_GPU_TEMP{%s}) by(kubernetes_node, modelName)", "GPU 모델명 및 개수 조회, 필수 값 instance, 단위 : 개", "GPU")
 	;
 // GPU 사용량, GPU Limit, GPU Request
 	private final String query;
