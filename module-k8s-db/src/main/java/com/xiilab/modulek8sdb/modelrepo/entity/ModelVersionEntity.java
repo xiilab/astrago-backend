@@ -13,21 +13,19 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_MODEL_REPO_LABEL")
+@Entity(name = "TB_MODEL_REPO_VERSION")
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class ModelLabelEntity {
-
+public class ModelVersionEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "MODEL_REPO_LABEL_ID")
+	@Column(name = "MODEL_REPO_VERSION_ID")
 	private long id;
+	@Column(name = "VERSION")
+	private String version;
 	@ManyToOne
 	@JoinColumn(name = "MODEL_REPO_ID")
 	private ModelRepoEntity modelRepoEntity;
-	@ManyToOne
-	@JoinColumn(name = "LABEL_ID")
-	private LabelEntity labelEntity;
 }
