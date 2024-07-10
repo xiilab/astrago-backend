@@ -331,8 +331,13 @@ public class K8sInfoPicker {
 			if (node.getMetadata().getLabels().containsKey("nvidia.com/mig.config")) {
 				int capacityGPU = node.getStatus().getCapacity().get("nvidia.com/gpu") == null ?
 					0 : Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").getAmount());
+				int migCount = 0;
 				if (capacityGPU == 0) {
-					int migCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/mig-count"));
+					try {
+						migCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/mig-count"));
+					} catch (Exception e) {
+						continue;
+					}
 					gpu += migCount;
 				} else {
 					gpu += capacityGPU;
