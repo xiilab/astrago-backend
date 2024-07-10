@@ -36,6 +36,8 @@ public class ModelRepoEntity {
 	private String modelName;
 	@Column(name = "MODEL_REPO_DESCRIPTION")
 	private String description;
+	@Column(name = "MODEL_REPO_MODEL_REAL_NAME")
+	private String modelRepoRealName;
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
 	@Column(name = "MODEL_REPO_SIZE")

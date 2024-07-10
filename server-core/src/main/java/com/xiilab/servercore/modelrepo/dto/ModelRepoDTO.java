@@ -1,6 +1,7 @@
 package com.xiilab.servercore.modelrepo.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
@@ -36,6 +37,7 @@ public class ModelRepoDTO {
 			return ModelRepoEntity.builder()
 				.description(this.getDescription())
 				.modelName(this.getModelName())
+				.modelRepoRealName("model-" + UUID.randomUUID().toString().substring(6))
 				.workspaceResourceName(this.getWorkspaceResourceName())
 				.storageEntity(storageEntity)
 				.build();

@@ -114,11 +114,12 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 
 	private void createFile(ModelRepoEntity saveModel, List<MultipartFile> files) {
 		//파일 업로드
-		String storageRootPath = saveModel.getStorageEntity().getHostPath();
+		String storageRootPath =
+			saveModel.getStorageEntity().getHostPath() + "/workspaces/" + saveModel.getWorkspaceResourceName();
 		String saveDirectoryName =
-			saveModel.getModelName().replace(" ", "") + "/"
-				+ saveModel.getModelVersionList().get(0).getVersion();
-		String modelPath = storageRootPath + "/" + saveModel.getWorkspaceResourceName() + "/" + saveDirectoryName;
+			saveModel.getModelRepoRealName().replace(" ", "");
+		String modelPath = storageRootPath + "/" + saveDirectoryName + "/"
+			+ saveModel.getModelVersionList().get(0).getVersion();
 
 		long size = 0;
 		// 업로드된 파일을 저장할 경로 설정
@@ -135,7 +136,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			}
 			//model 저장
 			saveModel.setModelSize(size);
-			saveModel.setModelPath(modelPath);
+			saveModel.setModelPath(storageRootPath);
 			saveModel.setSaveDirectoryName(saveDirectoryName);
 		} catch (IOException e) {
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
