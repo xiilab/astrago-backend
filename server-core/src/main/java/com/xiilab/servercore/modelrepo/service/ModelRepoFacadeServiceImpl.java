@@ -14,10 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelRepoErrorCode;
-import com.xiilab.modulek8sdb.modelrepo.entity.LabelEntity;
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
+import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
-import com.xiilab.modulek8sdb.modelrepo.repository.LabelRepository;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
@@ -100,7 +101,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	}
 
 	private LabelEntity getLabelEntityById(long id) {
-		return labelRepository.findById(id).orElseThrow(() -> new RestApiException(ModelRepoErrorCode.LABEL_NOT_FOUND));
+		return labelRepository.findById(id).orElseThrow(() -> new RestApiException(LabelErrorCode.LABEL_NOT_FOUND));
 	}
 
 	private List<ModelRepoEntity> getModelRepoEntityListByWorkspaceResourceName(String workspaceResourceName) {

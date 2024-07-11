@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.modelrepo.repository;
+package com.xiilab.modulek8sdb.label.repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.xiilab.modulek8sdb.modelrepo.entity.LabelEntity;
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 
 public interface LabelRepository extends JpaRepository<LabelEntity, Long> {
 

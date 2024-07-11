@@ -1,5 +1,7 @@
 package com.xiilab.modulek8sdb.modelrepo.entity;
 
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

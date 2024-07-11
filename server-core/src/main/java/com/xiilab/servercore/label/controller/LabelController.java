@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,15 +34,14 @@ public class LabelController {
 	@Operation(summary = "라벨 저장 API")
 	public ResponseEntity<HttpStatus> saveLabel(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
-		@RequestParam(name = "labelName") String labelName,
-		@RequestParam(name = "colorCode") String colorCode) {
-		labelService.addLabel(workspaceResourceName, labelName, colorCode);
+		@RequestBody LabelDTO labelDTO) {
+		labelService.addLabel(workspaceResourceName, labelDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/{workspaceResourceName}")
 	@Operation(summary = "해당 워크스페이스에 등록된 라벨 리스트 조회 API")
-	public ResponseEntity<List<LabelDTO>> getLabels(
+	public ResponseEntity<List<LabelDTO.RequestDTO>> getLabels(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
 		return new ResponseEntity<>(labelService.getLabels(workspaceResourceName), HttpStatus.OK);
 	}
