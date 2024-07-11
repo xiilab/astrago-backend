@@ -6,9 +6,9 @@ import com.xiilab.servercore.label.dto.LabelDTO;
 
 public interface LabelService {
 
-	void addLabel(String workspaceResourceName,String labelName, String colorCode);
+	void addLabel(String workspaceResourceName, LabelDTO labelDTO);
 
-	List<LabelDTO> getLabels(String workspaceResourceName);
+	List<LabelDTO.RequestDTO> getLabels(String workspaceResourceName);
 
 	boolean checkLabel(String workspaceResourceName, String labelName);
 

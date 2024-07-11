@@ -24,7 +24,7 @@ public class ModelRepoDTO {
 	protected String modelName;
 	protected String description;
 	protected String workspaceResourceName;
-	protected List<LabelDTO> labels;
+	protected List<LabelDTO.RequestDTO> labels;
 
 	@Getter
 	@AllArgsConstructor
@@ -65,7 +65,7 @@ public class ModelRepoDTO {
 				.storageType(modelRepoEntity.getStorageEntity().getStorageType())
 				.storagePath(modelRepoEntity.getStorageEntity().getStoragePath())
 				.ip(modelRepoEntity.getStorageEntity().getIp())
-				.labels(modelRepoEntity.getModelLabelEntityList().stream().map(modelLabelEntity -> LabelDTO.convertLabelDTO(modelLabelEntity.getLabelEntity())).toList())
+				.labels(modelRepoEntity.getModelLabelEntityList().stream().map(modelLabelEntity -> LabelDTO.RequestDTO.convertLabelDTO(modelLabelEntity.getLabelEntity())).toList())
 				.version(modelRepoEntity.getModelVersionList().stream().map(VersionDTO::convertVersionDTO).toList())
 				.build();
 		}

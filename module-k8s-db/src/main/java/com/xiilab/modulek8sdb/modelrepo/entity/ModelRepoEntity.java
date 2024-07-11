@@ -3,6 +3,7 @@ package com.xiilab.modulek8sdb.modelrepo.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import jakarta.persistence.CascadeType;

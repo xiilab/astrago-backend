@@ -1,7 +1,9 @@
-package com.xiilab.modulek8sdb.modelrepo.entity;
+package com.xiilab.modulek8sdb.label.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.xiilab.modulek8sdb.modelrepo.entity.ModelLabelEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -33,6 +35,8 @@ public class LabelEntity {
 	private String workspaceResourceName;
 	@Column(name = "LABEL_COLER_CODE")
 	private String colorCode;
+	@Column(name = "LABEL_COLER_NAME")
+	private String colorCodeName;
 	@OneToMany(mappedBy = "labelEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<ModelLabelEntity> modelLabelEntityList = new ArrayList<>();
 }

@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.ModelRepoErrorCode;
-import com.xiilab.modulek8sdb.modelrepo.entity.LabelEntity;
-import com.xiilab.modulek8sdb.modelrepo.repository.LabelRepository;
+import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
+import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.servercore.label.dto.LabelDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -23,45 +23,57 @@ public class LabelServiceImpl implements LabelService {
 
 	@Override
 	@Transactional
-	public void addLabel(String workspaceResourceName, String labelName, String colorCode) {
+	public void addLabel(String workspaceResourceName, LabelDTO labelDTO) {
 		// 라벨 이름 중복 체크
-		Optional<LabelEntity> findLabel = getLabelByWorkspaceResourceNameAndLabelName(workspaceResourceName, labelName);
+		Optional<LabelEntity> findLabel = getLabelByWorkspaceResourceNameAndLabelName(workspaceResourceName,
+			labelDTO.getLabelName());
+		// 해당 워크스페이스에 해당 이름의 라벨이 없는경우 생성
 		if (findLabel.isEmpty()) {
 			try {
-				labelRepository.save(LabelEntity.builder()
-					.name(labelName)
-					.workspaceResourceName(workspaceResourceName)
-					.colorCode(colorCode)
-					.build());
+				labelRepository.save(labelDTO.convertLabelEntity(workspaceResourceName));
 			} catch (IllegalArgumentException e) {
-				throw new RestApiException(ModelRepoErrorCode.LABEL_SAVE_FAIL);
+				throw new RestApiException(LabelErrorCode.LABEL_SAVE_FAIL);
 			}
 		} else {
-			throw new RestApiException(ModelRepoErrorCode.LABEL_DUPLICATE);
+			throw new RestApiException(LabelErrorCode.LABEL_DUPLICATE);
 		}
 	}
 
 	@Override
-	public List<LabelDTO> getLabels(String workspaceResourceName) {
-		List<LabelEntity> getModelLabels = labelRepository.findAllByWorkspaceResourceName(
-			workspaceResourceName);
-		return getModelLabels.stream().map(LabelDTO::convertLabelDTO).toList();
+	public List<LabelDTO.RequestDTO> getLabels(String workspaceResourceName) {
+		// 해당 워크스페이스의 등록된 라벨 리스트 조회
+		List<LabelEntity> getModelLabels = labelRepository.findAllByWorkspaceResourceName(workspaceResourceName);
+		return getModelLabels.stream().map(LabelDTO.RequestDTO::convertLabelDTO).toList();
 	}
 
 	@Override
 	public boolean checkLabel(String workspaceResourceName, String labelName) {
+		// 라벨 중복 체크
 		Optional<LabelEntity> findLabel = getLabelByWorkspaceResourceNameAndLabelName(workspaceResourceName, labelName);
 		return findLabel.isEmpty();
 	}
 
 	@Override
 	@Transactional
-	public void deleteLabelById(long id) {
-		labelRepository.deleteById(id);
+	public void deleteLabelById(long labelId) {
+		// 해당 ID의 라벨 삭제
+		if(getLabelEntity(labelId).isPresent()){
+			try{
+				labelRepository.deleteById(labelId);
+			}catch (IllegalArgumentException e){
+				throw new RestApiException(LabelErrorCode.LABEL_DELETE_FAIL);
+			}
+		}else{
+			throw new RestApiException(LabelErrorCode.LABEL_NOT_FOUND);
+		}
 	}
 
 	private Optional<LabelEntity> getLabelByWorkspaceResourceNameAndLabelName(String workspaceResourceName,
 		String labelName) {
 		return labelRepository.findByWorkspaceResourceNameAndName(workspaceResourceName, labelName);
+	}
+
+	private Optional<LabelEntity> getLabelEntity(long labelId) {
+		return labelRepository.findById(labelId);
 	}
 }
