@@ -117,6 +117,8 @@ public record ResponseDTO() {
 								  long memUsage,
 								  long gpuTotal,
 								  long gpuUsage,
+								  long migTotal,
+								  long migUsage,
 								  long diskTotal,
 								  long diskUsage) {
 	}
