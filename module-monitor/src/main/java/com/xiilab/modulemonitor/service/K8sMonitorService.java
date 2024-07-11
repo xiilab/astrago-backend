@@ -34,6 +34,8 @@ public interface K8sMonitorService {
 
 	ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName);
 
+	ResponseDTO.ResponseClusterDTO getDashboardClusterMIG(String nodeName);
+
 	Map<String, Map<String, Long>> getClusterReason(long minute);
 
 	String getNodeName(String podName, String namespace);
