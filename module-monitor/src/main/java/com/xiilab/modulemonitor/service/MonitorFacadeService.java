@@ -115,6 +115,8 @@ public class MonitorFacadeService {
 		ResponseDTO.ResponseClusterDTO clusterMEM = k8sMonitorService.getDashboardClusterMemByNode(nodeName, memResponse);
 		// GPU
 		ResponseDTO.ResponseClusterDTO clusterGPU = k8sMonitorService.getDashboardClusterGPU(nodeName);
+		// MIG
+		ResponseDTO.ResponseClusterDTO clusterMIG = k8sMonitorService.getDashboardClusterMIG(nodeName);
 
 		String diskTotal = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.NODE_TOTAL_DISK_SIZE_BYTE.getQuery(), node));
@@ -135,6 +137,8 @@ public class MonitorFacadeService {
 			.memUsage(clusterMEM.usage())
 			.gpuTotal(clusterGPU.total())
 			.gpuUsage(clusterGPU.usage())
+			.migTotal(clusterMIG.total())
+			.migUsage(clusterMIG.usage())
 			.diskTotal(Long.parseLong(diskTotalByte))
 			.diskUsage(Long.parseLong(diskUsageByte))
 			.build();

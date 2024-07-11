@@ -72,6 +72,12 @@ public class K8sMonitorServiceImpl implements K8sMonitorService{
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName) {
 		return k8sMonitorRepository.getDashboardClusterGPU(nodeName);
 	}
+
+	@Override
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterMIG(String nodeName) {
+		return k8sMonitorRepository.getDashboardClusterMIG(nodeName);
+	}
+
 	@Override
 	public Map<String, Map<String, Long>> getClusterReason(long minute){
 		return k8sMonitorRepository.getClusterReason(minute);

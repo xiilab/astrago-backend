@@ -320,6 +320,23 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	}
 
 	@Override
+	public ResponseDTO.ResponseClusterDTO getDashboardClusterMIG(String nodeName) {
+		List<Node> nodeList = getNodeList(nodeName);
+		List<Pod> podList = getRunningPod();
+		// 모든 노드의 GPU total 값을 합산
+		long totalGpuCapacity = totalCapacity(nodeList, "MIG");
+
+		// 모든 노드의 cpuRequest 값을 합산
+		String totalGpuRequests = totalRequests(nodeList, podList, "MIG");
+
+		return ResponseDTO.ResponseClusterDTO.builder()
+			.name("MIG")
+			.total(totalGpuCapacity)
+			.usage(Long.parseLong(totalGpuRequests))
+			.build();
+	}
+
+	@Override
 	public ResponseDTO.ResponseClusterResourceDTO getClusterTotalResource() {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Node> nodeList = kubernetesClient.nodes().list().getItems();
@@ -357,6 +374,10 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu")))
 				.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
 				.sum();
+			case "MIG" -> nodeList.stream()
+				.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu.shared")))
+				.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu.shared").toString()))
+				.sum();
 			default -> 0;
 		};
 	}
@@ -379,6 +400,14 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 					.toList();
 
 				return calculateTotalGpuRequests(runningPodsOnNode);
+			}).reduce("0", (x, y) -> String.valueOf(Integer.parseInt(x) + Integer.parseInt(y)));
+			case "MIG" -> nodeList.stream().map(node -> {
+				List<Pod> runningPodsOnNode = podList.stream()
+					.filter(pod ->
+						!StringUtils.isEmpty(pod.getSpec().getNodeName()) && pod.getSpec().getNodeName().equals(node.getMetadata().getName()))
+					.toList();
+
+				return calculateTotalMIGRequests(runningPodsOnNode);
 			}).reduce("0", (x, y) -> String.valueOf(Integer.parseInt(x) + Integer.parseInt(y)));
 			case "MEM" -> nodeList.stream().map(node -> {
 				List<Pod> runningPodsOnNode = podList.stream()
@@ -431,6 +460,19 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			.filter(container -> container.getResources().getRequests().get("nvidia.com/gpu") != null)
 			.map(container -> {
 				String gpuAmount = container.getResources().getRequests().get("nvidia.com/gpu").getAmount();
+				return gpuAmount;
+			})
+			.reduce("0", (acc, val) -> String.valueOf(Integer.parseInt(acc) + Integer.parseInt(val)));
+
+		return String.valueOf(Integer.parseInt(containerResult));
+	}
+
+	private String calculateTotalMIGRequests(List<Pod> podList) {
+		String containerResult = podList.stream()
+			.flatMap(pod -> pod.getSpec().getContainers().stream())
+			.filter(container -> container.getResources().getRequests().get("nvidia.com/gpu.shared") != null)
+			.map(container -> {
+				String gpuAmount = container.getResources().getRequests().get("nvidia.com/gpu.shared").getAmount();
 				return gpuAmount;
 			})
 			.reduce("0", (acc, val) -> String.valueOf(Integer.parseInt(acc) + Integer.parseInt(val)));
