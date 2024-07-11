@@ -136,6 +136,7 @@ public class MonitorController {
 		return new ResponseEntity<>(monitorService.getWlList(status), HttpStatus.OK);
 	}
 
+
 	/**
 	 * 해당 WS의 Resource Info 조회 API
 	 * @param namespace 조회될 WS name

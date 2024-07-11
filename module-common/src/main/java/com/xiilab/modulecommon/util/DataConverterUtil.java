@@ -19,6 +19,7 @@ import java.time.temporal.WeekFields;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -68,11 +69,11 @@ public class DataConverterUtil {
 		return field == null ? "" : field.asText();
 	}
 	public static String getInstance(String str) {
-		// JsonNode field = node.get(fieldName);
-		// return field == null ? "" : field.asText();
 		try {
 			JsonNode root = objectMapper.readTree(str);
 			return root.path("data").path("result").elements().next().get("metric").get("instance").asText();
+		} catch (NoSuchElementException e){
+			return "";
 		} catch (JsonProcessingException e) {
 			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
 		}
