@@ -22,7 +22,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-public class DistributedJobEntity extends WorkloadEntity {
+public class DistributedJobEntity extends DevelopEntity {
 	@Column(name = "LAUNCHER_CPU_REQUEST")
 	private Float launcherCpuRequest;
 	@Column(name = "LAUNCHER_MEM_REQUEST")

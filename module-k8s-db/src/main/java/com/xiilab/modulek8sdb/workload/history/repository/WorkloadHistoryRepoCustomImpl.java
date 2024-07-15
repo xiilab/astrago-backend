@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.repository;
 
+import static com.xiilab.modulek8sdb.workload.history.entity.QDevelopEntity.*;
 import static com.xiilab.modulek8sdb.workload.history.entity.QWorkloadEntity.*;
 
 import java.util.List;
@@ -117,8 +118,8 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 		return switch (sortType) {
 			case AGE_ASC -> new OrderSpecifier<>(Order.ASC, workloadEntity.createdAt);
 			case AGE_DESC -> new OrderSpecifier<>(Order.DESC, workloadEntity.createdAt);
-			case REMAIN_TIME_ASC -> new OrderSpecifier<>(Order.ASC, workloadEntity.remainTime);
-			case REMAIN_TIME_DESC -> new OrderSpecifier<>(Order.DESC, workloadEntity.remainTime);
+			case REMAIN_TIME_ASC -> new OrderSpecifier<>(Order.ASC, developEntity.remainTime);
+			case REMAIN_TIME_DESC -> new OrderSpecifier<>(Order.DESC, developEntity.remainTime);
 		};
 	}
 	private BooleanExpression eqName(String searchName) {

@@ -9,7 +9,7 @@ public enum WorkloadType {
 	BATCH("batch"),
 	INTERACTIVE("interactive"),
 	DISTRIBUTED("distributed"),
-	SERVICE("service"),
+	DEPLOY("deploy"),
 	;
 
 	private final String type;

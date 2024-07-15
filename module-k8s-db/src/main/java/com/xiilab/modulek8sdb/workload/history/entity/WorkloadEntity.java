@@ -10,12 +10,8 @@ import org.hibernate.annotations.SQLDelete;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
-import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -84,8 +80,6 @@ public abstract class WorkloadEntity {
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "WORKLOAD_STATUS")
 	protected WorkloadStatus workloadStatus;
-	@Column(name = "WORKLOAD_PARAMETER")
-	protected String parameter;
 	@ManyToOne(fetch = FetchType.EAGER)
 	protected ImageEntity image;
 	@Column(name = "DELETE_YN")
@@ -95,8 +89,6 @@ public abstract class WorkloadEntity {
 	protected LocalDateTime startTime;
 	@Column(name = "END_TIME")
 	protected LocalDateTime endTime;
-	@Column(name = "REMAIN_TIME")
-	protected int remainTime;
 	@Column(name = "NODE_NAME")
 	protected String nodeName;
 	@Column(name = "GPU_NAME")
@@ -117,17 +109,6 @@ public abstract class WorkloadEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<PortEntity> portList = new ArrayList<>();
-	@Builder.Default
-	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
-	protected List<DatasetWorkLoadMappingEntity> datasetWorkloadMappingList = new ArrayList<>();
-	@Builder.Default
-	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
-	protected List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = new ArrayList<>();
-	@Builder.Default
-	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
-	protected List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = new ArrayList<>();
-	@OneToOne(mappedBy = "workload")
-	protected ImageWorkloadMappingEntity imageWorkloadMappingEntity;
 	@Transient
 	protected boolean canBeDeleted;
 
