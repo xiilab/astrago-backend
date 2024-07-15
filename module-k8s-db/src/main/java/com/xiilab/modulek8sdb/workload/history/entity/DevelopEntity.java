@@ -26,7 +26,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class DevelopEntity extends WorkloadEntity{
 	@Column(name = "REMAIN_TIME")
-	protected int remainTime;
+	protected Integer remainTime;
 	@Column(name = "WORKLOAD_PARAMETER")
 	protected String parameter;
 	@Builder.Default

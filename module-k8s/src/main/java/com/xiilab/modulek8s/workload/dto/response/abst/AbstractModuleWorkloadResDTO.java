@@ -63,7 +63,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 	protected WorkloadStatus status;               // 워크로드 status
 	protected boolean isPinYN;                     // PIN YN
 	protected AgeDTO age;                          // 워크로드 경과시간
-	protected int remainTime;                      // 잔여시간
+	protected Integer remainTime;                      // 잔여시간
 	protected String datasetIds;
 	protected String modelIds;
 	protected String codeIds;
