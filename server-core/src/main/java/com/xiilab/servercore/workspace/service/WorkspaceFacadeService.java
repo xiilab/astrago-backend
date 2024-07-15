@@ -22,6 +22,8 @@ public interface WorkspaceFacadeService {
 	PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition, int pageNum,
 		UserDTO.UserInfo userInfoDTO);
 
+	Object getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO);
+
 	void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
 
 	void deleteWorkspaceByName(String workspaceName, UserDTO.UserInfo userInfoDTO);

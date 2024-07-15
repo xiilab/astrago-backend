@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -290,6 +289,32 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				getUserRecentlyWorkload(workspace.getResourceName(), userInfoDTO.getUserName())))
 			.toList();
 		return new PageDTO<>(pageDTO.getTotalSize(), pageDTO.getTotalPageNum(), pageDTO.getCurrentPage(), resultList);
+	}
+
+	@Override
+	public WorkspaceDTO.FindJoinedWorkspaces getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO)
+	{
+		Set<String> userWorkspaceList = userInfoDTO.getWorkspaceList(false);
+		//전체 workspace 리스트 조회
+		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
+		//user의 pin 리스트 조회
+		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
+		//조건절 처리
+		List<WorkspaceDTO.FindJoinedWorkspaceDetail> findJoinedWorkspaceDetails = workspaceList.stream()
+			.filter(workspace -> userWorkspaceList.contains(workspace.getResourceName()))
+			.sorted(Comparator.comparing(WorkspaceDTO.ResponseDTO::getCreatedAt).reversed())
+			.map(workspace -> WorkspaceDTO.FindJoinedWorkspaceDetail.builder()
+				.id(workspace.getId())
+				.name(workspace.getName())
+				.resourceName(workspace.getResourceName())
+				.isPinYN(userWorkspacePinList.contains(workspace.getResourceName()))
+				.build())
+			.toList();
+
+		return WorkspaceDTO.FindJoinedWorkspaces.builder()
+			.workspaces(findJoinedWorkspaceDetails)
+			.totalCount(findJoinedWorkspaceDetails.size())
+			.build();
 	}
 
 	private RecentlyWorkloadDTO getUserRecentlyWorkload(String workspaceName, String username) {
