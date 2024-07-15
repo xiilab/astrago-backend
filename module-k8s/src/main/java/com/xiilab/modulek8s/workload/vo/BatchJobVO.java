@@ -95,7 +95,7 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
-		annotationMap.put(AnnotationField.PARAMETER.getField(), this.parameter.size() != 0 ? JsonConvertUtil.convertMapToJson(this.parameter) : "");
+		annotationMap.put(AnnotationField.PARAMETER.getField(), this.parameter != null && this.parameter.size() != 0 ? JsonConvertUtil.convertMapToJson(this.parameter) : "");
 		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
 		annotationMap.put(AnnotationField.NODE_NAME.getField(), this.nodeName);
 		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);
