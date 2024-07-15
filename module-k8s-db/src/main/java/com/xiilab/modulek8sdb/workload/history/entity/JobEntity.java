@@ -22,7 +22,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-public class JobEntity extends WorkloadEntity {
+public class JobEntity extends DevelopEntity {
 	@Column(name = "WORKLOAD_IDE")
 	private String ide;
 	@Column(name = "WORKLOAD_REQ_CPU")

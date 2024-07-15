@@ -11,6 +11,7 @@ import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
+import com.xiilab.modulek8sdb.workload.history.entity.DevelopEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
 import lombok.AllArgsConstructor;
@@ -56,11 +57,12 @@ public class WorkloadSummaryDTO {
 		this.createdAt = workload.getCreatedAt();
 		this.status = workload.getWorkloadStatus();
 		this.age = workload.getCreatedAt() != null ? new AgeDTO(workload.getCreatedAt()) : null;
-		this.remainTime = workload.getRemainTime();
+		DevelopEntity developEntity = (DevelopEntity)workload;
+		this.remainTime = developEntity.getRemainTime();
 		this.imageType = !ObjectUtils.isEmpty(workload.getImage()) ? workload.getImage().getImageType() : null;
 		this.canBeDeleted = workload.isCanBeDeleted();
-		this.estimatedRemainingTime = workload.getRemainTime() != 0 ? LocalDateTime.now()
-			.plusSeconds(workload.getRemainTime())
+		this.estimatedRemainingTime = developEntity.getRemainTime() != 0 ? LocalDateTime.now()
+			.plusSeconds(developEntity.getRemainTime())
 			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "0";
 		this.startTime = workload.getStartTime() != null ?
 			workload.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null;
