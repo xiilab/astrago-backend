@@ -769,7 +769,7 @@ create table if not exists TB_WORKLOAD_JOB
     WORKLOAD_REQ_GPU int                           null,
     WORKLOAD_REQ_MEM float DEFAULT NULL,
     REMAIN_TIME int(11) DEFAULT NULL,
-    WORKLOAD_PARAMETER varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL
+    WORKLOAD_PARAMETER varchar(255) DEFAULT NULL
 );
 --
 -- -- astrago.TB_WORKLOAD_DISTRIBUTED_JOB definition
@@ -783,7 +783,7 @@ create table if not exists TB_WORKLOAD_DISTRIBUTED_JOB (
     WORKER_MEM_REQUEST float DEFAULT NULL,
     WORKLOAD_ID bigint(20) NOT NULL,
     REMAIN_TIME int(11) DEFAULT NULL,
-    WORKLOAD_PARAMETER varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL
+    WORKLOAD_PARAMETER varchar(255)  DEFAULT NULL
 );
 
 create table if not exists TB_DEPLOY (
@@ -792,7 +792,7 @@ create table if not exists TB_DEPLOY (
     REQ_CPU float DEFAULT NULL ,
     REQ_GPU int(11) DEFAULT NULL ,
     REQ_MEM float DEFAULT NULL ,
-    DEPLOY_TYPE enum('TRITON','USER') CHARACTER SET utf8mb4 DEFAULT NULL,
+    DEPLOY_TYPE enum('TRITON','USER') DEFAULT NULL,
     CONSTRAINT `PRIMARY` PRIMARY KEY (WORKLOAD_ID)
 );
 
