@@ -154,7 +154,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.models(workloadEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
 				.codes(workloadEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
 				.command(workloadEntity.getWorkloadCMD())
-				.parameter(JsonConvertUtil.convertJsonToMap(workloadEntity.getParameter()))
+				.parameter(workloadEntity.getParameter() != null ? JsonConvertUtil.convertJsonToMap(workloadEntity.getParameter()) : null)
 				.cpuRequest(workloadEntity.getCpuRequest())
 				.gpuRequest(workloadEntity.getGpuRequest() == null ? 0 : workloadEntity.getGpuRequest())
 				.memRequest(workloadEntity.getMemRequest())

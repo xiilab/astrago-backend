@@ -786,6 +786,17 @@ create table if not exists TB_WORKLOAD_DISTRIBUTED_JOB (
     WORKLOAD_PARAMETER varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL
 );
 
+create table if not exists TB_DEPLOY (
+    WORKLOAD_ID bigint(20) NOT NULL,
+    REPLICA int(11) DEFAULT NULL ,
+    REQ_CPU float DEFAULT NULL ,
+    REQ_GPU int(11) DEFAULT NULL ,
+    REQ_MEM float DEFAULT NULL ,
+    DEPLOY_TYPE enum('TRITON','USER') CHARACTER SET utf8mb4 DEFAULT NULL,
+    CONSTRAINT `PRIMARY` PRIMARY KEY (WORKLOAD_ID)
+);
+
+
 create table if not exists TB_WORKSPACE_ALERT_MAPPING
 (
     ALERT_ID                   bigint             null,
