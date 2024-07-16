@@ -87,6 +87,22 @@ public class WorkspaceDTO {
 	}
 
 	@Getter
+	@Builder
+	public static class FindJoinedWorkspaceDetail {
+		private String id;
+		private String name;
+		private String resourceName;
+		private boolean isPinYN;
+	}
+
+	@Getter
+	@Builder
+	public static class FindJoinedWorkspaces {
+		private List<FindJoinedWorkspaceDetail> workspaces;
+		private Integer totalCount;
+	}
+
+	@Getter
 	public static class AdminResponseDTO {
 		private String id;
 		private String name;

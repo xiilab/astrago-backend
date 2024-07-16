@@ -95,6 +95,13 @@ public class WorkspaceController {
 			workspaceService.getWorkspaceList(isMyWorkspace, searchCondition, pageNum, userInfoDTO));
 	}
 
+	@GetMapping("/joined")
+	@Operation(summary = "내가 속한 워크스페이스 리스트 조회")
+	public ResponseEntity<Object> getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO) {
+		return ResponseEntity.ok(
+			workspaceService.getJoinedWorkspaceList(userInfoDTO));
+	}
+
 	@GetMapping("/admin")
 	@Operation(summary = "관리자용 워크스페이스 리스트 조회")
 	public ResponseEntity<PageDTO<WorkspaceDTO.AdminResponseDTO>> getAdminWorkspaceList(
@@ -315,4 +322,5 @@ public class WorkspaceController {
 		workspaceService.validRedirectWorkspace(workspaceResourceName);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 }
