@@ -1,19 +1,12 @@
 package com.xiilab.servercore.modelrepo.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelRepoErrorCode;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
@@ -37,7 +30,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 
 	@Override
 	@Transactional
-	public void createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO, List<MultipartFile> files) {
+	public ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO) {
 		try {
 			// 스토리지 조회
 			StorageEntity storageEntity = storageService.findById(modelRepoReqDTO.getStorageId());
@@ -46,16 +39,16 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			// ModelRepoEntity save
 			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
 			// 라벨 등록
-			if (Objects.nonNull(modelRepoReqDTO.getLabels())) {
-				List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabels().stream().map(label ->
-					getLabelEntityById(label.getLabelId())
-				).toList();
+			if (Objects.nonNull(modelRepoReqDTO.getLabelIds())) {
+				List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabelIds()
+					.stream()
+					.map(this::getLabelEntityById)
+					.toList();
 				saveModel.addModelLabelEntity(labelEntityList);
 			}
 			saveModel.addModelVersionEntity();
-			// 파일 저장
-			createFile(saveModel, files);
 
+			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
 		}
@@ -92,10 +85,11 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		getModelRepo.modifyModelRepo(modelRepoReqDTO.getModelName(), modelRepoReqDTO.getDescription(),
 			storageEntity);
 
-		if (Objects.nonNull(modelRepoReqDTO.getLabels())) {
-			List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabels().stream().map(label ->
-				getLabelEntityById(label.getLabelId())
-			).toList();
+		if (Objects.nonNull(modelRepoReqDTO.getLabelIds())) {
+			List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabelIds()
+				.stream()
+				.map(this::getLabelEntityById)
+				.toList();
 			getModelRepo.modifyModelLabel(labelEntityList);
 		}
 	}
@@ -111,37 +105,6 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	private ModelRepoEntity getModelRepoEntityById(long modelRepoId) {
 		return modelRepoRepository.findById(modelRepoId)
 			.orElseThrow(() -> new RestApiException(ModelRepoErrorCode.MODEL_NOT_FOUND));
-	}
-
-	private void createFile(ModelRepoEntity saveModel, List<MultipartFile> files) {
-		//파일 업로드
-		String storageRootPath =
-			saveModel.getStorageEntity().getHostPath() + "/workspaces/" + saveModel.getWorkspaceResourceName();
-		String saveDirectoryName =
-			saveModel.getModelRepoRealName().replace(" ", "");
-		String modelPath = storageRootPath + "/" + saveDirectoryName + "/"
-			+ saveModel.getModelVersionList().get(0).getVersion();
-
-		long size = 0;
-		// 업로드된 파일을 저장할 경로 설정
-		Path uploadPath = Paths.get(modelPath);
-		try {
-			Files.createDirectories(uploadPath);
-			// 업로드된 각 파일에 대해 작업 수행
-			if (files != null) {
-				for (MultipartFile file : files) {
-					Path targetPath = uploadPath.resolve(file.getOriginalFilename().replace(" ", "_"));
-					Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-					size += file.getSize();
-				}
-			}
-			//model 저장
-			saveModel.setModelSize(size);
-			saveModel.setModelPath(storageRootPath);
-			saveModel.setSaveDirectoryName(saveDirectoryName);
-		} catch (IOException e) {
-			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
-		}
 	}
 
 }
