@@ -16,28 +16,39 @@ public class LabelDTO {
 	protected String colorCode;
 	protected String colorCodeName;
 
-	public LabelEntity convertLabelEntity(String workspaceName) {
+	public LabelEntity convertLabelEntity(String workspaceName, int count) {
 		return LabelEntity.builder()
 			.name(this.getLabelName())
 			.workspaceResourceName(workspaceName)
 			.colorCode(this.getColorCode())
 			.colorCodeName(this.getColorCodeName())
+			.order(count + 1)
 			.build();
 	}
 	@Getter
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@SuperBuilder
-	public static class RequestDTO extends LabelDTO {
+	public static class ResponseDTO extends LabelDTO {
 		private long labelId;
-
-		public static RequestDTO convertLabelDTO(LabelEntity labelEntity) {
-			return RequestDTO.builder()
+		private int order;
+		public static ResponseDTO convertLabelDTO(LabelEntity labelEntity) {
+			return ResponseDTO.builder()
 				.labelId(labelEntity.getId())
 				.labelName(labelEntity.getName())
 				.colorCode(labelEntity.getColorCode())
 				.colorCodeName(labelEntity.getColorCodeName())
+				.order(labelEntity.getOrder())
 				.build();
 		}
+	}
+
+	@Getter
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@SuperBuilder
+	public static class UpdateDTO extends LabelDTO {
+		private long labelId;
+		private int order;
 	}
 }

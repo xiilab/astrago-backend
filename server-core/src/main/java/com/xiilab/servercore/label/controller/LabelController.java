@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +42,7 @@ public class LabelController {
 
 	@GetMapping("/{workspaceResourceName}")
 	@Operation(summary = "해당 워크스페이스에 등록된 라벨 리스트 조회 API")
-	public ResponseEntity<List<LabelDTO.RequestDTO>> getLabels(
+	public ResponseEntity<List<LabelDTO.ResponseDTO>> getLabels(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
 		return new ResponseEntity<>(labelService.getLabels(workspaceResourceName), HttpStatus.OK);
 	}
@@ -59,6 +60,13 @@ public class LabelController {
 	public ResponseEntity<HttpStatus> delete(
 		@PathVariable(name = "labelId") Long labelId) {
 		labelService.deleteLabelById(labelId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	@PatchMapping()
+	@Operation(summary = "라벨를 변경하는 API")
+	public ResponseEntity<HttpStatus> modifyLabel(
+		@RequestBody List<LabelDTO.UpdateDTO> updateLabelDTOs) {
+		labelService.modifyLabels(updateLabelDTOs);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
