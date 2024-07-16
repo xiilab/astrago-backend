@@ -24,14 +24,14 @@ public class ModelRepoDTO {
 	protected String modelName;
 	protected String description;
 	protected String workspaceResourceName;
-	protected List<LabelDTO.ResponseDTO> labels;
 
 	@Getter
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@SuperBuilder
 	public static class RequestDTO extends ModelRepoDTO {
-		protected long storageId;
+		private long storageId;
+		private List<Long> labelIds;
 
 		public ModelRepoEntity convertEntity(StorageEntity storageEntity) {
 			return ModelRepoEntity.builder()
@@ -55,6 +55,8 @@ public class ModelRepoDTO {
 		private String storageName;
 		private String ip;
 		private String storagePath;
+		private List<LabelDTO.ResponseDTO> labels;
+
 		public static ModelRepoDTO.ResponseDTO convertModelRepoDTO(ModelRepoEntity modelRepoEntity) {
 			return ModelRepoDTO.ResponseDTO.builder()
 				.modelRepoId(modelRepoEntity.getId())
