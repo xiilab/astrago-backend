@@ -8,9 +8,11 @@ public interface LabelService {
 
 	void addLabel(String workspaceResourceName, LabelDTO labelDTO);
 
-	List<LabelDTO.RequestDTO> getLabels(String workspaceResourceName);
+	List<LabelDTO.ResponseDTO> getLabels(String workspaceResourceName);
 
 	boolean checkLabel(String workspaceResourceName, String labelName);
 
 	void deleteLabelById(long labelId);
+
+	void modifyLabels(List<LabelDTO.UpdateDTO> updateLabelDTOs);
 }
