@@ -33,11 +33,10 @@ public class LabelController {
 
 	@PostMapping("/{workspaceResourceName}")
 	@Operation(summary = "라벨 저장 API")
-	public ResponseEntity<HttpStatus> saveLabel(
+	public ResponseEntity<LabelDTO.ResponseDTO> saveLabel(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestBody LabelDTO labelDTO) {
-		labelService.addLabel(workspaceResourceName, labelDTO);
-		return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<>(labelService.addLabel(workspaceResourceName, labelDTO),HttpStatus.OK);
 	}
 
 	@GetMapping("/{workspaceResourceName}")
