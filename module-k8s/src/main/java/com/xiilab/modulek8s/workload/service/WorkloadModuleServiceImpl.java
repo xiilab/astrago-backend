@@ -445,8 +445,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	@Override
 	public List<Event> getWorkloadEventList(String workloadName, String workspace, WorkloadType workloadType) {
-		Pod jobPod = getJobPod(workspace, workloadName, workloadType);
-		return workloadRepository.getWorkloadEventList(jobPod.getMetadata().getName(), workspace);
+		return workloadRepository.getWorkloadEventList(workloadName, workspace);
 	}
 
 	@Override
