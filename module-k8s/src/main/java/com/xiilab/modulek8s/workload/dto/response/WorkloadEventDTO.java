@@ -1,6 +1,5 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
-import com.xiilab.modulecommon.enums.K8sContainerReason;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class WorkloadEventDTO {
 	private String type;
-	private K8sContainerReason reason;
+	private String reason;
 	private AgeDTO age;
 	private String from;
 	private String message;

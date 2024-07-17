@@ -807,8 +807,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			List<Event> items = list.getItems();
 			if (Objects.nonNull(items)) {
 				return items.stream()
-					.filter(item -> item.getRegarding().getKind().equals("Pod") &&
-						item.getRegarding().getName().equals(pod))
+					.filter(item -> item.getRegarding().getName().contains(pod))
 					.toList();
 			}
 			return new ArrayList<>();
