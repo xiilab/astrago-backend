@@ -12,6 +12,7 @@ public enum K8sContainerReason {
 	ExceededGracePeriod,
 	FailedKillPod,
 	FailedCreatePodContainer,
+	FailedMount,
 	NetworkNotReady,
 	Pulling,
 	Pulled,

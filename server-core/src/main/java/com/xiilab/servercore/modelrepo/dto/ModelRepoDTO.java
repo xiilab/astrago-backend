@@ -24,14 +24,14 @@ public class ModelRepoDTO {
 	protected String modelName;
 	protected String description;
 	protected String workspaceResourceName;
-	protected List<LabelDTO.RequestDTO> labels;
 
 	@Getter
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@SuperBuilder
 	public static class RequestDTO extends ModelRepoDTO {
-		protected long storageId;
+		private long storageId;
+		private List<Long> labelIds;
 
 		public ModelRepoEntity convertEntity(StorageEntity storageEntity) {
 			return ModelRepoEntity.builder()
@@ -55,8 +55,10 @@ public class ModelRepoDTO {
 		private String storageName;
 		private String ip;
 		private String storagePath;
+		private List<LabelDTO.ResponseDTO> labels;
+
 		public static ModelRepoDTO.ResponseDTO convertModelRepoDTO(ModelRepoEntity modelRepoEntity) {
-			return ResponseDTO.builder()
+			return ModelRepoDTO.ResponseDTO.builder()
 				.modelRepoId(modelRepoEntity.getId())
 				.workspaceResourceName(modelRepoEntity.getWorkspaceResourceName())
 				.modelName(modelRepoEntity.getModelName())
@@ -65,7 +67,7 @@ public class ModelRepoDTO {
 				.storageType(modelRepoEntity.getStorageEntity().getStorageType())
 				.storagePath(modelRepoEntity.getStorageEntity().getStoragePath())
 				.ip(modelRepoEntity.getStorageEntity().getIp())
-				.labels(modelRepoEntity.getModelLabelEntityList().stream().map(modelLabelEntity -> LabelDTO.RequestDTO.convertLabelDTO(modelLabelEntity.getLabelEntity())).toList())
+				.labels(modelRepoEntity.getModelLabelEntityList().stream().map(modelLabelEntity -> LabelDTO.ResponseDTO.convertLabelDTO(modelLabelEntity.getLabelEntity())).toList())
 				.version(modelRepoEntity.getModelVersionList().stream().map(VersionDTO::convertVersionDTO).toList())
 				.build();
 		}

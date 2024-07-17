@@ -45,8 +45,6 @@ public class ModelRepoEntity {
 	private Long modelSize;
 	@Column(name = "MODEL_REPO_PATH")
 	private String modelPath;
-	@Column(name = "MODEL_REPO_SAVE_DIRECTORY_NAME")
-	private String saveDirectoryName;
 	@OneToMany(mappedBy = "modelRepoEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<ModelLabelEntity> modelLabelEntityList = new ArrayList<>();
 	@OneToMany(mappedBy = "modelRepoEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -95,9 +93,5 @@ public class ModelRepoEntity {
 	}
 	public void setModelPath(String datasetPath){
 		this.modelPath = datasetPath;
-	}
-
-	public void setSaveDirectoryName(String saveDirectoryName){
-		this.saveDirectoryName = saveDirectoryName;
 	}
 }

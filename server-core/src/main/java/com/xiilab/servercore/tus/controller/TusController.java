@@ -22,5 +22,6 @@ public class TusController {
 		HttpServletResponse response) {
 		tusService.tusUpload(request, response);
 		return new ResponseEntity<>(HttpStatus.OK);
+
 	}
 }

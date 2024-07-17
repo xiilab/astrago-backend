@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
@@ -30,18 +29,18 @@ import lombok.RequiredArgsConstructor;
 @RestController()
 public class ModelRepoController {
 	private final ModelRepoFacadeService modelRepoFacadeService;
+
 	@PostMapping()
 	@Operation(summary = "신규 모델 등록하는 API")
-	public ResponseEntity<HttpStatus> createModelRepo(
-		@RequestPart(name = "files", required = false) List<MultipartFile> files,
+	public ResponseEntity<ModelRepoDTO.ResponseDTO> createModelRepo(
 		@RequestPart(name = "modelRepoReqDTO") ModelRepoDTO.RequestDTO modelRepoReqDTO) {
-		modelRepoFacadeService.createModelRepo(modelRepoReqDTO, files);
-		return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<>(modelRepoFacadeService.createModelRepo(modelRepoReqDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("/{workspaceResourceName}")
 	@Operation(summary = "해당 워크스페이스에 전체 모델 리스트 조회 API")
-	public ResponseEntity<List<ModelRepoDTO.ResponseDTO>> getModelRepoList(@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+	public ResponseEntity<List<ModelRepoDTO.ResponseDTO>> getModelRepoList(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
 		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoList(workspaceResourceName), HttpStatus.OK);
 	}
 
@@ -50,7 +49,8 @@ public class ModelRepoController {
 	public ResponseEntity<ModelRepoDTO.ResponseDTO> getModelRepoById(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
 		@PathVariable(name = "modelRepoId") Long modelRepoId) {
-		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoById(workspaceResourceName, modelRepoId), HttpStatus.OK);
+		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoById(workspaceResourceName, modelRepoId),
+			HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{modelRepoId}")
