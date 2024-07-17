@@ -23,7 +23,7 @@ public class LabelServiceImpl implements LabelService {
 
 	@Override
 	@Transactional
-	public void addLabel(String workspaceResourceName, LabelDTO labelDTO) {
+	public LabelDTO.ResponseDTO addLabel(String workspaceResourceName, LabelDTO labelDTO) {
 		// 라벨 이름 중복 체크
 		Optional<LabelEntity> findLabel = getLabelByWorkspaceResourceNameAndLabelName(workspaceResourceName,
 			labelDTO.getLabelName());
@@ -32,7 +32,8 @@ public class LabelServiceImpl implements LabelService {
 		// 해당 워크스페이스에 해당 이름의 라벨이 없는경우 생성
 		if (findLabel.isEmpty()) {
 			try {
-				labelRepository.save(labelDTO.convertLabelEntity(workspaceResourceName, count));
+				LabelEntity labelEntity = labelRepository.save(labelDTO.convertLabelEntity(workspaceResourceName, count));
+				return LabelDTO.ResponseDTO.convertLabelDTO(labelEntity);
 			} catch (IllegalArgumentException e) {
 				throw new RestApiException(LabelErrorCode.LABEL_SAVE_FAIL);
 			}
