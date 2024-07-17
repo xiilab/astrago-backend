@@ -34,6 +34,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 	public Page<Dataset> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType userAuth,
 		RepositorySearchCondition repositorySearchCondition, PageMode pageMode) {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
+
 		OrderSpecifier<? extends Serializable> sort =
 			sortType == RepositorySortType.NAME ? dataset.datasetName.desc() :
 				sortType == RepositorySortType.CREATED_AT ? dataset.regDate.desc() : dataset.datasetSize.desc();
