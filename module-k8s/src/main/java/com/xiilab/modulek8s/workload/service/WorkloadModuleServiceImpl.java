@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -446,6 +447,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public List<Event> getWorkloadEventList(String workloadName, String workspace, WorkloadType workloadType) {
 		return workloadRepository.getWorkloadEventList(workloadName, workspace);
+	}
+
+	@Override
+	public Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName) {
+		return workloadRepository.getWorkloadRecentlyEvent(workloadName, workspaceName);
 	}
 
 	@Override

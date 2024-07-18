@@ -58,7 +58,6 @@ public class WorkloadController {
 	private final ModelService modelService;
 	private final HubService hubService;
 
-
 	@PostMapping("/workloads")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
@@ -123,6 +122,16 @@ public class WorkloadController {
 			workloadFacadeService.getWorkloadEvent(workloadType, workloadEventDTO),
 			HttpStatus.OK
 		);
+	}
+
+	@GetMapping("/workloads/event/reason")
+	@Operation(summary = "워크로드의 최근 event reason 조회")
+	public ResponseEntity<List<WorkloadEventDTO.Recently>> getWorkloadRecentlyEventReason(
+		@RequestParam List<String> workloadNames,
+		@RequestParam String workspace
+	) {
+		return new ResponseEntity<>(workloadFacadeService.getWorkloadRecentlyEventReason(workloadNames, workspace),
+			HttpStatus.OK);
 	}
 
 	@GetMapping("/workloads/jobList")

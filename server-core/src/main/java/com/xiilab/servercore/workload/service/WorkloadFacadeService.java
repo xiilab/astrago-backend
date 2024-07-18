@@ -606,6 +606,25 @@ public class WorkloadFacadeService {
 		}
 	}
 
+	public List<WorkloadEventDTO.Recently> getWorkloadRecentlyEventReason(List<String> workloadNames,
+		String workspace) {
+		Map<String, Event> workloadRecentlyEvent = workloadModuleService.getWorkloadRecentlyEvent(workloadNames,
+			workspace);
+		return workloadRecentlyEvent.entrySet().stream()
+			.map(key -> {
+				if (key.getValue() == null) {
+					return WorkloadEventDTO.Recently.builder()
+						.workload(key.getKey())
+						.build();
+				}
+				return WorkloadEventDTO.Recently.builder()
+					.workload(key.getKey())
+					.reason(key.getValue().getReason())
+					.build();
+			})
+			.toList();
+	}
+
 	public PageDTO<WorkloadEventDTO> getWorkloadEvent(WorkloadType workloadType,
 		WorkloadEventReqDTO workloadEventReqDTO) {
 		List<Event> workloadEventList = workloadModuleService.getWorkloadEventList(workloadEventReqDTO.getWorkload(),
@@ -656,7 +675,8 @@ public class WorkloadFacadeService {
 			.from(event.getReportingController())
 			.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
 			.message(event.getNote())
-			.build()).toList();
+				.build())
+			.toList();
 
 		return new PageDTO<>(result, workloadEventReqDTO.getPageNum(), workloadEventReqDTO.getPageSize());
 	}
