@@ -178,6 +178,12 @@ public class WorkloadFacadeService {
 			}
 		}
 
+		// outputMountPath(사용자가 입력, 컨테이너 마운트 경로) <=> hostPath 볼륨 생성
+		// hostPath 형식: {defaultStorageHostPath} + "/workspace/{wsResourceName}/workloads/{wlResourceName}/models"
+		if (StringUtils.hasText(createWorkloadReqDTO.getOutputMountPath())) {
+
+		}
+
 		try {
 			NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 			// 커스텀 이미지일 때만 이미지 데이터 저장

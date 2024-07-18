@@ -47,6 +47,7 @@ public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	protected Integer resourcePresetId;
 	@Setter
 	protected FrameWorkType ide;
+	protected String outputMountPath;	// output 마운트 경로
 
 	public abstract CreateWorkloadReqDTO toModuleDTO(String initContainerUrl);
 
