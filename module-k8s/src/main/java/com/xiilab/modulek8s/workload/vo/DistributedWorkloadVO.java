@@ -203,6 +203,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 
 	protected Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
+		map.put("sidecar.istio.io/inject", String.valueOf(false));
 		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
 		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
 		this.codes.forEach(code -> {
