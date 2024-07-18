@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.io.Resource;
 
@@ -145,4 +146,6 @@ public interface WorkloadModuleService {
 	HasMetadata getJob(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	List<Pod> getWorkloadByWorkloadName(String resourceName);
+
+	Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName);
 }

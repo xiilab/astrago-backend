@@ -246,7 +246,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String workloadName) {
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String workloadName) {
 		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
 			workspaceResourceName, workloadName);
 		return batchJobList.getItems().stream()
@@ -272,7 +273,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String userId) {
 		DeploymentList interactiveJobList = getInteractiveJobListByWorkspaceResourceNameAndCreator(
 			workspaceResourceName, userId);
 		return interactiveJobList.getItems().stream()
@@ -815,6 +817,35 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadNames, String workspaceName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			EventList eventList = kubernetesClient.events().v1().events().inNamespace(workspaceName).list();
+			List<Event> items = eventList.getItems();
+			if (!CollectionUtils.isEmpty(items)) {
+				Map<String, Event> latestEventsByWorkloadName = new HashMap<>();
+				for (Event item : items) {
+					String eventName = item.getRegarding().getName();
+					workloadNames.stream()
+						.filter(eventName::contains)
+						.findFirst()
+						.ifPresent(workloadName -> {
+							Event currentLatestEvent = latestEventsByWorkloadName.get(workloadName);
+							if (currentLatestEvent == null ||
+								item.getMetadata()
+									.getCreationTimestamp()
+									.compareTo(currentLatestEvent.getMetadata().getCreationTimestamp()) > 0) {
+								latestEventsByWorkloadName.put(workloadName, item);
+							}
+						});
+				}
+				workloadNames.forEach(workloadName -> latestEventsByWorkloadName.putIfAbsent(workloadName, null));
+				return latestEventsByWorkloadName;
+			}
+		}
+		return Map.of();
+	}
+
+	@Override
 	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "ds-" + id;
@@ -987,6 +1018,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get();
 		}
 	}
+
 	@Override
 	public Deployment getInteractiveJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
@@ -1051,7 +1083,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private DeploymentList getInteractiveJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+	private DeploymentList getInteractiveJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName,
+		String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.apps()
 				.deployments()
