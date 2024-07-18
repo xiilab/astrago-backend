@@ -821,8 +821,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			EventList eventList = kubernetesClient.events().v1().events().inNamespace(workspaceName).list();
 			List<Event> items = eventList.getItems();
+			Map<String, Event> latestEventsByWorkloadName = new HashMap<>();
 			if (!CollectionUtils.isEmpty(items)) {
-				Map<String, Event> latestEventsByWorkloadName = new HashMap<>();
 				for (Event item : items) {
 					String eventName = item.getRegarding().getName();
 					workloadNames.stream()
@@ -838,11 +838,10 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 							}
 						});
 				}
-				workloadNames.forEach(workloadName -> latestEventsByWorkloadName.putIfAbsent(workloadName, null));
-				return latestEventsByWorkloadName;
 			}
+			workloadNames.forEach(workloadName -> latestEventsByWorkloadName.putIfAbsent(workloadName, null));
+			return latestEventsByWorkloadName;
 		}
-		return Map.of();
 	}
 
 	@Override
