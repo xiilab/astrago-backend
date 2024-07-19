@@ -35,7 +35,6 @@ import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulecommon.enums.K8sContainerReason;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
@@ -595,7 +594,7 @@ public class WorkloadFacadeService {
 
 		List<WorkloadEventDTO> result = eventStream.map(event -> WorkloadEventDTO.builder()
 			.type(event.getType())
-			.reason(K8sContainerReason.valueOf(event.getReason()))
+			.reason(event.getReason())
 			.from(event.getReportingController())
 			.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
 			.message(event.getNote())
