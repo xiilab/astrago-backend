@@ -55,43 +55,43 @@ public class ModelRepoEntity {
 
 	public void addModelLabelEntity(List<LabelEntity> labelEntityList) {
 		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
-			.map(labelEntity -> ModelLabelEntity.builder()
-			.labelEntity(labelEntity)
-			.modelRepoEntity(this)
-			.build()
-			).toList();
+			.map(labelEntity -> ModelLabelEntity.builder().labelEntity(labelEntity).modelRepoEntity(this).build())
+			.toList();
 
 		this.modelLabelEntityList = modelLabelEntities;
 	}
 
 	public void addModelVersionEntity() {
-		this.modelVersionList = List.of(ModelVersionEntity.builder()
-			.version("v1")
-			.modelRepoEntity(this)
-			.build());
+		this.modelVersionList = List.of(ModelVersionEntity.builder().version("v1").modelRepoEntity(this).build());
 	}
 
-	public void modifyModelRepo(String modelName, String description, StorageEntity storageEntity) {
+	public void modifyModelRepo(String modelName, String description) {
 		this.modelName = modelName;
 		this.description = description;
-		this.storageEntity = storageEntity;
 	}
 
 	public void modifyModelLabel(List<LabelEntity> labelEntityList) {
 		this.getModelLabelEntityList().clear();
 		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
-			.map(labelEntity -> ModelLabelEntity.builder()
-				.labelEntity(labelEntity)
-				.modelRepoEntity(this)
-				.build()
-			).toList();
+			.map(labelEntity -> ModelLabelEntity.builder().labelEntity(labelEntity).modelRepoEntity(this).build())
+			.toList();
 		this.getModelLabelEntityList().addAll(modelLabelEntities);
 	}
 
-	public void setModelSize(Long modelSize){
+	public void setModelSize(Long modelSize) {
 		this.modelSize = modelSize;
 	}
-	public void setModelPath(String datasetPath){
+
+	public void setModelPath(String datasetPath) {
 		this.modelPath = datasetPath;
 	}
+
+	public void updateModelRepoVersion(long versionInfo) {
+		this.getModelVersionList()
+			.add(ModelVersionEntity.builder()
+				.version("v" + versionInfo)
+				.modelRepoEntity(this)
+				.build());
+	}
+
 }

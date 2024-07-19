@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -78,13 +77,14 @@ public class TusService {
 		TusException {
 		ModelRepoDTO.RequestDTO modelRepoDTO = getModelRepoDTO(uploadInfo);
 		ModelRepoDTO.ResponseDTO modelRepo = modelRepoFacadeService.createModelRepo(modelRepoDTO);
-		// 파일 저장
-		Long fileSize = getFilePath(request, uploadInfo, filename);
 
 		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepo.getModelRepoId())
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
-
-		modelRepoEntity.setModelPath(uploadInfo.getMetadata().get("filePath"));
+		//파일 업로드 경로
+		String filePath = modelRepoEntity.getModelPath() + "/v" + modelRepoEntity.getModelVersionList().size() + 1;
+		// 파일 저장
+		Long fileSize = getFilePath(request, filePath, filename);
+		// 해당 파일 size
 		modelRepoEntity.setModelSize(fileSize);
 	}
 
@@ -98,7 +98,7 @@ public class TusService {
 			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
 		String workspaceResourceName = Optional.ofNullable(uploadInfo.getMetadata().get("workspaceResourceName"))
 			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
-		List<Long> labelsIds = getStorageIds(
+		List<Long> labelsIds = getLabels(
 			Optional.ofNullable(uploadInfo.getMetadata().get("labelsIds"))
 				.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE)));
 
@@ -120,7 +120,7 @@ public class TusService {
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 
 		// 파일 저장
-		Long fileSize = getFilePath(request, uploadInfo, filename);
+		Long fileSize = getFilePath(request, uploadInfo.getMetadata().get("filePath"), filename);
 		findModel.setModelSize(fileSize);
 	}
 
@@ -133,21 +133,21 @@ public class TusService {
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 
 		// 파일 저장
-		Long fileSize = getFilePath(request, uploadInfo, filename);
+		Long fileSize = getFilePath(request, uploadInfo.getMetadata().get("filePath"), filename);
 		findDataset.setDatasetSize(fileSize);
 	}
 
-	private Long getFilePath(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
+	private Long getFilePath(HttpServletRequest request, String filePath, String filename) throws
 		IOException,
 		TusException {
-		return CoreFileUtils.saveInputStreamToFile(uploadInfo.getMetadata().get("filePath"),
+		return CoreFileUtils.saveInputStreamToFile(filePath,
 			filename, tusFileUploadService.getUploadedBytes(request.getRequestURI()));
 	}
 
-	private List<Long> getStorageIds(String storageIds){
-		return Arrays.stream(storageIds.split(","))
+	private List<Long> getLabels(String labelIds){
+		return Arrays.stream(labelIds.split(","))
 			.map(String::trim)
 			.map(Long::parseLong)
-			.collect(Collectors.toList());
+			.toList();
 	}
 }
