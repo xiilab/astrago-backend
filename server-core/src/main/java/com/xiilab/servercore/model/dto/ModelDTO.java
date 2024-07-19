@@ -1,20 +1,17 @@
 package com.xiilab.servercore.model.dto;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
-import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
-import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
-import com.xiilab.modulek8sdb.model.entity.ModelWorkSpaceMappingEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
+import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
+import com.xiilab.modulek8sdb.model.entity.ModelWorkSpaceMappingEntity;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -123,7 +120,7 @@ public class ModelDTO {
 		private String size;
 		private String defaultPath;
 		private String saveDirectoryName;
-		private List<WorkloadResDTO.UsingModelDTO> usingModels;
+		private List<WorkloadResDTO.UsingWorkloadDTO> usingModels;
 
 		public static ModelDTO.ResModelWithStorage toDto(Model model){
 			if (model.isAstragoModel()) {

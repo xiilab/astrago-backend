@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
+import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
+import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
+import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.servercore.node.dto.NodeResDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 
@@ -91,5 +94,27 @@ public class NodeController {
 		@PathVariable(name = "nodeName") String nodeName,
 		@RequestParam(name = "giCount") int giCount) {
 		return new ResponseEntity<>(nodeFacadeService.getNodeMIGProfiles(nodeName, giCount), HttpStatus.OK);
+	}
+
+	@GetMapping("/{nodeName}/mps")
+	@Operation(summary = "node mps 설정 정보 조회")
+	public ResponseEntity<MPSGpuDTO.MPSInfoDTO> getMpsConfig(
+		@PathVariable(name = "nodeName") String nodeName) {
+		return new ResponseEntity<>(nodeFacadeService.getMpsConfig(nodeName), HttpStatus.OK);
+	}
+
+	@PostMapping("/{nodeName}/mps")
+	@Operation(summary = "node mps 설정")
+	public ResponseEntity<HttpStatus> setMpsConfig(@PathVariable(value = "nodeName") String nodeName,
+		@RequestBody MPSGpuDTO.SetMPSDTO setMPSDTO) {
+		nodeFacadeService.setMpsConfig(nodeName, setMPSDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/gpus")
+	@Operation(summary = "node gpu 조회")
+	public ResponseEntity<NodeResDTO.FindGpuResources> getNodeGpuList(
+		@RequestParam(name = "nodeType") NodeType nodeType) {
+		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(nodeType), HttpStatus.OK);
 	}
 }

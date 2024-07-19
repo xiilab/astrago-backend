@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
 
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
 public interface VolumeRepository {
@@ -51,4 +52,8 @@ public interface VolumeRepository {
 	List<VolumeMount> getAstragoVolumes();
 
 	void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVC);
+
+	PersistentVolumeClaim createIbmPvc(String storageName);
+
+	void deleteIbmPvc(String storageName);
 }

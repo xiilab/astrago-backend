@@ -108,6 +108,7 @@ public record ResponseDTO() {
 	 */
 	@Builder
 	public record NodeResourceDTO(String nodeName,
+								  String instance,
 								  long cpuTotal,
 								  double cpuRequest,
 								  double cpuUsage,
@@ -116,6 +117,8 @@ public record ResponseDTO() {
 								  long memUsage,
 								  long gpuTotal,
 								  long gpuUsage,
+								  long migTotal,
+								  long migUsage,
 								  long diskTotal,
 								  long diskUsage) {
 	}

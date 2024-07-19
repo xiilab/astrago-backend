@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.GitEnvType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.ValidUtils;
@@ -46,6 +47,11 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	List<JobVolumeVO> datasets;
 	List<JobVolumeVO> models;
 	String secretName;
+	String nodeName;
+	GPUType gpuType;
+	String gpuName;
+	Integer gpuOnePerMemory;
+	Integer resourcePresetId;
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
@@ -103,12 +109,6 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			.withMedium("Memory")
 			.endEmptyDir()
 			.build());
-		// addVolumes.add(new VolumeBuilder()
-		// 	.withName("tz-seoul")
-		// 	.withNewHostPath()
-		// 	.withPath("/usr/share/zoneinfo/Asia/Seoul")
-		// 	.endHostPath()
-		// 	.build());
 		podSpecBuilder.addAllToVolumes(addVolumes);
 	}
 
@@ -133,14 +133,25 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 
 	// 요청된 워크로드 리소스 MAP로 반환
 	public Map<String, Quantity> getWorkloadResourceMap() {
+		Map<String, Quantity> result = new HashMap<>();
 		// 소수점 한자리로 변환
-		String strCpuRequest = String.valueOf(cpuRequest) ;
+		String strCpuRequest = String.valueOf(cpuRequest);
 		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
 
-		// gpu 요청여부에 따라 다른 결과 반환
-		return gpuRequest == 0 ? Map.of("cpu", new Quantity(strCpuRequest), "memory", new Quantity(strMemRequest)) :
-			Map.of("nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)), "cpu", new Quantity(strCpuRequest),
-				"memory", new Quantity(strMemRequest));
+		if (ValidUtils.isNullOrZero(gpuRequest)) {
+			result.put("cpu", new Quantity(strCpuRequest));
+			result.put("memory", new Quantity(strMemRequest));
+		} else {
+			if (gpuType == GPUType.MPS) {
+				result.put("nvidia.com/gpu.shared", new Quantity(String.valueOf(gpuRequest)));
+			} else {
+				result.put("nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)));
+			}
+			result.put("cpu", new Quantity(strCpuRequest));
+			result.put("memory", new Quantity(strMemRequest));
+		}
+
+		return result;
 	}
 
 	private List<EnvVar> getGithubEnvVarList(JobCodeVO codeVO) {
@@ -148,8 +159,12 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(
 			new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_REPO.name()).withValue(codeVO.repositoryURL()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_BRANCH.name()).withValue(codeVO.branch()).build());
-		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_MOUNT_PATH.name()).withValue(codeVO.mountPath()).build());
-		result.add(new EnvVarBuilder().withName(GitEnvType.REPOSITORY_TYPE.name()).withValue(codeVO.repositoryType().name()).build());
+		result.add(
+			new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_MOUNT_PATH.name()).withValue(codeVO.mountPath()).build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.REPOSITORY_TYPE.name())
+			.withValue(codeVO.repositoryType().name())
+			.build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.COMMAND.name()).withValue(codeVO.command()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue("/git").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_DEST.name()).withValue("code").build());

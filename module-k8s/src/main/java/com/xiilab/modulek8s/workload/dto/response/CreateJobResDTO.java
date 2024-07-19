@@ -1,26 +1,29 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
 import java.util.Map;
-import java.util.Objects;
 
+import org.kubeflow.v2beta1.MPIJob;
 import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class CreateJobResDTO extends ModuleWorkloadResDTO {
+public class CreateJobResDTO extends AbstractModuleWorkloadResDTO {
 	private WorkloadStatus status;
+	private String gpuRequest;                   // 워크로드 gpu 요청량
+	private String cpuRequest;                   // 워크로드 cpu 요청량
+	private String memRequest;                   // 워크로드 mem 요청량
 	private Map<Long, Map<String, String>> codesInfoMap;
 	private Map<Long, Map<String, String>> datasetInfoMap;
 	private Map<Long, Map<String, String>> modelInfoMap;
@@ -28,7 +31,7 @@ public class CreateJobResDTO extends ModuleWorkloadResDTO {
 	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
 		super(deployment);
 		initializeFromContainer(deployment.getSpec().getTemplate().getSpec().getContainers().get(0));
-		status = getWorkloadStatus(deployment.getStatus());
+		status = K8sInfoPicker.getInteractiveWorkloadStatus(deployment.getStatus());
 		this.codesInfoMap = codesInfoMap;
 		this.datasetInfoMap = datasetInfoMap;
 		this.modelInfoMap = modelInfoMap;
@@ -37,7 +40,15 @@ public class CreateJobResDTO extends ModuleWorkloadResDTO {
 	public CreateJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
 		super(job);
 		initializeFromContainer(job.getSpec().getTemplate().getSpec().getContainers().get(0));
-		status = getWorkloadStatus(job.getStatus());
+		status = K8sInfoPicker.getBatchWorkloadStatus(job.getStatus());
+		this.codesInfoMap = codesInfoMap;
+		this.datasetInfoMap = datasetInfoMap;
+		this.modelInfoMap = modelInfoMap;
+	}
+
+	public CreateJobResDTO(MPIJob resource, Map<Long, Map<String, String>> codesInfoMap,
+		Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
+		super(resource);
 		this.codesInfoMap = codesInfoMap;
 		this.datasetInfoMap = datasetInfoMap;
 		this.modelInfoMap = modelInfoMap;
@@ -65,35 +76,6 @@ public class CreateJobResDTO extends ModuleWorkloadResDTO {
 			.map(port -> ModulePortResDTO.builder().name(port.getName()).originPort(port.getContainerPort()).build())
 			.toList();
 		command = !ObjectUtils.isEmpty(container.getCommand())? container.getCommand().get(2) : null;
-	}
-
-	private WorkloadStatus getWorkloadStatus(DeploymentStatus deploymentStatus) {
-		Integer replicas = deploymentStatus.getReplicas();
-		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
-		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
-		if (unavailableReplicas != null && unavailableReplicas > 0) {
-			return WorkloadStatus.ERROR;
-		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
-			return WorkloadStatus.RUNNING;
-		} else {
-			return WorkloadStatus.PENDING;
-		}
-	}
-
-	private WorkloadStatus getWorkloadStatus(JobStatus jobStatus) {
-		Integer active = jobStatus.getActive();
-		Integer failed = jobStatus.getFailed();
-		Integer succeeded = jobStatus.getSucceeded();
-		Integer ready = jobStatus.getReady();
-		if (failed != null && failed > 0) {
-			return WorkloadStatus.ERROR;
-		} else if (ready != null && ready > 0) {
-			return WorkloadStatus.RUNNING;
-		} else if (active != null && active > 0) {
-			return WorkloadStatus.PENDING;
-		} else {
-			return WorkloadStatus.END;
-		}
 	}
 
 }

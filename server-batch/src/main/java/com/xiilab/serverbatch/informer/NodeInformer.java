@@ -20,6 +20,7 @@ import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
@@ -103,8 +104,21 @@ public class NodeInformer {
 								}
 							}
 						}
+						// mps 설정 상태
+						String node1MpsCapable = node1.getMetadata().getLabels().get("nvidia.com/mps.capable") == null ? "false" : node1.getMetadata().getLabels().get("nvidia.com/mps.capable");
+						String node2MpsCapable = node2.getMetadata().getLabels().get("nvidia.com/mps.capable") == null ? "false" : node2.getMetadata().getLabels().get("nvidia.com/mps.capable");
+						//mps 업데이트 완료
+						if (!node1MpsCapable.equals(node2MpsCapable)) {
+							kubernetesClient.nodes().withName(node2.getMetadata().getName()).edit(node ->  new NodeBuilder(node)
+								.editMetadata()
+								.addToLabels("mps_status", "COMPLETE")
+								.endMetadata()
+								.build());
+						}
 					}
 				}
+
+
 			}
 
 			@Override

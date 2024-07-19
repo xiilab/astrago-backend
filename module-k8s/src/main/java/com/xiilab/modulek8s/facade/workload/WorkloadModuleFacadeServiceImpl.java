@@ -10,11 +10,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
@@ -23,20 +23,24 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
+import com.xiilab.modulek8s.node.service.NodeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.ModuleCreateDistributedWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCredentialReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
-import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.log.service.LogService;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
@@ -62,9 +66,10 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final SvcService svcService;
 	private final LogService logService;
 	private final SecretService secretService;
+	private final NodeService nodeService;
 
 	@Override
-	public CreateJobResDTO createJobWorkload(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+	public CreateJobResDTO createJobWorkload(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		//생성 요청한 workspace가 존재하는지 확인
 		WorkspaceDTO.ResponseDTO workspaceByName = workspaceService.getWorkspaceByName(
 			moduleCreateWorkloadReqDTO.getWorkspace());
@@ -82,10 +87,16 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			// Model PV 생성
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
 			if (workloadType == WorkloadType.BATCH) {
-				createJobResDTO = workloadModuleService.createBatchJobWorkload(moduleCreateWorkloadReqDTO,
+				createJobResDTO = workloadModuleService.createBatchJobWorkload(
+					(ModuleCreateWorkloadReqDTO)moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
-				createJobResDTO = workloadModuleService.createInteractiveJobWorkload(moduleCreateWorkloadReqDTO,
+				createJobResDTO = workloadModuleService.createInteractiveJobWorkload(
+					(ModuleCreateWorkloadReqDTO)moduleCreateWorkloadReqDTO,
+					workspaceByName.getName());
+			} else if (workloadType == WorkloadType.DISTRIBUTED) {
+				return workloadModuleService.createDistributedJobWorkload(
+					(ModuleCreateDistributedWorkloadReqDTO)moduleCreateWorkloadReqDTO,
 					workspaceByName.getName());
 			}
 
@@ -97,7 +108,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 				svcService.createNodePortService(createSvcReqDTO);
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			// log.error(e.getMessage());
+			e.printStackTrace();
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
@@ -128,7 +140,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		}
 	}
 
-	private void createAndSetImageSecret(ModuleCreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
+	private void createAndSetImageSecret(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		ModuleCredentialReqDTO credentialReqDTO = moduleCreateWorkloadReqDTO.getImage().getCredentialReqDTO();
 		String imageSecretName = null;
 		if (credentialReqDTO != null && credentialReqDTO.credentialId() != null
@@ -154,7 +166,12 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public void deleteBatchHobWorkload(String workSpaceName, String workloadName) {
+	public ModuleDistributedJobResDTO getDistributedWorkload(String workspaceName, String workloadResourceName) {
+		return workloadModuleService.getDistributedJobWorkload(workspaceName, workloadResourceName);
+	}
+
+	@Override
+	public void deleteBatchJobWorkload(String workSpaceName, String workloadName) {
 		workloadModuleService.deleteBatchJobWorkload(workSpaceName, workloadName);
 		svcService.deleteService(workSpaceName, workloadName);
 	}
@@ -166,8 +183,13 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
-		List<ModuleWorkloadResDTO> workloadList = new ArrayList<>();
+	public void deleteDistributedWorkload(String workspaceName, String workloadName) {
+		workloadModuleService.deleteDistributedWorkload(workspaceName, workloadName);
+	}
+
+	@Override
+	public List<AbstractModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
+		List<AbstractModuleWorkloadResDTO> workloadList = new ArrayList<>();
 		List<ModuleBatchJobResDTO> jobWorkloadList = workloadModuleService.getBatchWorkloadListByCondition(
 			workSpaceName, null, null);
 		List<ModuleInteractiveJobResDTO> workloadResList = workloadModuleService.getInteractiveWorkloadListByCondition(
@@ -187,12 +209,12 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return logService.watchLogByWorkload(workspaceName, podName);
 	}
 
-	public ModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
-		List<ModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
+	public AbstractModuleWorkloadResDTO getUserRecentlyWorkload(String workspaceName, String username) {
+		List<AbstractModuleWorkloadResDTO> workloadList = getWorkloadList(workspaceName);
 		try {
 			return workloadList.stream()
 				.filter(workload -> workload.getCreatorUserName().equals(username))
-				.sorted(Comparator.comparing(ModuleWorkloadResDTO::getCreatedAt).reversed())
+				.sorted(Comparator.comparing(AbstractModuleWorkloadResDTO::getCreatedAt).reversed())
 				.toList()
 				.get(0);
 		} catch (Exception e) {
@@ -414,6 +436,17 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
 		String description) {
 		workloadModuleService.editInteractiveJob(workspaceResourceName, workloadResourceName, name, description);
+	}
+
+	@Override
+	public List<Pod> getWorkloadByWorkloadName(String resourceName) {
+		return workloadModuleService.getWorkloadByWorkloadName(resourceName);
+	}
+
+	@Override
+	public GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName) {
+		//node를 통해 gpu 정보 조회
+		return nodeService.getGpuInfoByNodeName(gpuName, nodeName);
 	}
 
 	@Override

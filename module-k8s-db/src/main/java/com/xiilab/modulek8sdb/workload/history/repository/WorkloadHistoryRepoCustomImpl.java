@@ -1,6 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.repository;
 
-import static com.xiilab.modulek8sdb.workload.history.entity.QJobEntity.*;
+import static com.xiilab.modulek8sdb.workload.history.entity.QWorkloadEntity.*;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,45 +28,31 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<JobEntity> findBatchWorkloadHistoryByCondition(String workspaceName, String searchName, String userId,
-		WorkloadType workloadType) {
+	public WorkloadEntity findByWorkspaceNameRecently(String workspace, String username) {
 		return queryFactory
-			.selectFrom(jobEntity)
-			.where(
-				jobEntity.workloadType.eq(workloadType),
-				eqWorkspaceName(workspaceName),
-				eqName(searchName),
-				eqUserId(userId),
-				eqWorkloadType(workloadType),
-				jobEntity.deleteYN.eq(DeleteYN.N)
-			).fetch();
-	}
-
-	@Override
-	public JobEntity findByWorkspaceNameRecently(String workspace, String username) {
-		return queryFactory
-			.selectFrom(jobEntity)
-			.where(jobEntity.workspaceResourceName.eq(workspace).and(jobEntity.creatorName.eq(username)))
-			.orderBy(jobEntity.createdAt.desc())
+			.selectFrom(workloadEntity)
+			.where(workloadEntity.workspaceResourceName.eq(workspace).and(workloadEntity.creatorName.eq(username)))
+			.orderBy(workloadEntity.createdAt.desc())
 			.limit(1)
 			.fetchOne();
 	}
 
 	@Override
-	public List<JobEntity> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList,
+	public List<WorkloadEntity> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList,
 		WorkloadType workloadType, WorkloadSortCondition sortCondition) {
-		return queryFactory.selectFrom(jobEntity)
-			.where(jobEntity.resourceName.in(pinResourceNameList),
-				jobEntity.workloadType.eq(workloadType))
+		return queryFactory.selectFrom(workloadEntity)
+			.where(workloadEntity.resourceName.in(pinResourceNameList),
+				eqWorkloadType(workloadType))
 			.orderBy(createOrderSpecifier(sortCondition))
 			.fetch();
 	}
 
 	@Override
-	public Page<JobEntity> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
+	public Page<WorkloadEntity> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType,
+		String searchName,
 		String userId, List<String> pinResourceNameList, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest,
 		WorkloadStatus workloadStatus) {
-		List<JobEntity> jobEntities = queryFactory.selectFrom(jobEntity)
+		List<WorkloadEntity> jobEntities = queryFactory.selectFrom(workloadEntity)
 			.where(
 				resourceNameNotIn(pinResourceNameList),
 				eqWorkspaceName(workspaceName),
@@ -74,14 +60,14 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 				eqUserId(userId),
 				eqWorkloadType(workloadType),
 				workloadStatusEq(workloadStatus),
-				jobEntity.deleteYN.eq(DeleteYN.N)
+				workloadEntity.deleteYN.eq(DeleteYN.N)
 			).orderBy(createOrderSpecifier(workloadSortCondition))
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
 			.fetch();
 
-		Long totalCount = queryFactory.select(jobEntity.count())
-			.from(jobEntity)
+		Long totalCount = queryFactory.select(workloadEntity.count())
+			.from(workloadEntity)
 			.where(
 				resourceNameNotIn(pinResourceNameList),
 				eqWorkspaceName(workspaceName),
@@ -89,49 +75,77 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 				eqUserId(userId),
 				eqWorkloadType(workloadType),
 				workloadStatusEq(workloadStatus),
-				jobEntity.deleteYN.eq(DeleteYN.N)
+				workloadEntity.deleteYN.eq(DeleteYN.N)
 			).fetchOne();
 		return new PageImpl<>(jobEntities, pageRequest, totalCount);
 	}
+
+	@Override
+	public Page<WorkloadEntity> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
+		WorkloadSortCondition workloadSortCondition, PageRequest pageRequest, WorkloadStatus workloadStatus) {
+		List<WorkloadEntity> jobEntities = queryFactory.selectFrom(workloadEntity)
+			.where(
+				eqWorkspaceName(workspaceName),
+				eqName(searchName),
+				eqWorkloadType(workloadType),
+				workloadStatusEq(workloadStatus),
+				workloadEntity.deleteYN.eq(DeleteYN.N)
+			).orderBy(createOrderSpecifier(workloadSortCondition))
+			.offset(pageRequest.getOffset())
+			.limit(pageRequest.getPageSize())
+			.fetch();
+
+		Long totalCount = queryFactory.select(workloadEntity.count())
+			.from(workloadEntity)
+			.where(
+				eqWorkspaceName(workspaceName),
+				eqName(searchName),
+				eqWorkloadType(workloadType),
+				workloadStatusEq(workloadStatus),
+				workloadEntity.deleteYN.eq(DeleteYN.N)
+			).fetchOne();
+		return new PageImpl<>(jobEntities, pageRequest, totalCount);
+	}
+
 	private Predicate workloadStatusEq(WorkloadStatus workloadStatus){
-		return workloadStatus != null ? jobEntity.workloadStatus.eq(workloadStatus) : null;
+		return workloadStatus != null ? workloadEntity.workloadStatus.eq(workloadStatus) : null;
 	}
 	private Predicate resourceNameNotIn(List<String> resourceNames){
-		return resourceNames.size() != 0 ? jobEntity.resourceName.notIn(resourceNames) : null;
+		return resourceNames.size() != 0 ? workloadEntity.resourceName.notIn(resourceNames) : null;
 	}
 	private OrderSpecifier createOrderSpecifier(WorkloadSortCondition sortType) {
 		return switch (sortType) {
-			case AGE_ASC -> new OrderSpecifier<>(Order.ASC, jobEntity.createdAt);
-			case AGE_DESC -> new OrderSpecifier<>(Order.DESC, jobEntity.createdAt);
-			case REMAIN_TIME_ASC -> new OrderSpecifier<>(Order.ASC, jobEntity.remainTime);
-			case REMAIN_TIME_DESC -> new OrderSpecifier<>(Order.DESC, jobEntity.remainTime);
+			case AGE_ASC -> new OrderSpecifier<>(Order.ASC, workloadEntity.createdAt);
+			case AGE_DESC -> new OrderSpecifier<>(Order.DESC, workloadEntity.createdAt);
+			case REMAIN_TIME_ASC -> new OrderSpecifier<>(Order.ASC, workloadEntity.remainTime);
+			case REMAIN_TIME_DESC -> new OrderSpecifier<>(Order.DESC, workloadEntity.remainTime);
 		};
 	}
 	private BooleanExpression eqName(String searchName) {
 		if (searchName == null) {
 			return null;
 		}
-		return jobEntity.name.contains(searchName);
+		return workloadEntity.name.contains(searchName);
 	}
 
 	private BooleanExpression eqUserId(String userId) {
 		if (userId == null) {
 			return null;
 		}
-		return jobEntity.creatorId.eq(userId);
+		return workloadEntity.creatorId.eq(userId);
 	}
 
 	private BooleanExpression eqWorkloadType(WorkloadType workloadType) {
 		if (workloadType == null) {
 			return null;
 		}
-		return jobEntity.workloadType.eq(workloadType);
+		return workloadEntity.workloadType.eq(workloadType);
 	}
 
 	private BooleanExpression eqWorkspaceName(String workspaceName) {
 		if (workspaceName == null) {
 			return null;
 		}
-		return jobEntity.workspaceResourceName.eq(workspaceName);
+		return workloadEntity.workspaceResourceName.eq(workspaceName);
 	}
 }

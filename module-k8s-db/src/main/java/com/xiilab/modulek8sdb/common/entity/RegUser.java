@@ -2,7 +2,6 @@ package com.xiilab.modulek8sdb.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,11 +10,11 @@ import lombok.NoArgsConstructor;
 // @AllArgsConstructor
 @Embeddable
 public class RegUser {
-	@Column(name = "REG_USER_ID")
+	@Column(name = "REG_USER_ID", updatable = false)
 	protected String regUserId;
-	@Column(name = "REG_USER_NAME")
+	@Column(name = "REG_USER_NAME", updatable = false)
 	protected String regUserName;
-	@Column(name = "REG_USER_REAL_NAME")
+	@Column(name = "REG_USER_REAL_NAME", updatable = false)
 	protected String regUserRealName;
 
 	public RegUser(String regUserId, String regUserName, String regUserRealName) {

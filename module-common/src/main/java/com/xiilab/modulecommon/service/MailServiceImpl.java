@@ -4,11 +4,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.config.MailConfig;
 import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.util.MailUtils;
@@ -19,15 +22,17 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
-	private final JavaMailSender mailSender;
+	// private final JavaMailSender mailSender;
+	private final MailConfig mailConfig;
 	private final String ASTRAGO = "ASTRAGO";
-	@Value("${spring.mail.username}")
-	private String adminEmailAddr;
+
+	// @Value("${spring.mail.username}")
+	private String adminEmailAddr = "astrago@xiilab.com";
 
 	public void sendMail(MailDTO mailDTO) {
 		try {
 			if(!StringUtils.isBlank(mailDTO.getReceiverEmail())){
-				MailUtils sendMail = new MailUtils(mailSender);
+				MailUtils sendMail = new MailUtils(null);
 				sendMail.setSubject(mailDTO.getSubject());
 				sendMail.setTo(mailDTO.getReceiverEmail());
 				sendMail.setFrom(adminEmailAddr, ASTRAGO);
@@ -51,6 +56,42 @@ public class MailServiceImpl implements MailService {
 			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
 		}
 	}
+	public boolean sendMail(MailDTO mailDTO, SmtpDTO smtpDTO) {
+		boolean result = false;
+		try {
+			JavaMailSender mailSender = mailConfig.javaMailSender(smtpDTO);
+
+			if(!StringUtils.isBlank(mailDTO.getReceiverEmail())){
+				MailUtils sendMail = new MailUtils(mailSender);
+				sendMail.setSubject(mailDTO.getSubject());
+				sendMail.setTo(mailDTO.getReceiverEmail());
+				sendMail.setFrom(adminEmailAddr, ASTRAGO);
+
+				sendMail.setText(
+					createBody(
+						createTitle(mailDTO.getTitle()) +
+							createSubTitle(mailDTO.getSubTitle()) +
+							createContentTitle(StringUtils.isBlank(mailDTO.getContentTitle()) ? "" : String.format(mailDTO.getContentTitle(), adminEmailAddr)) +
+							createContents(mailDTO.getContents()) +
+							createContentFooter(mailDTO.getFooter())
+						, createFooter()
+					)
+				);
+
+				sendMail.setLogo("image/logo.png");
+				sendMail.setIcon("image/icon.png");
+				sendMail.send();
+
+				result = true;
+			}
+		} catch (MessagingException | UnsupportedEncodingException e) {
+			throw new RestApiException(CommonErrorCode.MAIL_SEND_FAILED);
+		} catch (MailSendException | MailAuthenticationException e){
+			result = false;
+		}
+		return result;
+	}
+
 
 	private String createBody(String title, String footer){
 		return """

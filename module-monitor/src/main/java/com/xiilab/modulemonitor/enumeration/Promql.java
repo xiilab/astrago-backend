@@ -15,7 +15,7 @@ public enum Promql {
 	GPU_COUNT("DCGM_FI_DEV_COUNT{%s}","GPU 개수 조회 및 GPU Name 조회","GPU"),
 	GPU_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{%s}) by(gpu, kubernetes_node, modelName)", "GPU 사용률 조회", "GPU"),
 	GPU_AVG_USAGE("avg(DCGM_FI_DEV_GPU_UTIL{%s})", "GPU 평균 사용량 조회", "GPU"),
-	GPU_MEM_USAGE("avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])) by(gpu, kubernetes_node, modelName))", "GPU MEM 사용률 조회", "GPU"),
+	GPU_MEM_USAGE("round((avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) / (avg(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m])) by(gpu, kubernetes_node, modelName) + avg(max_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])) by(gpu, kubernetes_node, modelName))) * 100, 0.01)", "GPU MEM 사용률 조회", "GPU"),
 	GPU_MEM_AVG_USAGE("avg(max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%s}[1m])", "GPU MEM 평균 사용량 조회", "GPU"),
 	GPU_POWER_USAGE("avg(DCGM_FI_DEV_POWER_USAGE{%s}) by(gpu, kubernetes_node, modelName)","GPU 전력 사용률 조회","GPU"),
 	GPU_AVG_POWER_USAGE("DCGM_FI_DEV_POWER_USAGE{%s}","GPU 전력 사용량 조회","GPU"),
@@ -46,9 +46,11 @@ public enum Promql {
 	USAGE_NODE_CPU_CORE("sum(kube_pod_container_resource_requests{resource=\"cpu\",%s})by(node)", "특정 노드의 cpu 코어 수 조회", "NODE"),
 	USAGE_NODE_MEMORY_SIZE("sum(kube_pod_container_resource_requests{resource=\"memory\",%s})by(node)", "특정 노드의 memory size 조회", "NODE"),
 	USAGE_NODE_GPU_COUNT("sum(kube_pod_container_resource_requests{resource=\"nvidia_com_gpu\",%s})by(node)", "특정 노드의 gpu 개수 조회", "NODE"),
+	USAGE_NODE_MPS_GPU_COUNT("sum(kube_pod_container_resource_requests{resource=\"nvidia_com_gpu_shared\",%s})by(node)", "특정 노드의 gpu 개수 조회", "NODE"),
 	TOTAL_NODE_CPU_CORE("sum(kube_node_status_capacity{resource=\"cpu\",%s})by(node)", "특정 노드의 cpu 사용량 조회", "NODE"),
 	TOTAL_NODE_MEMORY_SIZE("sum(kube_node_status_capacity{resource=\"memory\",%s})by(node)", "특정 노드의 memory 사용량 조회", "NODE"),
 	TOTAL_NODE_GPU_COUNT("sum(kube_node_status_capacity{resource=\"nvidia_com_gpu\",%s})by(node)", "특정 노드의 gpu 사용량 조회", "NODE"),
+	TOTAL_NODE_MPS_GPU_COUNT("sum(kube_node_status_capacity{resource=\"nvidia_com_gpu_shared\",%s})by(node)", "특정 노드의 mps gpu 사용량 조회", "NODE"),
 	USAGE_NODE_CPU_COUNT("sum(kube_node_status_capacity{resource=\"cpu\",%s})by(node)", "특정 노드의 cpu 사용량 조회", "NODE"),
 	USAGE_NODE_MEMORY_COUNT("sum(kube_node_status_capacity{resource=\"memory\",%s})by(node)", "특정 노드의 memory 사용량 조회", "NODE"),
 	USAGE_NODE_GPU_USAGE("sum(kube_node_status_capacity{resource=\"nvidia_com_gpu\",%s})by(node)", "특정 노드의 gpu 사용량 조회", "NODE"),
@@ -191,14 +193,25 @@ public enum Promql {
 	DASHBOARD_WS_CPU_USAGE("round(((sum(kube_resourcequota{type=\"used\", resource=~\"requests.cpu\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.cpu\"} > 0) by(namespace)) * 100 , 0.01)", "", "DASHBOARD"),
 	DASHBOARD_WS_MEM_USAGE("round(((sum(kube_resourcequota{type=\"used\", resource=~\"requests.memory\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.memory\"} > 0) by(namespace)) * 100, 0.01)", "", "DASHBOARD"),
 	DASHBOARD_WS_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
-	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_status_phase{namespace =~ \"ws.*\", phase !=\"Pending\", phase !=\"Running\", phase=\"Succeeded\"} > 0) by(namespace)", "", "DASHBOARD"),
+	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_status_phase{namespace =~ \"ws.*\", phase !=\"Pending\", phase !=\"Running\", phase!=\"Succeeded\"} > 0) by(namespace)", "", "DASHBOARD"),
 	DASHBOARD_WS_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
+
+
 	// TERMINAL
 	TERMINAL_GPU_UTILIZATION("DCGM_FI_DEV_GPU_UTIL{%s}", "", "TERMINAL"),
-	TERMINAL_GPU_MEM_USAGE("(label_replace(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])), \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * 100) * on(node) group_left kube_node_info{}", "", "TERMINAL"),
-	TERMINAL_MEM_UTILIZATION("sum(container_memory_usage_bytes{%s})", "", "TERMINAL"),
+	TERMINAL_GPU_MEM_USAGE(
+		"round((label_replace(max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) / (max_over_time(DCGM_FI_DEV_FB_USED{%1$s}[1m]) + min_over_time(DCGM_FI_DEV_FB_FREE{%1$s}[1m])), \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * 100) * on(node) group_left kube_node_info{}, 0.01)",
+		"", "TERMINAL"),
+	TERMINAL_MEM_UTILIZATION("avg(container_memory_usage_bytes{container != \"\", %s}) by (pod)", "", "TERMINAL"),
 	TERMINAL_CPU_UTILIZATION("round(sum (rate (container_cpu_usage_seconds_total{%s}[1m])) / sum (machine_cpu_cores{%s}) * 100)", "", "TERMINAL"),
+	TERMINAL_MULTI_CPU_UTILIZATION("round(sum (rate (container_cpu_usage_seconds_total{%s}[1m])) by(pod, node), 0.01)",
+		"", "TERMINAL"),
 
+	// SYSTEM
+	SYSTEM_CPU_CORE_COUNT("avg(machine_cpu_cores{%s}) by (node)", "NODE CPU 코어 총 갯수 조회, 필수 값 nodeName, 단위 : Core", "NODE"),
+	SYSTEM_MEMORY_BYTE("avg(machine_memory_bytes{%s}) by (node)", "NODE의 총 메모리, 필수 값 nodeName, 단위 : Byte", "NODE"),
+	SYSTEM_DISK_BYTE("max by (mountpoint) (node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint = \"/\", %s})", "NDOE의 총 DISK, 필수 값 nodeName, 단위 : Byte ", "INSTANCE"),
+	SYSTEM_GPU_MODEL("count(DCGM_FI_DEV_GPU_TEMP{%s}) by(kubernetes_node, modelName)", "GPU 모델명 및 개수 조회, 필수 값 instance, 단위 : 개", "GPU")
 	;
 // GPU 사용량, GPU Limit, GPU Request
 	private final String query;

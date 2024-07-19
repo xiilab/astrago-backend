@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulemonitor.dto.ClusterObjectDTO;
+import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.ClusterObject;
 import com.xiilab.modulemonitor.enumeration.Promql;
@@ -102,7 +103,7 @@ public class MonitorFacadeService {
 		String cpuMetric = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.NODE_CPU_USAGE.getQuery(), node));
 		String cpuResponse = DataConverterUtil.formatObjectMapper(cpuMetric);
-
+		String instance = DataConverterUtil.getInstance(cpuMetric);
 		String memMetric = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.REPORT_CLUSTER_MEM_USAGE.getQuery(), node));
 
@@ -114,6 +115,8 @@ public class MonitorFacadeService {
 		ResponseDTO.ResponseClusterDTO clusterMEM = k8sMonitorService.getDashboardClusterMemByNode(nodeName, memResponse);
 		// GPU
 		ResponseDTO.ResponseClusterDTO clusterGPU = k8sMonitorService.getDashboardClusterGPU(nodeName);
+		// MIG
+		ResponseDTO.ResponseClusterDTO clusterMIG = k8sMonitorService.getDashboardClusterMIG(nodeName);
 
 		String diskTotal = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.NODE_TOTAL_DISK_SIZE_BYTE.getQuery(), node));
@@ -125,6 +128,7 @@ public class MonitorFacadeService {
 
 		return ResponseDTO.NodeResourceDTO.builder()
 			.nodeName(nodeName)
+			.instance(instance)
 			.cpuTotal(clusterCPU.total())
 			.cpuRequest(clusterCPU.cpuRequest())
 			.cpuUsage(clusterCPU.cpuUsage())
@@ -133,6 +137,8 @@ public class MonitorFacadeService {
 			.memUsage(clusterMEM.usage())
 			.gpuTotal(clusterGPU.total())
 			.gpuUsage(clusterGPU.usage())
+			.migTotal(clusterMIG.total())
+			.migUsage(clusterMIG.usage())
 			.diskTotal(Long.parseLong(diskTotalByte))
 			.diskUsage(Long.parseLong(diskUsageByte))
 			.build();
@@ -410,5 +416,32 @@ public class MonitorFacadeService {
 			case CONTAINER_IMAGE_RESTART ->
 				k8sMonitorService.getContainerImageRestart();
 		};
+	}
+
+	public List<ResponseDTO.HistoryDTO> getMultiCPUUtilization(RequestDTO requestDTO) {
+		List<ResponseDTO.HistoryDTO> historyMetric = prometheusService.getHistoryMetric(requestDTO);
+
+		// Process the list to divide each value by 3
+		return historyMetric.stream()
+			.map(historyDTO -> {
+				Long cpuCore = k8sMonitorService.getCpuCore(historyDTO.nodeName());
+				return new ResponseDTO.HistoryDTO(
+					historyDTO.metricName(),
+					historyDTO.nameSpace(),
+					historyDTO.internalIp(),
+					historyDTO.nodeName(),
+					historyDTO.podName(),
+					historyDTO.kubeNodeName(),
+					historyDTO.modelName(),
+					historyDTO.gpuIndex(),
+					historyDTO.instance(),
+					historyDTO.prettyName(),
+					historyDTO.valueDTOS().stream()
+						.map(valueDTO ->
+							new ResponseDTO.ValueDTO(valueDTO.dateTime(),
+								String.valueOf(Double.parseDouble(valueDTO.value()) / cpuCore)))
+						.toList());
+			})
+			.toList();
 	}
 }

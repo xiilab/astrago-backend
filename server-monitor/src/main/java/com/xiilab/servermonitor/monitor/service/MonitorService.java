@@ -149,5 +149,8 @@ public class MonitorService {
 		return monitorFacadeService.getClusterObjectByObject(clusterObject);
 	}
 
+	public List<ResponseDTO.HistoryDTO> getMultiCPUUtilization(RequestDTO requestDTO) {
+		return monitorFacadeService.getMultiCPUUtilization(requestDTO);
+	}
 }
 

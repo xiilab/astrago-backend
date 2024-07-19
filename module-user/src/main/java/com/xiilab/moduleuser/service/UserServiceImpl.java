@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -24,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final ApplicationEventPublisher eventPublisher;
-	private final MailService mailService;
 
 	@Override
 	public UserDTO.UserInfo joinUser(UserReqVO userReqVO) {
@@ -55,7 +53,6 @@ public class UserServiceImpl implements UserService {
 			userRepository.updateUserAttribute(userIdList, Map.of("approvalYN", String.valueOf(approvalYN)));
 			//사용자 활성화 처리
 			userRepository.updateUserActivationYN(userIdList, true);
-
 		} else {
 			//사용자 반려 처리
 			userRepository.refuseUserById(userIdList);

@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulecommon.enums.ImageType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -39,11 +39,8 @@ public abstract class ImageEntity extends BaseEntity {
 	@Column(name = "IMAGE_ID")
 	private Long id;
 
-	@Column(name = "IMAGE_NAME_HUB")
-	private String imageNameHub;
-
-	@Column(name = "IMAGE_NAME_HARBOR")
-	private String imageNameHarbor;
+	@Column(name = "IMAGE_NAME")
+	private String imageName;
 
 	@Column(name = "REPOSITORY_AUTH_TYPE")
 	@Enumerated(EnumType.STRING)
@@ -61,19 +58,22 @@ public abstract class ImageEntity extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYN = DeleteYN.N;
 
-	protected ImageEntity(String imageNameHub, RepositoryAuthType repositoryAuthType, ImageType imageType,
+	@Column(name = "MULTI_NODE")
+	private boolean multiNode;
+
+	protected ImageEntity(String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
 		WorkloadType workloadType) {
-		this.imageNameHub = imageNameHub;
+		this.imageName = imageName;
 		this.repositoryAuthType = repositoryAuthType;
 		this.imageType = imageType;
 		this.workloadType = workloadType;
 	}
 
-	protected ImageEntity(RegUser regUser, String imageNameHub, RepositoryAuthType repositoryAuthType, ImageType imageType,
+	protected ImageEntity(RegUser regUser, String imageName, RepositoryAuthType repositoryAuthType, ImageType imageType,
 		WorkloadType workloadType) {
 		super.regDate = LocalDateTime.now();
 		super.regUser = regUser;
-		this.imageNameHub = imageNameHub;
+		this.imageName = imageName;
 		this.repositoryAuthType = repositoryAuthType;
 		this.imageType = imageType;
 		this.workloadType = workloadType;

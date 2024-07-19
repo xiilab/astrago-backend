@@ -1,11 +1,13 @@
 // package com.xiilab.modulek8s.storage.facade;
 //
 // import java.io.IOException;
+// import java.nio.charset.StandardCharsets;
 // import java.nio.file.Files;
 // import java.nio.file.Path;
 // import java.nio.file.Paths;
 // import java.time.LocalDateTime;
 // import java.util.ArrayList;
+// import java.util.Base64;
 // import java.util.Collections;
 // import java.util.HashMap;
 // import java.util.List;
@@ -850,45 +852,59 @@
 // 	@Test
 // 	@DisplayName("node 목록 조회")
 // 	void 노드목록조회(){
-// 		String gpuName = "nvidia.com/gpu.product";
-// 		String gpuCount = "nvidia.com/gpu.count";
-// 		String address = "projectcalico.org/IPv4Address";
+// 		// String gpuName = "nvidia.com/gpu.product";
+// 		// String gpuCount = "nvidia.com/gpu.count";
+// 		// String address = "projectcalico.org/IPv4Address";
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {
-// 			Node node1 = client.nodes().withName("gpu-titan-2").get();
-// 			Node node2 = client.nodes().list().getItems().stream().filter(node ->
-// 				node.getMetadata().getName().equals("gpu-titan-2")).findFirst().get();
-// 			List<Node> nodes = client.nodes().list().getItems();
-// 			for (Node node : nodes) {
-// 				String nodeName = node.getMetadata().getName(); //"gpu-titan-2"
-// 				node.getSpec().getUnschedulable(); // true = cordon or null, false = uncordon
-// 				//mem, cpu, disk, gpu
-// 				//request cpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="cpu"})by(node)
-// 				//request gpu => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="gpu"})
-// 				//request memory => prometheus sum(kube_pod_container_resource_requests{node="gpu-titan-2",resource="memory"})/1024 = ki
-// 				//총 cpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="cpu"})by(node)
-// 				//총 gpu => sum(kube_node_status_capacity{node="gpu-titan-2",resource="nvidia_com_gpu"})by(node)
-// 				//총 mem => sum(kube_node_status_capacity{node="gpu-titan-2",resource="memory"})by(node)/1024 = ki
-//
-// 				//총 disk => max by (mountpoint) (label_replace(node_filesystem_size_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
-// 				//사용량 disk => max by (mountpoint) (label_replace(node_filesystem_avail_bytes{job="node-exporter", fstype!="", mountpoint="/"}, "internal_ip", "$1", "instance", "(.*):.*") * on(internal_ip) group_left(node) kube_node_info{node="gpu-titan-2"}) 바이트
-//
-//
+// 			List<Pod> pods = client.pods().list().getItems();
+// 			for (Pod pod : pods) {
+// 				if(pod.getSpec().getNodeName() != null &&
+// 					pod.getSpec().getNodeName().equals("worker-27") &&
+// 					pod.getStatus().getPhase().equals("Running")){
+// 					Quantity gpuQuantity = pod.getSpec()
+// 						.getContainers()
+// 						.get(0)
+// 						.getResources()
+// 						.getRequests()
+// 						.get("nvidia.com/gpu");
+// 					Quantity sharedGpuQuantity = pod.getSpec()
+// 						.getContainers()
+// 						.get(0)
+// 						.getResources()
+// 						.getRequests()
+// 						.get("nvidia.com/gpu.shared");
+// 					boolean usedCheck = false;
+// 					if(gpuQuantity != null){
+// 						int gpuCount = Integer.parseInt(gpuQuantity
+// 							.getAmount());
+// 						if (gpuCount > 0) {
+// 							usedCheck = true;
+// 						}
+// 					}else if(sharedGpuQuantity != null){
+// 						int sharedGpuCount = Integer.parseInt(sharedGpuQuantity
+// 							.getAmount());
+// 						if(sharedGpuCount > 0){
+// 							usedCheck = true;
+// 						}
+// 					}
+// 					if(usedCheck){
+// 						System.out.println("사용중임");
+// 						break;
+// 					}
+// 				}
 // 			}
-//
-// 			System.out.println(nodes);
 // 		}
 // 	}
 // 	@Test
 // 	@DisplayName("노드 스케쥴 설정")
 // 	void nodeSchedule(){
-// 		String resourceName = "master-x3250m5-1";
-// 		ScheduleType scheduleType = ScheduleType.OFF;
+// 		String resourceName = "worker-27";
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {
-// 			client.nodes().withName(resourceName).edit(node -> new NodeBuilder(node)
-// 				.editSpec()
-// 				.withUnschedulable(scheduleType.name().equalsIgnoreCase("ON") ? false : true)
-// 				.endSpec()
-// 				.build());
+// 			Node node = client.nodes().withName(resourceName).get();
+// 			NodeBuilder nodeBuilder = new NodeBuilder().editMetadata().addToLabels("mps_status", "COMPLETE").endMetadata();
+// 			node.edit().withNewMetadata().addToLabels("mps_status", "COMPLETE").endMetadata().build();
+// 			Node build = node.edit().editMetadata().addToLabels("mps_status", "COMPLETE").endMetadata().build();
+// 			node.setMetadata(build.getMetadata());
 // 		}
 // 	}
 //
@@ -909,6 +925,111 @@
 // 			for (VolumeMount volumeMount : volumeMounts) {
 // 				System.out.println(volumeMount.getName());
 // 			}
+// 		}
+// 	}
+//
+// 	@Test
+// 	void insertIbmSec(){
+// 		SecretDTO secretDTO = SecretDTO.builder()
+// 			.secretName("test-secret")
+// 			.userName("testUserName")
+// 			.password("testPassword")
+// 			.build();
+//
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			Secret secret = new SecretBuilder()
+// 				.withNewMetadata()
+// 				.withName(secretDTO.getSecretName())
+// 				.withNamespace("ibm")
+// 				.endMetadata()
+// 				.withType("Opaque")
+// 				.addToData("username", secretDTO.getUserName())
+// 				.addToData("password", Base64.getEncoder()
+// 					.encodeToString(secretDTO.getPassword().getBytes(StandardCharsets.UTF_8)))
+// 				.build();
+// 			client.secrets()
+// 				.resource(secret)
+// 				.serverSideApply();
+// 			Secret ibmSecret = client.secrets().inNamespace("ibm").withName(secret.getMetadata().getName()).get();
+//
+// 			if(ibmSecret.getMetadata().getName().equals(secretDTO.getSecretName())){
+// 				client.secrets().inNamespace("ibm").withName(secret.getMetadata().getName()).delete();
+// 			}
+// 		}
+// 	}
+//
+// 	@Test
+// 	void createIbmStorage(){
+// 		StorageClass storageClass = new StorageClassBuilder()
+// 			.withNewMetadata()
+// 			.withName("ibm-block-" + "test-storage")
+// 			.endMetadata()
+// 			.withProvisioner("block.csi.ibm.com")
+// 			.addToParameters("pool", "demo-pool")
+// 			.addToParameters("SpaceEfficiency", "thin")
+// 			.addToParameters("virt_snap_func", "false")
+// 			.addToParameters("csi.storage.k8s.io/fstype", "xfs")
+// 			.addToParameters("csi.storage.k8s.io/secret-name", secretName)
+// 			.addToParameters("csi.storage.k8s.io/secret-namespace", "default")
+// 			.withAllowVolumeExpansion(true)
+// 			.build();
+// 	}
+//
+// 	@Test
+// 	void test2(){
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			Job job = client.batch().v1().jobs().inAnyNamespace()
+// 				.withLabel("app", "wl-e8a6df95-163f-4f4b-9231-f2bf292b9723")
+// 				// .withLabel("app", "wl-982fe371-a3c2-4ec4-bf97-da1164ae2ad4-7675559c8f-vj7wf")
+// 				.list().getItems().get(0);
+// 			String label = job
+// 				.getMetadata().getLabels().get("app");
+//
+// 			List<Pod> pods = client.pods().inAnyNamespace().withLabel("app", label).list().getItems();
+// 			String nodeName = "";
+// 			for (Pod pod : pods) {
+// 				boolean isRunning = pod.getStatus().getPhase().equalsIgnoreCase("Running");
+// 				if(isRunning){
+// 					nodeName = pod.getSpec().getNodeName();
+// 					break;
+// 				}
+// 			}
+// 			Node node = client.nodes().withName(nodeName).get();
+// 			String migCapable = node.getMetadata().getLabels().get("nvidia.com/mig.capable");
+// 			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable");
+// 			int memory = 0;
+// 			String gpuName = "";
+// 			if(Boolean.valueOf(migCapable)){ //mig
+// 				String strategy = node.getMetadata().getLabels().get("nvidia.com/mig.strategy");
+// 				//single
+// 				if(strategy.equalsIgnoreCase("single")){
+// 					memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+// 				}else{
+// 				//mixed
+// 					//db에서 gpuName 조회 후 .memory 문자열 합쳐서 라벨 검색 후 memory 조회
+// 				}
+// 			}else if(Boolean.valueOf(mpsCapable)){//mps
+// 				int gpuMemory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+// 				int mpsCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"));
+// 				memory = gpuMemory / mpsCount;
+//
+// 			}else{//normal
+// 				memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+// 				gpuName = node.getMetadata().getLabels().get("nvidia.com/gpu.product");
+// 			}
+//
+// 			System.out.println(memory);
+//
+// 		}
+// 	}
+// 	@Test
+// 	void test3(){
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			List<Node> nodes = client.nodes()
+// 				.withLabel("nvidia.com/gpu.product", "Tesla-V100-PCIE-16GB")
+// 				.withLabel("nvidia.com/mps.capable", "true")
+// 				.list()
+// 				.getItems();
 // 		}
 // 	}
 // }

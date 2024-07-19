@@ -5,14 +5,14 @@ import org.springframework.util.CollectionUtils;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadResDTO;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
-public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
-
+public class ModuleInteractiveJobResDTO extends AbstractSingleWorkloadResDTO {
 	public ModuleInteractiveJobResDTO(Deployment deployment) {
 		super(deployment);
 		Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
@@ -27,7 +27,7 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 			.map(env -> new ModuleEnvResDTO(env.getName(), env.getValue()))
 			.toList();
 		super.ports = container.getPorts().stream()
-			.map(port -> new ModulePortResDTO(port.getName(), port.getContainerPort(), null))
+			.map(ModulePortResDTO::new)
 			.toList();
 		super.command = CollectionUtils.isEmpty(container.getCommand()) ? null : container.getCommand().get(2);
 		super.status = K8sInfoPicker.getInteractiveWorkloadStatus(deployment.getStatus());
@@ -39,15 +39,4 @@ public class ModuleInteractiveJobResDTO extends ModuleWorkloadResDTO {
 	public WorkloadType getType() {
 		return WorkloadType.INTERACTIVE;
 	}
-
-	// public void updatePort(String nodeIp, Service service) {
-	// 	if (Objects.nonNull(service) && Objects.nonNull(service.getSpec().getPorts())) {
-	// 		List<ServicePort> servicePorts = service.getSpec().getPorts();
-	// 		this.ports = servicePorts.stream().map(servicePort -> ModulePortResDTO.builder()
-	// 			.name(servicePort.getName())
-	// 			.originPort(servicePort.getPort())
-	// 			.url(String.format("%s:%s", nodeIp, servicePort.getNodePort()))
-	// 			.build()).toList();
-	// 	}
-	// }
 }

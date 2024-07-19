@@ -11,14 +11,18 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.enums.CodeType;
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.common.dto.DistributedResourceDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractDistributedWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadResDTO;
 import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -31,6 +35,7 @@ import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.EnvEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
@@ -44,38 +49,44 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public class FindWorkloadResDTO extends ResDTO {
+	protected Long id;
+	protected String uid;
+	protected String workloadName;
+	protected String workloadResourceName;
+	protected String workspaceName;
+	protected String workSpaceResourceName;
+	protected String description;
+	protected WorkloadType workloadType;
+	protected FindWorkloadResDTO.Image image;
+	protected List<FindWorkloadResDTO.Port> ports;
+	protected List<FindWorkloadResDTO.Env> envs;
+	protected List<FindWorkloadResDTO.Volume> datasets;
+	protected List<FindWorkloadResDTO.Volume> models;
+	protected List<FindWorkloadResDTO.Code> codes;
+	protected String workingDir;
+	protected String command;
+	protected WorkloadStatus status;
+	protected String nodeName;
+	protected boolean canBeDeleted;
+	protected String startTime;
+	protected GPUType gpuType;
+	protected String gpuName;
+	protected Integer gpuOnePerMemory;
+	protected Integer resourcePresetId;
+	protected String endTime;
+
 	@Getter
 	@SuperBuilder
-	public static class WorkloadDetail extends FindWorkloadResDTO {
-		private Long id;
-		private String uid;
-		private String workloadName;
-		private String workloadResourceName;
-		private String workspaceName;
-		private String workSpaceResourceName;
-		private String description;
-		private WorkloadType workloadType;
-		private FindWorkloadResDTO.Image image;
-		private List<FindWorkloadResDTO.Port> ports;
-		private List<FindWorkloadResDTO.Env> envs;
-		private List<FindWorkloadResDTO.Volume> datasets;
-		private List<FindWorkloadResDTO.Volume> models;
-		private List<FindWorkloadResDTO.Code> codes;
-		private String workingDir;
-		private String command;
-		private Map<String,String> parameter;
+	public static class SingleWorkloadDetail extends FindWorkloadResDTO {
 		private Float cpuRequest;
 		private Integer gpuRequest;
 		private Float memRequest;
-		private WorkloadStatus status;
+		private Map<String, String> parameter;
 		private String ide;
-		private String nodeName;
 		private String estimatedInitialTime;
 		private String estimatedRemainingTime;
-		private boolean canBeDeleted;
-		private String startTime;
 
-		public static <T extends ModuleWorkloadResDTO> FindWorkloadResDTO.WorkloadDetail from(
+		public static <T extends AbstractSingleWorkloadResDTO> SingleWorkloadDetail from(
 			T moduleJobResDTO
 			, FindWorkloadResDTO.Image image
 			, List<FindWorkloadResDTO.Volume> models
@@ -83,8 +94,9 @@ public class FindWorkloadResDTO extends ResDTO {
 			, List<FindWorkloadResDTO.Code> codes
 			, List<FindWorkloadResDTO.Port> ports
 			, List<FindWorkloadResDTO.Env> envs
-		 	, String nodeName) {
-			return WorkloadDetail.builder()
+			, String nodeName) {
+
+			return SingleWorkloadDetail.builder()
 				.uid(moduleJobResDTO.getUid())
 				.workloadName(moduleJobResDTO.getName())
 				.workloadResourceName(moduleJobResDTO.getResourceName())
@@ -101,53 +113,172 @@ public class FindWorkloadResDTO extends ResDTO {
 				.workingDir(moduleJobResDTO.getWorkingDir())
 				.command(moduleJobResDTO.getCommand())
 				.parameter(moduleJobResDTO.getParameter())
-				.cpuRequest(Float.parseFloat(moduleJobResDTO.getCpuRequest()))
-				.gpuRequest(Integer.parseInt(moduleJobResDTO.getGpuRequest()))
-				.memRequest(Float.parseFloat(moduleJobResDTO.getMemRequest()))
+				.cpuRequest(moduleJobResDTO.getCpuRequest())
+				.memRequest(moduleJobResDTO.getMemRequest())
+				.gpuRequest(moduleJobResDTO.getGpuRequest())
+				.regUserId(moduleJobResDTO.getCreatorId())
+				.regUserName(moduleJobResDTO.getCreatorUserName())
+				.regUserRealName(moduleJobResDTO.getCreatorFullName())
+				.regDate(moduleJobResDTO.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.modDate(null)
+				.workingDir(moduleJobResDTO.getWorkingDir())
+				.status(moduleJobResDTO.getStatus())
+				.ide(moduleJobResDTO.getIde())
+				.nodeName(nodeName)
+				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime()) ?
+					moduleJobResDTO.getEstimatedInitialTime() : null)
+				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime()) ?
+					moduleJobResDTO.getEstimatedRemainingTime() : null)
+				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
+				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime()) ? moduleJobResDTO.getStartTime() : null)
+				.gpuName(moduleJobResDTO.getGpuName())
+				.gpuType(moduleJobResDTO.getGpuType())
+				.resourcePresetId(moduleJobResDTO.getResourcePresetId())
+				.build();
+		}
+
+		public static SingleWorkloadDetail from(JobEntity workloadEntity) {
+			return SingleWorkloadDetail.builder()
+				.id(workloadEntity.getId())
+				.uid(workloadEntity.getUid())
+				.workloadName(workloadEntity.getName())
+				.workloadResourceName(workloadEntity.getResourceName())
+				.workspaceName(workloadEntity.getWorkspaceName())
+				.workSpaceResourceName(workloadEntity.getWorkspaceResourceName())
+				.description(workloadEntity.getDescription())
+				.workloadType(workloadEntity.getWorkloadType())
+				.image(new Image(workloadEntity.getImage()))
+				.ports(workloadEntity.getPortList().stream().map(Port::new).toList())
+				.envs(workloadEntity.getEnvList().stream().map(Env::new).toList())
+				.datasets(workloadEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
+				.models(workloadEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
+				.codes(workloadEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
+				.command(workloadEntity.getWorkloadCMD())
+				.parameter(JsonConvertUtil.convertJsonToMap(workloadEntity.getParameter()))
+				.cpuRequest(workloadEntity.getCpuRequest())
+				.gpuRequest(workloadEntity.getGpuRequest() == null ? 0 : workloadEntity.getGpuRequest())
+				.memRequest(workloadEntity.getMemRequest())
+				.regUserId(workloadEntity.getCreatorId())
+				.regUserName(workloadEntity.getCreatorName())
+				.regUserRealName(workloadEntity.getCreatorRealName())
+				.regDate(workloadEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.modDate(null)
+				.workingDir(workloadEntity.getWorkingDir())
+				.status(workloadEntity.getWorkloadStatus())
+				.ide(workloadEntity.getIde())
+				.canBeDeleted(workloadEntity.isCanBeDeleted())
+				.gpuName(workloadEntity.getGpuName())
+				.gpuType(workloadEntity.getGpuType())
+				.gpuOnePerMemory(workloadEntity.getGpuOnePerMemory())
+				.resourcePresetId(workloadEntity.getResourcePresetId())
+				.nodeName(workloadEntity.getNodeName())
+				.startTime(DataConverterUtil.convertLocalDateTimeToString(workloadEntity.getStartTime()))
+				.endTime(DataConverterUtil.convertLocalDateTimeToString(workloadEntity.getEndTime()))
+				.build();
+		}
+	}
+
+	@Getter
+	@SuperBuilder
+	public static class DistributedWorkloadDetail extends FindWorkloadResDTO {
+		private DistributedResourceDTO.LauncherInfo launcherInfo;
+		private DistributedResourceDTO.WorkerInfo workerInfo;
+
+		public static DistributedWorkloadDetail from(
+			AbstractDistributedWorkloadResDTO moduleJobResDTO
+			, FindWorkloadResDTO.Image image
+			, List<FindWorkloadResDTO.Volume> models
+			, List<FindWorkloadResDTO.Volume> datasets
+			, List<FindWorkloadResDTO.Code> codes
+			, List<FindWorkloadResDTO.Port> ports
+			, List<FindWorkloadResDTO.Env> envs
+			, String nodeName) {
+
+			return DistributedWorkloadDetail.builder()
+				.uid(moduleJobResDTO.getUid())
+				.workloadName(moduleJobResDTO.getName())
+				.workloadResourceName(moduleJobResDTO.getResourceName())
+				.workspaceName(moduleJobResDTO.getWorkspaceName())
+				.workSpaceResourceName(moduleJobResDTO.getWorkspaceResourceName())
+				.description(moduleJobResDTO.getDescription())
+				.workloadType(moduleJobResDTO.getType())
+				.image(image)
+				.ports(ports)
+				.envs(envs)
+				.datasets(datasets)
+				.models(models)
+				.codes(codes)
+				.workingDir(moduleJobResDTO.getWorkingDir())
+				.command(moduleJobResDTO.getCommand())
 				.regUserId(moduleJobResDTO.getCreatorId())
 				.regUserName(moduleJobResDTO.getCreatorUserName())
 				.regUserRealName(moduleJobResDTO.getCreatorFullName())
 				.regDate(moduleJobResDTO.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 				.modDate(null)
 				.status(moduleJobResDTO.getStatus())
-				.ide(moduleJobResDTO.getIde())
 				.nodeName(nodeName)
-				.estimatedInitialTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedInitialTime())? moduleJobResDTO.getEstimatedInitialTime() : null)
-				.estimatedRemainingTime(!ObjectUtils.isEmpty(moduleJobResDTO.getEstimatedRemainingTime())? moduleJobResDTO.getEstimatedRemainingTime() : null)
 				.canBeDeleted(moduleJobResDTO.isCanBeDeleted())
-				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime())? moduleJobResDTO.getStartTime() : null)
+				.workingDir(moduleJobResDTO.getWorkingDir())
+				.startTime(StringUtils.hasText(moduleJobResDTO.getStartTime()) ? moduleJobResDTO.getStartTime() : null)
+				.launcherInfo(DistributedResourceDTO.LauncherInfo.builder()
+					.cpuRequest(moduleJobResDTO.getLauncherInfo().getCpuRequest())
+					.memRequest(moduleJobResDTO.getLauncherInfo().getMemRequest())
+					.build())
+				.workerInfo(DistributedResourceDTO.WorkerInfo.builder()
+					.cpuRequest(moduleJobResDTO.getWorkerInfo().getCpuRequest())
+					.memRequest(moduleJobResDTO.getWorkerInfo().getMemRequest())
+					.gpuRequest(moduleJobResDTO.getWorkerInfo().getGpuRequest())
+					.workerCnt(moduleJobResDTO.getWorkerInfo().getWorkerCnt())
+					.build())
+				.gpuName(moduleJobResDTO.getGpuName())
+				.gpuType(moduleJobResDTO.getGpuType())
+				.nodeName(moduleJobResDTO.getNodeName())
+				.resourcePresetId(moduleJobResDTO.getResourcePresetId())
+				.startTime(moduleJobResDTO.getStartTime())
 				.build();
 		}
 
-		public static FindWorkloadResDTO.WorkloadDetail from(JobEntity jobEntity) {
-			return WorkloadDetail.builder()
-				.id(jobEntity.getId())
-				.uid(jobEntity.getUid())
-				.workloadName(jobEntity.getName())
-				.workloadResourceName(jobEntity.getResourceName())
-				.workspaceName(jobEntity.getWorkspaceName())
-				.workSpaceResourceName(jobEntity.getWorkspaceResourceName())
-				.description(jobEntity.getDescription())
-				.workloadType(jobEntity.getWorkloadType())
-				.image(new Image(jobEntity.getImage()))
-				.ports(jobEntity.getPortList().stream().map(Port::new).toList())
-				.envs(jobEntity.getEnvList().stream().map(Env::new).toList())
-				.datasets(jobEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
-				.models(jobEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
-				.codes(jobEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
-				.command(jobEntity.getWorkloadCMD())
-				.parameter(JsonConvertUtil.convertJsonToMap(jobEntity.getParameter()))
-				.cpuRequest(jobEntity.getCpuRequest().floatValue())
-				.gpuRequest(jobEntity.getGpuRequest() == null ? 0 : jobEntity.getGpuRequest())
-				.memRequest(jobEntity.getMemRequest().floatValue())
-				.regUserId(jobEntity.getCreatorId())
-				.regUserName(jobEntity.getCreatorName())
-				.regUserRealName(jobEntity.getCreatorRealName())
-				.regDate(jobEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+		public static DistributedWorkloadDetail from(DistributedJobEntity distributedJobEntity) {
+			return DistributedWorkloadDetail.builder()
+				.id(distributedJobEntity.getId())
+				.uid(distributedJobEntity.getUid())
+				.workloadName(distributedJobEntity.getName())
+				.workloadResourceName(distributedJobEntity.getResourceName())
+				.workspaceName(distributedJobEntity.getWorkspaceName())
+				.workSpaceResourceName(distributedJobEntity.getWorkspaceResourceName())
+				.description(distributedJobEntity.getDescription())
+				.workloadType(distributedJobEntity.getWorkloadType())
+				.image(new Image(distributedJobEntity.getImage()))
+				.ports(distributedJobEntity.getPortList().stream().map(Port::new).toList())
+				.envs(distributedJobEntity.getEnvList().stream().map(Env::new).toList())
+				.datasets(distributedJobEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
+				.models(distributedJobEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
+				.codes(distributedJobEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
+				.command(distributedJobEntity.getWorkloadCMD())
+				.regUserId(distributedJobEntity.getCreatorId())
+				.regUserName(distributedJobEntity.getCreatorName())
+				.regUserRealName(distributedJobEntity.getCreatorRealName())
+				.regDate(distributedJobEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.workingDir(distributedJobEntity.getWorkingDir())
 				.modDate(null)
-				.status(WorkloadStatus.END)
-				.ide(jobEntity.getIde())
-				.canBeDeleted(jobEntity.isCanBeDeleted())
+				.status(distributedJobEntity.getWorkloadStatus())
+				.canBeDeleted(distributedJobEntity.isCanBeDeleted())
+				.launcherInfo(DistributedResourceDTO.LauncherInfo.builder()
+					.cpuRequest(distributedJobEntity.getLauncherCpuRequest())
+					.memRequest(distributedJobEntity.getLauncherMemRequest())
+					.build())
+				.workerInfo(DistributedResourceDTO.WorkerInfo.builder()
+					.cpuRequest(distributedJobEntity.getWorkerCpuRequest())
+					.memRequest(distributedJobEntity.getWorkerMemRequest())
+					.gpuRequest(distributedJobEntity.getWorkerGpuRequest())
+					.workerCnt(distributedJobEntity.getWorkerCount())
+					.build())
+				.gpuName(distributedJobEntity.getGpuName())
+				.gpuType(distributedJobEntity.getGpuType())
+				.resourcePresetId(distributedJobEntity.getResourcePresetId())
+				.nodeName(distributedJobEntity.getNodeName())
+				.startTime(DataConverterUtil.convertLocalDateTimeToString(distributedJobEntity.getStartTime()))
+				.endTime(DataConverterUtil.convertLocalDateTimeToString(distributedJobEntity.getEndTime()))
 				.build();
 		}
 	}
@@ -166,8 +297,9 @@ public class FindWorkloadResDTO extends ResDTO {
 			super(imageEntity.getRegUser().getRegUserId(), imageEntity.getRegUser().getRegUserName(),
 				imageEntity.getRegUser().getRegUserRealName(), imageEntity.getRegDate(), imageEntity.getModDate());
 			this.id = imageEntity.getId();
-			this.title = imageEntity.isBuiltInImage()? ((BuiltInImageEntity)imageEntity).getTitle() : imageEntity.getImageNameHub();
-			this.name = imageEntity.getImageNameHub();
+			this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)imageEntity).getTitle() :
+				imageEntity.getImageName();
+			this.name = imageEntity.getImageName();
 			this.type = imageEntity.getImageType();
 			this.repositoryAuthType = imageEntity.getRepositoryAuthType();
 			if (imageEntity.getImageType() == ImageType.CUSTOM
@@ -325,6 +457,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private Long credentialId;
 		private String credentialName;
 		private RepositoryType repositoryType;
+		private String cmd;
 
 		public Code(CodeWorkLoadMappingEntity codeWorkLoadMappingEntity) {
 			super(codeWorkLoadMappingEntity.getCode().getRegUser().getRegUserId(),
@@ -346,6 +479,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				this.credentialId = codeWorkLoadMappingEntity.getCode().getCredentialEntity().getId();
 			}
 			this.repositoryType = codeWorkLoadMappingEntity.getCode().getRepositoryType();
+			this.cmd = codeWorkLoadMappingEntity.getCmd();
 		}
 
 		@Builder(builderClassName = "codeResDTO", builderMethodName = "codeResDTO")

@@ -72,12 +72,16 @@ public class HubServiceImpl implements HubService {
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 		FindHubResDTO.HubDetail hubDetail = FindHubResDTO.HubDetail.from(hubEntity, typesMap);
 
-		hubDetail.changeSourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrlGitLab() : hubEntity.getSourceCodeUrlGitHub());
+		hubDetail.changeSourceCodeUrl(
+			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() : hubEntity.getSourceCodeUrl());
 		FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
-		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageNameHarbor() : hubEntity.getHubImageEntity().getImageNameHub());
+		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageName() :
+			hubEntity.getHubImageEntity().getImageName());
 		hubDetail.setHubImage(hubImage);
-		hubDetail.setReadmeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getReadmeUrlGitLab() : hubEntity.getReadmeUrlGitHub());
-		hubDetail.setThumbnailUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrlGitLab() : hubEntity.getThumbnailUrlGitHub());
+		hubDetail.setReadmeUrl(
+			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getReadmeUrl() : hubEntity.getReadmeUrl());
+		hubDetail.setThumbnailUrl(
+			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrl() : hubEntity.getThumbnailUrl());
 
 		return hubDetail;
 	}
@@ -88,7 +92,8 @@ public class HubServiceImpl implements HubService {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
-		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size(), networkCloseYN);
+		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size(), networkCloseYN,
+			network.getPrivateRepositoryUrl());
 	}
 
 	@Override
@@ -110,12 +115,9 @@ public class HubServiceImpl implements HubService {
 		return HubEntity.saveBuilder()
 			.title(saveHubDTO.getTitle())
 			.description(saveHubDTO.getDescription())
-			.thumbnailUrlGitLab(saveHubDTO.getThumbnailURL())
-			.thumbnailUrlGitHub(saveHubDTO.getThumbnailURL())
-			.readmeUrlGitHub(saveHubDTO.getReadmeURL())
-			.readmeUrlGitLab(saveHubDTO.getReadmeURL())
-			.sourceCodeUrlGitHub(saveHubDTO.getSourceCodeUrl())
-			.sourceCodeUrlGitLab(saveHubDTO.getSourceCodeUrl())
+			.thumbnailUrl(saveHubDTO.getThumbnailURL())
+			.readmeUrl(saveHubDTO.getReadmeURL())
+			.sourceCodeUrl(saveHubDTO.getSourceCodeUrl())
 			.sourceCodeBranch("master")
 			.sourceCodeMountPath(saveHubDTO.getSourceCodeMountPath())
 			.datasetMountPath(saveHubDTO.getDatasetMountPath())
@@ -154,7 +156,8 @@ public class HubServiceImpl implements HubService {
 	/* 카테고리 검색 List 반환 */
 	private FindHubResDTO.Hubs getHubListByCategoryNames(String searchText, String[] categoryNames, Pageable pageable) {
 		// 카테고리 이름으로 hub 목록 조회
-		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.findHubCategoryMapping(searchText,
+		Page<HubCategoryMappingEntity> finByHubsByCategoryNames = hubCategoryMappingRepository.findHubCategoryMapping(
+			searchText,
 			Arrays.stream(categoryNames).toList(), null, pageable);
 
 		List<HubCategoryMappingEntity> hubList = finByHubsByCategoryNames.getContent();
@@ -177,7 +180,8 @@ public class HubServiceImpl implements HubService {
 		List<Long> hubIds = hubEntities.stream()
 			.map(HubEntity::getHubId)
 			.toList();
-		Page<HubCategoryMappingEntity> hubs = hubCategoryMappingRepository.findHubCategoryMapping(null, null, hubIds, null);
+		Page<HubCategoryMappingEntity> hubs = hubCategoryMappingRepository.findHubCategoryMapping(null, null, hubIds,
+			null);
 		return hubs.getContent();
 	}
 

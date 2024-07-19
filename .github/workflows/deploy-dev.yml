@@ -124,11 +124,8 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.repository = "${{ env.HARBOR_REPOSITORY }}/core"' 'environments/dev/values.yaml'
             yq -i '.astrago.core.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.batch.repository = "${{ env.HARBOR_REPOSITORY }}/batch"' 'environments/dev/values.yaml'
             yq -i '.astrago.batch.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/dev/values.yaml'
-            yq -i '.astrago.monitor.repository = "${{ env.HARBOR_REPOSITORY }}/monitor"' 'environments/dev/values.yaml'
             yq -i '.astrago.monitor.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/dev/values.yaml'
 
       - name: Commit and Push

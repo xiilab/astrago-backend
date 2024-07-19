@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.facade.dto;
 
+import com.xiilab.modulecommon.enums.StorageType;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,4 +14,7 @@ public class DeleteStorageReqDTO {
 	private String hostPath;
 	private String namespace;
 	private String astragoDeploymentName;
+	private StorageType storageType;
+	private String secretName;
+	private String storageName;
 }

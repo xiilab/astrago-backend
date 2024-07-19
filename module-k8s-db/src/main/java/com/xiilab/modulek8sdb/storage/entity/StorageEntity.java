@@ -1,6 +1,5 @@
 package com.xiilab.modulek8sdb.storage.entity;
 
-
 import org.hibernate.annotations.SQLDelete;
 
 import com.xiilab.modulecommon.enums.StorageType;
@@ -55,16 +54,15 @@ public class StorageEntity extends BaseEntity {
 	private String pvName;
 	@Column(name = "PVC_NAME")
 	private String pvcName;
-
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYN = DeleteYN.N;
-
+	@Column(name = "SECRET_NAME")
+	private String secretName;
 	@Builder
-	public StorageEntity(String storageName, int requestVolume, String description,
-		StorageType storageType,
-		String ip, String storagePath, String hostPath, String astragoDeploymentName, String namespace, String pvName,
-		String pvcName, String volumeName) {
+	public StorageEntity(String storageName, int requestVolume, String description, StorageType storageType, String ip,
+		String storagePath, String hostPath, String astragoDeploymentName, String namespace, String pvName,
+		String pvcName, String volumeName, String secretName) {
 		this.storageName = storageName;
 		this.requestVolume = requestVolume;
 		this.description = description;
@@ -77,8 +75,10 @@ public class StorageEntity extends BaseEntity {
 		this.volumeName = volumeName;
 		this.pvName = pvName;
 		this.pvcName = pvcName;
+		this.secretName = secretName;
 	}
-	public void changeStorageName(String storageName){
+
+	public void changeStorageName(String storageName) {
 		this.storageName = storageName;
 	}
 }

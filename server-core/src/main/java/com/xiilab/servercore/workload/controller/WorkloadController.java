@@ -23,10 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
@@ -37,11 +37,12 @@ import com.xiilab.servercore.hub.dto.response.FindHubInWorkloadResDTO;
 import com.xiilab.servercore.hub.service.HubService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
-import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.request.CreateDistributedWorkloadJobReqDTO;
+import com.xiilab.servercore.workload.dto.request.CreateSingleWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
-import com.xiilab.modulecommon.enums.WorkloadSortCondition;
+import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,12 +58,22 @@ public class WorkloadController {
 	private final ModelService modelService;
 	private final HubService hubService;
 
-	@PostMapping("/workloads/{type}")
+
+	@PostMapping("/workloads")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(
-		@RequestBody CreateWorkloadJobReqDTO createWorkloadJobReqDTO,
-		@PathVariable(value = "type") WorkloadType workloadType,
+		@RequestBody CreateSingleWorkloadJobReqDTO createWorkloadJobReqDTO,
 		UserDTO.UserInfo userInfoDTO) {
+		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/workloads/distributed")
+	@Operation(summary = "분산 학습용 워크로드 생성")
+	public ResponseEntity<HttpStatus> createWorkloadDistributed(
+		@RequestBody CreateDistributedWorkloadJobReqDTO createWorkloadJobReqDTO,
+		UserDTO.UserInfo userInfoDTO
+	) {
 		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -78,14 +89,28 @@ public class WorkloadController {
 
 	@GetMapping("/workloads/{type}")
 	@Operation(summary = "워크로드 상세 조회")
-	public ResponseEntity<FindWorkloadResDTO.WorkloadDetail> getWorkloadInfo(
+	public ResponseEntity<FindWorkloadResDTO> getWorkloadInfo(
 		@PathVariable("type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
 		@RequestParam("workloadResourceName") String workloadResourceName,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, userInfoDTO),
+			workloadFacadeService.getWorkloadInfoByResourceName(workloadType, workspaceResourceName,
+				workloadResourceName, userInfoDTO),
 			HttpStatus.OK);
+	}
+
+	@GetMapping("/workloads/ports/{type}")
+	@Operation(summary = "워크로드에 접근 할 수 있는 포트 조회")
+	public ResponseEntity<List<FindWorkloadResDTO.Port>> getWorkloadsPorts(
+		@PathVariable("type") WorkloadType workloadType,
+		@RequestParam("workspaceResourceName") String workspaceResourceName,
+		@RequestParam("workloadResourceName") String workloadResourceName
+	) {
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadPortInfo(workloadType, workspaceResourceName, workloadResourceName),
+			HttpStatus.OK
+		);
 	}
 
 	@PostMapping("/workloads/{type}/event")
@@ -102,8 +127,8 @@ public class WorkloadController {
 
 	@GetMapping("/workloads/jobList")
 	@Operation(summary = "워크로드 리스트 조회")
-	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getWorkloadList(
-		@RequestParam(value = "workloadType") WorkloadType workloadType,
+	public ResponseEntity<PageDTO<WorkloadSummaryDTO>> getWorkloadList(
+		@RequestParam(value = "workloadType", required = false) WorkloadType workloadType,
 		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		@RequestParam(value = "searchName", required = false) String searchName,
 		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
@@ -165,7 +190,8 @@ public class WorkloadController {
 
 	@GetMapping("/workloads/hubs")
 	@Operation(summary = "워크로드 생성 시 hub 전체 조회")
-	public ResponseEntity<FindHubInWorkloadResDTO.Hubs> getHubs(@RequestParam("workloadType") WorkloadType workloadType) {
+	public ResponseEntity<FindHubInWorkloadResDTO.Hubs> getHubs(
+		@RequestParam("workloadType") WorkloadType workloadType) {
 		return new ResponseEntity<>(hubService.getHubListInWorkload(workloadType), HttpStatus.OK);
 	}
 
@@ -264,13 +290,14 @@ public class WorkloadController {
 		UserDTO.UserInfo userInfoDTO
 	) {
 		return ResponseEntity.ok()
-				.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
+			.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
+
 	//관리자 api
 	@GetMapping("/admin/workloads/jobList")
 	@Operation(summary = "관리자 워크로드 리스트 조회")
-	public ResponseEntity<PageDTO<ModuleWorkloadResDTO>> getAdminWorkloadList(
-		@RequestParam(value = "workloadType") WorkloadType workloadType,
+	public ResponseEntity<PageDTO<WorkloadSummaryDTO>> getAdminWorkloadList(
+		@RequestParam(value = "workloadType", required = false) WorkloadType workloadType,
 		@RequestParam(value = "workspaceName", required = false) String workspaceName,
 		@RequestParam(value = "searchName", required = false) String searchName,
 		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
@@ -286,15 +313,17 @@ public class WorkloadController {
 
 	@GetMapping("/admin/workloads/{type}")
 	@Operation(summary = "관리자 워크로드 상세 조회")
-	public ResponseEntity<FindWorkloadResDTO.WorkloadDetail> getAdminWorkloadInfo(
+	public ResponseEntity<FindWorkloadResDTO> getAdminWorkloadInfo(
 		@PathVariable("type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
 		@RequestParam("workloadResourceName") String workloadResourceName,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getAdminWorkloadInfoByResourceName(workloadType, workspaceResourceName, workloadResourceName, userInfoDTO),
+			workloadFacadeService.getAdminWorkloadInfoByResourceName(workloadType, workspaceResourceName,
+				workloadResourceName, userInfoDTO),
 			HttpStatus.OK);
 	}
+
 	@GetMapping("/admin/workloads/{workloadName}/history/log")
 	@Operation(summary = "관리자 종료된 워크로드의 로그 조회하기")
 	public ResponseEntity<byte[]> getAdminEndWorkloadHistoryLog(
@@ -304,6 +333,7 @@ public class WorkloadController {
 		return ResponseEntity.ok()
 			.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
+
 	@PostMapping("/admin/workloads/{type}/event")
 	@Operation(summary = "워크로드 이벤트 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadEventDTO>> getAdminWorkloadEventList(

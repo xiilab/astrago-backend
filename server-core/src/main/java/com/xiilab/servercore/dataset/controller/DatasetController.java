@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
-import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
@@ -86,10 +85,11 @@ public class DatasetController {
 	@Operation(summary = "데이터 셋을 사용중인 워크로드 리스트 조회")
 	public ResponseEntity<WorkloadResDTO.PageUsingDatasetDTO> getWorkloadsUsingDataset(
 		PageInfo pageInfo,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO,
 		@PathVariable(name = "datasetId") Long datasetId
 	) {
 		WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset = datasetFacadeService.getWorkloadsUsingDataset(
-			pageInfo, datasetId);
+			pageInfo, datasetId, userInfoDTO);
 		return new ResponseEntity(workloadsUsingDataset, HttpStatus.OK);
 	}
 

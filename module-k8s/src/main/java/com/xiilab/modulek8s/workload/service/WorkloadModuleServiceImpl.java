@@ -26,12 +26,14 @@ import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
+import com.xiilab.modulek8s.workload.dto.request.ModuleCreateDistributedWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.repository.WorkloadRepository;
 import com.xiilab.modulek8s.workload.svc.repository.SvcRepository;
 
@@ -62,6 +64,14 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		String workspaceName) {
 		return workloadRepository.createInteractiveJobWorkload(
 			moduleCreateWorkloadReqDTO.toInteractiveJobVO(workspaceName));
+	}
+
+	@Override
+	public CreateJobResDTO createDistributedJobWorkload(
+		ModuleCreateDistributedWorkloadReqDTO moduleCreateWorkloadReqDTO,
+		String workspaceName) {
+		return workloadRepository.createDistributedJobWorkload(
+			moduleCreateWorkloadReqDTO.toDistributedJobVO(workspaceName));
 	}
 
 	@Override
@@ -97,6 +107,14 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			workloadName);
 		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.INTERACTIVE, interactiveJobWorkload);
 		return interactiveJobWorkload;
+	}
+
+	@Override
+	public ModuleDistributedJobResDTO getDistributedJobWorkload(String workSpaceName, String workloadName) {
+		ModuleDistributedJobResDTO distributedJobResDTO = workloadRepository.getDistributedJobWorkload(workSpaceName,
+			workloadName);
+		updateJopPodStartTime(workSpaceName, workloadName, WorkloadType.DISTRIBUTED, distributedJobResDTO);
+		return distributedJobResDTO;
 	}
 
 	@Override
@@ -171,7 +189,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		return workloadList;
 	}
 
-	private <T extends ModuleWorkloadResDTO> void updateJopPodStartTime(String workspaceResourceName,
+	private <T extends AbstractModuleWorkloadResDTO> void updateJopPodStartTime(String workspaceResourceName,
 		String workloadResourceName, WorkloadType workloadType, T workload) {
 		try {
 			Pod pod = getJobPod(workspaceResourceName, workloadResourceName, workloadType);
@@ -191,12 +209,19 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
+	public void deleteDistributedWorkload(String workspaceName, String workloadName) {
+		workloadRepository.deleteDistributedWorkload(workspaceName, workloadName);
+	}
+
+	@Override
 	public ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName,
 		WorkloadType workloadType) {
 		if (workloadType == WorkloadType.INTERACTIVE) {
 			return workloadRepository.connectInteractiveJobTerminal(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.BATCH) {
 			return workloadRepository.connectBatchJobTerminal(workspaceName, workloadName);
+		} else if (workloadType == WorkloadType.DISTRIBUTED) {
+			return workloadRepository.connectDistributeJobTerminal(workspaceName, workloadName);
 		} else {
 			return null;
 		}
@@ -208,6 +233,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return workloadRepository.getInteractiveJobPod(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.BATCH) {
 			return workloadRepository.getBatchJobPod(workspaceName, workloadName);
+		} else if (workloadType == WorkloadType.DISTRIBUTED) {
+			return workloadRepository.getDistributedLauncherPod(workspaceName, workloadName);
 		} else {
 			return null;
 		}
@@ -375,12 +402,12 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	// }
 
 	@Override
-	public List<ModuleWorkloadResDTO> getAstraInteractiveWorkloadList() {
+	public List<AbstractModuleWorkloadResDTO> getAstraInteractiveWorkloadList() {
 		return workloadRepository.getAstraInteractiveWorkload();
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getAstraBatchWorkloadList() {
+	public List<AbstractModuleWorkloadResDTO> getAstraBatchWorkloadList() {
 		return workloadRepository.getAstraBatchWorkload();
 	}
 
@@ -398,7 +425,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public List<ModuleWorkloadResDTO> getParentControllerList(
+	public List<AbstractModuleWorkloadResDTO> getParentControllerList(
 		List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
 		return resourceOptimizationTargetList.stream().map(optimizationTarget -> workloadRepository.getParentController(
 			optimizationTarget.getPodName(), optimizationTarget.getNamespace())).toList();
@@ -431,5 +458,10 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public List<Pod> getWorkloadByWorkloadName(String resourceName) {
+		return workloadRepository.getWorkloadsByWorkloadName(resourceName);
 	}
 }

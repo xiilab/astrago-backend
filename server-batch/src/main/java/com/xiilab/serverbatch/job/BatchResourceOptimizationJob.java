@@ -15,7 +15,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
-import com.xiilab.modulek8s.workload.dto.response.ModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
@@ -58,7 +58,8 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 
 		log.info("over resource total pod list count : {}", alarmDistinctList.size());
 
-		List<ModuleWorkloadResDTO> alarmParentList = workloadModuleService.getParentControllerList(alarmDistinctList);
+		List<AbstractModuleWorkloadResDTO> alarmParentList = workloadModuleService.getParentControllerList(
+			alarmDistinctList);
 
 
 		//최적화 대상에 대한 distinct 처리 진행
@@ -68,7 +69,8 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 			.toList();
 
 		log.info("over resource total pod list count : {}", optimizationDistinctList.size());
-		List<ModuleWorkloadResDTO> parentControllerList = workloadModuleService.getParentControllerList(optimizationDistinctList);
+		List<AbstractModuleWorkloadResDTO> parentControllerList = workloadModuleService.getParentControllerList(
+			optimizationDistinctList);
 		int resultCnt = workloadModuleService.optimizationInteractiveWorkload(optimizationDistinctList);
 
 		log.info("자원회수된 workload의 개수 : {}", resultCnt);

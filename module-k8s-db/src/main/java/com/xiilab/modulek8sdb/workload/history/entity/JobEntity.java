@@ -1,11 +1,10 @@
 package com.xiilab.modulek8sdb.workload.history.entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
@@ -26,10 +25,16 @@ import lombok.experimental.SuperBuilder;
 public class JobEntity extends WorkloadEntity {
 	@Column(name = "WORKLOAD_IDE")
 	private String ide;
+	@Column(name = "WORKLOAD_REQ_CPU")
+	private Float cpuRequest;
+	@Column(name = "WORKLOAD_REQ_MEM")
+	private Float memRequest;
+	@Column(name = "WORKLOAD_REQ_GPU")
+	private Integer gpuRequest;
 
 	@Builder(builderMethodName = "jobBuilder", builderClassName = "jobBuilder")
 	JobEntity(String uid, String name, String description, String resourceName, String workspaceName,
-		String workspaceResourceName, Float cpuReq, Integer gpuReq, Float memReq,
+		String workspaceResourceName, String nodeName, String gpuName, GPUType gpuType, Integer gpuOnePerMemory, Integer resourcePresetId, Float cpuReq, Integer gpuReq, Float memReq,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
 		Map<String, String> envs,
 		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
@@ -41,9 +46,14 @@ public class JobEntity extends WorkloadEntity {
 		this.resourceName = resourceName;
 		this.workspaceName = workspaceName;
 		this.workspaceResourceName = workspaceResourceName;
-		this.cpuRequest = BigDecimal.valueOf(cpuReq);
+		super.nodeName = nodeName;
+		super.gpuName = gpuName;
+		super.gpuType = gpuType;
+		super.gpuOnePerMemory = gpuOnePerMemory;
+		super.resourcePresetId = resourcePresetId;
+		this.cpuRequest = cpuReq;
 		this.gpuRequest = gpuReq;
-		this.memRequest = BigDecimal.valueOf(memReq);
+		this.memRequest = memReq;
 		this.createdAt = createdAt;
 		this.deletedAt = deletedAt;
 		this.creatorId = creatorId;
@@ -60,20 +70,5 @@ public class JobEntity extends WorkloadEntity {
 		this.deleteYN = deleteYN;
 		this.workloadStatus = workloadStatus;
 		this.parameter = JsonConvertUtil.convertMapToJson(parameter);
-	}
-
-	public void updateImage(ImageEntity image) {
-		this.image = image;
-	}
-
-	public void updateJob(String name, String description) {
-		super.name = name;
-		super.description = description;
-	}
-
-	public void updateCanBeDeleted(String creator, Set<String> ownerWorkspace) {
-		if (super.creatorId.equals(creator) || ownerWorkspace.contains(super.workspaceResourceName)) {
-			super.canBeDeleted = true;
-		}
 	}
 }

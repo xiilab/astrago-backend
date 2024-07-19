@@ -1,5 +1,7 @@
 package com.xiilab.modulecommon.util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -17,6 +19,7 @@ import java.time.temporal.WeekFields;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -61,9 +64,19 @@ public class DataConverterUtil {
 	 * @param fieldName 필드 이름
 	 * @return 가져온 필드 값 또는 Null
 	 */
-	public static String getStringOrNull(JsonNode node, String fieldName) {
+	public static String getStringOrNullByJsonNode(JsonNode node, String fieldName) {
 		JsonNode field = node.get(fieldName);
 		return field == null ? "" : field.asText();
+	}
+	public static String getInstance(String str) {
+		try {
+			JsonNode root = objectMapper.readTree(str);
+			return root.path("data").path("result").elements().next().get("metric").get("instance").asText();
+		} catch (NoSuchElementException e){
+			return "";
+		} catch (JsonProcessingException e) {
+			throw new CommonException(CommonErrorCode.DATA_FORMAT_FAIL);
+		}
 	}
 
 	/**
@@ -274,9 +287,13 @@ public class DataConverterUtil {
 			// Date -> 밀리세컨즈
 			long timeMil1 = start.getTime();
 			long timeMil2 = end.getTime();
-			long setp = (timeMil2 - timeMil1) / 40000;
-
-			return setp;
+			long step = timeMil2 - timeMil1;
+			if(step >= 200000){
+				step = step / 200000;
+			}else{
+				step = step / 60000;
+			}
+			return step;
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
@@ -471,6 +488,22 @@ public class DataConverterUtil {
 			return startTimeKorea.format(formatter);
 		} catch (DateTimeParseException e) {
 			throw new RestApiException(CommonErrorCode.FAILED_UTC_TO_KOR_TIME);
+		}
+	}
+
+	// MB -> GB 변환 메서드
+	public static double convertMbToGb(int mb) {
+		double gb = mb / 1024.0;
+		BigDecimal bd = new BigDecimal(gb).setScale(1, RoundingMode.HALF_UP);
+		return bd.doubleValue();
+	}
+
+	// LDT to "yyyy-MM-dd HH:mm:ss" 포맷 출력
+	public static String convertLocalDateTimeToString(LocalDateTime date) {
+		try {
+			return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		} catch (Exception e) {
+			return null;
 		}
 	}
 }

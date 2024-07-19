@@ -4,17 +4,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
@@ -193,4 +194,44 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 		return map != null && "astra".equals(map.get("control-by"));
 	}
 
+	@Override
+	public StorageClass createIbmStorage(String secretName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			StorageClass ibmStorageClass = createIbmStorageClass(secretName);
+			client.storage()
+				.v1()
+				.storageClasses()
+				.resource(ibmStorageClass)
+				.create();
+			return ibmStorageClass;
+		}
+	}
+
+	private StorageClass createIbmStorageClass(String secretName) {
+		return new StorageClassBuilder()
+			.withNewMetadata()
+			.withName("ibm-block-" + UUID.randomUUID())
+			.endMetadata()
+			.withProvisioner("block.csi.ibm.com")
+			.addToParameters("pool", "demo-pool")
+			.addToParameters("SpaceEfficiency", "thin")
+			.addToParameters("virt_snap_func", "false")
+			.addToParameters("csi.storage.k8s.io/fstype", "xfs")
+			.addToParameters("csi.storage.k8s.io/secret-name", secretName)
+			.addToParameters("csi.storage.k8s.io/secret-namespace", "default")
+			.withAllowVolumeExpansion(true)
+			.build();
+
+	}
+
+	@Override
+	public void deleteIbmStorage(String storageName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.storage()
+				.v1()
+				.storageClasses()
+				.withName(storageName)
+				.delete();
+		}
+	}
 }

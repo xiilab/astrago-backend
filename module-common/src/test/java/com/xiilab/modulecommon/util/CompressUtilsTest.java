@@ -16,7 +16,7 @@
 // 	void compressFolder() {
 // 		ClassLoader classLoader = this.getClass().getClassLoader();
 //
-// 		String targetFolder1 = "loopy";
+// 		String targetFolder1 = "zip";
 // 		// String targetFolder2 = "zip2/";
 // 		// String targetFolder3 = "zip3/";
 // 		// String targetFolder4 = "zip4/";
@@ -33,7 +33,7 @@
 // 			// pathList.add(Path.of(srcZip4.toURI()));
 //
 // 			long startTime = System.currentTimeMillis();
-// 			CompressUtils.saveCompressFile(pathList, null, CompressFileType.TAR);
+// 			CompressUtils.saveCompressFile(pathList, null, CompressFileType.ZIP);
 // 			long endTime = System.currentTimeMillis();
 // 			long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //
