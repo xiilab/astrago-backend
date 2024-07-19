@@ -13,10 +13,11 @@ public record JobCodeVO(
 	String mountPath,       // 소스코드 마운트 경로
 	RepositoryType repositoryType,
 	String initContainerImageUrl,       // init 컨테이너에 쓰일 이미지 주소
-	CredentialVO credentialVO
+	CredentialVO credentialVO,
+	String command
 ) {
 	public JobCodeVO(Long codeId, String repositoryURL, String branch, String mountPath, RepositoryType repositoryType,
-		String initContainerImageUrl) {
-		this(codeId, repositoryURL, branch, mountPath, repositoryType, initContainerImageUrl, null);
+		String initContainerImageUrl, String command) {
+		this(codeId, repositoryURL, branch, mountPath, repositoryType, initContainerImageUrl, null, command);
 	}
 }

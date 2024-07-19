@@ -28,6 +28,7 @@ public class ModuleCodeResDTO {
 	private Long credentialId;
 	private String credentialUserName;
 	private String credentialPassword;
+	private String command;
 
 	public ModuleCodeResDTO(List<? extends KubernetesResource> resources) {
 		if (!CollectionUtils.isEmpty(resources)) {
@@ -85,6 +86,9 @@ public class ModuleCodeResDTO {
 					break;
 				case REPOSITORY_TYPE:
 					this.repositoryType = RepositoryType.valueOf(envVarValue);
+					break;
+				case COMMAND:
+					this.command = envVarValue;
 					break;
 				default:
 					break;

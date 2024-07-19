@@ -457,6 +457,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private Long credentialId;
 		private String credentialName;
 		private RepositoryType repositoryType;
+		private String cmd;
 
 		public Code(CodeWorkLoadMappingEntity codeWorkLoadMappingEntity) {
 			super(codeWorkLoadMappingEntity.getCode().getRegUser().getRegUserId(),
@@ -478,6 +479,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				this.credentialId = codeWorkLoadMappingEntity.getCode().getCredentialEntity().getId();
 			}
 			this.repositoryType = codeWorkLoadMappingEntity.getCode().getRepositoryType();
+			this.cmd = codeWorkLoadMappingEntity.getCmd();
 		}
 
 		@Builder(builderClassName = "codeResDTO", builderMethodName = "codeResDTO")
