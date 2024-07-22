@@ -1101,7 +1101,7 @@ public class WorkloadFacadeService {
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
-		return workloadHistoryService.getWorkloadInfoByResourceName(
+		return workloadHistoryService.getAdminWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
 		// 실행중일 떄
