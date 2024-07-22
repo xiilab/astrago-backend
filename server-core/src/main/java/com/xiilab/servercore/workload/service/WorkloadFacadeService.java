@@ -1115,20 +1115,18 @@ public class WorkloadFacadeService {
 		PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
 		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getAdminWorkloadList(
 			workspaceName, workloadType, searchName, isCreatedByMe, workloadStatus, workloadSortCondition, pageRequest);
-		//workload 삭제 권한 체크
-		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		//page 계산
 		int totalSize = (int)overViewWorkloadResDTO.getTotalSize();
 		int totalPageNum = (int)Math.ceil(totalSize / (double)10);
 		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
-		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
+		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(true));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
 	}
 
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
-		return workloadHistoryService.getWorkloadInfoByResourceName(
+		return workloadHistoryService.getAdminWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
 		// 실행중일 떄
