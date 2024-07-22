@@ -275,7 +275,7 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 
 	private Metadata getMpiReplicasMetadata() {
 		Metadata metadata = new Metadata();
-		metadata.setAnnotations(Map.of("sidecar.istio.io/inject", String.valueOf(false)));
+		metadata.setAnnotations(getPodAnnotationMap());
 		return metadata;
 	}
 

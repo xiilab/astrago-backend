@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.code.entity;
+package com.xiilab.modulek8sdb.volume.entity;
 
 import org.hibernate.annotations.SQLDelete;
 
@@ -23,46 +23,40 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "TB_CODE_WORKLOAD_MAPPING")
+@Table(name = "TB_VOLUME_WORKLOAD_MAPPING")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE TB_CODE_WORKLOAD_MAPPING tcwm SET tcwm.DELETE_YN = 'Y' WHERE tcwm.CODE_WORKLOAD_MAPPING_ID = ?")
+@SQLDelete(sql = "UPDATE TB_VOLUME_WORKLOAD_MAPPING tvwm SET tvwm.DELETE_YN = 'Y' WHERE tvwm.VOLUME_WORKLOAD_MAPPING_ID = ?")
 @Getter
-public class CodeWorkLoadMappingEntity {
+public class VolumeWorkLoadMappingEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "CODE_WORKLOAD_MAPPING_ID")
+	@Column(name = "VOLUME_WORKLOAD_MAPPING_ID")
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "CODE_ID")
+	@JoinColumn(name = "VOLUME_ID")
 	@JsonIgnore
-	private CodeEntity code;
+	private Volume volume;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "WORKLOAD_ID")
 	private WorkloadEntity workload;
 
-	@Column(name = "branch")
-	private String branch;
-
-	@Column(name = "mountPath")
+	@Column(name = "MOUNT_PATH")
 	private String mountPath;
 
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYN = DeleteYN.N;
 
-	@Column(name = "CMD")
-	private String cmd;
-
 	@Builder
-	public CodeWorkLoadMappingEntity(CodeEntity code, WorkloadEntity workload, String branch, String mountPath,
-		String cmd) {
-		this.code = code;
+	public VolumeWorkLoadMappingEntity(Volume volume, WorkloadEntity workload, String mountPath) {
+		this.volume = volume;
 		this.workload = workload;
-		this.branch = branch;
 		this.mountPath = mountPath;
-		this.cmd = cmd;
+		//연관관계 편의 메서드
+		// model.getModelWorkLoadMappingList().add(this);
+		// workload.getModelWorkloadMappingList().add(this);
 	}
 }

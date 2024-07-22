@@ -39,7 +39,7 @@ import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
-import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.storage.volume.repository.K8sVolumeRepository;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
@@ -102,7 +102,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final UserService userService;
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
-	private final VolumeRepository volumeRepository;
+	private final K8sVolumeRepository k8sVolumeRepository;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 
 	@Override
@@ -667,8 +667,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	private void deletePvAndPVC(String workspaceResourceName, String pvName, String pvcName) {
-		volumeRepository.deletePVC(pvcName, workspaceResourceName);
-		volumeRepository.deletePV(pvName);
+		k8sVolumeRepository.deletePVC(pvcName, workspaceResourceName);
+		k8sVolumeRepository.deletePV(pvName);
 	}
 
 	private String[] getSplitIds(String ids) {
@@ -777,6 +777,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								.code(code)
 								.branch(codeMountMap.getOrDefault("branch", ""))
 								.mountPath(codeMountMap.getOrDefault("mountPath", ""))
+								.cmd(codeMountMap.getOrDefault("command", ""))
 								.build();
 							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.IMAGE) {

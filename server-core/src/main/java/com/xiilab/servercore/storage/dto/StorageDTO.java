@@ -5,10 +5,12 @@ import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.SecretDTO;
+import com.xiilab.modulek8sdb.common.enums.DefaultStorageYN;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class StorageDTO {
@@ -36,6 +38,8 @@ public class StorageDTO {
 		private String volumeName;
 		private int requestVolume;
 		private String secretName;
+		@Setter
+		private DefaultStorageYN defaultStorageYN = DefaultStorageYN.N;
 
 		public StorageEntity toEntity(){
 			return StorageEntity.builder()
@@ -52,6 +56,7 @@ public class StorageDTO {
 				.pvcName(this.pvcName)
 				.volumeName(this.volumeName)
 				.secretName(this.secretName)
+				.defaultStorageYN(this.defaultStorageYN)
 				.build();
 		}
 	}
