@@ -219,6 +219,21 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 
 		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
 	}
+	@Override
+	public FindWorkloadResDTO.WorkloadDetail getAdminWorkloadInfoByResourceName(String workspaceName,
+		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
+		JobEntity jobEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
+				workspaceName, workloadResourceName)
+			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
+		// 삭제된 워크로드는 다른 에러메시지 처리
+		if (jobEntity.getDeleteYN() == DeleteYN.Y) {
+			throw new RestApiException(WorkloadErrorCode.DELETED_WORKLOAD_INFO);
+		}
+		// Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		jobEntity.updateCanBeDeleted(true);
+
+		return FindWorkloadResDTO.WorkloadDetail.from(jobEntity);
+	}
 
 	@Override
 	public void deleteWorkloadHistory(long id, UserDTO.UserInfo userInfoDTO) {

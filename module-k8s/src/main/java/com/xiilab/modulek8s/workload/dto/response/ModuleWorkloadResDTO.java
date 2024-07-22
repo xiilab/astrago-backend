@@ -120,6 +120,12 @@ public abstract class ModuleWorkloadResDTO {
 		}
 	}
 
+	public void updateCanBeDeleted(boolean isAdmin){
+		if(isAdmin){
+			this.canBeDeleted = true;
+		}
+	}
+
 	public void updatePinYN(boolean pinYN) {
 		this.isPinYN = pinYN;
 	}

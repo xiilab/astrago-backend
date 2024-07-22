@@ -52,4 +52,6 @@ public interface WorkloadHistoryService {
 		List<String> pinResourceNameList, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest);
 
 	List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);
+
+	FindWorkloadResDTO.WorkloadDetail getAdminWorkloadInfoByResourceName(String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO);
 }

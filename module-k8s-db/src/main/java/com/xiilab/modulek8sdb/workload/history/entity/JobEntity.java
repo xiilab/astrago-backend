@@ -76,4 +76,9 @@ public class JobEntity extends WorkloadEntity {
 			super.canBeDeleted = true;
 		}
 	}
+	public void updateCanBeDeleted(boolean isAdmin) {
+		if (isAdmin) {
+			this.canBeDeleted = true;
+		}
+	}
 }

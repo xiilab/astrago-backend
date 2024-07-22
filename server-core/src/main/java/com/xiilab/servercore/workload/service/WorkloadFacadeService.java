@@ -1081,9 +1081,9 @@ public class WorkloadFacadeService {
 			workloadStatus, workloadSortCondition, pageRequest);
 
 		//workload 삭제 권한 체크
-		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		// Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		overViewWorkloadResDTO.getContent()
-			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
+			.forEach(moduleWorkloadResDTO -> moduleWorkloadResDTO.updateCanBeDeleted(true));
 
 		//page 계산
 		int totalSize = (int)(pinList.size() + overViewWorkloadResDTO.getTotalSize());
@@ -1098,26 +1098,26 @@ public class WorkloadFacadeService {
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 		// 실행중일 떄
 		try {
-			UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
-			Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+			// UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
+			// Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 			// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
 			if (workloadType == WorkloadType.BATCH) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
 				// 삭제권한 업데이트
-				moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
+				moduleBatchJobResDTO.updateCanBeDeleted(true);
 
 				return getActiveWorkloadDetail(moduleBatchJobResDTO);
 			} else if (workloadType == WorkloadType.INTERACTIVE) {
 				ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
 					workspaceName, workloadResourceName);
 				//삭제권한 업데이트
-				moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+				moduleInteractiveJobResDTO.updateCanBeDeleted(true);
 				return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
 			}
 		} catch (Exception e) {
 			try {
-				return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
+				return workloadHistoryService.getAdminWorkloadInfoByResourceName(workspaceName, workloadResourceName,
 					userInfoDTO);
 			} catch (Exception e2) {
 				throw e2;
