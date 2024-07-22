@@ -145,4 +145,9 @@ public abstract class WorkloadEntity {
 			this.canBeDeleted = true;
 		}
 	}
+	public void updateCanBeDeleted(boolean isAdmin) {
+		if (isAdmin) {
+			this.canBeDeleted = true;
+		}
+	}
 }
