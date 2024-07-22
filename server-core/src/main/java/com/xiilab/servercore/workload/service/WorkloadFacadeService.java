@@ -1094,7 +1094,7 @@ public class WorkloadFacadeService {
 		int totalSize = (int)overViewWorkloadResDTO.getTotalSize();
 		int totalPageNum = (int)Math.ceil(totalSize / (double)10);
 		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
-		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
+		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(true));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
 	}
 
