@@ -71,6 +71,11 @@ public class WorkloadSummaryDTO {
 			this.canBeDeleted = true;
 		}
 	}
+	public void updateCanBeDeleted(boolean isAdmin){
+		if(isAdmin){
+			this.canBeDeleted = true;
+		}
+	}
 
 	public void updatePinYN(boolean isPinYN) {
 		this.isPinYN = isPinYN;
