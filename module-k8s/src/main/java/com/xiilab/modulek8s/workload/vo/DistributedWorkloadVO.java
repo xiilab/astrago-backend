@@ -137,6 +137,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 		result.add(createEnv(GitEnvType.GIT_SYNC_BRANCH.name(), codeVO.branch()));
 		result.add(createEnv(GitEnvType.GIT_SYNC_MOUNT_PATH.name(), codeVO.mountPath()));
 		result.add(createEnv(GitEnvType.REPOSITORY_TYPE.name(), codeVO.repositoryType().name()));
+		result.add(createEnv(GitEnvType.COMMAND.name(), codeVO.command()));
 		result.add(createEnv(GitEnvType.GIT_SYNC_TIMEOUT.name(), "600"));
 		result.add(createEnv(GitEnvType.GIT_SYNC_ROOT.name(), "/git"));
 		result.add(createEnv(GitEnvType.GIT_SYNC_DEST.name(), "code"));
@@ -203,6 +204,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 
 	protected Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
+		map.put("sidecar.istio.io/inject", String.valueOf(false));
 		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
 		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
 		this.codes.forEach(code -> {

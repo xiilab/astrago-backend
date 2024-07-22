@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class VolumeRepositoryImpl implements VolumeRepository {
+public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 	private final K8sAdapter k8sAdapter;
 	private static final String ASTRA = "astra";
 

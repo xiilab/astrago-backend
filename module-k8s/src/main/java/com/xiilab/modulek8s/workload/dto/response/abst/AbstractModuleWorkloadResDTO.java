@@ -163,6 +163,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 			Map<String, String> pathMap = codeMountPathMap.get(code.getRepositoryUrl());
 			pathMap.put("mountPath", code.getMountPath());
 			pathMap.put("branch", code.getBranch());
+			pathMap.put("command", code.getCommand());
 		}
 	}
 

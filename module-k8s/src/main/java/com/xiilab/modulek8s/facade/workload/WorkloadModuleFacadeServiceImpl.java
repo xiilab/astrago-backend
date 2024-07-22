@@ -27,7 +27,7 @@ import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.node.service.NodeService;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
-import com.xiilab.modulek8s.storage.volume.service.VolumeService;
+import com.xiilab.modulek8s.storage.volume.service.K8sVolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
@@ -62,7 +62,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkspaceService workspaceService;
-	private final VolumeService volumeService;
+	private final K8sVolumeService k8sVolumeService;
 	private final SvcService svcService;
 	private final LogService logService;
 	private final SecretService secretService;
@@ -113,15 +113,15 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			// Dataset PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
-					volumeService.deletePVC(dataset.getCreatePV().getPvcName(), dataset.getCreatePV().getNamespace());
-					volumeService.deletePV(dataset.getCreatePV().getPvName());
+					k8sVolumeService.deletePVC(dataset.getCreatePV().getPvcName(), dataset.getCreatePV().getNamespace());
+					k8sVolumeService.deletePV(dataset.getCreatePV().getPvName());
 				}
 			}
 			// Model PV 삭제
 			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getModels())) {
 				for (ModuleVolumeReqDTO model : moduleCreateWorkloadReqDTO.getModels()) {
-					volumeService.deletePVC(model.getCreatePV().getPvcName(), model.getCreatePV().getNamespace());
-					volumeService.deletePV(model.getCreatePV().getPvName());
+					k8sVolumeService.deletePVC(model.getCreatePV().getPvcName(), model.getCreatePV().getNamespace());
+					k8sVolumeService.deletePV(model.getCreatePV().getPvName());
 				}
 			}
 
@@ -134,8 +134,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private void createPVAndPVC(List<ModuleVolumeReqDTO> list) {
 		if (!CollectionUtils.isEmpty(list)) {
 			for (ModuleVolumeReqDTO reqDto : list) {
-				volumeService.createPV(reqDto.getCreatePV());
-				volumeService.createPVC(reqDto.getCreatePVC());
+				k8sVolumeService.createPV(reqDto.getCreatePV());
+				k8sVolumeService.createPVC(reqDto.getCreatePVC());
 			}
 		}
 	}
@@ -253,14 +253,14 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			.requestVolume(50)
 			.namespace(namespace)
 			.build();
-		volumeService.createPV(createPV);
+		k8sVolumeService.createPV(createPV);
 		//pvc 생성
 		CreatePVC createPVC = CreatePVC.builder()
 			.pvcName(pvcName)
 			.namespace(namespace)
 			.requestVolume(50)
 			.build();
-		volumeService.createPVC(createPVC);
+		k8sVolumeService.createPVC(createPVC);
 		//deployment 생성
 		CreateDatasetDeployment createDeployment = CreateDatasetDeployment.builder()
 			.datasetName(datasetName)
@@ -323,9 +323,9 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		//deployment 삭제
 		workloadModuleService.deleteDeploymentByResourceName(deploymentName, namespace);
 		//pvc 삭제
-		volumeService.deletePVC(pvcName, namespace);
+		k8sVolumeService.deletePVC(pvcName, namespace);
 		//pv 삭제
-		volumeService.deletePV(pvName);
+		k8sVolumeService.deletePV(pvName);
 	}
 
 	@Override
@@ -351,14 +351,14 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			.requestVolume(50)
 			.namespace(namespace)
 			.build();
-		volumeService.createPV(createPV);
+		k8sVolumeService.createPV(createPV);
 		//pvc 생성
 		CreatePVC createPVC = CreatePVC.builder()
 			.pvcName(pvcName)
 			.namespace(namespace)
 			.requestVolume(50)
 			.build();
-		volumeService.createPVC(createPVC);
+		k8sVolumeService.createPVC(createPVC);
 		//deployment 생성
 		CreateModelDeployment createDeployment = CreateModelDeployment.builder()
 			.modelName(modelName)
@@ -421,9 +421,9 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		//deployment 삭제
 		workloadModuleService.deleteDeploymentByResourceName(deploymentName, namespace);
 		//pvc 삭제
-		volumeService.deletePVC(pvcName, namespace);
+		k8sVolumeService.deletePVC(pvcName, namespace);
 		//pv 삭제
-		volumeService.deletePV(pvName);
+		k8sVolumeService.deletePV(pvName);
 	}
 
 	@Override

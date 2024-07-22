@@ -5,13 +5,12 @@ import com.xiilab.modulek8s.common.dto.DistributedResourceDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCreateDistributedWorkloadReqDTO;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Getter
-@AllArgsConstructor
+// @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 public class CreateDistributedWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {

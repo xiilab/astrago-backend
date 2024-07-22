@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
+import com.xiilab.modulek8sdb.common.enums.DefaultStorageYN;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.storage.repository.StorageRepository;
@@ -29,6 +30,10 @@ public class StorageServiceImpl implements StorageService {
 	@Override
 	@Transactional
 	public void insertStorage(StorageDTO.Create createStorageReqDTO) {
+		// 첫번재로 등록하는 스토리지는 default 스토리지로 등록
+		if (storageRepository.findAll().size() == 0) {
+			createStorageReqDTO.setDefaultStorageYN(DefaultStorageYN.Y);
+		}
 		StorageEntity storageEntity = createStorageReqDTO.toEntity();
 		storageRepository.save(storageEntity);
 	}
@@ -69,6 +74,4 @@ public class StorageServiceImpl implements StorageService {
 			.orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
 		storageEntity.changeStorageName(modifyStorage.getStorageName());
 	}
-
-
 }

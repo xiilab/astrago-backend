@@ -17,7 +17,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDT
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
-public interface VolumeRepository {
+public interface K8sVolumeRepository {
 	String createVolume(CreateVolumeDTO createVolumeDTO);
 
 	List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName,

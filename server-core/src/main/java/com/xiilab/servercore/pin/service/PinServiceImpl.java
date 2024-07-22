@@ -18,7 +18,7 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PinServiceImpl implements PinService {
 	private final PinRepository pinRepository;
@@ -35,6 +35,7 @@ public class PinServiceImpl implements PinService {
 		return workloadPins.stream().map(PinEntity::getResourceName).collect(Collectors.toSet());
 	}
 
+	@Transactional
 	@Override
 	public void createPin(String resourceName, PinType pinType, UserDTO.UserInfo userInfoDTO) {
 		if (pinType == PinType.WORKLOAD) {
@@ -91,8 +92,7 @@ public class PinServiceImpl implements PinService {
 	private void createWorkspacePin(String resourceName, UserDTO.UserInfo userInfoDTO) {
 		// 기존에 등록되었던 모든 workspace pin 삭제
 		pinRepository.deleteByResourceType_RegUserId(PinType.WORKSPACE, userInfoDTO.getId());
-		// 새로운 workspace Pin 등록
-		createPin(resourceName, PinType.WORKSPACE, userInfoDTO);
+		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
 	}
 
 	private void createWorkloadPin(String resourceName, UserDTO.UserInfo userInfoDTO) {
