@@ -181,7 +181,7 @@ public class WorkloadFacadeService {
 		// outputMountPath(사용자가 입력, 컨테이너 마운트 경로) <=> hostPath 볼륨 생성
 		// hostPath 형식: {defaultStorageHostPath} + "/workspace/{wsResourceName}/workloads/{wlResourceName}/models"
 		if (StringUtils.hasText(createWorkloadReqDTO.getOutputMountPath())) {
-
+			// defaultStoragePath 검색
 		}
 
 		try {

@@ -1,6 +1,5 @@
 package com.xiilab.modulek8sdb.code.entity;
 
-
 import org.hibernate.annotations.SQLDelete;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -54,11 +53,16 @@ public class CodeWorkLoadMappingEntity {
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYN = DeleteYN.N;
 
+	@Column(name = "CMD")
+	private String cmd;
+
 	@Builder
-	public CodeWorkLoadMappingEntity(CodeEntity code, WorkloadEntity workload, String branch, String mountPath) {
+	public CodeWorkLoadMappingEntity(CodeEntity code, WorkloadEntity workload, String branch, String mountPath,
+		String cmd) {
 		this.code = code;
 		this.workload = workload;
 		this.branch = branch;
 		this.mountPath = mountPath;
+		this.cmd = cmd;
 	}
 }

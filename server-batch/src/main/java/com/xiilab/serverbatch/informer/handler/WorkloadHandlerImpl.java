@@ -777,6 +777,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								.code(code)
 								.branch(codeMountMap.getOrDefault("branch", ""))
 								.mountPath(codeMountMap.getOrDefault("mountPath", ""))
+								.cmd(codeMountMap.getOrDefault("command", ""))
 								.build();
 							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.IMAGE) {

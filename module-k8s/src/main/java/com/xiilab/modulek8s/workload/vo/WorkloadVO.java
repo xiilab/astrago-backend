@@ -164,6 +164,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(new EnvVarBuilder().withName(GitEnvType.REPOSITORY_TYPE.name())
 			.withValue(codeVO.repositoryType().name())
 			.build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.COMMAND.name()).withValue(codeVO.command()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue("/git").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_DEST.name()).withValue("code").build());
