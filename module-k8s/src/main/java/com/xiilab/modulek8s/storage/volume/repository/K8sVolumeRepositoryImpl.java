@@ -410,7 +410,7 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 			boolean chk = volumeCreatorCheck(modifyVolumeDTO.getWorkspaceMetaName(),
 				modifyVolumeDTO.getVolumeMetaName(), client, creator);
 			if (!chk) {
-				throw new K8sException(VolumeErrorCode.VOLUME_FORBIDDEN_MODIFY);
+				throw new K8sException(VolumeErrorCode.VOLUME_FIX_FORBIDDEN);
 			}
 			Resource<PersistentVolumeClaim> persistentVolumeClaimResource = client.persistentVolumeClaims()
 				.inNamespace(modifyVolumeDTO.getWorkspaceMetaName())
@@ -436,7 +436,7 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 			boolean chk = volumeCreatorCheck(deleteVolumeDTO.getWorkspaceMetaName(),
 				deleteVolumeDTO.getVolumeMetaName(), client, creator);
 			if (!chk)
-				throw new K8sException(VolumeErrorCode.VOLUME_FORBIDDEN_DELETE);
+				throw new K8sException(VolumeErrorCode.VOLUME_DELETE_FORBIDDEN);
 
 			//삭제 전 사용중인지 확인해야함
 			String volumeMetaName = deleteVolumeDTO.getVolumeMetaName();

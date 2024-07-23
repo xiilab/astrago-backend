@@ -97,7 +97,7 @@ public class WorkspaceController {
 
 	@GetMapping("/joined")
 	@Operation(summary = "내가 속한 워크스페이스 리스트 조회")
-	public ResponseEntity<Object> getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<WorkspaceDTO.FindJoinedWorkspaces> getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok(
 			workspaceService.getJoinedWorkspaceList(userInfoDTO));
 	}

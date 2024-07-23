@@ -247,6 +247,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
+	public WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id) {
+		return workloadRepository.workloadsUsingVolume(pageNo, pageSize, id);
+	}
+
+	@Override
 	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
 		workloadRepository.createDatasetDeployment(createDeployment);
 	}
@@ -264,6 +269,12 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public boolean isUsedDataset(Long datasetId) {
 		return workloadRepository.isUsedDataset(datasetId);
+	}
+
+	// isUsedVolume
+	@Override
+	public boolean isUsedVolume(Long volumeId) {
+		return workloadRepository.isUsedVolume(volumeId);
 	}
 
 	@Override
