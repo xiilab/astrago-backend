@@ -63,7 +63,7 @@ public class ModelRepoEntity {
 
 	public void addModelVersionEntity(String modelFilePath, String labelFilePath) {
 		this.modelVersionList = List.of(ModelVersionEntity.builder().version("v1").modelRepoEntity(this)
-			.modelFilePath(modelFilePath).labelFilePath(labelFilePath).build());
+			.modelFileName(modelFilePath).labelFileName(labelFilePath).build());
 	}
 
 	public void modifyModelRepo(String modelName, String description) {

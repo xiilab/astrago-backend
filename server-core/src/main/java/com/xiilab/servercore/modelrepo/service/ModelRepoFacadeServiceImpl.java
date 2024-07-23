@@ -79,10 +79,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			String modelPath = storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
 				saveModel.getModelRepoRealName().replace(" ", "");
 			saveModel.setModelPath(modelPath);
-			// 모델, 라벨 파일 경로 등록
-			String modelFilePath = modelPath + "/" + modelRepoReqDTO.getModelFileName();
-			String labelFilePath = modelPath + "/" + modelRepoReqDTO.getLabelFileName();
-			saveModel.addModelVersionEntity(modelFilePath, labelFilePath);
+			// 모델, 라벨 파일 이름 등록
+			saveModel.addModelVersionEntity(modelRepoReqDTO.getModelFileName(), modelRepoReqDTO.getLabelFileName());
 			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);

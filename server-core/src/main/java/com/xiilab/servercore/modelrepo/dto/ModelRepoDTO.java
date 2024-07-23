@@ -1,5 +1,6 @@
 package com.xiilab.servercore.modelrepo.dto;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,7 +75,8 @@ public class ModelRepoDTO {
 				.modelPath(modelRepoEntity.getModelPath())
 				.ip(modelRepoEntity.getStorageEntity().getIp())
 				.labels(modelRepoEntity.getModelLabelEntityList().stream().map(modelLabelEntity -> LabelDTO.ResponseDTO.convertLabelDTO(modelLabelEntity.getLabelEntity())).toList())
-				.version(modelRepoEntity.getModelVersionList().stream().map(VersionDTO::convertVersionDTO).toList())
+				.version(modelRepoEntity.getModelVersionList().stream().map(VersionDTO::convertVersionDTO)
+					.sorted(Comparator.comparing(VersionDTO::getVersionName).reversed()).toList())
 				.build();
 		}
 	}
@@ -94,8 +96,8 @@ public class ModelRepoDTO {
 			return VersionDTO.builder()
 				.versionId(versionEntity.getId())
 				.versionName(versionEntity.getVersion())
-				.modelFilePath(versionEntity.getModelFilePath())
-				.labelFilePath(versionEntity.getLabelFilePath())
+				.modelFilePath(versionEntity.getModelFileName())
+				.labelFilePath(versionEntity.getLabelFileName())
 				.build();
 		}
 	}

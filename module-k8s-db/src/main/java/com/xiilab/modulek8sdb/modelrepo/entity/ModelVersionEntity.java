@@ -25,10 +25,10 @@ public class ModelVersionEntity {
 	private long id;
 	@Column(name = "VERSION")
 	private String version;
-	@Column(name = "MODEL_FILE_PATH")
-	private String modelFilePath;
-	@Column(name = "LABEL_FILE_PATH")
-	private String labelFilePath;
+	@Column(name = "MODEL_FILE_NAME")
+	private String modelFileName;
+	@Column(name = "LABEL_FILE_NAME")
+	private String labelFileName;
 	@ManyToOne
 	@JoinColumn(name = "MODEL_REPO_ID")
 	private ModelRepoEntity modelRepoEntity;
