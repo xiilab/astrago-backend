@@ -374,6 +374,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END,
 				deployment.getMetadata().getName());
+			workloadHistoryRepo.updateWorkloadEndTime(deployment.getMetadata().getName(), LocalDateTime.now());
 			handleNotificationsAndLog(wl, WorkloadStatus.END);
 		});
 	}
