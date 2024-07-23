@@ -662,8 +662,9 @@ public class WorkloadFacadeService {
 
 		//Age 정렬 조건 적용
 		if (workloadEventReqDTO.getAgeSortCondition() != null) {
-			// Event 클래스에 getAge 메소드가 있다고 가정합니다.
-			Comparator<Event> ageComparator = Comparator.comparing(event -> event.getMetadata().getCreationTimestamp());
+			Comparator<Event> ageComparator = Comparator
+				.comparing((Event event) -> event.getMetadata().getCreationTimestamp())
+				.thenComparingLong(event -> Long.parseLong(event.getMetadata().getResourceVersion()));
 			if (workloadEventReqDTO.getAgeSortCondition() == WorkloadEventAgeSortCondition.AGE_DESC) {
 				ageComparator = ageComparator.reversed();
 			}
@@ -677,11 +678,11 @@ public class WorkloadFacadeService {
 		}
 
 		List<WorkloadEventDTO> result = eventStream.map(event -> WorkloadEventDTO.builder()
-			.type(event.getType())
-			.reason(event.getReason())
-			.from(event.getReportingController())
-			.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
-			.message(event.getNote())
+				.type(event.getType())
+				.reason(event.getReason())
+				.from(event.getReportingController())
+				.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
+				.message(event.getNote())
 				.build())
 			.toList();
 
@@ -1115,20 +1116,18 @@ public class WorkloadFacadeService {
 		PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
 		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getAdminWorkloadList(
 			workspaceName, workloadType, searchName, isCreatedByMe, workloadStatus, workloadSortCondition, pageRequest);
-		//workload 삭제 권한 체크
-		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		//page 계산
 		int totalSize = (int)overViewWorkloadResDTO.getTotalSize();
 		int totalPageNum = (int)Math.ceil(totalSize / (double)10);
 		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
-		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
+		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(true));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
 	}
 
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
-		return workloadHistoryService.getWorkloadInfoByResourceName(
+		return workloadHistoryService.getAdminWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
 		// 실행중일 떄

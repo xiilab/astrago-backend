@@ -228,7 +228,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					String nodeName = "";
 					for (Pod pod : pods) {
 						boolean isRunning = pod.getStatus().getPhase().equalsIgnoreCase("Running");
-						if(isRunning){
+						if (isRunning) {
 							nodeName = pod.getSpec().getNodeName();
 							break;
 						}
@@ -239,10 +239,13 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
 						gpuName, nodeName);
 
-					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(), nodeName);
+					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(),
+						nodeName);
 
 					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
 						LocalDateTime.now());
+				}else if(afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END){
+					workloadHistoryRepo.updateWorkloadEndTime(afterDeployment.getMetadata().getName(), LocalDateTime.now());
 				}
 			}
 		}
@@ -371,6 +374,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END,
 				deployment.getMetadata().getName());
+			workloadHistoryRepo.updateWorkloadEndTime(deployment.getMetadata().getName(), LocalDateTime.now());
 			handleNotificationsAndLog(wl, WorkloadStatus.END);
 		});
 	}

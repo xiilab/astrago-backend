@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -822,23 +823,20 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			EventList eventList = kubernetesClient.events().v1().events().inNamespace(workspaceName).list();
 			List<Event> items = eventList.getItems();
 			Map<String, Event> latestEventsByWorkloadName = new HashMap<>();
+
 			if (!CollectionUtils.isEmpty(items)) {
+				items.sort(Comparator.comparing((Event e) -> e.getMetadata().getCreationTimestamp())
+					.thenComparingLong(e -> Long.parseLong(e.getMetadata().getResourceVersion())));
+
 				for (Event item : items) {
 					String eventName = item.getRegarding().getName();
 					workloadNames.stream()
 						.filter(eventName::contains)
 						.findFirst()
-						.ifPresent(workloadName -> {
-							Event currentLatestEvent = latestEventsByWorkloadName.get(workloadName);
-							if (currentLatestEvent == null ||
-								item.getMetadata()
-									.getCreationTimestamp()
-									.compareTo(currentLatestEvent.getMetadata().getCreationTimestamp()) > 0) {
-								latestEventsByWorkloadName.put(workloadName, item);
-							}
-						});
+						.ifPresent(workloadName -> latestEventsByWorkloadName.put(workloadName, item));
 				}
 			}
+
 			workloadNames.forEach(workloadName -> latestEventsByWorkloadName.putIfAbsent(workloadName, null));
 			return latestEventsByWorkloadName;
 		}
