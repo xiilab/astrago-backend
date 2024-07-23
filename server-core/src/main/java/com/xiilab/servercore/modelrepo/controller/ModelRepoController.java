@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
@@ -29,13 +27,6 @@ import lombok.RequiredArgsConstructor;
 @RestController()
 public class ModelRepoController {
 	private final ModelRepoFacadeService modelRepoFacadeService;
-
-	@PostMapping()
-	@Operation(summary = "신규 모델 등록하는 API")
-	public ResponseEntity<ModelRepoDTO.ResponseDTO> createModelRepo(
-		@RequestPart(name = "modelRepoReqDTO") ModelRepoDTO.RequestDTO modelRepoReqDTO) {
-		return new ResponseEntity<>(modelRepoFacadeService.createModelRepo(modelRepoReqDTO), HttpStatus.OK);
-	}
 
 	@GetMapping("/{workspaceResourceName}")
 	@Operation(summary = "해당 워크스페이스에 전체 모델 리스트 조회 API")
@@ -61,12 +52,20 @@ public class ModelRepoController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PatchMapping("/{modelRepoId}")
-	@Operation(summary = "해당 ID의 모델 수정하는 API")
-	public ResponseEntity<HttpStatus> modifyModelRepo(
-		@PathVariable(name = "modelRepoId") Long modelRepoId,
-		@RequestBody ModelRepoDTO.RequestDTO modelRepoReqDTO) {
-		modelRepoFacadeService.modifyModelRepo(modelRepoId, modelRepoReqDTO);
+	@PatchMapping()
+	@Operation(summary = "워크로드 모델 등록 및 기존 모델 등록 API")
+	public ResponseEntity<HttpStatus> registerOrVersionUpModelRepo(
+		@RequestBody ModelRepoDTO.wlModelRepoDTO modelRepoReqDTO) {
+		modelRepoFacadeService.registerOrVersionUpModelRepo(modelRepoReqDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@DeleteMapping("/version/{versionId}")
+	@Operation(summary = "해당 ID의 모델의 버전을 삭제하는 API")
+	public ResponseEntity<HttpStatus> deleteModelRepoVersion(
+		@PathVariable(name = "versionId") Long versionId
+	){
+		modelRepoFacadeService.deleteModelRepoVersion(versionId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

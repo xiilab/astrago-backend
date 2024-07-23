@@ -14,6 +14,8 @@ public interface ModelRepoFacadeService {
 
 	void deleteModelRepoById(long modelRepoId);
 
-	void modifyModelRepo(long modelRepoId, ModelRepoDTO.RequestDTO modelRepoDTO);
+	void registerOrVersionUpModelRepo(ModelRepoDTO.wlModelRepoDTO modelRepoDTO);
+
+	void deleteModelRepoVersion(long versionId);
 
 }
