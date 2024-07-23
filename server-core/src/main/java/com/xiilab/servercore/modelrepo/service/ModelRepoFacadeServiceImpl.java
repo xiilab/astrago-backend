@@ -74,23 +74,29 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
 			// ModelRepoEntity save
 			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
-			// 라벨 등록
-			if (Objects.nonNull(modelRepoReqDTO.getLabelIds())) {
-				List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabelIds()
-					.stream()
-					.map(this::getLabelEntityById)
-					.toList();
-				saveModel.addModelLabelEntity(labelEntityList);
-			}
-			saveModel.addModelVersionEntity();
+			setModelLabel(modelRepoReqDTO, saveModel);
 			// 해당 모델이 저장 되는 경로
 			String modelPath = storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
 				saveModel.getModelRepoRealName().replace(" ", "");
 			saveModel.setModelPath(modelPath);
-
+			// 모델, 라벨 파일 경로 등록
+			String modelFilePath = modelPath + "/" + modelRepoReqDTO.getModelFileName();
+			String labelFilePath = modelPath + "/" + modelRepoReqDTO.getLabelFileName();
+			saveModel.addModelVersionEntity(modelFilePath, labelFilePath);
 			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
+		}
+	}
+
+	private void setModelLabel(ModelRepoDTO.RequestDTO modelRepoReqDTO, ModelRepoEntity saveModel) {
+		// 라벨 등록
+		if (Objects.nonNull(modelRepoReqDTO.getLabelIds())) {
+			List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabelIds()
+				.stream()
+				.map(this::getLabelEntityById)
+				.toList();
+			saveModel.addModelLabelEntity(labelEntityList);
 		}
 	}
 
@@ -135,7 +141,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		String storagePath = "";
 		if (wlModelRepoDTO.getModelType().equals(ModelRepoType.NEW_MODEL)) {
 			// 모델 신규 등록
-			storagePath = createNewModelRepo(wlModelRepoDTO);
+			storagePath = createNewModelRepo(wlModelRepoDTO) + "/v1";
 		} else {
 			// 기존 모델에 추가
 			storagePath = versionUpModelRepo(wlModelRepoDTO);
@@ -165,7 +171,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		// model repo 저장
 		ModelRepoDTO.ResponseDTO modelRepo = createModelRepo(requestDTO);
 		// 옮길 경로
-		return modelRepo.getModelPath() + "/v1";
+		return modelRepo.getModelPath();
 	}
 
 	private LabelEntity getLabelEntityById(long id) {

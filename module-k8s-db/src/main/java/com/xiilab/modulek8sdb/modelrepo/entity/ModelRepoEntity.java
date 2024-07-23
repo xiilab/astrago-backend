@@ -61,8 +61,9 @@ public class ModelRepoEntity {
 		this.modelLabelEntityList = modelLabelEntities;
 	}
 
-	public void addModelVersionEntity() {
-		this.modelVersionList = List.of(ModelVersionEntity.builder().version("v1").modelRepoEntity(this).build());
+	public void addModelVersionEntity(String modelFilePath, String labelFilePath) {
+		this.modelVersionList = List.of(ModelVersionEntity.builder().version("v1").modelRepoEntity(this)
+			.modelFilePath(modelFilePath).labelFilePath(labelFilePath).build());
 	}
 
 	public void modifyModelRepo(String modelName, String description) {

@@ -75,7 +75,9 @@ public class TusService {
 	private void saveModelRepo(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
 		IOException,
 		TusException {
+		// model repo DTO 생성
 		ModelRepoDTO.RequestDTO modelRepoDTO = getModelRepoDTO(uploadInfo);
+		// model repo DB 등록
 		ModelRepoDTO.ResponseDTO modelRepo = modelRepoFacadeService.createModelRepo(modelRepoDTO);
 
 		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepo.getModelRepoId())
@@ -101,6 +103,10 @@ public class TusService {
 		List<Long> labelsIds = getLabels(
 			Optional.ofNullable(uploadInfo.getMetadata().get("labelsIds"))
 				.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE)));
+		String modelFileName = Optional.ofNullable(uploadInfo.getMetadata().get("modelFileName"))
+			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
+		String labelFileName = Optional.ofNullable(uploadInfo.getMetadata().get("labelFileName"))
+			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
 
 		return ModelRepoDTO.RequestDTO.builder()
 			.modelName(modelName)
@@ -108,6 +114,8 @@ public class TusService {
 			.workspaceResourceName(workspaceResourceName)
 			.labelIds(labelsIds)
 			.storageId(storageId)
+			.modelFileName(modelFileName)
+			.labelFileName(labelFileName)
 			.build();
 	}
 

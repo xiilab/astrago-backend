@@ -32,6 +32,8 @@ public class ModelRepoDTO {
 	public static class RequestDTO extends ModelRepoDTO {
 		private long storageId;
 		private List<Long> labelIds;
+		private String modelFileName;
+		private String labelFileName;
 
 		public ModelRepoEntity convertEntity(StorageEntity storageEntity) {
 			return ModelRepoEntity.builder()
@@ -85,11 +87,15 @@ public class ModelRepoDTO {
 		private long versionId;
 		// 라벨은 model에 종속됨
 		private String versionName;
+		private String modelFilePath;
+		private String labelFilePath;
 
 		public static VersionDTO convertVersionDTO(ModelVersionEntity versionEntity) {
 			return VersionDTO.builder()
 				.versionId(versionEntity.getId())
 				.versionName(versionEntity.getVersion())
+				.modelFilePath(versionEntity.getModelFilePath())
+				.labelFilePath(versionEntity.getLabelFilePath())
 				.build();
 		}
 	}
@@ -107,6 +113,8 @@ public class ModelRepoDTO {
 		private List<String> wlModelPaths;
 		private long storageId;
 		private long modelRepoId;
+		private String modelFileName;
+		private String labelFileName;
 
 		public ModelRepoDTO.RequestDTO convertEntity(StorageEntity storageEntity) {
 			return RequestDTO.builder()
@@ -115,6 +123,8 @@ public class ModelRepoDTO {
 				.workspaceResourceName(this.getWorkspaceResourceName())
 				.storageId(this.getStorageId())
 				.labelIds(this.getLabelIds())
+				.modelFileName(this.modelFileName)
+				.labelFileName(this.labelFileName)
 				.build();
 		}
 
