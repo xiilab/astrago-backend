@@ -662,8 +662,9 @@ public class WorkloadFacadeService {
 
 		//Age 정렬 조건 적용
 		if (workloadEventReqDTO.getAgeSortCondition() != null) {
-			// Event 클래스에 getAge 메소드가 있다고 가정합니다.
-			Comparator<Event> ageComparator = Comparator.comparing(event -> event.getMetadata().getCreationTimestamp());
+			Comparator<Event> ageComparator = Comparator
+				.comparing((Event event) -> event.getMetadata().getCreationTimestamp())
+				.thenComparingLong(event -> Long.parseLong(event.getMetadata().getResourceVersion()));
 			if (workloadEventReqDTO.getAgeSortCondition() == WorkloadEventAgeSortCondition.AGE_DESC) {
 				ageComparator = ageComparator.reversed();
 			}
@@ -677,11 +678,11 @@ public class WorkloadFacadeService {
 		}
 
 		List<WorkloadEventDTO> result = eventStream.map(event -> WorkloadEventDTO.builder()
-			.type(event.getType())
-			.reason(event.getReason())
-			.from(event.getReportingController())
-			.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
-			.message(event.getNote())
+				.type(event.getType())
+				.reason(event.getReason())
+				.from(event.getReportingController())
+				.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
+				.message(event.getNote())
 				.build())
 			.toList();
 
