@@ -94,6 +94,7 @@ public interface WorkloadModuleService {
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
+	WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 
@@ -102,6 +103,8 @@ public interface WorkloadModuleService {
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
 	boolean isUsedDataset(Long datasetId);
+
+	boolean isUsedVolume(Long volumeId);
 
 	void deleteDeploymentByResourceName(String deploymentName, String namespace);
 

@@ -34,18 +34,18 @@ public class VolumeWorkSpaceMappingEntity extends BaseEntity {
 
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
-	@Column(name = "MODEL_DEFAULT_MOUNT_PATH")
-	private String modelDefaultMountPath;
+	@Column(name = "VOLUME_DEFAULT_MOUNT_PATH")
+	private String volumeDefaultMountPath;
 	@Builder
 	public VolumeWorkSpaceMappingEntity(Volume volume, String workspaceResourceName, String volumeDefaultMountPath) {
 		this.volume = volume;
 		this.workspaceResourceName = workspaceResourceName;
-		this.modelDefaultMountPath = volumeDefaultMountPath;
+		this.volumeDefaultMountPath = volumeDefaultMountPath;
 		//연관관계 편의 메서드
 		volume.getVolumeWorkSpaceMappingList().add(this);
 	}
 
 	public void modifyDefaultPath(String modelDefaultMountPath) {
-		this.modelDefaultMountPath = modelDefaultMountPath;
+		this.volumeDefaultMountPath = modelDefaultMountPath;
 	}
 }

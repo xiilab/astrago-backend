@@ -546,9 +546,9 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public boolean isUsedModel(Long modelId) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String label = "md-" + modelId;
-			if (getJobsInUseDataset(label, client).size() == 0 &&
-				getStatefulSetsInUseDataset(label, client).size() == 0 &&
-				getDeploymentsInUseDataset(label, client).size() == 0) {
+			if (getJobsInUseVolume(label, client).size() == 0 &&
+				getStatefulSetsInUseVolume(label, client).size() == 0 &&
+				getDeploymentsInUseVolume(label, client).size() == 0) {
 				return false;
 			}
 			return true;
@@ -846,9 +846,9 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "ds-" + id;
-			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
-			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
-			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
+			List<Job> jobsInUseDataset = getJobsInUseVolume(datasetId, client);
+			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseVolume(datasetId, client);
+			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseVolume(datasetId, client);
 			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(datasetId, client);
 
 			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();
@@ -885,12 +885,68 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String volumeId = "vl-" + id;
+			List<Job> jobsInUseVolume = getJobsInUseVolume(volumeId, client);
+			List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeId, client);
+			List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeId, client);
+			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(volumeId, client);
+
+			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();
+			//워크로드 이름(사용자가 지정한 이름), 상태, job Type, 생성자 이름, 생성일자
+			for (Job job : jobsInUseVolume) {
+				getWorkloadInfoUsingDataset(workloads, job, WorkloadResourceType.JOB);
+			}
+			for (StatefulSet statefulSet : statefulSetsInUseVolume) {
+				getWorkloadInfoUsingDataset(workloads, statefulSet, WorkloadResourceType.STATEFULSET);
+			}
+			for (Deployment deployment : deploymentsInUseVolume) {
+				getWorkloadInfoUsingDataset(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
+			}
+			for (MPIJob mpiJob : mpiJobsInUseDataset) {
+				getWorkloadInfoUsingDataset(workloads, mpiJob, WorkloadResourceType.DISTRIBUTED);
+			}
+			int totalCount = workloads.size();
+			int startIndex = (pageNo - 1) * pageSize;
+			int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+			if (startIndex >= totalCount || endIndex <= startIndex) {
+				// 페이지 범위를 벗어나면 빈 리스트 반환
+				return WorkloadResDTO.PageUsingVolumeDTO.builder()
+					.usingWorkloads(null)
+					.totalCount(totalCount)
+					.build();
+			}
+
+			return WorkloadResDTO.PageUsingVolumeDTO.builder()
+				.usingWorkloads(workloads.subList(startIndex, endIndex))
+				.totalCount(totalCount)
+				.build();
+		}
+	}
+
+	@Override
 	public boolean isUsedDataset(Long datasetId) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String label = "ds-" + datasetId;
-			if (getJobsInUseDataset(label, client).size() == 0 &&
-				getStatefulSetsInUseDataset(label, client).size() == 0 &&
-				getDeploymentsInUseDataset(label, client).size() == 0 &&
+			if (getJobsInUseVolume(label, client).size() == 0 &&
+				getStatefulSetsInUseVolume(label, client).size() == 0 &&
+				getDeploymentsInUseVolume(label, client).size() == 0 &&
+				getMPIJobsInUseDataset(label, client).size() == 0) {
+				return false;
+			}
+			return true;
+		}
+	}
+
+	@Override
+	public boolean isUsedVolume(Long volumeId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "vl-" + volumeId;
+			if (getJobsInUseVolume(label, client).size() == 0 &&
+				getStatefulSetsInUseVolume(label, client).size() == 0 &&
+				getDeploymentsInUseVolume(label, client).size() == 0 &&
 				getMPIJobsInUseDataset(label, client).size() == 0) {
 				return false;
 			}
@@ -939,19 +995,19 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private static List<Job> getJobsInUseDataset(String key, KubernetesClient client) {
+	private static List<Job> getJobsInUseVolume(String key, KubernetesClient client) {
 		return client.batch().v1().jobs().inAnyNamespace().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
 
-	private static List<Deployment> getDeploymentsInUseDataset(String key, KubernetesClient client) {
+	private static List<Deployment> getDeploymentsInUseVolume(String key, KubernetesClient client) {
 		return client.apps().deployments().inAnyNamespace().withLabelIn(key, "true")
 			.list()
 			.getItems();
 	}
 
-	private static List<StatefulSet> getStatefulSetsInUseDataset(String key, KubernetesClient client) {
+	private static List<StatefulSet> getStatefulSetsInUseVolume(String key, KubernetesClient client) {
 		return client
 			.apps()
 			.statefulSets()
@@ -965,9 +1021,9 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "md-" + id;
-			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
-			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
-			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
+			List<Job> jobsInUseDataset = getJobsInUseVolume(datasetId, client);
+			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseVolume(datasetId, client);
+			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseVolume(datasetId, client);
 			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(datasetId, client);
 
 			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();

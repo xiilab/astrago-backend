@@ -13,7 +13,7 @@ public interface VolumeWorkspaceRepository extends JpaRepository<VolumeWorkSpace
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("delete from VolumeWorkSpaceMappingEntity vwm where vwm.volume.volumeId = :volumeId")
-	void deleteVolumeWorkspaceMappingById(@Param("volumeId") Long volumeId);
+	void deleteByVolumeId(@Param("volumeId") Long volumeId);
 
 	@Query("select vwm  from VolumeWorkSpaceMappingEntity vwm "
 		+ " join fetch vwm.volume m where vwm.workspaceResourceName = :workspaceResourceName and vwm.volume.deleteYn = 'N' "
@@ -25,7 +25,7 @@ public interface VolumeWorkspaceRepository extends JpaRepository<VolumeWorkSpace
 		+ "where mwm.volume.volumeId = :volumeId "
 		+ "and mwm.volume.deleteYn = 'N'"
 		+ "and mwm.workspaceResourceName like :workspaceResourceName")
-	VolumeWorkSpaceMappingEntity findByWorkspaceResourceNameAndModelId(@Param("workspaceResourceName") String workspaceResourceName, @Param("volumeId") Long volumeId);
+	VolumeWorkSpaceMappingEntity findByWorkspaceResourceNameAndVolumeId(@Param("workspaceResourceName") String workspaceResourceName, @Param("volumeId") Long volumeId);
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("delete "
