@@ -18,7 +18,9 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,6 +87,7 @@ import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -1138,5 +1141,10 @@ public class WorkloadFacadeService {
 		// 	}
 		// }
 		// return null;
+	}
+
+	public Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus,
+		Pageable pageable) {
+		return workloadHistoryService.getExperiments(searchCondition, workloadStatus, pageable);
 	}
 }

@@ -3,6 +3,7 @@ package com.xiilab.modulek8sdb.workload.history.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.annotations.SQLDelete;
@@ -27,7 +28,6 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -109,6 +109,9 @@ public abstract class WorkloadEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<PortEntity> portList = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	protected List<ExperimentEntity> experimentList = new ArrayList<>();
 	@Transient
 	protected boolean canBeDeleted;
 
@@ -124,6 +127,19 @@ public abstract class WorkloadEntity {
 	public void updateCanBeDeleted(String creator, Set<String> ownerWorkspace) {
 		if (this.creatorId.equals(creator) || ownerWorkspace.contains(this.workspaceResourceName)) {
 			this.canBeDeleted = true;
+		}
+	}
+
+	public void addExperiment(String uuid) {
+		Optional<ExperimentEntity> expOpt = this.experimentList.stream()
+			.filter(ex -> ex.getUuid().equals(uuid))
+			.findAny();
+		if (expOpt.isEmpty()) {
+			this.experimentList.add(ExperimentEntity.builder()
+				.uuid(uuid)
+				.createdTime(LocalDateTime.now())
+				.workload(this)
+				.build());
 		}
 	}
 }

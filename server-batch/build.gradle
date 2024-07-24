@@ -3,7 +3,6 @@ dependencies {
     implementation project(':module-k8s-db')
     implementation project(':module-user')
     implementation project(':module-common')
-    implementation project(':module-alert')
     implementation project(':module-monitor')
     implementation 'io.fabric8:kubernetes-client:6.9.2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

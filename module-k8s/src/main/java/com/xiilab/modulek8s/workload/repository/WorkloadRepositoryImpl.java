@@ -755,7 +755,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 					}
 				} else if ("Job".equals(ownerKind)) {
 					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
-					job.getMetadata();
+					kubernetesClient.resource(job).delete();
 				}
 			}
 		} catch (KubernetesClientException e) {

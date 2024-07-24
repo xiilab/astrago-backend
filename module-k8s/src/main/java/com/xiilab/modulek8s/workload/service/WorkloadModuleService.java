@@ -145,4 +145,5 @@ public interface WorkloadModuleService {
 	HasMetadata getJob(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	List<Pod> getWorkloadByWorkloadName(String resourceName);
+
 }

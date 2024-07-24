@@ -87,7 +87,7 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 		List<ResponseDTO.RealTimeDTO> overResourceCPUPodList = prometheusService.getRealTimeMetric(
 			Promql.RESOURCE_OPTIMIZATION_CPU, String.valueOf(hour), String.valueOf(cpu), unixTimeStamp);
 		List<ResponseDTO.RealTimeDTO> overResourceGPUPodList = prometheusService.getRealTimeMetric(
-			Promql.RESOURCE_OPTIMIZATION_CPU, String.valueOf(hour), String.valueOf(gpu), unixTimeStamp);
+			Promql.RESOURCE_OPTIMIZATION_GPU, String.valueOf(hour), String.valueOf(gpu), unixTimeStamp);
 		List<ResponseDTO.RealTimeDTO> overResourceMEMPodList = prometheusService.getRealTimeMetric(
 			Promql.RESOURCE_OPTIMIZATION_MEM, String.valueOf(hour), String.valueOf(mem), unixTimeStamp);
 		log.info("over resource cpu pod list count : {}", overResourceCPUPodList.size());
