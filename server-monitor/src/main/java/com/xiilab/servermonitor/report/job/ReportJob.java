@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
@@ -14,11 +15,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.dto.ReportType;
+import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
@@ -29,6 +33,8 @@ import com.xiilab.modulek8sdb.report.entity.ReportReservationHistoryEntity;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationUserEntity;
 import com.xiilab.modulek8sdb.report.report.ReportReservationHistoryRepository;
 import com.xiilab.modulek8sdb.report.report.ReservationRepository;
+import com.xiilab.modulek8sdb.smtp.entity.SmtpEntity;
+import com.xiilab.modulek8sdb.smtp.repository.SmtpRepository;
 import com.xiilab.servermonitor.report.service.ReportMonitorService;
 
 import jakarta.transaction.Transactional;
@@ -47,6 +53,7 @@ public class ReportJob extends QuartzJobBean {
 	private final NetworkRepository networkRepository;
 	@Value("${frontend.url}")
 	private String frontendUrl;
+	private final SmtpRepository smtpRepository;
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
 	@Override
@@ -108,15 +115,38 @@ public class ReportJob extends QuartzJobBean {
 				.report(reportReservation)
 				.result(true)
 				.build());
-			if (network.getNetworkCloseYN() == NetworkCloseYN.N) {
 
+			if (network.getNetworkCloseYN() == NetworkCloseYN.N) {
 				try {
 					MailDTO mailDTO = MailServiceUtils.reportMail(reportReservation.getReportType().getName(),
 						start + end, pdfLink, user.getEmail());
-					mailService.sendMail(mailDTO);
+					smtpSendMail(mailDTO);
 				} catch (Exception e) {
 					saveHistory.falseResult();
 				}
+			}
+		}
+	}
+
+	private void smtpSendMail(MailDTO mailDTO) {
+		// SMTP 정보 조회
+		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
+		// SMTP 등록 체크
+		if(ObjectUtils.isEmpty(smtpEntities)){
+			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
+		}
+		// SMTP MAIL 전송
+		for(SmtpEntity smtpEntity : smtpEntities){
+			SmtpDTO smtpDTO = SmtpDTO.builder()
+				.host(smtpEntity.getHost())
+				.port(smtpEntity.getPort())
+				.username(smtpEntity.getUserName())
+				.password(smtpEntity.getPassword())
+				.build();
+			if(mailService.sendMail(mailDTO, smtpDTO)){
+				// SMTP SEND COUNT++
+				smtpEntity.increment();
+				break;
 			}
 		}
 	}
