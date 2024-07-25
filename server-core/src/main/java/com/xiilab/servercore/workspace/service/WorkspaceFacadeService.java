@@ -12,6 +12,7 @@ import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
+import com.xiilab.servercore.workspace.dto.FindWorkspaceResDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
@@ -22,7 +23,7 @@ public interface WorkspaceFacadeService {
 	PageDTO<WorkspaceDTO.TotalResponseDTO> getWorkspaceList(boolean isMyWorkspace, String searchCondition, int pageNum,
 		UserDTO.UserInfo userInfoDTO);
 
-	WorkspaceDTO.FindJoinedWorkspaces getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO);
+	WorkspaceDTO.FindJoinedWorkspaces getJoinedWorkspaceList(String title, UserDTO.UserInfo userInfoDTO);
 
 	void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO);
 
@@ -35,6 +36,8 @@ public interface WorkspaceFacadeService {
 	WorkspaceResourceQuotaState getWorkspaceResourceUsage(String workspaceResourceName);
 
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName);
+
+	FindWorkspaceResDTO.JoinedWorkspaceDetail getJoinedWorkspaceInfoByName(String workspaceResourceName);
 
 	void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserDTO.UserInfo userInfoDTO);
 

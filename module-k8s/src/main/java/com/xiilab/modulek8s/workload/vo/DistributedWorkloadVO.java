@@ -46,8 +46,10 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 	protected Integer workerGpuRequest;    //worker gpu request
 	protected int workerCnt;                //worker count
 	protected List<JobCodeVO> codes;                // code 정의
-	protected List<JobVolumeVO> datasets;
-	protected List<JobVolumeVO> models;
+	// TODO 삭제 예정
+	// protected List<JobVolumeVO> datasets;
+	// protected List<JobVolumeVO> models;
+	protected List<JobVolumeVO> volumes;
 	protected String secretName;
 	protected String nodeName;
 	protected GPUType gpuType;
@@ -205,8 +207,10 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 	protected Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
 		map.put("sidecar.istio.io/inject", String.valueOf(false));
-		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
-		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
+		// TODO 삭제 예정
+		// this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
+		// this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
+		this.volumes.forEach(volume -> map.put("vl-" + volume.id(), volume.mountPath()));
 		this.codes.forEach(code -> {
 			if (!ValidUtils.isNullOrZero(code.id())) {
 				map.put("cd-" + code.id(), code.mountPath());

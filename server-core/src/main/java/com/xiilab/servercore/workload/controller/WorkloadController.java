@@ -47,6 +47,7 @@ import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -59,10 +60,14 @@ public class WorkloadController {
 	private final HubService hubService;
 
 	@PostMapping("/workloads")
-	@Operation(summary = "워크로드 생성")
-	public ResponseEntity<HttpStatus> createWorkload(
-		@RequestBody CreateSingleWorkloadJobReqDTO createWorkloadJobReqDTO,
-		UserDTO.UserInfo userInfoDTO) {
+	@Operation(
+		summary = "워크로드 생성",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "Create the User"
+		)
+	)
+	public ResponseEntity<HttpStatus> createWorkload(@Valid @RequestBody CreateSingleWorkloadJobReqDTO createWorkloadJobReqDTO,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}

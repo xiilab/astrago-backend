@@ -25,8 +25,10 @@ public class CreateDistributedWorkloadJobReqDTO extends CreateWorkloadJobReqDTO 
 			.workspace(workspace)
 			.workloadType(workloadType)
 			.image(image)
-			.datasets(datasets)
-			.models(models)
+			// TODO 삭제 예정
+			// .datasets(datasets)
+			// .models(models)
+			.volumes(volumes)
 			.ports(ports)
 			.envs(envs)
 			.codes(codes)

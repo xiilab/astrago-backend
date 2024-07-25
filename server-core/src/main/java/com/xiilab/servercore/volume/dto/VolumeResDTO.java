@@ -35,7 +35,7 @@ public class VolumeResDTO {
 		private String storageName;
 		private String ip;
 		private String storagePath;
-		private String datasetPath;
+		private String volumePath;
 		private String saveDirectoryName;
 
 		public static VolumeResDTO.ResVolumeWithStorage toDto(Volume volume){
@@ -51,7 +51,7 @@ public class VolumeResDTO {
 					.division(volume.getDivision())
 					.ip(((AstragoVolumeEntity)volume).getStorageEntity().getIp())
 					.storagePath(((AstragoVolumeEntity)volume).getStorageEntity().getStoragePath())
-					.datasetPath(((AstragoVolumeEntity)volume).getVolumePath())
+					.volumePath(((AstragoVolumeEntity)volume).getVolumePath())
 					.storageName(((AstragoVolumeEntity)volume).getStorageEntity().getStorageName())
 					.size(CoreFileUtils.formatFileSize(volume.getVolumeSize()))
 					.defaultPath(volume.getVolumeDefaultMountPath())
@@ -68,7 +68,7 @@ public class VolumeResDTO {
 					.division(volume.getDivision())
 					.ip(((LocalVolumeEntity)volume).getIp())
 					.storagePath(((LocalVolumeEntity)volume).getStoragePath())
-					.datasetPath("/")
+					.volumePath("/")
 					.defaultPath(volume.getVolumeDefaultMountPath())
 					.build();
 			}
