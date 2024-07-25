@@ -52,31 +52,6 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 	@Autowired
 	private UserService userService;
 
-	private static MailDTO getMailDTO(AbstractModuleWorkloadResDTO aa, UserDTO.UserInfo creator) {
-		MailAttribute mail = WORKLOAD_DELETE_SCHEDULED;
-
-		// Mail Contents 작성
-		List<MailDTO.Content> contents = List.of(
-			MailDTO.Content.builder()
-				.col1("워크스페이스 이름 : ")
-				.col2(aa.getWorkspaceName())
-				.build(),
-			MailDTO.Content.builder()
-				.col1("워크로드 이름 : ")
-				.col2(aa.getName())
-				.build());
-
-		return MailDTO.builder()
-			.subject(mail.getSubject())
-			.title(mail.getTitle())
-			.subTitle(mail.getSubTitle())
-			.contentTitle(mail.getContentTitle())
-			.contents(contents)
-			.receiverEmail(creator.getEmail())
-			.footer(mail.getFooter())
-			.build();
-	}
-
 	@Override
 	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
 		log.info("batch resource optimization alert job start....");
@@ -174,5 +149,29 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 		}
 	}
 
+	private static MailDTO getMailDTO(AbstractModuleWorkloadResDTO aa, UserDTO.UserInfo creator) {
+		MailAttribute mail = WORKLOAD_DELETE_SCHEDULED;
+
+		// Mail Contents 작성
+		List<MailDTO.Content> contents = List.of(
+			MailDTO.Content.builder()
+				.col1("워크스페이스 이름 : ")
+				.col2(aa.getWorkspaceName())
+				.build(),
+			MailDTO.Content.builder()
+				.col1("워크로드 이름 : ")
+				.col2(aa.getName())
+				.build());
+
+		return MailDTO.builder()
+			.subject(mail.getSubject())
+			.title(mail.getTitle())
+			.subTitle(mail.getSubTitle())
+			.contentTitle(mail.getContentTitle())
+			.contents(contents)
+			.receiverEmail(creator.getEmail())
+			.footer(mail.getFooter())
+			.build();
+	}
 }
 
