@@ -50,6 +50,7 @@ import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -765,6 +766,10 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				} else if ("Job".equals(ownerKind)) {
 					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
 					job.getMetadata();
+				} else if("service".equals(ownerKind)) {
+					Service service = kubernetesClient.services().inNamespace(namespace).withName(ownerName).get();
+					kubernetesClient.resource(service).delete();
+					log.info("service {}가 삭제되었습니다.", service.getMetadata().getName());
 				}
 			}
 		} catch (KubernetesClientException e) {
