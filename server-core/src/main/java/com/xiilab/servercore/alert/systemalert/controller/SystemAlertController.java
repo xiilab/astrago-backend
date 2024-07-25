@@ -114,4 +114,13 @@ public class SystemAlertController {
 			userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	@PatchMapping("/read")
+	@Operation(summary = "알림 전체 읽기 API")
+	public ResponseEntity<HttpStatus> readSystemAlerts(
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
+	){
+		alertService.readSystemAlerts(userInfoDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }
