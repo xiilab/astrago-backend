@@ -85,10 +85,12 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 		CreateJobResDTO createJobResDTO = null;
 		try {
-			// Dataset PV 생성
-			createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
-			// Model PV 생성
-			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
+			// TODO 삭제 예정
+			// // Dataset PV 생성
+			// createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
+			// // Model PV 생성
+			// createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
+			createPVAndPVC(moduleCreateWorkloadReqDTO.getVolumes());
 			if (workloadType == WorkloadType.BATCH) {
 				createJobResDTO = workloadModuleService.createBatchJobWorkload(
 					(ModuleCreateWorkloadReqDTO)moduleCreateWorkloadReqDTO,
@@ -113,8 +115,16 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		} catch (Exception e) {
 			// log.error(e.getMessage());
 			e.printStackTrace();
+			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getVolumes())) {
+				for (ModuleVolumeReqDTO volume : moduleCreateWorkloadReqDTO.getVolumes()) {
+					k8sVolumeService.deletePVC(volume.getCreatePV().getPvcName(), volume.getCreatePV().getNamespace());
+					k8sVolumeService.deletePV(volume.getCreatePV().getPvName());
+				}
+			}
+
+			// TODO 삭제 예정
 			// Dataset PV 삭제
-			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
+/*			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
 					k8sVolumeService.deletePVC(dataset.getCreatePV().getPvcName(), dataset.getCreatePV().getNamespace());
 					k8sVolumeService.deletePV(dataset.getCreatePV().getPvName());
@@ -126,7 +136,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 					k8sVolumeService.deletePVC(model.getCreatePV().getPvcName(), model.getCreatePV().getNamespace());
 					k8sVolumeService.deletePV(model.getCreatePV().getPvName());
 				}
-			}
+			}*/
 
 			throw new RestApiException(WorkloadErrorCode.FAILED_CREATE_WORKLOAD);
 		}

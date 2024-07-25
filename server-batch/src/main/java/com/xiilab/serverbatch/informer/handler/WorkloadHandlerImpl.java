@@ -54,21 +54,16 @@ import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
-import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
-import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
-import com.xiilab.modulek8sdb.model.entity.Model;
-import com.xiilab.modulek8sdb.model.repository.ModelRepository;
-import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
 import com.xiilab.modulek8sdb.storage.service.StorageService;
+import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
+import com.xiilab.modulek8sdb.volume.repository.VolumeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
@@ -88,12 +83,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
-	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
-	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
+	// TODO 삭제 예정
+	// private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
+	// private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
+	private final VolumeWorkLoadMappingRepository volumeWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
-	private final DatasetRepository datasetRepository;
-	private final ModelRepository modelRepository;
+	// TODO 삭제 예정
+	// private final DatasetRepository datasetRepository;
+	// private final ModelRepository modelRepository;
+	private final VolumeRepository volumeRepository;
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
 	private final CredentialRepository credentialRepository;
@@ -632,7 +631,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 	private void saveMappings(AbstractModuleWorkloadResDTO jobResDTO, WorkloadEntity workload) {
 		// dataset, model mapping insert
-		String datasetIds = jobResDTO.getDatasetIds();
+		// TODO 삭제 예정
+		/*String datasetIds = jobResDTO.getDatasetIds();
 		if (StringUtils.hasText(datasetIds)) {
 			saveDataMapping(getSplitIds(datasetIds), datasetRepository::findById, workload, EntityMappingType.DATASET,
 				jobResDTO.getDatasetMountPathMap(), null);
@@ -643,7 +643,16 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (StringUtils.hasText(modelIds)) {
 			saveDataMapping(getSplitIds(modelIds), modelRepository::findById, workload, EntityMappingType.MODEL,
 				jobResDTO.getModelMountPathMap(), null);
+		}*/
+		//
+
+		String volumeIds = jobResDTO.getVolumeIds();
+		if (StringUtils.hasText(volumeIds)) {
+			saveDataMapping(getSplitIds(volumeIds), volumeRepository::findById, workload, EntityMappingType.VOLUME,
+				jobResDTO.getVolumeMountPathMap(), null);
 		}
+
+
 		RegUser regUser = new RegUser(jobResDTO.getCreatorId(), jobResDTO.getCreatorUserName(),
 			jobResDTO.getCreatorFullName());
 
@@ -749,13 +758,14 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, WorkloadEntity jobEntity,
-		EntityMappingType type, Map<Long, String> mdAnddsMountPathMap, Map<String, Map<String, String>> codeInfoMap) {
+		EntityMappingType type, Map<Long, String> mountPathMap, Map<String, Map<String, String>> codeInfoMap) {
 		if (ids != null) {
 			for (String id : ids) {
 				if (StringUtils.hasText(id)) {
 					Optional<?> optionalEntity = findByIdFunction.apply(Long.valueOf(id));
 					optionalEntity.ifPresent(entity -> {
-						if (type == EntityMappingType.DATASET) {
+						// TODO 삭제 예정
+						/*if (type == EntityMappingType.DATASET) {
 							Dataset dataset = (Dataset)entity;
 							DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity = DatasetWorkLoadMappingEntity.builder()
 								.dataset(dataset)
@@ -771,6 +781,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								.mountPath(mdAnddsMountPathMap.get(model.getModelId()))
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
+						}*/
+						if(type == EntityMappingType.VOLUME) {
+							com.xiilab.modulek8sdb.volume.entity.Volume volume = (com.xiilab.modulek8sdb.volume.entity.Volume)entity;
+							VolumeWorkLoadMappingEntity volumeWorkLoadMappingEntity = VolumeWorkLoadMappingEntity.builder()
+								.volume(volume)
+								.workload(jobEntity)
+								.mountPath(mountPathMap.get(volume.getVolumeId()))
+								.build();
+							volumeWorkLoadMappingRepository.save(volumeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.CODE) {
 							CodeEntity code = (CodeEntity)entity;
 							// Map<String, String> codeMountMap = codeInfoMap.get(code.getCodeURL());

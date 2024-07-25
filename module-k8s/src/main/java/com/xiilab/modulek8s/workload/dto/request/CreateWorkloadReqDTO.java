@@ -23,8 +23,10 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected ImageType imageType;    // 이미지 타입(빌트인, Dockerhub)
 	protected ModuleImageReqDTO image;    // 이미지명
 	protected List<ModuleCodeReqDTO> codes;    // import할 코드 목록
-	protected List<ModuleVolumeReqDTO> datasets;    // 마운트할 데이터셋 볼륨 목록 (볼륨명, 마운트할 경로)
-	protected List<ModuleVolumeReqDTO> models;    // 마운트할 모델 볼륨 목록 (볼륨명, 마운트할 경로)
+	// TODO 삭제 예정
+	// protected List<ModuleVolumeReqDTO> datasets;    // 마운트할 데이터셋 볼륨 목록 (볼륨명, 마운트할 경로)
+	// protected List<ModuleVolumeReqDTO> models;    // 마운트할 모델 볼륨 목록 (볼륨명, 마운트할 경로)
+	protected List<ModuleVolumeReqDTO> volumes;    // 마운트할 볼륨 목록 (볼륨명, 마운트할 경로)
 	protected List<ModulePortReqDTO> ports;    // 노드 포토 목록 (포트명, 포트번호)
 	protected List<ModuleEnvReqDTO> envs;    // 환경변수 목록 (변수명, 값)
 	protected String workingDir;    // 명령어를 실행 할 path
@@ -45,8 +47,10 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 
 	protected void initializeCollection() {
 		this.codes = getListIfNotEmpty(this.codes);
-		this.datasets = getListIfNotEmpty(this.datasets);
-		this.models = getListIfNotEmpty(this.models);
+		// TODO 삭제 예정
+		// TODO 삭제 예정
+		// this.datasets = getListIfNotEmpty(this.datasets);
+		// this.models = getListIfNotEmpty(this.models);
 		this.ports = getListIfNotEmpty(this.ports);
 		this.envs = getListIfNotEmpty(this.envs);
 	}

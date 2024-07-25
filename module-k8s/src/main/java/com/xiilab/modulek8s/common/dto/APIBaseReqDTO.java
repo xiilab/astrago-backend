@@ -1,6 +1,6 @@
 package com.xiilab.modulek8s.common.dto;
 
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,8 +13,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class APIBaseReqDTO {
 	//사용자가 실제 입력한 name
-	@Pattern(regexp = "^[^-_]*$")
+	@NotNull
+	// @Pattern(regexp = "^[^-_]*$")
 	protected String name;
 	//resource에 대한 설명
+	@NotNull
 	protected String description;
 }
