@@ -13,6 +13,7 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.pin.service.PinService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,7 +27,7 @@ public class PinController {
 	public ResponseEntity<HttpStatus> createWorkspacePin(
 		@RequestParam(value = "resourceName") String resourceName,
 		@RequestParam(value = "pinType") PinType pinType,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		pinService.createPin(resourceName, pinType, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

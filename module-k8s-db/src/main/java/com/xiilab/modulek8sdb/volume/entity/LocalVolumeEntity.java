@@ -1,6 +1,8 @@
 package com.xiilab.modulek8sdb.volume.entity;
 
+import com.xiilab.modulecommon.enums.OutputVolumeYN;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.VolumeAccessType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
@@ -40,9 +42,9 @@ public class LocalVolumeEntity extends Volume{
 	private String pvcName;
 
 	@Builder
-	public LocalVolumeEntity(Long volumeId, String volumeName, String ip, StorageType storageType, String storagePath, String dns, String deploymentName
+	public LocalVolumeEntity(Long volumeId, String volumeName, VolumeAccessType volumeAccessType, OutputVolumeYN outputVolumeYN, String ip, StorageType storageType, String storagePath, String dns, String deploymentName
 		, String svcName, String pvName, String pvcName, String defaultPath) {
-		super(volumeId, volumeName, defaultPath);
+		super(volumeId, volumeName, defaultPath, volumeAccessType, outputVolumeYN);
 		this.ip = ip;
 		this.storageType = storageType;
 		this.storagePath = storagePath;

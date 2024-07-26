@@ -21,6 +21,7 @@ import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.FileType;
+import com.xiilab.modulecommon.enums.OutputVolumeYN;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
@@ -71,14 +72,16 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	@Transactional
 	public void insertAstragoVolume(VolumeReqDTO.Edit.CreateAstragoVolume createAstragoVolumeDTO,
 		List<MultipartFile> files) {
-		//storage 조회
+		// storage 조회
 		StorageEntity storageEntity = storageService.findById(createAstragoVolumeDTO.getStorageId());
 
-		//dataset 저장
+		// Volume 저장
 		AstragoVolumeEntity astragoVolume = AstragoVolumeEntity.builder()
 			.volumeName(createAstragoVolumeDTO.getVolumeName())
 			.storageEntity(storageEntity)
 			.defaultPath(createAstragoVolumeDTO.getDefaultPath())
+			.volumeAccessType(createAstragoVolumeDTO.getVolumeAccessType())
+			.outputVolumeYN(OutputVolumeYN.N)
 			.build();
 
 		volumeService.insertAstragoVolume(astragoVolume, files);
@@ -110,6 +113,8 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 		//2. 디비 인서트
 		LocalVolumeEntity localVolumeEntity = LocalVolumeEntity.builder()
 			.volumeName(createLocalVolumeDTO.getVolumeName())
+			.volumeAccessType(createLocalVolumeDTO.getVolumeAccessType())
+			.outputVolumeYN(OutputVolumeYN.N)
 			.ip(createLocalVolumeDTO.getIp())
 			.storageType(StorageType.NFS)
 			.storagePath(createLocalVolumeDTO.getStoragePath())

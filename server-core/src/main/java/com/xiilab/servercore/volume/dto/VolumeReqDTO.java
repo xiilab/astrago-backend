@@ -3,6 +3,7 @@ package com.xiilab.servercore.volume.dto;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.CompressFileType;
+import com.xiilab.modulecommon.enums.VolumeAccessType;
 
 import lombok.Getter;
 
@@ -27,8 +28,9 @@ public class VolumeReqDTO {
 
 	@Getter
 	public abstract static class Edit {
-		private String volumeName;
-		private String defaultPath;
+		protected String volumeName;
+		protected String defaultPath;
+		protected VolumeAccessType volumeAccessType;
 
 		@Getter
 		public static class CreateAstragoVolume extends Edit {

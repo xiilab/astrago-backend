@@ -1,5 +1,7 @@
 package com.xiilab.modulek8sdb.volume.entity;
 
+import com.xiilab.modulecommon.enums.OutputVolumeYN;
+import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import jakarta.persistence.Column;
@@ -30,18 +32,20 @@ public class AstragoVolumeEntity extends Volume {
 	private String saveDirectoryName;
 
 	@Builder
-	public AstragoVolumeEntity(Long volumeId, String volumeName, StorageEntity storageEntity, String defaultPath) {
-		super(volumeId, volumeName, defaultPath);
+	public AstragoVolumeEntity(Long volumeId, String volumeName, StorageEntity storageEntity, String defaultPath,
+		VolumeAccessType volumeAccessType, OutputVolumeYN outputVolumeYN) {
+		super(volumeId, volumeName, defaultPath, volumeAccessType, outputVolumeYN);
 		this.storageEntity = storageEntity;
 	}
 
-	public void setVolumePath(String datasetPath){
+	public void setVolumePath(String datasetPath) {
 		this.volumePath = datasetPath;
 	}
 
-	public void setSaveDirectoryName(String saveDirectoryName){
+	public void setSaveDirectoryName(String saveDirectoryName) {
 		this.saveDirectoryName = saveDirectoryName;
 	}
+
 	@Override
 	public boolean isAstragoVolume() {
 		return true;

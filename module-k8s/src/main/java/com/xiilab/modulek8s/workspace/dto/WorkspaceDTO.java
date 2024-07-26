@@ -100,7 +100,7 @@ public class WorkspaceDTO {
 				.id(workspace.id)
 				.name(workspace.name)
 				.resourceName(workspace.resourceName)
-				.isPinYN(userWorkspacePinList.contains(workspace.id))
+				.isPinYN(userWorkspacePinList.contains(workspace.resourceName))
 				.build();
 		}
 	}
