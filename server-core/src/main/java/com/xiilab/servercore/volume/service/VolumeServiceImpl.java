@@ -125,6 +125,7 @@ public class VolumeServiceImpl implements VolumeService {
 			.orElseThrow(() -> new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND));
 		volume.modifyVolumeName(modifyVolumeDTO.getVolumeName());
 		volume.modifyVolumeDefaultPath(modifyVolumeDTO.getDefaultPath());
+		volume.modifyVolumeAccessType(modifyVolumeDTO.getVolumeAccessType());
 	}
 
 	@Override

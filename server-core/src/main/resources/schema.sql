@@ -723,12 +723,8 @@ create table if not exists TB_VOLUME
 (
     VOLUME_ID            bigint auto_increment
         primary key,
-    workload_WORKLOAD_ID bigint       null,
     VOLUME_NAME          varchar(255) null
 );
-
-create index if not exists FKklfdhstveisq6o9ddn3buybdv
-    on TB_VOLUME (workload_WORKLOAD_ID);
 
 create table if not exists TB_WORKLOAD
 (

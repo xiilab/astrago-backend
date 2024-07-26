@@ -1,7 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 import com.xiilab.modulecommon.enums.GPUType;
@@ -42,8 +41,8 @@ public class DistributedJobEntity extends DevelopEntity {
 		Integer resourcePresetId, float launcherCpuRequest, float launcherMemRequest, float workerCpuRequest,
 		float workerMemRequest, int workerGpuRequest, int workerCount,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
-		Map<String, String> envs,
-		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
+		Map<String, String> envs, //List<String> volumes,
+		Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
 		ImageEntity image, DeleteYN deleteYN, String ide, String workingDir, Map<String, String> parameter,
 		WorkloadStatus workloadStatus) {
 		this.uid = uid;
@@ -63,7 +62,7 @@ public class DistributedJobEntity extends DevelopEntity {
 		this.creatorRealName = creatorRealName;
 		this.creatorName = creatorName;
 		this.envList = EnvEntity.generateEnvList(envs, this);
-		this.volumeList = VolumeEntity.generateVolumeList(volumes, this);
+		// this.volumeList = VolumeEntity.generateVolumeList(volumes, this);
 		this.portList = PortEntity.generatePortList(ports, this);
 		this.workloadType = workloadType;
 		this.workingDir = workingDir;
