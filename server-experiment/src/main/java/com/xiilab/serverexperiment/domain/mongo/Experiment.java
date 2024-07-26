@@ -10,7 +10,7 @@ import lombok.Builder;
 
 @Document(collection = "logs")
 @Builder
-public class Log {
+public class Experiment {
 	@Id
 	private String id;
 	@Field("workload_id")

@@ -8,26 +8,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
-import com.xiilab.serverexperiment.domain.mongo.Log;
+import com.xiilab.serverexperiment.domain.mongo.Experiment;
 import com.xiilab.serverexperiment.domain.mongo.Workload;
-import com.xiilab.serverexperiment.dto.TrainDataDTO;
-import com.xiilab.serverexperiment.dto.TrainDataSearchDTO;
-import com.xiilab.serverexperiment.repository.LogCustomRepository;
-import com.xiilab.serverexperiment.repository.LogRepository;
+import com.xiilab.serverexperiment.dto.ExperimentDataDTO;
+import com.xiilab.serverexperiment.repository.ExperimentCustomRepository;
+import com.xiilab.serverexperiment.repository.ExperimentRepository;
 import com.xiilab.serverexperiment.repository.WorkloadLogRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class TrainDataService {
+public class ExperimentDataService {
 	private final WorkloadLogRepository workloadLogRepository;
 	private final WorkloadHistoryRepo workloadHistoryRepo;
-	private final LogRepository logRepository;
-	private final LogCustomRepository logCustomRepository;
+	private final ExperimentRepository experimentRepository;
+	private final ExperimentCustomRepository experimentCustomRepository;
 
 	@Transactional
-	public void saveTrainData(TrainDataDTO.Req trainDataReq) {
+	public void saveExperimentData(ExperimentDataDTO.Req trainDataReq) {
 		Optional<WorkloadEntity> workloadOpt = workloadHistoryRepo.findByResourceName(trainDataReq.getWorkloadName());
 
 		workloadOpt.ifPresent(workload -> {
@@ -36,15 +35,20 @@ public class TrainDataService {
 		});
 	}
 
-	public List<String> getTrainDataKeyByIds(List<String> ids) {
-		return logCustomRepository.getExperimentKeysByIds(ids);
+	public List<String> getExperimentDataKeyByIds(List<String> ids) {
+		return experimentCustomRepository.getExperimentKeysByIds(ids);
 	}
 
-	public List<TrainDataSearchDTO> searchTrainData(List<String> experiments, List<String> metrics) {
-		return logCustomRepository.getSearchTrainData(experiments, metrics);
+	public List<ExperimentDataDTO.SearchRes> searchExperimentsGraphData(List<String> experiments,
+		List<String> metrics) {
+		return experimentCustomRepository.searchExperimentsGraphData(experiments, metrics);
 	}
 
-	private void saveExperiment(TrainDataDTO.Req trainDataReq) {
+	public List<ExperimentDataDTO.Res> searchExperimentTableData(List<String> experiments, List<String> metrics) {
+		return experimentCustomRepository.searchExperimentsTableData(experiments, metrics);
+	}
+
+	private void saveExperiment(ExperimentDataDTO.Req trainDataReq) {
 		Workload workload = workloadLogRepository.findByNameAndId(trainDataReq.getWorkloadName(),
 				trainDataReq.getUuid())
 			.orElseGet(() -> workloadLogRepository.save(Workload.builder()
@@ -52,16 +56,16 @@ public class TrainDataService {
 				.name(trainDataReq.getWorkloadName())
 				.build()));
 
-		List<Log> logList = trainDataReq.getMetrics().stream().map(req -> Log.builder()
+		List<Experiment> experimentList = trainDataReq.getMetrics().stream().map(req -> Experiment.builder()
 				.workloadId(workload.getId())
 				.step(req.getStep())
 				.epoch(req.getEpochs())
 				.relativeTime(req.getRelativeTime())
 				.wallTime(req.getWallTime())
-				.metrics(req.getLog())
+				.metrics(req.getMetrics())
 				.build())
 			.toList();
 
-		logRepository.saveAll(logList);
+		experimentRepository.saveAll(experimentList);
 	}
 }
