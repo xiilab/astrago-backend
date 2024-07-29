@@ -1,12 +1,21 @@
 package com.xiilab.modulek8sdb.modelrepo.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import com.xiilab.modulecommon.dto.FileInfoDTO;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,9 +36,30 @@ public class ModelVersionEntity {
 	private String version;
 	@Column(name = "MODEL_FILE_NAME")
 	private String modelFileName;
-	@Column(name = "LABEL_FILE_NAME")
-	private String labelFileName;
+	@Column(name = "MODEL_FILE_SIZE")
+	private String modelFileSize;
 	@ManyToOne
 	@JoinColumn(name = "MODEL_REPO_ID")
 	private ModelRepoEntity modelRepoEntity;
+	@OneToMany(mappedBy = "modelVersionEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	private List<ModelMetaEntity> modelMetaEntities = new ArrayList<>();
+
+	public void setModelFile(String modelFileName, String modelFileSize) {
+		this.modelFileName = modelFileName;
+		this.modelFileSize = modelFileSize;
+	}
+	public void setModelMeta(List<FileInfoDTO> metafileList) {
+
+		if(Objects.nonNull(metafileList)) {
+			metafileList.forEach(metafile -> {
+				ModelMetaEntity modelMetaEntity = ModelMetaEntity.builder()
+					.modelFileName(metafile.getFileName())
+					.modelFileSize(Long.parseLong(metafile.getSize()))
+					.modelVersionEntity(this)
+					.build();
+				this.modelMetaEntities.add(modelMetaEntity);
+			});
+		}
+
+	}
 }

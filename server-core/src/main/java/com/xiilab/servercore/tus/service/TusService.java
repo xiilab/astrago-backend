@@ -86,8 +86,6 @@ public class TusService {
 		String filePath = modelRepoEntity.getModelPath() + "/v" + modelRepoEntity.getModelVersionList().size() + 1;
 		// 파일 저장
 		Long fileSize = getFilePath(request, filePath, filename);
-		// 해당 파일 size
-		modelRepoEntity.setModelSize(fileSize);
 	}
 
 	private ModelRepoDTO.RequestDTO getModelRepoDTO(UploadInfo uploadInfo) {

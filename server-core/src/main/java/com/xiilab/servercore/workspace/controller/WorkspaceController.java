@@ -60,6 +60,7 @@ public class WorkspaceController {
 	@GetMapping("/{name}")
 	@Operation(summary = "워크스페이스 정보 조회")
 	public ResponseEntity<WorkspaceTotalDTO> getWorkspaceInfo(@PathVariable(name = "name") String name) {
+
 		return ResponseEntity.ok(workspaceService.getWorkspaceInfoByName(name));
 	}
 

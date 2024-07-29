@@ -1,7 +1,6 @@
 package com.xiilab.servercore.modelrepo.service;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -9,7 +8,9 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelRepoErrorCode;
@@ -39,23 +40,6 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	private final StorageService storageService;
 	private final ModelRepoVersionRepository versionRepository;
 
-	private static void copyModelToStorage(String wlModelPath, String storagePath) {
-		// 모델 경로 설정
-		Path sourcePath = Paths.get(wlModelPath);
-		Path targetPath = Paths.get(storagePath);
-		// 모델 복사
-		try {
-			if (Files.isDirectory(sourcePath)) {
-				FileUtils.copyDirectory(sourcePath, targetPath);
-			} else {
-				FileUtils.copyFile(sourcePath, targetPath);
-			}
-			log.info("모델 등록 성공");
-		} catch (IOException e) {
-			log.info("모델 등록 실패");
-		}
-	}
-
 	@Override
 	public List<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName) {
 		// 해당 워크스페이스에 등록된 Model List 조회
@@ -64,37 +48,17 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		return modelRepoEntityList.stream().map(ModelRepoDTO.ResponseDTO::convertModelRepoDTO).toList();
 	}
 
-	@Override
-	@Transactional
-	public ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO) {
+	private static FileInfoDTO copyModelToStorage(String wlModelPath, String storagePath) {
+		// 모델 경로 설정
+		Path sourcePath = Paths.get(wlModelPath);
+		Path targetPath = Paths.get(storagePath);
+		// 모델 복사
 		try {
-			// 스토리지 조회
-			StorageEntity storageEntity = storageService.findById(modelRepoReqDTO.getStorageId());
-			// ModelRepoEntity 생성
-			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
-			// ModelRepoEntity save
-			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
-			setModelLabel(modelRepoReqDTO, saveModel);
-			// 해당 모델이 저장 되는 경로
-			String modelPath = storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
-				saveModel.getModelRepoRealName().replace(" ", "");
-			saveModel.setModelPath(modelPath);
-			// 모델, 라벨 파일 이름 등록
-			saveModel.addModelVersionEntity(modelRepoReqDTO.getModelFileName(), modelRepoReqDTO.getLabelFileName());
-			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
-		} catch (IllegalArgumentException e) {
-			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
-		}
-	}
-
-	private void setModelLabel(ModelRepoDTO.RequestDTO modelRepoReqDTO, ModelRepoEntity saveModel) {
-		// 라벨 등록
-		if (Objects.nonNull(modelRepoReqDTO.getLabelIds())) {
-			List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabelIds()
-				.stream()
-				.map(this::getLabelEntityById)
-				.toList();
-			saveModel.addModelLabelEntity(labelEntityList);
+			log.info("모델 등록 성공");
+			return FileUtils.copyFile(sourcePath, targetPath);
+		} catch (IOException e) {
+			log.info("모델 등록 실패");
+			return null;
 		}
 	}
 
@@ -134,23 +98,59 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 
 	@Override
 	@Transactional
-	public void registerOrVersionUpModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
-		// WL 모델 경로
-		String storagePath = "";
-		if (wlModelRepoDTO.getModelType().equals(ModelRepoType.NEW_MODEL)) {
-			// 모델 신규 등록
-			storagePath = createNewModelRepo(wlModelRepoDTO) + "/v1";
-		} else {
-			// 기존 모델에 추가
-			storagePath = versionUpModelRepo(wlModelRepoDTO);
-		}
-		for(String wlModelPath : wlModelRepoDTO.getWlModelPaths()){
-			copyModelToStorage(wlModelPath, storagePath);
+	public ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO) {
+		try {
+			// 스토리지 조회
+			StorageEntity storageEntity = storageService.findById(modelRepoReqDTO.getStorageId());
+			// ModelRepoEntity 생성
+			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
+			// ModelRepoEntity save
+			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
+			setModelLabel(modelRepoReqDTO, saveModel);
+			// 해당 모델이 저장 되는 경로
+			String modelPath =
+				storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
+					saveModel.getModelRepoRealName().replace(" ", "");
+			saveModel.setModelPath(modelPath);
+			// 모델 파일 등록
+			saveModel.addModelVersionEntity(modelRepoReqDTO.getModelFileName());
+			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
+		} catch (IllegalArgumentException e) {
+			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
 		}
 	}
 
-	private String versionUpModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
-		String storagePath;
+	@Override
+	@Transactional
+	public void registerOrVersionUpModelRepo(List<MultipartFile> files,
+		ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
+		// // WL 모델 경로
+		String storagePath = "";
+		ModelRepoDTO.ResponseDTO responseDTO = null;
+		if (wlModelRepoDTO.getModelType().equals(ModelRepoType.NEW_MODEL)) {
+			responseDTO = createNewModelRepo(wlModelRepoDTO);
+			// 모델 신규 등록
+			storagePath = responseDTO.getModelPath() + "/v1/";
+		} else {
+			// 기존 모델에 추가
+			responseDTO = versionUpModelRepo(wlModelRepoDTO);
+			ModelVersionEntity versionEntity = versionRepository.findByModelRepoEntityId(responseDTO.getModelRepoId());
+			storagePath = responseDTO.getModelPath() + "/" + versionEntity.getVersion() + "/";
+		}
+		// 모델 파일 복사
+		ModelVersionEntity versionEntity = versionRepository.findByModelRepoEntityId(responseDTO.getModelRepoId());
+		FileInfoDTO modelFile = copyModelToStorage(wlModelRepoDTO.getWlModelPaths(), storagePath);
+		if(Objects.nonNull(modelFile)) {
+			versionEntity.setModelFile(modelFile.getFileName(), modelFile.getSize());
+		}
+		// 그외 설정 파일 업로드
+		List<FileInfoDTO> metaFiles = FileUtils.uploadFiles(storagePath, files);
+		if(Objects.nonNull(metaFiles)){
+			versionEntity.setModelMeta(metaFiles);
+		}
+	}
+
+	private ModelRepoDTO.ResponseDTO versionUpModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
 		// 기존 모델 조회
 		ModelRepoEntity modelRepoEntity = getModelRepoEntityById(wlModelRepoDTO.getModelRepoId());
 		// 해당 모델의 다음 버전 조회
@@ -158,18 +158,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		// 다음 버전 저장
 		modelRepoEntity.updateModelRepoVersion(version);
 		// 옮길 경로
-		storagePath = modelRepoEntity.getModelPath() + "/v" + version;
-		return storagePath;
-	}
-
-	private String createNewModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
-		// 스토리지 조회
-		StorageEntity storage = storageService.findById(wlModelRepoDTO.getStorageId());
-		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertEntity(storage);
-		// model repo 저장
-		ModelRepoDTO.ResponseDTO modelRepo = createModelRepo(requestDTO);
-		// 옮길 경로
-		return modelRepo.getModelPath();
+		return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(modelRepoEntity);
 	}
 
 	private LabelEntity getLabelEntityById(long id) {
@@ -185,10 +174,26 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			.orElseThrow(() -> new RestApiException(ModelRepoErrorCode.MODEL_REPO_NOT_FOUND));
 	}
 
-	private ModelVersionEntity getModelRepoVersionById(long versionId){
+	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
+		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertEntity();
+		// model repo 저장
+		return createModelRepo(requestDTO);
+	}
+
+	private ModelVersionEntity getModelRepoVersionById(long versionId) {
 		return versionRepository.findById(versionId)
 			.orElseThrow(() -> new RestApiException(ModelRepoErrorCode.MODEL_REPO_VERSION_NOT_FOUND));
 	}
 
+	private void setModelLabel(ModelRepoDTO.RequestDTO modelRepoReqDTO, ModelRepoEntity saveModel) {
+		// 라벨 등록
+		if (Objects.nonNull(modelRepoReqDTO.getLabelIds())) {
+			List<LabelEntity> labelEntityList = modelRepoReqDTO.getLabelIds()
+				.stream()
+				.map(this::getLabelEntityById)
+				.toList();
+			saveModel.addModelLabelEntity(labelEntityList);
+		}
+	}
 
 }

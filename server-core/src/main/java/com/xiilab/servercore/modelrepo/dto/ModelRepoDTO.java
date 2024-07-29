@@ -97,7 +97,6 @@ public class ModelRepoDTO {
 				.versionId(versionEntity.getId())
 				.versionName(versionEntity.getVersion())
 				.modelFilePath(versionEntity.getModelFileName())
-				.labelFilePath(versionEntity.getLabelFileName())
 				.build();
 		}
 	}
@@ -112,13 +111,12 @@ public class ModelRepoDTO {
 		private String workspaceResourceName;
 		private List<Long> labelIds;
 		private ModelRepoType modelType;
-		private List<String> wlModelPaths;
+		private String wlModelPaths;
 		private long storageId;
 		private long modelRepoId;
 		private String modelFileName;
-		private String labelFileName;
 
-		public ModelRepoDTO.RequestDTO convertEntity(StorageEntity storageEntity) {
+		public ModelRepoDTO.RequestDTO convertEntity() {
 			return RequestDTO.builder()
 				.modelName(this.getModelName())
 				.description(this.getDescription())
@@ -126,7 +124,6 @@ public class ModelRepoDTO {
 				.storageId(this.getStorageId())
 				.labelIds(this.getLabelIds())
 				.modelFileName(this.modelFileName)
-				.labelFileName(this.labelFileName)
 				.build();
 		}
 
