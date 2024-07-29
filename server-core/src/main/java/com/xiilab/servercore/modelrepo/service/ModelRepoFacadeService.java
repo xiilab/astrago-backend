@@ -2,6 +2,8 @@ package com.xiilab.servercore.modelrepo.service;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 
 public interface ModelRepoFacadeService {
@@ -14,7 +16,7 @@ public interface ModelRepoFacadeService {
 
 	void deleteModelRepoById(long modelRepoId);
 
-	void registerOrVersionUpModelRepo(ModelRepoDTO.wlModelRepoDTO modelRepoDTO);
+	void registerOrVersionUpModelRepo(List<MultipartFile> files, ModelRepoDTO.wlModelRepoDTO modelRepoDTO);
 
 	void deleteModelRepoVersion(long versionId);
 

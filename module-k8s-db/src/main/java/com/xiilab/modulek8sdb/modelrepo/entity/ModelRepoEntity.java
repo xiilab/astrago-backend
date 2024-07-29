@@ -28,7 +28,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class ModelRepoEntity {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MODEL_REPO_ID")
@@ -41,17 +40,15 @@ public class ModelRepoEntity {
 	private String modelRepoRealName;
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
-	@Column(name = "MODEL_REPO_SIZE")
-	private Long modelSize;
 	@Column(name = "MODEL_REPO_PATH")
 	private String modelPath;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "STORAGE_ID")
+	private StorageEntity storageEntity;
 	@OneToMany(mappedBy = "modelRepoEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<ModelLabelEntity> modelLabelEntityList = new ArrayList<>();
 	@OneToMany(mappedBy = "modelRepoEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<ModelVersionEntity> modelVersionList = new ArrayList<>();
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "STORAGE_ID")
-	private StorageEntity storageEntity;
 
 	public void addModelLabelEntity(List<LabelEntity> labelEntityList) {
 		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
@@ -61,26 +58,9 @@ public class ModelRepoEntity {
 		this.modelLabelEntityList = modelLabelEntities;
 	}
 
-	public void addModelVersionEntity(String modelFilePath, String labelFilePath) {
+	public void addModelVersionEntity(String modelFilePath) {
 		this.modelVersionList = List.of(ModelVersionEntity.builder().version("v1").modelRepoEntity(this)
-			.modelFileName(modelFilePath).labelFileName(labelFilePath).build());
-	}
-
-	public void modifyModelRepo(String modelName, String description) {
-		this.modelName = modelName;
-		this.description = description;
-	}
-
-	public void modifyModelLabel(List<LabelEntity> labelEntityList) {
-		this.getModelLabelEntityList().clear();
-		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
-			.map(labelEntity -> ModelLabelEntity.builder().labelEntity(labelEntity).modelRepoEntity(this).build())
-			.toList();
-		this.getModelLabelEntityList().addAll(modelLabelEntities);
-	}
-
-	public void setModelSize(Long modelSize) {
-		this.modelSize = modelSize;
+			.modelFileName(modelFilePath).build());
 	}
 
 	public void setModelPath(String datasetPath) {
