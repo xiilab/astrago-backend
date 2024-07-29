@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.dto.request;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.util.CollectionUtils;
 
@@ -10,6 +11,7 @@ import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 import com.xiilab.modulek8s.workload.vo.JobImageVO;
 
@@ -44,6 +46,7 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected GPUType gpuType;
 	protected Integer gpuOnePerMemory;
 	protected Integer resourcePresetId;
+	protected String jobName;
 
 	protected void initializeCollection() {
 		this.codes = getListIfNotEmpty(this.codes);
@@ -66,5 +69,9 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	public CredentialVO toCredentialVO() {
 		JobImageVO jobImageVO = this.image.toJobImageVO(workspace);
 		return jobImageVO.credentialVO();
+	}
+
+	protected String getUniqueResourceName() {
+		return ResourceType.WORKLOAD.getName() + "-" + UUID.randomUUID();
 	}
 }

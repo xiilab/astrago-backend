@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.OutputVolumeYN;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
@@ -79,6 +80,13 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected Integer gpuOnePerMemory;
 	protected Integer resourcePresetId;
 	protected String endTime;
+	protected String estimatedInitialTime;
+	protected String estimatedRemainingTime;
+
+	public void updateHubPredictTime(String estimatedInitialTime, String estimatedRemainingTime) {
+		this.estimatedInitialTime = estimatedInitialTime;
+		this.estimatedRemainingTime = estimatedRemainingTime;
+	}
 
 	@Getter
 	@SuperBuilder
@@ -88,8 +96,6 @@ public class FindWorkloadResDTO extends ResDTO {
 		private Float memRequest;
 		private Map<String, String> parameter;
 		private String ide;
-		private String estimatedInitialTime;
-		private String estimatedRemainingTime;
 
 		public static <T extends AbstractSingleWorkloadResDTO> SingleWorkloadDetail from(
 			T moduleJobResDTO
@@ -395,6 +401,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private RepositoryDivision division;
 		private StorageType storageType;
 		private DeleteYN deleteYN;
+		private OutputVolumeYN outputVolumeYN;
 
 		public Volume(DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity) {
 			super(datasetWorkLoadMappingEntity.getDataset().getRegUser().getRegUserId(),
@@ -470,6 +477,7 @@ public class FindWorkloadResDTO extends ResDTO {
 					volumeWorkLoadMappingEntity.getVolume())).getStorageType();
 			}
 			this.deleteYN = volumeWorkLoadMappingEntity.getDeleteYN();
+			this.outputVolumeYN = volumeWorkLoadMappingEntity.getVolume().getOutputVolumeYN();
 		}
 
 		@Builder(builderClassName = "VolumeResDTO", builderMethodName = "volumeResDTO")

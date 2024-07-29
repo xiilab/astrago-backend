@@ -20,6 +20,7 @@ public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 	@Override
 	public ModuleCreateWorkloadReqDTO toModuleDTO(String initContainerUrl) {
 		return ModuleCreateWorkloadReqDTO.builder()
+			.jobName(super.jobName)
 			.name(getName())
 			.description(getDescription())
 			.workspace(workspace)

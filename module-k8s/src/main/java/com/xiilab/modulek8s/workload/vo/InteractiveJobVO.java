@@ -60,7 +60,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
-		jobName = getUniqueResourceName();
+		jobName = !StringUtils.isEmpty(this.jobName)? this.jobName : getUniqueResourceName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
