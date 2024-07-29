@@ -7,6 +7,7 @@ import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
+import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
@@ -35,6 +36,9 @@ public class DevelopEntity extends WorkloadEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
+	protected List<VolumeWorkLoadMappingEntity> volumeWorkloadMappingList = new ArrayList<>();
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = new ArrayList<>();

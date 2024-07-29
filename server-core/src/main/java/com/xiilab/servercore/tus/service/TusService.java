@@ -9,14 +9,12 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
-import com.xiilab.modulecommon.exception.errorcode.ModelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.TusErrorCode;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
-import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
-import com.xiilab.modulek8sdb.model.entity.Model;
-import com.xiilab.modulek8sdb.model.repository.ModelRepository;
+import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
+import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
@@ -34,8 +32,10 @@ import me.desair.tus.server.upload.UploadInfo;
 @RequiredArgsConstructor
 public class TusService {
 	private final TusFileUploadService tusFileUploadService;
-	private final ModelRepository modelRepository;
-	private final DatasetRepository datasetRepository;
+	// TODO 삭제 예정
+/*	private final ModelRepository modelRepository;
+	private final DatasetRepository datasetRepository;*/
+	private final VolumeRepository volumeRepository;
 	private final ModelRepoFacadeService modelRepoFacadeService;
 	private final ModelRepoRepository modelRepoRepository;
 
@@ -55,12 +55,16 @@ public class TusService {
 				String uploadType = Optional.ofNullable(uploadInfo.getMetadata().get("uploadType"))
 					.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
 
-				if ("DATASET".equals(uploadType)) {
+				// TODO 삭제 예정
+				/*if ("DATASET".equals(uploadType)) {
 					saveDataset(request, uploadInfo, filename);
 				} else if ("MODEL".equals(uploadType)) {
 					saveModel(request, uploadInfo, filename);
-				} else if ("MODEL_REPO".equals(uploadType)) {
+				} else*/
+				if ("MODEL_REPO".equals(uploadType)) {
 					saveModelRepo(request, uploadInfo, filename);
+				} else if ("VOLUME".equals(uploadType)) {
+					saveVolume(request, uploadInfo, filename);
 				}
 
 				// 임시 파일 삭제
@@ -117,12 +121,13 @@ public class TusService {
 			.build();
 	}
 
-	private void saveModel(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
+	// TODO 삭제 예정
+	/*private void saveModel(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
 		IOException, TusException {
 		Long modelId = Optional.ofNullable(uploadInfo.getMetadata().get("modelId"))
 			.map(Long::valueOf)
 			.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
-		Model findModel = modelRepository.findById(modelId)
+		Model findModel = volumeRepository.findById(modelId)
 			.orElseThrow(() -> new RestApiException(ModelErrorCode.MODEL_NOT_FOUND));
 
 		// 파일 저장
@@ -141,6 +146,19 @@ public class TusService {
 		// 파일 저장
 		Long fileSize = getFilePath(request, uploadInfo.getMetadata().get("filePath"), filename);
 		findDataset.setDatasetSize(fileSize);
+	}*/
+
+	private void saveVolume(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
+		IOException, TusException {
+		Long volumeId = Optional.ofNullable(uploadInfo.getMetadata().get("volumeId"))
+			.map(Long::valueOf)
+			.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
+		Volume findVolume = volumeRepository.findById(volumeId)
+			.orElseThrow(() -> new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND));
+
+		// 파일 저장
+		Long fileSize = getFilePath(request, uploadInfo.getMetadata().get("filePath"), filename);
+		findVolume.setVolumeSize(fileSize);
 	}
 
 	private Long getFilePath(HttpServletRequest request, String filePath, String filename) throws
@@ -150,7 +168,7 @@ public class TusService {
 			filename, tusFileUploadService.getUploadedBytes(request.getRequestURI()));
 	}
 
-	private List<Long> getLabels(String labelIds){
+	private List<Long> getLabels(String labelIds) {
 		return Arrays.stream(labelIds.split(","))
 			.map(String::trim)
 			.map(Long::parseLong)

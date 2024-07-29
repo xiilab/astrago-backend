@@ -75,6 +75,7 @@ import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadHistoryService;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
+import com.xiilab.servercore.workspace.dto.FindWorkspaceResDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
 import com.xiilab.servercore.workspace.entity.WorkspaceSettingEntity;
@@ -292,23 +293,21 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public WorkspaceDTO.FindJoinedWorkspaces getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO)
+	public WorkspaceDTO.FindJoinedWorkspaces getJoinedWorkspaceList(String title, UserDTO.UserInfo userInfoDTO)
 	{
+		// keycloak에서 조회되는 workspace 리스트 조회
 		Set<String> userWorkspaceList = userInfoDTO.getWorkspaceList(false);
-		//전체 workspace 리스트 조회
+		// 클러스터 전체 workspace 리스트 조회
 		List<WorkspaceDTO.ResponseDTO> workspaceList = workspaceModuleFacadeService.getWorkspaceList();
 		//user의 pin 리스트 조회
 		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userInfoDTO.getId());
 		//조건절 처리
 		List<WorkspaceDTO.FindJoinedWorkspaceDetail> findJoinedWorkspaceDetails = workspaceList.stream()
 			.filter(workspace -> userWorkspaceList.contains(workspace.getResourceName()))
+			.filter(workspace -> title == null || workspace.getName().contains(title))
 			.sorted(Comparator.comparing(WorkspaceDTO.ResponseDTO::getCreatedAt).reversed())
-			.map(workspace -> WorkspaceDTO.FindJoinedWorkspaceDetail.builder()
-				.id(workspace.getId())
-				.name(workspace.getName())
-				.resourceName(workspace.getResourceName())
-				.isPinYN(userWorkspacePinList.contains(workspace.getResourceName()))
-				.build())
+			.map(workspace -> WorkspaceDTO.FindJoinedWorkspaceDetail.of(workspace, userWorkspacePinList))
+			.sorted(Comparator.comparing(WorkspaceDTO.FindJoinedWorkspaceDetail::isPinYN).reversed())
 			.toList();
 
 		return WorkspaceDTO.FindJoinedWorkspaces.builder()
@@ -391,6 +390,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		workspaceInfoByName.setMigTotalCount(migList.size());
 
 		return workspaceInfoByName;
+	}
+
+	@Override
+	public FindWorkspaceResDTO.JoinedWorkspaceDetail getJoinedWorkspaceInfoByName(String workspaceResourceName) {
+		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(
+			workspaceResourceName);
+
+		return FindWorkspaceResDTO.JoinedWorkspaceDetail.from(workspaceInfoByName);
 	}
 
 	@Override

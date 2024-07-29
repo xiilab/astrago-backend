@@ -32,6 +32,7 @@ import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
+import com.xiilab.servercore.workspace.dto.FindWorkspaceResDTO;
 import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
@@ -98,9 +99,18 @@ public class WorkspaceController {
 
 	@GetMapping("/joined")
 	@Operation(summary = "내가 속한 워크스페이스 리스트 조회")
-	public ResponseEntity<WorkspaceDTO.FindJoinedWorkspaces> getJoinedWorkspaceList(UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<WorkspaceDTO.FindJoinedWorkspaces> getJoinedWorkspaceList(
+		@RequestParam(value = "title", required = false) String title,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
+		) {
 		return ResponseEntity.ok(
-			workspaceService.getJoinedWorkspaceList(userInfoDTO));
+			workspaceService.getJoinedWorkspaceList(title, userInfoDTO));
+	}
+
+	@GetMapping("/joined/{workspaceResourceName}")
+	@Operation(summary = "내가 속한 워크스페이스 상세 조회")
+	public ResponseEntity<FindWorkspaceResDTO.JoinedWorkspaceDetail> getJoinedWorkspaceInfo(@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+		return ResponseEntity.ok(workspaceService.getJoinedWorkspaceInfoByName(workspaceResourceName));
 	}
 
 	@GetMapping("/admin")

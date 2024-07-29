@@ -87,27 +87,33 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 		Job resource = (Job)createResource(batchJobVO.createResource());
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
-		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
-		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(batchJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
 	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
 		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource());
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
-		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
-		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(interactiveJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
 	public CreateJobResDTO createDistributedJobWorkload(DistributedJobVO distributedJobVO) {
 		MPIJob resource = (MPIJob)createResource(distributedJobVO.createResource());
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(distributedJobVO.getCodes());
-		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(distributedJobVO.getDatasets());
-		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(distributedJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(distributedJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(distributedJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(distributedJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
@@ -1188,7 +1194,6 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private Map<Long, Map<String, String>> getVolumesInfoMap(List<JobVolumeVO> jobVolumeVOList) {
 		Map<Long, Map<String, String>> volumesMap = new HashMap<>();
 		for (JobVolumeVO jobVolumeVO : jobVolumeVOList) {
-			Long id = jobVolumeVO.id();
 			String mountPath = jobVolumeVO.mountPath();
 			volumesMap.computeIfAbsent(jobVolumeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
 		}

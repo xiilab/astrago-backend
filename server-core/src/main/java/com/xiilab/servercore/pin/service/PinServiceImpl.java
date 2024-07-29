@@ -35,8 +35,8 @@ public class PinServiceImpl implements PinService {
 		return workloadPins.stream().map(PinEntity::getResourceName).collect(Collectors.toSet());
 	}
 
-	@Transactional
 	@Override
+	@Transactional
 	public void createPin(String resourceName, PinType pinType, UserDTO.UserInfo userInfoDTO) {
 		if (pinType == PinType.WORKLOAD) {
 			createWorkloadPin(resourceName, userInfoDTO);

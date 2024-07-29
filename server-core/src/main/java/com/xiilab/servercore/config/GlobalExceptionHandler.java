@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -80,6 +80,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		WebRequest request) {
 		log.error("handleIllegalArgument", ex);
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
+		// String errorMessage = String.format(INVALID_DTO_FIELD_ERROR_MESSAGE_FORMAT, firstFieldError.getField(),
+		// 	firstFieldError.getDefaultMessage(), firstFieldError.getRejectedValue());
 		return handleExceptionInternal(ex, errorCode);
 	}
 
@@ -133,14 +135,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	private ErrorResponse makeErrorResponse(BindException e, ErrorCode errorCode) {
+		FieldError firstFieldError = e.getFieldErrors().get(0);
+		String errorMessage = String.format("%s 필드는 %s (전달된 값: %s)", firstFieldError.getField(),
+			firstFieldError.getDefaultMessage(), firstFieldError.getRejectedValue());
+
 		List<ErrorResponse.ValidationError> errorList = e.getBindingResult().getFieldErrors()
 			.stream()
 			.map(ErrorResponse.ValidationError::of)
 			.collect(Collectors.toList());
 		return ErrorResponse.builder()
 			.resultCode(errorCode.getCode())
-			.resultMsg(errorCode.getMessage())
-			.errors(errorList)
+			.resultMsg(errorMessage)
+			// .errors(errorList)
 			.build();
 	}
 

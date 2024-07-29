@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,15 +26,22 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
+	@NotNull
 	protected String workspace;    // 워크스페이스명
+	@NotNull
 	protected WorkloadType workloadType;
+	@NotNull
 	protected ModuleImageReqDTO image;
 	protected List<ModulePortReqDTO> ports;
 	protected List<ModuleEnvReqDTO> envs;
-	protected List<ModuleVolumeReqDTO> datasets;
-	protected List<ModuleVolumeReqDTO> models;
+	// TODO 삭제 예정
+	// protected List<ModuleVolumeReqDTO> datasets;
+	// protected List<ModuleVolumeReqDTO> models;
+	//
+	protected List<ModuleVolumeReqDTO> volumes;
 	protected List<ModuleCodeReqDTO> codes;
 	protected String workingDir;
+	@NotNull
 	protected String command;
 	protected Map<String, String> parameter;
 	protected String creatorId;

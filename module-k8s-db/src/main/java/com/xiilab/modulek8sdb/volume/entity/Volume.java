@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.xiilab.modulecommon.enums.OutputVolumeYN;
+import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -30,7 +32,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "TB_VOLUME")
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name="DIVISION")
+@DiscriminatorColumn(name = "DIVISION")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE TB_VOLUME tv SET tv.DELETE_YN = 'Y' WHERE tv.VOLUME_ID = ?")
 public abstract class Volume extends BaseEntity {
@@ -56,6 +58,14 @@ public abstract class Volume extends BaseEntity {
 	@Column(name = "VOLUME_DEFAULT_MOUNT_PATH")
 	private String volumeDefaultMountPath;
 
+	@Column(name = "VOLUME_ACCESS_TYPE")
+	@Enumerated(EnumType.STRING)
+	private VolumeAccessType volumeAccessType;
+
+	@Column(name = "OUTPUT_VOLUME_YN")
+	@Enumerated(EnumType.STRING)
+	private OutputVolumeYN outputVolumeYN;
+
 	@OneToMany(mappedBy = "volume")
 	private List<VolumeWorkSpaceMappingEntity> volumeWorkSpaceMappingList = new ArrayList<>();
 	@OneToMany(mappedBy = "volume")
@@ -64,24 +74,36 @@ public abstract class Volume extends BaseEntity {
 	@Transient
 	private boolean isAvailable = false;
 
-	public Volume(Long volumeId, String volumeName, String volumeDefaultMountPath) {
+	public Volume(Long volumeId, String volumeName, String volumeDefaultMountPath, VolumeAccessType volumeAccessType,
+		OutputVolumeYN outputVolumeYN) {
 		this.volumeId = volumeId;
 		this.volumeName = volumeName;
 		this.volumeDefaultMountPath = volumeDefaultMountPath;
+		this.volumeAccessType = volumeAccessType;
+		this.outputVolumeYN = outputVolumeYN;
 	}
 
 	public boolean isAvailable() {
 		return !this.getVolumeWorkSpaceMappingList().isEmpty();
 	}
-	public void setVolumeSize(long size){
+
+	public void setVolumeSize(long size) {
 		this.volumeSize = size;
 	}
-	public void modifyVolumeName(String volumeName){
+
+	public void modifyVolumeName(String volumeName) {
 		this.volumeName = volumeName;
 	}
-	public void modifyVolumeDefaultPath(String volumeDefaultMountPath){
+
+	public void modifyVolumeDefaultPath(String volumeDefaultMountPath) {
 		this.volumeDefaultMountPath = volumeDefaultMountPath;
 	}
+
+	public void modifyVolumeAccessType(VolumeAccessType volumeAccessType) {
+		this.volumeAccessType = volumeAccessType;
+	}
+
 	public abstract boolean isAstragoVolume();
+
 	public abstract boolean isLocalVolume();
 }

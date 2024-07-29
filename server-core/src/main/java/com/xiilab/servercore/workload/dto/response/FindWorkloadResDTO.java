@@ -35,6 +35,9 @@ import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
+import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
+import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
+import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.EnvEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
@@ -60,8 +63,10 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected FindWorkloadResDTO.Image image;
 	protected List<FindWorkloadResDTO.Port> ports;
 	protected List<FindWorkloadResDTO.Env> envs;
-	protected List<FindWorkloadResDTO.Volume> datasets;
-	protected List<FindWorkloadResDTO.Volume> models;
+	// TODO 삭제 예정
+	// protected List<FindWorkloadResDTO.Volume> datasets;
+	// protected List<FindWorkloadResDTO.Volume> models;
+	protected List<FindWorkloadResDTO.Volume> volumes;
 	protected List<FindWorkloadResDTO.Code> codes;
 	protected String workingDir;
 	protected String command;
@@ -89,8 +94,10 @@ public class FindWorkloadResDTO extends ResDTO {
 		public static <T extends AbstractSingleWorkloadResDTO> SingleWorkloadDetail from(
 			T moduleJobResDTO
 			, FindWorkloadResDTO.Image image
-			, List<FindWorkloadResDTO.Volume> models
-			, List<FindWorkloadResDTO.Volume> datasets
+			// TODO 삭제 예정
+			// , List<FindWorkloadResDTO.Volume> models
+			// , List<FindWorkloadResDTO.Volume> datasets
+			, List<FindWorkloadResDTO.Volume> volumes
 			, List<FindWorkloadResDTO.Code> codes
 			, List<FindWorkloadResDTO.Port> ports
 			, List<FindWorkloadResDTO.Env> envs
@@ -107,8 +114,10 @@ public class FindWorkloadResDTO extends ResDTO {
 				.image(image)
 				.ports(ports)
 				.envs(envs)
-				.datasets(datasets)
-				.models(models)
+				// TODO 삭제 예정
+				// .datasets(datasets)
+				// .models(models)
+				.volumes(volumes)
 				.codes(codes)
 				.workingDir(moduleJobResDTO.getWorkingDir())
 				.command(moduleJobResDTO.getCommand())
@@ -150,8 +159,10 @@ public class FindWorkloadResDTO extends ResDTO {
 				.image(new Image(workloadEntity.getImage()))
 				.ports(workloadEntity.getPortList().stream().map(Port::new).toList())
 				.envs(workloadEntity.getEnvList().stream().map(Env::new).toList())
-				.datasets(workloadEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
-				.models(workloadEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
+				// TODO 삭제 예정
+				// .datasets(workloadEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
+				// .models(workloadEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
+				.volumes(workloadEntity.getVolumeWorkloadMappingList().stream().map(Volume::new).toList())
 				.codes(workloadEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
 				.command(workloadEntity.getWorkloadCMD())
 				.parameter(workloadEntity.getParameter() != null ? JsonConvertUtil.convertJsonToMap(workloadEntity.getParameter()) : null)
@@ -187,8 +198,10 @@ public class FindWorkloadResDTO extends ResDTO {
 		public static DistributedWorkloadDetail from(
 			AbstractDistributedWorkloadResDTO moduleJobResDTO
 			, FindWorkloadResDTO.Image image
-			, List<FindWorkloadResDTO.Volume> models
-			, List<FindWorkloadResDTO.Volume> datasets
+			// TODO 삭제 예정
+			// , List<FindWorkloadResDTO.Volume> models
+			// , List<FindWorkloadResDTO.Volume> datasets
+			, List<FindWorkloadResDTO.Volume> volumes
 			, List<FindWorkloadResDTO.Code> codes
 			, List<FindWorkloadResDTO.Port> ports
 			, List<FindWorkloadResDTO.Env> envs
@@ -205,8 +218,10 @@ public class FindWorkloadResDTO extends ResDTO {
 				.image(image)
 				.ports(ports)
 				.envs(envs)
-				.datasets(datasets)
-				.models(models)
+				// TODO 삭제 예정
+				// .datasets(datasets)
+				// .models(models)
+				.volumes(volumes)
 				.codes(codes)
 				.workingDir(moduleJobResDTO.getWorkingDir())
 				.command(moduleJobResDTO.getCommand())
@@ -251,8 +266,10 @@ public class FindWorkloadResDTO extends ResDTO {
 				.image(new Image(distributedJobEntity.getImage()))
 				.ports(distributedJobEntity.getPortList().stream().map(Port::new).toList())
 				.envs(distributedJobEntity.getEnvList().stream().map(Env::new).toList())
-				.datasets(distributedJobEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
-				.models(distributedJobEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
+				// TODO 삭제 예정
+				// .datasets(distributedJobEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
+				// .models(distributedJobEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
+				.volumes(distributedJobEntity.getVolumeWorkloadMappingList().stream().map(Volume::new).toList())
 				.codes(distributedJobEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
 				.command(distributedJobEntity.getWorkloadCMD())
 				.regUserId(distributedJobEntity.getCreatorId())
@@ -428,6 +445,31 @@ public class FindWorkloadResDTO extends ResDTO {
 					modelWorkLoadMappingEntity.getModel())).getStorageType();
 			}
 			this.deleteYN = modelWorkLoadMappingEntity.getDeleteYN();
+		}
+
+		public Volume(VolumeWorkLoadMappingEntity volumeWorkLoadMappingEntity) {
+			super(volumeWorkLoadMappingEntity.getVolume().getRegUser().getRegUserId(),
+				volumeWorkLoadMappingEntity.getVolume().getRegUser().getRegUserName(),
+				volumeWorkLoadMappingEntity.getVolume().getRegUser().getRegUserRealName(),
+				volumeWorkLoadMappingEntity.getVolume().getRegDate(),
+				volumeWorkLoadMappingEntity.getVolume().getModDate());
+			// model size null이면 0L 반환
+			Long volumeSize = Objects.requireNonNullElse(volumeWorkLoadMappingEntity.getVolume().getVolumeSize(), 0L);
+
+			this.id = volumeWorkLoadMappingEntity.getVolume().getVolumeId();
+			this.name = volumeWorkLoadMappingEntity.getVolume().getVolumeName();
+			this.mountPath = volumeWorkLoadMappingEntity.getMountPath();
+			this.size = CoreFileUtils.formatFileSize(volumeSize);
+			this.division = volumeWorkLoadMappingEntity.getVolume().getDivision();
+			if (volumeWorkLoadMappingEntity.getVolume().isAstragoVolume()) {
+				this.storageType = ((AstragoVolumeEntity)Hibernate.unproxy(
+					volumeWorkLoadMappingEntity.getVolume())).getStorageEntity()
+					.getStorageType();
+			} else if (volumeWorkLoadMappingEntity.getVolume().isLocalVolume()) {
+				this.storageType = ((LocalVolumeEntity)Hibernate.unproxy(
+					volumeWorkLoadMappingEntity.getVolume())).getStorageType();
+			}
+			this.deleteYN = volumeWorkLoadMappingEntity.getDeleteYN();
 		}
 
 		@Builder(builderClassName = "VolumeResDTO", builderMethodName = "volumeResDTO")

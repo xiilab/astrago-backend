@@ -84,6 +84,7 @@ import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -92,16 +93,16 @@ import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.image.dto.ImageResDTO;
 import com.xiilab.servercore.image.service.ImageService;
-import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.user.service.UserFacadeService;
+import com.xiilab.servercore.volume.dto.VolumeResDTO;
+import com.xiilab.servercore.volume.service.VolumeService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
@@ -128,6 +129,7 @@ public class WorkloadFacadeService {
 	private final PinService pinService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
+	private final VolumeService volumeService;
 	private final WorkloadHistoryService workloadHistoryService;
 	private final CredentialService credentialService;
 	private final CodeService codeService;
@@ -154,13 +156,20 @@ public class WorkloadFacadeService {
 		}
 
 		// 데이터셋 볼륨 추가
-		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getDatasets())) {
+		// TODO 삭제 예정
+/*		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getDatasets())) {
 			setDatasetVolume(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getDatasets());
 		}
 
 		// 모델 볼륨 추가
 		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getModels())) {
 			setModelVolume(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getModels());
+		}
+		//*/
+
+		// 볼륨 추가
+		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getVolumes())) {
+			setVolumes(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getVolumes());
 		}
 
 		//Image IDE 정보 주입
@@ -369,12 +378,15 @@ public class WorkloadFacadeService {
 			moduleJobResDTO.getResourceName());
 		// 이미지 DTO 세팅
 		FindWorkloadResDTO.Image image = generateImageResDTO(moduleJobResDTO);
+		// TODO 삭제 예쩡
 		// 모델 세팅
-		List<FindWorkloadResDTO.Volume> models = generateModelResDTO(moduleJobResDTO.getModelIds(),
-			moduleJobResDTO.getModelMountPathMap());
-		// 데이터셋 세팅
-		List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
-			moduleJobResDTO.getDatasetMountPathMap());
+		// List<FindWorkloadResDTO.Volume> models = generateModelResDTO(moduleJobResDTO.getModelIds(),
+		// 	moduleJobResDTO.getModelMountPathMap());
+		// // 데이터셋 세팅
+		// List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
+		// 	moduleJobResDTO.getDatasetMountPathMap());
+		List<FindWorkloadResDTO.Volume> volumes = generateDatasetResDTO(moduleJobResDTO.getVolumeIds(),
+				moduleJobResDTO.getVolumeMountPathMap());
 		// 코드 세팅
 		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
 		// PORT 세팅
@@ -386,16 +398,27 @@ public class WorkloadFacadeService {
 			.toList();
 
 		if (moduleJobResDTO.getType() == WorkloadType.DISTRIBUTED) {
+			// TODO 삭제 예정
+			// return FindWorkloadResDTO.DistributedWorkloadDetail.from((AbstractDistributedWorkloadResDTO)moduleJobResDTO,
+			// 	image, models, datasets, codes, ports, envs,
+			// 	nodeName);
 			return FindWorkloadResDTO.DistributedWorkloadDetail.from((AbstractDistributedWorkloadResDTO)moduleJobResDTO,
-				image, models, datasets, codes, ports, envs,
+				image, volumes, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.BATCH) {
+			// TODO 삭제 예정
+			// return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
+			// 	models, datasets, codes, ports, envs,
+			// 	nodeName);
 			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
-				models, datasets, codes, ports, envs,
+				volumes, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
+			// return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
+			// 	models, datasets, codes, ports, envs,
+			// 	nodeName);
 			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
-				models, datasets, codes, ports, envs,
+				volumes, codes, ports, envs,
 				nodeName);
 		} else {
 			return null;
@@ -582,22 +605,7 @@ public class WorkloadFacadeService {
 	}
 
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
-		// workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
-		// try {
-		// 	if (workloadType == WorkloadType.BATCH) {
-		// 		workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
-		// 			workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-		// 			workloadUpdateDTO.getDescription());
-		// 	} else if (workloadType == WorkloadType.INTERACTIVE) {
-		// 		workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
-		// 			workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-		// 			workloadUpdateDTO.getDescription());
-		// 	}
-		// } catch (Exception e) {
-		//
-		// }
-
-		try {
+		/*	try {
 			if (workloadType == WorkloadType.BATCH) {
 				workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
 					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
@@ -609,7 +617,8 @@ public class WorkloadFacadeService {
 			}
 		} finally {
 			workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
-		}
+		}*/
+		workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
 	}
 
 	public List<WorkloadEventDTO.Recently> getWorkloadRecentlyEventReason(List<String> workloadNames,
@@ -800,7 +809,7 @@ public class WorkloadFacadeService {
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 	}
 
-	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+	/*private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
 		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
 			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
 			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
@@ -846,6 +855,31 @@ public class WorkloadFacadeService {
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
 					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType());
+			}
+		}
+	}*/
+
+	private void setVolumes(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Volume findVolume = volumeService.findById(moduleVolumeReqDTO.getId());
+			VolumeResDTO.ResVolumeWithStorage resVolumeWithStorage = VolumeResDTO.ResVolumeWithStorage.toDto(
+				findVolume);
+			if (resVolumeWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
+				String storagePath = resVolumeWithStorage.getStoragePath();
+				String saveDirectoryName = resVolumeWithStorage.getSaveDirectoryName();
+
+				// storagePath의 끝이 '/'로 끝나는지 여부 확인
+				if (!storagePath.endsWith(File.separator)) {
+					storagePath += File.separator;
+				}
+
+				String filePath = storagePath + saveDirectoryName;
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
+					filePath,
+					resVolumeWithStorage.getStorageType());
+			} else {
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
+					resVolumeWithStorage.getStoragePath(), resVolumeWithStorage.getStorageType());
 			}
 		}
 	}
