@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
@@ -55,8 +57,9 @@ public class ModelRepoController {
 	@PatchMapping()
 	@Operation(summary = "워크로드 모델 등록 및 기존 모델 등록 API")
 	public ResponseEntity<HttpStatus> registerOrVersionUpModelRepo(
+		@RequestPart(name = "files", required = false) List<MultipartFile> files,
 		@RequestBody ModelRepoDTO.wlModelRepoDTO modelRepoReqDTO) {
-		modelRepoFacadeService.registerOrVersionUpModelRepo(modelRepoReqDTO);
+		modelRepoFacadeService.registerOrVersionUpModelRepo(files, modelRepoReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
