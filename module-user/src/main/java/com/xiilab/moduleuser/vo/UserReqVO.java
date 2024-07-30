@@ -33,7 +33,7 @@ public class UserReqVO {
 	@NotBlank(message = "userName 필수 값입니다.")
 	private String username;
 	@NotBlank(message = "password 필수 값입니다.")
-	@Size(min = 10, max = 16, message = "비밀번호는 10 ~ 16 사이 글자여야합니다.")
+	@Size(min = 4, max = 16, message = "비밀번호는 4 ~ 16 사이 글자여야합니다.")
 	@Pattern(regexp = "^[\\p{Punct}\\w]*$")
 	private String password;
 
