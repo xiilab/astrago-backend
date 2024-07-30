@@ -166,11 +166,15 @@ public class NodeFacadeService {
 	}
 
 	private double getTotalResource(String metricName) {
-		RequestDTO requestDTO = new RequestDTO();
-		requestDTO.changeMetricName(metricName);
-		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalResource = prometheusService.getRealTimeMetric(
-			requestDTO);
-		return Double.parseDouble(totalResource.get(0).value());
+		try {
+			RequestDTO requestDTO = new RequestDTO();
+			requestDTO.changeMetricName(metricName);
+			List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> totalResource = prometheusService.getRealTimeMetric(
+				requestDTO);
+			return Double.parseDouble(totalResource.get(0).value());
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 
 	private ResponseDTO.NodeResourceInfo.Requests buildRequests(
