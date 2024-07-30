@@ -87,7 +87,7 @@ public class TusService {
 		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepo.getModelRepoId())
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 		//파일 업로드 경로
-		String filePath = modelRepoEntity.getModelPath() + "/v" + modelRepoEntity.getModelVersionList().size() + 1;
+		String filePath = modelRepoEntity.getModelPath() + "/v1/";
 		// 파일 저장
 		Long fileSize = getFilePath(request, filePath, filename);
 	}
@@ -105,10 +105,6 @@ public class TusService {
 		List<Long> labelsIds = getLabels(
 			Optional.ofNullable(uploadInfo.getMetadata().get("labelsIds"))
 				.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE)));
-		String modelFileName = Optional.ofNullable(uploadInfo.getMetadata().get("modelFileName"))
-			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
-		String labelFileName = Optional.ofNullable(uploadInfo.getMetadata().get("labelFileName"))
-			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
 
 		return ModelRepoDTO.RequestDTO.builder()
 			.modelName(modelName)
@@ -116,8 +112,6 @@ public class TusService {
 			.workspaceResourceName(workspaceResourceName)
 			.labelIds(labelsIds)
 			.storageId(storageId)
-			.modelFileName(modelFileName)
-			.labelFileName(labelFileName)
 			.build();
 	}
 
