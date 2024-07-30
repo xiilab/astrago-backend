@@ -18,6 +18,7 @@ public class WorkloadEventDTO {
 	@Builder
 	public static class Recently {
 		private String workload;
+		private String type;
 		private String reason;
 	}
 }

@@ -619,6 +619,7 @@ public class WorkloadFacadeService {
 				}
 				return WorkloadEventDTO.Recently.builder()
 					.workload(key.getKey())
+					.type(key.getValue().getType())
 					.reason(key.getValue().getReason())
 					.build();
 			})
