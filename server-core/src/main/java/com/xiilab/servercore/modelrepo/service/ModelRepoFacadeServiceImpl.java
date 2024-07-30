@@ -112,8 +112,6 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 				storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
 					saveModel.getModelRepoRealName().replace(" ", "");
 			saveModel.setModelPath(modelPath);
-			// 모델 파일 등록
-			saveModel.addModelVersionEntity(modelRepoReqDTO.getModelFileName());
 			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
@@ -175,7 +173,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	}
 
 	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
-		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertEntity();
+		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertRequestDTO();
 		// model repo 저장
 		return createModelRepo(requestDTO);
 	}
