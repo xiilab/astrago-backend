@@ -2,6 +2,7 @@ package com.xiilab.servercore.workload.dto.request;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -61,6 +62,7 @@ public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	protected String outputMountPath;	// output 마운트 경로
 	@JsonIgnore
 	protected String jobName = ResourceType.WORKLOAD.getName() + "-" + UUID.randomUUID();
+	protected Set<Long> labelIds;
 	public abstract CreateWorkloadReqDTO toModuleDTO(String initContainerUrl);
 
 	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {

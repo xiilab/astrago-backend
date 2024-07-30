@@ -42,6 +42,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.gpuName(this.gpuName)
 			.gpuOnePerMemory(this.gpuOnePerMemory)
 			.resourcePresetId(this.resourcePresetId)
+			.labelIds(super.labelIds)
 			.build();
 	}
 
@@ -77,6 +78,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.gpuName(this.gpuName)
 			.gpuOnePerMemory(this.gpuOnePerMemory)
 			.resourcePresetId(this.resourcePresetId)
+			.labelIds(super.labelIds)
 			.build();
 	}
 }

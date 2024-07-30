@@ -36,7 +36,7 @@ public class LabelEntity {
 	@Column(name = "LABEL_COLER_CODE")
 	private String colorCode;
 	@Column(name = "LABEL_COLER_NAME")
-	private String colorCodeName;
+	private String colorName;
 	@Column(name = "LABEL_ORDER")
 	private int order;
 	@OneToMany(mappedBy = "labelEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -45,7 +45,7 @@ public class LabelEntity {
 	public void updateLabel(String name, String colorCode, String colorCodeName, int order) {
 		this.name = name;
 		this.colorCode = colorCode;
-		this.colorCodeName = colorCodeName;
+		this.colorName = colorCodeName;
 		this.order = order;
 	}
 

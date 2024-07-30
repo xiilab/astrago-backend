@@ -43,6 +43,7 @@ import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.EnvEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.LabelWorkloadMappingEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 
@@ -64,6 +65,7 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected FindWorkloadResDTO.Image image;
 	protected List<FindWorkloadResDTO.Port> ports;
 	protected List<FindWorkloadResDTO.Env> envs;
+	protected List<FindWorkloadResDTO.Label> labels;
 	// TODO 삭제 예정
 	// protected List<FindWorkloadResDTO.Volume> datasets;
 	// protected List<FindWorkloadResDTO.Volume> models;
@@ -108,7 +110,6 @@ public class FindWorkloadResDTO extends ResDTO {
 			, List<FindWorkloadResDTO.Port> ports
 			, List<FindWorkloadResDTO.Env> envs
 			, String nodeName) {
-
 			return SingleWorkloadDetail.builder()
 				.uid(moduleJobResDTO.getUid())
 				.workloadName(moduleJobResDTO.getName())
@@ -162,7 +163,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.workSpaceResourceName(workloadEntity.getWorkspaceResourceName())
 				.description(workloadEntity.getDescription())
 				.workloadType(workloadEntity.getWorkloadType())
-				.image(new Image(workloadEntity.getImage()))
+				.image(new Image(workloadEntity.getImageWorkloadMappingEntity().getImage()))
 				.ports(workloadEntity.getPortList().stream().map(Port::new).toList())
 				.envs(workloadEntity.getEnvList().stream().map(Env::new).toList())
 				// TODO 삭제 예정
@@ -170,6 +171,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				// .models(workloadEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
 				.volumes(workloadEntity.getVolumeWorkloadMappingList().stream().map(Volume::new).toList())
 				.codes(workloadEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
+				.labels(workloadEntity.getLabelList().stream().map(Label::new).toList())
 				.command(workloadEntity.getWorkloadCMD())
 				.parameter(workloadEntity.getParameter() != null ? JsonConvertUtil.convertJsonToMap(workloadEntity.getParameter()) : null)
 				.cpuRequest(workloadEntity.getCpuRequest())
@@ -269,9 +271,10 @@ public class FindWorkloadResDTO extends ResDTO {
 				.workSpaceResourceName(distributedJobEntity.getWorkspaceResourceName())
 				.description(distributedJobEntity.getDescription())
 				.workloadType(distributedJobEntity.getWorkloadType())
-				.image(new Image(distributedJobEntity.getImage()))
+				.image(new Image(distributedJobEntity.getImageWorkloadMappingEntity().getImage()))
 				.ports(distributedJobEntity.getPortList().stream().map(Port::new).toList())
 				.envs(distributedJobEntity.getEnvList().stream().map(Env::new).toList())
+				.labels(distributedJobEntity.getLabelList().stream().map(Label::new).toList())
 				// TODO 삭제 예정
 				// .datasets(distributedJobEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
 				// .models(distributedJobEntity.getModelWorkloadMappingList().stream().map(Volume::new).toList())
@@ -549,6 +552,23 @@ public class FindWorkloadResDTO extends ResDTO {
 			this.credentialId = credentialId;
 			this.credentialName = credentialName;
 			this.repositoryType = repositoryType;
+		}
+	}
+
+	@Getter
+	public static class Label {
+		private Long labelId;
+		private String labelColorCode;
+		private String labelColorName;
+		private String labelName;
+		private String workspaceResourceName;
+
+		public Label(LabelWorkloadMappingEntity labelWorkloadMappingEntity) {
+			this.labelId = labelWorkloadMappingEntity.getLabel().getId();
+			this.labelColorCode = labelWorkloadMappingEntity.getLabel().getColorCode();
+			this.labelColorName = labelWorkloadMappingEntity.getLabel().getColorName();
+			this.labelName = labelWorkloadMappingEntity.getLabel().getName();
+			this.workspaceResourceName = labelWorkloadMappingEntity.getLabel().getWorkspaceResourceName();
 		}
 	}
 }

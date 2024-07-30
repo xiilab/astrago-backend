@@ -49,6 +49,7 @@ public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 			.gpuName(gpuName)
 			.gpuOnePerMemory(gpuOnePerMemory)
 			.resourcePresetId(resourcePresetId)
+			.labelIds(labelIds)
 			.build();
 	}
 

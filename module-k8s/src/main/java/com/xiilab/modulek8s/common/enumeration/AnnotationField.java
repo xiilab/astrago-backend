@@ -24,6 +24,7 @@ public enum AnnotationField {
 	// MODEL_IDS("model-ids"),
 	CODE_IDS("code-ids"),
 	VOLUME_IDS("volume-ids"),
+	LABEL_IDS("label-ids"),
 	IMAGE_TYPE("image-type"),
 	IMAGE_ID("image_id"),
 	IMAGE_CREDENTIAL_ID("image-credential-id"),
