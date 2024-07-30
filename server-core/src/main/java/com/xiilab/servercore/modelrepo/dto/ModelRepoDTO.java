@@ -33,8 +33,6 @@ public class ModelRepoDTO {
 	public static class RequestDTO extends ModelRepoDTO {
 		private long storageId;
 		private List<Long> labelIds;
-		private String modelFileName;
-		private String labelFileName;
 
 		public ModelRepoEntity convertEntity(StorageEntity storageEntity) {
 			return ModelRepoEntity.builder()
@@ -114,16 +112,14 @@ public class ModelRepoDTO {
 		private String wlModelPaths;
 		private long storageId;
 		private long modelRepoId;
-		private String modelFileName;
 
-		public ModelRepoDTO.RequestDTO convertEntity() {
+		public ModelRepoDTO.RequestDTO convertRequestDTO() {
 			return RequestDTO.builder()
 				.modelName(this.getModelName())
 				.description(this.getDescription())
 				.workspaceResourceName(this.getWorkspaceResourceName())
 				.storageId(this.getStorageId())
 				.labelIds(this.getLabelIds())
-				.modelFileName(this.modelFileName)
 				.build();
 		}
 

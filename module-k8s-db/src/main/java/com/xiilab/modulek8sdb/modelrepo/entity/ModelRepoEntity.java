@@ -58,11 +58,6 @@ public class ModelRepoEntity {
 		this.modelLabelEntityList = modelLabelEntities;
 	}
 
-	public void addModelVersionEntity(String modelFilePath) {
-		this.modelVersionList = List.of(ModelVersionEntity.builder().version("v1").modelRepoEntity(this)
-			.modelFileName(modelFilePath).build());
-	}
-
 	public void setModelPath(String datasetPath) {
 		this.modelPath = datasetPath;
 	}
