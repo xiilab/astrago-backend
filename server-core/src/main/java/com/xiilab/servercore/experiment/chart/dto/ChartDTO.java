@@ -1,9 +1,9 @@
-package com.xiilab.servercore.chart.dto;
+package com.xiilab.servercore.experiment.chart.dto;
 
 import java.util.List;
 
-import com.xiilab.servercore.chart.entity.ChartEntity;
-import com.xiilab.servercore.chart.entity.PanelEntity;
+import com.xiilab.servercore.experiment.chart.entity.ChartEntity;
+import com.xiilab.servercore.experiment.chart.entity.PanelEntity;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

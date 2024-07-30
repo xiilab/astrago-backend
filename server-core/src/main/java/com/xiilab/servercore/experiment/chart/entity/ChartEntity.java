@@ -1,7 +1,7 @@
-package com.xiilab.servercore.chart.entity;
+package com.xiilab.servercore.experiment.chart.entity;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.servercore.chart.dto.ChartDTO;
+import com.xiilab.servercore.experiment.chart.dto.ChartDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

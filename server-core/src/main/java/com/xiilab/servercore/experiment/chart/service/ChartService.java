@@ -1,4 +1,4 @@
-package com.xiilab.servercore.chart.service;
+package com.xiilab.servercore.experiment.chart.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.errorcode.ChartErrorCode;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.servercore.chart.dto.ChartDTO;
-import com.xiilab.servercore.chart.entity.ChartEntity;
-import com.xiilab.servercore.chart.entity.PanelEntity;
-import com.xiilab.servercore.chart.repository.ChartRepository;
-import com.xiilab.servercore.chart.repository.PanelRepository;
+import com.xiilab.servercore.experiment.chart.dto.ChartDTO;
+import com.xiilab.servercore.experiment.chart.entity.ChartEntity;
+import com.xiilab.servercore.experiment.chart.entity.PanelEntity;
+import com.xiilab.servercore.experiment.chart.repository.ChartRepository;
+import com.xiilab.servercore.experiment.chart.repository.PanelRepository;
 
 import lombok.RequiredArgsConstructor;
 

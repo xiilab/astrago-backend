@@ -1,4 +1,4 @@
-package com.xiilab.servercore.chart.entity;
+package com.xiilab.servercore.experiment.chart.entity;
 
 import java.util.ArrayList;
 import java.util.List;

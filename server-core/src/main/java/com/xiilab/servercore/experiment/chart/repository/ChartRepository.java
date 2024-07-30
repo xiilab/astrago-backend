@@ -1,4 +1,4 @@
-package com.xiilab.servercore.chart.repository;
+package com.xiilab.servercore.experiment.chart.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.xiilab.servercore.chart.entity.ChartEntity;
+import com.xiilab.servercore.experiment.chart.entity.ChartEntity;
 
 @Repository
 public interface ChartRepository extends JpaRepository<ChartEntity, Long> {

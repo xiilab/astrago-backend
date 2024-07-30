@@ -1,4 +1,4 @@
-package com.xiilab.servercore.chart.controller;
+package com.xiilab.servercore.experiment.chart.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.servercore.chart.dto.ChartDTO;
-import com.xiilab.servercore.chart.service.ChartService;
+import com.xiilab.servercore.experiment.chart.dto.ChartDTO;
+import com.xiilab.servercore.experiment.chart.service.ChartService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
