@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.kubeflow.v2beta1.MPIJob;
 import org.kubeflow.v2beta1.MPIJobStatus;
@@ -57,6 +58,88 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class K8sInfoPicker {
+
+	public static String extractGpuChipset(Node node) {
+		String nodeGPUProduct = getNodeGPUProduct(node);
+		if (StringUtils.hasText(nodeGPUProduct)) {
+			try {
+				return getDGXGpuChipset(nodeGPUProduct);
+			} catch (Exception e) {
+				return getOEMGpuChipset(node);
+			}
+		} else {
+			return null;
+		}
+	}
+
+	private static String getOEMGpuChipset(Node node) {
+		String nodeGPUProduct = getNodeGPUProduct(node);
+		String chipset = "";
+		String memory = "";
+		String[] split = nodeGPUProduct.split("-");
+		Set<String> chipsets = Set.of("A30", "A100", "H100");
+		Set<String> pcie = Set.of("PCIE", "SXM4", "SXM5");
+
+		for (String s : split) {
+			if (chipsets.contains(s)) {
+				chipset = s;
+			}
+		}
+
+		for (String s : split) {
+			if (pcie.contains(s)) {
+				int mem = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
+				switch (s) {
+					case "PCIE" -> {
+						if (chipset.equals("H100")) {
+							if (mem < 90000) {
+								memory = "80GB";
+							} else if (mem < 97000) {
+								memory = "94GB";
+							}
+						} else if (chipset.equals("A100")) {
+							if (mem < 50000) {
+								memory = "40GB";
+							} else {
+								memory = "80GB";
+							}
+						}
+					}
+					case "SXM4" -> {
+						if (chipset.equals("A100")) {
+							if (mem < 50000) {
+								memory = "40GB";
+							} else {
+								memory = "80GB";
+							}
+						}
+					}
+					case "SXM5" -> {
+						if (chipset.equals("H100")) {
+							if (mem < 90000) {
+								memory = "80GB";
+							} else {
+								memory = "94GB";
+							}
+						}
+					}
+				}
+			} else {
+				if (chipset.equals("H100")) {
+					memory = "96GB";
+				} else if (chipset.equals("GH200")) {
+					memory = "96GB";
+				} else if (chipset.equals("A30")) {
+					memory = "24GB";
+				}
+			}
+		}
+		return "%s-%s".formatted(chipset, memory);
+	}
+
+	public static String getNodeGPUProduct(Node node) {
+		return node.getMetadata().getLabels().get("nvidia.com/gpu.product");
+	}
 
 	/**
 	 * 해당 k8s resource가 astrago에서 생성되었는지 체크하는 메소드
@@ -504,6 +587,30 @@ public class K8sInfoPicker {
 	private static boolean jobHasPodInitializingCondition(List<JobCondition> conditions) {
 		return conditions.stream()
 			.anyMatch(condition -> "PodInitializing".equals(condition.getType()));
+	}
+
+	private static String getDGXGpuChipset(String productName) {
+		StringBuilder chipset = null;
+		String[] split = productName.split("-");
+		Set<String> strings = Set.of("A30", "A100", "H100");
+		boolean hasGB = false;
+		for (String s : split) {
+			if (strings.contains(s)) {
+				chipset = new StringBuilder(s);
+			}
+			if (s.contains("GB")) {
+				hasGB = true;
+				if (chipset != null) {
+					chipset.append("-").append(s);
+				}
+			}
+		}
+
+		if (!hasGB) {
+			throw new IllegalArgumentException("Product name does not contain a valid memory size.");
+		}
+
+		return chipset.toString();
 	}
 
 	private static List<ModuleEnvResDTO> getEnvs(List<? extends KubernetesResource> envs) {

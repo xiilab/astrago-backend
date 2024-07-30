@@ -11,7 +11,6 @@ import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
-import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
 import io.fabric8.kubernetes.api.model.Node;
 
@@ -24,9 +23,9 @@ public interface NodeRepository {
 
 	void updateMIGProfile(String nodeName, String option);
 
-	MIGProfileDTO getNodeMIGProfileFromJson(String productName, int giCount);
+	MIGProfileDTO getNodeMIGProfileFromJson(String gpuChipset, String productName, int giCount);
 
-	int getMIGProfileGICount(String productName, String profileName) throws IOException;
+	int getMIGProfileGICount(String gpuChipset, String productName, String profileName) throws IOException;
 
 	Node getNode(String resourceName);
 

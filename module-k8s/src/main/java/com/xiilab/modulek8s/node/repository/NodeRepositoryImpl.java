@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.core.io.DefaultResourceLoader;
@@ -27,6 +26,7 @@ import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.NodeErrorCode;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
+import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
@@ -295,10 +295,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 		if (!getMigCapable(node)) {
 			throw new K8sException(NodeErrorCode.NOT_SUPPORTED_GPU);
 		}
+		//node의 gpuChipset을 조회
+		String gpuChipset = K8sInfoPicker.extractGpuChipset(node);
 		//node의 gpu productName을 조회한다.
 		String gpuProductName = getGPUProductName(node);
 		//해당 node에 장착된 gpu가 가능한 mig profile을 리턴한다.
-		return getNodeMIGProfileFromJson(gpuProductName, giCount);
+		return getNodeMIGProfileFromJson(gpuChipset, gpuProductName, giCount);
 	}
 
 	@Override
@@ -526,13 +528,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 * @throws IOException
 	 */
 	@Override
-	public MIGProfileDTO getNodeMIGProfileFromJson(String productName, int giCount) {
+	public MIGProfileDTO getNodeMIGProfileFromJson(String gpuChipset, String productName, int giCount) {
 		try {
-			String chipset = extractGpuChipset(productName);
 			List<Map<String, Integer>> resProfile = new ArrayList<>();
 			//MIGProfile.json을 읽어온다.
 			InputStream inputStream = this.getClass()
-				.getResourceAsStream(String.format("/migProfile/%s.json", chipset));
+				.getResourceAsStream(String.format("/migProfile/%s.json", gpuChipset));
 			//json 파일을 읽어옴
 			MIGProfileDTO migProfileList = objectMapper.readValue(inputStream, MIGProfileDTO.class);
 
@@ -552,12 +553,11 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	@Override
-	public int getMIGProfileGICount(String productName, String profileName) throws IOException {
+	public int getMIGProfileGICount(String gpuChipset, String productName, String profileName) throws IOException {
 		try {
-			String chipset = extractGpuChipset(productName);
 			//MIGProfile.json을 읽어온다.
 			org.springframework.core.io.Resource resource = ResourcePatternUtils.getResourcePatternResolver(
-				new DefaultResourceLoader()).getResource(String.format("classpath:migProfile/%s.json", chipset));
+				new DefaultResourceLoader()).getResource(String.format("classpath:migProfile/%s.json", gpuChipset));
 			File file = resource.getFile();
 			//mig profile 파일이 존재하지 않을 경우 exception 발생시킴
 			if (!file.exists()) {
@@ -628,7 +628,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
 				.migInfos(List.of(MIGGpuDTO.MIGInfoDTO.builder().gpuIndexs(gpuIndex).migEnable(false).build()))
-				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get(GPU_NAME)))
+				.gpuProduct(K8sInfoPicker.extractGpuChipset(node))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		} else {
@@ -636,7 +636,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			return MIGGpuDTO.MIGInfoStatus.builder()
 				.nodeName(node.getMetadata().getName())
 				.migInfos(convertMapToMIGInfo(rawMIGInfo))
-				.gpuProduct(extractGpuChipset(node.getMetadata().getLabels().get(MIG_GPU_NAME)))
+				.gpuProduct(K8sInfoPicker.extractGpuChipset(node))
 				.status(MigStatus.valueOf(migProfileStatus.toUpperCase()))
 				.build();
 		}
@@ -865,21 +865,6 @@ public class NodeRepositoryImpl implements NodeRepository {
 		Map<String, Object> convertResult = yaml.load(migConfigSTR);
 		Map<String, Object> migConfigs = (Map<String, Object>)convertResult.get("mig-configs");
 		return migConfigs;
-	}
-
-	private String extractGpuChipset(String value) {
-		StringBuilder chipset = null;
-		String[] split = value.split("-");
-		Set<String> strings = Set.of("A30", "A100", "H100");
-		for (String s : split) {
-			if (strings.contains(s)) {
-				chipset = new StringBuilder(s);
-			}
-			if (s.contains("GB")) {
-				chipset.append("-").append(s);
-			}
-		}
-		return chipset.toString();
 	}
 
 	/**
