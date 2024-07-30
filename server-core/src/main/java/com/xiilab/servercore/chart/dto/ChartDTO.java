@@ -1,0 +1,64 @@
+package com.xiilab.servercore.chart.dto;
+
+import java.util.List;
+
+import com.xiilab.servercore.chart.entity.ChartEntity;
+import com.xiilab.servercore.chart.entity.PanelEntity;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+public class ChartDTO {
+	@Getter
+	@AllArgsConstructor
+	public static class Req {
+		@NotBlank
+		private String title;
+		@NotBlank
+		private String xAxis;
+		private Double xMin;
+		private Double xMax;
+		@NotBlank
+		private String yAxis;
+		private Double yMin;
+		private Double yMax;
+	}
+
+	@Getter
+	public static class Res {
+		private final Long id;
+		private final String title;
+		private final String xAxis;
+		private final Double xAxisMin;
+		private final Double xAxisMax;
+		private final String yAxis;
+		private final Double yAxisMin;
+		private final Double yAxisMax;
+
+		public Res(ChartEntity chartEntity) {
+			this.id = chartEntity.getId();
+			this.title = chartEntity.getTitle();
+			this.xAxis = chartEntity.getXAxis();
+			this.xAxisMin = chartEntity.getXAxisMin();
+			this.xAxisMax = chartEntity.getXAxisMax();
+			this.yAxis = chartEntity.getYAxis();
+			this.yAxisMin = chartEntity.getYAxisMin();
+			this.yAxisMax = chartEntity.getYAxisMax();
+		}
+	}
+
+	@Getter
+	public static class Panel {
+		private final Long id;
+		private final String title;
+		private final List<Res> charts;
+
+		public Panel(PanelEntity panelEntity) {
+			this.id = panelEntity.getId();
+			this.title = panelEntity.getTitle();
+			this.charts = panelEntity.getChartList().stream().map(Res::new).toList();
+		}
+	}
+}
