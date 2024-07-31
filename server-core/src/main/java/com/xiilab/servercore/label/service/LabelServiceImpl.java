@@ -23,14 +23,18 @@ public class LabelServiceImpl implements LabelService {
 
 	@Override
 	@Transactional
-	public void addLabel(String workspaceResourceName, LabelDTO labelDTO) {
+	public LabelDTO.ResponseDTO addLabel(String workspaceResourceName, LabelDTO labelDTO) {
 		// 라벨 이름 중복 체크
 		Optional<LabelEntity> findLabel = getLabelByWorkspaceResourceNameAndLabelName(workspaceResourceName,
 			labelDTO.getLabelName());
+		// 라벨 갯수 조회
+		int count = getLabelCountByWorkspaceResourceName(workspaceResourceName);
 		// 해당 워크스페이스에 해당 이름의 라벨이 없는경우 생성
 		if (findLabel.isEmpty()) {
 			try {
-				labelRepository.save(labelDTO.convertLabelEntity(workspaceResourceName));
+				LabelEntity labelEntity = labelRepository.save(
+					labelDTO.convertLabelEntity(workspaceResourceName, count));
+				return LabelDTO.ResponseDTO.convertLabelDTO(labelEntity);
 			} catch (IllegalArgumentException e) {
 				throw new RestApiException(LabelErrorCode.LABEL_SAVE_FAIL);
 			}
@@ -40,10 +44,10 @@ public class LabelServiceImpl implements LabelService {
 	}
 
 	@Override
-	public List<LabelDTO.RequestDTO> getLabels(String workspaceResourceName) {
+	public List<LabelDTO.ResponseDTO> getLabels(String workspaceResourceName) {
 		// 해당 워크스페이스의 등록된 라벨 리스트 조회
 		List<LabelEntity> getModelLabels = labelRepository.findAllByWorkspaceResourceName(workspaceResourceName);
-		return getModelLabels.stream().map(LabelDTO.RequestDTO::convertLabelDTO).toList();
+		return getModelLabels.stream().map(LabelDTO.ResponseDTO::convertLabelDTO).toList();
 	}
 
 	@Override
@@ -68,6 +72,17 @@ public class LabelServiceImpl implements LabelService {
 		}
 	}
 
+	@Override
+	@Transactional
+	public void modifyLabels(List<LabelDTO.UpdateDTO> updateLabelDTOs) {
+		for (LabelDTO.UpdateDTO updateLabelDTO : updateLabelDTOs) {
+			Optional<LabelEntity> labelEntity = getLabelEntity(updateLabelDTO.getLabelId());
+			labelEntity.ifPresent(
+				entity -> entity.updateLabel(updateLabelDTO.getLabelName(), updateLabelDTO.getColorCode(),
+					updateLabelDTO.getColorCodeName(), updateLabelDTO.getOrder()));
+		}
+	}
+
 	private Optional<LabelEntity> getLabelByWorkspaceResourceNameAndLabelName(String workspaceResourceName,
 		String labelName) {
 		return labelRepository.findByWorkspaceResourceNameAndName(workspaceResourceName, labelName);
@@ -75,5 +90,9 @@ public class LabelServiceImpl implements LabelService {
 
 	private Optional<LabelEntity> getLabelEntity(long labelId) {
 		return labelRepository.findById(labelId);
+	}
+
+	private int getLabelCountByWorkspaceResourceName(String workspaceResourceName) {
+		return labelRepository.findByWorkspaceResourceNameContaining(workspaceResourceName);
 	}
 }

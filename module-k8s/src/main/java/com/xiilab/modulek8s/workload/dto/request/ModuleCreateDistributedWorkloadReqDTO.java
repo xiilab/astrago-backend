@@ -28,8 +28,10 @@ public class ModuleCreateDistributedWorkloadReqDTO extends CreateWorkloadReqDTO 
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
 			.codes(this.codes.stream().map(codeDTO -> codeDTO.toJobCodeVO(workspace, initContainerUrl)).toList())
-			.datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
-			.models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			// TODO 삭제 예정
+			// .datasets(this.datasets.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			// .models(this.models.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.workingDir(this.workingDir)

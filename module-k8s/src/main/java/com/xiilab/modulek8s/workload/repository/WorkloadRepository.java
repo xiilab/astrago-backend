@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.repository;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
@@ -139,11 +140,15 @@ public interface WorkloadRepository {
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
+	WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id);
+
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
 	boolean isUsedDataset(Long datasetId);
+
+	boolean isUsedVolume(Long volumeId);
 
 	void deleteDeploymentByResourceName(String deploymentName, String namespace);
 
@@ -180,6 +185,8 @@ public interface WorkloadRepository {
 	AbstractModuleWorkloadResDTO getParentController(String pod, String namespace);
 
 	List<Event> getWorkloadEventList(String pod, String namespace);
+
+	Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName);
 
 	Job getBatchJob(String workspaceName, String workloadName);
 

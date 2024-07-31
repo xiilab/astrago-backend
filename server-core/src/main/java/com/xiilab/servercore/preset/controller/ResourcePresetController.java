@@ -1,5 +1,6 @@
 package com.xiilab.servercore.preset.controller;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,7 +52,7 @@ public class ResourcePresetController {
 	@GetMapping
 	@Operation(summary = "리소스 프리셋 목록 조회")
 	public ResponseEntity<ResourcePresetResDTO.FindResourcePresets> findResourcePresets(
-		ResourcePresetReqDTO.FindSearchCondition findSearchCondition) {
+		@ParameterObject ResourcePresetReqDTO.FindSearchCondition findSearchCondition) {
 		return new ResponseEntity<>(resourcePresetService.findResourcePresets(findSearchCondition), HttpStatus.OK);
 	}
 

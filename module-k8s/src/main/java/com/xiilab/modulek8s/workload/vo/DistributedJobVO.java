@@ -159,8 +159,10 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		if (!StringUtils.isEmpty(this.gpuName)) {
 			spec.setNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
 		}
-		addVolume(spec, datasets);
-		addVolume(spec, models);
+		// TODO 삭제 예정
+		// addVolume(spec, datasets);
+		// addVolume(spec, models);
+		addVolume(spec, volumes);
 		return spec;
 	}
 
@@ -186,8 +188,10 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		if (!StringUtils.isEmpty(this.gpuName)) {
 			spec.setNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
 		}
-		addVolume(spec, datasets);
-		addVolume(spec, models);
+		// TODO 삭제 예정
+		// addVolume(spec, datasets);
+		// addVolume(spec, models);
+		addVolume(spec, volumes);
 		return spec;
 	}
 
@@ -202,8 +206,10 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		launcherContainer.setWorkingDir(workingDir);
 		launcherContainer.setImagePullPolicy("IfNotPresent");
 		launcherContainer.setPorts(convertContainerPort());
-		addVolumeMounts(launcherContainer, datasets);
-		addVolumeMounts(launcherContainer, models);
+		// TODO 삭제 예정
+		// addVolumeMounts(launcherContainer, datasets);
+		// addVolumeMounts(launcherContainer, models);
+		addVolumeMounts(launcherContainer, volumes);
 		addCloneCodeVolumeMounts(launcherContainer, codes);
 		if (StringUtils.isNotBlank(workingDir)) {
 			launcherContainer.setWorkingDir(workingDir);
@@ -220,8 +226,10 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		workerContainer.setEnv(convertEnv());
 		workerContainer.setImagePullPolicy("IfNotPresent");
 		workerContainer.setPorts(convertContainerPort());
-		addVolumeMounts(workerContainer, datasets);
-		addVolumeMounts(workerContainer, models);
+		// TODO 삭제 예정
+		// addVolumeMounts(workerContainer, datasets);
+		// addVolumeMounts(workerContainer, models);
+		addVolumeMounts(workerContainer, volumes);
 		addCloneCodeVolumeMounts(workerContainer, codes);
 		return workerContainer;
 	}
@@ -275,7 +283,7 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 
 	private Metadata getMpiReplicasMetadata() {
 		Metadata metadata = new Metadata();
-		metadata.setAnnotations(Map.of("sidecar.istio.io/inject", String.valueOf(false)));
+		metadata.setAnnotations(getPodAnnotationMap());
 		return metadata;
 	}
 
@@ -297,8 +305,10 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		annotationMap.put(AnnotationField.IMAGE_NAME.getField(), getImage().name());
 		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().name());
 		annotationMap.put(AnnotationField.IMAGE_CREDENTIAL_ID.getField(), imageCredentialId);
-		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
-		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
+		// TODO 삭제 예정
+		//annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
+		// annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
+		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getJobVolumeIds(this.volumes));
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
@@ -322,11 +332,15 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		map.put(LabelField.JOB_NAME.getField(), jobName);
 		map.put(LabelField.GPU_NAME.getField(), gpuName);
 		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
-		if (!CollectionUtils.isEmpty(datasets)) {
-			this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
-		}
-		if (!CollectionUtils.isEmpty(models)) {
-			this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
+		// TODO 삭제 예정
+		// if (!CollectionUtils.isEmpty(datasets)) {
+		// 	this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
+		// }
+		// if (!CollectionUtils.isEmpty(models)) {
+		// 	this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
+		// }
+		if (!CollectionUtils.isEmpty(volumes)) {
+			this.volumes.forEach(volume -> addVolumeMap(map, "vl-", volume.id()));
 		}
 		if (!CollectionUtils.isEmpty(codes)) {
 			this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));

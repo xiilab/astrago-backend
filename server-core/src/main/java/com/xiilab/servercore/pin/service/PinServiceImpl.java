@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.PinErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
-import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulek8sdb.pin.entity.PinEntity;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.pin.repository.PinRepository;
@@ -19,7 +18,7 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PinServiceImpl implements PinService {
 	private final PinRepository pinRepository;
@@ -37,6 +36,7 @@ public class PinServiceImpl implements PinService {
 	}
 
 	@Override
+	@Transactional
 	public void createPin(String resourceName, PinType pinType, UserDTO.UserInfo userInfoDTO) {
 		if (pinType == PinType.WORKLOAD) {
 			createWorkloadPin(resourceName, userInfoDTO);
@@ -63,15 +63,16 @@ public class PinServiceImpl implements PinService {
 	@Override
 	public List<String> getWorkloadPinListByUserId(String userId, String workspaceName) {
 		List<PinEntity> pinList;
-		if(workspaceName != null){
-			pinList = pinRepository.findByTypeAndRegUserIdAndWorkspaceResourceName(userId, workspaceName, PinType.WORKLOAD.name());
-		}else{
-			pinList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKLOAD,userId);
+		if (workspaceName != null) {
+			pinList = pinRepository.findByTypeAndRegUserIdAndWorkspaceResourceName(userId, workspaceName,
+				PinType.WORKLOAD.name());
+		} else {
+			pinList = pinRepository.findByTypeAndRegUser_RegUserId(PinType.WORKLOAD, userId);
 		}
 		return pinList.stream().map(pinEntity -> pinEntity.getResourceName()).toList();
 	}
 
-	private void createWorkspacePin(String resourceName, UserDTO.UserInfo userInfoDTO) {
+/*	private void createWorkspacePin(String resourceName, UserDTO.UserInfo userInfoDTO) {
 		PinEntity pinEntity = pinRepository.findByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKSPACE,
 			resourceName, userInfoDTO.getId());
 
@@ -85,6 +86,12 @@ public class PinServiceImpl implements PinService {
 		if (workspaceList.size() >= 6) {
 			throw new RestApiException(PinErrorCode.PIN_ADD_ERROR_MESSAGE);
 		}
+		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
+	}*/
+
+	private void createWorkspacePin(String resourceName, UserDTO.UserInfo userInfoDTO) {
+		// 기존에 등록되었던 모든 workspace pin 삭제
+		pinRepository.deleteByResourceType_RegUserId(PinType.WORKSPACE, userInfoDTO.getId());
 		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
 	}
 

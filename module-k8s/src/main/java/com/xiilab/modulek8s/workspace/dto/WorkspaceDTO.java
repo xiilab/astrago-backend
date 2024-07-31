@@ -2,6 +2,7 @@ package com.xiilab.modulek8s.workspace.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
@@ -84,6 +85,32 @@ public class WorkspaceDTO {
 			this.age = createdTime != null ? new AgeDTO(createdTime) : null;
 			this.recentlyWorkload = recentlyWorkload;
 		}
+	}
+
+	@Getter
+	@Builder
+	public static class FindJoinedWorkspaceDetail {
+		private String id;
+		private String name;
+		private String resourceName;
+		private boolean isPinYN;
+
+		public static WorkspaceDTO.FindJoinedWorkspaceDetail of(WorkspaceDTO.ResponseDTO workspace,
+			Set<String> userWorkspacePinList) {
+			return FindJoinedWorkspaceDetail.builder()
+				.id(workspace.id)
+				.name(workspace.name)
+				.resourceName(workspace.resourceName)
+				.isPinYN(userWorkspacePinList.contains(workspace.resourceName))
+				.build();
+		}
+	}
+
+	@Getter
+	@Builder
+	public static class FindJoinedWorkspaces {
+		private List<FindJoinedWorkspaceDetail> workspaces;
+		private Integer totalCount;
 	}
 
 	@Getter

@@ -25,33 +25,43 @@ public class CreateJobResDTO extends AbstractModuleWorkloadResDTO {
 	private String cpuRequest;                   // 워크로드 cpu 요청량
 	private String memRequest;                   // 워크로드 mem 요청량
 	private Map<Long, Map<String, String>> codesInfoMap;
-	private Map<Long, Map<String, String>> datasetInfoMap;
-	private Map<Long, Map<String, String>> modelInfoMap;
+	// TODO 삭제 예정
+	// private Map<Long, Map<String, String>> datasetInfoMap;
+	// private Map<Long, Map<String, String>> modelInfoMap;
+	private Map<Long, Map<String, String>> volumeInfoMap;
 
-	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
+	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap,
+		Map<Long, Map<String, String>> volumeInfoMap) {
 		super(deployment);
 		initializeFromContainer(deployment.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = K8sInfoPicker.getInteractiveWorkloadStatus(deployment.getStatus());
 		this.codesInfoMap = codesInfoMap;
-		this.datasetInfoMap = datasetInfoMap;
-		this.modelInfoMap = modelInfoMap;
+		this.volumeInfoMap = volumeInfoMap;
+		// TODO 삭제 예정
+		// this.datasetInfoMap = datasetInfoMap;
+		// this.modelInfoMap = modelInfoMap;
 	}
 
-	public CreateJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
+	public CreateJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap,
+		Map<Long, Map<String, String>> volumeInfoMap) {
 		super(job);
 		initializeFromContainer(job.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = K8sInfoPicker.getBatchWorkloadStatus(job.getStatus());
 		this.codesInfoMap = codesInfoMap;
-		this.datasetInfoMap = datasetInfoMap;
-		this.modelInfoMap = modelInfoMap;
+		this.volumeInfoMap = volumeInfoMap;
+		// TODO 삭제 예정
+		// this.datasetInfoMap = datasetInfoMap;
+		// this.modelInfoMap = modelInfoMap;
 	}
 
 	public CreateJobResDTO(MPIJob resource, Map<Long, Map<String, String>> codesInfoMap,
-		Map<Long, Map<String, String>> datasetInfoMap, Map<Long, Map<String, String>> modelInfoMap) {
+		Map<Long, Map<String, String>> volumeInfoMap) {
 		super(resource);
 		this.codesInfoMap = codesInfoMap;
-		this.datasetInfoMap = datasetInfoMap;
-		this.modelInfoMap = modelInfoMap;
+		this.volumeInfoMap = volumeInfoMap;
+		// TODO 삭제 예정
+		// this.datasetInfoMap = datasetInfoMap;
+		// this.modelInfoMap = modelInfoMap;
 	}
 
 	@Override

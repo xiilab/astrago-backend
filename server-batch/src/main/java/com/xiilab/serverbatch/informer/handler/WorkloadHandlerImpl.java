@@ -39,7 +39,7 @@ import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
-import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.storage.volume.repository.K8sVolumeRepository;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
@@ -54,21 +54,16 @@ import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
-import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
-import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
-import com.xiilab.modulek8sdb.dataset.repository.DatasetWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
-import com.xiilab.modulek8sdb.model.entity.Model;
-import com.xiilab.modulek8sdb.model.repository.ModelRepository;
-import com.xiilab.modulek8sdb.model.repository.ModelWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
 import com.xiilab.modulek8sdb.storage.service.StorageService;
+import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
+import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
+import com.xiilab.modulek8sdb.volume.repository.VolumeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
@@ -88,12 +83,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
-	private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
-	private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
+	// TODO 삭제 예정
+	// private final DatasetWorkLoadMappingRepository datasetWorkLoadMappingRepository;
+	// private final ModelWorkLoadMappingRepository modelWorkLoadMappingRepository;
+	private final VolumeWorkLoadMappingRepository volumeWorkLoadMappingRepository;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
 	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
-	private final DatasetRepository datasetRepository;
-	private final ModelRepository modelRepository;
+	// TODO 삭제 예정
+	// private final DatasetRepository datasetRepository;
+	// private final ModelRepository modelRepository;
+	private final VolumeRepository volumeRepository;
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
 	private final CredentialRepository credentialRepository;
@@ -102,7 +101,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final UserService userService;
 	private final StorageService storageService;
 	private final StorageModuleService storageModuleService;
-	private final VolumeRepository volumeRepository;
+	private final K8sVolumeRepository k8sVolumeRepository;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 
 	@Override
@@ -158,7 +157,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					//db gpu, memory 정보 저장
 					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
 						gpuName, nodeName);
-					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory());
+					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(),
+						nodeName);
 					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 				}
 
@@ -228,7 +228,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					String nodeName = "";
 					for (Pod pod : pods) {
 						boolean isRunning = pod.getStatus().getPhase().equalsIgnoreCase("Running");
-						if(isRunning){
+						if (isRunning) {
 							nodeName = pod.getSpec().getNodeName();
 							break;
 						}
@@ -239,9 +239,13 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
 						gpuName, nodeName);
 
-					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory());
+					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(),
+						nodeName);
 
 					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
+						LocalDateTime.now());
+				} else if (afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END) {
+					workloadHistoryRepo.updateWorkloadEndTime(afterDeployment.getMetadata().getName(),
 						LocalDateTime.now());
 				}
 			}
@@ -371,6 +375,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END,
 				deployment.getMetadata().getName());
+			workloadHistoryRepo.updateWorkloadEndTime(deployment.getMetadata().getName(), LocalDateTime.now());
 			handleNotificationsAndLog(wl, WorkloadStatus.END);
 		});
 	}
@@ -628,7 +633,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 	private void saveMappings(AbstractModuleWorkloadResDTO jobResDTO, WorkloadEntity workload) {
 		// dataset, model mapping insert
-		String datasetIds = jobResDTO.getDatasetIds();
+		// TODO 삭제 예정
+		/*String datasetIds = jobResDTO.getDatasetIds();
 		if (StringUtils.hasText(datasetIds)) {
 			saveDataMapping(getSplitIds(datasetIds), datasetRepository::findById, workload, EntityMappingType.DATASET,
 				jobResDTO.getDatasetMountPathMap(), null);
@@ -639,7 +645,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (StringUtils.hasText(modelIds)) {
 			saveDataMapping(getSplitIds(modelIds), modelRepository::findById, workload, EntityMappingType.MODEL,
 				jobResDTO.getModelMountPathMap(), null);
+		}*/
+		//
+
+		String volumeIds = jobResDTO.getVolumeIds();
+		if (StringUtils.hasText(volumeIds)) {
+			saveDataMapping(getSplitIds(volumeIds), volumeRepository::findById, workload, EntityMappingType.VOLUME,
+				jobResDTO.getVolumeMountPathMap(), null);
 		}
+
 		RegUser regUser = new RegUser(jobResDTO.getCreatorId(), jobResDTO.getCreatorUserName(),
 			jobResDTO.getCreatorFullName());
 
@@ -667,8 +681,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	private void deletePvAndPVC(String workspaceResourceName, String pvName, String pvcName) {
-		volumeRepository.deletePVC(pvcName, workspaceResourceName);
-		volumeRepository.deletePV(pvName);
+		k8sVolumeRepository.deletePVC(pvcName, workspaceResourceName);
+		k8sVolumeRepository.deletePV(pvName);
 	}
 
 	private String[] getSplitIds(String ids) {
@@ -745,13 +759,14 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	private void saveDataMapping(String[] ids, Function<Long, Optional<?>> findByIdFunction, WorkloadEntity jobEntity,
-		EntityMappingType type, Map<Long, String> mdAnddsMountPathMap, Map<String, Map<String, String>> codeInfoMap) {
+		EntityMappingType type, Map<Long, String> mountPathMap, Map<String, Map<String, String>> codeInfoMap) {
 		if (ids != null) {
 			for (String id : ids) {
 				if (StringUtils.hasText(id)) {
 					Optional<?> optionalEntity = findByIdFunction.apply(Long.valueOf(id));
 					optionalEntity.ifPresent(entity -> {
-						if (type == EntityMappingType.DATASET) {
+						// TODO 삭제 예정
+						/*if (type == EntityMappingType.DATASET) {
 							Dataset dataset = (Dataset)entity;
 							DatasetWorkLoadMappingEntity datasetWorkLoadMappingEntity = DatasetWorkLoadMappingEntity.builder()
 								.dataset(dataset)
@@ -767,6 +782,15 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								.mountPath(mdAnddsMountPathMap.get(model.getModelId()))
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
+						}*/
+						if (type == EntityMappingType.VOLUME) {
+							com.xiilab.modulek8sdb.volume.entity.Volume volume = (com.xiilab.modulek8sdb.volume.entity.Volume)entity;
+							VolumeWorkLoadMappingEntity volumeWorkLoadMappingEntity = VolumeWorkLoadMappingEntity.builder()
+								.volume(volume)
+								.workload(jobEntity)
+								.mountPath(mountPathMap.get(volume.getVolumeId()))
+								.build();
+							volumeWorkLoadMappingRepository.save(volumeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.CODE) {
 							CodeEntity code = (CodeEntity)entity;
 							// Map<String, String> codeMountMap = codeInfoMap.get(code.getCodeURL());
@@ -777,6 +801,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								.code(code)
 								.branch(codeMountMap.getOrDefault("branch", ""))
 								.mountPath(codeMountMap.getOrDefault("mountPath", ""))
+								.cmd(codeMountMap.getOrDefault("command", ""))
 								.build();
 							codeWorkLoadMappingRepository.save(codeWorkLoadMappingEntity);
 						} else if (type == EntityMappingType.IMAGE) {

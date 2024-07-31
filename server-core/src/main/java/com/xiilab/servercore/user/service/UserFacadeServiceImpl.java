@@ -9,17 +9,27 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
+import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
+import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeServiceImpl;
+import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
+import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.smtp.entity.SmtpEntity;
+import com.xiilab.modulek8sdb.smtp.repository.SmtpRepository;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -27,7 +37,7 @@ import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
-import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
+import com.xiilab.servercore.pin.service.PinService;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -37,13 +47,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserFacadeServiceImpl implements UserFacadeService {
 	private final UserService userService;
-	private final SystemAlertSetService alertSetService;
 	private final AlertService alertService;
-	private final MailService mailService;
 	private final ApplicationEventPublisher eventPublisher;
+	private final WorkspaceModuleFacadeServiceImpl workspaceModuleFacadeService;
+	private final PinService pinService;
+	private final SmtpRepository smtpRepository;
+	private final MailService mailService;
 
 	@Override
 	public void joinUser(UserReqVO userReqVO, String groupId) {
+		// 회원가입
 		UserDTO.UserInfo userInfo = userService.joinUser(userReqVO);
 		if (StringUtils.isNotBlank(groupId)) {
 			userService.joinDefaultGroup(userInfo.getId());
@@ -51,6 +64,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		} else {
 			userService.joinDefaultGroup(userInfo.getId());
 		}
+		createDefaultWorkspace(userInfo);
+
 		// 회원가입 알림 메시지 발송
 		AlertMessage userCreate = AlertMessage.USER_CREATE;
 		String mailTitle = userCreate.getMailTitle();
@@ -80,8 +95,21 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public void updateUserApprovalYN(List<String> userId, boolean approvalYN) {
-		userService.updateUserApprovalYN(userId, approvalYN);
+	public void updateUserApprovalYN(List<String> userIdList, boolean approvalYN) {
+		userService.updateUserApprovalYN(userIdList, approvalYN);
+		userIdList.forEach(userId -> {
+			UserDTO.UserInfo user = userService.getUserById(userId);
+			MailDTO mailDTO = null;
+			if (approvalYN) {
+				mailDTO = MailServiceUtils.approvalUserMail(
+					user.getLastName() + user.getFirstName(),
+					user.getEmail());
+			} else {
+				mailDTO = MailServiceUtils.refuseUserMail(
+					user.getUserFullName(), user.getEmail());
+			}
+			sendMail(mailDTO);
+		});
 	}
 
 	@Override
@@ -234,5 +262,48 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 			.collect(Collectors.toSet());
 
 		return workspaces.contains(workspaceName) ? WorkspaceRole.ROLE_OWNER : WorkspaceRole.ROLE_USER;
+	}
+
+	/**
+	 * 사용자 기본 워크스페이스 생성 후 pin으로 등록
+	 *
+	 * @param userInfo
+	 */
+	private void createDefaultWorkspace(UserDTO.UserInfo userInfo) {
+		// 사용자 기본 워크스페이스 생성
+		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
+			.name(userInfo.getUserFullName() + "'s workspace")
+			.description(userInfo.getUserFullName() + "'s default workspace.")
+			.creatorId(userInfo.getId())
+			.creatorUserName(userInfo.getUserName())
+			.creatorFullName(userInfo.getUserFullName())
+			.build());
+
+		// 생성된 workspace pin으로 등록
+		pinService.createPin(workspace.getResourceName(), PinType.WORKSPACE, userInfo);
+	}
+
+	private void sendMail(MailDTO mailDTO) {
+		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
+
+		if (ObjectUtils.isEmpty(smtpEntities)) {
+			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
+		}
+		for (SmtpEntity smtpEntity : smtpEntities) {
+			SmtpDTO smtpDTO = SmtpDTO.builder()
+				.host(smtpEntity.getHost())
+				.port(smtpEntity.getPort())
+				.username(smtpEntity.getUserName())
+				.password(smtpEntity.getPassword())
+				.build();
+
+			boolean result = mailService.sendMail(mailDTO, smtpDTO);
+
+			smtpEntity.increment();
+
+			if (result) {
+				break;
+			}
+		}
 	}
 }

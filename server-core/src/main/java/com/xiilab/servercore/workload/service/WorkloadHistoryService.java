@@ -50,5 +50,8 @@ public interface WorkloadHistoryService {
 
 	List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(String workspaceResourceName);
 
+	FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName, String workloadResourceName,
+		UserDTO.UserInfo userInfoDTO);
+
 	Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus, Pageable pageable);
 }

@@ -28,7 +28,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class ModelRepoEntity {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MODEL_REPO_ID")
@@ -37,67 +36,38 @@ public class ModelRepoEntity {
 	private String modelName;
 	@Column(name = "MODEL_REPO_DESCRIPTION")
 	private String description;
-	@Column(name = "MODEL_REPO_MODEL_REAL_NAME")
+	@Column(name = "MODEL_REPO_REAL_NAME")
 	private String modelRepoRealName;
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
-	@Column(name = "MODEL_REPO_SIZE")
-	private Long modelSize;
 	@Column(name = "MODEL_REPO_PATH")
 	private String modelPath;
-	@Column(name = "MODEL_REPO_SAVE_DIRECTORY_NAME")
-	private String saveDirectoryName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "STORAGE_ID")
+	private StorageEntity storageEntity;
 	@OneToMany(mappedBy = "modelRepoEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<ModelLabelEntity> modelLabelEntityList = new ArrayList<>();
 	@OneToMany(mappedBy = "modelRepoEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<ModelVersionEntity> modelVersionList = new ArrayList<>();
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "STORAGE_ID")
-	private StorageEntity storageEntity;
 
 	public void addModelLabelEntity(List<LabelEntity> labelEntityList) {
 		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
-			.map(labelEntity -> ModelLabelEntity.builder()
-			.labelEntity(labelEntity)
-			.modelRepoEntity(this)
-			.build()
-			).toList();
+			.map(labelEntity -> ModelLabelEntity.builder().labelEntity(labelEntity).modelRepoEntity(this).build())
+			.toList();
 
 		this.modelLabelEntityList = modelLabelEntities;
 	}
 
-	public void addModelVersionEntity() {
-		this.modelVersionList = List.of(ModelVersionEntity.builder()
-			.version("v1")
-			.modelRepoEntity(this)
-			.build());
-	}
-
-	public void modifyModelRepo(String modelName, String description, StorageEntity storageEntity) {
-		this.modelName = modelName;
-		this.description = description;
-		this.storageEntity = storageEntity;
-	}
-
-	public void modifyModelLabel(List<LabelEntity> labelEntityList) {
-		this.getModelLabelEntityList().clear();
-		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
-			.map(labelEntity -> ModelLabelEntity.builder()
-				.labelEntity(labelEntity)
-				.modelRepoEntity(this)
-				.build()
-			).toList();
-		this.getModelLabelEntityList().addAll(modelLabelEntities);
-	}
-
-	public void setModelSize(Long modelSize){
-		this.modelSize = modelSize;
-	}
-	public void setModelPath(String datasetPath){
+	public void setModelPath(String datasetPath) {
 		this.modelPath = datasetPath;
 	}
 
-	public void setSaveDirectoryName(String saveDirectoryName){
-		this.saveDirectoryName = saveDirectoryName;
+	public void updateModelRepoVersion(long versionInfo) {
+		this.getModelVersionList()
+			.add(ModelVersionEntity.builder()
+				.version("v" + versionInfo)
+				.modelRepoEntity(this)
+				.build());
 	}
+
 }

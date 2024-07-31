@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -30,18 +29,11 @@ import lombok.RequiredArgsConstructor;
 @RestController()
 public class ModelRepoController {
 	private final ModelRepoFacadeService modelRepoFacadeService;
-	@PostMapping()
-	@Operation(summary = "신규 모델 등록하는 API")
-	public ResponseEntity<HttpStatus> createModelRepo(
-		@RequestPart(name = "files", required = false) List<MultipartFile> files,
-		@RequestPart(name = "modelRepoReqDTO") ModelRepoDTO.RequestDTO modelRepoReqDTO) {
-		modelRepoFacadeService.createModelRepo(modelRepoReqDTO, files);
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
 
 	@GetMapping("/{workspaceResourceName}")
 	@Operation(summary = "해당 워크스페이스에 전체 모델 리스트 조회 API")
-	public ResponseEntity<List<ModelRepoDTO.ResponseDTO>> getModelRepoList(@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+	public ResponseEntity<List<ModelRepoDTO.ResponseDTO>> getModelRepoList(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
 		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoList(workspaceResourceName), HttpStatus.OK);
 	}
 
@@ -50,7 +42,8 @@ public class ModelRepoController {
 	public ResponseEntity<ModelRepoDTO.ResponseDTO> getModelRepoById(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
 		@PathVariable(name = "modelRepoId") Long modelRepoId) {
-		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoById(workspaceResourceName, modelRepoId), HttpStatus.OK);
+		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoById(workspaceResourceName, modelRepoId),
+			HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{modelRepoId}")
@@ -61,12 +54,21 @@ public class ModelRepoController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PatchMapping("/{modelRepoId}")
-	@Operation(summary = "해당 ID의 모델 수정하는 API")
-	public ResponseEntity<HttpStatus> modifyModelRepo(
-		@PathVariable(name = "modelRepoId") Long modelRepoId,
-		@RequestBody ModelRepoDTO.RequestDTO modelRepoReqDTO) {
-		modelRepoFacadeService.modifyModelRepo(modelRepoId, modelRepoReqDTO);
+	@PatchMapping()
+	@Operation(summary = "워크로드 모델 등록 및 기존 모델 등록 API")
+	public ResponseEntity<HttpStatus> registerOrVersionUpModelRepo(
+		@RequestPart(name = "files", required = false) List<MultipartFile> files,
+		@RequestBody ModelRepoDTO.wlModelRepoDTO modelRepoReqDTO) {
+		modelRepoFacadeService.registerOrVersionUpModelRepo(files, modelRepoReqDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@DeleteMapping("/version/{versionId}")
+	@Operation(summary = "해당 ID의 모델의 버전을 삭제하는 API")
+	public ResponseEntity<HttpStatus> deleteModelRepoVersion(
+		@PathVariable(name = "versionId") Long versionId
+	) {
+		modelRepoFacadeService.deleteModelRepoVersion(versionId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

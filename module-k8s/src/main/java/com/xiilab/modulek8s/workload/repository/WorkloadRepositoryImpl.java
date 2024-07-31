@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -81,31 +83,26 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
-	@Override
-	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
-		Job resource = (Job)createResource(batchJobVO.createResource());
-		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
-		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
-		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+	private static List<Job> getJobsInUseVolume(String key, KubernetesClient client) {
+		return client.batch().v1().jobs().inAnyNamespace().withLabelIn(key, "true")
+			.list()
+			.getItems();
 	}
 
-	@Override
-	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
-		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource());
-		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
-		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
-		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+	private static List<Deployment> getDeploymentsInUseVolume(String key, KubernetesClient client) {
+		return client.apps().deployments().inAnyNamespace().withLabelIn(key, "true")
+			.list()
+			.getItems();
 	}
 
-	@Override
-	public CreateJobResDTO createDistributedJobWorkload(DistributedJobVO distributedJobVO) {
-		MPIJob resource = (MPIJob)createResource(distributedJobVO.createResource());
-		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(distributedJobVO.getCodes());
-		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(distributedJobVO.getDatasets());
-		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(distributedJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+	private static List<StatefulSet> getStatefulSetsInUseVolume(String key, KubernetesClient client) {
+		return client
+			.apps()
+			.statefulSets()
+			.inAnyNamespace()
+			.withLabelIn(key, "true")
+			.list()
+			.getItems();
 	}
 
 	@Override
@@ -246,13 +243,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String workloadName) {
-		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
-			workspaceResourceName, workloadName);
-		return batchJobList.getItems().stream()
-			.filter(job -> job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField()))
-			.map(ModuleBatchJobResDTO::new)
-			.toList();
+	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
+		Job resource = (Job)createResource(batchJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(batchJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
@@ -272,12 +270,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
-		DeploymentList interactiveJobList = getInteractiveJobListByWorkspaceResourceNameAndCreator(
-			workspaceResourceName, userId);
-		return interactiveJobList.getItems().stream()
-			.map(ModuleInteractiveJobResDTO::new)
-			.toList();
+	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
+		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(interactiveJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
@@ -540,16 +540,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public boolean isUsedModel(Long modelId) {
-		try (KubernetesClient client = k8sAdapter.configServer()) {
-			String label = "md-" + modelId;
-			if (getJobsInUseDataset(label, client).size() == 0 &&
-				getStatefulSetsInUseDataset(label, client).size() == 0 &&
-				getDeploymentsInUseDataset(label, client).size() == 0) {
-				return false;
-			}
-			return true;
-		}
+	public CreateJobResDTO createDistributedJobWorkload(DistributedJobVO distributedJobVO) {
+		MPIJob resource = (MPIJob)createResource(distributedJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(distributedJobVO.getCodes());
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(distributedJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(distributedJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(distributedJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
@@ -726,43 +724,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public boolean optimizationResource(String pod, String namespace) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			Pod podResult = kubernetesClient.pods().inNamespace(namespace).withName(pod).get();
-
-			OwnerReference controllerUid = KubernetesResourceUtil.getControllerUid(podResult);
-
-			if (controllerUid != null) {
-				String ownerKind = controllerUid.getKind();
-				String ownerName = controllerUid.getName();
-				if ("ReplicaSet".equals(ownerKind)) {
-					ReplicaSet replicaSet = kubernetesClient.apps()
-						.replicaSets()
-						.inNamespace(namespace)
-						.withName(ownerName)
-						.get();
-					if (replicaSet != null) {
-						OwnerReference deployController = KubernetesResourceUtil.getControllerUid(replicaSet);
-						if ("Deployment".equals(deployController.getKind())) {
-							Deployment deployment = kubernetesClient.apps()
-								.deployments()
-								.inNamespace(namespace)
-								.withName(deployController.getName())
-								.get();
-							kubernetesClient.resource(deployment).delete();
-							log.info("deployment {}가 삭제되었습니다.", deployment.getMetadata().getName());
-						}
-					}
-				} else if ("Job".equals(ownerKind)) {
-					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
-					kubernetesClient.resource(job).delete();
-				}
-			}
-		} catch (KubernetesClientException e) {
-			log.error(e.getMessage());
-			return false;
-		}
-		return true;
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String workloadName) {
+		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
+			workspaceResourceName, workloadName);
+		return batchJobList.getItems().stream()
+			.filter(job -> job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField()))
+			.map(ModuleBatchJobResDTO::new)
+			.toList();
 	}
 
 	@Override
@@ -801,14 +770,81 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String userId) {
+		DeploymentList interactiveJobList = getInteractiveJobListByWorkspaceResourceNameAndCreator(
+			workspaceResourceName, userId);
+		return interactiveJobList.getItems().stream()
+			.map(ModuleInteractiveJobResDTO::new)
+			.toList();
+	}
+
+	@Override
+	public boolean isUsedModel(Long modelId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "md-" + modelId;
+			if (getJobsInUseVolume(label, client).size() == 0 &&
+				getStatefulSetsInUseVolume(label, client).size() == 0 &&
+				getDeploymentsInUseVolume(label, client).size() == 0) {
+				return false;
+			}
+			return true;
+		}
+	}
+
+	@Override
+	public boolean optimizationResource(String pod, String namespace) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Pod podResult = kubernetesClient.pods().inNamespace(namespace).withName(pod).get();
+
+			OwnerReference controllerUid = KubernetesResourceUtil.getControllerUid(podResult);
+
+			if (controllerUid != null) {
+				String ownerKind = controllerUid.getKind();
+				String ownerName = controllerUid.getName();
+				if ("ReplicaSet".equals(ownerKind)) {
+					ReplicaSet replicaSet = kubernetesClient.apps()
+						.replicaSets()
+						.inNamespace(namespace)
+						.withName(ownerName)
+						.get();
+					if (replicaSet != null) {
+						OwnerReference deployController = KubernetesResourceUtil.getControllerUid(replicaSet);
+						if ("Deployment".equals(deployController.getKind())) {
+							Deployment deployment = kubernetesClient.apps()
+								.deployments()
+								.inNamespace(namespace)
+								.withName(deployController.getName())
+								.get();
+							kubernetesClient.resource(deployment).delete();
+							log.info("deployment {}가 삭제되었습니다.", deployment.getMetadata().getName());
+						}
+					}
+				} else if ("Job".equals(ownerKind)) {
+					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
+					kubernetesClient.resource(job).delete();
+					log.info("job {}가 삭제되었습니다.", job.getMetadata().getName());
+				} else if ("service".equals(ownerKind)) {
+					Service service = kubernetesClient.services().inNamespace(namespace).withName(ownerName).get();
+					kubernetesClient.resource(service).delete();
+					log.info("service {}가 삭제되었습니다.", service.getMetadata().getName());
+				}
+			}
+		} catch (KubernetesClientException e) {
+			log.error(e.getMessage());
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public List<Event> getWorkloadEventList(String pod, String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			EventList list = kubernetesClient.events().v1().events().inNamespace(namespace).list();
 			List<Event> items = list.getItems();
 			if (Objects.nonNull(items)) {
 				return items.stream()
-					.filter(item -> item.getRegarding().getKind().equals("Pod") &&
-						item.getRegarding().getName().equals(pod))
+					.filter(item -> item.getRegarding().getName().contains(pod))
 					.toList();
 			}
 			return new ArrayList<>();
@@ -816,12 +852,37 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadNames, String workspaceName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			EventList eventList = kubernetesClient.events().v1().events().inNamespace(workspaceName).list();
+			List<Event> items = eventList.getItems();
+			Map<String, Event> latestEventsByWorkloadName = new HashMap<>();
+
+			if (!CollectionUtils.isEmpty(items)) {
+				items.sort(Comparator.comparing((Event e) -> e.getMetadata().getCreationTimestamp())
+					.thenComparingLong(e -> Long.parseLong(e.getMetadata().getResourceVersion())));
+
+				for (Event item : items) {
+					String eventName = item.getRegarding().getName();
+					workloadNames.stream()
+						.filter(eventName::contains)
+						.findFirst()
+						.ifPresent(workloadName -> latestEventsByWorkloadName.put(workloadName, item));
+				}
+			}
+
+			workloadNames.forEach(workloadName -> latestEventsByWorkloadName.putIfAbsent(workloadName, null));
+			return latestEventsByWorkloadName;
+		}
+	}
+
+	@Override
 	public WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "ds-" + id;
-			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
-			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
-			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
+			List<Job> jobsInUseDataset = getJobsInUseVolume(datasetId, client);
+			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseVolume(datasetId, client);
+			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseVolume(datasetId, client);
 			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(datasetId, client);
 
 			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();
@@ -854,20 +915,6 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 				.usingWorkloads(workloads.subList(startIndex, endIndex))
 				.totalCount(totalCount)
 				.build();
-		}
-	}
-
-	@Override
-	public boolean isUsedDataset(Long datasetId) {
-		try (KubernetesClient client = k8sAdapter.configServer()) {
-			String label = "ds-" + datasetId;
-			if (getJobsInUseDataset(label, client).size() == 0 &&
-				getStatefulSetsInUseDataset(label, client).size() == 0 &&
-				getDeploymentsInUseDataset(label, client).size() == 0 &&
-				getMPIJobsInUseDataset(label, client).size() == 0) {
-				return false;
-			}
-			return true;
 		}
 	}
 
@@ -912,35 +959,83 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private static List<Job> getJobsInUseDataset(String key, KubernetesClient client) {
-		return client.batch().v1().jobs().inAnyNamespace().withLabelIn(key, "true")
-			.list()
-			.getItems();
+	@Override
+	public WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String volumeId = "vl-" + id;
+			List<Job> jobsInUseVolume = getJobsInUseVolume(volumeId, client);
+			List<StatefulSet> statefulSetsInUseVolume = getStatefulSetsInUseVolume(volumeId, client);
+			List<Deployment> deploymentsInUseVolume = getDeploymentsInUseVolume(volumeId, client);
+			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(volumeId, client);
+
+			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();
+			//워크로드 이름(사용자가 지정한 이름), 상태, job Type, 생성자 이름, 생성일자
+			for (Job job : jobsInUseVolume) {
+				getWorkloadInfoUsingDataset(workloads, job, WorkloadResourceType.JOB);
+			}
+			for (StatefulSet statefulSet : statefulSetsInUseVolume) {
+				getWorkloadInfoUsingDataset(workloads, statefulSet, WorkloadResourceType.STATEFULSET);
+			}
+			for (Deployment deployment : deploymentsInUseVolume) {
+				getWorkloadInfoUsingDataset(workloads, deployment, WorkloadResourceType.DEPLOYMENT);
+			}
+			for (MPIJob mpiJob : mpiJobsInUseDataset) {
+				getWorkloadInfoUsingDataset(workloads, mpiJob, WorkloadResourceType.DISTRIBUTED);
+			}
+			int totalCount = workloads.size();
+			int startIndex = (pageNo - 1) * pageSize;
+			int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+			if (startIndex >= totalCount || endIndex <= startIndex) {
+				// 페이지 범위를 벗어나면 빈 리스트 반환
+				return WorkloadResDTO.PageUsingVolumeDTO.builder()
+					.usingWorkloads(null)
+					.totalCount(totalCount)
+					.build();
+			}
+
+			return WorkloadResDTO.PageUsingVolumeDTO.builder()
+				.usingWorkloads(workloads.subList(startIndex, endIndex))
+				.totalCount(totalCount)
+				.build();
+		}
 	}
 
-	private static List<Deployment> getDeploymentsInUseDataset(String key, KubernetesClient client) {
-		return client.apps().deployments().inAnyNamespace().withLabelIn(key, "true")
-			.list()
-			.getItems();
+	@Override
+	public boolean isUsedDataset(Long datasetId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "ds-" + datasetId;
+			if (getJobsInUseVolume(label, client).size() == 0 &&
+				getStatefulSetsInUseVolume(label, client).size() == 0 &&
+				getDeploymentsInUseVolume(label, client).size() == 0 &&
+				getMPIJobsInUseDataset(label, client).size() == 0) {
+				return false;
+			}
+			return true;
+		}
 	}
 
-	private static List<StatefulSet> getStatefulSetsInUseDataset(String key, KubernetesClient client) {
-		return client
-			.apps()
-			.statefulSets()
-			.inAnyNamespace()
-			.withLabelIn(key, "true")
-			.list()
-			.getItems();
+	@Override
+	public boolean isUsedVolume(Long volumeId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "vl-" + volumeId;
+			if (getJobsInUseVolume(label, client).size() == 0 &&
+				getStatefulSetsInUseVolume(label, client).size() == 0 &&
+				getDeploymentsInUseVolume(label, client).size() == 0 &&
+				getMPIJobsInUseDataset(label, client).size() == 0) {
+				return false;
+			}
+			return true;
+		}
 	}
 
 	@Override
 	public WorkloadResDTO.PageUsingModelDTO workloadsUsingModel(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String datasetId = "md-" + id;
-			List<Job> jobsInUseDataset = getJobsInUseDataset(datasetId, client);
-			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseDataset(datasetId, client);
-			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseDataset(datasetId, client);
+			List<Job> jobsInUseDataset = getJobsInUseVolume(datasetId, client);
+			List<StatefulSet> statefulSetsInUseDataset = getStatefulSetsInUseVolume(datasetId, client);
+			List<Deployment> deploymentsInUseDataset = getDeploymentsInUseVolume(datasetId, client);
 			List<MPIJob> mpiJobsInUseDataset = getMPIJobsInUseDataset(datasetId, client);
 
 			List<WorkloadResDTO.UsingWorkloadDTO> workloads = new ArrayList<>();
@@ -988,6 +1083,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get();
 		}
 	}
+
 	@Override
 	public Deployment getInteractiveJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
@@ -1052,7 +1148,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private DeploymentList getInteractiveJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+	private DeploymentList getInteractiveJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName,
+		String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.apps()
 				.deployments()
@@ -1098,7 +1195,6 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private Map<Long, Map<String, String>> getVolumesInfoMap(List<JobVolumeVO> jobVolumeVOList) {
 		Map<Long, Map<String, String>> volumesMap = new HashMap<>();
 		for (JobVolumeVO jobVolumeVO : jobVolumeVOList) {
-			Long id = jobVolumeVO.id();
 			String mountPath = jobVolumeVO.mountPath();
 			volumesMap.computeIfAbsent(jobVolumeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
 		}

@@ -7,6 +7,7 @@ import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.DatasetWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.dataset.entity.ModelWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
+import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
@@ -24,9 +25,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class DevelopEntity extends WorkloadEntity{
+public class DevelopEntity extends WorkloadEntity {
 	@Column(name = "REMAIN_TIME")
-	protected int remainTime;
+	protected Integer remainTime;
 	@Column(name = "WORKLOAD_PARAMETER")
 	protected String parameter;
 	@Builder.Default
@@ -35,6 +36,9 @@ public class DevelopEntity extends WorkloadEntity{
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
+	protected List<VolumeWorkLoadMappingEntity> volumeWorkloadMappingList = new ArrayList<>();
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = new ArrayList<>();

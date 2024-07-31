@@ -25,7 +25,8 @@ public class ModuleDistributedJobResDTO extends AbstractDistributedWorkloadResDT
 		super(mpiJob);
 		Containers launcherContainers = getLauncherContainers(mpiJob);
 		// 데이터셋, 모델 마운트 패스 정보
-		super.initializeVolumeMountPath(mpiJob.getMetadata().getAnnotations());
+		super.initializeVolumeMountPath(
+			mpiJob.getSpec().getMpiReplicaSpecs().get("Launcher").getTemplate().getMetadata().getAnnotations());
 		InitContainers mpiJobInitContainers = K8sInfoPicker.getMpiJobInitContainers(mpiJob);
 		if (mpiJobInitContainers != null) {
 			// 코드 정보

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -246,6 +247,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
+	public WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id) {
+		return workloadRepository.workloadsUsingVolume(pageNo, pageSize, id);
+	}
+
+	@Override
 	public void createDatasetDeployment(CreateDatasetDeployment createDeployment) {
 		workloadRepository.createDatasetDeployment(createDeployment);
 	}
@@ -263,6 +269,12 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public boolean isUsedDataset(Long datasetId) {
 		return workloadRepository.isUsedDataset(datasetId);
+	}
+
+	// isUsedVolume
+	@Override
+	public boolean isUsedVolume(Long volumeId) {
+		return workloadRepository.isUsedVolume(volumeId);
 	}
 
 	@Override
@@ -445,8 +457,12 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 
 	@Override
 	public List<Event> getWorkloadEventList(String workloadName, String workspace, WorkloadType workloadType) {
-		Pod jobPod = getJobPod(workspace, workloadName, workloadType);
-		return workloadRepository.getWorkloadEventList(jobPod.getMetadata().getName(), workspace);
+		return workloadRepository.getWorkloadEventList(workloadName, workspace);
+	}
+
+	@Override
+	public Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName) {
+		return workloadRepository.getWorkloadRecentlyEvent(workloadName, workspaceName);
 	}
 
 	@Override

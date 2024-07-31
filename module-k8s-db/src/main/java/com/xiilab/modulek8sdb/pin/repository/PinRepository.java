@@ -33,4 +33,8 @@ public interface PinRepository extends JpaRepository<PinEntity, Long> {
 	@Modifying
 	@Query("delete from TB_PIN t where t.resourceName = ?1 and t.type = ?2")
 	int deleteByResourceNameAndType(String resourceName, PinType type);
+
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("delete from TB_PIN p where p.type = :pinType and p.regUser.regUserId = :regUserId")
+	void deleteByResourceType_RegUserId(@Param("pinType") PinType pinType, @Param("regUserId") String regUserId);
 }

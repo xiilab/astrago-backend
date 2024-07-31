@@ -7,8 +7,11 @@ import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelResDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalVolumeDTO;
+import com.xiilab.modulek8s.facade.dto.CreateLocalVolumeResDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteLocalVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
@@ -66,13 +69,21 @@ public interface WorkloadModuleFacadeService {
 
 	CreateLocalDatasetResDTO createLocalDataset(CreateLocalDatasetDTO createLocalDatasetDTO);
 
+	CreateLocalVolumeResDTO createLocalVolume(CreateLocalVolumeDTO createLocalVolumeDTO);
+
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
+
+	WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
 	boolean isUsedDataset(Long datasetId);
 
+	boolean isUsedVolume(Long volumeId);
+
 	void deleteLocalDataset(DeleteLocalDatasetDTO deleteLocalDatasetDTO);
+
+	void deleteLocalVolume(DeleteLocalVolumeDTO deleteLocalVolumeDTO);
 
 	CreateLocalModelResDTO createLocalModel(CreateLocalModelDTO createDto);
 

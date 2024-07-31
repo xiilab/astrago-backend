@@ -27,6 +27,7 @@ public enum CommonErrorCode implements ErrorCode {
 	FILE_INFO_LOOKUP_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 정보 불러오기에 실패했습니다."),
 	FILE_DOWNLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 다운로드에 실패했습니다."),
 	FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 업로드를 실패했습니다."),
+	FILE_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 경로의 파일 삭제 실패했습니다."),
 	// alert
 	ALERT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 알림이 존재하지 않습니다."),
 	ALERT_NOT_FOUND_WORKSPACE_NAME(HttpStatus.NOT_FOUND.value(), "해당 워크스페이스 알림 설정이 존재하지 않습니다."),

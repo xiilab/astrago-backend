@@ -36,7 +36,7 @@ public class WorkloadSummaryDTO {
 	private WorkloadStatus status;               // 워크로드 status
 	private boolean isPinYN;                     // PIN YN
 	private AgeDTO age;                          // 워크로드 경과시간
-	private int remainTime;                      // 잔여시간
+	private Integer remainTime;                      // 잔여시간
 	private ImageType imageType;
 	private boolean canBeDeleted;
 	private Map<String, String> parameter;
@@ -61,7 +61,8 @@ public class WorkloadSummaryDTO {
 		this.remainTime = developEntity.getRemainTime();
 		this.imageType = !ObjectUtils.isEmpty(workload.getImage()) ? workload.getImage().getImageType() : null;
 		this.canBeDeleted = workload.isCanBeDeleted();
-		this.estimatedRemainingTime = developEntity.getRemainTime() != 0 ? LocalDateTime.now()
+		this.estimatedRemainingTime =
+			(developEntity.getRemainTime() != null && developEntity.getRemainTime() != 0) ? LocalDateTime.now()
 			.plusSeconds(developEntity.getRemainTime())
 			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "0";
 		this.startTime = workload.getStartTime() != null ?
@@ -74,6 +75,11 @@ public class WorkloadSummaryDTO {
 		}
 	}
 
+	public void updateCanBeDeleted(boolean isAdmin) {
+		if (isAdmin) {
+			this.canBeDeleted = true;
+		}
+	}
 	public void updatePinYN(boolean isPinYN) {
 		this.isPinYN = isPinYN;
 	}

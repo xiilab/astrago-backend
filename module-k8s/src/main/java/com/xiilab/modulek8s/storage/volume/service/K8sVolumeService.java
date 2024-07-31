@@ -20,7 +20,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.PageVolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
-import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
+import com.xiilab.modulek8s.storage.volume.repository.K8sVolumeRepository;
 
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -30,36 +30,36 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class VolumeService {
-	private final VolumeRepository volumeRepository;
+public class K8sVolumeService {
+	private final K8sVolumeRepository k8sVolumeRepository;
 
 	public String createVolume(CreateVolumeDTO createVolumeDTO) {
-		return volumeRepository.createVolume(createVolumeDTO);
+		return k8sVolumeRepository.createVolume(createVolumeDTO);
 	}
 
 	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName,
 		String storageMetaName) {
-		return volumeRepository.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
+		return k8sVolumeRepository.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
 	}
 
 	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName,
 		String volumeMetaName) {
-		return volumeRepository.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
+		return k8sVolumeRepository.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
 	}
 
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO) {
-		volumeRepository.modifyVolumeByMetaName(modifyVolumeDTO);
+		k8sVolumeRepository.modifyVolumeByMetaName(modifyVolumeDTO);
 	}
 
 	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO) {
-		volumeRepository.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
+		k8sVolumeRepository.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
 	}
 
 	public PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO) {
 		Pageable pageable = pageFindVolumeDTO.getPageable();
 		SearchCondition searchCondition = pageFindVolumeDTO.getSearchCondition();
 
-		List<PageVolumeResDTO> volumes = volumeRepository.findVolumesWithPagination(
+		List<PageVolumeResDTO> volumes = k8sVolumeRepository.findVolumesWithPagination(
 			pageFindVolumeDTO.getWorkspaceMetaName(), searchCondition.getOption(), searchCondition.getKeyword());
 		int pageNumber = pageable.getPageNumber();
 		int pageSize = pageable.getPageSize();
@@ -76,55 +76,55 @@ public class VolumeService {
 	public List<PageVolumeResDTO> findVolumes(FindVolumeDTO findVolumeDTO) {
 		String option = findVolumeDTO.getSearchCondition().getOption();
 		String keyword = findVolumeDTO.getSearchCondition().getKeyword();
-		return volumeRepository.findVolumes(option, keyword);
+		return k8sVolumeRepository.findVolumes(option, keyword);
 	}
 
 	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName) {
-		return volumeRepository.findVolumeByMetaName(volumeMetaName);
+		return k8sVolumeRepository.findVolumeByMetaName(volumeMetaName);
 	}
 
 	public void deleteVolumeByMetaName(String volumeMetaName) {
-		volumeRepository.deleteVolumeByMetaName(volumeMetaName);
+		k8sVolumeRepository.deleteVolumeByMetaName(volumeMetaName);
 	}
 
 	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
-		volumeRepository.modifyVolume(modifyVolumeDTO);
+		k8sVolumeRepository.modifyVolume(modifyVolumeDTO);
 	}
 
 	public void createPV(CreatePV createPV) {
-		volumeRepository.createPV(createPV);
+		k8sVolumeRepository.createPV(createPV);
 	}
 
 	public void createPVC(CreatePVC createPVC) {
-		volumeRepository.createPVC(createPVC);
+		k8sVolumeRepository.createPVC(createPVC);
 	}
 
 	public void deletePVC(String pvcName, String namespace) {
-		volumeRepository.deletePVC(pvcName, namespace);
+		k8sVolumeRepository.deletePVC(pvcName, namespace);
 	}
 
 	public void deletePV(String pvName) {
-		volumeRepository.deletePV(pvName);
+		k8sVolumeRepository.deletePV(pvName);
 	}
 
 	public void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
-		volumeRepository.deleteStorage(deleteStorageReqDTO);
+		k8sVolumeRepository.deleteStorage(deleteStorageReqDTO);
 	}
 
 	public List<String> getAstragoVolumes() {
-		List<VolumeMount> astragoVolumes = volumeRepository.getAstragoVolumes();
+		List<VolumeMount> astragoVolumes = k8sVolumeRepository.getAstragoVolumes();
 		return astragoVolumes.stream().map(volumeMount -> volumeMount.getName()).toList();
 	}
 
 	public void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVCs) {
-		volumeRepository.astragoCoreDeploymentConnectPVC(missingPVCs);
+		k8sVolumeRepository.astragoCoreDeploymentConnectPVC(missingPVCs);
 	}
 
 	public PersistentVolumeClaim createIbmPvc(String storageName) {
-		return volumeRepository.createIbmPvc(storageName);
+		return k8sVolumeRepository.createIbmPvc(storageName);
 	}
 
 	public void deleteIbmPvc(String storageName) {
-		volumeRepository.deleteIbmPvc(storageName);
+		k8sVolumeRepository.deleteIbmPvc(storageName);
 	}
 }

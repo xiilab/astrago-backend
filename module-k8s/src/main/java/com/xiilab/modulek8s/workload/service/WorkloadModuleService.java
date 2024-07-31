@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.io.Resource;
 
@@ -94,6 +95,8 @@ public interface WorkloadModuleService {
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
 
+	WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id);
+
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
 
 	void createModelDeployment(CreateModelDeployment createDeployment);
@@ -101,6 +104,8 @@ public interface WorkloadModuleService {
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
 
 	boolean isUsedDataset(Long datasetId);
+
+	boolean isUsedVolume(Long volumeId);
 
 	void deleteDeploymentByResourceName(String deploymentName, String namespace);
 
@@ -145,5 +150,7 @@ public interface WorkloadModuleService {
 	HasMetadata getJob(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	List<Pod> getWorkloadByWorkloadName(String resourceName);
+
+	Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName);
 
 }

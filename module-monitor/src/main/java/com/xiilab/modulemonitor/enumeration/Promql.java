@@ -193,7 +193,9 @@ public enum Promql {
 	DASHBOARD_WS_CPU_USAGE("round(((sum(kube_resourcequota{type=\"used\", resource=~\"requests.cpu\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.cpu\"} > 0) by(namespace)) * 100 , 0.01)", "", "DASHBOARD"),
 	DASHBOARD_WS_MEM_USAGE("round(((sum(kube_resourcequota{type=\"used\", resource=~\"requests.memory\"}) by(namespace)) / sum(kube_resourcequota{type=\"hard\", resource=~\"requests.memory\"} > 0) by(namespace)) * 100, 0.01)", "", "DASHBOARD"),
 	DASHBOARD_WS_PENDING_COUNT("count(kube_pod_status_phase{phase=\"Pending\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
-	DASHBOARD_WS_ERROR_COUNT("count(kube_pod_status_phase{namespace =~ \"ws.*\", phase !=\"Pending\", phase !=\"Running\", phase=\"Succeeded\"} > 0) by(namespace)", "", "DASHBOARD"),
+	DASHBOARD_WS_ERROR_COUNT(
+		"count(kube_pod_status_phase{namespace =~ \"ws.*\", phase !=\"Pending\", phase !=\"Running\", phase!=\"Succeeded\"} > 0) by(namespace)",
+		"", "DASHBOARD"),
 	DASHBOARD_WS_RUNNING_COUNT("count(kube_pod_status_phase{phase=\"Running\", namespace =~ \"ws.*\"} > 0) by(namespace)", "", "DASHBOARD"),
 
 

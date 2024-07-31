@@ -38,7 +38,6 @@ import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
-import com.xiilab.modulecommon.enums.K8sContainerReason;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
@@ -87,6 +86,7 @@ import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -96,16 +96,16 @@ import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
 import com.xiilab.servercore.credential.service.CredentialService;
-import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.image.dto.ImageResDTO;
 import com.xiilab.servercore.image.service.ImageService;
-import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.user.service.UserFacadeService;
+import com.xiilab.servercore.volume.dto.VolumeResDTO;
+import com.xiilab.servercore.volume.service.VolumeService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
@@ -141,6 +141,7 @@ public class WorkloadFacadeService {
 	private final NetworkRepository networkRepository;
 	private final UserFacadeService userFacadeService;
 	private final NodeFacadeService nodeFacadeService;
+	private final VolumeService volumeService;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserDTO.UserInfo userInfoDTO) {
@@ -158,13 +159,20 @@ public class WorkloadFacadeService {
 		}
 
 		// 데이터셋 볼륨 추가
-		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getDatasets())) {
+		// TODO 삭제 예정
+/*		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getDatasets())) {
 			setDatasetVolume(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getDatasets());
 		}
 
 		// 모델 볼륨 추가
 		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getModels())) {
 			setModelVolume(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getModels());
+		}
+		//*/
+
+		// 볼륨 추가
+		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getVolumes())) {
+			setVolumes(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getVolumes());
 		}
 
 		//Image IDE 정보 주입
@@ -180,6 +188,12 @@ public class WorkloadFacadeService {
 			if (StringUtils.hasText(createWorkloadReqDTO.getNodeName())) {
 				createWorkloadReqDTO.setNodeName(getMpsNodeName(createWorkloadReqDTO.getNodeName()));
 			}
+		}
+
+		// outputMountPath(사용자가 입력, 컨테이너 마운트 경로) <=> hostPath 볼륨 생성
+		// hostPath 형식: {defaultStorageHostPath} + "/workspace/{wsResourceName}/workloads/{wlResourceName}/models"
+		if (StringUtils.hasText(createWorkloadReqDTO.getOutputMountPath())) {
+			// defaultStoragePath 검색
 		}
 
 		try {
@@ -367,12 +381,15 @@ public class WorkloadFacadeService {
 			moduleJobResDTO.getResourceName());
 		// 이미지 DTO 세팅
 		FindWorkloadResDTO.Image image = generateImageResDTO(moduleJobResDTO);
+		// TODO 삭제 예쩡
 		// 모델 세팅
-		List<FindWorkloadResDTO.Volume> models = generateModelResDTO(moduleJobResDTO.getModelIds(),
-			moduleJobResDTO.getModelMountPathMap());
-		// 데이터셋 세팅
-		List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
-			moduleJobResDTO.getDatasetMountPathMap());
+		// List<FindWorkloadResDTO.Volume> models = generateModelResDTO(moduleJobResDTO.getModelIds(),
+		// 	moduleJobResDTO.getModelMountPathMap());
+		// // 데이터셋 세팅
+		// List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
+		// 	moduleJobResDTO.getDatasetMountPathMap());
+		List<FindWorkloadResDTO.Volume> volumes = generateDatasetResDTO(moduleJobResDTO.getVolumeIds(),
+			moduleJobResDTO.getVolumeMountPathMap());
 		// 코드 세팅
 		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
 		// PORT 세팅
@@ -384,16 +401,27 @@ public class WorkloadFacadeService {
 			.toList();
 
 		if (moduleJobResDTO.getType() == WorkloadType.DISTRIBUTED) {
+			// TODO 삭제 예정
+			// return FindWorkloadResDTO.DistributedWorkloadDetail.from((AbstractDistributedWorkloadResDTO)moduleJobResDTO,
+			// 	image, models, datasets, codes, ports, envs,
+			// 	nodeName);
 			return FindWorkloadResDTO.DistributedWorkloadDetail.from((AbstractDistributedWorkloadResDTO)moduleJobResDTO,
-				image, models, datasets, codes, ports, envs,
+				image, volumes, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.BATCH) {
+			// TODO 삭제 예정
+			// return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
+			// 	models, datasets, codes, ports, envs,
+			// 	nodeName);
 			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
-				models, datasets, codes, ports, envs,
+				volumes, codes, ports, envs,
 				nodeName);
 		} else if (moduleJobResDTO.getType() == WorkloadType.INTERACTIVE) {
+			// return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
+			// 	models, datasets, codes, ports, envs,
+			// 	nodeName);
 			return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
-				models, datasets, codes, ports, envs,
+				volumes, codes, ports, envs,
 				nodeName);
 		} else {
 			return null;
@@ -580,22 +608,7 @@ public class WorkloadFacadeService {
 	}
 
 	public void editWorkload(WorkloadType workloadType, WorkloadUpdateDTO workloadUpdateDTO) {
-		// workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
-		// try {
-		// 	if (workloadType == WorkloadType.BATCH) {
-		// 		workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
-		// 			workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-		// 			workloadUpdateDTO.getDescription());
-		// 	} else if (workloadType == WorkloadType.INTERACTIVE) {
-		// 		workloadModuleFacadeService.editInteractiveJob(workloadUpdateDTO.getWorkspaceResourceName(),
-		// 			workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
-		// 			workloadUpdateDTO.getDescription());
-		// 	}
-		// } catch (Exception e) {
-		//
-		// }
-
-		try {
+		/*	try {
 			if (workloadType == WorkloadType.BATCH) {
 				workloadModuleFacadeService.editBatchJob(workloadUpdateDTO.getWorkspaceResourceName(),
 					workloadUpdateDTO.getWorkloadResourceName(), workloadUpdateDTO.getName(),
@@ -607,7 +620,28 @@ public class WorkloadFacadeService {
 			}
 		} finally {
 			workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
-		}
+		}*/
+		workloadHistoryService.editWorkloadHistory(workloadUpdateDTO);
+	}
+
+	public List<WorkloadEventDTO.Recently> getWorkloadRecentlyEventReason(List<String> workloadNames,
+		String workspace) {
+		Map<String, Event> workloadRecentlyEvent = workloadModuleService.getWorkloadRecentlyEvent(workloadNames,
+			workspace);
+		return workloadRecentlyEvent.entrySet().stream()
+			.map(key -> {
+				if (key.getValue() == null) {
+					return WorkloadEventDTO.Recently.builder()
+						.workload(key.getKey())
+						.build();
+				}
+				return WorkloadEventDTO.Recently.builder()
+					.workload(key.getKey())
+					.type(key.getValue().getType())
+					.reason(key.getValue().getReason())
+					.build();
+			})
+			.toList();
 	}
 
 	public PageDTO<WorkloadEventDTO> getWorkloadEvent(WorkloadType workloadType,
@@ -640,8 +674,9 @@ public class WorkloadFacadeService {
 
 		//Age 정렬 조건 적용
 		if (workloadEventReqDTO.getAgeSortCondition() != null) {
-			// Event 클래스에 getAge 메소드가 있다고 가정합니다.
-			Comparator<Event> ageComparator = Comparator.comparing(event -> event.getMetadata().getCreationTimestamp());
+			Comparator<Event> ageComparator = Comparator
+				.comparing((Event event) -> event.getMetadata().getCreationTimestamp())
+				.thenComparingLong(event -> Long.parseLong(event.getMetadata().getResourceVersion()));
 			if (workloadEventReqDTO.getAgeSortCondition() == WorkloadEventAgeSortCondition.AGE_DESC) {
 				ageComparator = ageComparator.reversed();
 			}
@@ -655,12 +690,13 @@ public class WorkloadFacadeService {
 		}
 
 		List<WorkloadEventDTO> result = eventStream.map(event -> WorkloadEventDTO.builder()
-			.type(event.getType())
-			.reason(K8sContainerReason.valueOf(event.getReason()))
-			.from(event.getReportingController())
-			.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
-			.message(event.getNote())
-			.build()).toList();
+				.type(event.getType())
+				.reason(event.getReason())
+				.from(event.getReportingController())
+				.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
+				.message(event.getNote())
+				.build())
+			.toList();
 
 		return new PageDTO<>(result, workloadEventReqDTO.getPageNum(), workloadEventReqDTO.getPageSize());
 	}
@@ -776,7 +812,7 @@ public class WorkloadFacadeService {
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 	}
 
-	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+	/*private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
 		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
 			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
 			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
@@ -822,6 +858,31 @@ public class WorkloadFacadeService {
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
 					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType());
+			}
+		}
+	}*/
+
+	private void setVolumes(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Volume findVolume = volumeService.findById(moduleVolumeReqDTO.getId());
+			VolumeResDTO.ResVolumeWithStorage resVolumeWithStorage = VolumeResDTO.ResVolumeWithStorage.toDto(
+				findVolume);
+			if (resVolumeWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
+				String storagePath = resVolumeWithStorage.getStoragePath();
+				String saveDirectoryName = resVolumeWithStorage.getSaveDirectoryName();
+
+				// storagePath의 끝이 '/'로 끝나는지 여부 확인
+				if (!storagePath.endsWith(File.separator)) {
+					storagePath += File.separator;
+				}
+
+				String filePath = storagePath + saveDirectoryName;
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
+					filePath,
+					resVolumeWithStorage.getStorageType());
+			} else {
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
+					resVolumeWithStorage.getStoragePath(), resVolumeWithStorage.getStorageType());
 			}
 		}
 	}
@@ -1092,20 +1153,18 @@ public class WorkloadFacadeService {
 		PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
 		OverViewWorkloadResDTO<WorkloadSummaryDTO> overViewWorkloadResDTO = workloadHistoryService.getAdminWorkloadList(
 			workspaceName, workloadType, searchName, isCreatedByMe, workloadStatus, workloadSortCondition, pageRequest);
-		//workload 삭제 권한 체크
-		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		//page 계산
 		int totalSize = (int)overViewWorkloadResDTO.getTotalSize();
 		int totalPageNum = (int)Math.ceil(totalSize / (double)10);
 		workloadResDTOList.addAll(overViewWorkloadResDTO.getContent());
-		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(userInfoDTO.getId(), workspaceList));
+		workloadResDTOList.forEach(wl -> wl.updateCanBeDeleted(true));
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
 	}
 
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
-		return workloadHistoryService.getWorkloadInfoByResourceName(
+		return workloadHistoryService.getAdminWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
 		// 실행중일 떄

@@ -30,7 +30,7 @@ import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithStorageResDTO;
 import com.xiilab.modulek8s.storage.volume.dto.response.VolumeWithWorkloadsResDTO;
-import com.xiilab.modulek8s.storage.volume.service.VolumeService;
+import com.xiilab.modulek8s.storage.volume.service.K8sVolumeService;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.EditAstragoDeployment;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
@@ -43,7 +43,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class StorageModuleServiceImpl implements StorageModuleService{
-	private final VolumeService volumeService;
+	private final K8sVolumeService k8sVolumeService;
 	private final StorageClassService storageClassService;
 	private final WorkloadModuleService workloadModuleService;
 	private final SecretService secretService;
@@ -57,7 +57,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public void createVolume(CreateVolumeDTO createVolumeDTO){
 		//volume 생성
-		volumeService.createVolume(createVolumeDTO);
+		k8sVolumeService.createVolume(createVolumeDTO);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public List<VolumeResDTO> findVolumesByWorkspaceMetaNameAndStorageMetaName(String workspaceMetaName,
 		String storageMetaName) {
-		return volumeService.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
+		return k8sVolumeService.findVolumesByWorkspaceMetaNameAndStorageMetaName(workspaceMetaName, storageMetaName);
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public VolumeWithWorkloadsResDTO findVolumeWithWorkloadsByMetaName(String workspaceMetaName, String volumeMetaName){
-		return volumeService.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
+		return k8sVolumeService.findVolumeWithWorkloadsByMetaName(workspaceMetaName, volumeMetaName);
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public void modifyVolumeByMetaName(ModifyVolumeDTO modifyVolumeDTO){
-		volumeService.modifyVolumeByMetaName(modifyVolumeDTO);
+		k8sVolumeService.modifyVolumeByMetaName(modifyVolumeDTO);
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public void deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(DeleteVolumeDTO deleteVolumeDTO){
-		volumeService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
+		k8sVolumeService.deleteVolumeByWorkspaceMetaNameAndVolumeMetaName(deleteVolumeDTO);
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public PageResDTO findVolumesWithPagination(PageFindVolumeDTO pageFindVolumeDTO) {
-		return volumeService.findVolumesWithPagination(pageFindVolumeDTO);
+		return k8sVolumeService.findVolumesWithPagination(pageFindVolumeDTO);
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public List<PageVolumeResDTO> findVolumes(FindVolumeDTO findVolumeDTO) {
-		return volumeService.findVolumes(findVolumeDTO);
+		return k8sVolumeService.findVolumes(findVolumeDTO);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public VolumeWithStorageResDTO findVolumeByMetaName(String volumeMetaName){
-		return volumeService.findVolumeByMetaName(volumeMetaName);
+		return k8sVolumeService.findVolumeByMetaName(volumeMetaName);
 	}
 
 	/**
@@ -140,7 +140,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public void deleteVolumeByMetaName(String volumeMetaName) {
-		volumeService.deleteVolumeByMetaName(volumeMetaName);
+		k8sVolumeService.deleteVolumeByMetaName(volumeMetaName);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	 */
 	@Override
 	public void modifyVolume(ModifyVolumeDTO modifyVolumeDTO) {
-		volumeService.modifyVolume(modifyVolumeDTO);
+		k8sVolumeService.modifyVolume(modifyVolumeDTO);
 	}
 
 	@Override
@@ -208,7 +208,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.requestVolume(createStorageReqDTO.getRequestVolume())
 			.namespace(namespace)
 			.build();
-		volumeService.createPV(createPV);
+		k8sVolumeService.createPV(createPV);
 
 		//pvc 생성
 		CreatePVC createPVC = CreatePVC.builder()
@@ -216,7 +216,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.namespace(namespace)
 			.requestVolume(createStorageReqDTO.getRequestVolume())
 			.build();
-		volumeService.createPVC(createPVC);
+		k8sVolumeService.createPVC(createPVC);
 
 		//connect test pod 생성 후 pvc 연결 테스트
 		ConnectTestDTO connectTestDTO = ConnectTestDTO.builder()
@@ -258,8 +258,8 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			}if(!isAvailable){
 				//pvc, pv, connect deployment 삭제
 				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, namespace);
-				volumeService.deletePVC(pvcName, namespace);
-				volumeService.deletePV(pvName);
+				k8sVolumeService.deletePVC(pvcName, namespace);
+				k8sVolumeService.deletePV(pvName);
 				//연결 실패 응답
 				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
 			}
@@ -297,25 +297,25 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	public void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
 		if(deleteStorageReqDTO.getStorageType() == StorageType.IBM){
 			// pvc 삭제
-			volumeService.deleteIbmPvc(deleteStorageReqDTO.getPvcName());
+			k8sVolumeService.deleteIbmPvc(deleteStorageReqDTO.getPvcName());
 			// storage 삭제
 			storageClassService.deleteIbmStorage(deleteStorageReqDTO.getStorageName());
 			// secret 삭제
 			secretService.deleteIbmSecret(deleteStorageReqDTO.getSecretName());
 		}else{
 			//astrago deployment에 볼륨 제거
-			volumeService.deleteStorage(deleteStorageReqDTO);
+			k8sVolumeService.deleteStorage(deleteStorageReqDTO);
 			//PVC, PV 삭제
-			volumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
-			volumeService.deletePV(deleteStorageReqDTO.getPvName());
+			k8sVolumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
+			k8sVolumeService.deletePV(deleteStorageReqDTO.getPvName());
 		}
 	}
 
 	@Override
 	public void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> mounts) {
-		List<String> deploymentVolumeNames = volumeService.getAstragoVolumes();
+		List<String> deploymentVolumeNames = k8sVolumeService.getAstragoVolumes();
 		List<AstragoDeploymentConnectPVC> missingPVCs = getMissingPVCs(mounts, deploymentVolumeNames);
-		volumeService.astragoCoreDeploymentConnectPVC(missingPVCs);
+		k8sVolumeService.astragoCoreDeploymentConnectPVC(missingPVCs);
 	}
 
 	public static List<AstragoDeploymentConnectPVC> getMissingPVCs(List<AstragoDeploymentConnectPVC> astragoDeploymentPVCs, List<String> deploymentVolumeNames) {
@@ -342,6 +342,6 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	@Override
 	public PersistentVolumeClaim createIbmPvc(String storageName){
-		return volumeService.createIbmPvc(storageName);
+		return k8sVolumeService.createIbmPvc(storageName);
 	}
 }

@@ -1,10 +1,9 @@
 package com.xiilab.servercore.preset.dto.request;
 
-import org.springdoc.core.annotations.ParameterObject;
-
 import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulecommon.util.ValidUtils;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,10 +38,10 @@ public abstract class ResourcePresetReqDTO {
 	@Getter
 	@Setter
 	@NoArgsConstructor
-	@ParameterObject
 	public static class FindSearchCondition {
 		private Integer page = 0;
 		private Integer size = Integer.MAX_VALUE;
+		@Parameter(required = true)
 		private NodeType nodeType;
 
 		public void setPage(Integer page) {

@@ -103,9 +103,10 @@ public abstract class WorkloadEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();
-	@Builder.Default
-	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	protected List<VolumeEntity> volumeList = new ArrayList<>();
+	// TODO 삭제 예정
+	// @Builder.Default
+	// @OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	// protected List<VolumeEntity> volumeList = new ArrayList<>();
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<PortEntity> portList = new ArrayList<>();
@@ -126,6 +127,12 @@ public abstract class WorkloadEntity {
 
 	public void updateCanBeDeleted(String creator, Set<String> ownerWorkspace) {
 		if (this.creatorId.equals(creator) || ownerWorkspace.contains(this.workspaceResourceName)) {
+			this.canBeDeleted = true;
+		}
+	}
+
+	public void updateCanBeDeleted(boolean isAdmin) {
+		if (isAdmin) {
 			this.canBeDeleted = true;
 		}
 	}

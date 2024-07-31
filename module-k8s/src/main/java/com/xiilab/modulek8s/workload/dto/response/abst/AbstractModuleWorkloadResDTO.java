@@ -57,15 +57,19 @@ public abstract class AbstractModuleWorkloadResDTO {
 	protected List<ModuleEnvResDTO> envs;          // env 정의
 	protected List<ModulePortResDTO> ports;        // port 정의
 	protected List<ModuleCodeResDTO> codes;        // port 정의
-	protected Map<Long, String> datasetMountPathMap = new HashMap<>();    // dataset - mount path 맵
-	protected Map<Long, String> modelMountPathMap = new HashMap<>(); // model - mount path 맵
+	// TODO 삭제 예정
+	/*protected Map<Long, String> datasetMountPathMap = new HashMap<>();    // dataset - mount path 맵
+	protected Map<Long, String> modelMountPathMap = new HashMap<>(); // model - mount path 맵*/
+	protected Map<Long, String> volumeMountPathMap = new HashMap<>();    // dataset - mount path 맵
 	protected String command;                      // 워크로드 명령
 	protected WorkloadStatus status;               // 워크로드 status
 	protected boolean isPinYN;                     // PIN YN
 	protected AgeDTO age;                          // 워크로드 경과시간
-	protected int remainTime;                      // 잔여시간
-	protected String datasetIds;
-	protected String modelIds;
+	protected Integer remainTime;                      // 잔여시간
+	// TODO 삭제 예정
+	// protected String datasetIds;
+	// protected String modelIds;
+	protected String volumeIds;
 	protected String codeIds;
 	protected Long imageId;
 	protected ImageType imageType;
@@ -105,8 +109,10 @@ public abstract class AbstractModuleWorkloadResDTO {
 			createdAt = DateUtils.convertK8sUtcTimeString(hasMetadata.getMetadata().getCreationTimestamp());
 			age = createdAt != null ? new AgeDTO(createdAt) : null;
 			type = getType();
-			datasetIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.DATASET_IDS.getField());
-			modelIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.MODEL_IDS.getField());
+			// TODO 삭제예정
+			// datasetIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.DATASET_IDS.getField());
+			// modelIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.MODEL_IDS.getField());
+			volumeIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.VOLUME_IDS.getField());
 			codeIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CODE_IDS.getField());
 			imageType = ImageType.valueOf(
 				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_TYPE.getField()));
@@ -163,6 +169,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 			Map<String, String> pathMap = codeMountPathMap.get(code.getRepositoryUrl());
 			pathMap.put("mountPath", code.getMountPath());
 			pathMap.put("branch", code.getBranch());
+			pathMap.put("command", code.getCommand());
 		}
 	}
 
@@ -170,10 +177,14 @@ public abstract class AbstractModuleWorkloadResDTO {
 		annotations.entrySet().forEach(entry -> {
 			String key = entry.getKey();
 			String value = entry.getValue();
-			if (key.startsWith("ds-")) {
+			// TODO 삭제 예정
+			/*if (key.startsWith("ds-")) {
 				this.datasetMountPathMap.put(Long.parseLong(key.split("-")[1]), value);
 			} else if (key.startsWith("md-")) {
 				this.modelMountPathMap.put(Long.parseLong(key.split("-")[1]), value);
+			}*/
+			if (key.startsWith("vl-")) {
+				this.volumeMountPathMap.put(Long.parseLong(key.split("-")[1]), value);
 			}
 		});
 	}

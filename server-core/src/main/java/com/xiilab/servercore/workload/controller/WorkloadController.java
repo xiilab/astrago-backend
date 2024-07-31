@@ -50,6 +50,7 @@ import com.xiilab.servercore.workload.service.WorkloadFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -62,10 +63,15 @@ public class WorkloadController {
 	private final HubService hubService;
 
 	@PostMapping("/workloads")
-	@Operation(summary = "워크로드 생성")
+	@Operation(
+		summary = "워크로드 생성",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "Create the User"
+		)
+	)
 	public ResponseEntity<HttpStatus> createWorkload(
-		@RequestBody CreateSingleWorkloadJobReqDTO createWorkloadJobReqDTO,
-		UserDTO.UserInfo userInfoDTO) {
+		@Valid @RequestBody CreateSingleWorkloadJobReqDTO createWorkloadJobReqDTO,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -125,6 +131,16 @@ public class WorkloadController {
 			workloadFacadeService.getWorkloadEvent(workloadType, workloadEventDTO),
 			HttpStatus.OK
 		);
+	}
+
+	@GetMapping("/workloads/event/reason")
+	@Operation(summary = "워크로드의 최근 event reason 조회")
+	public ResponseEntity<List<WorkloadEventDTO.Recently>> getWorkloadRecentlyEventReason(
+		@RequestParam List<String> workloadNames,
+		@RequestParam String workspace
+	) {
+		return new ResponseEntity<>(workloadFacadeService.getWorkloadRecentlyEventReason(workloadNames, workspace),
+			HttpStatus.OK);
 	}
 
 	@GetMapping("/workloads/jobList")

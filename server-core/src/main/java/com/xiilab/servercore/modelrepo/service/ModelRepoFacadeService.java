@@ -8,7 +8,7 @@ import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 
 public interface ModelRepoFacadeService {
 
-	void createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO, List<MultipartFile> files);
+	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO);
 
 	List<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName);
 
@@ -16,6 +16,8 @@ public interface ModelRepoFacadeService {
 
 	void deleteModelRepoById(long modelRepoId);
 
-	void modifyModelRepo(long modelRepoId, ModelRepoDTO.RequestDTO modelRepoDTO);
+	void registerOrVersionUpModelRepo(List<MultipartFile> files, ModelRepoDTO.wlModelRepoDTO modelRepoDTO);
+
+	void deleteModelRepoVersion(long versionId);
 
 }

@@ -91,8 +91,10 @@ public class InteractiveJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.IMAGE_NAME.getField(), getImage().name());
 		annotationMap.put(AnnotationField.IMAGE_TYPE.getField(), getImage().imageType().name());
 		annotationMap.put(AnnotationField.IMAGE_CREDENTIAL_ID.getField(), imageCredentialId);
-		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
-		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
+		// TODO 삭제 예정
+		// annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
+		// annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
+		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getJobVolumeIds(this.volumes));
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
@@ -117,8 +119,10 @@ public class InteractiveJobVO extends WorkloadVO {
 		map.put(LabelField.JOB_NAME.getField(), jobName);
 		map.put(LabelField.GPU_NAME.getField(), gpuName);
 		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
-		this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
-		this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
+		// TODO 삭제 예정
+		// this.datasets.forEach(dataset -> addVolumeMap(map, "ds-", dataset.id()));
+		// this.models.forEach(model -> addVolumeMap(map, "md-", model.id()));
+		this.volumes.forEach(volume -> addVolumeMap(map, "vl-", volume.id()));
 		this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
 
 		return map;
@@ -162,8 +166,10 @@ public class InteractiveJobVO extends WorkloadVO {
 		}
 		cloneGitRepo(podSpecBuilder, codes);
 		addDefaultVolume(podSpecBuilder);
-		addVolumes(podSpecBuilder, datasets);
-		addVolumes(podSpecBuilder, models);
+		// TODO 삭제예정
+		// addVolumes(podSpecBuilder, datasets);
+		// addVolumes(podSpecBuilder, models);
+		addVolumes(podSpecBuilder, volumes);
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withTerminationGracePeriodSeconds(20L)
@@ -177,8 +183,10 @@ public class InteractiveJobVO extends WorkloadVO {
 		if (this.gpuType != GPUType.MPS) {
 			addDefaultShmVolumeMountPath(podSpecContainer);
 		}
-		addVolumeMount(podSpecContainer, datasets);
-		addVolumeMount(podSpecContainer, models);
+		// TODO 삭제 예정
+		// addVolumeMount(podSpecContainer, datasets);
+		// addVolumeMount(podSpecContainer, models);
+		addVolumeMount(podSpecContainer, volumes);
 		addContainerSourceCode(podSpecContainer);
 		addContainerResource(podSpecContainer);
 

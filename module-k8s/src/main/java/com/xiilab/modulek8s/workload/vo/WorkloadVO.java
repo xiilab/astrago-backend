@@ -44,8 +44,12 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	Float memRequest;        // 워크로드 mem 요청량
 	//SchedulingType schedulingType;        // 스케줄링 방식
 	List<JobCodeVO> codes;    // code 정의
-	List<JobVolumeVO> datasets;
-	List<JobVolumeVO> models;
+	// TODO 삭제 예정
+	// List<JobVolumeVO> datasets;
+	// List<JobVolumeVO> models;
+	//
+
+	List<JobVolumeVO> volumes;
 	String secretName;
 	String nodeName;
 	GPUType gpuType;
@@ -164,6 +168,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		result.add(new EnvVarBuilder().withName(GitEnvType.REPOSITORY_TYPE.name())
 			.withValue(codeVO.repositoryType().name())
 			.build());
+		result.add(new EnvVarBuilder().withName(GitEnvType.COMMAND.name()).withValue(codeVO.command()).build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_TIMEOUT.name()).withValue("600").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_ROOT.name()).withValue("/git").build());
 		result.add(new EnvVarBuilder().withName(GitEnvType.GIT_SYNC_DEST.name()).withValue("code").build());
@@ -216,8 +221,10 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 
 	protected Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
-		this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
-		this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
+		// TODO 삭제 예정
+		// this.datasets.forEach(dataset -> map.put("ds-" + dataset.id(), dataset.mountPath()));
+		// this.models.forEach(model -> map.put("md-" + model.id(), model.mountPath()));
+		this.volumes.forEach(volume -> map.put("vl-" + volume.id(), volume.mountPath()));
 		this.codes.forEach(code -> {
 			if (!ValidUtils.isNullOrZero(code.id())) {
 				map.put("cd-" + code.id(), code.mountPath());

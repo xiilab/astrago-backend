@@ -38,8 +38,18 @@ public class AgeDTO {
 
 		// ZonedDateTime을 LocalDateTime으로 변환
 		LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+
+		// KST인경우
+		LocalDateTime nowLocalDateTime = LocalDateTime.now();
+		// UTC
+		if (creationTimestamp.contains("Z")) {
+			// UTC 시간대를 기준으로 현재 시간을 가져옴
+			ZonedDateTime nowUTC = ZonedDateTime.now(ZoneId.of("UTC"));
+			nowLocalDateTime = nowUTC.toLocalDateTime();
+		}
+
 		// Duration을 사용하여 시간 차이 계산
-		Duration duration = Duration.between(localDateTime, LocalDateTime.now());
+		Duration duration = Duration.between(localDateTime, nowLocalDateTime);
 		days = duration.toDays();
 		hour = duration.toHours() % 24;
 		minutes = duration.toMinutes() % 60;
