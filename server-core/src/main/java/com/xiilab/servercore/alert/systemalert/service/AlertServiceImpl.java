@@ -228,7 +228,7 @@ public class AlertServiceImpl implements AlertService {
 	@Transactional
 	public void readSystemAlerts(UserDTO.UserInfo userInfoDTO, String alertRole){
 		List<SystemAlertEntity> systemAlertEntities = systemAlertRepository.getSystemAlertEntitiesByRecipientIdAndAlertRole(
-			userInfoDTO.getId(), alertRole);
+			userInfoDTO.getId(), AlertRole.valueOf(alertRole));
 		systemAlertEntities.forEach(SystemAlertEntity::readAlert);
 	}
 
