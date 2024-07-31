@@ -270,6 +270,8 @@ public class BatchJobVO extends WorkloadVO {
 				.build()
 			).toList();
 		List<EnvVar> result = new ArrayList<>(envVars);
+		//userId, workloadName, url을 env로 추가
+		result.addAll(getMetadataEnv());
 		// GPU 미사용시, GPU 접근 막는 환경변수
 		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
 			result.add(new EnvVarBuilder()

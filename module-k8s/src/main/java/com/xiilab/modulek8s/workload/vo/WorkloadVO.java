@@ -238,4 +238,20 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	public abstract List<String> convertCmd();
 
 	public abstract WorkloadType getWorkloadType();
+
+	protected List<EnvVar> getMetadataEnv() {
+		EnvVar wlNameEnv = new EnvVarBuilder()
+			.withName("ASTRAGO_WORKLOAD_NAME")
+			.withValue(getResourceName())
+			.build();
+		EnvVar userId = new EnvVarBuilder()
+			.withName("ASTRAGO_USER_ID")
+			.withValue(getCreatorUserName())
+			.build();
+		EnvVar url = new EnvVarBuilder()
+			.withName("ASTRAGO_URL")
+			.withValue("astrago-backend-experiment.astrago.svc.cluster.local")
+			.build();
+		return List.of(wlNameEnv, userId, url);
+	}
 }
