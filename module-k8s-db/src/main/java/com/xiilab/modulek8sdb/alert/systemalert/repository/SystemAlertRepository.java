@@ -11,6 +11,6 @@ import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 public interface SystemAlertRepository extends JpaRepository<SystemAlertEntity, Long>, SystemAlertRepositoryCustom {
 	List<SystemAlertEntity> getAlertEntitiesByRecipientId(String recipientId);
 
-	@Query("select t from TB_SYSTEM_ALERT t where t.recipientId = :userId and t.readYN = 'N'")
-	List<SystemAlertEntity> getSystemAlertEntitiesByRegUser_RegUserId(@Param("userId") String userId);
+	@Query("select t from TB_SYSTEM_ALERT t where t.recipientId = :userId and t.alertRole = :alertRole and t.readYN = 'N'")
+	List<SystemAlertEntity> getSystemAlertEntitiesByRecipientIdAndAlertRole(@Param("userId") String userId, @Param("alertRole") String alertRole);
 }

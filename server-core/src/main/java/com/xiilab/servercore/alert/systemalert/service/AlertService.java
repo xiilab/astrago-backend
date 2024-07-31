@@ -28,5 +28,5 @@ public interface AlertService {
 	void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName, ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
 		UserDTO.UserInfo userInfoDTO);
 
-	void readSystemAlerts(UserDTO.UserInfo userInfoDTO);
+	void readSystemAlerts(UserDTO.UserInfo userInfoDTO, String findSearchCondition);
 }
