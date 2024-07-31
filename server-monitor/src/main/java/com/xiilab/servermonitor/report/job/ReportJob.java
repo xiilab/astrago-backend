@@ -132,18 +132,18 @@ public class ReportJob extends QuartzJobBean {
 		// SMTP 정보 조회
 		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
 		// SMTP 등록 체크
-		if(ObjectUtils.isEmpty(smtpEntities)){
+		if (ObjectUtils.isEmpty(smtpEntities)) {
 			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
 		}
 		// SMTP MAIL 전송
-		for(SmtpEntity smtpEntity : smtpEntities){
+		for (SmtpEntity smtpEntity : smtpEntities) {
 			SmtpDTO smtpDTO = SmtpDTO.builder()
 				.host(smtpEntity.getHost())
 				.port(smtpEntity.getPort())
 				.username(smtpEntity.getUserName())
 				.password(smtpEntity.getPassword())
 				.build();
-			if(mailService.sendMail(mailDTO, smtpDTO)){
+			if (mailService.sendMail(mailDTO, smtpDTO)) {
 				// SMTP SEND COUNT++
 				smtpEntity.increment();
 				break;

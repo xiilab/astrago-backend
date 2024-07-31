@@ -72,6 +72,7 @@ public interface WorkloadModuleFacadeService {
 	CreateLocalVolumeResDTO createLocalVolume(CreateLocalVolumeDTO createLocalVolumeDTO);
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
+
 	WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id);
 
 	void modifyLocalDatasetDeployment(ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO);
@@ -81,6 +82,7 @@ public interface WorkloadModuleFacadeService {
 	boolean isUsedVolume(Long volumeId);
 
 	void deleteLocalDataset(DeleteLocalDatasetDTO deleteLocalDatasetDTO);
+
 	void deleteLocalVolume(DeleteLocalVolumeDTO deleteLocalVolumeDTO);
 
 	CreateLocalModelResDTO createLocalModel(CreateLocalModelDTO createDto);

@@ -114,6 +114,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # experiment image build & push
+      - name: Build and push Experiment Docker images
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: ./server-experiment
+          file: server-experiment/Dockerfile
+          push: true
+          tags: ${{ env.HARBOR_REPOSITORY }}/experiment:${{ steps.extract_image_tag.outputs.image-tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
 
   delivery:
     needs: [ integration ]
@@ -132,6 +143,7 @@ jobs:
             yq -i '.astrago.core.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
             yq -i '.astrago.batch.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
             yq -i '.astrago.monitor.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.experiment.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |

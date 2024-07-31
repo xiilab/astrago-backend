@@ -59,10 +59,11 @@ public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	protected Integer resourcePresetId;
 	@Setter
 	protected FrameWorkType ide;
-	protected String outputMountPath;	// output 마운트 경로
+	protected String outputMountPath;    // output 마운트 경로
 	@JsonIgnore
 	protected String jobName = ResourceType.WORKLOAD.getName() + "-" + UUID.randomUUID();
 	protected Set<Long> labelIds;
+
 	public abstract CreateWorkloadReqDTO toModuleDTO(String initContainerUrl);
 
 	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {

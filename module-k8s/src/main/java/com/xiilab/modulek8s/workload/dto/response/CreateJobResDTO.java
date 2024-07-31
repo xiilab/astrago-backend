@@ -30,7 +30,8 @@ public class CreateJobResDTO extends AbstractModuleWorkloadResDTO {
 	// private Map<Long, Map<String, String>> modelInfoMap;
 	private Map<Long, Map<String, String>> volumeInfoMap;
 
-	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> volumeInfoMap) {
+	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap,
+		Map<Long, Map<String, String>> volumeInfoMap) {
 		super(deployment);
 		initializeFromContainer(deployment.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = K8sInfoPicker.getInteractiveWorkloadStatus(deployment.getStatus());
@@ -41,7 +42,8 @@ public class CreateJobResDTO extends AbstractModuleWorkloadResDTO {
 		// this.modelInfoMap = modelInfoMap;
 	}
 
-	public CreateJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap, Map<Long, Map<String, String>> volumeInfoMap) {
+	public CreateJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap,
+		Map<Long, Map<String, String>> volumeInfoMap) {
 		super(job);
 		initializeFromContainer(job.getSpec().getTemplate().getSpec().getContainers().get(0));
 		status = K8sInfoPicker.getBatchWorkloadStatus(job.getStatus());

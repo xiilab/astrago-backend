@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorValue("LOCAL")
 @Getter
-public class LocalVolumeEntity extends Volume{
+public class LocalVolumeEntity extends Volume {
 	@Column(name = "STORAGE_IP")
 	private String ip;
 	@Column(name = "STORAGE_TYPE")
@@ -42,7 +42,9 @@ public class LocalVolumeEntity extends Volume{
 	private String pvcName;
 
 	@Builder
-	public LocalVolumeEntity(Long volumeId, String volumeName, VolumeAccessType volumeAccessType, OutputVolumeYN outputVolumeYN, String ip, StorageType storageType, String storagePath, String dns, String deploymentName
+	public LocalVolumeEntity(Long volumeId, String volumeName, VolumeAccessType volumeAccessType,
+		OutputVolumeYN outputVolumeYN, String ip, StorageType storageType, String storagePath, String dns,
+		String deploymentName
 		, String svcName, String pvName, String pvcName, String defaultPath) {
 		super(volumeId, volumeName, defaultPath, volumeAccessType, outputVolumeYN);
 		this.ip = ip;

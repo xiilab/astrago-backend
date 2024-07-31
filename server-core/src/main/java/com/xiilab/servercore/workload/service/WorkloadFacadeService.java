@@ -18,7 +18,9 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +88,7 @@ import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -101,7 +104,6 @@ import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
-import com.xiilab.servercore.storage.service.StorageService;
 import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.volume.dto.VolumeResDTO;
 import com.xiilab.servercore.volume.service.VolumeFacadeService;
@@ -134,7 +136,6 @@ public class WorkloadFacadeService {
 	private final DatasetService datasetService;
 	private final ModelService modelService;
 	private final VolumeService volumeService;
-	private final StorageService storageService;
 	private final WorkloadHistoryService workloadHistoryService;
 	private final CredentialService credentialService;
 	private final CodeService codeService;
@@ -184,7 +185,8 @@ public class WorkloadFacadeService {
 				createWorkloadReqDTO.getOutputMountPath(),
 				VolumeAccessType.PRIVATE);
 			// reqDTO에 추가
-			createWorkloadReqDTO.getVolumes().add(new ModuleVolumeReqDTO(volumeId, createWorkloadReqDTO.getOutputMountPath()));
+			createWorkloadReqDTO.getVolumes()
+				.add(new ModuleVolumeReqDTO(volumeId, createWorkloadReqDTO.getOutputMountPath()));
 		}
 
 		// 볼륨 추가
@@ -350,7 +352,6 @@ public class WorkloadFacadeService {
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 
-
 		FindWorkloadResDTO findWorkloadResDTO = workloadHistoryService.getWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
@@ -358,7 +359,8 @@ public class WorkloadFacadeService {
 			if (findWorkloadResDTO.getImage().getType() == ImageType.HUB) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
-				findWorkloadResDTO.updateHubPredictTime(moduleBatchJobResDTO.getEstimatedInitialTime(), moduleBatchJobResDTO.getEstimatedRemainingTime());
+				findWorkloadResDTO.updateHubPredictTime(moduleBatchJobResDTO.getEstimatedInitialTime(),
+					moduleBatchJobResDTO.getEstimatedRemainingTime());
 			}
 
 			return findWorkloadResDTO;
@@ -415,7 +417,7 @@ public class WorkloadFacadeService {
 		// List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
 		// 	moduleJobResDTO.getDatasetMountPathMap());
 		List<FindWorkloadResDTO.Volume> volumes = generateDatasetResDTO(moduleJobResDTO.getVolumeIds(),
-				moduleJobResDTO.getVolumeMountPathMap());
+			moduleJobResDTO.getVolumeMountPathMap());
 		// 코드 세팅
 		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
 		// PORT 세팅
@@ -1226,5 +1228,10 @@ public class WorkloadFacadeService {
 		// 	}
 		// }
 		// return null;
+	}
+
+	public Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus,
+		Pageable pageable) {
+		return workloadHistoryService.getExperiments(searchCondition, workloadStatus, pageable);
 	}
 }

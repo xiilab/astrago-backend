@@ -121,7 +121,7 @@ public class SystemAlertController {
 	public ResponseEntity<HttpStatus> readSystemAlerts(
 		@RequestParam(name = "alertRole") String alertRole,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
-	){
+	) {
 		alertService.readSystemAlerts(userInfoDTO, alertRole);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

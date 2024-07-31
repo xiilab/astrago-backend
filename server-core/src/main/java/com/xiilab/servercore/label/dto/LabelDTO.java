@@ -32,6 +32,7 @@ public class LabelDTO {
 	public static class ResponseDTO extends LabelDTO {
 		private long labelId;
 		private int order;
+
 		public static ResponseDTO convertLabelDTO(LabelEntity labelEntity) {
 			return ResponseDTO.builder()
 				.labelId(labelEntity.getId())

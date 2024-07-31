@@ -26,7 +26,7 @@ public enum WorkloadErrorCode implements ErrorCode {
 	FAILED_UPDATE_END_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 수정에 실패하였습니다."),
 	FAILED_LOAD_CODE_CREDENTIAL_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"코드의 크레덴셜 정보 조회에 실패하였습니다."),
 	FAILED_LOAD_IMAGE_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드의 이미지 정보를 조회할 수 없습니다."),
-	FAILED_CREATE_INITIALIZE(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 생성 중 초기화에 실패했습니다."),
+	FAILED_CREATE_INITIALIZE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "워크로드 생성 중 초기화에 실패했습니다."),
 	WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR(HttpStatus.BAD_REQUEST.value(), "워크로드 최적화 정책 생성은 5시간 이상, 24시간 이하만 가능합니다."),
 	FAILED_POD_START_DATE_CONVERSION(HttpStatus.INTERNAL_SERVER_ERROR.value(), "워크로드 실제 실행시간 포맷을 변경하는 중에 오류가 발생하였습니다.")
 	;

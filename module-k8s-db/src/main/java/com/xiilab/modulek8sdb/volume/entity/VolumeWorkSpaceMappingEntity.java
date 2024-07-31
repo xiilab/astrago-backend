@@ -36,6 +36,7 @@ public class VolumeWorkSpaceMappingEntity extends BaseEntity {
 	private String workspaceResourceName;
 	@Column(name = "VOLUME_DEFAULT_MOUNT_PATH")
 	private String volumeDefaultMountPath;
+
 	@Builder
 	public VolumeWorkSpaceMappingEntity(Volume volume, String workspaceResourceName, String volumeDefaultMountPath) {
 		this.volume = volume;

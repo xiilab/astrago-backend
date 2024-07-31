@@ -13,5 +13,6 @@ public interface SystemAlertRepository extends JpaRepository<SystemAlertEntity, 
 	List<SystemAlertEntity> getAlertEntitiesByRecipientId(String recipientId);
 
 	@Query("select t from TB_SYSTEM_ALERT t where t.recipientId = :userId and t.alertRole = :alertRole and t.readYN = 'N'")
-	List<SystemAlertEntity> getSystemAlertEntitiesByRecipientIdAndAlertRole(@Param("userId") String userId, @Param("alertRole") AlertRole alertRole);
+	List<SystemAlertEntity> getSystemAlertEntitiesByRecipientIdAndAlertRole(@Param("userId") String userId,
+		@Param("alertRole") AlertRole alertRole);
 }

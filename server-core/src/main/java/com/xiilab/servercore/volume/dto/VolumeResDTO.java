@@ -38,7 +38,7 @@ public class VolumeResDTO {
 		private String volumePath;
 		private String saveDirectoryName;
 
-		public static VolumeResDTO.ResVolumeWithStorage toDto(Volume volume){
+		public static VolumeResDTO.ResVolumeWithStorage toDto(Volume volume) {
 			if (volume.isAstragoVolume()) {
 				return VolumeResDTO.ResVolumeWithStorage.builder()
 					.volumeId(volume.getVolumeId())
@@ -57,7 +57,7 @@ public class VolumeResDTO {
 					.defaultPath(volume.getVolumeDefaultMountPath())
 					.saveDirectoryName(((AstragoVolumeEntity)volume).getSaveDirectoryName())
 					.build();
-			}else if (volume.isLocalVolume()) {
+			} else if (volume.isLocalVolume()) {
 				return ResVolumeWithStorage.builder()
 					.volumeId(volume.getVolumeId())
 					.storageType(((LocalVolumeEntity)volume).getStorageType())
@@ -169,7 +169,7 @@ public class VolumeResDTO {
 			return null;
 		}
 
-		public static VolumeInWorkspace mappingEntityToDto(VolumeWorkSpaceMappingEntity volume){
+		public static VolumeInWorkspace mappingEntityToDto(VolumeWorkSpaceMappingEntity volume) {
 			if (volume.getVolume().isAstragoVolume()) {
 				return VolumeInWorkspace.builder()
 					.volumeId(volume.getVolume().getVolumeId())
@@ -184,7 +184,7 @@ public class VolumeResDTO {
 					.defaultPath(volume.getVolumeDefaultMountPath())
 					.userId(volume.getRegUser().getRegUserId())
 					.build();
-			}else if (volume.getVolume().isLocalVolume()) {
+			} else if (volume.getVolume().isLocalVolume()) {
 				return VolumeInWorkspace.builder()
 					.volumeId(volume.getVolume().getVolumeId())
 					.storageType(((LocalVolumeEntity)volume.getVolume()).getStorageType())
@@ -212,7 +212,9 @@ public class VolumeResDTO {
 				.volumes(volumes.stream().map(VolumeInWorkspace::entityToDto).toList())
 				.build();
 		}
-		public static VolumeResDTO.VolumesInWorkspace mappingEntitiesToDtos(List<VolumeWorkSpaceMappingEntity> volumes) {
+
+		public static VolumeResDTO.VolumesInWorkspace mappingEntitiesToDtos(
+			List<VolumeWorkSpaceMappingEntity> volumes) {
 			return VolumeResDTO.VolumesInWorkspace.builder()
 				.volumes(volumes.stream().map(VolumeInWorkspace::mappingEntityToDto).toList())
 				.build();
