@@ -313,9 +313,9 @@ create table if not exists TB_HUB
     SOURCE_CODE_MOUNT_PATH varchar(255)                            null,
     TITLE                  varchar(255)                            null,
     IMAGE_ID               bigint                                  null,
-    SOURCE_CODE_URL varchar(255)                            null,
-    README_URL     varchar(255)                            null,
-    THUMBNAIL_URL   varchar(255)                            null,
+    SOURCE_CODE_URL varchar(255) null,
+    README_URL      varchar(255) null,
+    THUMBNAIL_URL   varchar(255) null,
     WORKLOAD_TYPE          enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
     PARAMETER              varchar(1000)                           null
 );
@@ -361,17 +361,17 @@ create table if not exists TB_IMAGE
 (
     IMAGE_ID             bigint auto_increment
         primary key,
-    MOD_DATE             datetime(6)                             null,
-    REG_DATE             datetime(6)                             null,
-    IMAGE_TYPE           varchar(31)                             not null,
-    IMAGE_NAME       varchar(255)                            null,
-    REG_USER_ID          varchar(255)                            null,
-    REG_USER_NAME        varchar(255)                            null,
-    REG_USER_REAL_NAME   varchar(255)                            null,
-    DELETE_YN            enum ('Y', 'N')                         null,
-    REPOSITORY_AUTH_TYPE enum ('PRIVATE', 'PUBLIC')              null,
-    WORKLOAD_TYPE enum ('BATCH', 'INTERACTIVE', 'DEPLOY', 'DISTRIBUTED') null,
-    MULTI_NODE           tinyint(1)                              null
+    MOD_DATE             datetime(6)                                            null,
+    REG_DATE             datetime(6)                                            null,
+    IMAGE_TYPE           varchar(31)                                            not null,
+    IMAGE_NAME           varchar(255)                                           null,
+    REG_USER_ID          varchar(255)                                           null,
+    REG_USER_NAME        varchar(255)                                           null,
+    REG_USER_REAL_NAME   varchar(255)                                           null,
+    DELETE_YN            enum ('Y', 'N')                                        null,
+    REPOSITORY_AUTH_TYPE enum ('PRIVATE', 'PUBLIC')                             null,
+    WORKLOAD_TYPE        enum ('BATCH', 'INTERACTIVE', 'DEPLOY', 'DISTRIBUTED') null,
+    MULTI_NODE           tinyint(1)                                             null
 );
 
 create table if not exists TB_IMAGE_WORKLOAD_MAPPING
@@ -721,9 +721,9 @@ create table if not exists TB_SYSTEM_ALERT_SETTING
 
 create table if not exists TB_VOLUME
 (
-    VOLUME_ID            bigint auto_increment
+    VOLUME_ID   bigint auto_increment
         primary key,
-    VOLUME_NAME          varchar(255) null
+    VOLUME_NAME varchar(255) null
 );
 
 create table if not exists TB_WORKLOAD
@@ -759,10 +759,10 @@ create table if not exists TB_WORKLOAD
 
 create table if not exists TB_WORKLOAD_JOB
 (
-    WORKLOAD_ID  bigint       not null primary key,
+    WORKLOAD_ID      bigint not null primary key,
     WORKLOAD_IDE       varchar(255) null,
     WORKLOAD_REQ_CPU   float        DEFAULT NULL,
-    WORKLOAD_REQ_GPU int                           null,
+    WORKLOAD_REQ_GPU int    null,
     WORKLOAD_REQ_MEM   float        DEFAULT NULL,
     REMAIN_TIME        int(11)      DEFAULT NULL,
     WORKLOAD_PARAMETER varchar(255) DEFAULT NULL
@@ -781,6 +781,17 @@ create table if not exists TB_WORKLOAD_DISTRIBUTED_JOB
     WORKLOAD_ID          bigint(20) NOT NULL,
     REMAIN_TIME          int(11)      DEFAULT NULL,
     WORKLOAD_PARAMETER   varchar(255) DEFAULT NULL
+);
+
+create table if not exists TB_EXPERIMENT
+(
+    EXPERIMENT_ID           bigint auto_increment
+        primary key,
+    EXPERIMENT_CREATED_DATE datetime(6)  null,
+    EXPERIMENT_UUID         varchar(255) null,
+    workload_WORKLOAD_ID    bigint       null,
+    constraint FKm2x4fcat26vejxlcth9s8iuuh
+        foreign key (workload_WORKLOAD_ID) references TB_WORKLOAD (WORKLOAD_ID)
 );
 
 create table if not exists TB_DEPLOY
@@ -829,11 +840,11 @@ create table if not exists TB_WORKSPACE_SETTING
 
 CREATE TABLE if not exists TB_NETWORK
 (
-    NETWORK_ID             bigint(20) NOT NULL AUTO_INCREMENT,
-    NETWORK_CLOSE_YN       enum ('Y','N') DEFAULT NULL,
-    PRIVATE_REPOSITORY_URL varchar(255)   DEFAULT NULL COMMENT 'private repository url',
-    INIT_CONTAINER_IMAGE_URL    varchar(255)   DEFAULT NULL COMMENT 'init container 용 폐쇄망 도커 이미지 경로',
-    LOCAL_VOLUME_IMAGE_URL  varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 도커 이미지 경로',
+    NETWORK_ID               bigint(20) NOT NULL AUTO_INCREMENT,
+    NETWORK_CLOSE_YN         enum ('Y','N') DEFAULT NULL,
+    PRIVATE_REPOSITORY_URL   varchar(255)   DEFAULT NULL COMMENT 'private repository url',
+    INIT_CONTAINER_IMAGE_URL varchar(255)   DEFAULT NULL COMMENT 'init container 용 폐쇄망 도커 이미지 경로',
+    LOCAL_VOLUME_IMAGE_URL   varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 도커 이미지 경로',
     PRIMARY KEY (`NETWORK_ID`)
 );
 
