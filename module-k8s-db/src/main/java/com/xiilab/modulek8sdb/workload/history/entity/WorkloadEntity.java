@@ -112,6 +112,9 @@ public abstract class WorkloadEntity {
 	protected List<PortEntity> portList = new ArrayList<>();
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	protected List<LabelWorkloadMappingEntity> labelList = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<ExperimentEntity> experimentList = new ArrayList<>();
 	@Transient
 	protected boolean canBeDeleted;

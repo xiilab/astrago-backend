@@ -16,6 +16,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.OutputVolumeYN;
 import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -48,7 +49,8 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				volumeNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				deleteYnEqN()
+				deleteYnEqN(),
+				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN())
 			)
 			.orderBy(sort)
 			.offset(pageRequest.getOffset())
@@ -61,7 +63,8 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				volumeNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				deleteYnEqN()
+				deleteYnEqN(),
+				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN())
 			)
 			.fetchOne();
 		return new PageImpl<>(volumes, pageRequest, count);
@@ -103,5 +106,9 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 			return StringUtils.hasText(creator) ? volume.regUser.regUserId.eq(creator) : null;
 		}
 		return null;
+	}
+
+	private Predicate outputVoulmeYNEq(OutputVolumeYN outputVolumeYN) {
+		return outputVolumeYN != null ? volume.outputVolumeYN.eq(outputVolumeYN) : null;
 	}
 }

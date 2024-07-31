@@ -66,7 +66,7 @@ public class WorkloadController {
 	@Operation(
 		summary = "워크로드 생성",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-			description = "Create the User"
+			description = "Create Workload"
 		)
 	)
 	public ResponseEntity<HttpStatus> createWorkload(

@@ -22,6 +22,9 @@ import com.xiilab.servercore.volume.dto.VolumeResDTO;
 public interface VolumeService {
 	void insertAstragoVolume(AstragoVolumeEntity astragoVolumeEntity, List<MultipartFile> files);
 
+	void insertAstragoOutputVolume(AstragoVolumeEntity astragoVolumeEntity, String volumeName,
+		String workspaceResourceName, String workloadResourceName);
+
 	VolumeResDTO.ResVolumes getVolumes(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode);
 

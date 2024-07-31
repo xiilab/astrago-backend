@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -60,7 +61,7 @@ public class BatchJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
-		jobName = getUniqueResourceName();
+		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueResourceName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
@@ -93,8 +94,9 @@ public class BatchJobVO extends WorkloadVO {
 		// TODO 삭제 예정
 		// annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		// annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
-		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getJobVolumeIds(this.volumes));
-		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
+		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getIds(this.volumes, JobVolumeVO::id));
+		annotationMap.put(AnnotationField.CODE_IDS.getField(), getIds(this.codes, JobCodeVO::id));
+		annotationMap.put(AnnotationField.LABEL_IDS.getField(), getIds(this.labelIds, Function.identity()));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.PARAMETER.getField(),
