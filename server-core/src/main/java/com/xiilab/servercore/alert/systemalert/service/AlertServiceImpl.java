@@ -224,6 +224,14 @@ public class AlertServiceImpl implements AlertService {
 			userInfo.getId());
 	}
 
+	@Override
+	@Transactional
+	public void readSystemAlerts(UserDTO.UserInfo userInfoDTO){
+		List<SystemAlertEntity> systemAlertEntities = systemAlertRepository.getSystemAlertEntitiesByRegUser_RegUserId(
+			userInfoDTO.getId());
+		systemAlertEntities.stream().forEach(SystemAlertEntity::readAlert);
+	}
+
 	private Map<AlertType, Long> getAllAlertTypeCountMap(String loginUserId, AlertRole alertRole, ReadYN readYN, String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate) {
 		Map<AlertType, Long> allAlertTypeCountMap = new HashMap<>();
