@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
@@ -118,7 +119,7 @@ public class SystemAlertController {
 	@PatchMapping("/read")
 	@Operation(summary = "알림 전체 읽기 API")
 	public ResponseEntity<HttpStatus> readSystemAlerts(
-		@Parameter(name = "alertRole") String alertRole,
+		@Parameter(name = "alertRole") AlertRole alertRole,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	){
 		alertService.readSystemAlerts(userInfoDTO, alertRole);
