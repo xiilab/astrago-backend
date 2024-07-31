@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.alert.systemalert.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,4 +14,6 @@ import com.xiilab.modulek8sdb.alert.systemalert.entity.SystemAlertEntity;
 public interface SystemAlertRepositoryCustom {
 	Page<SystemAlertEntity> findAlerts(String recipientId, AlertType alertType, AlertRole alertRole, ReadYN readYN, String searchText,
 		LocalDateTime searchStartDate, LocalDateTime searchEndDate, Pageable pageable);
+
+	List<SystemAlertEntity> getAllSystemAlertList(String recipientId, AlertRole alertRole);
 }
