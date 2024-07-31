@@ -63,10 +63,11 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 	@Query("""
 		update TB_WORKLOAD t 
 		set t.gpuOnePerMemory = :memory,
-		t.nodeName = CASE WHEN :nodeName IS NULL THEN t.nodeName ELSE :nodeName END,
-		t.gpuName = CASE WHEN :gpuName IS NULL THEN t.gpuName ELSE :gpuName END
+				t.nodeName = CASE WHEN :nodeName IS NULL THEN t.nodeName ELSE :nodeName END,
+				t.gpuName = CASE WHEN :gpuName IS NULL THEN t.gpuName ELSE :gpuName END
 		where t.resourceName = :resourceName
 """)
-	void insertGpuInfo(@Param("resourceName") String resourceName, @Param("gpuName") String gpuName, @Param("memory") int memory,
+	void insertGpuInfo(@Param("resourceName") String resourceName, @Param("gpuName") String gpuName,
+		@Param("memory") int memory,
 		@Param("nodeName") String nodeName);
 }

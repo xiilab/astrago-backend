@@ -3,7 +3,6 @@ dependencies {
     implementation project(':module-k8s-db')
     implementation project(':module-user')
     implementation project(':module-common')
-    implementation project(':module-alert')
     implementation project(':module-monitor')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'

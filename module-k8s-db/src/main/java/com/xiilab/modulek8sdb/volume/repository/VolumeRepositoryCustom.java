@@ -15,5 +15,6 @@ public interface VolumeRepositoryCustom {
 		RepositorySearchCondition repositorySearchCondition, PageMode pageMode);
 
 	Volume getVolumeWithStorage(Long modelId);
+
 	List<Volume> findByAuthority(String userId, AuthType userAuth);
 }

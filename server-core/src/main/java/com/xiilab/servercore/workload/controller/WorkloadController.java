@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +30,7 @@ import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -66,7 +69,8 @@ public class WorkloadController {
 			description = "Create Workload"
 		)
 	)
-	public ResponseEntity<HttpStatus> createWorkload(@Valid @RequestBody CreateSingleWorkloadJobReqDTO createWorkloadJobReqDTO,
+	public ResponseEntity<HttpStatus> createWorkload(
+		@Valid @RequestBody CreateSingleWorkloadJobReqDTO createWorkloadJobReqDTO,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
@@ -154,6 +158,17 @@ public class WorkloadController {
 		return new ResponseEntity<>(
 			workloadFacadeService.getOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
 				workloadSortCondition, pageNum, isCreatedByMe, userInfoDTO), HttpStatus.OK);
+	}
+
+	@GetMapping("/workloads/experiments")
+	@Operation(summary = "워크로드 실험 데이터 리스트 조회")
+	public ResponseEntity<Page<ExperimentDTO>> getExperiments(
+		@RequestParam(value = "searchCondition", required = false) String searchCondition,
+		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
+		Pageable pageable
+	) {
+		return new ResponseEntity<>(workloadFacadeService.getExperiments(searchCondition, workloadStatus, pageable),
+			HttpStatus.OK);
 	}
 
 	@DeleteMapping("/workloads/{type}")

@@ -31,6 +31,10 @@ import lombok.RequiredArgsConstructor;
 public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
+	private static BooleanExpression deleteYnEqN() {
+		return volume.deleteYn.eq(DeleteYN.N);
+	}
+
 	@Override
 	public Page<Volume> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType userAuth,
 		RepositorySearchCondition repositorySearchCondition, PageMode pageMode) {
@@ -84,10 +88,6 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 		return volumes;
 	}
 
-	private static BooleanExpression deleteYnEqN() {
-		return volume.deleteYn.eq(DeleteYN.N);
-	}
-
 	private Predicate volumeNameOrCreatorNameContains(String searchText) {
 		return StringUtils.hasText(searchText) ? volume.regUser.regUserRealName.contains(searchText)
 			.or(volume.volumeName.contains(searchText)) : null;
@@ -109,6 +109,6 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 	}
 
 	private Predicate outputVoulmeYNEq(OutputVolumeYN outputVolumeYN) {
-		return outputVolumeYN != null? volume.outputVolumeYN.eq(outputVolumeYN) : null;
+		return outputVolumeYN != null ? volume.outputVolumeYN.eq(outputVolumeYN) : null;
 	}
 }

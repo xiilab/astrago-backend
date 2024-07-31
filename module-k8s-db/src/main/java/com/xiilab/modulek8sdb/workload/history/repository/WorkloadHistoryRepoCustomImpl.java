@@ -78,6 +78,7 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 				workloadStatusEq(workloadStatus),
 				workloadEntity.deleteYN.eq(DeleteYN.N)
 			).fetchOne();
+
 		return new PageImpl<>(jobEntities, pageRequest, totalCount);
 	}
 

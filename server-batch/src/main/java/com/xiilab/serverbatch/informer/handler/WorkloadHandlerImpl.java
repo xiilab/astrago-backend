@@ -70,8 +70,8 @@ import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.LabelWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
-import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.LabelWorkloadMappingRepository;
+import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -163,7 +163,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					//db gpu, memory 정보 저장
 					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
 						gpuName, nodeName);
-					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(), nodeName);
+					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(),
+						nodeName);
 					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 				}
 
@@ -249,8 +250,9 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
 						LocalDateTime.now());
-				}else if(afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END){
-					workloadHistoryRepo.updateWorkloadEndTime(afterDeployment.getMetadata().getName(), LocalDateTime.now());
+				} else if (afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END) {
+					workloadHistoryRepo.updateWorkloadEndTime(afterDeployment.getMetadata().getName(),
+						LocalDateTime.now());
 				}
 			}
 		}
@@ -658,7 +660,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 				jobResDTO.getVolumeMountPathMap(), null);
 		}
 
-
 		RegUser regUser = new RegUser(jobResDTO.getCreatorId(), jobResDTO.getCreatorUserName(),
 			jobResDTO.getCreatorFullName());
 
@@ -794,7 +795,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
 						}*/
-						if(type == EntityMappingType.VOLUME) {
+						if (type == EntityMappingType.VOLUME) {
 							com.xiilab.modulek8sdb.volume.entity.Volume volume = (com.xiilab.modulek8sdb.volume.entity.Volume)entity;
 							VolumeWorkLoadMappingEntity volumeWorkLoadMappingEntity = VolumeWorkLoadMappingEntity.builder()
 								.volume(volume)

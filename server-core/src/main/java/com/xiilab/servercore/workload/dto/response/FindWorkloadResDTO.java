@@ -42,8 +42,8 @@ import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.EnvEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
-import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.LabelWorkloadMappingEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 
@@ -173,7 +173,8 @@ public class FindWorkloadResDTO extends ResDTO {
 				.codes(workloadEntity.getCodeWorkloadMappingList().stream().map(Code::new).toList())
 				.labels(workloadEntity.getLabelList().stream().map(Label::new).toList())
 				.command(workloadEntity.getWorkloadCMD())
-				.parameter(workloadEntity.getParameter() != null ? JsonConvertUtil.convertJsonToMap(workloadEntity.getParameter()) : null)
+				.parameter(workloadEntity.getParameter() != null ?
+					JsonConvertUtil.convertJsonToMap(workloadEntity.getParameter()) : null)
 				.cpuRequest(workloadEntity.getCpuRequest())
 				.gpuRequest(workloadEntity.getGpuRequest() == null ? 0 : workloadEntity.getGpuRequest())
 				.memRequest(workloadEntity.getMemRequest())

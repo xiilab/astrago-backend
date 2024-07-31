@@ -57,17 +57,23 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class VolumeFacadeServiceImpl implements VolumeFacadeService {
+	private final VolumeService volumeService;
+	private final StorageService storageService;
+	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final WebClientService webClientService;
+	private final NetworkRepository networkRepository;
 	@Value("${astrago.namespace}")
 	private String namespace;
 	@Value("${astrago.dataset.dockerImage.name}")
 	private String dockerImage;
 	@Value("${astrago.dataset.dockerImage.hostPath}")
 	private String hostPath;
-	private final VolumeService volumeService;
-	private final StorageService storageService;
-	private final WorkloadModuleFacadeService workloadModuleFacadeService;
-	private final WebClientService webClientService;
-	private final NetworkRepository networkRepository;
+
+	private static boolean checkAccessVolume(UserDTO.UserInfo userInfoDTO, Volume volume) {
+		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
+			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId()
+				.equals(volume.getRegUser().getRegUserId()));
+	}
 
 	@Override
 	@Transactional
@@ -377,11 +383,5 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 				.forEach(wl -> wl.updateIsAccessible(userInfoDTO.getId(), userInfoDTO.getMyWorkspaces()));
 		}
 		return pageUsingVolumeDTO;
-	}
-
-	private static boolean checkAccessVolume(UserDTO.UserInfo userInfoDTO, Volume volume) {
-		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
-			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId()
-				.equals(volume.getRegUser().getRegUserId()));
 	}
 }

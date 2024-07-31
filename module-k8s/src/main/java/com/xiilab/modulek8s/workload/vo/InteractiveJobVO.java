@@ -14,12 +14,12 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
@@ -61,7 +61,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
-		jobName = !StringUtils.isEmpty(this.jobName)? this.jobName : getUniqueResourceName();
+		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueResourceName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
@@ -280,6 +280,8 @@ public class InteractiveJobVO extends WorkloadVO {
 			).toList();
 
 		List<EnvVar> result = new ArrayList<>(envVars);
+		//userId, workloadName, url을 env로 추가
+		result.addAll(getMetadataEnv());
 		// GPU 미사용시, GPU 접근 막는 환경변수
 		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
 			result.add(new EnvVarBuilder()

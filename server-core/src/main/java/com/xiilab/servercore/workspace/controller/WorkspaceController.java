@@ -102,14 +102,15 @@ public class WorkspaceController {
 	public ResponseEntity<WorkspaceDTO.FindJoinedWorkspaces> getJoinedWorkspaceList(
 		@RequestParam(value = "title", required = false) String title,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
-		) {
+	) {
 		return ResponseEntity.ok(
 			workspaceService.getJoinedWorkspaceList(title, userInfoDTO));
 	}
 
 	@GetMapping("/joined/{workspaceResourceName}")
 	@Operation(summary = "내가 속한 워크스페이스 상세 조회")
-	public ResponseEntity<FindWorkspaceResDTO.JoinedWorkspaceDetail> getJoinedWorkspaceInfo(@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+	public ResponseEntity<FindWorkspaceResDTO.JoinedWorkspaceDetail> getJoinedWorkspaceInfo(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
 		return ResponseEntity.ok(workspaceService.getJoinedWorkspaceInfoByName(workspaceResourceName));
 	}
 

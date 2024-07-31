@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -27,9 +28,11 @@ import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
+import com.xiilab.modulek8sdb.workload.history.repository.ExperimentRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -49,6 +52,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final WorkloadHistoryRepoCustom workloadHistoryRepoCustom;
 	private final ApplicationEventPublisher publisher;
 	private final UserFacadeService userFacadeService;
+	private final ExperimentRepo experimentRepo;
 
 	@Override
 	public WorkloadSummaryDTO getWorkloadHistoryById(long id) {
@@ -75,6 +79,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			return FindWorkloadResDTO.SingleWorkloadDetail.from((JobEntity)workloadEntity);
 		}
 	}
+
 	@Override
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
@@ -234,5 +239,11 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		List<WorkloadStatus> statuses = List.of(WorkloadStatus.ERROR, WorkloadStatus.PENDING, WorkloadStatus.RUNNING);
 		List<GPUType> types = List.of(GPUType.MIG, GPUType.MPS);
 		return workloadHistoryRepo.getWorkloadHistoryByUsingDivisionGPU(workspaceResourceName, statuses, types);
+	}
+
+	@Override
+	public Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus,
+		Pageable pageable) {
+		return experimentRepo.getExperiments(searchCondition, workloadStatus, pageable);
 	}
 }

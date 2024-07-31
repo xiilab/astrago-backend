@@ -62,7 +62,8 @@ public class WorkloadSummaryDTO {
 		// this.imageType = !ObjectUtils.isEmpty(workload.getImage()) ? workload.getImage().getImageType() : null;
 		this.imageType = ((DevelopEntity)workload).getImageWorkloadMappingEntity().getImage().getImageType();
 		this.canBeDeleted = workload.isCanBeDeleted();
-		this.estimatedRemainingTime = (developEntity.getRemainTime() != null && developEntity.getRemainTime() != 0) ? LocalDateTime.now()
+		this.estimatedRemainingTime =
+			(developEntity.getRemainTime() != null && developEntity.getRemainTime() != 0) ? LocalDateTime.now()
 			.plusSeconds(developEntity.getRemainTime())
 			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "0";
 		this.startTime = workload.getStartTime() != null ?
@@ -75,8 +76,9 @@ public class WorkloadSummaryDTO {
 			this.canBeDeleted = true;
 		}
 	}
-	public void updateCanBeDeleted(boolean isAdmin){
-		if(isAdmin){
+
+	public void updateCanBeDeleted(boolean isAdmin) {
+		if (isAdmin) {
 			this.canBeDeleted = true;
 		}
 	}

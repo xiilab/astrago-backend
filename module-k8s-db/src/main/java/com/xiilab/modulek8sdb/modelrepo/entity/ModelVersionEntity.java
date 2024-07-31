@@ -48,9 +48,10 @@ public class ModelVersionEntity {
 		this.modelFileName = modelFileName;
 		this.modelFileSize = modelFileSize;
 	}
+
 	public void setModelMeta(List<FileInfoDTO> metafileList) {
 
-		if(Objects.nonNull(metafileList)) {
+		if (Objects.nonNull(metafileList)) {
 			metafileList.forEach(metafile -> {
 				ModelMetaEntity modelMetaEntity = ModelMetaEntity.builder()
 					.modelFileName(metafile.getFileName())
