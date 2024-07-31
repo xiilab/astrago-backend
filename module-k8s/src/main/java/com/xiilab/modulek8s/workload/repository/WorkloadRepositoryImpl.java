@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -246,7 +247,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String workloadName) {
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String workloadName) {
 		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
 			workspaceResourceName, workloadName);
 		return batchJobList.getItems().stream()
@@ -272,7 +274,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String userId) {
 		DeploymentList interactiveJobList = getInteractiveJobListByWorkspaceResourceNameAndCreator(
 			workspaceResourceName, userId);
 		return interactiveJobList.getItems().stream()
@@ -807,11 +810,35 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			List<Event> items = list.getItems();
 			if (Objects.nonNull(items)) {
 				return items.stream()
-					.filter(item -> item.getRegarding().getKind().equals("Pod") &&
-						item.getRegarding().getName().equals(pod))
+					.filter(item -> item.getRegarding().getName().contains(pod))
 					.toList();
 			}
 			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadNames, String workspaceName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			EventList eventList = kubernetesClient.events().v1().events().inNamespace(workspaceName).list();
+			List<Event> items = eventList.getItems();
+			Map<String, Event> latestEventsByWorkloadName = new HashMap<>();
+
+			if (!CollectionUtils.isEmpty(items)) {
+				items.sort(Comparator.comparing((Event e) -> e.getMetadata().getCreationTimestamp())
+					.thenComparingLong(e -> Long.parseLong(e.getMetadata().getResourceVersion())));
+
+				for (Event item : items) {
+					String eventName = item.getRegarding().getName();
+					workloadNames.stream()
+						.filter(eventName::contains)
+						.findFirst()
+						.ifPresent(workloadName -> latestEventsByWorkloadName.put(workloadName, item));
+				}
+			}
+
+			workloadNames.forEach(workloadName -> latestEventsByWorkloadName.putIfAbsent(workloadName, null));
+			return latestEventsByWorkloadName;
 		}
 	}
 
@@ -988,6 +1015,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			return kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).get();
 		}
 	}
+
 	@Override
 	public Deployment getInteractiveJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
@@ -1052,7 +1080,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
-	private DeploymentList getInteractiveJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName, String userId) {
+	private DeploymentList getInteractiveJobListByWorkspaceResourceNameAndCreator(String workspaceResourceName,
+		String userId) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.apps()
 				.deployments()

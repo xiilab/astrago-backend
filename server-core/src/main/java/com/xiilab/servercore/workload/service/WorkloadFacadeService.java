@@ -606,6 +606,26 @@ public class WorkloadFacadeService {
 		}
 	}
 
+	public List<WorkloadEventDTO.Recently> getWorkloadRecentlyEventReason(List<String> workloadNames,
+		String workspace) {
+		Map<String, Event> workloadRecentlyEvent = workloadModuleService.getWorkloadRecentlyEvent(workloadNames,
+			workspace);
+		return workloadRecentlyEvent.entrySet().stream()
+			.map(key -> {
+				if (key.getValue() == null) {
+					return WorkloadEventDTO.Recently.builder()
+						.workload(key.getKey())
+						.build();
+				}
+				return WorkloadEventDTO.Recently.builder()
+					.workload(key.getKey())
+					.type(key.getValue().getType())
+					.reason(key.getValue().getReason())
+					.build();
+			})
+			.toList();
+	}
+
 	public PageDTO<WorkloadEventDTO> getWorkloadEvent(WorkloadType workloadType,
 		WorkloadEventReqDTO workloadEventReqDTO) {
 		List<Event> workloadEventList = workloadModuleService.getWorkloadEventList(workloadEventReqDTO.getWorkload(),
@@ -636,8 +656,9 @@ public class WorkloadFacadeService {
 
 		//Age 정렬 조건 적용
 		if (workloadEventReqDTO.getAgeSortCondition() != null) {
-			// Event 클래스에 getAge 메소드가 있다고 가정합니다.
-			Comparator<Event> ageComparator = Comparator.comparing(event -> event.getMetadata().getCreationTimestamp());
+			Comparator<Event> ageComparator = Comparator
+				.comparing((Event event) -> event.getMetadata().getCreationTimestamp())
+				.thenComparingLong(event -> Long.parseLong(event.getMetadata().getResourceVersion()));
 			if (workloadEventReqDTO.getAgeSortCondition() == WorkloadEventAgeSortCondition.AGE_DESC) {
 				ageComparator = ageComparator.reversed();
 			}
@@ -651,12 +672,14 @@ public class WorkloadFacadeService {
 		}
 
 		List<WorkloadEventDTO> result = eventStream.map(event -> WorkloadEventDTO.builder()
-			.type(event.getType())
-			.reason(event.getReason())
-			.from(event.getReportingController())
-			.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
-			.message(event.getNote())
-			.build()).toList();
+				.type(event.getType())
+				.reason(event.getReason())
+				.from(event.getReportingController())
+				.age(new AgeDTO(DateUtils.convertK8sUtcTimeString(event.getMetadata().getCreationTimestamp())))
+				.message(event.getNote())
+				.build())
+			.toList();
+
 
 		return new PageDTO<>(result, workloadEventReqDTO.getPageNum(), workloadEventReqDTO.getPageSize());
 	}
