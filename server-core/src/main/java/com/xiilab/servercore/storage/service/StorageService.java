@@ -12,6 +12,8 @@ public interface StorageService {
 
 	StorageDTO.ResStorage getStorage(Long storageId);
 
+	StorageEntity getDefaultStorage();
+
 	StorageEntity findById(Long storageId);
 
 	void deleteById(Long storageId);

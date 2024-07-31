@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -15,6 +16,9 @@ import com.xiilab.servercore.volume.dto.VolumeResDTO;
 
 public interface VolumeFacadeService {
 	void insertAstragoVolume(VolumeReqDTO.Edit.CreateAstragoVolume createAstragoVolumeDTO, List<MultipartFile> files);
+
+	Long insertAstragoOutputVolume(String volumeName, String workspaceResourceName, String workloadResourceName,
+		String defaultPath, VolumeAccessType volumeAccessType);
 
 	VolumeResDTO.ResVolumeWithStorage getVolume(Long volumeId);
 

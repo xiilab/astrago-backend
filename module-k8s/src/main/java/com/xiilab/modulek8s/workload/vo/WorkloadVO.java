@@ -1,10 +1,13 @@
 package com.xiilab.modulek8s.workload.vo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
@@ -56,6 +59,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	String gpuName;
 	Integer gpuOnePerMemory;
 	Integer resourcePresetId;
+	Set<Long> labelIds;
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
@@ -199,7 +203,18 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		return result;
 	}
 
-	protected String getJobVolumeIds(List<JobVolumeVO> list) {
+	protected <T> String getIds(Collection<T> list, Function<T, ?> idExtractor) {
+		if (CollectionUtils.isEmpty(list)) {
+			return "";
+		}
+
+		return list.stream()
+			.map(idExtractor)
+			.map(String::valueOf)
+			.collect(Collectors.joining(","));
+	}
+
+/*	protected String getJobVolumeIds(List<JobVolumeVO> list) {
 		if (CollectionUtils.isEmpty(list)) {
 			return "";
 		}
@@ -217,7 +232,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		return list.stream()
 			.map(jobCodeVO -> String.valueOf(jobCodeVO.id()))
 			.collect(Collectors.joining(","));
-	}
+	}*/
 
 	protected Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();

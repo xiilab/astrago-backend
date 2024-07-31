@@ -23,6 +23,7 @@ import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.OutputVolumeYN;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
@@ -85,7 +86,26 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			.build();
 
 		volumeService.insertAstragoVolume(astragoVolume, files);
+	}
 
+	@Override
+	@Transactional
+	public Long insertAstragoOutputVolume(String volumeName, String workspaceResourceName, String workloadResourceName,
+		String defaultPath, VolumeAccessType volumeAccessType) {
+		// storage 조회
+		StorageEntity defaultStorage = storageService.getDefaultStorage();
+
+		// Volume 저장
+		AstragoVolumeEntity astragoVolume = AstragoVolumeEntity.builder()
+			.volumeName(volumeName)
+			.storageEntity(defaultStorage)
+			.defaultPath(defaultPath)
+			.volumeAccessType(volumeAccessType)
+			.outputVolumeYN(OutputVolumeYN.Y)
+			.build();
+
+		volumeService.insertAstragoOutputVolume(astragoVolume, volumeName, workspaceResourceName, workloadResourceName);
+		return astragoVolume.getVolumeId();
 	}
 
 	@Override
@@ -139,7 +159,7 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			//local 데이터 셋이면 디비 + deployment label 변경
 			if (volume.isLocalVolume()) {
 				// LocalDatasetEntity localDatasetEntity = (LocalDatasetEntity)dataset;
-				LocalVolumeEntity localVolumeEntity = (LocalVolumeEntity) volume;
+				LocalVolumeEntity localVolumeEntity = (LocalVolumeEntity)volume;
 				ModifyLocalDatasetDeploymentDTO modifyLocalDatasetDeploymentDTO = ModifyLocalDatasetDeploymentDTO
 					.builder()
 					.deploymentName(localVolumeEntity.getDeploymentName())

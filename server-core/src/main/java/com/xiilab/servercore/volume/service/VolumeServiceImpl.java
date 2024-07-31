@@ -86,6 +86,25 @@ public class VolumeServiceImpl implements VolumeService {
 	}
 
 	@Override
+	@Transactional
+	public void insertAstragoOutputVolume(AstragoVolumeEntity astragoVolumeEntity, String volumeName,
+		String workspaceResourceName, String workloadResourceName) {
+		//파일 업로드
+		String storageRootPath = astragoVolumeEntity.getStorageEntity().getHostPath();
+		String saveDirectoryName =
+			"workspaces" + File.separator + workspaceResourceName + File.separator + "workloads" + File.separator
+				+ workloadResourceName + File.separator + "outputs";
+		String volumePath = storageRootPath + File.separator + saveDirectoryName;
+		// String.format("%s" + File.separator + "workspaces")
+
+		//dataset 저장
+		astragoVolumeEntity.setVolumeSize(0L);
+		astragoVolumeEntity.setVolumePath(volumePath);
+		astragoVolumeEntity.setSaveDirectoryName(saveDirectoryName);
+		volumeRepository.save(astragoVolumeEntity);
+	}
+
+	@Override
 	public VolumeResDTO.ResVolumes getVolumes(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode) {
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
@@ -269,7 +288,8 @@ public class VolumeServiceImpl implements VolumeService {
 		String workspaceResourceName = insertWorkspaceVolumeDTO.getWorkspaceResourceName();
 		Long volumeId = insertWorkspaceVolumeDTO.getVolumeId();
 
-		VolumeWorkSpaceMappingEntity workSpaceMappingEntity = volumeWorkspaceRepository.findByWorkspaceResourceNameAndVolumeId(workspaceResourceName, volumeId);
+		VolumeWorkSpaceMappingEntity workSpaceMappingEntity = volumeWorkspaceRepository.findByWorkspaceResourceNameAndVolumeId(
+			workspaceResourceName, volumeId);
 		if (workSpaceMappingEntity != null) {
 			throw new RestApiException(VolumeErrorCode.VOLUME_WORKSPACE_MAPPING_ALREADY);
 		}

@@ -21,6 +21,7 @@ public class CreateDistributedWorkloadJobReqDTO extends CreateWorkloadJobReqDTO 
 	public CreateWorkloadReqDTO toModuleDTO(String initContainerUrl) {
 		return ModuleCreateDistributedWorkloadReqDTO.builder()
 			.name(getName())
+			.jobName(super.jobName)
 			.description(getDescription())
 			.workspace(workspace)
 			.workloadType(workloadType)
@@ -51,6 +52,7 @@ public class CreateDistributedWorkloadJobReqDTO extends CreateWorkloadJobReqDTO 
 			.gpuName(gpuName)
 			.gpuOnePerMemory(gpuOnePerMemory)
 			.resourcePresetId(resourcePresetId)
+			.labelIds(labelIds)
 			.build();
 	}
 

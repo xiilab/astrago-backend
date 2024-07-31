@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.kubeflow.v2beta1.MPIJob;
 import org.kubeflow.v2beta1.MPIJobSpec;
@@ -267,7 +268,7 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 
 	@Override
 	protected ObjectMeta createMeta() {
-		jobName = getUniqueResourceName();
+		jobName = !StringUtils.isEmpty(this.jobName)? this.jobName : getUniqueResourceName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
@@ -308,10 +309,12 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 		// TODO 삭제 예정
 		//annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		// annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
-		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getJobVolumeIds(this.volumes));
-		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
+		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getIds(this.volumes, JobVolumeVO::id));
+		annotationMap.put(AnnotationField.CODE_IDS.getField(), getIds(this.codes, JobCodeVO::id));
+		annotationMap.put(AnnotationField.LABEL_IDS.getField(), getIds(this.labelIds, Function.identity()));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
+		annotationMap.put(AnnotationField.LABEL_IDS.getField(), getIds(this.labelIds, Function.identity()));
 		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
 		annotationMap.put(AnnotationField.NODE_NAME.getField(), this.nodeName);
 		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);

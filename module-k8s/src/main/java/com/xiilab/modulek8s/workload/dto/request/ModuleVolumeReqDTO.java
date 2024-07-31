@@ -21,6 +21,11 @@ public class ModuleVolumeReqDTO {
 	@JsonIgnore
 	private CreatePVC createPVC;
 
+	public ModuleVolumeReqDTO(Long id, String mountPath) {
+		this.id = id;
+		this.mountPath = mountPath;
+	}
+
 	public JobVolumeVO toJobVolumeVO() {
 		return new JobVolumeVO(id, this.mountPath, createPV.getPvName(), createPV.getPvcName());
 	}

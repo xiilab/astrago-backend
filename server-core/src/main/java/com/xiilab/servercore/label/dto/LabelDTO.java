@@ -21,7 +21,7 @@ public class LabelDTO {
 			.name(this.getLabelName())
 			.workspaceResourceName(workspaceName)
 			.colorCode(this.getColorCode())
-			.colorCodeName(this.getColorCodeName())
+			.colorName(this.getColorCodeName())
 			.order(count + 1)
 			.build();
 	}
@@ -37,7 +37,7 @@ public class LabelDTO {
 				.labelId(labelEntity.getId())
 				.labelName(labelEntity.getName())
 				.colorCode(labelEntity.getColorCode())
-				.colorCodeName(labelEntity.getColorCodeName())
+				.colorCodeName(labelEntity.getColorName())
 				.order(labelEntity.getOrder())
 				.build();
 		}
