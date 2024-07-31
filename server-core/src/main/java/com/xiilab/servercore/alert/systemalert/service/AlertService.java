@@ -2,7 +2,6 @@ package com.xiilab.servercore.alert.systemalert.service;
 
 import java.util.List;
 
-import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertMappingDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.alert.systemalert.dto.request.ModifyWorkspaceAlertMapping;
@@ -29,5 +28,5 @@ public interface AlertService {
 	void modifyWorkspaceAlertMapping(String alertId, String workspaceResourceName, ModifyWorkspaceAlertMapping modifyWorkspaceAlertMapping,
 		UserDTO.UserInfo userInfoDTO);
 
-	void readSystemAlerts(UserDTO.UserInfo userInfoDTO, AlertRole findSearchCondition);
+	void readSystemAlerts(UserDTO.UserInfo userInfoDTO, String alertRole);
 }
