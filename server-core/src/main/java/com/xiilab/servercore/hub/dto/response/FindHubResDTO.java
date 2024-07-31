@@ -59,6 +59,8 @@ public class FindHubResDTO extends ResDTO {
 		private Map<String, String> parameter;
 		private Map<String, Integer> ports;
 		private String command;
+		// 허브 이미지 내에 소스코드 포함되어 있는지에 대한 여부
+		private Boolean isSourceCodeIncluded;
 
 		public static FindHubResDTO.HubDetail from(HubEntity hubEntity, Map<Long, Set<String>> typesMap) {
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -83,8 +85,9 @@ public class FindHubResDTO extends ResDTO {
 						}) : null)
 					.command(hubEntity.getCommand())
 					.parameter(hubEntity.getParameter() != null ?
-						objectMapper.readValue(hubEntity.getParameter(), new TypeReference<Map<String, String>>() {
+						objectMapper.readValue(hubEntity.getParameter(), new TypeReference<>() {
 						}) : null)
+					.isSourceCodeIncluded(hubEntity.getSourceCodeUrl() != null)
 					.regUserName(hubEntity.getRegUser().getRegUserName())
 					.regUserId(hubEntity.getRegUser().getRegUserId())
 					.regUserRealName(hubEntity.getRegUser().getRegUserRealName())

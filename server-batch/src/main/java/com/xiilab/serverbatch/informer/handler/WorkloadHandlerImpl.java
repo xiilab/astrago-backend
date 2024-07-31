@@ -818,7 +818,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 						} else if (type == EntityMappingType.IMAGE) {
 							ImageEntity image = (ImageEntity)entity;
 							// 잡 엔티티 이미지 업데이트
-							jobEntity.updateImage(image);
+							// jobEntity.updateImage(image);
 							// workloadHistoryRepo.save(jobEntity);
 							ImageWorkloadMappingEntity imageWorkloadMappingEntity = ImageWorkloadMappingEntity.builder()
 								.workload(jobEntity)

@@ -67,7 +67,7 @@ public class DistributedJobEntity extends DevelopEntity {
 		this.workloadType = workloadType;
 		this.workingDir = workingDir;
 		this.workloadCMD = workloadCmd;
-		this.image = image;
+		// this.image = image;
 		this.deleteYN = deleteYN;
 		this.workloadStatus = workloadStatus;
 		this.parameter = JsonConvertUtil.convertMapToJson(parameter);
