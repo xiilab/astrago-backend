@@ -324,7 +324,7 @@ public class FindWorkloadResDTO extends ResDTO {
 			super(imageEntity.getRegUser().getRegUserId(), imageEntity.getRegUser().getRegUserName(),
 				imageEntity.getRegUser().getRegUserRealName(), imageEntity.getRegDate(), imageEntity.getModDate());
 			this.id = imageEntity.getId();
-			this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)imageEntity).getTitle() :
+			this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)Hibernate.unproxy(imageEntity)).getTitle() :
 				imageEntity.getImageName();
 			this.name = imageEntity.getImageName();
 			this.type = imageEntity.getImageType();

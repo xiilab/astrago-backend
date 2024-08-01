@@ -71,8 +71,8 @@ public class HubServiceImpl implements HubService {
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 		FindHubResDTO.HubDetail hubDetail = FindHubResDTO.HubDetail.from(hubEntity, typesMap);
 
-		hubDetail.changeSourceCodeUrl(
-			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() : hubEntity.getSourceCodeUrl());
+		hubDetail.changeSourceCodeUrl(hubEntity.getSourceCodeUrl());
+
 		FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
 		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ?
 			network.getPrivateRepositoryUrl() + hubEntity.getHubImageEntity().getImageName() :
