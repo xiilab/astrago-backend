@@ -867,3 +867,35 @@ create table if not exists TB_RESOURCE_PRESET
     PRIMARY KEY (`RESOURCE_PRESET_ID`)
 );
 
+create table if not exists TB_CHART_PANEL
+(
+    ID                 bigint auto_increment
+        primary key,
+    MOD_DATE           datetime(6)  null,
+    REG_DATE           datetime(6)  null,
+    REG_USER_ID        varchar(255) null,
+    REG_USER_NAME      varchar(255) null,
+    REG_USER_REAL_NAME varchar(255) null,
+    TITLE              varchar(255) null
+);
+
+create table if not exists TB_CHART
+(
+    ID                 bigint auto_increment
+        primary key,
+    MOD_DATE           datetime(6)  null,
+    REG_DATE           datetime(6)  null,
+    REG_USER_ID        varchar(255) null,
+    REG_USER_NAME      varchar(255) null,
+    REG_USER_REAL_NAME varchar(255) null,
+    TITLE              varchar(255) null,
+    X_AXIS             varchar(255) null,
+    X_AXIS_MAX         double       null,
+    X_AXIS_MIN         double       null,
+    Y_AXIS             varchar(255) null,
+    Y_AXIS_MAX         double       null,
+    Y_AXIS_MIN         double       null,
+    panel_ID           bigint       null,
+    constraint FKgrrgebm7rh7vn8xjmf3moal79
+        foreign key (panel_ID) references TB_CHART_PANEL (ID)
+);
