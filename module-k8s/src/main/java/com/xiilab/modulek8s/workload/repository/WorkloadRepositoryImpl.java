@@ -83,37 +83,26 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkloadRepositoryImpl implements WorkloadRepository {
 	private final K8sAdapter k8sAdapter;
 
-	@Override
-	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
-		Job resource = (Job)createResource(batchJobVO.createResource());
-		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
-		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(batchJobVO.getVolumes());
-		// TODO 삭제 예정
-		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
-		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
+	private static List<Job> getJobsInUseVolume(String key, KubernetesClient client) {
+		return client.batch().v1().jobs().inAnyNamespace().withLabelIn(key, "true")
+			.list()
+			.getItems();
 	}
 
-	@Override
-	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
-		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource());
-		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
-		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(interactiveJobVO.getVolumes());
-		// TODO 삭제 예정
-		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
-		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
+	private static List<Deployment> getDeploymentsInUseVolume(String key, KubernetesClient client) {
+		return client.apps().deployments().inAnyNamespace().withLabelIn(key, "true")
+			.list()
+			.getItems();
 	}
 
-	@Override
-	public CreateJobResDTO createDistributedJobWorkload(DistributedJobVO distributedJobVO) {
-		MPIJob resource = (MPIJob)createResource(distributedJobVO.createResource());
-		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(distributedJobVO.getCodes());
-		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(distributedJobVO.getVolumes());
-		// TODO 삭제 예정
-		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(distributedJobVO.getDatasets());
-		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(distributedJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
+	private static List<StatefulSet> getStatefulSetsInUseVolume(String key, KubernetesClient client) {
+		return client
+			.apps()
+			.statefulSets()
+			.inAnyNamespace()
+			.withLabelIn(key, "true")
+			.list()
+			.getItems();
 	}
 
 	@Override
@@ -254,14 +243,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(
-		String workspaceResourceName, String workloadName) {
-		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
-			workspaceResourceName, workloadName);
-		return batchJobList.getItems().stream()
-			.filter(job -> job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField()))
-			.map(ModuleBatchJobResDTO::new)
-			.toList();
+	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
+		Job resource = (Job)createResource(batchJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(batchJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
@@ -281,13 +270,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(
-		String workspaceResourceName, String userId) {
-		DeploymentList interactiveJobList = getInteractiveJobListByWorkspaceResourceNameAndCreator(
-			workspaceResourceName, userId);
-		return interactiveJobList.getItems().stream()
-			.map(ModuleInteractiveJobResDTO::new)
-			.toList();
+	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
+		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(interactiveJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
@@ -550,16 +540,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public boolean isUsedModel(Long modelId) {
-		try (KubernetesClient client = k8sAdapter.configServer()) {
-			String label = "md-" + modelId;
-			if (getJobsInUseVolume(label, client).size() == 0 &&
-				getStatefulSetsInUseVolume(label, client).size() == 0 &&
-				getDeploymentsInUseVolume(label, client).size() == 0) {
-				return false;
-			}
-			return true;
-		}
+	public CreateJobResDTO createDistributedJobWorkload(DistributedJobVO distributedJobVO) {
+		MPIJob resource = (MPIJob)createResource(distributedJobVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(distributedJobVO.getCodes());
+		Map<Long, Map<String, String>> volumesInfoMap = getVolumesInfoMap(distributedJobVO.getVolumes());
+		// TODO 삭제 예정
+		// Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(distributedJobVO.getDatasets());
+		// Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(distributedJobVO.getModels());
+		return new CreateJobResDTO(resource, codesInfoMap, volumesInfoMap);
 	}
 
 	@Override
@@ -736,47 +724,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public boolean optimizationResource(String pod, String namespace) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			Pod podResult = kubernetesClient.pods().inNamespace(namespace).withName(pod).get();
-
-			OwnerReference controllerUid = KubernetesResourceUtil.getControllerUid(podResult);
-
-			if (controllerUid != null) {
-				String ownerKind = controllerUid.getKind();
-				String ownerName = controllerUid.getName();
-				if ("ReplicaSet".equals(ownerKind)) {
-					ReplicaSet replicaSet = kubernetesClient.apps()
-						.replicaSets()
-						.inNamespace(namespace)
-						.withName(ownerName)
-						.get();
-					if (replicaSet != null) {
-						OwnerReference deployController = KubernetesResourceUtil.getControllerUid(replicaSet);
-						if ("Deployment".equals(deployController.getKind())) {
-							Deployment deployment = kubernetesClient.apps()
-								.deployments()
-								.inNamespace(namespace)
-								.withName(deployController.getName())
-								.get();
-							kubernetesClient.resource(deployment).delete();
-							log.info("deployment {}가 삭제되었습니다.", deployment.getMetadata().getName());
-						}
-					}
-				} else if ("Job".equals(ownerKind)) {
-					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
-					job.getMetadata();
-				} else if("service".equals(ownerKind)) {
-					Service service = kubernetesClient.services().inNamespace(namespace).withName(ownerName).get();
-					kubernetesClient.resource(service).delete();
-					log.info("service {}가 삭제되었습니다.", service.getMetadata().getName());
-				}
-			}
-		} catch (KubernetesClientException e) {
-			log.error(e.getMessage());
-			return false;
-		}
-		return true;
+	public List<ModuleBatchJobResDTO> getBatchWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String workloadName) {
+		JobList batchJobList = getBatchJobListByWorkspaceResourceNameAndCreator(
+			workspaceResourceName, workloadName);
+		return batchJobList.getItems().stream()
+			.filter(job -> job.getMetadata().getAnnotations().containsKey(LabelField.CONTROL_BY.getField()))
+			.map(ModuleBatchJobResDTO::new)
+			.toList();
 	}
 
 	@Override
@@ -812,6 +767,74 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public List<ModuleInteractiveJobResDTO> getInteractiveWorkloadListByWorkspaceResourceNameAndCreator(
+		String workspaceResourceName, String userId) {
+		DeploymentList interactiveJobList = getInteractiveJobListByWorkspaceResourceNameAndCreator(
+			workspaceResourceName, userId);
+		return interactiveJobList.getItems().stream()
+			.map(ModuleInteractiveJobResDTO::new)
+			.toList();
+	}
+
+	@Override
+	public boolean isUsedModel(Long modelId) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			String label = "md-" + modelId;
+			if (getJobsInUseVolume(label, client).size() == 0 &&
+				getStatefulSetsInUseVolume(label, client).size() == 0 &&
+				getDeploymentsInUseVolume(label, client).size() == 0) {
+				return false;
+			}
+			return true;
+		}
+	}
+
+	@Override
+	public boolean optimizationResource(String pod, String namespace) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			Pod podResult = kubernetesClient.pods().inNamespace(namespace).withName(pod).get();
+
+			OwnerReference controllerUid = KubernetesResourceUtil.getControllerUid(podResult);
+
+			if (controllerUid != null) {
+				String ownerKind = controllerUid.getKind();
+				String ownerName = controllerUid.getName();
+				if ("ReplicaSet".equals(ownerKind)) {
+					ReplicaSet replicaSet = kubernetesClient.apps()
+						.replicaSets()
+						.inNamespace(namespace)
+						.withName(ownerName)
+						.get();
+					if (replicaSet != null) {
+						OwnerReference deployController = KubernetesResourceUtil.getControllerUid(replicaSet);
+						if ("Deployment".equals(deployController.getKind())) {
+							Deployment deployment = kubernetesClient.apps()
+								.deployments()
+								.inNamespace(namespace)
+								.withName(deployController.getName())
+								.get();
+							kubernetesClient.resource(deployment).delete();
+							log.info("deployment {}가 삭제되었습니다.", deployment.getMetadata().getName());
+						}
+					}
+				} else if ("Job".equals(ownerKind)) {
+					Job job = kubernetesClient.batch().v1().jobs().inNamespace(namespace).withName(ownerName).get();
+					kubernetesClient.resource(job).delete();
+					log.info("job {}가 삭제되었습니다.", job.getMetadata().getName());
+				} else if ("service".equals(ownerKind)) {
+					Service service = kubernetesClient.services().inNamespace(namespace).withName(ownerName).get();
+					kubernetesClient.resource(service).delete();
+					log.info("service {}가 삭제되었습니다.", service.getMetadata().getName());
+				}
+			}
+		} catch (KubernetesClientException e) {
+			log.error(e.getMessage());
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -895,6 +918,47 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	private static WorkloadStatus getJobStatus(JobStatus jobStatus) {
+		Integer active = jobStatus.getActive();
+		Integer failed = jobStatus.getFailed();
+		Integer ready = jobStatus.getReady();
+		if (failed != null && failed > 0) {
+			return WorkloadStatus.ERROR;
+		} else if (ready != null && ready > 0) {
+			return WorkloadStatus.RUNNING;
+		} else if (active != null && active > 0) {
+			return WorkloadStatus.PENDING;
+		} else {
+			return WorkloadStatus.END;
+		}
+	}
+
+	private static WorkloadStatus getDeploymentStatus(DeploymentStatus deploymentStatus) {
+		Integer replicas = deploymentStatus.getReplicas();
+		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
+		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
+		if (unavailableReplicas != null && unavailableReplicas > 0) {
+			return WorkloadStatus.ERROR;
+		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+			return WorkloadStatus.RUNNING;
+		} else {
+			return WorkloadStatus.PENDING;
+		}
+	}
+
+	private static WorkloadStatus getStatefulsetStatus(StatefulSetStatus statefulSetStatus) {
+		Integer replicas = statefulSetStatus.getReplicas();
+		Integer availableReplicas = statefulSetStatus.getAvailableReplicas();
+		Integer readyReplicas = statefulSetStatus.getReadyReplicas();
+		if (readyReplicas != null || readyReplicas == 0) {
+			return WorkloadStatus.ERROR;
+		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
+			return WorkloadStatus.RUNNING;
+		} else {
+			return WorkloadStatus.PENDING;
+		}
+	}
+
 	@Override
 	public WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
@@ -963,69 +1027,6 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 			}
 			return true;
 		}
-	}
-
-	private static WorkloadStatus getJobStatus(JobStatus jobStatus) {
-		Integer active = jobStatus.getActive();
-		Integer failed = jobStatus.getFailed();
-		Integer ready = jobStatus.getReady();
-		if (failed != null && failed > 0) {
-			return WorkloadStatus.ERROR;
-		} else if (ready != null && ready > 0) {
-			return WorkloadStatus.RUNNING;
-		} else if (active != null && active > 0) {
-			return WorkloadStatus.PENDING;
-		} else {
-			return WorkloadStatus.END;
-		}
-	}
-
-	private static WorkloadStatus getDeploymentStatus(DeploymentStatus deploymentStatus) {
-		Integer replicas = deploymentStatus.getReplicas();
-		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
-		Integer unavailableReplicas = deploymentStatus.getUnavailableReplicas();
-		if (unavailableReplicas != null && unavailableReplicas > 0) {
-			return WorkloadStatus.ERROR;
-		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
-			return WorkloadStatus.RUNNING;
-		} else {
-			return WorkloadStatus.PENDING;
-		}
-	}
-
-	private static WorkloadStatus getStatefulsetStatus(StatefulSetStatus statefulSetStatus) {
-		Integer replicas = statefulSetStatus.getReplicas();
-		Integer availableReplicas = statefulSetStatus.getAvailableReplicas();
-		Integer readyReplicas = statefulSetStatus.getReadyReplicas();
-		if (readyReplicas != null || readyReplicas == 0) {
-			return WorkloadStatus.ERROR;
-		} else if (availableReplicas != null && Objects.equals(replicas, availableReplicas)) {
-			return WorkloadStatus.RUNNING;
-		} else {
-			return WorkloadStatus.PENDING;
-		}
-	}
-
-	private static List<Job> getJobsInUseVolume(String key, KubernetesClient client) {
-		return client.batch().v1().jobs().inAnyNamespace().withLabelIn(key, "true")
-			.list()
-			.getItems();
-	}
-
-	private static List<Deployment> getDeploymentsInUseVolume(String key, KubernetesClient client) {
-		return client.apps().deployments().inAnyNamespace().withLabelIn(key, "true")
-			.list()
-			.getItems();
-	}
-
-	private static List<StatefulSet> getStatefulSetsInUseVolume(String key, KubernetesClient client) {
-		return client
-			.apps()
-			.statefulSets()
-			.inAnyNamespace()
-			.withLabelIn(key, "true")
-			.list()
-			.getItems();
 	}
 
 	@Override

@@ -1,15 +1,19 @@
 package com.xiilab.modulek8s.workload.dto.request;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.util.CollectionUtils;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Supplier;
 
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
+import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.secret.vo.CredentialVO;
 import com.xiilab.modulek8s.workload.vo.JobImageVO;
 
@@ -44,19 +48,22 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected GPUType gpuType;
 	protected Integer gpuOnePerMemory;
 	protected Integer resourcePresetId;
+	protected String jobName;
+	protected Set<Long> labelIds;
 
 	protected void initializeCollection() {
-		this.codes = getListIfNotEmpty(this.codes);
-		// TODO 삭제 예정
+		this.codes = initCollectionIfNotEmpty(this.codes, ArrayList::new);
 		// TODO 삭제 예정
 		// this.datasets = getListIfNotEmpty(this.datasets);
 		// this.models = getListIfNotEmpty(this.models);
-		this.ports = getListIfNotEmpty(this.ports);
-		this.envs = getListIfNotEmpty(this.envs);
+		this.volumes = initCollectionIfNotEmpty(this.volumes, ArrayList::new);
+		this.ports = initCollectionIfNotEmpty(this.ports, ArrayList::new);
+		this.envs = initCollectionIfNotEmpty(this.envs, ArrayList::new);
+		this.labelIds = initCollectionIfNotEmpty(this.labelIds, HashSet::new);
 	}
 
-	protected <T> List<T> getListIfNotEmpty(List<T> list) {
-		return CollectionUtils.isEmpty(list) ? new ArrayList<>() : list;
+	protected <C extends Collection<?>> C initCollectionIfNotEmpty(C collection, Supplier<? extends C> supplier) {
+		return (collection == null || collection.isEmpty()) ? supplier.get() : collection;
 	}
 
 	public void setImageSecretName(String imageSecretName) {
@@ -66,5 +73,9 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	public CredentialVO toCredentialVO() {
 		JobImageVO jobImageVO = this.image.toJobImageVO(workspace);
 		return jobImageVO.credentialVO();
+	}
+
+	protected String getUniqueResourceName() {
+		return ResourceType.WORKLOAD.getName() + "-" + UUID.randomUUID();
 	}
 }

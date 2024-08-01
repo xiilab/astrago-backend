@@ -13,6 +13,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 		initializeCollection();
 
 		return BatchJobVO.builder()
+			.jobName(super.jobName)
 			.workspace(this.workspace)
 			.workspaceName(workspaceName)
 			.name(this.getName())
@@ -41,6 +42,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.gpuName(this.gpuName)
 			.gpuOnePerMemory(this.gpuOnePerMemory)
 			.resourcePresetId(this.resourcePresetId)
+			.labelIds(super.labelIds)
 			.build();
 	}
 
@@ -48,6 +50,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 		initializeCollection();
 
 		return InteractiveJobVO.builder()
+			.jobName(this.jobName)
 			.workspace(this.workspace)
 			.workspaceName(workspaceName)
 			.name(this.getName())
@@ -75,6 +78,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.gpuName(this.gpuName)
 			.gpuOnePerMemory(this.gpuOnePerMemory)
 			.resourcePresetId(this.resourcePresetId)
+			.labelIds(super.labelIds)
 			.build();
 	}
 }

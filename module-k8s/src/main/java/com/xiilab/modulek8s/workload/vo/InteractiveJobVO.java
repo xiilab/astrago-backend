@@ -7,18 +7,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
@@ -60,7 +61,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
-		jobName = getUniqueResourceName();
+		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueResourceName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
@@ -94,8 +95,9 @@ public class InteractiveJobVO extends WorkloadVO {
 		// TODO 삭제 예정
 		// annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		// annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
-		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getJobVolumeIds(this.volumes));
-		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
+		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getIds(this.volumes, JobVolumeVO::id));
+		annotationMap.put(AnnotationField.CODE_IDS.getField(), getIds(this.codes, JobCodeVO::id));
+		annotationMap.put(AnnotationField.LABEL_IDS.getField(), getIds(this.labelIds, Function.identity()));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.IDE.getField(), getIde());
@@ -250,6 +252,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		if (envs != null && !envs.isEmpty()) {
 			podSpecContainer.addAllToEnv(convertEnv());
 		}
+		podSpecContainer.addAllToEnv(getMetadataEnv());
 	}
 
 	private void addContainerPort(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {

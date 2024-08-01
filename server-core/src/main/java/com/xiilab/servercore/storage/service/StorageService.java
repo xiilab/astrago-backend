@@ -1,8 +1,8 @@
 package com.xiilab.servercore.storage.service;
 
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.servercore.storage.dto.StorageDTO;
 
 public interface StorageService {
 
@@ -11,6 +11,8 @@ public interface StorageService {
 	StorageDTO.ResStorages getStorages(int pageNo, int pageSize, DeleteYN deleteYN);
 
 	StorageDTO.ResStorage getStorage(Long storageId);
+
+	StorageEntity getDefaultStorage();
 
 	StorageEntity findById(Long storageId);
 

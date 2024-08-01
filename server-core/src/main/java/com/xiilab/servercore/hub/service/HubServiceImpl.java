@@ -21,17 +21,16 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
-
 import com.xiilab.modulecommon.exception.errorcode.HubErrorCode;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
-import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
-import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
-import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
-import com.xiilab.servercore.hub.dto.request.HubReqDTO;
 import com.xiilab.modulek8sdb.hub.entity.HubCategoryMappingEntity;
 import com.xiilab.modulek8sdb.hub.entity.HubEntity;
 import com.xiilab.modulek8sdb.hub.repository.HubCategoryMappingRepository;
 import com.xiilab.modulek8sdb.hub.repository.HubRepository;
+import com.xiilab.modulek8sdb.image.entity.HubImageEntity;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
+import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
+import com.xiilab.servercore.hub.dto.request.HubReqDTO;
 import com.xiilab.servercore.hub.dto.response.FindHubCommonResDTO;
 import com.xiilab.servercore.hub.dto.response.FindHubInWorkloadResDTO;
 import com.xiilab.servercore.hub.dto.response.FindHubResDTO;
@@ -72,10 +71,11 @@ public class HubServiceImpl implements HubService {
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 		FindHubResDTO.HubDetail hubDetail = FindHubResDTO.HubDetail.from(hubEntity, typesMap);
 
-		hubDetail.changeSourceCodeUrl(
-			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() : hubEntity.getSourceCodeUrl());
+		hubDetail.changeSourceCodeUrl(hubEntity.getSourceCodeUrl());
+
 		FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
-		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? network.getPrivateRepositoryUrl() + hubEntity.getHubImageEntity().getImageName() :
+		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ?
+			network.getPrivateRepositoryUrl() + hubEntity.getHubImageEntity().getImageName() :
 			hubEntity.getHubImageEntity().getImageName());
 		hubDetail.setHubImage(hubImage);
 		hubDetail.setReadmeUrl(

@@ -59,6 +59,8 @@ import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
+import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
 import com.xiilab.modulek8sdb.storage.service.StorageService;
 import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
@@ -66,7 +68,9 @@ import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
 import com.xiilab.modulek8sdb.volume.repository.VolumeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.LabelWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
+import com.xiilab.modulek8sdb.workload.history.repository.LabelWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.UserService;
 
@@ -95,6 +99,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final VolumeRepository volumeRepository;
 	private final CodeRepository codeRepository;
 	private final ImageRepository imageRepository;
+	private final LabelRepository labelRepository;
+	private final LabelWorkloadMappingRepository labelWorkloadMappingRepository;
 	private final CredentialRepository credentialRepository;
 	private final SvcRepository k8sSvcRepository;
 	private final ApplicationEventPublisher publisher;
@@ -157,7 +163,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					//db gpu, memory 정보 저장
 					GpuInfoDTO gpuInfo = workloadModuleFacadeService.getGpuInfoByNodeName(
 						gpuName, nodeName);
-					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(), nodeName);
+					workloadHistoryRepo.insertGpuInfo(resourceName, gpuInfo.getGpuName(), gpuInfo.getMemory(),
+						nodeName);
 					workloadHistoryRepo.insertWorkloadStartTime(afterJob.getMetadata().getName(), LocalDateTime.now());
 				}
 
@@ -243,8 +250,9 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
 						LocalDateTime.now());
-				}else if(afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END){
-					workloadHistoryRepo.updateWorkloadEndTime(afterDeployment.getMetadata().getName(), LocalDateTime.now());
+				} else if (afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END) {
+					workloadHistoryRepo.updateWorkloadEndTime(afterDeployment.getMetadata().getName(),
+						LocalDateTime.now());
 				}
 			}
 		}
@@ -652,7 +660,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 				jobResDTO.getVolumeMountPathMap(), null);
 		}
 
-
 		RegUser regUser = new RegUser(jobResDTO.getCreatorId(), jobResDTO.getCreatorUserName(),
 			jobResDTO.getCreatorFullName());
 
@@ -668,6 +675,12 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (imageId != null) {
 			saveDataMapping(getSplitIds(String.valueOf(imageId)), imageRepository::findById, workload,
 				EntityMappingType.IMAGE, null, null);
+		}
+
+		String labelIds = jobResDTO.getLabelIds();
+		if (StringUtils.hasText(labelIds)) {
+			saveDataMapping(getSplitIds(labelIds), labelRepository::findById, workload, EntityMappingType.LABEL,
+				null, null);
 		}
 	}
 
@@ -782,7 +795,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 								.build();
 							modelWorkLoadMappingRepository.save(modelWorkLoadMappingEntity);
 						}*/
-						if(type == EntityMappingType.VOLUME) {
+						if (type == EntityMappingType.VOLUME) {
 							com.xiilab.modulek8sdb.volume.entity.Volume volume = (com.xiilab.modulek8sdb.volume.entity.Volume)entity;
 							VolumeWorkLoadMappingEntity volumeWorkLoadMappingEntity = VolumeWorkLoadMappingEntity.builder()
 								.volume(volume)
@@ -806,13 +819,23 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 						} else if (type == EntityMappingType.IMAGE) {
 							ImageEntity image = (ImageEntity)entity;
 							// 잡 엔티티 이미지 업데이트
-							jobEntity.updateImage(image);
-							workloadHistoryRepo.save(jobEntity);
+							// jobEntity.updateImage(image);
+							// workloadHistoryRepo.save(jobEntity);
 							ImageWorkloadMappingEntity imageWorkloadMappingEntity = ImageWorkloadMappingEntity.builder()
 								.workload(jobEntity)
 								.image(image)
 								.build();
 							imageWorkloadMappingRepository.save(imageWorkloadMappingEntity);
+						} else if (type == EntityMappingType.LABEL) {
+							LabelEntity label = (LabelEntity)entity;
+							// 잡 엔티티 이미지 업데이트
+							// jobEntity.updateImage(image);
+							// workloadHistoryRepo.save(jobEntity);
+							LabelWorkloadMappingEntity workloadLabel = LabelWorkloadMappingEntity.builder()
+								.workload(jobEntity)
+								.label(label)
+								.build();
+							labelWorkloadMappingRepository.save(workloadLabel);
 						}
 					});
 				}

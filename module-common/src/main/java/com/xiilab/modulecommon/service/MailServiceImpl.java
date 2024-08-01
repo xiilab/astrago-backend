@@ -185,7 +185,7 @@ public class MailServiceImpl implements MailService {
             <tr style="text-align: center">
                 <td
                     style="
-                    	width:500px;
+			                 	width:500px;
                         text-align: center;
                         padding-bottom: 13px;
                         line-height: 24px;">
@@ -261,13 +261,13 @@ public class MailServiceImpl implements MailService {
 		if(contents != null){
 			for(MailDTO.Content content : contents){
 				result += """
-				         <tr style="text-align: center">
-				             
-				                <span style="margin-right: 10px"> %s</span>
-				            
-				             
+					         <tr style="text-align: center">
+					             
+					                <span style="margin-right: 10px"> %s</span>
+					            
+					             
 				                 %s
-				          
+					          
 				         </tr>
 				""".formatted(content.getCol1(), content.getCol2());
 			}

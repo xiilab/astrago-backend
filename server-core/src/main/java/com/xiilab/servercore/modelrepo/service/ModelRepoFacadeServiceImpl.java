@@ -112,8 +112,6 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 				storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
 					saveModel.getModelRepoRealName().replace(" ", "");
 			saveModel.setModelPath(modelPath);
-			// 모델 파일 등록
-			saveModel.addModelVersionEntity(modelRepoReqDTO.getModelFileName());
 			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
@@ -140,12 +138,12 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		// 모델 파일 복사
 		ModelVersionEntity versionEntity = versionRepository.findByModelRepoEntityId(responseDTO.getModelRepoId());
 		FileInfoDTO modelFile = copyModelToStorage(wlModelRepoDTO.getWlModelPaths(), storagePath);
-		if(Objects.nonNull(modelFile)) {
+		if (Objects.nonNull(modelFile)) {
 			versionEntity.setModelFile(modelFile.getFileName(), modelFile.getSize());
 		}
 		// 그외 설정 파일 업로드
 		List<FileInfoDTO> metaFiles = FileUtils.uploadFiles(storagePath, files);
-		if(Objects.nonNull(metaFiles)){
+		if (Objects.nonNull(metaFiles)) {
 			versionEntity.setModelMeta(metaFiles);
 		}
 	}
@@ -175,7 +173,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	}
 
 	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
-		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertEntity();
+		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertRequestDTO();
 		// model repo 저장
 		return createModelRepo(requestDTO);
 	}

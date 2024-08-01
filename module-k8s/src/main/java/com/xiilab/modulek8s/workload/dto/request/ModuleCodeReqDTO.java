@@ -27,7 +27,8 @@ public class ModuleCodeReqDTO {
 
 	public JobCodeVO toJobCodeVO(String workspace, String initContainerUrl) {
 		if (repositoryAuthType == RepositoryAuthType.PRIVATE && credentialReqDTO != null) {
-			return new JobCodeVO(codeId, repositoryURL, branch, mountPath, repositoryType, initContainerUrl, credentialReqDTO.toCredentialVO(workspace), command);
+			return new JobCodeVO(codeId, repositoryURL, branch, mountPath, repositoryType, initContainerUrl,
+				credentialReqDTO.toCredentialVO(workspace), command);
 		} else {
 			return new JobCodeVO(codeId, repositoryURL, branch, mountPath, repositoryType, initContainerUrl, command);
 		}

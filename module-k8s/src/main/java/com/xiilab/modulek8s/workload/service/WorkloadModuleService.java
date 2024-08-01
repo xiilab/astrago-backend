@@ -94,6 +94,7 @@ public interface WorkloadModuleService {
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
+
 	WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
@@ -151,4 +152,5 @@ public interface WorkloadModuleService {
 	List<Pod> getWorkloadByWorkloadName(String resourceName);
 
 	Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName);
+
 }

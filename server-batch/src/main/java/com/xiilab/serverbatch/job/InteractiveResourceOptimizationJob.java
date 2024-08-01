@@ -121,19 +121,19 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 
 	}
 
-	private void sendMail(List<AbstractModuleWorkloadResDTO> alarmParentList){
+	private void sendMail(List<AbstractModuleWorkloadResDTO> alarmParentList) {
 		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
 
-		if(ObjectUtils.isEmpty(smtpEntities)){
+		if (ObjectUtils.isEmpty(smtpEntities)) {
 			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
 		}
 
-		for(AbstractModuleWorkloadResDTO alarmParent : alarmParentList){
+		for (AbstractModuleWorkloadResDTO alarmParent : alarmParentList) {
 			// 사용자 조회
 			UserDTO.UserInfo creator = userService.getUserById(alarmParent.getCreatorId());
 			MailDTO mailDTO = getMailDTO(alarmParent, creator);
 
-			for(SmtpEntity smtpEntity : smtpEntities){
+			for (SmtpEntity smtpEntity : smtpEntities) {
 				SmtpDTO smtpDTO = SmtpDTO.builder()
 					.host(smtpEntity.getHost())
 					.port(smtpEntity.getPort())
@@ -143,7 +143,7 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 
 				boolean result = mailService.sendMail(mailDTO, smtpDTO);
 
-				if(result){
+				if (result) {
 					break;
 				}
 			}

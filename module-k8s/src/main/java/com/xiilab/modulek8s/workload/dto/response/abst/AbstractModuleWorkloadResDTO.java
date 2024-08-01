@@ -71,6 +71,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 	// protected String modelIds;
 	protected String volumeIds;
 	protected String codeIds;
+	protected String labelIds;
 	protected Long imageId;
 	protected ImageType imageType;
 	protected Long imageCredentialId;
@@ -114,6 +115,7 @@ public abstract class AbstractModuleWorkloadResDTO {
 			// modelIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.MODEL_IDS.getField());
 			volumeIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.VOLUME_IDS.getField());
 			codeIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.CODE_IDS.getField());
+			labelIds = hasMetadata.getMetadata().getAnnotations().get(AnnotationField.LABEL_IDS.getField());
 			imageType = ImageType.valueOf(
 				hasMetadata.getMetadata().getAnnotations().get(AnnotationField.IMAGE_TYPE.getField()));
 			imageCredentialId = !StringUtils.hasText(hasMetadata.getMetadata()

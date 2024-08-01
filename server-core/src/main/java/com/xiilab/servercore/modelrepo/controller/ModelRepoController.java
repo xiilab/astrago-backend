@@ -67,7 +67,7 @@ public class ModelRepoController {
 	@Operation(summary = "해당 ID의 모델의 버전을 삭제하는 API")
 	public ResponseEntity<HttpStatus> deleteModelRepoVersion(
 		@PathVariable(name = "versionId") Long versionId
-	){
+	) {
 		modelRepoFacadeService.deleteModelRepoVersion(versionId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

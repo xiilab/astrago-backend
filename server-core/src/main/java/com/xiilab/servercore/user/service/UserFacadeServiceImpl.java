@@ -97,16 +97,16 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void updateUserApprovalYN(List<String> userIdList, boolean approvalYN) {
 		userService.updateUserApprovalYN(userIdList, approvalYN);
-		userIdList.forEach(userId ->{
+		userIdList.forEach(userId -> {
 			UserDTO.UserInfo user = userService.getUserById(userId);
 			MailDTO mailDTO = null;
-			if(approvalYN){
+			if (approvalYN) {
 				mailDTO = MailServiceUtils.approvalUserMail(
 					user.getLastName() + user.getFirstName(),
 					user.getEmail());
-			}else{
+			} else {
 				mailDTO = MailServiceUtils.refuseUserMail(
-					user.getUserFullName(),user.getEmail());
+					user.getUserFullName(), user.getEmail());
 			}
 			sendMail(mailDTO);
 		});
@@ -266,6 +266,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 
 	/**
 	 * 사용자 기본 워크스페이스 생성 후 pin으로 등록
+	 *
 	 * @param userInfo
 	 */
 	private void createDefaultWorkspace(UserDTO.UserInfo userInfo) {
@@ -282,13 +283,13 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		pinService.createPin(workspace.getResourceName(), PinType.WORKSPACE, userInfo);
 	}
 
-	private void sendMail(MailDTO mailDTO){
+	private void sendMail(MailDTO mailDTO) {
 		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
 
-		if(ObjectUtils.isEmpty(smtpEntities)){
+		if (ObjectUtils.isEmpty(smtpEntities)) {
 			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
 		}
-		for(SmtpEntity smtpEntity : smtpEntities){
+		for (SmtpEntity smtpEntity : smtpEntities) {
 			SmtpDTO smtpDTO = SmtpDTO.builder()
 				.host(smtpEntity.getHost())
 				.port(smtpEntity.getPort())
@@ -300,7 +301,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 
 			smtpEntity.increment();
 
-			if(result){
+			if (result) {
 				break;
 			}
 		}
