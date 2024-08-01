@@ -64,12 +64,11 @@ public class VolumeController {
 	@GetMapping("")
 	@Operation(summary = "볼륨 전체 조회")
 	public ResponseEntity<VolumeResDTO.ResVolumes> getVolumes(
-		PageInfo pageInfo,
 		RepositorySearchCondition repositorySearchCondition,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO,
 		@RequestParam(value = "pageMode") PageMode pageMode) {
 		return new ResponseEntity(
-			volumeService.getVolumes(pageInfo, repositorySearchCondition, userInfoDTO, pageMode),
+			volumeService.getVolumes(repositorySearchCondition, userInfoDTO, pageMode),
 			HttpStatus.OK);
 	}
 

@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
@@ -25,7 +24,7 @@ public interface VolumeService {
 	void insertAstragoOutputVolume(AstragoVolumeEntity astragoVolumeEntity, String volumeName,
 		String workspaceResourceName, String workloadResourceName);
 
-	VolumeResDTO.ResVolumes getVolumes(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
+	VolumeResDTO.ResVolumes getVolumes(RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode);
 
 	VolumeResDTO.ResVolumeWithStorage getVolumeWithStorage(Long volumeId);

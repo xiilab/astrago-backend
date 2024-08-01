@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.core.io.ByteArrayResource;
@@ -25,7 +26,6 @@ import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
 import com.xiilab.modulecommon.util.CompressUtils;
 import com.xiilab.modulecommon.util.DecompressUtils;
-import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
@@ -105,9 +105,15 @@ public class VolumeServiceImpl implements VolumeService {
 	}
 
 	@Override
-	public VolumeResDTO.ResVolumes getVolumes(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
+	public VolumeResDTO.ResVolumes getVolumes(RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode) {
-		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
+		
+		PageRequest pageRequest = null;
+		if (!Objects.isNull(repositorySearchCondition.getPageNo()) &&
+			!Objects.isNull(repositorySearchCondition.getPageSize())) {
+			pageRequest = PageRequest.of(repositorySearchCondition.getPageNo(), repositorySearchCondition.getPageSize());
+		}
+
 		Page<Volume> volumes = volumeRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
 			userInfoDTO.getAuth(), repositorySearchCondition, pageMode);
 		List<Volume> entities = volumes.getContent();
