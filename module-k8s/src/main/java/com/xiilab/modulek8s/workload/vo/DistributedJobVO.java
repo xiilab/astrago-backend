@@ -268,7 +268,7 @@ public class DistributedJobVO extends DistributedWorkloadVO {
 
 	@Override
 	protected ObjectMeta createMeta() {
-		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueResourceName();
+		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueJobName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
