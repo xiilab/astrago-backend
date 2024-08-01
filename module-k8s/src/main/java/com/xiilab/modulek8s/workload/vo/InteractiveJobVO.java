@@ -252,6 +252,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		if (envs != null && !envs.isEmpty()) {
 			podSpecContainer.addAllToEnv(convertEnv());
 		}
+		podSpecContainer.addAllToEnv(getMetadataEnv());
 	}
 
 	private void addContainerPort(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
@@ -280,8 +281,6 @@ public class InteractiveJobVO extends WorkloadVO {
 			).toList();
 
 		List<EnvVar> result = new ArrayList<>(envVars);
-		//userId, workloadName, url을 env로 추가
-		result.addAll(getMetadataEnv());
 		// GPU 미사용시, GPU 접근 막는 환경변수
 		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
 			result.add(new EnvVarBuilder()
