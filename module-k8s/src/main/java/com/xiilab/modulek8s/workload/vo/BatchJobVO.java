@@ -48,7 +48,6 @@ public class BatchJobVO extends WorkloadVO {
 	private String workingDir;        // 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
 	private Map<String, String> parameter;        // 사용자가 입력한 hyper parameter
-	private String jobName;
 
 	@Override
 	public Job createResource() {
@@ -61,7 +60,7 @@ public class BatchJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
-		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueResourceName();
+		super.jobName = getUniqueJobName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
@@ -178,7 +177,7 @@ public class BatchJobVO extends WorkloadVO {
 			.withRestartPolicy("Never")
 			.withTerminationGracePeriodSeconds(20L)
 			.addNewContainer()
-			.withName(getUniqueResourceName())
+			.withName(getUniqueJobName())
 			.withImage(image.name());
 
 		addContainerPort(podSpecContainer);

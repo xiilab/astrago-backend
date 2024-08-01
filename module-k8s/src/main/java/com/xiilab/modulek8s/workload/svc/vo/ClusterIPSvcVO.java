@@ -1,17 +1,11 @@
 package com.xiilab.modulek8s.workload.svc.vo;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.CollectionUtils;
-
-import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
-import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 
 import io.fabric8.kubernetes.api.model.IntOrString;
@@ -43,7 +37,7 @@ public class ClusterIPSvcVO extends K8SResourceReqVO {
 
 	public static ClusterIPSvcVO createServiceDtoToServiceVO(CreateClusterIPSvcReqDTO createSvcReqDTO) {
 		return ClusterIPSvcVO.builder()
-			.resourceName(createSvcReqDTO.getSvcName())
+			.jobName(createSvcReqDTO.getSvcName())
 			.namespace(createSvcReqDTO.getNamespace())
 			.svcType(createSvcReqDTO.getSvcType())
 			.deploymentName(createSvcReqDTO.getDeploymentName())
@@ -57,7 +51,7 @@ public class ClusterIPSvcVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName())
+			.withName(getJobName())
 			.withNamespace(namespace)
 			.withLabels(Map.of(
 				LabelField.CONTROL_BY.getField(), "astra",

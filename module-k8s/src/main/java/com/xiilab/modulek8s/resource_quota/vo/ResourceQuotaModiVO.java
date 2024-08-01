@@ -41,7 +41,7 @@ public class ResourceQuotaModiVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName())
+			.withName(getUniqueJobName())
 			.withLabels(
 				Map.of(
 					AnnotationField.NAME.getField(), getName(),

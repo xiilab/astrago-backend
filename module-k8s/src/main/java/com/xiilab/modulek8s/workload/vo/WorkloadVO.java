@@ -73,7 +73,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			AtomicInteger volumeIndex = new AtomicInteger(1);
 			// 소스 코드 복사
 			List<Container> gitCloneContainers = codes.stream()
-				.map(codeVO -> new ContainerBuilder().withName(getUniqueResourceName() + "-git-clone-" + index)
+				.map(codeVO -> new ContainerBuilder().withName(getUniqueJobName() + "-git-clone-" + index)
 					// .withImage("k8s.gcr.io/git-sync/git-sync:v3.2.2")
 					.withImage(codeVO.initContainerImageUrl())
 					// init컨테이너와 아래서 생성한 emptyDir 볼륨 연결
@@ -264,7 +264,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	protected List<EnvVar> getMetadataEnv() {
 		EnvVar wlNameEnv = new EnvVarBuilder()
 			.withName("ASTRAGO_WORKLOAD_NAME")
-			.withValue(getResourceName())
+			.withValue(getJobName())
 			.build();
 		EnvVar userId = new EnvVarBuilder()
 			.withName("ASTRAGO_USER_ID")

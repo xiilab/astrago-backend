@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
 
@@ -54,7 +54,7 @@ public class StorageClassVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getResourceName()) //vo-uuid
+			.withName(getJobName()) //vo-uuid
 			.addToAnnotations(createAnnotation())
 			.addToLabels(createLabels())
 			.build();
