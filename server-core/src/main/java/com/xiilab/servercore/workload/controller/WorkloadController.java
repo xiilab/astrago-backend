@@ -115,6 +115,7 @@ public class WorkloadController {
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
 		@RequestParam("workloadResourceName") String workloadResourceName
 	) {
+
 		return new ResponseEntity<>(
 			workloadFacadeService.getWorkloadPortInfo(workloadType, workspaceResourceName, workloadResourceName),
 			HttpStatus.OK
