@@ -1,4 +1,4 @@
-package com.xiilab.servercore.experiment.chart.entity;
+package com.xiilab.modulek8sdb.experiment.entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +31,8 @@ public class PanelEntity extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
 	private Long id;
+	@Column(name = "workspace")
+	private String workspace;
 	@Column(name = "TITLE")
 	private String title;
 	@OneToMany(mappedBy = "panel", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

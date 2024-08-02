@@ -1,11 +1,10 @@
-package com.xiilab.servercore.experiment.chart.dto;
+package com.xiilab.modulek8sdb.experiment.dto;
 
 import java.util.List;
 
-import com.xiilab.servercore.experiment.chart.entity.ChartEntity;
-import com.xiilab.servercore.experiment.chart.entity.PanelEntity;
+import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+import com.xiilab.modulek8sdb.experiment.entity.PanelEntity;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -14,14 +13,11 @@ public class ChartDTO {
 	@Getter
 	@AllArgsConstructor
 	public static class Req {
-		@NotBlank
 		private String title;
-		@NotBlank
 		private String xAxis;
 		private Double xMin;
 		private Double xMax;
-		@NotBlank
-		private String yAxis;
+		private List<String> yAxis;
 		private Double yMin;
 		private Double yMax;
 	}
@@ -33,7 +29,7 @@ public class ChartDTO {
 		private final String xAxis;
 		private final Double xAxisMin;
 		private final Double xAxisMax;
-		private final String yAxis;
+		private final List<String> yAxis;
 		private final Double yAxisMin;
 		private final Double yAxisMax;
 
@@ -53,12 +49,10 @@ public class ChartDTO {
 	public static class Panel {
 		private final Long id;
 		private final String title;
-		private final List<Res> charts;
 
 		public Panel(PanelEntity panelEntity) {
 			this.id = panelEntity.getId();
 			this.title = panelEntity.getTitle();
-			this.charts = panelEntity.getChartList().stream().map(Res::new).toList();
 		}
 	}
 }

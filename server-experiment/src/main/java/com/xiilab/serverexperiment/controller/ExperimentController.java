@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,13 +36,13 @@ public class ExperimentController {
 		return new ResponseEntity<>(experimentDataService.getExperimentDataKeyByIds(ids), HttpStatus.OK);
 	}
 
-	@PostMapping("/metrics")
+	@GetMapping("/{id}/graph")
 	public ResponseEntity<List<ExperimentDataDTO.SearchRes>> searchExperimentsGraphData(
-		@RequestBody ExperimentDataDTO.SearchReq searchReq
+		@PathVariable(name = "id") Long id,
+		@RequestParam(name = "experiments") List<String> experiments
 	) {
 		return new ResponseEntity<>(
-			experimentDataService.searchExperimentsGraphData(searchReq.getExperiments(), searchReq.getMetrics()),
-			HttpStatus.OK);
+			experimentDataService.searchExperimentsGraphData(id, experiments), HttpStatus.OK);
 	}
 
 	@PostMapping("/search")

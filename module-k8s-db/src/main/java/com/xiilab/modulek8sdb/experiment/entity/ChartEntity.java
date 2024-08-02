@@ -1,9 +1,13 @@
-package com.xiilab.servercore.experiment.chart.entity;
+package com.xiilab.modulek8sdb.experiment.entity;
+
+import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.servercore.experiment.chart.dto.ChartDTO;
+import com.xiilab.modulek8sdb.common.utils.ListToStringConverter;
+import com.xiilab.modulek8sdb.experiment.dto.ChartDTO;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,7 +40,8 @@ public class ChartEntity extends BaseEntity {
 	@Column(name = "X_AXIS_MAX")
 	private Double xAxisMax;
 	@Column(name = "Y_AXIS")
-	private String yAxis;
+	@Convert(converter = ListToStringConverter.class)
+	private List<String> yAxis;
 	@Column(name = "Y_AXIS_MIN")
 	private Double yAxisMin;
 	@Column(name = "Y_AXIS_MAX")
@@ -63,5 +68,10 @@ public class ChartEntity extends BaseEntity {
 		this.yAxis = req.getYAxis();
 		this.yAxisMin = req.getYMin();
 		this.yAxisMax = req.getYMax();
+	}
+
+	public List<String> getAllAxis() {
+		yAxis.add(xAxis);
+		return yAxis;
 	}
 }
