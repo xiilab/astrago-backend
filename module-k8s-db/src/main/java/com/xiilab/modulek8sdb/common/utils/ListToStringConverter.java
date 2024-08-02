@@ -1,4 +1,4 @@
-package com.xiilab.servercore.common.utils;
+package com.xiilab.modulek8sdb.common.utils;
 
 import java.util.Arrays;
 import java.util.List;

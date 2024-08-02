@@ -1,12 +1,10 @@
-package com.xiilab.servercore.experiment.chart.dto;
+package com.xiilab.modulek8sdb.experiment.dto;
 
 import java.util.List;
 
-import com.xiilab.servercore.experiment.chart.entity.ChartEntity;
-import com.xiilab.servercore.experiment.chart.entity.PanelEntity;
+import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+import com.xiilab.modulek8sdb.experiment.entity.PanelEntity;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,13 +13,10 @@ public class ChartDTO {
 	@Getter
 	@AllArgsConstructor
 	public static class Req {
-		@NotBlank
 		private String title;
-		@NotBlank
 		private String xAxis;
 		private Double xMin;
 		private Double xMax;
-		@NotNull
 		private List<String> yAxis;
 		private Double yMin;
 		private Double yMax;
