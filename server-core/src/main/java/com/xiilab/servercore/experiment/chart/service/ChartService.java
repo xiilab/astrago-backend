@@ -7,12 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.errorcode.ChartErrorCode;
+import com.xiilab.modulek8sdb.experiment.dto.ChartDTO;
+import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+import com.xiilab.modulek8sdb.experiment.entity.PanelEntity;
+import com.xiilab.modulek8sdb.experiment.repository.ChartRepository;
+import com.xiilab.modulek8sdb.experiment.repository.PanelRepository;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.servercore.experiment.chart.dto.ChartDTO;
-import com.xiilab.servercore.experiment.chart.entity.ChartEntity;
-import com.xiilab.servercore.experiment.chart.entity.PanelEntity;
-import com.xiilab.servercore.experiment.chart.repository.ChartRepository;
-import com.xiilab.servercore.experiment.chart.repository.PanelRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,15 +23,16 @@ public class ChartService {
 	private final PanelRepository panelRepository;
 
 	@Transactional
-	public void saveChartPanel(String title) {
+	public void saveChartPanel(String workspace, String title) {
 		panelRepository.save(PanelEntity.builder()
+			.workspace(workspace)
 			.title(title)
 			.build());
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ChartDTO.Panel> getChartPartByUserId(Pageable pageable, UserDTO.UserInfo userDTO) {
-		Page<PanelEntity> chartPanelList = panelRepository.findByRegUser_RegUserId(userDTO.getId(),
+	public Page<ChartDTO.Panel> getChartPartByUserId(String workspace, Pageable pageable, UserDTO.UserInfo userDTO) {
+		Page<PanelEntity> chartPanelList = panelRepository.findByRegUser_RegUserId(workspace, userDTO.getId(),
 			pageable);
 		return chartPanelList.map(ChartDTO.Panel::new);
 	}
