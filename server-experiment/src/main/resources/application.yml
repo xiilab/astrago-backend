@@ -21,5 +21,3 @@ spring:
 tus:
   upload-path: /root/astrago/tus/meta
   expire-period: 43200000 # 12시간
-server:
-  port: 8090

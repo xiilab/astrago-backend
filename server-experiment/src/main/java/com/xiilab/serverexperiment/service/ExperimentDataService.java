@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+import com.xiilab.modulek8sdb.experiment.repository.ChartRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.serverexperiment.domain.mongo.Experiment;
@@ -24,6 +26,7 @@ public class ExperimentDataService {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
 	private final ExperimentRepository experimentRepository;
 	private final ExperimentCustomRepository experimentCustomRepository;
+	private final ChartRepository chartRepository;
 
 	@Transactional
 	public void saveExperimentData(ExperimentDataDTO.Req trainDataReq) {
@@ -39,12 +42,22 @@ public class ExperimentDataService {
 		return experimentCustomRepository.getExperimentKeysByIds(ids);
 	}
 
-	public List<ExperimentDataDTO.SearchRes> searchExperimentsGraphData(List<String> experiments,
-		List<String> metrics) {
-		return experimentCustomRepository.searchExperimentsGraphData(experiments, metrics);
+	public ExperimentDataDTO.ChartRes searchExperimentsGraphData(
+		Long id,
+		List<String> experiments) {
+		Optional<ChartEntity> chartOpt = chartRepository.findById(id);
+		if (chartOpt.isPresent()) {
+			ChartEntity chartEntity = chartOpt.get();
+			List<ExperimentDataDTO.SearchRes> searchRes = experimentCustomRepository.searchExperimentsGraphData(
+				experiments, chartEntity);
+			return new ExperimentDataDTO.ChartRes(chartEntity, searchRes);
+		} else {
+			return null;
+		}
 	}
 
 	public List<ExperimentDataDTO.Res> searchExperimentTableData(List<String> experiments, List<String> metrics) {
+
 		return experimentCustomRepository.searchExperimentsTableData(experiments, metrics);
 	}
 

@@ -21,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public abstract class K8SResourceReqVO {
 	//metadata.name
-	String resourceName;
+	protected String jobName;
 	//annotation
 	//사용자가 실제 입력한 name
 	@Pattern(regexp = "^[^-_]*$")
@@ -42,9 +42,9 @@ public abstract class K8SResourceReqVO {
 	String controlBy;
 	ResourceType type;
 
-	protected K8SResourceReqVO(String resourceName, String name, String description, LocalDateTime createdAt,
+	protected K8SResourceReqVO(String jobName, String name, String description, LocalDateTime createdAt,
 		String creatorUserName, String creatorFullName, String creatorId) {
-		this.resourceName = resourceName;
+		this.jobName = jobName;
 		this.name = name;
 		this.description = description;
 		this.createdAt = createdAt;
@@ -58,11 +58,11 @@ public abstract class K8SResourceReqVO {
 	 *
 	 * @return 리소스 이름
 	 */
-	public String getUniqueResourceName() {
-		if (!StringUtils.hasText(this.resourceName)) {
-			this.resourceName = getType().getName() + "-" + UUID.randomUUID();
+	public String getUniqueJobName() {
+		if (!StringUtils.hasText(this.jobName)) {
+			this.jobName = getType().getName() + "-" + UUID.randomUUID();
 		}
-		return this.resourceName;
+		return this.jobName;
 	}
 
 	//k8s resource 객체를 생성하는 메소드

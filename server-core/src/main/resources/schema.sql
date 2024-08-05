@@ -876,6 +876,7 @@ create table if not exists TB_CHART_PANEL
     REG_USER_ID        varchar(255) null,
     REG_USER_NAME      varchar(255) null,
     REG_USER_REAL_NAME varchar(255) null,
+    WORKSPACE varchar(255) null,
     TITLE              varchar(255) null
 );
 
