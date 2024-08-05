@@ -3,11 +3,11 @@ package com.xiilab.modulek8s.storage.volume.vo;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.enumeration.AccessMode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 
@@ -67,7 +67,7 @@ public class VolumeVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName()) //vo-uuid
+			.withName(getUniqueJobName()) //vo-uuid
 			.withNamespace(workspaceMetaDataName)
 			.addToAnnotations(createAnnotation())
 			.addToLabels(createLabels())

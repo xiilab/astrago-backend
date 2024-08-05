@@ -129,6 +129,7 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           repository: ${{ env.DEPLOYMENT_REPOSITORY }}
+          ref: develop
 
       - name: stage 이미지 정보 수정
         uses: mikefarah/yq@master

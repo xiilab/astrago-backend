@@ -1,6 +1,5 @@
 package com.xiilab.modulek8s.workload.secret.vo;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
@@ -33,7 +32,7 @@ public class SecretVO extends K8SResourceReqVO {
 	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
-			.withName(getUniqueResourceName())
+			.withName(getUniqueJobName())
 			.withNamespace(workspaceName)
 			.build();
 	}

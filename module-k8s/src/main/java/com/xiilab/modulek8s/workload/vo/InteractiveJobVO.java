@@ -47,7 +47,6 @@ public class InteractiveJobVO extends WorkloadVO {
 	private List<JobEnvVO> envs;        //env 정의
 	private List<JobPortVO> ports;        //port 정의
 	private String command;        // 워크로드 명령
-	private String jobName;
 	private String ide;
 
 	@Override
@@ -61,7 +60,7 @@ public class InteractiveJobVO extends WorkloadVO {
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
-		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueResourceName();
+		jobName = !StringUtils.isEmpty(this.jobName) ? this.jobName : getUniqueJobName();
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
@@ -176,7 +175,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withTerminationGracePeriodSeconds(20L)
 			.addNewContainer()
-			.withName(getUniqueResourceName())
+			.withName(getUniqueJobName())
 			.withImage(image.name());
 
 		addContainerPort(podSpecContainer);

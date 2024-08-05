@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulek8sdb.experiment.dto.ChartDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.servercore.experiment.chart.dto.ChartDTO;
 import com.xiilab.servercore.experiment.chart.service.ChartService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,8 +30,11 @@ public class ChartController {
 
 	@GetMapping("/panel/list")
 	@Operation(summary = "chart panel을 조회하는 api")
-	public ResponseEntity<Page<ChartDTO.Panel>> getChartPanel(UserDTO.UserInfo userInfo, Pageable pageable) {
-		return new ResponseEntity<>(chartService.getChartPartByUserId(pageable, userInfo), HttpStatus.OK);
+	public ResponseEntity<Page<ChartDTO.Panel>> getChartPanel(
+		@RequestParam(name = "workspace") String workspace,
+		UserDTO.UserInfo userInfo,
+		Pageable pageable) {
+		return new ResponseEntity<>(chartService.getChartPartByUserId(workspace, pageable, userInfo), HttpStatus.OK);
 	}
 
 	@GetMapping("/panel/{id}/charts")
@@ -42,8 +45,10 @@ public class ChartController {
 
 	@PostMapping("/panel")
 	@Operation(summary = "panel을 추가하는 api")
-	public ResponseEntity<HttpStatus> saveChartPanel(@RequestParam(value = "title") String title) {
-		chartService.saveChartPanel(title);
+	public ResponseEntity<HttpStatus> saveChartPanel(
+		@RequestParam(name = "workspace") String workspace,
+		@RequestParam(name = "title") String title) {
+		chartService.saveChartPanel(workspace, title);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 

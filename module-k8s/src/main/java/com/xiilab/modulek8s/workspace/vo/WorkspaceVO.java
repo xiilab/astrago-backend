@@ -33,7 +33,7 @@ public class WorkspaceVO {
 		@Override
 		protected ObjectMeta createMeta() {
 			return new ObjectMetaBuilder()
-				.withName(getUniqueResourceName())
+				.withName(getUniqueJobName())
 				.withAnnotations(
 					Map.of(
 						AnnotationField.NAME.getField(), getName(),

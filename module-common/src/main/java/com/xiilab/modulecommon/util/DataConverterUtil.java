@@ -290,8 +290,10 @@ public class DataConverterUtil {
 			long step = timeMil2 - timeMil1;
 			if(step >= 200000){
 				step = step / 200000;
-			}else{
+			}else if(step >= 60000) {
 				step = step / 60000;
+			}else{
+				step = 1L;
 			}
 			return step;
 		} catch (ParseException e) {
