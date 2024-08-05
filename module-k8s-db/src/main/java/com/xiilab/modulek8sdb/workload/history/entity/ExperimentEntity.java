@@ -31,6 +31,12 @@ public class ExperimentEntity {
 	@CreatedDate
 	@Column(name = "EXPERIMENT_CREATED_DATE")
 	private LocalDateTime createdTime;
+	@Column(name = "IS_VIEW_YN")
+	private boolean isViewYN;
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkloadEntity workload;
+
+	public void updateIsViewYN(boolean isViewYN) {
+		this.isViewYN = isViewYN;
+	}
 }

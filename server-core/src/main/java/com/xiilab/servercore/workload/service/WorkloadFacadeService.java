@@ -1234,4 +1234,8 @@ public class WorkloadFacadeService {
 		Pageable pageable) {
 		return workloadHistoryService.getExperiments(searchCondition, workloadStatus, pageable);
 	}
+
+	public void updateExperimentViewYN(List<Long> experimentId, boolean isViewYN) {
+		workloadHistoryService.updateExperimentViewYN(experimentId, isViewYN);
+	}
 }

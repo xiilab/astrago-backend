@@ -790,6 +790,7 @@ create table if not exists TB_EXPERIMENT
     EXPERIMENT_CREATED_DATE datetime(6)  null,
     EXPERIMENT_UUID         varchar(255) null,
     workload_WORKLOAD_ID    bigint       null,
+    IS_VIEW_YN tinyint(1) null,
     constraint FKm2x4fcat26vejxlcth9s8iuuh
         foreign key (workload_WORKLOAD_ID) references TB_WORKLOAD (WORKLOAD_ID)
 );
