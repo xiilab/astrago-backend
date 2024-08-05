@@ -32,6 +32,7 @@ import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
+import com.xiilab.modulek8sdb.workload.history.repository.ExperimentCustomRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.ExperimentRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
@@ -52,6 +53,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final WorkloadHistoryRepoCustom workloadHistoryRepoCustom;
 	private final ApplicationEventPublisher publisher;
 	private final UserFacadeService userFacadeService;
+	private final ExperimentCustomRepo experimentCustomRepo;
 	private final ExperimentRepo experimentRepo;
 
 	@Override
@@ -244,6 +246,12 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	@Override
 	public Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus,
 		Pageable pageable) {
-		return experimentRepo.getExperiments(searchCondition, workloadStatus, pageable);
+		return experimentCustomRepo.getExperiments(searchCondition, workloadStatus, pageable);
+	}
+
+	@Override
+	@Transactional
+	public void updateExperimentViewYN(List<Long> experimentIds, boolean isViewYN) {
+		experimentRepo.findAllById(experimentIds).forEach(experiment -> experiment.updateIsViewYN(isViewYN));
 	}
 }

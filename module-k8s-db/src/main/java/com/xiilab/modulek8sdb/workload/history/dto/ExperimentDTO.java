@@ -15,4 +15,5 @@ public class ExperimentDTO {
 	private String workspaceName;
 	private String uuid;
 	private WorkloadStatus status;
+	private boolean isView;
 }

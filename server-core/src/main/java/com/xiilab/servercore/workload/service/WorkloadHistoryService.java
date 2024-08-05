@@ -54,4 +54,6 @@ public interface WorkloadHistoryService {
 		UserDTO.UserInfo userInfoDTO);
 
 	Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus, Pageable pageable);
+
+	void updateExperimentViewYN(List<Long> experimentIds, boolean isViewYN);
 }

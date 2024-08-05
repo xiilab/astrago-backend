@@ -172,6 +172,15 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
+	@PatchMapping("/workloads/experiments")
+	@Operation(summary = "워크로드 실험 데이터 viewYN 업데이트")
+	public ResponseEntity<HttpStatus> updateExperimentViewYN(
+		@RequestParam(value = "ids") List<Long> experimentIds,
+		@RequestParam(value = "viewYN") boolean isViewYN) {
+		workloadFacadeService.updateExperimentViewYN(experimentIds, isViewYN);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 	@DeleteMapping("/workloads/{type}")
 	@Operation(summary = "워크로드 종료 api")
 	public ResponseEntity<HttpStatus> stopWorkload(
