@@ -42,15 +42,17 @@ public class ExperimentDataService {
 		return experimentCustomRepository.getExperimentKeysByIds(ids);
 	}
 
-	public List<ExperimentDataDTO.SearchRes> searchExperimentsGraphData(
+	public ExperimentDataDTO.ChartRes searchExperimentsGraphData(
 		Long id,
 		List<String> experiments) {
 		Optional<ChartEntity> chartOpt = chartRepository.findById(id);
 		if (chartOpt.isPresent()) {
 			ChartEntity chartEntity = chartOpt.get();
-			return experimentCustomRepository.searchExperimentsGraphData(experiments, chartEntity.getAllAxis());
+			List<ExperimentDataDTO.SearchRes> searchRes = experimentCustomRepository.searchExperimentsGraphData(
+				experiments, chartEntity);
+			return new ExperimentDataDTO.ChartRes(chartEntity, searchRes);
 		} else {
-			return List.of();
+			return null;
 		}
 	}
 

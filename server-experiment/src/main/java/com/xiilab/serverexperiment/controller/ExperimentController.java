@@ -36,8 +36,8 @@ public class ExperimentController {
 		return new ResponseEntity<>(experimentDataService.getExperimentDataKeyByIds(ids), HttpStatus.OK);
 	}
 
-	@GetMapping("/{id}/graph")
-	public ResponseEntity<List<ExperimentDataDTO.SearchRes>> searchExperimentsGraphData(
+	@GetMapping("/chart/{id}")
+	public ResponseEntity<ExperimentDataDTO.ChartRes> searchExperimentsGraphData(
 		@PathVariable(name = "id") Long id,
 		@RequestParam(name = "experiments") List<String> experiments
 	) {
