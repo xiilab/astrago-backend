@@ -2,6 +2,7 @@ package com.xiilab.servercore.node.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -15,6 +16,9 @@ import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
+import com.xiilab.modulek8sdb.mig.entity.MigInfoEntity;
+import com.xiilab.modulek8sdb.mig.entity.NodeEntity;
+import com.xiilab.modulek8sdb.mig.repository.MigRepository;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
 import com.xiilab.modulemonitor.service.PrometheusService;
@@ -29,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class NodeFacadeService {
 	private final NodeRepository nodeRepository;
 	private final PrometheusService prometheusService;
+	private final MigRepository migRepository;
 
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText) {
 		ResponseDTO.PageNodeDTO nodeList = nodeRepository.getNodeList(pageNo, pageSize, searchText);
@@ -229,7 +234,28 @@ public class NodeFacadeService {
 		nodeRepository.setSchedule(resourceName, scheduleDTO.getScheduleType());
 	}
 
+	private static void updateNode(MIGGpuDTO migGpuDTO, Optional<NodeEntity> nodeEntity) {
+		NodeEntity getNodeEntity = nodeEntity.get();
+
+		List<MigInfoEntity> migInfoEntities = migGpuDTO.getMigInfos().stream().map(migInfoDTO ->
+			MigInfoEntity.builder()
+				.profile(migInfoDTO.getProfile())
+				.migEnable(migInfoDTO.isMigEnable())
+				.gpuIndexes(migInfoDTO.getGpuIndexs())
+				.nodeEntity(getNodeEntity)
+				.build()).toList();
+
+		getNodeEntity.updateMigInfo(migInfoEntities);
+	}
+
 	public void updateMIGProfile(MIGGpuDTO migGpuDTO) {
+		// 해당 노드의 MIG 적용되어 있는경우 update, 최초 설정인경우 save
+		Optional<NodeEntity> nodeEntity = getNodeEntityByNodeName(migGpuDTO.getMigKey());
+		if(nodeEntity.isEmpty()){
+			saveNode(migGpuDTO);
+		}else{
+			updateNode(migGpuDTO, nodeEntity);
+		}
 		nodeRepository.saveGpuProductTOLabel(migGpuDTO.getNodeName());
 		//mig parted configmap에 해당 노드의 프로파일 추가
 		nodeRepository.updateMigProfile(migGpuDTO);
@@ -244,6 +270,10 @@ public class NodeFacadeService {
 	}
 
 	public MIGGpuDTO.MIGInfoStatus getNodeMigStatus(String nodeName) {
+		Map<String, Object> migConfigMap = nodeRepository.getMigConfigMap();
+		if(migConfigMap.get("custom-" + nodeName) == null){
+			syncMigConfig(nodeName);
+		}
 		return nodeRepository.getNodeMigStatus(nodeName);
 	}
 
@@ -310,10 +340,6 @@ public class NodeFacadeService {
 			));
 	}
 
-	private String getNodeName(String nodeName, GPUType gpuType) {
-		return gpuType == GPUType.MPS ? nodeName : null;
-	}
-
 	private Integer getMaximumGPUCount(List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos) {
 		return gpuInfos.stream()
 			.map(ResponseDTO.NodeGPUs.GPUInfo::getCount)
@@ -321,9 +347,39 @@ public class NodeFacadeService {
 			.orElseGet(() -> 0);
 	}
 
-	private Integer getTotalGPUCount(List<ResponseDTO.NodeGPUs.GPUInfo> gpuInfos) {
-		return gpuInfos.stream()
-			.mapToInt(ResponseDTO.NodeGPUs.GPUInfo::getCount)
-			.sum();
+	private void saveNode(MIGGpuDTO migGpuDTO){
+		NodeEntity nodeEntity = NodeEntity.builder().nodeName(migGpuDTO.getMigKey()).build();
+
+		List<MigInfoEntity> migInfoEntities = migGpuDTO.getMigInfos().stream().map(migInfoDTO ->
+			MigInfoEntity.builder()
+				.profile(migInfoDTO.getProfile())
+				.migEnable(migInfoDTO.isMigEnable())
+				.gpuIndexes(migInfoDTO.getGpuIndexs())
+				.nodeEntity(nodeEntity)
+				.build()).toList();
+
+		nodeEntity.addMigInfo(migInfoEntities);
+
+		migRepository.save(nodeEntity);
+	}
+
+	private Optional<NodeEntity> getNodeEntityByNodeName(String nodeName){
+		return migRepository.getByNodeName(nodeName);
+	}
+
+	private void syncMigConfig(String nodeName) {
+		migRepository.getByNodeName("custom-" + nodeName).ifPresent(migEntity -> {
+			MIGGpuDTO migGpuDTO = MIGGpuDTO.builder()
+				.nodeName(nodeName)
+				.migInfos(migEntity.getMigInfos().stream().map(migInfoEntity ->
+					MIGGpuDTO.MIGInfoDTO.builder()
+						.gpuIndexs(migInfoEntity.getGpuIndexes())
+						.migEnable(migInfoEntity.isMigEnable())
+						.profile(migInfoEntity.getProfile())
+						.build()
+				).toList())
+				.build();
+			nodeRepository.syncMigConfigMap(migGpuDTO);
+		});
 	}
 }
