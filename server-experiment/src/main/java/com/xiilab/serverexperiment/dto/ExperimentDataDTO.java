@@ -3,6 +3,8 @@ package com.xiilab.serverexperiment.dto;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,8 +25,31 @@ public class ExperimentDataDTO {
 	}
 
 	@Getter
+	public static class ChartRes {
+		private final String title;
+		private final String xAxis;
+		private final Double xAxisMin;
+		private final Double xAxisMax;
+		private final List<String> yAxis;
+		private final Double yAxisMin;
+		private final Double yAxisMax;
+		private final List<SearchRes> chartList;
+
+		public ChartRes(ChartEntity chartEntity, List<SearchRes> searchRes) {
+			this.title = chartEntity.getTitle();
+			this.xAxis = chartEntity.getXAxis();
+			this.xAxisMin = chartEntity.getXAxisMin();
+			this.xAxisMax = chartEntity.getXAxisMax();
+			this.yAxis = chartEntity.getYAxis();
+			this.yAxisMin = chartEntity.getYAxisMin();
+			this.yAxisMax = chartEntity.getYAxisMax();
+			this.chartList = searchRes;
+		}
+	}
+
+	@Getter
 	public static class SearchRes {
-		private String workloadName;
+		private String uuid;
 		private List<MetricEntry> value;
 	}
 
