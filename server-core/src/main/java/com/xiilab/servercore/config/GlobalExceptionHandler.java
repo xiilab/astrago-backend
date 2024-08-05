@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.ErrorCode;
 import com.xiilab.modulecommon.exception.ErrorResponse;
 import com.xiilab.modulecommon.exception.K8sException;
@@ -49,6 +50,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		ErrorCode errorCode = e.getErrorCode();
 		String msg = String.format(errorCode.getMessage());
 		log.error("k8sException :" + msg);
+		return handleExceptionInternal(errorCode, msg);
+	}
+
+	@ExceptionHandler(CommonException.class)
+	public ResponseEntity<Object> handleCommonException(CommonException e) {
+		ErrorCode errorCode = e.getErrorCode();
+		String msg = String.format(errorCode.getMessage());
+		log.error("commonException :" + msg);
 		return handleExceptionInternal(errorCode, msg);
 	}
 

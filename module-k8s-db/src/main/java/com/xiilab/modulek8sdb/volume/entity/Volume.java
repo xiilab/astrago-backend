@@ -36,25 +36,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE TB_VOLUME tv SET tv.DELETE_YN = 'Y' WHERE tv.VOLUME_ID = ?")
 public abstract class Volume extends BaseEntity {
+	@Column(name = "DIVISION", insertable = false, updatable = false)
+	@Enumerated(EnumType.STRING)
+	protected RepositoryDivision division;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "VOLUME_ID")
 	private Long volumeId;
-
 	@Column(name = "VOLUME_NAME")
 	private String volumeName;
-
 	@Column(name = "VOLUME_SIZE")
 	private Long volumeSize;
-
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN deleteYn = DeleteYN.N;
-
-	@Column(name = "DIVISION", insertable = false, updatable = false)
-	@Enumerated(EnumType.STRING)
-	protected RepositoryDivision division;
-
 	@Column(name = "VOLUME_DEFAULT_MOUNT_PATH")
 	private String volumeDefaultMountPath;
 

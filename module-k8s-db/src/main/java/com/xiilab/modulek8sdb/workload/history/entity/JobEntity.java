@@ -64,7 +64,7 @@ public class JobEntity extends DevelopEntity {
 		this.workloadType = workloadType;
 		this.workingDir = workingDir;
 		this.workloadCMD = workloadCmd;
-		this.image = image;
+		// this.image = image;
 		this.ide = ide;
 		this.deleteYN = deleteYN;
 		this.workloadStatus = workloadStatus;

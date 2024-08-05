@@ -74,8 +74,8 @@ import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workload.service.WorkloadHistoryService;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
-import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.FindWorkspaceResDTO;
+import com.xiilab.servercore.workspace.dto.ResourceQuotaFormDTO;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
 import com.xiilab.servercore.workspace.entity.WorkspaceSettingEntity;
@@ -293,8 +293,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public WorkspaceDTO.FindJoinedWorkspaces getJoinedWorkspaceList(String title, UserDTO.UserInfo userInfoDTO)
-	{
+	public WorkspaceDTO.FindJoinedWorkspaces getJoinedWorkspaceList(String title, UserDTO.UserInfo userInfoDTO) {
 		// keycloak에서 조회되는 workspace 리스트 조회
 		Set<String> userWorkspaceList = userInfoDTO.getWorkspaceList(false);
 		// 클러스터 전체 workspace 리스트 조회

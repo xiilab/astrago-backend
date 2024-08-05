@@ -72,7 +72,10 @@ public class ModelRepoDTO {
 				.storagePath(modelRepoEntity.getStorageEntity().getStoragePath())
 				.modelPath(modelRepoEntity.getModelPath())
 				.ip(modelRepoEntity.getStorageEntity().getIp())
-				.labels(modelRepoEntity.getModelLabelEntityList().stream().map(modelLabelEntity -> LabelDTO.ResponseDTO.convertLabelDTO(modelLabelEntity.getLabelEntity())).toList())
+				.labels(modelRepoEntity.getModelLabelEntityList()
+					.stream()
+					.map(modelLabelEntity -> LabelDTO.ResponseDTO.convertLabelDTO(modelLabelEntity.getLabelEntity()))
+					.toList())
 				.version(modelRepoEntity.getModelVersionList().stream().map(VersionDTO::convertVersionDTO)
 					.sorted(Comparator.comparing(VersionDTO::getVersionName).reversed()).toList())
 				.build();

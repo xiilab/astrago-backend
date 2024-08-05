@@ -21,7 +21,7 @@ public class LabelDTO {
 			.name(this.getLabelName())
 			.workspaceResourceName(workspaceName)
 			.colorCode(this.getColorCode())
-			.colorCodeName(this.getColorCodeName())
+			.colorName(this.getColorCodeName())
 			.order(count + 1)
 			.build();
 	}
@@ -32,12 +32,13 @@ public class LabelDTO {
 	public static class ResponseDTO extends LabelDTO {
 		private long labelId;
 		private int order;
+
 		public static ResponseDTO convertLabelDTO(LabelEntity labelEntity) {
 			return ResponseDTO.builder()
 				.labelId(labelEntity.getId())
 				.labelName(labelEntity.getName())
 				.colorCode(labelEntity.getColorCode())
-				.colorCodeName(labelEntity.getColorCodeName())
+				.colorCodeName(labelEntity.getColorName())
 				.order(labelEntity.getOrder())
 				.build();
 		}

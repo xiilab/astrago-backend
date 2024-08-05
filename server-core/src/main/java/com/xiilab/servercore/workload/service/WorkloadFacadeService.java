@@ -18,7 +18,9 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -85,6 +88,7 @@ import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -102,6 +106,7 @@ import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
 import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.volume.dto.VolumeResDTO;
+import com.xiilab.servercore.volume.service.VolumeFacadeService;
 import com.xiilab.servercore.volume.service.VolumeService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
@@ -125,6 +130,7 @@ public class WorkloadFacadeService {
 	private final WorkloadModuleService workloadModuleService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final SvcModuleFacadeService svcModuleFacadeService;
+	private final VolumeFacadeService volumeFacadeService;
 	private final NodeService nodeService;
 	private final PinService pinService;
 	private final DatasetService datasetService;
@@ -167,6 +173,22 @@ public class WorkloadFacadeService {
 		}
 		//*/
 
+		// outputMountPath(사용자가 입력, 컨테이너 마운트 경로) <=> hostPath 볼륨 생성
+		// hostPath 형식: {defaultStorageHostPath} + "/workspace/{wsResourceName}/workloads/{wlResourceName}/models"
+		if (StringUtils.hasText(createWorkloadReqDTO.getOutputMountPath())) {
+			// 볼륨 DB에 저장
+			String volumeName = String.format("%s의 Output volume", createWorkloadReqDTO.getName());
+			Long volumeId = volumeFacadeService.insertAstragoOutputVolume(
+				volumeName,
+				createWorkloadReqDTO.getWorkspace(),
+				createWorkloadReqDTO.getJobName(),
+				createWorkloadReqDTO.getOutputMountPath(),
+				VolumeAccessType.PRIVATE);
+			// reqDTO에 추가
+			createWorkloadReqDTO.getVolumes()
+				.add(new ModuleVolumeReqDTO(volumeId, createWorkloadReqDTO.getOutputMountPath()));
+		}
+
 		// 볼륨 추가
 		if (!CollectionUtils.isEmpty(createWorkloadReqDTO.getVolumes())) {
 			setVolumes(createWorkloadReqDTO.getWorkspace(), createWorkloadReqDTO.getVolumes());
@@ -185,12 +207,6 @@ public class WorkloadFacadeService {
 			if (StringUtils.hasText(createWorkloadReqDTO.getNodeName())) {
 				createWorkloadReqDTO.setNodeName(getMpsNodeName(createWorkloadReqDTO.getNodeName()));
 			}
-		}
-
-		// outputMountPath(사용자가 입력, 컨테이너 마운트 경로) <=> hostPath 볼륨 생성
-		// hostPath 형식: {defaultStorageHostPath} + "/workspace/{wsResourceName}/workloads/{wlResourceName}/models"
-		if (StringUtils.hasText(createWorkloadReqDTO.getOutputMountPath())) {
-			// defaultStoragePath 검색
 		}
 
 		try {
@@ -329,15 +345,30 @@ public class WorkloadFacadeService {
 			moduleWorkloadResDTO = workloadModuleFacadeService.getDistributedWorkload(
 				workspaceName, workloadResourceName);
 		}
+
 		return generatePortResDTO(moduleWorkloadResDTO);
 	}
 
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 
-		return workloadHistoryService.getWorkloadInfoByResourceName(
+		FindWorkloadResDTO findWorkloadResDTO = workloadHistoryService.getWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
+		try {
+			if (findWorkloadResDTO.getImage().getType() == ImageType.HUB) {
+				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
+					workloadResourceName);
+				findWorkloadResDTO.updateHubPredictTime(moduleBatchJobResDTO.getEstimatedInitialTime(),
+					moduleBatchJobResDTO.getEstimatedRemainingTime());
+			}
+
+			return findWorkloadResDTO;
+		} catch (Exception e) {
+			return findWorkloadResDTO;
+		}
+
+		// HUB일 떄,
 		// 실행중일 떄
 		// try {
 		// 	UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
@@ -386,7 +417,7 @@ public class WorkloadFacadeService {
 		// List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
 		// 	moduleJobResDTO.getDatasetMountPathMap());
 		List<FindWorkloadResDTO.Volume> volumes = generateDatasetResDTO(moduleJobResDTO.getVolumeIds(),
-				moduleJobResDTO.getVolumeMountPathMap());
+			moduleJobResDTO.getVolumeMountPathMap());
 		// 코드 세팅
 		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
 		// PORT 세팅
@@ -1197,5 +1228,10 @@ public class WorkloadFacadeService {
 		// 	}
 		// }
 		// return null;
+	}
+
+	public Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus,
+		Pageable pageable) {
+		return workloadHistoryService.getExperiments(searchCondition, workloadStatus, pageable);
 	}
 }

@@ -32,7 +32,8 @@ public class LabelServiceImpl implements LabelService {
 		// 해당 워크스페이스에 해당 이름의 라벨이 없는경우 생성
 		if (findLabel.isEmpty()) {
 			try {
-				LabelEntity labelEntity = labelRepository.save(labelDTO.convertLabelEntity(workspaceResourceName, count));
+				LabelEntity labelEntity = labelRepository.save(
+					labelDTO.convertLabelEntity(workspaceResourceName, count));
 				return LabelDTO.ResponseDTO.convertLabelDTO(labelEntity);
 			} catch (IllegalArgumentException e) {
 				throw new RestApiException(LabelErrorCode.LABEL_SAVE_FAIL);
@@ -74,7 +75,7 @@ public class LabelServiceImpl implements LabelService {
 	@Override
 	@Transactional
 	public void modifyLabels(List<LabelDTO.UpdateDTO> updateLabelDTOs) {
-		for(LabelDTO.UpdateDTO updateLabelDTO : updateLabelDTOs){
+		for (LabelDTO.UpdateDTO updateLabelDTO : updateLabelDTOs) {
 			Optional<LabelEntity> labelEntity = getLabelEntity(updateLabelDTO.getLabelId());
 			labelEntity.ifPresent(
 				entity -> entity.updateLabel(updateLabelDTO.getLabelName(), updateLabelDTO.getColorCode(),

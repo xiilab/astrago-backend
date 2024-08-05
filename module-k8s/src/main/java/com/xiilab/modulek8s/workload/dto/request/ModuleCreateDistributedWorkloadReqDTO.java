@@ -19,6 +19,7 @@ public class ModuleCreateDistributedWorkloadReqDTO extends CreateWorkloadReqDTO 
 		initializeCollection();
 
 		return DistributedJobVO.builder()
+			.jobName(super.jobName)
 			.workspace(this.workspace)
 			.workspaceName(workspaceName)
 			.name(this.getName())

@@ -36,7 +36,7 @@ public class LabelController {
 	public ResponseEntity<LabelDTO.ResponseDTO> saveLabel(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestBody LabelDTO labelDTO) {
-		return new ResponseEntity<>(labelService.addLabel(workspaceResourceName, labelDTO),HttpStatus.OK);
+		return new ResponseEntity<>(labelService.addLabel(workspaceResourceName, labelDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("/{workspaceResourceName}")
@@ -61,6 +61,7 @@ public class LabelController {
 		labelService.deleteLabelById(labelId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 	@PatchMapping()
 	@Operation(summary = "라벨를 변경하는 API")
 	public ResponseEntity<HttpStatus> modifyLabel(

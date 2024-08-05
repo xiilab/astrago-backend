@@ -42,7 +42,7 @@ public class AgeDTO {
 		// KST인경우
 		LocalDateTime nowLocalDateTime = LocalDateTime.now();
 		// UTC
-		if(creationTimestamp.contains("Z")){
+		if (creationTimestamp.contains("Z")) {
 			// UTC 시간대를 기준으로 현재 시간을 가져옴
 			ZonedDateTime nowUTC = ZonedDateTime.now(ZoneId.of("UTC"));
 			nowLocalDateTime = nowUTC.toLocalDateTime();

@@ -52,32 +52,32 @@ public class FileUtils {
 			.build();
 	}
 
-	public static void deleteDirectory(String path){
-		try{
+	public static void deleteDirectory(String path) {
+		try {
 			Path targetPath = Paths.get(path);
 			Files.delete(targetPath);
-		}catch (IOException e){
+		} catch (IOException e) {
 			throw new RestApiException(CommonErrorCode.FILE_DELETE_FAIL);
 		}
 	}
 
-	public static List<FileInfoDTO> uploadFiles(String path, List<MultipartFile> files){
+	public static List<FileInfoDTO> uploadFiles(String path, List<MultipartFile> files) {
 		List<FileInfoDTO> fileList = null;
-		try{
+		try {
 			Path targetPath = Paths.get(path);
 			// 파일 업로드
-			for(MultipartFile file : files){
+			for (MultipartFile file : files) {
 				// 각 파일의 원본 이름에서 공백을 언더스코어로 대체
 				String fileName = file.getOriginalFilename().replace(" ", "_");
 				// 지정된 경로에 파일을 복사
 				Files.copy(file.getInputStream(), targetPath.resolve(fileName));
 				fileList.add(FileInfoDTO.builder()
-						.fileName(fileName)
-						.size(String.valueOf(file.getSize()))
+					.fileName(fileName)
+					.size(String.valueOf(file.getSize()))
 					.build());
 			}
 			return fileList;
-		}catch (IOException e){
+		} catch (IOException e) {
 			// 파일 업로드 실패시 예외 처리
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
 		}

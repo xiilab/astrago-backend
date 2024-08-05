@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8sdb.common.enums.DefaultStorageYN;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
@@ -53,6 +54,12 @@ public class StorageServiceImpl implements StorageService {
 		StorageEntity storageEntity = storageRepository.findById(storageId)
 			.orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
 		return StorageDTO.ResStorage.toDto(storageEntity);
+	}
+
+	@Override
+	public StorageEntity getDefaultStorage() {
+		return storageRepository.findByDefaultStorageYN(DefaultStorageYN.Y)
+			.orElseThrow(() -> new RestApiException(StorageErrorCode.STORAGE_NOT_FOUND));
 	}
 
 	@Override

@@ -18,5 +18,5 @@ public interface LabelRepository extends JpaRepository<LabelEntity, Long> {
 	Optional<LabelEntity> findByWorkspaceResourceNameAndName(@Param("workspaceResourceName") String workspaceResourceName, @Param("labelName") String labelName);
 
 	@Query("select count(tl) from TB_LABEL tl where tl.workspaceResourceName = :workspaceResourceName ")
-	Integer findByWorkspaceResourceNameContaining(@Param("workspaceResourceName")String workspaceResourceName);
+	Integer findByWorkspaceResourceNameContaining(@Param("workspaceResourceName") String workspaceResourceName);
 }

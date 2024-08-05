@@ -138,12 +138,12 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		// 모델 파일 복사
 		ModelVersionEntity versionEntity = versionRepository.findByModelRepoEntityId(responseDTO.getModelRepoId());
 		FileInfoDTO modelFile = copyModelToStorage(wlModelRepoDTO.getWlModelPaths(), storagePath);
-		if(Objects.nonNull(modelFile)) {
+		if (Objects.nonNull(modelFile)) {
 			versionEntity.setModelFile(modelFile.getFileName(), modelFile.getSize());
 		}
 		// 그외 설정 파일 업로드
 		List<FileInfoDTO> metaFiles = FileUtils.uploadFiles(storagePath, files);
-		if(Objects.nonNull(metaFiles)){
+		if (Objects.nonNull(metaFiles)) {
 			versionEntity.setModelMeta(metaFiles);
 		}
 	}

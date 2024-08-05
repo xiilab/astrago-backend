@@ -95,7 +95,8 @@ public class WorkspaceDTO {
 		private String resourceName;
 		private boolean isPinYN;
 
-		public static WorkspaceDTO.FindJoinedWorkspaceDetail of(WorkspaceDTO.ResponseDTO workspace, Set<String> userWorkspacePinList) {
+		public static WorkspaceDTO.FindJoinedWorkspaceDetail of(WorkspaceDTO.ResponseDTO workspace,
+			Set<String> userWorkspacePinList) {
 			return FindJoinedWorkspaceDetail.builder()
 				.id(workspace.id)
 				.name(workspace.name)

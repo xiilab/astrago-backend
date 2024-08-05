@@ -67,6 +67,16 @@ public class SystemAlertRepositoryCustomImpl implements SystemAlertRepositoryCus
 		return new PageImpl<>(result, pageable, totalCount);
 	}
 
+	@Override
+	public List<SystemAlertEntity> getAllSystemAlertList(String recipientId, AlertRole alertRole) {
+		return queryFactory.selectFrom(systemAlertEntity)
+			.where(
+				eqRecipientId(recipientId),
+				eqReadYn(ReadYN.N),
+				eqAlertRole(alertRole)
+			).fetch();
+	}
+
 	private BooleanExpression eqRecipientId(String recipientId) {
 		return StringUtils.hasText(recipientId) ? systemAlertEntity.recipientId.eq(recipientId) : null;
 	}

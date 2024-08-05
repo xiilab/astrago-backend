@@ -3,6 +3,8 @@ package com.xiilab.modulek8s.common.vo;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.util.StringUtils;
+
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -57,7 +59,10 @@ public abstract class K8SResourceReqVO {
 	 * @return 리소스 이름
 	 */
 	public String getUniqueResourceName() {
-		return getType().getName() + "-" + UUID.randomUUID();
+		if (!StringUtils.hasText(this.resourceName)) {
+			this.resourceName = getType().getName() + "-" + UUID.randomUUID();
+		}
+		return this.resourceName;
 	}
 
 	//k8s resource 객체를 생성하는 메소드

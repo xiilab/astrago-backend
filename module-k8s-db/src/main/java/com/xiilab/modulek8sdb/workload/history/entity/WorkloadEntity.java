@@ -3,6 +3,7 @@ package com.xiilab.modulek8sdb.workload.history.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.annotations.SQLDelete;
@@ -11,7 +12,6 @@ import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,7 +25,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -79,8 +78,8 @@ public abstract class WorkloadEntity {
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "WORKLOAD_STATUS")
 	protected WorkloadStatus workloadStatus;
-	@ManyToOne(fetch = FetchType.EAGER)
-	protected ImageEntity image;
+	// @ManyToOne(fetch = FetchType.EAGER)
+	// protected ImageEntity image;
 	@Column(name = "DELETE_YN")
 	@Enumerated(EnumType.STRING)
 	protected DeleteYN deleteYN;
@@ -109,12 +108,18 @@ public abstract class WorkloadEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<PortEntity> portList = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	protected List<LabelWorkloadMappingEntity> labelList = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	protected List<ExperimentEntity> experimentList = new ArrayList<>();
 	@Transient
 	protected boolean canBeDeleted;
 
-	public void updateImage(ImageEntity image) {
-		this.image = image;
-	}
+	// public void updateImage(ImageEntity image) {
+	// 	this.image = image;
+	// }
 
 	public void updateJob(String name, String description) {
 		this.name = name;
@@ -126,9 +131,23 @@ public abstract class WorkloadEntity {
 			this.canBeDeleted = true;
 		}
 	}
-	public void updateCanBeDeleted(boolean isAdmin){
-		if(isAdmin){
+
+	public void updateCanBeDeleted(boolean isAdmin) {
+		if (isAdmin) {
 			this.canBeDeleted = true;
+		}
+	}
+
+	public void addExperiment(String uuid) {
+		Optional<ExperimentEntity> expOpt = this.experimentList.stream()
+			.filter(ex -> ex.getUuid().equals(uuid))
+			.findAny();
+		if (expOpt.isEmpty()) {
+			this.experimentList.add(ExperimentEntity.builder()
+				.uuid(uuid)
+				.createdTime(LocalDateTime.now())
+				.workload(this)
+				.build());
 		}
 	}
 }
