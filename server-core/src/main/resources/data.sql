@@ -411,4 +411,5 @@ values  (1, 'SMALL', 'SMALL', null, null, 1, 2.0, 4.0, 'SINGLE', now(), null, 'S
         (3, 'LARGE', 'LARGE', null, null, 2, 8.0, 16.0, 'SINGLE', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM'),
         (5, 'LARGE', 'LARGE', 5.0, 10.0, 4, 8.0, 16.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM'),
         (6, 'MEDIUM', 'MEDIUM', 3.0, 7.0, 3, 4.0, 8.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM'),
-        (8, 'SMALL', 'SMALL', 2.0, 5.0, 2, 2.0, 4.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM');
+        (8, 'SMALL', 'SMALL', 2.0, 5.0, 2, 2.0, 4.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM')
+    ON DUPLICATE KEY UPDATE RESOURCE_PRESET_ID = RESOURCE_PRESET_ID;
