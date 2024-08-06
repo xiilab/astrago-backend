@@ -2,6 +2,7 @@ package com.xiilab.serverexperiment.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,12 +46,14 @@ public class ExperimentController {
 			experimentDataService.searchExperimentsGraphData(id, experiments), HttpStatus.OK);
 	}
 
-	@PostMapping("/search")
+	@PostMapping("/table")
 	public ResponseEntity<List<ExperimentDataDTO.Res>> searchExperimentsTableData(
-		@RequestBody ExperimentDataDTO.SearchReq searchReq
+		@RequestParam(name = "userId") String userId,
+		@RequestParam(name = "workspace") String workspace,
+		Pageable pageable
 	) {
 		return new ResponseEntity<>(
-			experimentDataService.searchExperimentTableData(searchReq.getExperiments(), searchReq.getMetrics()),
+			experimentDataService.searchExperimentTableData(userId, workspace, pageable),
 			HttpStatus.OK);
 	}
 }

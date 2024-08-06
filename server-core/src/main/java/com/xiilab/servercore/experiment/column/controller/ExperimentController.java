@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulek8sdb.experiment.dto.ExperimentColumnDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.servercore.experiment.column.dto.ExperimentColumnDTO;
 import com.xiilab.servercore.experiment.column.service.ExperimentColumnService;
 
 import io.swagger.v3.oas.annotations.Operation;
