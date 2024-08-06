@@ -8,12 +8,10 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,6 +29,8 @@ public class MigInfoEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MIG_INFO_ID")
 	private Long id;
+	@Column(name = "NODE_NAME")
+	private String nodeName;
 	@ElementCollection
 	private List<Integer> gpuIndexes;
 	@Column(name = "MIG_ENABLE")
@@ -41,7 +41,5 @@ public class MigInfoEntity {
 	@MapKeyColumn(name = "PROFILE_TYPE")
 	@Column(name = "PROFILE_COUNT")
 	private Map<String, Integer> profile = new HashMap<>();
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "NODE_ID")
-	private NodeEntity nodeEntity;
+
 }
