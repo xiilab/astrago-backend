@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.volume.repository;
 
 import static com.xiilab.modulek8sdb.volume.entity.QVolume.*;
+import static com.xiilab.modulek8sdb.volume.entity.QVolumeWorkSpaceMappingEntity.*;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.OutputVolumeYN;
@@ -44,30 +46,40 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 			sortType == RepositorySortType.NAME ? volume.volumeName.desc() :
 				sortType == RepositorySortType.CREATED_AT ? volume.regDate.desc() : volume.volumeSize.desc();
 
-		List<Volume> volumes = queryFactory.selectFrom(volume)
-			.where(
-				creatorEq(userId, userAuth, pageMode),
-				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
-				volumeNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				deleteYnEqN(),
-				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN())
-			)
-			.orderBy(sort)
-			.offset(pageRequest.getOffset())
-			.limit(pageRequest.getPageSize())
-			.fetch();
-
-		Long count = queryFactory.select(volume.count())
+		Long totalCount = queryFactory.select(volume.count())
 			.from(volume)
+			.join(volume.volumeWorkSpaceMappingList, volumeWorkSpaceMappingEntity)
 			.where(
 				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				volumeNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
 				deleteYnEqN(),
-				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN())
+				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN()),
+				workspaceResourceNameEq(repositorySearchCondition.getWorkspaceResourceName())
 			)
 			.fetchOne();
-		return new PageImpl<>(volumes, pageRequest, count);
+
+		JPAQuery<Volume> query = queryFactory.selectFrom(volume)
+			.join(volume.volumeWorkSpaceMappingList, volumeWorkSpaceMappingEntity)
+			.where(
+				creatorEq(userId, userAuth, pageMode),
+				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
+				volumeNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
+				deleteYnEqN(),
+				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN()),
+				workspaceResourceNameEq(repositorySearchCondition.getWorkspaceResourceName())
+			)
+			.orderBy(sort);
+
+		if (pageRequest != null) {
+			query.offset(pageRequest.getPageNumber())
+				.limit(pageRequest.getPageSize());
+		} else {
+			pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
+		}
+
+		List<Volume> result = query.fetch();
+		return new PageImpl<>(result, pageRequest, totalCount);
 	}
 
 	@Override
@@ -110,5 +122,9 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 
 	private Predicate outputVoulmeYNEq(OutputVolumeYN outputVolumeYN) {
 		return outputVolumeYN != null ? volume.outputVolumeYN.eq(outputVolumeYN) : null;
+	}
+
+	private Predicate workspaceResourceNameEq(String workspaceResourceName) {
+		return workspaceResourceName != null? volumeWorkSpaceMappingEntity.workspaceResourceName.eq(workspaceResourceName) : null;
 	}
 }
