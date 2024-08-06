@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class ModelRepoController {
 	private final ModelRepoFacadeService modelRepoFacadeService;
 
-	@GetMapping("/{workspaceResourceName}")
+	@GetMapping("/ws/{workspaceResourceName}")
 	@Operation(summary = "해당 워크스페이스에 전체 모델 리스트 조회 API")
 	public ResponseEntity<PageDTO<ModelRepoDTO.ResponseDTO>> getModelRepoList(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
