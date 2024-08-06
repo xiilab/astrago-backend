@@ -1,5 +1,6 @@
 package com.xiilab.serverbatch.informer;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -154,19 +155,21 @@ public class NodeInformer {
 	}
 
 	private void syncMigConfig(String nodeName) {
-		migRepository.getByNodeName("custom-" + nodeName).ifPresent(migEntity -> {
-			MIGGpuDTO migGpuDTO = MIGGpuDTO.builder()
-				.nodeName(nodeName)
-				.migInfos(migEntity.getMigInfos().stream().map(migInfoEntity ->
-					MIGGpuDTO.MIGInfoDTO.builder()
-						.gpuIndexs(migInfoEntity.getGpuIndexes())
-						.migEnable(migInfoEntity.isMigEnable())
-						.profile(migInfoEntity.getProfile())
-						.build()
-					).toList())
-				.build();
-			nodeRepository.syncMigConfigMap(migGpuDTO);
-		});
+		List<MIGGpuDTO.MIGInfoDTO> migInfoDTOList = migRepository.getAllByNodeName(nodeName)
+			.stream()
+			.map(migInfoEntity ->
+				MIGGpuDTO.MIGInfoDTO.builder()
+					.gpuIndexs(migInfoEntity.getGpuIndexes())
+					.profile(migInfoEntity.getProfile())
+					.migEnable(migInfoEntity.isMigEnable())
+					.build()
+			)
+			.toList();
+		MIGGpuDTO migGpuDTO = MIGGpuDTO.builder()
+			.nodeName(nodeName)
+			.migInfos(migInfoDTOList)
+			.build();
+		nodeRepository.syncMigConfigMap(migGpuDTO);
 	}
 
 }
