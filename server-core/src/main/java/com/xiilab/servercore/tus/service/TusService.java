@@ -86,6 +86,7 @@ public class TusService {
 
 		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepo.getModelRepoId())
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+		log.info("ModelRepoPath : " + modelRepoEntity.getModelPath());
 		//파일 업로드 경로
 		String filePath = modelRepoEntity.getModelPath() + "/v1/";
 		// 파일 저장
