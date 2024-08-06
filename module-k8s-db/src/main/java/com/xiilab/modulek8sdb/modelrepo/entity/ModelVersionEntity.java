@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class ModelVersionEntity {
+public class ModelVersionEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MODEL_REPO_VERSION_ID")

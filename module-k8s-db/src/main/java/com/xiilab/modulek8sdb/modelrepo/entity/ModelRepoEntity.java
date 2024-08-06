@@ -3,6 +3,7 @@ package com.xiilab.modulek8sdb.modelrepo.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class ModelRepoEntity {
+public class ModelRepoEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MODEL_REPO_ID")
@@ -68,6 +69,11 @@ public class ModelRepoEntity {
 				.version("v" + versionInfo)
 				.modelRepoEntity(this)
 				.build());
+	}
+
+	public void updateModelRepo(String modelName, String description) {
+		this.modelName = modelName;
+		this.description = description;
 	}
 
 }

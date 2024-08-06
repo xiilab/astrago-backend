@@ -15,6 +15,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelRepoErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
+import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
@@ -41,11 +42,15 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	private final ModelRepoVersionRepository versionRepository;
 
 	@Override
-	public List<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName) {
+	public PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, int pageNum, int pageSize) {
 		// 해당 워크스페이스에 등록된 Model List 조회
 		List<ModelRepoEntity> modelRepoEntityList = getModelRepoEntityListByWorkspaceResourceName(
 			workspaceResourceName);
-		return modelRepoEntityList.stream().map(ModelRepoDTO.ResponseDTO::convertModelRepoDTO).toList();
+		List<ModelRepoDTO.ResponseDTO> list = modelRepoEntityList.stream()
+			.map(ModelRepoDTO.ResponseDTO::convertModelRepoDTO)
+			.toList();
+
+		return new PageDTO<>(list, pageNum, pageSize);
 	}
 
 	private static FileInfoDTO copyModelToStorage(String wlModelPath, String storagePath) {
@@ -121,7 +126,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	@Override
 	@Transactional
 	public void registerOrVersionUpModelRepo(List<MultipartFile> files,
-		ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
+		ModelRepoDTO.WlModelRepoDTO wlModelRepoDTO) {
 		// // WL 모델 경로
 		String storagePath = "";
 		ModelRepoDTO.ResponseDTO responseDTO = null;
@@ -132,11 +137,11 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		} else {
 			// 기존 모델에 추가
 			responseDTO = versionUpModelRepo(wlModelRepoDTO);
-			ModelVersionEntity versionEntity = versionRepository.findByModelRepoEntityId(responseDTO.getModelRepoId());
+			ModelVersionEntity versionEntity = versionRepository.findLatestByModelRepoEntityId(responseDTO.getModelRepoId());
 			storagePath = responseDTO.getModelPath() + "/" + versionEntity.getVersion() + "/";
 		}
 		// 모델 파일 복사
-		ModelVersionEntity versionEntity = versionRepository.findByModelRepoEntityId(responseDTO.getModelRepoId());
+		ModelVersionEntity versionEntity = versionRepository.findLatestByModelRepoEntityId(responseDTO.getModelRepoId());
 		FileInfoDTO modelFile = copyModelToStorage(wlModelRepoDTO.getWlModelPaths(), storagePath);
 		if (Objects.nonNull(modelFile)) {
 			versionEntity.setModelFile(modelFile.getFileName(), modelFile.getSize());
@@ -148,7 +153,24 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		}
 	}
 
-	private ModelRepoDTO.ResponseDTO versionUpModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
+	@Override
+	@Transactional
+	public void updateModelRepoById(long modelRepoId, ModelRepoDTO.UpdateDTO updateDTO) {
+		ModelRepoEntity findModelRepo = getModelRepoEntityById(modelRepoId);
+
+		findModelRepo.updateModelRepo(updateDTO.getModelName(), updateDTO.getDescription());
+	}
+
+	@Override
+	public PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize){
+		List<ModelVersionEntity> getVersionList = versionRepository.findByModelRepoEntityId(modelRepoId);
+		List<ModelRepoDTO.VersionDTO> versionDTOS = getVersionList.stream()
+			.map(ModelRepoDTO.VersionDTO::convertVersionDTO)
+			.toList();
+		return new PageDTO<>(versionDTOS, pageNum, pageSize);
+	}
+
+	private ModelRepoDTO.ResponseDTO versionUpModelRepo(ModelRepoDTO.WlModelRepoDTO wlModelRepoDTO) {
 		// 기존 모델 조회
 		ModelRepoEntity modelRepoEntity = getModelRepoEntityById(wlModelRepoDTO.getModelRepoId());
 		// 해당 모델의 다음 버전 조회
@@ -172,7 +194,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			.orElseThrow(() -> new RestApiException(ModelRepoErrorCode.MODEL_REPO_NOT_FOUND));
 	}
 
-	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.wlModelRepoDTO wlModelRepoDTO) {
+	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.WlModelRepoDTO wlModelRepoDTO) {
 		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertRequestDTO();
 		// model repo 저장
 		return createModelRepo(requestDTO);
