@@ -742,7 +742,7 @@ create table if not exists TB_WORKLOAD
     GPU_NAME                varchar(255)                             DEFAULT NULL,
     NODE_NAME               varchar(255)                             DEFAULT NULL,
     WORKING_DIR             varchar(255)                            null comment '명령어를 실행 할 위치',
-    WORKLOAD_CMD               varchar(255)                            null,
+    WORKLOAD_CMD               varchar(500)                            null,
     WORKLOAD_DESCRIPTION    varchar(255)                            null,
     DELETE_YN               enum ('Y', 'N')                         null,
     GPU_TYPE                enum ('MIG','MPS','NORMAL')              DEFAULT NULL,

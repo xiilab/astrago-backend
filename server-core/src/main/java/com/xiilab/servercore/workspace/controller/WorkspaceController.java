@@ -20,9 +20,11 @@ import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceDatasetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceModelDTO;
+import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceVolumeDTO;
 import com.xiilab.modulek8sdb.workspace.dto.ResourceQuotaApproveDTO;
 import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
 import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceModelDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceVolumeDTO;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceApplicationForm;
 import com.xiilab.modulek8sdb.workspace.dto.WorkspaceResourceReqDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -30,6 +32,8 @@ import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.dataset.service.DatasetService;
 import com.xiilab.servercore.model.dto.ModelDTO;
 import com.xiilab.servercore.model.service.ModelService;
+import com.xiilab.servercore.volume.dto.VolumeResDTO;
+import com.xiilab.servercore.volume.service.VolumeService;
 import com.xiilab.servercore.workload.enumeration.WorkspaceSortCondition;
 import com.xiilab.servercore.workspace.dto.ClusterResourceCompareDTO;
 import com.xiilab.servercore.workspace.dto.FindWorkspaceResDTO;
@@ -49,6 +53,7 @@ public class WorkspaceController {
 	private final WorkspaceFacadeService workspaceService;
 	private final DatasetService datasetService;
 	private final ModelService modelService;
+	private final VolumeService volumeService;
 
 	@PostMapping("")
 	@Operation(summary = "워크스페이스 생성")
@@ -212,11 +217,22 @@ public class WorkspaceController {
 		return ResponseEntity.ok().build();
 	}
 
+
+	// TODO 삭제 예정
 	@PostMapping("{workspaceResourceName}/datasets")
 	@Operation(summary = "워크스페이스 데이터 셋 추가")
 	public ResponseEntity insertWorkspaceDataset(@RequestBody InsertWorkspaceDatasetDTO insertWorkspaceDatasetDTO) {
 		datasetService.insertWorkspaceDataset(insertWorkspaceDatasetDTO);
 		return new ResponseEntity(HttpStatus.OK);
+	}
+
+	@GetMapping("{workspaceResourceName}/datasets")
+	@Operation(summary = "워크스페이스 데이터 셋 전체 조회")
+	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByWorkspaceResourceName(
+			workspaceResourceName);
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
 	}
 
 	@PatchMapping("{workspaceResourceName}/datasets/{datasetId}")
@@ -247,6 +263,16 @@ public class WorkspaceController {
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
+	@GetMapping("{workspaceResourceName}/models")
+	@Operation(summary = "워크스페이스 model 전체 조회")
+	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
+		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByWorkspaceResourceName(
+			workspaceResourceName);
+
+		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
+	}
+
 	@PatchMapping("{workspaceResourceName}/models/{modelId}")
 	@Operation(summary = "워크스페이스 model defaultPath 수정")
 	public ResponseEntity updateWorkspaceModel(
@@ -268,23 +294,45 @@ public class WorkspaceController {
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
-	@GetMapping("{workspaceResourceName}/datasets")
-	@Operation(summary = "워크스페이스 데이터 셋 전체 조회")
-	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
-		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
-		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByWorkspaceResourceName(
-			workspaceResourceName);
-		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
+	//
+	@PostMapping("{workspaceResourceName}/volumes")
+	@Operation(summary = "워크스페이스 볼륨 추가")
+	public ResponseEntity insertWorkspaceModel(@RequestBody InsertWorkspaceVolumeDTO insertWorkspaceVolumeDTO) {
+		volumeService.insertWorkspaceVolume(insertWorkspaceVolumeDTO);
+		return new ResponseEntity(HttpStatus.OK);
 	}
 
-	@GetMapping("{workspaceResourceName}/models")
-	@Operation(summary = "워크스페이스 model 전체 조회")
-	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
+	@GetMapping("{workspaceResourceName}/volumes")
+	@Operation(summary = "워크스페이스 volume 전체 조회")
+	public ResponseEntity<VolumeResDTO.VolumesInWorkspace> getVolumesByWorkspaceResourceName(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
-		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByWorkspaceResourceName(
+		// ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByWorkspaceResourceName(
+		// 	workspaceResourceName);
+		VolumeResDTO.VolumesInWorkspace volumesByRepositoryType = volumeService.getVolumesByWorkspaceResourceName(
 			workspaceResourceName);
 
-		return new ResponseEntity<>(datasetsByRepositoryType, HttpStatus.OK);
+		return new ResponseEntity<>(volumesByRepositoryType, HttpStatus.OK);
+	}
+
+	@PatchMapping("{workspaceResourceName}/volumes/{volumeId}")
+	@Operation(summary = "워크스페이스 volume defaultPath 수정")
+	public ResponseEntity updateWorkspaceVolume(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(name = "volumeId") Long volumeId,
+		@RequestBody UpdateWorkspaceVolumeDTO updateWorkspaceVolumeDTO,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
+	) {
+		volumeService.updateWorkspaceVolume(updateWorkspaceVolumeDTO, workspaceResourceName, volumeId, userInfoDTO);
+		return new ResponseEntity(HttpStatus.OK);
+	}
+
+	@DeleteMapping("{workspaceResourceName}/models/{volumeId}")
+	@Operation(summary = "워크스페이스 volume 삭제")
+	public ResponseEntity deleteWorkspaceVolume(
+		@PathVariable(value = "workspaceResourceName") String workspaceResourceName,
+		@PathVariable(value = "volumeId") Long volumeId, UserDTO.UserInfo userInfoDTO) {
+		volumeService.deleteWorkspaceVolume(workspaceResourceName, volumeId, userInfoDTO);
+		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@GetMapping("/alert/{workspaceName}")

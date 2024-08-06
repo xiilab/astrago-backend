@@ -238,5 +238,4 @@ public class VolumeController {
 		headers.setContentType(file.getMediaType());
 		return new ResponseEntity<>(file.getByteArrayResource(), headers, HttpStatus.OK);
 	}
-
 }

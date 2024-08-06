@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.volume.repository;
 
 import static com.xiilab.modulek8sdb.volume.entity.QVolume.*;
+import static com.xiilab.modulek8sdb.volume.entity.QVolumeWorkSpaceMappingEntity.*;
 
 import java.io.Serializable;
 import java.util.List;
@@ -47,22 +48,26 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 
 		Long totalCount = queryFactory.select(volume.count())
 			.from(volume)
+			.join(volume.volumeWorkSpaceMappingList, volumeWorkSpaceMappingEntity)
 			.where(
 				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				volumeNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
 				deleteYnEqN(),
-				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN())
+				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN()),
+				workspaceResourceNameEq(repositorySearchCondition.getWorkspaceResourceName())
 			)
 			.fetchOne();
 
 		JPAQuery<Volume> query = queryFactory.selectFrom(volume)
+			.join(volume.volumeWorkSpaceMappingList, volumeWorkSpaceMappingEntity)
 			.where(
 				creatorEq(userId, userAuth, pageMode),
 				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
 				volumeNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
 				deleteYnEqN(),
-				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN())
+				outputVoulmeYNEq(repositorySearchCondition.getOutputVolumeYN()),
+				workspaceResourceNameEq(repositorySearchCondition.getWorkspaceResourceName())
 			)
 			.orderBy(sort);
 
@@ -117,5 +122,9 @@ public class VolumeRepositoryImpl implements VolumeRepositoryCustom {
 
 	private Predicate outputVoulmeYNEq(OutputVolumeYN outputVolumeYN) {
 		return outputVolumeYN != null ? volume.outputVolumeYN.eq(outputVolumeYN) : null;
+	}
+
+	private Predicate workspaceResourceNameEq(String workspaceResourceName) {
+		return workspaceResourceName != null? volumeWorkSpaceMappingEntity.workspaceResourceName.eq(workspaceResourceName) : null;
 	}
 }

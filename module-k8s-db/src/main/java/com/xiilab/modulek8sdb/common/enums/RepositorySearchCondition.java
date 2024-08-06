@@ -14,14 +14,16 @@ public class RepositorySearchCondition {
 	private OutputVolumeYN outputVolumeYN;
 	private Integer pageNo;
 	private Integer pageSize;
+	private String workspaceResourceName;
 
 	public RepositorySearchCondition(RepositoryDivision repositoryDivision, String searchText,
-		RepositorySortType sort, OutputVolumeYN outputVolumeYN, Integer pageNo, Integer pageSize) {
+		RepositorySortType sort, OutputVolumeYN outputVolumeYN, Integer pageNo, Integer pageSize, String workspaceResourceName) {
 		this.repositoryDivision = repositoryDivision;
 		this.searchText = StringUtils.isBlank(searchText) ? null : searchText.replace(" ", "");
 		this.sort = sort == null ? RepositorySortType.NAME : sort;
 		this.outputVolumeYN = outputVolumeYN;
 		this.pageNo = !ValidUtils.isNullOrZero(pageNo)? pageNo - 1 : null;
 		this.pageSize = pageSize;
+		this.workspaceResourceName = workspaceResourceName;
 	}
 }

@@ -27,15 +27,19 @@ import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
 import com.xiilab.modulecommon.util.CompressUtils;
 import com.xiilab.modulecommon.util.DecompressUtils;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
+import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.volume.entity.VolumeLabelMappingEntity;
 import com.xiilab.modulek8sdb.volume.entity.VolumeWorkSpaceMappingEntity;
+import com.xiilab.modulek8sdb.volume.repository.VolumeLabelMappingRepository;
 import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
 import com.xiilab.modulek8sdb.volume.repository.VolumeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.volume.repository.VolumeWorkspaceRepository;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceVolumeDTO;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceVolumeDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
@@ -50,13 +54,15 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 @Slf4j
 public class VolumeServiceImpl implements VolumeService {
+	private final LabelRepository labelRepository;
 	private final VolumeRepository volumeRepository;
 	private final VolumeWorkspaceRepository volumeWorkspaceRepository;
 	private final VolumeWorkLoadMappingRepository volumeWorkLoadMappingRepository;
+	private final VolumeLabelMappingRepository volumeLabelMappingRepository;
 
 	@Override
 	@Transactional
-	public void insertAstragoVolume(AstragoVolumeEntity astragoVolumeEntity, List<MultipartFile> files) {
+	public Long insertAstragoVolume(AstragoVolumeEntity astragoVolumeEntity, List<MultipartFile> files) {
 		//파일 업로드
 		String storageRootPath = astragoVolumeEntity.getStorageEntity().getHostPath();
 		String saveDirectoryName =
@@ -79,7 +85,8 @@ public class VolumeServiceImpl implements VolumeService {
 			astragoVolumeEntity.setVolumeSize(size);
 			astragoVolumeEntity.setVolumePath(volumePath);
 			astragoVolumeEntity.setSaveDirectoryName(saveDirectoryName);
-			volumeRepository.save(astragoVolumeEntity);
+			AstragoVolumeEntity saveAstragoVolumeEntity = volumeRepository.save(astragoVolumeEntity);
+			return saveAstragoVolumeEntity.getVolumeId();
 		} catch (IOException e) {
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
 		}
@@ -107,19 +114,19 @@ public class VolumeServiceImpl implements VolumeService {
 	@Override
 	public VolumeResDTO.ResVolumes getVolumes(RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode) {
-		
+
 		PageRequest pageRequest = null;
 		if (!Objects.isNull(repositorySearchCondition.getPageNo()) &&
 			!Objects.isNull(repositorySearchCondition.getPageSize())) {
 			pageRequest = PageRequest.of(repositorySearchCondition.getPageNo(), repositorySearchCondition.getPageSize());
 		}
 
-		Page<Volume> volumes = volumeRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
+		Page<Volume> volumesWithPaging = volumeRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
 			userInfoDTO.getAuth(), repositorySearchCondition, pageMode);
-		List<Volume> entities = volumes.getContent();
-		long totalCount = volumes.getTotalElements();
+		List<Volume> volumes = volumesWithPaging.getContent();
+		long totalCount = volumesWithPaging.getTotalElements();
 
-		return VolumeResDTO.ResVolumes.entitiesToDtos(entities, totalCount);
+		return VolumeResDTO.ResVolumes.entitiesToDtos(volumes, totalCount);
 	}
 
 	@Override
@@ -133,8 +140,9 @@ public class VolumeServiceImpl implements VolumeService {
 
 	@Override
 	@Transactional
-	public void insertLocalVolume(LocalVolumeEntity localVolumeEntity) {
-		volumeRepository.save(localVolumeEntity);
+	public Long insertLocalVolume(LocalVolumeEntity localVolumeEntity) {
+		LocalVolumeEntity saveLocalVolumeEntity = volumeRepository.save(localVolumeEntity);
+		return saveLocalVolumeEntity.getVolumeId();
 	}
 
 	@Override
@@ -289,10 +297,12 @@ public class VolumeServiceImpl implements VolumeService {
 		return null;
 	}
 
+	@Transactional
 	@Override
 	public void insertWorkspaceVolume(InsertWorkspaceVolumeDTO insertWorkspaceVolumeDTO) {
 		String workspaceResourceName = insertWorkspaceVolumeDTO.getWorkspaceResourceName();
 		Long volumeId = insertWorkspaceVolumeDTO.getVolumeId();
+		// Set<Long> labelIds = insertWorkspaceVolumeDTO.getLabelIds();
 
 		VolumeWorkSpaceMappingEntity workSpaceMappingEntity = volumeWorkspaceRepository.findByWorkspaceResourceNameAndVolumeId(
 			workspaceResourceName, volumeId);
@@ -309,11 +319,23 @@ public class VolumeServiceImpl implements VolumeService {
 			.volumeDefaultMountPath(insertWorkspaceVolumeDTO.getDefaultPath())
 			.build();
 
+		// 라벨 찾기
+		// insertWorkspaceVolumeDTO.getLabelIds();
+		List<LabelEntity> findLabels = labelRepository.findAllById(insertWorkspaceVolumeDTO.getLabelIds());
+		for (LabelEntity findLabel : findLabels) {
+			VolumeLabelMappingEntity volumeLabelMappingEntity = VolumeLabelMappingEntity.builder()
+				.volume(volume)
+				.label(findLabel)
+				.build();
+			volumeLabelMappingRepository.save(volumeLabelMappingEntity);
+		}
+
 		volumeWorkspaceRepository.save(volumeWorkSpaceMappingEntity);
 	}
 
+	@Transactional
 	@Override
-	public void deleteWorkspaceDataset(String workspaceResourceName, Long volumeId, UserDTO.UserInfo userInfoDTO) {
+	public void deleteWorkspaceVolume(String workspaceResourceName, Long volumeId, UserDTO.UserInfo userInfoDTO) {
 		VolumeWorkSpaceMappingEntity volumeWorkSpaceMappingEntity = volumeWorkspaceRepository.findByWorkspaceResourceNameAndVolumeId(
 			workspaceResourceName, volumeId);
 		if (volumeWorkSpaceMappingEntity == null) {
@@ -347,7 +369,7 @@ public class VolumeServiceImpl implements VolumeService {
 
 	@Override
 	@Transactional
-	public void updateWorkspaceVolume(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName,
+	public void updateWorkspaceVolume(UpdateWorkspaceVolumeDTO updateWorkspaceVolumeDTO, String workspaceResourceName,
 		Long volumeId, UserDTO.UserInfo userInfoDTO) {
 		VolumeWorkSpaceMappingEntity workSpaceMappingEntity = volumeWorkspaceRepository.findByWorkspaceResourceNameAndVolumeId(
 			workspaceResourceName, volumeId);
@@ -360,7 +382,7 @@ public class VolumeServiceImpl implements VolumeService {
 			.equalsIgnoreCase(userInfoDTO.getId()))) {
 			throw new RestApiException(VolumeErrorCode.VOLUME_FIX_FORBIDDEN);
 		}
-		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceDatasetDTO.getDefaultPath());
+		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceVolumeDTO.getDefaultPath());
 	}
 
 	public void deleteVolumeWorkloadMappingById(Long volumeId) {

@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -15,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
@@ -40,6 +42,7 @@ import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceVolumeDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
@@ -91,7 +94,11 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			.outputVolumeYN(OutputVolumeYN.N)
 			.build();
 
-		volumeService.insertAstragoVolume(astragoVolume, files);
+		Long saveVolumeId = volumeService.insertAstragoVolume(astragoVolume, files);
+
+		// workspace
+		saveWorkspaceVolumeMapping(createAstragoVolumeDTO.getWorkspaceResourceName(), saveVolumeId,
+			createAstragoVolumeDTO.getDefaultPath(), createAstragoVolumeDTO.getLabelIds());
 	}
 
 	@Override
@@ -152,7 +159,24 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			.defaultPath(createLocalVolumeDTO.getDefaultPath())
 			.build();
 		localVolumeEntity.setVolumeSize(50L);
-		volumeService.insertLocalVolume(localVolumeEntity);
+		Long saveVolumeId = volumeService.insertLocalVolume(localVolumeEntity);
+
+		// workspace
+		saveWorkspaceVolumeMapping(createLocalVolumeDTO.getWorkspaceResourceName(), saveVolumeId,
+			createLocalVolumeDTO.getDefaultPath(), createLocalVolumeDTO.getLabelIds());
+	}
+
+	private void saveWorkspaceVolumeMapping(String workspaceResourceName, Long saveVolumeId,
+		String defaultPath, Set<Long> labelIds) {
+		if (StringUtils.hasText(workspaceResourceName)) {
+			InsertWorkspaceVolumeDTO insertWorkspaceVolumeDTO = InsertWorkspaceVolumeDTO.builder()
+				.volumeId(saveVolumeId)
+				.workspaceResourceName(workspaceResourceName)
+				.defaultPath(defaultPath)
+				.labelIds(labelIds)
+				.build();
+			volumeService.insertWorkspaceVolume(insertWorkspaceVolumeDTO);
+		}
 	}
 
 	@Override
