@@ -11,7 +11,6 @@ import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.enumeration.ScheduleType;
-import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
 import io.fabric8.kubernetes.api.model.Node;
 
@@ -28,6 +27,8 @@ public interface NodeRepository {
 
 	int getMIGProfileGICount(String productName, String profileName) throws IOException;
 
+	void syncMigConfigMap(MIGGpuDTO migGpuDTO);
+
 	Node getNode(String resourceName);
 
 	ResponseDTO.NodeInfo getNodeByResourceName(String resourceName);
@@ -41,6 +42,8 @@ public interface NodeRepository {
 	void updateMigProfile(MIGGpuDTO MIGGpuDTO);
 
 	MIGGpuDTO.MIGInfoStatus getNodeMigStatus(String nodeName);
+
+	Map<String, Object> getMigConfigMap();
 
 	void updateNodeLabel(String nodeName, Map<String, String> labels);
 

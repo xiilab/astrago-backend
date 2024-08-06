@@ -317,6 +317,17 @@ public class NodeRepositoryImpl implements NodeRepository {
 	}
 
 	@Override
+	public void syncMigConfigMap(MIGGpuDTO migGpuDTO) {
+		saveGpuProductTOLabel(migGpuDTO.getNodeName());
+		//mig parted configmap에 해당 노드의 프로파일 추가
+		updateMigProfile(migGpuDTO);
+		//변경된 configmap이 적용될 수 있도록 mig manager를 restart한다.
+		restartMIGManager();
+		//node의 라벨값 변경
+		updateMIGProfile(migGpuDTO.getNodeName(), migGpuDTO.getMigKey());
+	}
+
+	@Override
 	public Node getNode(String nodeName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Node node = client.nodes().withName(nodeName).get();
@@ -855,6 +866,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 		}
 	}
 
+	@Override
 	public Map<String, Object> getMigConfigMap() {
 		DumperOptions options = new DumperOptions();
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);

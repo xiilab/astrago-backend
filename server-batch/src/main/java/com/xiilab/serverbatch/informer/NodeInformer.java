@@ -1,5 +1,6 @@
 package com.xiilab.serverbatch.informer;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -12,12 +13,11 @@ import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.MigStatus;
-import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
-import com.xiilab.moduleuser.service.UserService;
+import com.xiilab.modulek8sdb.mig.repository.MigRepository;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeBuilder;
@@ -36,8 +36,7 @@ public class NodeInformer {
 	private final K8sAdapter k8sAdapter;
 	private final NodeRepository nodeRepository;
 	private final ApplicationEventPublisher eventPublisher;
-	private final MailService mailService;
-	private final UserService userService;
+	private final MigRepository migRepository;
 
 	@PostConstruct
 	void doInformer() {
@@ -139,6 +138,10 @@ public class NodeInformer {
 
 	private int getMIGGiCount(String nodeName) {
 		int giCount = 0;
+		Map<String, Object> migConfigMap = nodeRepository.getMigConfigMap();
+		if(migConfigMap.get("custom-" + nodeName) == null){
+			syncMigConfig(nodeName);
+		}
 		MIGGpuDTO.MIGInfoStatus nodeMigStatus = nodeRepository.getNodeMigStatus(nodeName);
 		if (CollectionUtils.isEmpty(nodeMigStatus.getMigInfos())) {
 			return 0;
@@ -149,6 +152,24 @@ public class NodeInformer {
 			giCount += gpus * profileCnt;
 		}
 		return giCount;
+	}
+
+	private void syncMigConfig(String nodeName) {
+		List<MIGGpuDTO.MIGInfoDTO> migInfoDTOList = migRepository.getAllByNodeName(nodeName)
+			.stream()
+			.map(migInfoEntity ->
+				MIGGpuDTO.MIGInfoDTO.builder()
+					.gpuIndexs(migInfoEntity.getGpuIndexes())
+					.profile(migInfoEntity.getProfile())
+					.migEnable(migInfoEntity.isMigEnable())
+					.build()
+			)
+			.toList();
+		MIGGpuDTO migGpuDTO = MIGGpuDTO.builder()
+			.nodeName(nodeName)
+			.migInfos(migInfoDTOList)
+			.build();
+		nodeRepository.syncMigConfigMap(migGpuDTO);
 	}
 
 }
