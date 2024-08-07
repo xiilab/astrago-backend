@@ -125,5 +125,4 @@ public class SystemAlertController {
 		alertService.readSystemAlerts(userInfoDTO, alertRole);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
 }
