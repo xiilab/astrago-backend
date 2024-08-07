@@ -92,7 +92,16 @@ public class PinServiceImpl implements PinService {
 	private void createWorkspacePin(String resourceName, UserDTO.UserInfo userInfoDTO) {
 		// 기존에 등록되었던 모든 workspace pin 삭제
 		pinRepository.deleteByResourceType_RegUserId(PinType.WORKSPACE, userInfoDTO.getId());
-		pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName));
+		// pinRepository.save(new PinEntity(PinType.WORKSPACE, resourceName, userInfoDTO.getId(), userInfoDTO.getUserName(), userInfoDTO.getUserFullName()));
+		pinRepository.save(
+			PinEntity.builder()
+				.type(PinType.WORKSPACE)
+				.resourceName(resourceName)
+				.regUserId(userInfoDTO.getId())
+				.regUserName(userInfoDTO.getUserName())
+				.regUserRealName(userInfoDTO.getUserFullName())
+				.build()
+		);
 	}
 
 	private void createWorkloadPin(String resourceName, UserDTO.UserInfo userInfoDTO) {

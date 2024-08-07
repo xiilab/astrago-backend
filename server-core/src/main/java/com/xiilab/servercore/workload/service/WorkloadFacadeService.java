@@ -77,9 +77,6 @@ import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
-import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
-import com.xiilab.modulek8sdb.dataset.entity.Dataset;
-import com.xiilab.modulek8sdb.dataset.entity.LocalDatasetEntity;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
 import com.xiilab.modulek8sdb.model.entity.Model;
@@ -87,6 +84,8 @@ import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
+import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
@@ -416,7 +415,7 @@ public class WorkloadFacadeService {
 		// // 데이터셋 세팅
 		// List<FindWorkloadResDTO.Volume> datasets = generateDatasetResDTO(moduleJobResDTO.getDatasetIds(),
 		// 	moduleJobResDTO.getDatasetMountPathMap());
-		List<FindWorkloadResDTO.Volume> volumes = generateDatasetResDTO(moduleJobResDTO.getVolumeIds(),
+		List<FindWorkloadResDTO.Volume> volumes = generateVolumeResDTO(moduleJobResDTO.getVolumeIds(),
 			moduleJobResDTO.getVolumeMountPathMap());
 		// 코드 세팅
 		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
@@ -1028,28 +1027,28 @@ public class WorkloadFacadeService {
 		return models;
 	}
 
-	private List<FindWorkloadResDTO.Volume> generateDatasetResDTO(String ids, Map<Long, String> mountMap) {
+	private List<FindWorkloadResDTO.Volume> generateVolumeResDTO(String ids, Map<Long, String> mountMap) {
 		List<FindWorkloadResDTO.Volume> datasets = new ArrayList<>();
 		if (StringUtils.hasText(ids)) {
 			String[] splitIds = ids.split(",");
 			for (String s : splitIds) {
-				long datasetId = Long.parseLong(s);
-				Dataset findDataset = datasetService.findById(datasetId);
+				long volumeId = Long.parseLong(s);
+				Volume findVolume = volumeService.findById(volumeId);
 				FindWorkloadResDTO.Volume datasetVol = FindWorkloadResDTO.Volume.volumeResDTO()
-					.regUserId(findDataset.getRegUser().getRegUserId())
-					.regUserName(findDataset.getRegUser().getRegUserName())
-					.regUserRealName(findDataset.getRegUser().getRegUserRealName())
-					.regDate(findDataset.getRegDate())
-					.modDate(findDataset.getModDate())
-					.id(findDataset.getDatasetId())
-					.name(findDataset.getDatasetName())
-					.mountPath(mountMap.get(findDataset.getDatasetId()))
-					.size(findDataset.getDatasetSize())
-					.division(findDataset.getDivision())
-					.storageType(findDataset.isAstragoDataset() ?
-						((AstragoDatasetEntity)findDataset).getStorageEntity().getStorageType() :
-						((LocalDatasetEntity)findDataset).getStorageType())
-					.deleteYN(findDataset.getDeleteYn())
+					.regUserId(findVolume.getRegUser().getRegUserId())
+					.regUserName(findVolume.getRegUser().getRegUserName())
+					.regUserRealName(findVolume.getRegUser().getRegUserRealName())
+					.regDate(findVolume.getRegDate())
+					.modDate(findVolume.getModDate())
+					.id(findVolume.getVolumeId())
+					.name(findVolume.getVolumeName())
+					.mountPath(mountMap.get(findVolume.getVolumeId()))
+					.size(findVolume.getVolumeSize())
+					.division(findVolume.getDivision())
+					.storageType(findVolume.isAstragoVolume() ?
+						((AstragoVolumeEntity)findVolume).getStorageEntity().getStorageType() :
+						((LocalVolumeEntity)findVolume).getStorageType())
+					.deleteYN(findVolume.getDeleteYn())
 					.build();
 				datasets.add(datasetVol);
 			}
