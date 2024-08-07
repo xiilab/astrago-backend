@@ -18,13 +18,15 @@ public class FindWorkspaceResDTO {
 		private String workspaceResourceName;
 		private LocalDateTime createAt;
 		private String description;
+		private boolean pinYn;
 
-		public static FindWorkspaceResDTO.JoinedWorkspaceDetail from(WorkspaceTotalDTO workspaceTotalDTO) {
+		public static FindWorkspaceResDTO.JoinedWorkspaceDetail from(WorkspaceTotalDTO workspaceTotalDTO, boolean pinYN) {
 			return JoinedWorkspaceDetail.builder()
 				.workspaceName(workspaceTotalDTO.getName())
 				.workspaceResourceName(workspaceTotalDTO.getResourceName())
 				.description(workspaceTotalDTO.getDescription())
 				.createAt(workspaceTotalDTO.getCreateAt())
+				.pinYn(pinYN)
 				.build();
 		}
 	}

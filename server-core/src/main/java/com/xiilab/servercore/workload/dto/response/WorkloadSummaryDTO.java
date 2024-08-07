@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.util.ObjectUtils;
+
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -59,13 +61,14 @@ public class WorkloadSummaryDTO {
 		this.age = workload.getCreatedAt() != null ? new AgeDTO(workload.getCreatedAt()) : null;
 		DevelopEntity developEntity = (DevelopEntity)workload;
 		this.remainTime = developEntity.getRemainTime();
-		// this.imageType = !ObjectUtils.isEmpty(workload.getImage()) ? workload.getImage().getImageType() : null;
-		this.imageType = ((DevelopEntity)workload).getImageWorkloadMappingEntity().getImage().getImageType();
+		this.imageType = !ObjectUtils.isEmpty(((DevelopEntity)workload).getImageWorkloadMappingEntity()) ?
+			((DevelopEntity)workload).getImageWorkloadMappingEntity().getImage().getImageType() : null;
+		// this.imageType = ((DevelopEntity)workload).getImageWorkloadMappingEntity().getImage().getImageType();
 		this.canBeDeleted = workload.isCanBeDeleted();
 		this.estimatedRemainingTime =
 			(developEntity.getRemainTime() != null && developEntity.getRemainTime() != 0) ? LocalDateTime.now()
-			.plusSeconds(developEntity.getRemainTime())
-			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "0";
+				.plusSeconds(developEntity.getRemainTime())
+				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "0";
 		this.startTime = workload.getStartTime() != null ?
 			workload.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null;
 		this.labels = workload.getLabelList().stream().map(FindWorkloadResDTO.Label::new).toList();
@@ -82,6 +85,7 @@ public class WorkloadSummaryDTO {
 			this.canBeDeleted = true;
 		}
 	}
+
 	public void updatePinYN(boolean isPinYN) {
 		this.isPinYN = isPinYN;
 	}

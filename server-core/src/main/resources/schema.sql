@@ -302,7 +302,7 @@ create table if not exists TB_HUB
     REG_DATE               datetime(6)                             null,
     ENVS                   varchar(1000)                           null,
     PORTS                  varchar(1000)                           null,
-    COMMAND                varchar(255)                            null,
+    COMMAND                varchar(1000)                            null,
     DATASET_MOUNT_PATH     varchar(255)                            null,
     DESCRIPTION            varchar(255)                            null,
     MODEL_MOUNT_PATH       varchar(255)                            null,
