@@ -67,14 +67,15 @@ public class AlertEventListener {
 	@Transactional
 	public void handleAdminAlertEvent(AdminAlertEvent adminAlertEvent) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		if(network.getNetworkCloseYN() == NetworkCloseYN.N){
+		if (network.getNetworkCloseYN() == NetworkCloseYN.N) {
 			log.info("관리자[{}] 알림 발송 시작!", adminAlertEvent.title());
 			try {
 				// 보내는 유저 정보 조회
 				RegUser regUser = getRegUser(adminAlertEvent.sendUserId());
 
 				// AlertRole, Alert 이름으로 ID 조회
-				AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(),
+				AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(
+					adminAlertEvent.alertName().getName(),
 					AlertRole.ADMIN).orElseThrow();
 
 				// ADMIN ALERT Mapping 엔티티 조회
@@ -91,7 +92,8 @@ public class AlertEventListener {
 							.title(adminAlertEvent.title())
 							.message(adminAlertEvent.message())
 							.recipientId(findUser.getId())
-							.senderId(StringUtils.hasText(adminAlertEvent.sendUserId())? adminAlertEvent.sendUserId() : "SYSTEM")
+							.senderId(StringUtils.hasText(adminAlertEvent.sendUserId()) ? adminAlertEvent.sendUserId() :
+								"SYSTEM")
 							.alertType(findAlert.getAlertType())
 							.alertEventType(findAlert.getAlertEventType())
 							.alertRole(findAdminAlertMappingEntity.getAlert().getAlertRole())
@@ -102,7 +104,8 @@ public class AlertEventListener {
 						systemAlertRepository.save(saveSystemAlert);
 						log.info("관리자[{}] - 시스템 알림 발송 성공!", adminAlertEvent.title());
 					}
-					if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON && adminAlertEvent.mailDTO() != null) {
+					if (findAdminAlertMappingEntity.getEmailAlertStatus() == AlertStatus.ON
+						&& adminAlertEvent.mailDTO() != null) {
 						// 메일 발송 로직 추가
 						MailDTO mailDTO = adminAlertEvent.mailDTO();
 						mailDTO.setReceiverEmail(findUser.getEmail());
@@ -120,7 +123,7 @@ public class AlertEventListener {
 	@Transactional
 	public void handleWorkspaceUserAlertEvent(WorkspaceUserAlertEvent workspaceUserAlertEvent) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		if(network.getNetworkCloseYN() == NetworkCloseYN.N) {
+		if (network.getNetworkCloseYN() == NetworkCloseYN.N) {
 			log.info("워크스페이스 유저[{}] 알림 발송 시작!", workspaceUserAlertEvent.title());
 			try {
 				if (!StringUtils.hasText(workspaceUserAlertEvent.recipientUserId())) {
@@ -159,7 +162,8 @@ public class AlertEventListener {
 						.build();
 					systemAlertRepository.save(saveSystemAlert);
 				}
-				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON && workspaceUserAlertEvent.mailDTO() != null ) {
+				if (findWorkspaceAlertMapping.getEmailAlertStatus() == AlertStatus.ON
+					&& workspaceUserAlertEvent.mailDTO() != null) {
 					sendMail(workspaceUserAlertEvent.mailDTO());
 				}
 				if (workspaceUserAlertEvent.alertName() == AlertName.USER_WORKSPACE_DELETE) {
@@ -179,7 +183,7 @@ public class AlertEventListener {
 	@Transactional
 	public void handleUserAlertEvent(UserAlertEvent userAlertEvent) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		if(network.getNetworkCloseYN() == NetworkCloseYN.N) {
+		if (network.getNetworkCloseYN() == NetworkCloseYN.N) {
 			UserDTO.UserInfo findUser = userRepository.getUserById(userAlertEvent.userId());
 			// AlertRole, Alert 이름으로 ID 조회
 			if (!ObjectUtils.isEmpty(userAlertEvent.alertName())) {
@@ -209,7 +213,7 @@ public class AlertEventListener {
 					.build();
 				systemAlertRepository.save(saveSystemAlert);
 			}
-			if(userAlertEvent.mailDTO() != null ){
+			if (userAlertEvent.mailDTO() != null) {
 				// 메일 발송 로직 추가
 				sendMail(userAlertEvent.mailDTO());
 			}
@@ -229,7 +233,8 @@ public class AlertEventListener {
 		if (!ObjectUtils.isEmpty(sendUserId)) {
 			UserDTO.UserInfo findSendUser = userRepository.getUserById(sendUserId);
 			if (!ObjectUtils.isEmpty(findSendUser)) {
-				regUser = new RegUser(findSendUser.getId(), findSendUser.getUserName(), findSendUser.getLastName() + findSendUser.getFirstName());
+				regUser = new RegUser(findSendUser.getId(), findSendUser.getUserName(),
+					findSendUser.getLastName() + findSendUser.getFirstName());
 			}
 		}
 
@@ -241,14 +246,15 @@ public class AlertEventListener {
 	@Transactional
 	public void handleAlertManagerEvent(AlertManagerEvent adminAlertEvent) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		if(network.getNetworkCloseYN() == NetworkCloseYN.N){
+		if (network.getNetworkCloseYN() == NetworkCloseYN.N) {
 			log.info("관리자[{}] 알림 발송 시작!", adminAlertEvent.title());
 			try {
 				// 보내는 유저 정보 조회
 				RegUser regUser = getRegUser(adminAlertEvent.sendUserId());
 
 				// AlertRole, Alert 이름으로 ID 조회
-				AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(adminAlertEvent.alertName().getName(),
+				AlertEntity findAlert = alertRepository.findByAlertNameAndAlertRole(
+					adminAlertEvent.alertName().getName(),
 					AlertRole.ADMIN).orElseThrow();
 
 				// ADMIN ALERT Mapping 엔티티 조회
@@ -265,7 +271,8 @@ public class AlertEventListener {
 							.title(adminAlertEvent.title())
 							.message(adminAlertEvent.message())
 							.recipientId(findUser.getId())
-							.senderId(StringUtils.hasText(adminAlertEvent.sendUserId())? adminAlertEvent.sendUserId() : "SYSTEM")
+							.senderId(StringUtils.hasText(adminAlertEvent.sendUserId()) ? adminAlertEvent.sendUserId() :
+								"SYSTEM")
 							.alertType(findAlert.getAlertType())
 							.alertEventType(findAlert.getAlertEventType())
 							.alertRole(findAdminAlertMappingEntity.getAlert().getAlertRole())
@@ -283,13 +290,13 @@ public class AlertEventListener {
 		}
 	}
 
-	private void sendMail(MailDTO mailDTO){
+	private void sendMail(MailDTO mailDTO) {
 		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
 
-		if(ObjectUtils.isEmpty(smtpEntities)){
+		if (ObjectUtils.isEmpty(smtpEntities)) {
 			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
 		}
-		for(SmtpEntity smtpEntity : smtpEntities){
+		for (SmtpEntity smtpEntity : smtpEntities) {
 			SmtpDTO smtpDTO = SmtpDTO.builder()
 				.host(smtpEntity.getHost())
 				.port(smtpEntity.getPort())
@@ -301,7 +308,7 @@ public class AlertEventListener {
 
 			smtpEntity.increment();
 
-			if(result){
+			if (result) {
 				break;
 			}
 		}

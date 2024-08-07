@@ -1,7 +1,6 @@
 package com.xiilab.modulek8sdb.volume.entity;
 
 import com.xiilab.modulecommon.enums.OutputVolumeYN;
-import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import jakarta.persistence.Column;
@@ -33,8 +32,8 @@ public class AstragoVolumeEntity extends Volume {
 
 	@Builder
 	public AstragoVolumeEntity(Long volumeId, String volumeName, StorageEntity storageEntity, String defaultPath,
-		VolumeAccessType volumeAccessType, OutputVolumeYN outputVolumeYN) {
-		super(volumeId, volumeName, defaultPath, volumeAccessType, outputVolumeYN);
+		OutputVolumeYN outputVolumeYN) {
+		super(volumeId, volumeName, defaultPath, outputVolumeYN);
 		this.storageEntity = storageEntity;
 	}
 

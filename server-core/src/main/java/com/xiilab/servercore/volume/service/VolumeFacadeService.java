@@ -18,7 +18,7 @@ public interface VolumeFacadeService {
 	void insertAstragoVolume(VolumeReqDTO.Edit.CreateAstragoVolume createAstragoVolumeDTO, List<MultipartFile> files);
 
 	Long insertAstragoOutputVolume(String volumeName, String workspaceResourceName, String workloadResourceName,
-		String defaultPath, VolumeAccessType volumeAccessType);
+		String defaultPath);
 
 	VolumeResDTO.ResVolumeWithStorage getVolume(Long volumeId);
 
