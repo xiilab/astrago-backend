@@ -9,17 +9,23 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.UserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
+import com.xiilab.modulek8sdb.smtp.entity.SmtpEntity;
+import com.xiilab.modulek8sdb.smtp.repository.SmtpRepository;
 import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -39,6 +45,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	private final UserService userService;
 	private final SystemAlertSetService alertSetService;
 	private final AlertService alertService;
+	private final SmtpRepository smtpRepository;
 	private final MailService mailService;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -80,8 +87,21 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
-	public void updateUserApprovalYN(List<String> userId, boolean approvalYN) {
-		userService.updateUserApprovalYN(userId, approvalYN);
+	public void updateUserApprovalYN(List<String> userIdList, boolean approvalYN) {
+		userService.updateUserApprovalYN(userIdList, approvalYN);
+		userIdList.forEach(userId -> {
+			UserDTO.UserInfo user = userService.getUserById(userId);
+			MailDTO mailDTO = null;
+			if (approvalYN) {
+				mailDTO = MailServiceUtils.approvalUserMail(
+					user.getLastName() + user.getFirstName(),
+					user.getEmail());
+			} else {
+				mailDTO = MailServiceUtils.refuseUserMail(
+					user.getUserFullName(), user.getEmail());
+			}
+			sendMail(mailDTO);
+		});
 	}
 
 	@Override
@@ -234,5 +254,29 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 			.collect(Collectors.toSet());
 
 		return workspaces.contains(workspaceName) ? WorkspaceRole.ROLE_OWNER : WorkspaceRole.ROLE_USER;
+	}
+
+	private void sendMail(MailDTO mailDTO) {
+		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
+
+		if (ObjectUtils.isEmpty(smtpEntities)) {
+			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
+		}
+		for (SmtpEntity smtpEntity : smtpEntities) {
+			SmtpDTO smtpDTO = SmtpDTO.builder()
+				.host(smtpEntity.getHost())
+				.port(smtpEntity.getPort())
+				.username(smtpEntity.getUserName())
+				.password(smtpEntity.getPassword())
+				.build();
+
+			boolean result = mailService.sendMail(mailDTO, smtpDTO);
+
+			smtpEntity.increment();
+
+			if (result) {
+				break;
+			}
+		}
 	}
 }
