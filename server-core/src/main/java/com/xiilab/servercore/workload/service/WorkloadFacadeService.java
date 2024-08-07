@@ -41,7 +41,6 @@ import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.enums.StorageType;
-import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -181,8 +180,7 @@ public class WorkloadFacadeService {
 				volumeName,
 				createWorkloadReqDTO.getWorkspace(),
 				createWorkloadReqDTO.getJobName(),
-				createWorkloadReqDTO.getOutputMountPath(),
-				VolumeAccessType.PRIVATE);
+				createWorkloadReqDTO.getOutputMountPath());
 			// reqDTO에 추가
 			createWorkloadReqDTO.getVolumes()
 				.add(new ModuleVolumeReqDTO(volumeId, createWorkloadReqDTO.getOutputMountPath()));

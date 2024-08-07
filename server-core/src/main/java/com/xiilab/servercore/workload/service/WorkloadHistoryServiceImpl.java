@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
@@ -28,12 +29,16 @@ import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
+import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.LabelWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.ExperimentCustomRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.ExperimentRepo;
+import com.xiilab.modulek8sdb.workload.history.repository.LabelWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCustom;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -50,6 +55,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final WorkloadHistoryRepo workloadHistoryRepo;
+	private final LabelRepository labelRepository;
+	private final LabelWorkloadMappingRepository labelWorkloadMappingRepository;
 	private final WorkloadHistoryRepoCustom workloadHistoryRepoCustom;
 	private final ApplicationEventPublisher publisher;
 	private final UserFacadeService userFacadeService;
@@ -146,6 +153,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
+	@Transactional
 	@Override
 	public void editWorkloadHistory(WorkloadUpdateDTO workloadUpdateDTO) {
 		WorkloadEntity findWorkload = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
@@ -153,7 +161,19 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 				workloadUpdateDTO.getWorkloadResourceName())
 			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_WORKLOAD_INFO));
 		findWorkload.updateJob(workloadUpdateDTO.getName(), workloadUpdateDTO.getDescription());
-		workloadHistoryRepo.save(findWorkload);
+
+		if (!CollectionUtils.isEmpty(workloadUpdateDTO.getLabelIds())) {
+			labelWorkloadMappingRepository.deleteByWorkloadId(findWorkload);
+			List<LabelEntity> findLabels = labelRepository.findAllById(workloadUpdateDTO.getLabelIds());
+			List<LabelWorkloadMappingEntity> labelWorkloadMappings = findLabels.stream()
+				.map(label -> LabelWorkloadMappingEntity.builder()
+					.workload(findWorkload)
+					.label(label)
+					.build())
+				.toList();
+			labelWorkloadMappingRepository.saveAll(labelWorkloadMappings);
+		}
+		// workloadHistoryRepo.save(findWorkload);
 
 	}
 

@@ -39,7 +39,7 @@ public class LabelEntity {
 	private String colorName;
 	@Column(name = "LABEL_ORDER")
 	private int order;
-	@OneToMany(mappedBy = "labelEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@OneToMany(mappedBy = "labelEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<ModelLabelEntity> modelLabelEntityList = new ArrayList<>();
 
 	public void updateLabel(String name, String colorCode, String colorCodeName, int order) {
