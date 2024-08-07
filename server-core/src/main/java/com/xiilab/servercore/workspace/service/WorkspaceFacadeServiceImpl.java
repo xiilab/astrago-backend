@@ -392,11 +392,11 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	}
 
 	@Override
-	public FindWorkspaceResDTO.JoinedWorkspaceDetail getJoinedWorkspaceInfoByName(String workspaceResourceName) {
+	public FindWorkspaceResDTO.JoinedWorkspaceDetail getJoinedWorkspaceInfoByName(String workspaceResourceName, String userId) {
 		WorkspaceTotalDTO workspaceInfoByName = workspaceModuleFacadeService.getWorkspaceInfoByName(
 			workspaceResourceName);
-
-		return FindWorkspaceResDTO.JoinedWorkspaceDetail.from(workspaceInfoByName);
+		Set<String> userWorkspacePinList = pinService.getUserWorkspacePinList(userId);
+		return FindWorkspaceResDTO.JoinedWorkspaceDetail.from(workspaceInfoByName, userWorkspacePinList.contains(workspaceResourceName));
 	}
 
 	@Override

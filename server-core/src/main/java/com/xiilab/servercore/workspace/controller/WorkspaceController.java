@@ -115,8 +115,9 @@ public class WorkspaceController {
 	@GetMapping("/joined/{workspaceResourceName}")
 	@Operation(summary = "내가 속한 워크스페이스 상세 조회")
 	public ResponseEntity<FindWorkspaceResDTO.JoinedWorkspaceDetail> getJoinedWorkspaceInfo(
-		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
-		return ResponseEntity.ok(workspaceService.getJoinedWorkspaceInfoByName(workspaceResourceName));
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
+		return ResponseEntity.ok(workspaceService.getJoinedWorkspaceInfoByName(workspaceResourceName, userInfoDTO.getId()));
 	}
 
 	@GetMapping("/admin")

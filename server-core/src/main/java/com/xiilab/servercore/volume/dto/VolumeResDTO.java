@@ -233,16 +233,18 @@ public class VolumeResDTO {
 
 	@Getter
 	public static class Label {
-		private Long id;
-		private String name;
+		private Long labelId;
+		private String labelName;
 		private String colorCode;
-		private String colorName;
+		private String colorCodeName;
+		private Integer order;
 
 		public Label(VolumeLabelMappingEntity volumeLabelMappingEntity) {
-			this.id = volumeLabelMappingEntity.getId();
-			this.name = volumeLabelMappingEntity.getLabel().getName();
+			this.labelId = volumeLabelMappingEntity.getId();
+			this.labelName = volumeLabelMappingEntity.getLabel().getName();
 			this.colorCode = volumeLabelMappingEntity.getLabel().getColorCode();
-			this.colorName = volumeLabelMappingEntity.getLabel().getColorName();
+			this.colorCodeName = volumeLabelMappingEntity.getLabel().getColorName();
+			this.order = volumeLabelMappingEntity.getLabel().getOrder();
 		}
 	}
 }
