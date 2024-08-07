@@ -4,20 +4,24 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 
 public interface ModelRepoFacadeService {
 
 	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO);
 
-	List<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName);
+	PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, int pageNum, int pageSize);
 
 	ModelRepoDTO.ResponseDTO getModelRepoById(String workspaceResourceName, long modelRepoId);
 
 	void deleteModelRepoById(long modelRepoId);
 
-	void registerOrVersionUpModelRepo(List<MultipartFile> files, ModelRepoDTO.wlModelRepoDTO modelRepoDTO);
+	void registerOrVersionUpModelRepo(List<MultipartFile> files, ModelRepoDTO.WlModelRepoDTO modelRepoDTO);
 
 	void deleteModelRepoVersion(long versionId);
 
+	void updateModelRepoById(long modelRepoId, ModelRepoDTO.UpdateDTO updateDTO);
+
+	PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize);
 }

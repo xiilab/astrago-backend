@@ -1,5 +1,6 @@
 package com.xiilab.servercore.modelrepo.dto;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -59,6 +60,9 @@ public class ModelRepoDTO {
 		private String storagePath;
 		private String modelPath;
 		private List<LabelDTO.ResponseDTO> labels;
+		private String creator;
+		private String creatorName;
+		private LocalDateTime createdAt;
 
 		public static ModelRepoDTO.ResponseDTO convertModelRepoDTO(ModelRepoEntity modelRepoEntity) {
 			return ModelRepoDTO.ResponseDTO.builder()
@@ -78,6 +82,9 @@ public class ModelRepoDTO {
 					.toList())
 				.version(modelRepoEntity.getModelVersionList().stream().map(VersionDTO::convertVersionDTO)
 					.sorted(Comparator.comparing(VersionDTO::getVersionName).reversed()).toList())
+				.creator(modelRepoEntity.getRegUser().getRegUserName())
+				.creatorName(modelRepoEntity.getRegUser().getRegUserRealName())
+				.createdAt(modelRepoEntity.getRegDate())
 				.build();
 		}
 	}
@@ -92,12 +99,18 @@ public class ModelRepoDTO {
 		private String versionName;
 		private String modelFilePath;
 		private String labelFilePath;
+		private String creator;
+		private String creatorName;
+		private LocalDateTime createdAt;
 
 		public static VersionDTO convertVersionDTO(ModelVersionEntity versionEntity) {
 			return VersionDTO.builder()
 				.versionId(versionEntity.getId())
 				.versionName(versionEntity.getVersion())
 				.modelFilePath(versionEntity.getModelFileName())
+				.creator(versionEntity.getRegUser().getRegUserName())
+				.creatorName(versionEntity.getRegUser().getRegUserRealName())
+				.createdAt(versionEntity.getRegDate())
 				.build();
 		}
 	}
@@ -106,7 +119,16 @@ public class ModelRepoDTO {
 	@Builder
 	@AllArgsConstructor
 	@NoArgsConstructor
-	public static class wlModelRepoDTO {
+	public static class UpdateDTO {
+		private String modelName;
+		private String description;
+	}
+
+	@Getter
+	@Builder
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class WlModelRepoDTO {
 		private String modelName;
 		private String description;
 		private String workspaceResourceName;
