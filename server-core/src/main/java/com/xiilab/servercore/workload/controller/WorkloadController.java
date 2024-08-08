@@ -206,7 +206,7 @@ public class WorkloadController {
 	}
 
 	@GetMapping("/workloads/datasets")
-	@Operation(summary = "₩워크로드 생성 시 데이터 셋 전체 조회")
+	@Operation(summary = "워크로드 생성 시 데이터 셋 전체 조회")
 	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,

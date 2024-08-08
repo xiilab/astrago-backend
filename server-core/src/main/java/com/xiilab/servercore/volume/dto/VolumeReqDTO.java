@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.xiilab.modulecommon.enums.CompressFileType;
-import com.xiilab.modulecommon.enums.VolumeAccessType;
 
 import lombok.Getter;
 
@@ -32,7 +31,6 @@ public class VolumeReqDTO {
 		protected String volumeName;
 		protected String defaultPath;
 		protected String workspaceResourceName;
-		protected VolumeAccessType volumeAccessType;
 		private Set<Long> labelIds;
 
 		@Getter

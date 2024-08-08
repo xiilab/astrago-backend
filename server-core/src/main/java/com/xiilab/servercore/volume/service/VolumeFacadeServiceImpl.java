@@ -25,7 +25,6 @@ import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.OutputVolumeYN;
 import com.xiilab.modulecommon.enums.StorageType;
-import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
@@ -90,7 +89,6 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			.volumeName(createAstragoVolumeDTO.getVolumeName())
 			.storageEntity(storageEntity)
 			.defaultPath(createAstragoVolumeDTO.getDefaultPath())
-			.volumeAccessType(createAstragoVolumeDTO.getVolumeAccessType())
 			.outputVolumeYN(OutputVolumeYN.N)
 			.build();
 
@@ -104,7 +102,7 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	@Override
 	@Transactional
 	public Long insertAstragoOutputVolume(String volumeName, String workspaceResourceName, String workloadResourceName,
-		String defaultPath, VolumeAccessType volumeAccessType) {
+		String defaultPath) {
 		// storage 조회
 		StorageEntity defaultStorage = storageService.getDefaultStorage();
 
@@ -113,7 +111,6 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			.volumeName(volumeName)
 			.storageEntity(defaultStorage)
 			.defaultPath(defaultPath)
-			.volumeAccessType(volumeAccessType)
 			.outputVolumeYN(OutputVolumeYN.Y)
 			.build();
 
@@ -146,7 +143,6 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 		//2. 디비 인서트
 		LocalVolumeEntity localVolumeEntity = LocalVolumeEntity.builder()
 			.volumeName(createLocalVolumeDTO.getVolumeName())
-			.volumeAccessType(createLocalVolumeDTO.getVolumeAccessType())
 			.outputVolumeYN(OutputVolumeYN.N)
 			.ip(createLocalVolumeDTO.getIp())
 			.storageType(StorageType.NFS)

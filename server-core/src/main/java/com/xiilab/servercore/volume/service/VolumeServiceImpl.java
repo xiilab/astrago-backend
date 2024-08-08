@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.core.io.ByteArrayResource;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
@@ -158,7 +160,11 @@ public class VolumeServiceImpl implements VolumeService {
 			.orElseThrow(() -> new RestApiException(VolumeErrorCode.VOLUME_NOT_FOUND));
 		volume.modifyVolumeName(modifyVolumeDTO.getVolumeName());
 		volume.modifyVolumeDefaultPath(modifyVolumeDTO.getDefaultPath());
-		volume.modifyVolumeAccessType(modifyVolumeDTO.getVolumeAccessType());
+
+		if (!CollectionUtils.isEmpty(modifyVolumeDTO.getLabelIds())) {
+			volumeLabelMappingRepository.deleteByVolumeId(volumeId);
+			saveVolumeLabels(volume, modifyVolumeDTO.getLabelIds());
+		}
 	}
 
 	@Override
@@ -321,16 +327,20 @@ public class VolumeServiceImpl implements VolumeService {
 
 		// 라벨 찾기
 		// insertWorkspaceVolumeDTO.getLabelIds();
-		List<LabelEntity> findLabels = labelRepository.findAllById(insertWorkspaceVolumeDTO.getLabelIds());
-		for (LabelEntity findLabel : findLabels) {
-			VolumeLabelMappingEntity volumeLabelMappingEntity = VolumeLabelMappingEntity.builder()
-				.volume(volume)
-				.label(findLabel)
-				.build();
-			volumeLabelMappingRepository.save(volumeLabelMappingEntity);
-		}
+		saveVolumeLabels(volume, insertWorkspaceVolumeDTO.getLabelIds());
 
 		volumeWorkspaceRepository.save(volumeWorkSpaceMappingEntity);
+	}
+
+	private void saveVolumeLabels(Volume volume, Set<Long> labelIds) {
+		List<LabelEntity> findLabels = labelRepository.findAllById(labelIds);
+		List<VolumeLabelMappingEntity> volumeLabelMappingEntities = findLabels.stream()
+			.map(label -> VolumeLabelMappingEntity.builder()
+				.volume(volume)
+				.label(label)
+				.build())
+			.toList();
+		volumeLabelMappingRepository.saveAll(volumeLabelMappingEntities);
 	}
 
 	@Transactional

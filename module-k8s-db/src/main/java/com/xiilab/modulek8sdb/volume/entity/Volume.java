@@ -6,7 +6,6 @@ import java.util.List;
 import org.hibernate.annotations.SQLDelete;
 
 import com.xiilab.modulecommon.enums.OutputVolumeYN;
-import com.xiilab.modulecommon.enums.VolumeAccessType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
@@ -53,10 +52,6 @@ public abstract class Volume extends BaseEntity {
 	@Column(name = "VOLUME_DEFAULT_MOUNT_PATH")
 	private String volumeDefaultMountPath;
 
-	@Column(name = "VOLUME_ACCESS_TYPE")
-	@Enumerated(EnumType.STRING)
-	private VolumeAccessType volumeAccessType;
-
 	@Column(name = "OUTPUT_VOLUME_YN")
 	@Enumerated(EnumType.STRING)
 	private OutputVolumeYN outputVolumeYN;
@@ -71,12 +66,10 @@ public abstract class Volume extends BaseEntity {
 	@Transient
 	private boolean isAvailable = false;
 
-	public Volume(Long volumeId, String volumeName, String volumeDefaultMountPath, VolumeAccessType volumeAccessType,
-		OutputVolumeYN outputVolumeYN) {
+	public Volume(Long volumeId, String volumeName, String volumeDefaultMountPath, OutputVolumeYN outputVolumeYN) {
 		this.volumeId = volumeId;
 		this.volumeName = volumeName;
 		this.volumeDefaultMountPath = volumeDefaultMountPath;
-		this.volumeAccessType = volumeAccessType;
 		this.outputVolumeYN = outputVolumeYN;
 	}
 
@@ -94,10 +87,6 @@ public abstract class Volume extends BaseEntity {
 
 	public void modifyVolumeDefaultPath(String volumeDefaultMountPath) {
 		this.volumeDefaultMountPath = volumeDefaultMountPath;
-	}
-
-	public void modifyVolumeAccessType(VolumeAccessType volumeAccessType) {
-		this.volumeAccessType = volumeAccessType;
 	}
 
 	public abstract boolean isAstragoVolume();
