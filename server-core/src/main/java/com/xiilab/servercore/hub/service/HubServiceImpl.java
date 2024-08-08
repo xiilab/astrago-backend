@@ -1,6 +1,10 @@
 package com.xiilab.servercore.hub.service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -9,10 +13,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -129,13 +135,19 @@ public class HubServiceImpl implements HubService {
 		FindHubResDTO.HubDetail hub = getHubByHubId(hubId);
 		String readmeFileName = hub.getReadmeFileName();
 		// ClassPathResource를 사용하여 resources 디렉토리 내의 파일을 읽음
-		ClassPathResource resource = new ClassPathResource("static/hub/" + readmeFileName);
-		Path path = null;
-		try {
-			path = resource.getFile().toPath();
-			return new String(Files.readAllBytes(path));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		Resource resource = new ClassPathResource("static/hub/" + readmeFileName);
+		// Path path = null;
+		// try {
+		// 	path = resource.getFile().toPath();
+		// 	return new String(Files.readAllBytes(path));
+		// }
+		try (InputStream inputStream = resource.getInputStream();
+			 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+			return reader.lines().collect(Collectors.joining("\n"));
+		}
+		catch (IOException e) {
+			log.error(e.toString());
+			throw new RestApiException(HubErrorCode.GET_FAILED_HUB_REAM_ME);
 		}
 	}
 
