@@ -115,7 +115,7 @@ public class GroupController {
 	public ResponseEntity<HttpStatus> deleteWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
 		@RequestBody List<String> userIdList,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userIdList, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -125,7 +125,7 @@ public class GroupController {
 	public ResponseEntity<HttpStatus> addWorkspaceMemberByUserId(
 		@PathVariable(name = "groupName") String groupName,
 		@RequestBody AddWorkspaceUsersDTO addWorkspaceUsersDTO,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		groupFacadeService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}

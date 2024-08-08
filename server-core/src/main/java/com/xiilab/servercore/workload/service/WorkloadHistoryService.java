@@ -10,10 +10,10 @@ import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
-import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
+import com.xiilab.servercore.workload.dto.response.ExperimentDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
@@ -53,7 +53,8 @@ public interface WorkloadHistoryService {
 	FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName, String workloadResourceName,
 		UserDTO.UserInfo userInfoDTO);
 
-	Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus, Pageable pageable);
+	Page<ExperimentDTO> getExperiments(String searchCondition, String workspace, String userId, WorkloadStatus status,
+		Pageable pageable);
 
 	void updateExperimentViewYN(List<Long> experimentIds, boolean isViewYN);
 }

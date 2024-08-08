@@ -35,28 +35,31 @@ public class CredentialController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<CredentialResDTO.CredentialInfo> findCredentialInfoById(@PathVariable(name = "id") long id,
-		UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<CredentialResDTO.CredentialInfo> findCredentialInfoById(
+		@PathVariable(name = "id") long id,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(credentialService.findCredentialById(id, userInfoDTO), HttpStatus.OK);
 	}
 
 	@PostMapping()
-	public ResponseEntity<CredentialResDTO> createCredential(@RequestBody CredentialReqDTO credentialReqDTO,
-		UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<CredentialResDTO> createCredential(
+		@RequestBody CredentialReqDTO credentialReqDTO,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(credentialService.createCredential(credentialReqDTO, userInfoDTO), HttpStatus.OK);
 	}
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<HttpStatus> updateCredentialInfo(@PathVariable("id") long id,
 		@RequestBody CredentialReqDTO.UpdateDTO updateDTO,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		credentialService.updateCredentialById(id, updateDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<HttpStatus> deleteCredentialById(@PathVariable(name = "id") long id,
-		UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<HttpStatus> deleteCredentialById(
+		@PathVariable(name = "id") long id,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		credentialService.deleteCredentialById(id, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

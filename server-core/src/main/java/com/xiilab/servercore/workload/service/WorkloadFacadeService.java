@@ -86,7 +86,6 @@ import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
-import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
@@ -109,6 +108,7 @@ import com.xiilab.servercore.volume.service.VolumeService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
+import com.xiilab.servercore.workload.dto.response.ExperimentDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
@@ -1227,9 +1227,10 @@ public class WorkloadFacadeService {
 		// return null;
 	}
 
-	public Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus,
+	public Page<ExperimentDTO> getExperiments(String searchCondition, String workspace, String userId,
+		WorkloadStatus status,
 		Pageable pageable) {
-		return workloadHistoryService.getExperiments(searchCondition, workloadStatus, pageable);
+		return workloadHistoryService.getExperiments(searchCondition, workspace, userId, status, pageable);
 	}
 
 	public void updateExperimentViewYN(List<Long> experimentId, boolean isViewYN) {

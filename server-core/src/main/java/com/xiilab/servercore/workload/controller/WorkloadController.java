@@ -30,7 +30,6 @@ import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
-import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -44,6 +43,7 @@ import com.xiilab.servercore.workload.dto.request.CreateDistributedWorkloadJobRe
 import com.xiilab.servercore.workload.dto.request.CreateSingleWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
+import com.xiilab.servercore.workload.dto.response.ExperimentDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
@@ -80,7 +80,7 @@ public class WorkloadController {
 	@Operation(summary = "분산 학습용 워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkloadDistributed(
 		@RequestBody CreateDistributedWorkloadJobReqDTO createWorkloadJobReqDTO,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) {
 		workloadFacadeService.createWorkload(createWorkloadJobReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
@@ -153,7 +153,7 @@ public class WorkloadController {
 		@RequestParam(value = "workloadSortCondition", required = false) WorkloadSortCondition workloadSortCondition,
 		@RequestParam(value = "pageNum") int pageNum,
 		@RequestParam(value = "isCreatedByMe", required = false) Boolean isCreatedByMe,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) {
 		return new ResponseEntity<>(
 			workloadFacadeService.getOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
@@ -164,10 +164,13 @@ public class WorkloadController {
 	@Operation(summary = "워크로드 실험 데이터 리스트 조회")
 	public ResponseEntity<Page<ExperimentDTO>> getExperiments(
 		@RequestParam(value = "searchCondition", required = false) String searchCondition,
-		@RequestParam(value = "workloadStatus", required = false) WorkloadStatus workloadStatus,
+		@RequestParam(value = "workspace") String workspace,
+		@RequestParam(name = "status", required = false) WorkloadStatus status,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfo,
 		Pageable pageable
 	) {
-		return new ResponseEntity<>(workloadFacadeService.getExperiments(searchCondition, workloadStatus, pageable),
+		return new ResponseEntity<>(
+			workloadFacadeService.getExperiments(searchCondition, workspace, userInfo.getId(), status, pageable),
 			HttpStatus.OK);
 	}
 
@@ -186,7 +189,7 @@ public class WorkloadController {
 		@PathVariable(value = "type") WorkloadType workloadType,
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
 		@RequestParam("resourceName") String resourceName,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) throws IOException {
 		workloadFacadeService.stopWorkload(workspaceResourceName, resourceName, workloadType, userInfoDTO);
 		return ResponseEntity.ok().build();
@@ -196,7 +199,7 @@ public class WorkloadController {
 	@Operation(summary = "워크로드 삭제 api")
 	public ResponseEntity<HttpStatus> deleteWorkloadHistory(
 		@PathVariable(value = "id") long id,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) {
 		workloadFacadeService.deleteWorkloadHistory(id, userInfoDTO);
 		return ResponseEntity.ok().build();
@@ -207,7 +210,7 @@ public class WorkloadController {
 	public ResponseEntity<DatasetDTO.DatasetsInWorkspace> getDatasets(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		DatasetDTO.DatasetsInWorkspace datasetsByRepositoryType = datasetService.getDatasetsByRepositoryType(
 			workspaceResourceName, repositoryType, userInfoDTO);
 
@@ -219,7 +222,7 @@ public class WorkloadController {
 	public ResponseEntity<ModelDTO.ModelsInWorkspace> getModels(
 		@RequestParam(name = "workspaceResourceName") String workspaceResourceName,
 		@RequestParam(name = "repositoryType") RepositoryType repositoryType,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		ModelDTO.ModelsInWorkspace datasetsByRepositoryType = modelService.getModelsByRepositoryType(
 			workspaceResourceName, repositoryType, userInfoDTO);
 
@@ -325,8 +328,7 @@ public class WorkloadController {
 	@Operation(summary = "종료된 워크로드의 로그 조회하기")
 	public ResponseEntity<byte[]> getEndWorkloadHistoryLog(
 		@PathVariable(name = "workloadName") String workloadName,
-		UserDTO.UserInfo userInfoDTO
-	) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok()
 			.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
@@ -342,8 +344,7 @@ public class WorkloadController {
 		@RequestParam(value = "workloadSortCondition", required = false) WorkloadSortCondition workloadSortCondition,
 		@RequestParam(value = "pageNum") int pageNum,
 		@RequestParam(value = "isCreatedByMe", required = false) Boolean isCreatedByMe,
-		UserDTO.UserInfo userInfoDTO
-	) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(
 			workloadFacadeService.getAdminOverViewWorkloadList(workloadType, workspaceName, searchName, workloadStatus,
 				workloadSortCondition, pageNum, isCreatedByMe, userInfoDTO), HttpStatus.OK);
@@ -366,8 +367,7 @@ public class WorkloadController {
 	@Operation(summary = "관리자 종료된 워크로드의 로그 조회하기")
 	public ResponseEntity<byte[]> getAdminEndWorkloadHistoryLog(
 		@PathVariable(name = "workloadName") String workloadName,
-		UserDTO.UserInfo userInfoDTO
-	) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok()
 			.body(workloadFacadeService.getWorkloadLogFile(workloadName, userInfoDTO));
 	}
