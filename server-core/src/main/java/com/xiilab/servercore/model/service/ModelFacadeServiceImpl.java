@@ -92,7 +92,7 @@ public class ModelFacadeServiceImpl implements ModelFacadeService {
 				volumeImageURL = privateRegistryUrl + "/" + network.getLocalVolumeImageUrl();
 			}
 		}else{
-			volumeImageURL = network.getInitContainerImageUrl();
+			volumeImageURL = network.getLocalVolumeImageUrl();
 		}
 		CreateLocalModelDTO createDto = CreateLocalModelDTO.builder()
 			.namespace(namespace)
