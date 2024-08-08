@@ -321,6 +321,7 @@ create table if not exists TB_HUB
     REG_USER_ID            varchar(255)                            null,
     REG_USER_NAME          varchar(255)                            null,
     REG_USER_REAL_NAME     varchar(255)                            null,
+    SOURCE_CODE_MOUNT_PATH                  varchar(255)                            null,
     TITLE                  varchar(255)                            null,
     IMAGE_ID               bigint                                  null,
     README_FILE_NAME             varchar(255)                            null,
