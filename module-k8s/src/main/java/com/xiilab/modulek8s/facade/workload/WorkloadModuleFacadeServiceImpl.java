@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -67,7 +68,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final LogService logService;
 	private final SecretService secretService;
 	private final NodeService nodeService;
-
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 	@Override
 	public CreateJobResDTO createJobWorkload(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
 		//생성 요청한 workspace가 존재하는지 확인
@@ -86,6 +88,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getDatasets());
 			// Model PV 생성
 			createPVAndPVC(moduleCreateWorkloadReqDTO.getModels());
+
 			if (workloadType == WorkloadType.BATCH) {
 				createJobResDTO = workloadModuleService.createBatchJobWorkload(
 					(ModuleCreateWorkloadReqDTO)moduleCreateWorkloadReqDTO,

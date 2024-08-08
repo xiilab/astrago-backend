@@ -30,6 +30,7 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
@@ -63,6 +64,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WebClientService webClientService;
 	private final NetworkRepository networkRepository;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	@Override
 	@Transactional
@@ -91,13 +94,23 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 	public void insertLocalDataset(DatasetDTO.CreateLocalDataset createDatasetDTO) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		log.info("폐쇄망 : " + network.getNetworkCloseYN());
+		String volumeImageURL = "";
+		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
+			if(isBlankSafe(privateRegistryUrl)){
+				volumeImageURL = network.getLocalVolumeImageUrl();
+			}else{
+				volumeImageURL = privateRegistryUrl + "/" + network.getLocalVolumeImageUrl();
+			}
+		}else{
+			volumeImageURL = network.getInitContainerImageUrl();
+		}
 		CreateLocalDatasetDTO createDto = CreateLocalDatasetDTO.builder()
 			.namespace(namespace)
 			.datasetName(createDatasetDTO.getDatasetName())
 			.ip(createDatasetDTO.getIp())
 			.storagePath(createDatasetDTO.getStoragePath())
 			// .dockerImage(dockerImage)
-			.dockerImage(network.getLocalVolumeImageURL())
+			.dockerImage(volumeImageURL)
 			.hostPath(hostPath)
 			.build();
 		//1. nginx deployment, pvc, pv, svc 생성
@@ -352,5 +365,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId()
 				.equals(dataset.getRegUser().getRegUserId()));
 	}
-
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
+	}
 }

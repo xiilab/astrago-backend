@@ -39,33 +39,33 @@ public class NetworkServiceImpl implements NetworkService {
 		network.modifyNetworkStatus(modifyNetworkDTO.getNetworkStatus());
 	}
 
-	@Override
-	public PrivateRepositoryUrlDto getPrivateRepositoryUrl() {
-		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		PrivateRepositoryUrlDto privateRepositoryUrlDto = PrivateRepositoryUrlDto.builder()
-			.privateRepositoryUrl(network.getPrivateRepositoryUrl())
-			.build();
-		return privateRepositoryUrlDto;
-	}
-
-	@Override
-	@Transactional
-	public void modifyPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto) {
-		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		network.modifyPrivateRepositoryUrl(privateRepositoryUrlDto.getPrivateRepositoryUrl());
-	}
-
-	@Override
-	@Transactional
-	public void deletePrivateRepositoryUrl() {
-		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		network.modifyPrivateRepositoryUrl("");
-	}
-
-	@Override
-	@Transactional
-	public void createPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto) {
-		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		network.modifyPrivateRepositoryUrl(privateRepositoryUrlDto.getPrivateRepositoryUrl());
-	}
+	// @Override
+	// public PrivateRepositoryUrlDto getPrivateRepositoryUrl() {
+	// 	NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+	// 	PrivateRepositoryUrlDto privateRepositoryUrlDto = PrivateRepositoryUrlDto.builder()
+	// 		.privateRepositoryUrl(network.getPrivateRegistryUrl())
+	// 		.build();
+	// 	return privateRepositoryUrlDto;
+	// }
+	//
+	// @Override
+	// @Transactional
+	// public void modifyPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto) {
+	// 	NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+	// 	network.modifyPrivateRegistryUrl(privateRepositoryUrlDto.getPrivateRepositoryUrl());
+	// }
+	//
+	// @Override
+	// @Transactional
+	// public void deletePrivateRepositoryUrl() {
+	// 	NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+	// 	network.modifyPrivateRegistryUrl("");
+	// }
+	//
+	// @Override
+	// @Transactional
+	// public void createPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto) {
+	// 	NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+	// 	network.modifyPrivateRegistryUrl(privateRepositoryUrlDto.getPrivateRepositoryUrl());
+	// }
 }

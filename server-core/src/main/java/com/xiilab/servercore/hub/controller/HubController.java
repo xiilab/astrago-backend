@@ -50,4 +50,10 @@ public class HubController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@GetMapping("/{hubId}/readme")
+	@Operation(summary = "Hub readme 조회")
+	public ResponseEntity<String> getHubReadMe(@PathVariable("hubId") Long hubId){
+		return new ResponseEntity<>(hubService.getHubReadMe(hubId), HttpStatus.OK);
+	}
+
 }
