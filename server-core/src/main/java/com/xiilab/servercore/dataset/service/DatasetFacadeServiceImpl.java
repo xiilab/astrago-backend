@@ -102,7 +102,7 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				volumeImageURL = privateRegistryUrl + "/" + network.getLocalVolumeImageUrl();
 			}
 		}else{
-			volumeImageURL = network.getInitContainerImageUrl();
+			volumeImageURL = network.getLocalVolumeImageUrl();
 		}
 		CreateLocalDatasetDTO createDto = CreateLocalDatasetDTO.builder()
 			.namespace(namespace)

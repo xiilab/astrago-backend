@@ -102,7 +102,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				volumeImageURL = privateRegistryUrl + "/" + network.getLocalVolumeImageUrl();
 			}
 		}else{
-			volumeImageURL = network.getInitContainerImageUrl();
+			volumeImageURL = network.getLocalVolumeImageUrl();
 		}
 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
 			.storageName(storageDTO.getStorageName())
