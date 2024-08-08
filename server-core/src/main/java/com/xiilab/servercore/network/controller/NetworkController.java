@@ -41,32 +41,32 @@ public class NetworkController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Operation(summary = "private repository url 조회")
-	@GetMapping("/network/privateRepositoryUrl")
-	public ResponseEntity<PrivateRepositoryUrlDto> getPrivateRepositoryUrl(){
-		return new ResponseEntity<>(networkService.getPrivateRepositoryUrl(), HttpStatus.OK);
-	}
+	// @Operation(summary = "private repository url 조회")
+	// @GetMapping("/network/privateRepositoryUrl")
+	// public ResponseEntity<PrivateRepositoryUrlDto> getPrivateRepositoryUrl(){
+	// 	return new ResponseEntity<>(networkService.getPrivateRepositoryUrl(), HttpStatus.OK);
+	// }
+	//
+	// @Operation(summary = "private repository url 수정")
+	// @PatchMapping("/network/privateRepositoryUrl")
+	// public ResponseEntity<HttpStatus> modifyPrivateRepositoryUrl(@RequestBody PrivateRepositoryUrlDto privateRepositoryUrlDto){
+	// 	networkService.modifyPrivateRepositoryUrl(privateRepositoryUrlDto);
+	// 	return new ResponseEntity<>(HttpStatus.OK);
+	// }
+	//
+	// @Operation(summary = "private repository url 삭제")
+	// @DeleteMapping("/network/privateRepositoryUrl")
+	// public ResponseEntity<HttpStatus> deletePrivateRepositoryUrl(){
+	// 	networkService.deletePrivateRepositoryUrl();
+	// 	return new ResponseEntity<>(HttpStatus.OK);
+	// }
 
-	@Operation(summary = "private repository url 수정")
-	@PatchMapping("/network/privateRepositoryUrl")
-	public ResponseEntity<HttpStatus> modifyPrivateRepositoryUrl(@RequestBody PrivateRepositoryUrlDto privateRepositoryUrlDto){
-		networkService.modifyPrivateRepositoryUrl(privateRepositoryUrlDto);
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@Operation(summary = "private repository url 삭제")
-	@DeleteMapping("/network/privateRepositoryUrl")
-	public ResponseEntity<HttpStatus> deletePrivateRepositoryUrl(){
-		networkService.deletePrivateRepositoryUrl();
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@Operation(summary = "private repository url 등록")
-	@PostMapping("/network/privateRepositoryUrl")
-	public ResponseEntity<HttpStatus> createPrivateRepositoryUrl(@RequestBody PrivateRepositoryUrlDto privateRepositoryUrlDto){
-		networkService.createPrivateRepositoryUrl(privateRepositoryUrlDto);
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
+	// @Operation(summary = "private repository url 등록")
+	// @PostMapping("/network/privateRepositoryUrl")
+	// public ResponseEntity<HttpStatus> createPrivateRepositoryUrl(@RequestBody PrivateRepositoryUrlDto privateRepositoryUrlDto){
+	// 	networkService.createPrivateRepositoryUrl(privateRepositoryUrlDto);
+	// 	return new ResponseEntity<>(HttpStatus.OK);
+	// }
 
 
 }

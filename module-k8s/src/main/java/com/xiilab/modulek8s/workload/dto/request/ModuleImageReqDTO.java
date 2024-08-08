@@ -29,4 +29,7 @@ public class ModuleImageReqDTO {
 			return new JobImageVO(id, name, type);
 		}
 	}
+	public void modifyName(String name){
+		this.name = name;
+	}
 }

@@ -321,13 +321,10 @@ create table if not exists TB_HUB
     REG_USER_ID            varchar(255)                            null,
     REG_USER_NAME          varchar(255)                            null,
     REG_USER_REAL_NAME     varchar(255)                            null,
-    SOURCE_CODE_BRANCH     varchar(255)                            null,
-    SOURCE_CODE_MOUNT_PATH varchar(255)                            null,
-    SOURCE_CODE_URL        varchar(255)                            null,
     TITLE                  varchar(255)                            null,
     IMAGE_ID               bigint                                  null,
-    README_URL             varchar(255)                            null,
-    THUMBNAIL_URL          varchar(255)                            null,
+    README_FILE_NAME             varchar(255)                            null,
+    THUMBNAIL_FILE_NAME          varchar(255)                            null,
     WORKLOAD_TYPE          enum ('BATCH', 'INTERACTIVE', 'DEPLOY', 'DISTRIBUTED') null,
     PARAMETER              varchar(1000)                           null
 );
@@ -570,8 +567,7 @@ create table if not exists TB_NETWORK
         primary key,
     INIT_CONTAINER_IMAGE_URL varchar(255)    null comment 'init container 용 도커 이미지 경로',
     LOCAL_VOLUME_IMAGE_URL   varchar(255)    null comment '로컬 데이터 셋, 모델 용 도커 이미지 경로',
-    NETWORK_CLOSE_YN         enum ('Y', 'N') null,
-    PRIVATE_REPOSITORY_URL   varchar(255)    null
+    NETWORK_CLOSE_YN         enum ('Y', 'N') null
 );
 
 create table if not exists TB_PIN

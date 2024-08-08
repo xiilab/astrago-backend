@@ -26,7 +26,7 @@ public class FindHubResDTO extends ResDTO {
 	private String title;
 	private String description;
 	private String[] types;
-	private String thumbnailUrl;
+	private String thumbnailFileUrl;
 
 	public static FindHubResDTO of(HubEntity hubEntity, Map<Long, Set<String>> typesMap,
 		NetworkCloseYN networkCloseYN) {
@@ -34,8 +34,7 @@ public class FindHubResDTO extends ResDTO {
 			.id(hubEntity.getHubId())
 			.title(hubEntity.getTitle())
 			.description(hubEntity.getDescription())
-			.thumbnailUrl(
-				networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrl() : hubEntity.getThumbnailUrl())
+			.thumbnailFileUrl("/hub/" + hubEntity.getThumbnailFileName())
 			.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
 			.regUserName(hubEntity.getRegUser().getRegUserName())
 			.regUserId(hubEntity.getRegUser().getRegUserId())
@@ -47,11 +46,8 @@ public class FindHubResDTO extends ResDTO {
 	@Getter
 	@SuperBuilder
 	public static class HubDetail extends FindHubResDTO {
-		private String thumbnailUrl;
-		private String readmeUrl;
-		private String sourceCodeUrl;
-		private String sourceCodeBranch;
-		private String sourceCodeMountPath;
+		private String thumbnailFileName;
+		private String readmeFileName;
 		private String datasetMountPath;
 		private String modelMountPath;
 		private FindHubCommonResDTO.HubImage hubImage;
@@ -67,12 +63,10 @@ public class FindHubResDTO extends ResDTO {
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.description(hubEntity.getDescription())
-					.thumbnailUrl(hubEntity.getThumbnailUrl())
-					.readmeUrl(hubEntity.getReadmeUrl())
+					.hubImage(new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity()))
+					.thumbnailFileName(hubEntity.getThumbnailFileName())
+					.readmeFileName(hubEntity.getReadmeFileName())
 					.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
-					.sourceCodeUrl(hubEntity.getSourceCodeUrl())
-					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
-					.sourceCodeMountPath(hubEntity.getSourceCodeMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
 					.envs(hubEntity.getEnvs() != null ?
@@ -99,17 +93,14 @@ public class FindHubResDTO extends ResDTO {
 			this.hubImage = findHubCommonResDTO;
 		}
 
-		public void setReadmeUrl(String readmeUrl) {
-			this.readmeUrl = readmeUrl;
+		public void setReadmeFileName(String readmeFileName) {
+			this.readmeFileName = readmeFileName;
 		}
 
-		public void setThumbnailUrl(String thumbnailUrl) {
-			this.thumbnailUrl = thumbnailUrl;
+		public void setThumbnailFileName(String thumbnailFileName) {
+			this.thumbnailFileName = thumbnailFileName;
 		}
 
-		public void changeSourceCodeUrl(String sourceCodeUrl) {
-			this.sourceCodeUrl = sourceCodeUrl;
-		}
 	}
 
 	@Getter

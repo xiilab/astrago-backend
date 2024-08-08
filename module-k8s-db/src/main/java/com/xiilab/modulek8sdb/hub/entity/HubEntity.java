@@ -35,19 +35,10 @@ public class HubEntity extends BaseEntity {
 	@Column(name = "DESCRIPTION")
 	private String description;
 
-	@Column(name = "THUMBNAIL_URL")
-	private String thumbnailUrl;
-	@Column(name = "README_URL")
-	private String readmeUrl;
-
-	@Column(name = "SOURCE_CODE_URL")
-	private String sourceCodeUrl;
-
-	@Column(name = "SOURCE_CODE_BRANCH")
-	private String sourceCodeBranch;
-
-	@Column(name = "SOURCE_CODE_MOUNT_PATH")
-	private String sourceCodeMountPath;
+	@Column(name = "THUMBNAIL_FILE_NAME")
+	private String thumbnailFileName;
+	@Column(name = "README_FILE_NAME")
+	private String readmeFileName;
 
 	@Column(name = "DATASET_MOUNT_PATH")
 	private String datasetMountPath;
@@ -76,23 +67,19 @@ public class HubEntity extends BaseEntity {
 	private WorkloadType workloadType;
 
 	@Builder(builderMethodName = "saveBuilder", builderClassName = "saveBuilder")
-	public HubEntity(String title, String description,
-		String thumbnailUrl, String readmeUrl, String sourceCodeUrl, String sourceCodeBranch,
-		String sourceCodeMountPath,
-		String datasetMountPath, String modelMountPath, String envs, String command, String parameter,
+	public HubEntity(Long hubId, String title, String description, String thumbnailFileName, String readmeFileName,
+		String datasetMountPath, String modelMountPath, String envs, String parameter, String ports, String command,
 		HubImageEntity hubImageEntity, WorkloadType workloadType) {
 		this.title = title;
 		this.description = description;
-		this.thumbnailUrl = thumbnailUrl;
-		this.readmeUrl = readmeUrl;
-		this.sourceCodeUrl = sourceCodeUrl;
-		this.sourceCodeBranch = sourceCodeBranch;
-		this.sourceCodeMountPath = sourceCodeMountPath;
+		this.thumbnailFileName = thumbnailFileName;
+		this.readmeFileName = readmeFileName;
 		this.datasetMountPath = datasetMountPath;
 		this.modelMountPath = modelMountPath;
 		this.envs = envs;
-		this.command = command;
 		this.parameter = parameter;
+		this.ports = ports;
+		this.command = command;
 		this.hubImageEntity = hubImageEntity;
 		this.workloadType = workloadType;
 		// 연관관계 편의 메서드

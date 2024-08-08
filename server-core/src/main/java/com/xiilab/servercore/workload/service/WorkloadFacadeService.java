@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
@@ -57,6 +58,7 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
@@ -73,6 +75,7 @@ import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
@@ -137,6 +140,8 @@ public class WorkloadFacadeService {
 	private final NetworkRepository networkRepository;
 	private final UserFacadeService userFacadeService;
 	private final NodeFacadeService nodeFacadeService;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserDTO.UserInfo userInfoDTO) {
@@ -185,8 +190,33 @@ public class WorkloadFacadeService {
 			// 리소스 초과 알림
 			log.info("폐쇄망 : " + network.getNetworkCloseYN());
 			checkAndSendWorkspaceResourceOverAlert(createWorkloadReqDTO, userInfoDTO);
-			workloadModuleFacadeService.createJobWorkload(
-				createWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
+			NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+
+			String initContainerUrl = "";
+			String imageName = "";
+			if(networkCloseYN == NetworkCloseYN.Y){
+				if(isBlankSafe(privateRegistryUrl)){
+					initContainerUrl = network.getInitContainerImageUrl();
+				}else{
+					initContainerUrl = privateRegistryUrl + "/" + network.getInitContainerImageUrl();
+				}
+			}else{
+				initContainerUrl = network.getInitContainerImageUrl();
+			}
+			if(createWorkloadReqDTO.getImage().getType() != ImageType.CUSTOM && networkCloseYN == NetworkCloseYN.Y){
+				if(isBlankSafe(privateRegistryUrl)){
+					imageName = createWorkloadReqDTO.getImage().getName();
+				}else{
+					imageName = privateRegistryUrl + "/" + createWorkloadReqDTO.getImage().getName();
+				}
+			}else{
+				imageName = createWorkloadReqDTO.getImage().getName();
+			}
+			ModuleImageReqDTO image = createWorkloadReqDTO.getImage();
+			image.modifyName(imageName);
+			CreateWorkloadReqDTO moduleDTO = createWorkloadReqDTO.toModuleDTO(initContainerUrl);
+			moduleDTO.modifyImage(image);
+			workloadModuleFacadeService.createJobWorkload(moduleDTO);
 			// 워크로드
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -194,7 +224,10 @@ public class WorkloadFacadeService {
 		}
 
 	}
-
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
+	}
 	private String getMpsNodeName(String nodeNames) {
 		String[] splitNodeName = nodeNames.replaceAll(" ", "").split(",");
 		if (splitNodeName.length == 1) {
