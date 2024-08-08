@@ -559,17 +559,17 @@ public class FindWorkloadResDTO extends ResDTO {
 	@Getter
 	public static class Label {
 		private Long labelId;
-		private String labelColorCode;
-		private String labelColorName;
+		private String colorCode;
+		private String colorCodeName;
 		private String labelName;
-		private String workspaceResourceName;
+		private Integer order;
 
 		public Label(LabelWorkloadMappingEntity labelWorkloadMappingEntity) {
 			this.labelId = labelWorkloadMappingEntity.getLabel().getId();
-			this.labelColorCode = labelWorkloadMappingEntity.getLabel().getColorCode();
-			this.labelColorName = labelWorkloadMappingEntity.getLabel().getColorName();
+			this.colorCode = labelWorkloadMappingEntity.getLabel().getColorCode();
+			this.colorCodeName = labelWorkloadMappingEntity.getLabel().getColorName();
 			this.labelName = labelWorkloadMappingEntity.getLabel().getName();
-			this.workspaceResourceName = labelWorkloadMappingEntity.getLabel().getWorkspaceResourceName();
+			this.order = labelWorkloadMappingEntity.getLabel().getOrder();
 		}
 	}
 }

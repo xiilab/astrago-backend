@@ -37,7 +37,7 @@ public interface WorkspaceFacadeService {
 
 	WorkspaceTotalDTO getWorkspaceInfoByName(String workspaceResourceName);
 
-	FindWorkspaceResDTO.JoinedWorkspaceDetail getJoinedWorkspaceInfoByName(String workspaceResourceName);
+	FindWorkspaceResDTO.JoinedWorkspaceDetail getJoinedWorkspaceInfoByName(String workspaceResourceName, String regUserId);
 
 	void requestWorkspaceResource(WorkspaceResourceReqDTO workspaceResourceReqDTO, UserDTO.UserInfo userInfoDTO);
 

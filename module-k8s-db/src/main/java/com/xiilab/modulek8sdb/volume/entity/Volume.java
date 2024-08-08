@@ -65,6 +65,8 @@ public abstract class Volume extends BaseEntity {
 	private List<VolumeWorkSpaceMappingEntity> volumeWorkSpaceMappingList = new ArrayList<>();
 	@OneToMany(mappedBy = "volume")
 	private List<VolumeWorkLoadMappingEntity> volumelWorkLoadMappingList = new ArrayList<>();
+	@OneToMany(mappedBy = "volume")
+	private List<VolumeLabelMappingEntity> volumeLabelMappingList = new ArrayList<>();
 
 	@Transient
 	private boolean isAvailable = false;

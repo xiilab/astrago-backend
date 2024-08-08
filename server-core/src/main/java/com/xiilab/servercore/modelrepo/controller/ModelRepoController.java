@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
 
@@ -30,11 +32,13 @@ import lombok.RequiredArgsConstructor;
 public class ModelRepoController {
 	private final ModelRepoFacadeService modelRepoFacadeService;
 
-	@GetMapping("/{workspaceResourceName}")
+	@GetMapping("/ws/{workspaceResourceName}")
 	@Operation(summary = "해당 워크스페이스에 전체 모델 리스트 조회 API")
-	public ResponseEntity<List<ModelRepoDTO.ResponseDTO>> getModelRepoList(
-		@PathVariable(name = "workspaceResourceName") String workspaceResourceName) {
-		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoList(workspaceResourceName), HttpStatus.OK);
+	public ResponseEntity<PageDTO<ModelRepoDTO.ResponseDTO>> getModelRepoList(
+		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "pageSize") int pageSize) {
+		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoList(workspaceResourceName, pageNum, pageSize), HttpStatus.OK);
 	}
 
 	@GetMapping("/{workspaceResourceName}/{modelRepoId}")
@@ -54,11 +58,20 @@ public class ModelRepoController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@PatchMapping("/{modelRepoId}")
+	@Operation(summary = "해당 ID의 모델을 수정하는 API")
+	public ResponseEntity<HttpStatus> updateModelRepoById(
+		@PathVariable(name = "modelRepoId") Long modelRepoId,
+		@RequestBody ModelRepoDTO.UpdateDTO updateDTO) {
+		modelRepoFacadeService.updateModelRepoById(modelRepoId, updateDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 	@PatchMapping()
 	@Operation(summary = "워크로드 모델 등록 및 기존 모델 등록 API")
 	public ResponseEntity<HttpStatus> registerOrVersionUpModelRepo(
 		@RequestPart(name = "files", required = false) List<MultipartFile> files,
-		@RequestBody ModelRepoDTO.wlModelRepoDTO modelRepoReqDTO) {
+		@RequestBody ModelRepoDTO.WlModelRepoDTO modelRepoReqDTO) {
 		modelRepoFacadeService.registerOrVersionUpModelRepo(files, modelRepoReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -69,6 +82,17 @@ public class ModelRepoController {
 		@PathVariable(name = "versionId") Long versionId
 	) {
 		modelRepoFacadeService.deleteModelRepoVersion(versionId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/{modelRepoId}")
+	@Operation(summary = "해당 ID의 모델의 버전 리스트 조회 API")
+	public ResponseEntity<PageDTO<ModelRepoDTO.VersionDTO>> updateModelRepoById(
+		@PathVariable(name = "modelRepoId") Long modelRepoId,
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "pageSize") int pageSize
+	){
+		modelRepoFacadeService.getModelRepoVersionList(modelRepoId,pageNum, pageSize);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

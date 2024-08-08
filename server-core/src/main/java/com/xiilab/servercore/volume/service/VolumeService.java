@@ -7,30 +7,29 @@ import org.springframework.web.multipart.MultipartFile;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryType;
-import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.common.enums.RepositorySearchCondition;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.modulek8sdb.workspace.dto.InsertWorkspaceVolumeDTO;
-import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceDatasetDTO;
+import com.xiilab.modulek8sdb.workspace.dto.UpdateWorkspaceVolumeDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.dataset.dto.DownloadFileResDTO;
 import com.xiilab.servercore.volume.dto.VolumeReqDTO;
 import com.xiilab.servercore.volume.dto.VolumeResDTO;
 
 public interface VolumeService {
-	void insertAstragoVolume(AstragoVolumeEntity astragoVolumeEntity, List<MultipartFile> files);
+	Long insertAstragoVolume(AstragoVolumeEntity astragoVolumeEntity, List<MultipartFile> files);
 
 	void insertAstragoOutputVolume(AstragoVolumeEntity astragoVolumeEntity, String volumeName,
 		String workspaceResourceName, String workloadResourceName);
 
-	VolumeResDTO.ResVolumes getVolumes(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
+	VolumeResDTO.ResVolumes getVolumes(RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode);
 
 	VolumeResDTO.ResVolumeWithStorage getVolumeWithStorage(Long volumeId);
 
-	void insertLocalVolume(LocalVolumeEntity localVolumeEntity);
+	Long insertLocalVolume(LocalVolumeEntity localVolumeEntity);
 
 	Volume findById(Long volumeId);
 
@@ -59,13 +58,13 @@ public interface VolumeService {
 
 	void insertWorkspaceVolume(InsertWorkspaceVolumeDTO insertWorkspaceVolumeDTO);
 
-	void deleteWorkspaceDataset(String workspaceResourceName, Long volumeId, UserDTO.UserInfo userInfoDTO);
+	void deleteWorkspaceVolume(String workspaceResourceName, Long volumeId, UserDTO.UserInfo userInfoDTO);
 
 	VolumeResDTO.VolumesInWorkspace getVolumesByWorkspaceResourceName(String workspaceResourceName);
 
 	void deleteVolumeWorkloadMapping(Long volumeId);
 
-	void updateWorkspaceVolume(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO, String workspaceResourceName,
+	void updateWorkspaceVolume(UpdateWorkspaceVolumeDTO updateWorkspaceVolumeDTO, String workspaceResourceName,
 		Long volumeId, UserDTO.UserInfo userInfoDTO);
 
 }

@@ -8,6 +8,7 @@ import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.volume.entity.VolumeLabelMappingEntity;
 import com.xiilab.modulek8sdb.volume.entity.VolumeWorkSpaceMappingEntity;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 
@@ -28,6 +29,7 @@ public class VolumeResDTO {
 	private String size;
 	private RepositoryDivision division;
 	private Integer requestVolume;
+	private List<Label> labels;
 
 	@Getter
 	@SuperBuilder
@@ -56,6 +58,7 @@ public class VolumeResDTO {
 					.size(CoreFileUtils.formatFileSize(volume.getVolumeSize()))
 					.defaultPath(volume.getVolumeDefaultMountPath())
 					.saveDirectoryName(((AstragoVolumeEntity)volume).getSaveDirectoryName())
+					.labels(volume.getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
 			} else if (volume.isLocalVolume()) {
 				return ResVolumeWithStorage.builder()
@@ -70,6 +73,7 @@ public class VolumeResDTO {
 					.storagePath(((LocalVolumeEntity)volume).getStoragePath())
 					.volumePath("/")
 					.defaultPath(volume.getVolumeDefaultMountPath())
+					.labels(volume.getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
 			}
 
@@ -84,7 +88,7 @@ public class VolumeResDTO {
 
 		public static VolumeResDTO.ResVolume toDto(Volume volume) {
 			if (volume.isAstragoVolume()) {
-				return VolumeResDTO.ResVolume.builder()
+				return ResVolume.builder()
 					.volumeId(volume.getVolumeId())
 					.storageType(((AstragoVolumeEntity)volume).getStorageEntity().getStorageType())
 					.volumeName(volume.getVolumeName())
@@ -96,6 +100,7 @@ public class VolumeResDTO {
 					.division(volume.getDivision())
 					.size(CoreFileUtils.formatFileSize(volume.getVolumeSize()))
 					.defaultPath(volume.getVolumeDefaultMountPath())
+					.labels(volume.getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
 			} else if (volume.isLocalVolume()) {
 				return ResVolume.builder()
@@ -110,6 +115,7 @@ public class VolumeResDTO {
 					.division(volume.getDivision())
 					.size(CoreFileUtils.formatFileSize(volume.getVolumeSize()))
 					.defaultPath(volume.getVolumeDefaultMountPath())
+					.labels(volume.getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
 			}
 			return null;
@@ -151,6 +157,7 @@ public class VolumeResDTO {
 					.size(CoreFileUtils.formatFileSize(volume.getVolumeSize()))
 					.defaultPath(volume.getVolumeDefaultMountPath())
 					.userId(volume.getRegUser().getRegUserId())
+					.labels(volume.getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
 			} else if (volume.isLocalVolume()) {
 				return VolumeInWorkspace.builder()
@@ -164,38 +171,41 @@ public class VolumeResDTO {
 					.division(volume.getDivision())
 					.defaultPath(volume.getVolumeDefaultMountPath())
 					.userId(volume.getRegUser().getRegUserId())
+					.labels(volume.getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
 			}
 			return null;
 		}
 
-		public static VolumeInWorkspace mappingEntityToDto(VolumeWorkSpaceMappingEntity volume) {
-			if (volume.getVolume().isAstragoVolume()) {
+		public static VolumeInWorkspace mappingEntityToDto(VolumeWorkSpaceMappingEntity volumeWorkSpaceMappingEntity) {
+			if (volumeWorkSpaceMappingEntity.getVolume().isAstragoVolume()) {
 				return VolumeInWorkspace.builder()
-					.volumeId(volume.getVolume().getVolumeId())
-					.volumeName(volume.getVolume().getVolumeName())
-					.storageType(((AstragoVolumeEntity)volume.getVolume()).getStorageEntity().getStorageType())
-					.creator(volume.getRegUser().getRegUserName())
-					.creatorName(volume.getRegUser().getRegUserRealName())
-					.createdAt(volume.getRegDate())
-					.isAvailable(volume.getVolume().isAvailable())
-					.division(volume.getVolume().getDivision())
-					.size(CoreFileUtils.formatFileSize(volume.getVolume().getVolumeSize()))
-					.defaultPath(volume.getVolumeDefaultMountPath())
-					.userId(volume.getRegUser().getRegUserId())
+					.volumeId(volumeWorkSpaceMappingEntity.getVolume().getVolumeId())
+					.volumeName(volumeWorkSpaceMappingEntity.getVolume().getVolumeName())
+					.storageType(((AstragoVolumeEntity)volumeWorkSpaceMappingEntity.getVolume()).getStorageEntity().getStorageType())
+					.creator(volumeWorkSpaceMappingEntity.getRegUser().getRegUserName())
+					.creatorName(volumeWorkSpaceMappingEntity.getRegUser().getRegUserRealName())
+					.createdAt(volumeWorkSpaceMappingEntity.getRegDate())
+					.isAvailable(volumeWorkSpaceMappingEntity.getVolume().isAvailable())
+					.division(volumeWorkSpaceMappingEntity.getVolume().getDivision())
+					.size(CoreFileUtils.formatFileSize(volumeWorkSpaceMappingEntity.getVolume().getVolumeSize()))
+					.defaultPath(volumeWorkSpaceMappingEntity.getVolumeDefaultMountPath())
+					.userId(volumeWorkSpaceMappingEntity.getRegUser().getRegUserId())
+					.labels(volumeWorkSpaceMappingEntity.getVolume().getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
-			} else if (volume.getVolume().isLocalVolume()) {
+			} else if (volumeWorkSpaceMappingEntity.getVolume().isLocalVolume()) {
 				return VolumeInWorkspace.builder()
-					.volumeId(volume.getVolume().getVolumeId())
-					.storageType(((LocalVolumeEntity)volume.getVolume()).getStorageType())
-					.volumeName(volume.getVolume().getVolumeName())
-					.creator(volume.getRegUser().getRegUserName())
-					.creatorName(volume.getRegUser().getRegUserRealName())
-					.createdAt(volume.getRegDate())
-					.isAvailable(volume.getVolume().isAvailable())
-					.division(volume.getVolume().getDivision())
-					.defaultPath(volume.getVolumeDefaultMountPath())
-					.userId(volume.getRegUser().getRegUserId())
+					.volumeId(volumeWorkSpaceMappingEntity.getVolume().getVolumeId())
+					.storageType(((LocalVolumeEntity)volumeWorkSpaceMappingEntity.getVolume()).getStorageType())
+					.volumeName(volumeWorkSpaceMappingEntity.getVolume().getVolumeName())
+					.creator(volumeWorkSpaceMappingEntity.getRegUser().getRegUserName())
+					.creatorName(volumeWorkSpaceMappingEntity.getRegUser().getRegUserRealName())
+					.createdAt(volumeWorkSpaceMappingEntity.getRegDate())
+					.isAvailable(volumeWorkSpaceMappingEntity.getVolume().isAvailable())
+					.division(volumeWorkSpaceMappingEntity.getVolume().getDivision())
+					.defaultPath(volumeWorkSpaceMappingEntity.getVolumeDefaultMountPath())
+					.userId(volumeWorkSpaceMappingEntity.getRegUser().getRegUserId())
+					.labels(volumeWorkSpaceMappingEntity.getVolume().getVolumeLabelMappingList().stream().map(Label::new).toList())
 					.build();
 			}
 			return null;
@@ -218,6 +228,23 @@ public class VolumeResDTO {
 			return VolumeResDTO.VolumesInWorkspace.builder()
 				.volumes(volumes.stream().map(VolumeInWorkspace::mappingEntityToDto).toList())
 				.build();
+		}
+	}
+
+	@Getter
+	public static class Label {
+		private Long labelId;
+		private String labelName;
+		private String colorCode;
+		private String colorCodeName;
+		private Integer order;
+
+		public Label(VolumeLabelMappingEntity volumeLabelMappingEntity) {
+			this.labelId = volumeLabelMappingEntity.getId();
+			this.labelName = volumeLabelMappingEntity.getLabel().getName();
+			this.colorCode = volumeLabelMappingEntity.getLabel().getColorCode();
+			this.colorCodeName = volumeLabelMappingEntity.getLabel().getColorName();
+			this.order = volumeLabelMappingEntity.getLabel().getOrder();
 		}
 	}
 }
