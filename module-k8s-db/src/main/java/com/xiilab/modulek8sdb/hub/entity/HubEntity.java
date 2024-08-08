@@ -57,6 +57,8 @@ public class HubEntity extends BaseEntity {
 
 	@Column(name = "COMMAND")
 	private String command;
+	@Column(name = "SOURCE_CODE_MOUNT_PATH")
+	private String sourceCodeMountPath;
 
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "IMAGE_ID")
@@ -69,7 +71,7 @@ public class HubEntity extends BaseEntity {
 	@Builder(builderMethodName = "saveBuilder", builderClassName = "saveBuilder")
 	public HubEntity(Long hubId, String title, String description, String thumbnailFileName, String readmeFileName,
 		String datasetMountPath, String modelMountPath, String envs, String parameter, String ports, String command,
-		HubImageEntity hubImageEntity, WorkloadType workloadType) {
+		HubImageEntity hubImageEntity, WorkloadType workloadType, String sourceCodeMountPath) {
 		this.title = title;
 		this.description = description;
 		this.thumbnailFileName = thumbnailFileName;
@@ -82,6 +84,7 @@ public class HubEntity extends BaseEntity {
 		this.command = command;
 		this.hubImageEntity = hubImageEntity;
 		this.workloadType = workloadType;
+		this.sourceCodeMountPath = sourceCodeMountPath;
 		// 연관관계 편의 메서드
 		this.hubImageEntity.getHubEntities().add(this);
 	}

@@ -50,6 +50,7 @@ public class FindHubResDTO extends ResDTO {
 		private String readmeFileName;
 		private String datasetMountPath;
 		private String modelMountPath;
+		private String sourceCodeMountPath;
 		private FindHubCommonResDTO.HubImage hubImage;
 		private Map<String, String> envs;
 		private Map<String, String> parameter;
@@ -69,6 +70,7 @@ public class FindHubResDTO extends ResDTO {
 					.types(typesMap.getOrDefault(hubEntity.getHubId(), new HashSet<>()).toArray(String[]::new))
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
+					.sourceCodeMountPath(hubEntity.getSourceCodeMountPath())
 					.envs(hubEntity.getEnvs() != null ?
 						objectMapper.readValue(hubEntity.getEnvs(), new TypeReference<>() {
 						}) : null)
