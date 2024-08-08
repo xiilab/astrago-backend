@@ -7,11 +7,13 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.annotations.SQLDelete;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
+import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -143,11 +145,18 @@ public abstract class WorkloadEntity {
 			.filter(ex -> ex.getUuid().equals(uuid))
 			.findAny();
 		if (expOpt.isEmpty()) {
-			this.experimentList.add(ExperimentEntity.builder()
-				.uuid(uuid)
-				.createdTime(LocalDateTime.now())
-				.workload(this)
-				.build());
+			if (!CollectionUtils.isEmpty(this.labelList)) {
+				List<LabelEntity> labelEntities = this.labelList.stream()
+					.map(LabelWorkloadMappingEntity::getLabel)
+					.toList();
+				ExperimentEntity experiment = ExperimentEntity.builder()
+					.uuid(uuid)
+					.createdTime(LocalDateTime.now())
+					.workload(this)
+					.build();
+				experiment.addLabels(labelEntities);
+				this.experimentList.add(experiment);
+			}
 		}
 	}
 }

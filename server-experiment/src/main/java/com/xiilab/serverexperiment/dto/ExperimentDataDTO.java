@@ -3,9 +3,12 @@ package com.xiilab.serverexperiment.dto;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentQueryResult;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 public class ExperimentDataDTO {
@@ -71,5 +74,17 @@ public class ExperimentDataDTO {
 		private Double wallTime;
 		private Double relativeTime;
 		private Map<String, Double> metrics;
+	}
+
+	@Getter
+	@Builder
+	public static class TableDTO {
+		private String id;
+		private String name;
+		private String resourceName;
+		private WorkloadStatus status;
+		private String userName;
+		private List<ExperimentQueryResult.LabelDTO> labels;
+		private MetricEntry metricEntry;
 	}
 }

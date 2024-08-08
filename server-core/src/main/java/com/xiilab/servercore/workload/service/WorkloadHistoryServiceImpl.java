@@ -28,7 +28,7 @@ import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentQueryResult;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
@@ -39,6 +39,7 @@ import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepoCus
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
+import com.xiilab.servercore.workload.dto.response.ExperimentDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
@@ -244,9 +245,12 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
-	public Page<ExperimentDTO> getExperiments(String searchCondition, WorkloadStatus workloadStatus,
+	public Page<ExperimentDTO> getExperiments(String searchCondition, String workspace, String userId,
+		WorkloadStatus status,
 		Pageable pageable) {
-		return experimentCustomRepo.getExperiments(searchCondition, workloadStatus, pageable);
+		Page<ExperimentQueryResult> experiments = experimentCustomRepo.getExperiments(searchCondition, workspace,
+			userId, status, pageable);
+		return experiments.map(ExperimentDTO::new);
 	}
 
 	@Override

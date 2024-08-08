@@ -30,7 +30,6 @@ import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadEventDTO;
-import com.xiilab.modulek8sdb.workload.history.dto.ExperimentDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.common.dto.FileUploadResultDTO;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
@@ -44,6 +43,7 @@ import com.xiilab.servercore.workload.dto.request.CreateDistributedWorkloadJobRe
 import com.xiilab.servercore.workload.dto.request.CreateSingleWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadUpdateDTO;
+import com.xiilab.servercore.workload.dto.response.ExperimentDTO;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.service.WorkloadFacadeService;
@@ -166,11 +166,12 @@ public class WorkloadController {
 	public ResponseEntity<Page<ExperimentDTO>> getExperiments(
 		@RequestParam(value = "searchCondition", required = false) String searchCondition,
 		@RequestParam(value = "workspace") String workspace,
+		@RequestParam(name = "status", required = false) WorkloadStatus status,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfo,
 		Pageable pageable
 	) {
 		return new ResponseEntity<>(
-			workloadFacadeService.getExperiments(searchCondition, workspace, userInfo.getId(), pageable),
+			workloadFacadeService.getExperiments(searchCondition, workspace, userInfo.getId(), status, pageable),
 			HttpStatus.OK);
 	}
 

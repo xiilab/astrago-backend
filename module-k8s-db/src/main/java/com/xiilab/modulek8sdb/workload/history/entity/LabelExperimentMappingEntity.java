@@ -1,34 +1,34 @@
-package com.xiilab.modulek8sdb.modelrepo.entity;
+package com.xiilab.modulek8sdb.workload.history.entity;
 
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_MODEL_REPO_LABEL")
-@Builder
+@Entity
+@Table(name = "TB_LABEL_EXPERIMENT_MAPPING")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
 @Getter
-public class ModelLabelEntity {
+public class LabelExperimentMappingEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "MODEL_REPO_LABEL_ID")
+	@Column(name = "EXPERIMENT_LABEL_ID")
 	private long id;
-	@ManyToOne
-	@JoinColumn(name = "MODEL_REPO_ID")
-	private ModelRepoEntity modelRepoEntity;
-	@ManyToOne
-	@JoinColumn(name = "LABEL_ID")
-	private LabelEntity labelEntity;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private ExperimentEntity experiment;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private LabelEntity label;
 }

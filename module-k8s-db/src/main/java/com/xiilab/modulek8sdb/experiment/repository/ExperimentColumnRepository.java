@@ -1,4 +1,4 @@
-package com.xiilab.servercore.experiment.column.repository;
+package com.xiilab.modulek8sdb.experiment.repository;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.xiilab.servercore.experiment.column.entity.ExperimentColumnEntity;
+import com.xiilab.modulek8sdb.experiment.entity.ExperimentColumnEntity;
 
 @Repository
 public interface ExperimentColumnRepository extends JpaRepository<ExperimentColumnEntity, Long> {
