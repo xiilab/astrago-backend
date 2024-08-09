@@ -2,7 +2,6 @@ package com.xiilab.modulecommon.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -108,11 +107,10 @@ public class DecompressUtils {
 					continue;
 				}
 
+				createSaveDir(destinationPath.toFile().getPath(), entry.getName());
 				File saveFile = new File(destinationPath.toFile(), entry.getName());
 
-				if (entry.isDirectory()) {
-					saveFile.mkdirs();
-				} else {
+				if(!entry.isDirectory()){
 					try (OutputStream os = new BufferedOutputStream(new FileOutputStream(saveFile))) {
 						IOUtils.copy(ais, os);
 					}
@@ -122,6 +120,13 @@ public class DecompressUtils {
 			} while (entry != null);
 		} catch (IOException e) {
 			throw new RestApiException(UtilsErrorCode.FAILED_DECOMPRESS_FILE);
+		}
+	}
+
+	private static void createSaveDir(String destinationFilePath, String entryName) {
+		File file = Path.of(destinationFilePath + File.separator + entryName).getParent().toFile();
+		if (!file.exists()) {
+			file.mkdirs();
 		}
 	}
 }

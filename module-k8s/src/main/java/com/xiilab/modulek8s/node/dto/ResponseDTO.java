@@ -253,6 +253,7 @@ public class ResponseDTO {
 			private Integer count;
 			private boolean useAllGPUStatus;
 
+			@Builder
 			public GPUInfo(String nodeName, Integer gpuOnePerMemory, Integer count, boolean useAllGPUStatus) {
 				this.nodeName = nodeName;
 				// this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
