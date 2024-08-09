@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ExperimentController {
 	private final ExperimentDataService experimentDataService;
 
-	@PostMapping
+	@PostMapping("/")
 	public ResponseEntity<HttpStatus> saveExperimentData(@RequestBody ExperimentDataDTO.Req trainDataDTO) {
 		experimentDataService.saveExperimentData(trainDataDTO);
 		return new ResponseEntity<>(HttpStatus.CREATED);
