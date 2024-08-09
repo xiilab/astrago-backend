@@ -16,6 +16,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,16 @@ public class ImageRepositoryImpl implements ImageRepositoryCustom {
 			.where(
 				eqImageType(imageType),
 				eqWorkloadType(workloadType),
-				eqMultiNodeYN(multiNode)
+				eqMultiNodeYN(multiNode),
+				eqDeleteYN()
 			).fetchOne();
 
 		JPAQuery<ImageEntity> query = queryFactory.selectFrom(imageEntity)
 			.where(
 				eqImageType(imageType),
 				eqWorkloadType(workloadType),
-				eqMultiNodeYN(multiNode)
+				eqMultiNodeYN(multiNode),
+				eqDeleteYN()
 			);
 
 		if (pageable != null) {
@@ -63,5 +66,10 @@ public class ImageRepositoryImpl implements ImageRepositoryCustom {
 	}
 	private BooleanExpression eqMultiNodeYN(boolean multiNodeYN) {
 		return !ObjectUtils.isEmpty(multiNodeYN) ? imageEntity.multiNode.eq(multiNodeYN) : null;
+	}
+
+	private static BooleanExpression eqDeleteYN() {
+		// return imageEntity.deleteYn.eq(DeleteYN.N);
+		return imageEntity.deleteYN.eq(DeleteYN.N);
 	}
 }
