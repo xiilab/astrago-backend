@@ -1233,7 +1233,7 @@ public class WorkloadFacadeService {
 		return workloadHistoryService.getExperiments(searchCondition, workspace, userId, status, pageable);
 	}
 
-	public void updateExperimentViewYN(List<Long> experimentId, boolean isViewYN) {
-		workloadHistoryService.updateExperimentViewYN(experimentId, isViewYN);
+	public void updateExperimentViewYN(List<String> experimentUUIDs, boolean isViewYN) {
+		workloadHistoryService.updateExperimentViewYN(experimentUUIDs, isViewYN);
 	}
 }

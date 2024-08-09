@@ -177,9 +177,9 @@ public class WorkloadController {
 	@PatchMapping("/workloads/experiments")
 	@Operation(summary = "워크로드 실험 데이터 viewYN 업데이트")
 	public ResponseEntity<HttpStatus> updateExperimentViewYN(
-		@RequestParam(value = "ids") List<Long> experimentIds,
+		@RequestParam(value = "uuids") List<String> experimentUUIDs,
 		@RequestParam(value = "viewYN") boolean isViewYN) {
-		workloadFacadeService.updateExperimentViewYN(experimentIds, isViewYN);
+		workloadFacadeService.updateExperimentViewYN(experimentUUIDs, isViewYN);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

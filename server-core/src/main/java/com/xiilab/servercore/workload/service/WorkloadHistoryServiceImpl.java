@@ -275,7 +275,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 
 	@Override
 	@Transactional
-	public void updateExperimentViewYN(List<Long> experimentIds, boolean isViewYN) {
-		experimentRepo.findAllById(experimentIds).forEach(experiment -> experiment.updateIsViewYN(isViewYN));
+	public void updateExperimentViewYN(List<String> experimentUUIDs, boolean isViewYN) {
+		experimentRepo.findByUuidIn(experimentUUIDs).forEach(experiment -> experiment.updateIsViewYN(isViewYN));
 	}
 }
