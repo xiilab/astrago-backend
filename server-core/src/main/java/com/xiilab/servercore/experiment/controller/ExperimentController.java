@@ -114,13 +114,13 @@ public class ExperimentController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@PutMapping("/{id}/label")
+	@PutMapping("/{uuid}/label")
 	@Operation(summary = "비교 실험의 label을 추가하고 삭제하는 API")
 	public ResponseEntity<HttpStatus> putExperimentLabels(
-		@PathVariable("id") Long experimentId,
+		@PathVariable("uuid") String experimentUUID,
 		@RequestParam(name = "labelIds") List<Long> labelIds
 	) {
-		experimentService.updateExperimentLabel(experimentId, labelIds);
+		experimentService.updateExperimentLabel(experimentUUID, labelIds);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

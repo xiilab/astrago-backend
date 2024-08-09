@@ -142,8 +142,8 @@ public class ExperimentService {
 	}
 
 	@Transactional
-	public void updateExperimentLabel(Long experimentId, List<Long> labels) {
-		Optional<ExperimentEntity> expOpt = experimentRepo.findById(experimentId);
+	public void updateExperimentLabel(String experimentUUID, List<Long> labels) {
+		Optional<ExperimentEntity> expOpt = experimentRepo.findByUuid(experimentUUID);
 		expOpt.ifPresent(exp -> {
 			List<LabelEntity> labelEntityList = labelRepository.findAllById(labels);
 			exp.addLabels(labelEntityList);
