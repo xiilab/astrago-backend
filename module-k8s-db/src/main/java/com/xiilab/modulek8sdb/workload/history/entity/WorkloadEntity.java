@@ -145,18 +145,18 @@ public abstract class WorkloadEntity {
 			.filter(ex -> ex.getUuid().equals(uuid))
 			.findAny();
 		if (expOpt.isEmpty()) {
+			ExperimentEntity experiment = ExperimentEntity.builder()
+				.uuid(uuid)
+				.createdTime(LocalDateTime.now())
+				.workload(this)
+				.build();
 			if (!CollectionUtils.isEmpty(this.labelList)) {
 				List<LabelEntity> labelEntities = this.labelList.stream()
 					.map(LabelWorkloadMappingEntity::getLabel)
 					.toList();
-				ExperimentEntity experiment = ExperimentEntity.builder()
-					.uuid(uuid)
-					.createdTime(LocalDateTime.now())
-					.workload(this)
-					.build();
 				experiment.addLabels(labelEntities);
-				this.experimentList.add(experiment);
 			}
+			this.experimentList.add(experiment);
 		}
 	}
 }
