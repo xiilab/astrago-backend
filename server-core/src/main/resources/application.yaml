@@ -72,6 +72,7 @@ astrago:
     dockerImage:
       name: xiilab/astrago-dataset-nginx
       hostPath: /usr/share/nginx/html/directory
+  private-registry-url: ""
 
 github:
   public:

@@ -9,11 +9,11 @@ public interface NetworkService {
 
 	void modifyNetworkStatus(ModifyNetworkDTO modifyNetworkDTO);
 
-	PrivateRepositoryUrlDto getPrivateRepositoryUrl();
+	// PrivateRepositoryUrlDto getPrivateRepositoryUrl();
 
-	void modifyPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto);
+	// void modifyPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto);
 
-	void deletePrivateRepositoryUrl();
-
-	void createPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto);
+	// void deletePrivateRepositoryUrl();
+	//
+	// void createPrivateRepositoryUrl(PrivateRepositoryUrlDto privateRepositoryUrlDto);
 }

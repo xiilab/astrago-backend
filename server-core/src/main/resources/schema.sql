@@ -309,13 +309,10 @@ create table if not exists TB_HUB
     REG_USER_ID            varchar(255)                            null,
     REG_USER_NAME          varchar(255)                            null,
     REG_USER_REAL_NAME     varchar(255)                            null,
-    SOURCE_CODE_BRANCH     varchar(255)                            null,
-    SOURCE_CODE_MOUNT_PATH varchar(255)                            null,
+    README_FILE_NAME             varchar(255)                            null,
+    THUMBNAIL_FILE_NAME          varchar(255)                            null,
     TITLE                  varchar(255)                            null,
     IMAGE_ID               bigint                                  null,
-    SOURCE_CODE_URL varchar(255) null,
-    README_URL      varchar(255) null,
-    THUMBNAIL_URL   varchar(255) null,
     WORKLOAD_TYPE          enum ('BATCH', 'INTERACTIVE', 'DEPLOY') null,
     PARAMETER              varchar(1000)                           null
 );
@@ -843,7 +840,6 @@ CREATE TABLE if not exists TB_NETWORK
 (
     NETWORK_ID               bigint(20) NOT NULL AUTO_INCREMENT,
     NETWORK_CLOSE_YN         enum ('Y','N') DEFAULT NULL,
-    PRIVATE_REPOSITORY_URL   varchar(255)   DEFAULT NULL COMMENT 'private repository url',
     INIT_CONTAINER_IMAGE_URL varchar(255)   DEFAULT NULL COMMENT 'init container 용 폐쇄망 도커 이미지 경로',
     LOCAL_VOLUME_IMAGE_URL   varchar(255)   DEFAULT NULL COMMENT '스토리지 생성 시 연결 테스트 용 도커 이미지 경로',
     PRIMARY KEY (`NETWORK_ID`)
