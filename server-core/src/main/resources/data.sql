@@ -109,7 +109,7 @@ values  (1, null, null, '12.1', '2.1.0', 'PYTORCH'),
         (36, null, now(), '9.2', '1.4.0', 'PYTORCH'),
         (37, null, now(), '9.2', '1.2.0', 'PYTORCH'),
         (38, null, now(), '9', '1.1.0', 'PYTORCH'),
-        (49, null, now(), '9', '1.0.1', 'PYTORCH'),
+        (39, null, now(), '9', '1.0.1', 'PYTORCH'),
         (40, null, now(), '8', '1.0.0', 'PYTORCH')
 ON DUPLICATE KEY UPDATE FRAMEWORK_VERSION_ID = FRAMEWORK_VERSION_ID;
 
