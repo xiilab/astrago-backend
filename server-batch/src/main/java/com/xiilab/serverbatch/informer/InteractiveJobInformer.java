@@ -34,17 +34,17 @@ public class InteractiveJobInformer {
 		jobSharedIndexInformer.addEventHandler(new ResourceEventHandler<>() {
 			@Override
 			public void onAdd(Deployment deployment) {
-				workloadHandler.interactiveJobAddHandler(deployment);
+				workloadHandler.DeploymentAddHandler(deployment);
 			}
 
 			@Override
 			public void onUpdate(Deployment deployment1, Deployment deployment2) {
-				workloadHandler.interactiveJobUpdateHandler(deployment1, deployment2);
+				workloadHandler.deploymentUpdateHandler(deployment1, deployment2);
 			}
 
 			@Override
 			public void onDelete(Deployment deployment, boolean b) {
-				workloadHandler.interactiveJobDeleteHandler(deployment);
+				workloadHandler.deploymentDeleteHandler(deployment);
 			}
 		});
 

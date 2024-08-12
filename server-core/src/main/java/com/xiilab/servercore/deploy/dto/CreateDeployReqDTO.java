@@ -1,16 +1,16 @@
 package com.xiilab.servercore.deploy.dto;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.enums.DeployType;
 import com.xiilab.modulecommon.enums.GPUType;
+import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
-import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
-import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
+import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleEnvReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
@@ -18,14 +18,13 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @NoArgsConstructor
 @SuperBuilder
 public class CreateDeployReqDTO extends APIBaseReqDTO {
-	private String workspace;    // 워크스페이스명
+	private String workspaceResourceName;    // 워크스페이스명
 	private WorkloadType workloadType;
 	private DeployType deployType;
 	private ModuleImageReqDTO image;
@@ -44,15 +43,14 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 	private float cpuRequest;
 	private float memRequest;
 	private int gpuRequest;
-	private int modelId;
+	private long modelId;
+	private String modelVersion;
 	private String modelSaveName;
 	private List<String> modelConfigNames;
+	protected String imageSecretName;
 	private int replica;
 	//nvidia triton config file
 	private String tritonConfigText;
-	//확장자 검사해야함
-	private MultipartFile tritonConfigFile;
-
 
 	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {
 		this.creatorId = creatorId;
@@ -63,33 +61,44 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 		this.nodeName = nodeName;
 	}
 
-	public ModuleCreateWorkloadReqDTO toModuleDTO(String initContainerURL) {
+	public ModuleCreateDeployReqDTO toTritonModuleDTO(List<ModuleVolumeReqDTO> volumes) {
 		if(deployType == DeployType.TRITON){
-			return ModuleCreateWorkloadReqDTO.builder()
+			ModuleImageReqDTO imageReqDTO = ModuleImageReqDTO.builder()
+				.name("nvcr.io/nvidia/tritonserver:23.02-py3")
+				.type(ImageType.BUILT)
+				.repositoryAuthType(RepositoryAuthType.PUBLIC)
+				.build();
+			return ModuleCreateDeployReqDTO.builder()
 				.name(getName())
 				.description(getDescription())
-				.workspace(workspace)
+				.workspace(workspaceResourceName)
 				.workloadType(workloadType)
-				.image(image)
+				.image(imageReqDTO)
 				.ports(ports)
-				.envs(envs)
 				.workingDir(workingDir)
-				.command(command)
+				.command("tritonserver --model-repository=/models")
+				// .command("while true; do echo hello; sleep 10;done")
 				.cpuRequest(cpuRequest)
 				.gpuRequest(gpuRequest)
 				.memRequest(memRequest)
 				.creatorId(creatorId)
 				.creatorUserName(creatorUserName)
 				.creatorFullName(creatorFullName)
-				.initContainerUrl(initContainerURL)
 				.nodeName(nodeName)
 				.gpuType(gpuType != null? gpuType : GPUType.NORMAL)
 				.gpuName(gpuName)
 				.gpuOnePerMemory(gpuOnePerMemory)
 				.resourcePresetId(resourcePresetId)
+				.imageSecretName(imageSecretName)
+				.replica(replica)
+				.imageType(ImageType.BUILT)
+				.volumes(volumes)
+				.deployType(deployType)
+				.deployModelId(modelId)
 				.build();
 		}else{
 			return null;
 		}
 	}
+
 }

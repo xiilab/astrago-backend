@@ -189,7 +189,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		return modelRepoRepository.findAllByWorkspaceResourceName(workspaceResourceName);
 	}
 
-	private ModelRepoEntity getModelRepoEntityById(long modelRepoId) {
+	@Override
+	public ModelRepoEntity getModelRepoEntityById(long modelRepoId) {
 		return modelRepoRepository.findById(modelRepoId)
 			.orElseThrow(() -> new RestApiException(ModelRepoErrorCode.MODEL_REPO_NOT_FOUND));
 	}

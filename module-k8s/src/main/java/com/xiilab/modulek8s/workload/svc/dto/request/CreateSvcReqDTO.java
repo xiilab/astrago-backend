@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.svc.dto.request;
 import java.util.List;
 
 import com.xiilab.modulek8s.common.dto.K8SResourceReqDTO;
+import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 
@@ -23,6 +24,21 @@ public class CreateSvcReqDTO extends K8SResourceReqDTO {
 		return CreateSvcReqDTO.builder()
 			.name(moduleCreateWorkloadReqDTO.getName())
 // 			.workloadResourceName(moduleCreateWorkloadReqDTO.get)
+			.description(moduleCreateWorkloadReqDTO.getDescription())
+			.creatorId(moduleCreateWorkloadReqDTO.getCreatorId())
+			.creatorUserName(moduleCreateWorkloadReqDTO.getCreatorUserName())
+			.creatorFullName(moduleCreateWorkloadReqDTO.getCreatorFullName())
+			.workspace(moduleCreateWorkloadReqDTO.getWorkspace())
+			.svcType(SvcType.NODE_PORT)
+			.jobName(jobName)
+			.workloadResourceName(workloadResourceName)
+			.ports(moduleCreateWorkloadReqDTO.getPorts().stream().map(port -> new CreateSvcPortReqDTO(port.name(), port.port())).toList())
+			.build();
+	}
+	public static CreateSvcReqDTO createDeployReqDTOToCreateServiceDto(
+		ModuleCreateDeployReqDTO moduleCreateWorkloadReqDTO, String jobName, String workloadResourceName) {
+		return CreateSvcReqDTO.builder()
+			.name(moduleCreateWorkloadReqDTO.getName())
 			.description(moduleCreateWorkloadReqDTO.getDescription())
 			.creatorId(moduleCreateWorkloadReqDTO.getCreatorId())
 			.creatorUserName(moduleCreateWorkloadReqDTO.getCreatorUserName())

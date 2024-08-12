@@ -1,13 +1,18 @@
 package com.xiilab.servercore.deploy.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.deploy.dto.CreateDeployReqDTO;
 import com.xiilab.servercore.deploy.service.DeployFacadeServiceImpl;
 import com.xiilab.servercore.deploy.service.DeployService;
@@ -24,10 +29,11 @@ public class DeployController {
 	@PostMapping("/deploy")
 	@Operation(summary = "서비스 배포 생성")
 	public ResponseEntity<HttpStatus> createDeploy(
-		@RequestBody CreateDeployReqDTO createDeployReqDTO,
+		@RequestPart(name = "createDeploy") CreateDeployReqDTO createDeployReqDTO,
+		@RequestPart(name = "tritonConfigFile", required = false) MultipartFile tritonConfigFile,
 		UserDTO.UserInfo userInfoDTO
 	){
-		deployFacadeService.createDeploy(createDeployReqDTO, userInfoDTO);
+		deployFacadeService.createDeploy(createDeployReqDTO, tritonConfigFile, userInfoDTO);
 		return null;
 	}
 }

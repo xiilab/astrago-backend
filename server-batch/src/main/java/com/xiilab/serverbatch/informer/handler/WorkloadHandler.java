@@ -12,11 +12,11 @@ public interface WorkloadHandler {
 
 	void batchJobDeleteHandler(Job job);
 
-	void interactiveJobAddHandler(Deployment deployment);
+	void DeploymentAddHandler(Deployment deployment);
 
-	void interactiveJobUpdateHandler(Deployment beforeDeployment, Deployment afterDeployment);
+	void deploymentUpdateHandler(Deployment beforeDeployment, Deployment afterDeployment);
 
-	void interactiveJobDeleteHandler(Deployment deployment);
+	void deploymentDeleteHandler(Deployment deployment);
 
 	void distributedJobAddHandler(MPIJob mpiJob);
 
