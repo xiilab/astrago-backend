@@ -41,6 +41,12 @@ public class CreateJobResDTO extends AbstractModuleWorkloadResDTO {
 		// this.datasetInfoMap = datasetInfoMap;
 		// this.modelInfoMap = modelInfoMap;
 	}
+	public CreateJobResDTO(Deployment deployment, Map<Long, Map<String, String>> codesInfoMap) {
+		super(deployment);
+		initializeFromContainer(deployment.getSpec().getTemplate().getSpec().getContainers().get(0));
+		status = K8sInfoPicker.getInteractiveWorkloadStatus(deployment.getStatus());
+		this.codesInfoMap = codesInfoMap;
+	}
 
 	public CreateJobResDTO(Job job, Map<Long, Map<String, String>> codesInfoMap,
 		Map<Long, Map<String, String>> volumeInfoMap) {

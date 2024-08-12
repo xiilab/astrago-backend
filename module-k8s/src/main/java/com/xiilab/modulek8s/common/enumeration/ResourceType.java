@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum ResourceType {
 	WORKSPACE("ws"),
 	WORKLOAD("wl"),
+	DEPLOY("deploy"),
 	VOLUME("vo"),
 	PV("pv"),
 	PVC("pvc"),
