@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
@@ -234,5 +236,25 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		List<WorkloadStatus> statuses = List.of(WorkloadStatus.ERROR, WorkloadStatus.PENDING, WorkloadStatus.RUNNING);
 		List<GPUType> types = List.of(GPUType.MIG, GPUType.MPS);
 		return workloadHistoryRepo.getWorkloadHistoryByUsingDivisionGPU(workspaceResourceName, statuses, types);
+	}
+	@Override
+	public List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+		List<String> workspaceIds, LocalDate startDate,
+		LocalDate endDate) {
+		List<WorkloadEntity> workloads = workloadHistoryRepoCustom.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+			workspaceIds, startDate, endDate);
+		return workloads.stream()
+			.map(workloadEntity -> WorkloadResDTO.WorkloadReportDTO.builder()
+				.userName(workloadEntity.getCreatorRealName())
+				.userId(workloadEntity.getCreatorId())
+				.userEmail(workloadEntity.getCreatorName())
+				.workspaceName(workloadEntity.getWorkspaceName())
+				.workloadName(workloadEntity.getName())
+				.startDate(workloadEntity.getCreatedAt())
+				.endDate(workloadEntity.getDeletedAt())
+				.workloadStatus(workloadEntity.getWorkloadStatus())
+				.build()
+			)
+			.toList();
 	}
 }

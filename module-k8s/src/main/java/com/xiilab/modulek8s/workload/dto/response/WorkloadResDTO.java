@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -56,6 +57,23 @@ public class WorkloadResDTO {
 				case DEPLOYMENT -> this.resourceType = WorkloadType.INTERACTIVE;
 				case DISTRIBUTED -> this.resourceType = WorkloadType.DISTRIBUTED;
 			}
+		}
+	}
+	@Getter
+	@Builder
+	public static class WorkloadReportDTO {
+		private String userName;
+		private String userId;
+		private String userEmail;
+		private String group;
+		private String workspaceName;
+		private String workloadName;
+		private WorkloadStatus workloadStatus;
+		private LocalDateTime startDate;
+		private LocalDateTime endDate;
+
+		public void setGroup(String group) {
+			this.group = group;
 		}
 	}
 }

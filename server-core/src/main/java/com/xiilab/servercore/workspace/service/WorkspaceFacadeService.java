@@ -1,6 +1,9 @@
 package com.xiilab.servercore.workspace.service;
 
+import java.time.LocalDate;
 import java.util.List;
+
+import org.springframework.core.io.ByteArrayResource;
 
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8s.facade.dto.WorkspaceTotalDTO;
@@ -68,4 +71,6 @@ public interface WorkspaceFacadeService {
 		UserDTO.UserInfo userInfoDTO);
 
 	void validRedirectWorkspace(String workspaceResourceName);
+	ByteArrayResource downloadReport(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);
+
 }
