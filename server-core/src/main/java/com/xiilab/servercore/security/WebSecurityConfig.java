@@ -32,6 +32,7 @@ public class WebSecurityConfig {
 			.requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 			// .requestMatchers( "/api/v1/**").permitAll()
 			.requestMatchers("/error").permitAll()
+			.requestMatchers(HttpMethod.GET, "/hub/**").permitAll()
 			.requestMatchers(HttpMethod.GET, "/api/v1/core/user").permitAll()
 			.requestMatchers(HttpMethod.GET, "/api/v1/core/group").permitAll()
 			.requestMatchers(HttpMethod.POST, "/api/v1/core/user/join").permitAll()

@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -72,6 +73,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final LogService logService;
 	private final SecretService secretService;
 	private final NodeService nodeService;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	@Override
 	public CreateJobResDTO createJobWorkload(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {

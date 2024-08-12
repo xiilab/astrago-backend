@@ -34,6 +34,7 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalVolumeDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
@@ -70,6 +71,8 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	private String dockerImage;
 	@Value("${astrago.dataset.dockerImage.hostPath}")
 	private String hostPath;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	private static boolean checkAccessVolume(UserDTO.UserInfo userInfoDTO, Volume volume) {
 		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
@@ -129,12 +132,22 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 	public void insertLocalVolume(VolumeReqDTO.Edit.CreateLocalVolume createLocalVolumeDTO) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		log.info("폐쇄망 : " + network.getNetworkCloseYN());
+		String volumeImageURL = "";
+		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
+			if(isBlankSafe(privateRegistryUrl)){
+				volumeImageURL = network.getLocalVolumeImageUrl();
+			}else{
+				volumeImageURL = privateRegistryUrl + "/" + network.getLocalVolumeImageUrl();
+			}
+		}else{
+			volumeImageURL = network.getLocalVolumeImageUrl();
+		}
 		CreateLocalVolumeDTO createDto = CreateLocalVolumeDTO.builder()
 			.namespace(namespace)
 			.volumeName(createLocalVolumeDTO.getVolumeName())
 			.ip(createLocalVolumeDTO.getIp())
 			.storagePath(createLocalVolumeDTO.getStoragePath())
-			.dockerImage(network.getLocalVolumeImageURL())
+			.dockerImage(volumeImageURL)
 			.hostPath(hostPath)
 			.build();
 		//1. nginx deployment, pvc, pv, svc 생성
@@ -403,5 +416,9 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 				.forEach(wl -> wl.updateIsAccessible(userInfoDTO.getId(), userInfoDTO.getMyWorkspaces()));
 		}
 		return pageUsingVolumeDTO;
+	}
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
 	}
 }

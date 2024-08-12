@@ -27,6 +27,7 @@ import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
@@ -54,6 +55,8 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private String astragoDeploymentName;
 	@Value("${astrago.storage-default-path}")
 	private String storageDefaultPath;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	public static String getBase64EncodeString(String content){
 		// Base64 인코딩
@@ -104,6 +107,16 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		Path hostPath = createPath(storageDTO.getStorageName());
 		//폐쇄망 확인 후 connection image url 조회
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+		String volumeImageURL = "";
+		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
+			if(isBlankSafe(privateRegistryUrl)){
+				volumeImageURL = network.getLocalVolumeImageUrl();
+			}else{
+				volumeImageURL = privateRegistryUrl + "/" + network.getLocalVolumeImageUrl();
+			}
+		}else{
+			volumeImageURL = network.getLocalVolumeImageUrl();
+		}
 		log.info("폐쇄망 : " + network.getNetworkCloseYN());
 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
 			.storageName(storageDTO.getStorageName())
@@ -115,7 +128,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.hostPath(String.valueOf(hostPath))
 			.astragoDeploymentName(astragoDeploymentName)
 			.namespace(namespace)
-			.connectionTestImageUrl(network.getLocalVolumeImageURL())
+			.connectionTestImageUrl(volumeImageURL)
 			.secretDTO(storageDTO.getSecretDTO())
 			.build();
 		if(storageDTO.getStorageType() == StorageType.NFS){
@@ -157,7 +170,10 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		}
 
 	}
-
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
+	}
 	private Path createPath(String storageName) {
 		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
 			.toString()
