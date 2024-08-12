@@ -358,7 +358,11 @@ public class DataConverterUtil {
 		if (type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)) {
 			endDate = dateTime.minusWeeks(1);
 		} else {
-			endDate = dateTime.minusMonths(1);
+			if (ReportType.MONTHLY_CLUSTER.equals(type) || ReportType.MONTHLY_SYSTEM.equals(type)) {
+				endDate = LocalDateTime.of(dateTime.getYear(), dateTime.getMonth(), 1, 0, 0);
+			} else {
+				endDate = dateTime.minusMonths(1);
+			}
 		}
 		return String.valueOf(endDate.atZone(ZoneId.systemDefault()).toEpochSecond());
 	}
@@ -370,7 +374,11 @@ public class DataConverterUtil {
 		if (type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)) {
 			endDate = dateTime.minusDays(6);
 		} else {
-			endDate = dateTime.minusMonths(1);
+			if (ReportType.MONTHLY_CLUSTER.equals(type) || ReportType.MONTHLY_SYSTEM.equals(type)) {
+				endDate = LocalDateTime.of(dateTime.getYear(), dateTime.getMonth(), 1, 0, 0);
+			} else {
+				endDate = dateTime.minusMonths(1);
+			}
 		}
 		return endDate.toString().replace("T", " ") + ":00";
 	}
