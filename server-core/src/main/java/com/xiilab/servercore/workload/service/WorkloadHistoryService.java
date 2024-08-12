@@ -1,5 +1,6 @@
 package com.xiilab.servercore.workload.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import com.xiilab.modulecommon.enums.WorkloadSortCondition;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -46,6 +48,8 @@ public interface WorkloadHistoryService {
 	OverViewWorkloadResDTO<WorkloadSummaryDTO> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, Boolean isCreatedByMe, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest);
 
 	List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(String workspaceResourceName);
+
+	List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);
 
 	FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO);
 }

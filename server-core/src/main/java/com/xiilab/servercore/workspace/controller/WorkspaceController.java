@@ -1,8 +1,13 @@
 package com.xiilab.servercore.workspace.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -314,5 +319,21 @@ public class WorkspaceController {
 	) {
 		workspaceService.validRedirectWorkspace(workspaceResourceName);
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	@GetMapping("/workloads/report")
+	@Operation(summary = "워크스페이스 별 워크로드 통계 리포트 다운로드")
+	public ResponseEntity<ByteArrayResource> downloadReport(
+		@RequestParam(value = "workspaceIds") List<String> workspaceIds,
+		@RequestParam(value = "startDate") @DateTimeFormat(pattern = "yyyyMMdd") LocalDate startDate,
+		@RequestParam(value = "endDate") @DateTimeFormat(pattern = "yyyyMMdd") LocalDate endDate) {
+		ByteArrayResource resource = workspaceService.downloadReport(workspaceIds, startDate, endDate);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.xlsx");
+
+		return ResponseEntity.ok()
+			.headers(headers)
+			.contentLength(resource.contentLength())
+			.contentType(MediaType.APPLICATION_OCTET_STREAM)
+			.body(resource);
 	}
 }

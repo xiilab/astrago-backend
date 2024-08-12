@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -23,4 +24,6 @@ public interface WorkloadHistoryRepoCustom {
 		WorkloadStatus workloadStatus);
 
 	Page<WorkloadEntity> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest, WorkloadStatus workloadStatus);
+	List<WorkloadEntity> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);
+
 }

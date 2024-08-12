@@ -1,9 +1,13 @@
 package com.xiilab.servercore.workspace.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,6 +38,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkspaceErrorCode;
 import com.xiilab.modulecommon.service.MailService;
+import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.cluster.service.ClusterService;
@@ -47,6 +53,7 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.resource_quota.dto.TotalResourceQuotaDTO;
 import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
+import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -80,6 +87,17 @@ import com.xiilab.servercore.workspace.dto.WorkspaceResourceQuotaState;
 import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
 import com.xiilab.servercore.workspace.entity.WorkspaceSettingEntity;
 import com.xiilab.servercore.workspace.repository.WorkspaceSettingRepo;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -729,5 +747,118 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		} catch (K8sException e) {
 			e.printStackTrace();
 		}
+	}
+	@Override
+	public ByteArrayResource downloadReport(List<String> workspaceIds, LocalDate startDate, LocalDate endDate) {
+		List<WorkloadResDTO.WorkloadReportDTO> workloadReports = workloadHistoryService.getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(
+			workspaceIds, startDate, endDate);
+		// 유저 정보 설정
+		workloadReports.forEach(reportDTO -> {
+			UserDTO.UserInfo user = userService.getUserInfoById(reportDTO.getUserId());
+			List<String> groups = user.getGroups();
+			String groupList = groups.stream()
+				.filter(group -> !group.equals("default"))
+				.collect(Collectors.joining(", "));
+			reportDTO.setGroup(groupList);
+		});
+		String downloadReportPath = FileUtils.getUserFolderPath("downloadReport");
+		try {
+			Files.createDirectories(Path.of(downloadReportPath));
+		} catch (IOException e) {
+			log.error("엑셀 파일을 저장할 폴더 생성을 실패했습니다.");
+			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_FOLDER);
+		}
+		String reportFile =
+			downloadReportPath + File.separator + UUID.randomUUID().toString().substring(6) + "_report.xlsx";
+		createReportFile(workloadReports, reportFile);
+		ByteArrayResource resource = getByteArrayResource(reportFile);
+		deleteReportFile(reportFile);
+		return resource;
+	}
+
+	private void deleteReportFile(String reportFile) {
+		File file = new File(reportFile);
+		if (file.exists()) {
+			file.delete();
+		}
+	}
+
+	private static void createReportFile(List<WorkloadResDTO.WorkloadReportDTO> workloadReports, String reportFile) {
+		try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(reportFile)) {
+			Sheet sheet = workbook.createSheet("프로젝트 통계");
+
+			//title 작업
+			Row titleRow = sheet.createRow(1);
+			Cell titleCell = titleRow.createCell(1);
+			titleCell.setCellValue("Astrago Project Report");
+			setTitleCellStyle(titleCell);
+
+			//헤더 작업
+			Row headerRow = sheet.createRow(2);
+			String[] headers = {"USERNAME", "USERID", "GROUP", "WORKSPACE NAME", "WORKLOAD NAME", "STARTDATE",
+				"ENDDATE", "STATUS"};
+			for (int i = 0; i < headers.length; i++) {
+				Cell headerCell = headerRow.createCell(i + 1);
+				headerCell.setCellValue(headers[i]);
+				setHeaderCellStyle(headerCell);
+			}
+
+			CellStyle dateStyle = workbook.createCellStyle();
+			dateStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
+			dateStyle.setAlignment(HorizontalAlignment.CENTER);
+			dateStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+			int rowCount = 3;
+			for (WorkloadResDTO.WorkloadReportDTO reportDTO : workloadReports) {
+				Row dataRow = sheet.createRow(rowCount++);
+				setCellValueAndStyle(dataRow.createCell(1), reportDTO.getUserName(), null);
+				setCellValueAndStyle(dataRow.createCell(2), reportDTO.getUserEmail(), null);
+				setCellValueAndStyle(dataRow.createCell(3), reportDTO.getGroup(), null);
+				setCellValueAndStyle(dataRow.createCell(4), reportDTO.getWorkspaceName(), null);
+				setCellValueAndStyle(dataRow.createCell(5), reportDTO.getWorkloadName(), null);
+				setCellDateValueAndStyle(dataRow.createCell(6), reportDTO.getStartDate(), dateStyle);
+				setCellDateValueAndStyle(dataRow.createCell(7), reportDTO.getEndDate(), dateStyle);
+				setCellValueAndStyle(dataRow.createCell(8), reportDTO.getWorkloadStatus().name(), null);
+			}
+			workbook.write(fos);
+		} catch (IOException e) {
+			log.error("엑셀 파일 생성 실패");
+			throw new RestApiException(WorkspaceErrorCode.FAILED_CREATE_EXCEL_FILE);
+		}
+	}
+
+	private static void setTitleCellStyle(Cell titleCell) {
+		Sheet sheet = titleCell.getSheet();
+		Workbook workbook = sheet.getWorkbook();
+		sheet.addMergedRegion(new CellRangeAddress(1, 1, 1, 8)); //첫행, 마지막행, 첫열, 마지막열( 0번째 행의 0~8번째 컬럼을 병합한다)
+		CellStyle titleStyle = workbook.createCellStyle();
+		titleStyle.setAlignment(HorizontalAlignment.CENTER);
+		titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+		titleCell.setCellStyle(titleStyle);
+	}
+
+	private static void setHeaderCellStyle(Cell cell) {
+		Sheet sheet = cell.getSheet();
+		int[] columnWidths = {25, 25, 25, 35, 25, 25, 25, 25};
+		for (int i = 0; i < columnWidths.length; i++) {
+			sheet.setColumnWidth(i + 1, columnWidths[i] * 256);
+		}
+		Workbook workbook = sheet.getWorkbook();
+		CellStyle style = workbook.createCellStyle();
+		style.setAlignment(HorizontalAlignment.CENTER);
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+		style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+		style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		cell.setCellStyle(style);
+	}
+
+	private static void setCellValueAndStyle(Cell cell, String value, CellStyle style) {
+		cell.setCellValue(value);
+		cell.setCellStyle(style);
+	}
+
+	private static void setCellDateValueAndStyle(Cell cell, LocalDateTime value, CellStyle style) {
+		cell.setCellValue(value);
+		cell.setCellStyle(style);
 	}
 }
