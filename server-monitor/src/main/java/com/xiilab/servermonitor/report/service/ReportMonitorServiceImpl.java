@@ -18,6 +18,7 @@ import org.quartz.TriggerBuilder;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.stereotype.Service;
 
+import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
@@ -36,52 +37,53 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 
 	@Override
 	@Transactional
-	public void reportOnOff(Long id, boolean enable){
+	public void reportOnOff(Long id, boolean enable) {
 		ReportReservationEntity report = getReportReservationEntityById(id);
+		//날짜 검증 진행
+		if (report.getEndDate() != null && report.getEndDate().isBefore(LocalDateTime.now())) {
+			throw new CommonException(ReportErrorCode.REPORT_ILLEGAL_ARGS);
+		}
 		report.updateEnable(enable);
-
-		try{
+		try {
 			// true 알림기능 ON
-			if(enable){
+			if (enable) {
 				JobDataMap jobDataMap = createJobDataMap(report);
 				JobDetail reservationJob = createReservationJob(report.getId(), jobDataMap);
 				Trigger reservationTrigger = createTrigger(reservationJob, report);
 				scheduler.scheduleJob(reservationJob, reservationTrigger);
-			// False 알림기능 OFF
-			}else {
+				// False 알림기능 OFF
+			} else {
 				stopReportJob(report.getId());
 			}
-		}catch (SchedulerException e){
-			e.toString();
+		} catch (SchedulerException e) {
+			throw new CommonException(ReportErrorCode.REPORT_SAVE_FAIL);
 		}
-
 	}
 
 	private void stopReportJob(long id) {
-		try{
+		try {
 			Set<JobKey> astra = scheduler.getJobKeys(GroupMatcher.groupEquals(ASTRA));
 
 			List<JobKey> list = astra.stream().filter(jobKey -> jobKey.getName().contains(String.valueOf(id))).toList();
 			scheduler.deleteJobs(list);
-		}catch (SchedulerException e){
+		} catch (SchedulerException e) {
 			e.getMessage();
 		}
 	}
 
-
-	private ReportReservationEntity getReportReservationEntityById(long id){
+	private ReportReservationEntity getReportReservationEntityById(long id) {
 		return repository.findById(id).orElseThrow(() ->
 			new RestApiException(ReportErrorCode.REPORT_NOT_FOUND));
 	}
 
-	private JobDetail createReservationJob(long id, JobDataMap jobDataMap){
+	private JobDetail createReservationJob(long id, JobDataMap jobDataMap) {
 		return JobBuilder.newJob(ReportJob.class)
 			.withIdentity(String.valueOf(id), ASTRA)
 			.usingJobData(jobDataMap)
 			.build();
 	}
 
-	public JobDataMap createJobDataMap(ReportReservationEntity reportReservation){
+	public JobDataMap createJobDataMap(ReportReservationEntity reportReservation) {
 		JobDataMap jobDataMap = new JobDataMap();
 		jobDataMap.put("reportId", reportReservation.getId());
 		jobDataMap.put("reportType", reportReservation.getReportType());
@@ -95,14 +97,16 @@ public class ReportMonitorServiceImpl implements ReportMonitorService {
 		return jobDataMap;
 	}
 
-	private Trigger createTrigger(JobDetail jobDetail, ReportReservationEntity report){
+	private Trigger createTrigger(JobDetail jobDetail, ReportReservationEntity report) {
 		return TriggerBuilder.newTrigger()
-			.withSchedule(CronScheduleBuilder.cronSchedule(getCronExpression(report.getSendCycle(), report.getStartDate())))
+			.withSchedule(
+				CronScheduleBuilder.cronSchedule(getCronExpression(report.getSendCycle(), report.getStartDate())))
 			.startNow()
 			.forJob(jobDetail)
 			.endAt(Date.from(report.getEndDate().atZone(ZoneId.systemDefault()).toInstant()))
 			.build();
 	}
+
 	private String getCronExpression(long period, LocalDateTime startDate) {
 		switch ((int)period) {
 			case 1:
