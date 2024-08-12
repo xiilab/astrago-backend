@@ -15,7 +15,7 @@ public enum ReportErrorCode implements ErrorCode {
 	REPORT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 ID의 리포트 예약이 없습니다"),
 	REPORT_SAVE_FAIL_OVER_CYCLE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "주기가 너무 큽니다."),
 	REPORT_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "리포트 예약 실패하였습니다."),
-
+	REPORT_ILLEGAL_ARGS(HttpStatus.BAD_REQUEST.value(), "입력 값을 확인해주세요."),
 	;
 
 	private final int code;
