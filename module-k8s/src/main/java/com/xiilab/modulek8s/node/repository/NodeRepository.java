@@ -56,4 +56,6 @@ public interface NodeRepository {
 	void setMpsConfig(MPSGpuDTO.SetMPSDTO setMPSDTO);
 
 	GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName);
+
+	// ResponseDTO.PageNodeDTO getNodesByGpuName(int pageNo, int pageSize, String gpuName);
 }

@@ -933,6 +933,23 @@ public class NodeRepositoryImpl implements NodeRepository {
 		return workerNodeDriverInfos;
 	}
 
+/*	@Override
+	public ResponseDTO.PageNodeDTO getNodesByGpuName(int pageNo, int pageSize, String gpuName) {
+		List<ResponseDTO.NodeDTO> nodeDtos = new ArrayList<>();
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			List<Node> nodes = client.nodes()
+				.withLabel("nvidia.com/gpu.product", gpuName)
+				.list()
+				.getItems()
+				.stream()
+				.toList();
+
+		// 	for (Node node : nodes) {
+		//
+		// 	}
+		// }
+	}*/
+
 	private void putMpsGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap, Map<String, String> nodeLabels,
 		String nodeName, String gpuName) {
 		int mpsGPUCount = Integer.parseInt(nodeLabels.getOrDefault(MPS_GPU_COUNT, "1")) *

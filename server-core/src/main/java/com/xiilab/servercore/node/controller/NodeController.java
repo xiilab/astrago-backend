@@ -117,4 +117,11 @@ public class NodeController {
 		@RequestParam(name = "nodeType") NodeType nodeType) {
 		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(nodeType), HttpStatus.OK);
 	}
+
+	/*@GetMapping("/{gpuName}/nodes")
+	@Operation(summary = "gpu에 해당하는 노드 목록 조회")
+	public ResponseEntity<NodeResDTO.FindGpuResources> getNodeListByGpuName(
+		@PathVariable(name = "gpuName") String gpuName) {
+		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(nodeType), HttpStatus.OK);
+	}*/
 }
