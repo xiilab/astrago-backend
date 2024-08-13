@@ -168,9 +168,9 @@ public class DeployFacadeServiceImpl {
 					.build();
 				//ports 설정
 				List<ModulePortReqDTO> ports = new ArrayList<>();
-				ports.add(new ModulePortReqDTO("HTTP", 8000));
-				ports.add(new ModulePortReqDTO("GRPC", 8001));
-				ports.add(new ModulePortReqDTO("PROMETHEUS", 8002));
+				ports.add(new ModulePortReqDTO("http", 8000));
+				ports.add(new ModulePortReqDTO("grpc", 8001));
+				ports.add(new ModulePortReqDTO("prometheus", 8002));
 				createDeployReqDTO.setPorts(ports);
 
 				//triton deployment 생성
