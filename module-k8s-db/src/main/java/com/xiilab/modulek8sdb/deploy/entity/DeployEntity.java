@@ -28,8 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Entity
-@Table(name = "TB_DEPLOY")
+@Entity(name = "TB_DEPLOY")
 @NoArgsConstructor
 @Getter
 public class DeployEntity extends WorkloadEntity {
