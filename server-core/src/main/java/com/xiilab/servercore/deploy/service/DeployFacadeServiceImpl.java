@@ -119,7 +119,7 @@ public class DeployFacadeServiceImpl {
 				String tritonModelDirectoryPath = tritonModelRootPath + "/1";
 				FileUtils.createFolders(Path.of(tritonModelDirectoryPath));
 				// 모델을 트리톤 디렉토리로 copy
-				FileUtils.copyFile(Path.of(modelPath), Path.of(tritonModelDirectoryPath));
+				FileUtils.copyFile(Path.of(modelPath), Path.of(tritonModelDirectoryPath, "model.onnx"));
 				// 모델에 필요한 파일들을 트리톤 디렉토리로 copy
 				for (String configPath : modelConfigPaths) {
 					FileUtils.copyFile(Path.of(storageHostPath + "/" + configPath), Path.of(tritonModelRootPath));
