@@ -106,4 +106,11 @@ public class FileUtils {
 			throw new RestApiException(CommonErrorCode.FILE_UPLOAD_FAIL);
 		}
 	}
+	public static void renameFile(String oldFilePath, String newFilePath) throws IOException {
+		Path sourcePath = Paths.get(oldFilePath);
+		Path targetPath = Paths.get(newFilePath);
+
+		// 파일 이름 변경 (파일 이동)
+		Files.move(sourcePath, targetPath);
+	}
 }

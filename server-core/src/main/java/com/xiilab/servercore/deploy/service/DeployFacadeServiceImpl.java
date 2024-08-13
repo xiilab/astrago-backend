@@ -84,14 +84,14 @@ public class DeployFacadeServiceImpl {
 				//model로 storage 조회
 				ModelRepoEntity findModel = modelRepoFacadeService.getModelRepoEntityById(
 					createDeployReqDTO.getModelId());
-				String modelPath = findModel.getModelPath();
+				String modelPath = findModel.getModelPath(); // /workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662
 				String modelConfigPath = findModel.getModelPath();
 				List<String> modelConfigPaths = new ArrayList<>();
 				boolean verionChk = false;
 				for (ModelVersionEntity modelVersionEntity : findModel.getModelVersionList()) {
 					if (modelVersionEntity.getVersion().equalsIgnoreCase(createDeployReqDTO.getModelVersion())) {
 						modelPath +=
-							"/" + modelVersionEntity.getVersion() + "/" + modelVersionEntity.getModelFileName();
+							"/" + modelVersionEntity.getVersion() + "/" + modelVersionEntity.getModelFileName(); // /workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
 						for (String modelConfigName : createDeployReqDTO.getModelConfigNames()) {
 							modelConfigPaths.add(
 								modelConfigPath + "/" + modelVersionEntity.getVersion() + "/" + modelConfigName);
@@ -103,23 +103,24 @@ public class DeployFacadeServiceImpl {
 					throw new RestApiException(DeployErrorCode.NOT_FOUND_MODEL_VERSION);
 				}
 				String storageHostPath = findModel.getStorageEntity().getHostPath();
-				modelPath = storageHostPath + "/" + modelPath;
+				modelPath = storageHostPath + "/" + modelPath;  // /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
 				// 모델 외 파일은 추후 작성
 				// default storage 조회 후 해당 경로에 triton model 디렉토리 생성
 				String deployUUID = "deploy-" + UUID.randomUUID().toString().substring(6);
 				// String deployUUID = "deploy-" + "test";
 				StorageEntity defaultStorage = storageService.getDefaultStorage();
 				deployDirectoryPath = defaultStorage.getHostPath() + "/workspaces/" + createDeployReqDTO.getWorkspaceResourceName()
-					+ "/deploy/" + deployUUID;
+					+ "/deploy/" + deployUUID; // /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/deploy/uuid
 				String tritonDirectoryRootPath =
 					deployDirectoryPath + "/models/" + createDeployReqDTO.getModelId() + "/model_repository/";
-
-				String tritonModelRootPath = tritonDirectoryRootPath + findModel.getModelName();
+				// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/deploy/uuid/models/1/model_repository/
+				String tritonModelRootPath = tritonDirectoryRootPath + findModel.getModelName(); // /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/deploy/uuid/models/1/model_repository/yolov8
 				// String tritonModelRootPath = "/Users/leeyoungchun/kube-storage/test";
 				String tritonModelDirectoryPath = tritonModelRootPath + "/1";
 				FileUtils.createFolders(Path.of(tritonModelDirectoryPath));
 				// 모델을 트리톤 디렉토리로 copy
-				FileUtils.copyFile(Path.of(modelPath), Path.of(tritonModelDirectoryPath, "model.onnx"));
+				FileUtils.copyFile(Path.of(modelPath), Path.of(tritonModelDirectoryPath));
+				FileUtils.renameFile(modelPath, tritonModelDirectoryPath + "/model.onnx");
 				// 모델에 필요한 파일들을 트리톤 디렉토리로 copy
 				for (String configPath : modelConfigPaths) {
 					FileUtils.copyFile(Path.of(storageHostPath + "/" + configPath), Path.of(tritonModelRootPath));
