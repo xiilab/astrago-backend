@@ -78,6 +78,7 @@ public class DeployFacadeServiceImpl {
 			String deployJobResourceName = null;
 			String deployDirectoryPath = null;
 			try {
+				String modelFileName = null;
 				// 리소스 초과 알림
 				checkAndSendWorkspaceResourceOverAlert(createDeployReqDTO, userInfoDTO);
 				//모델 파일 -> triton model repository copy
@@ -90,8 +91,9 @@ public class DeployFacadeServiceImpl {
 				boolean verionChk = false;
 				for (ModelVersionEntity modelVersionEntity : findModel.getModelVersionList()) {
 					if (modelVersionEntity.getVersion().equalsIgnoreCase(createDeployReqDTO.getModelVersion())) {
+						modelFileName = modelVersionEntity.getModelFileName();
 						modelPath +=
-							"/" + modelVersionEntity.getVersion() + "/" + modelVersionEntity.getModelFileName(); // /workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
+							"/" + modelVersionEntity.getVersion() + "/" + modelFileName; // /workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
 						for (String modelConfigName : createDeployReqDTO.getModelConfigNames()) {
 							modelConfigPaths.add(
 								modelConfigPath + "/" + modelVersionEntity.getVersion() + "/" + modelConfigName);
@@ -120,7 +122,8 @@ public class DeployFacadeServiceImpl {
 				FileUtils.createFolders(Path.of(tritonModelDirectoryPath));
 				// 모델을 트리톤 디렉토리로 copy
 				FileUtils.copyFile(Path.of(modelPath), Path.of(tritonModelDirectoryPath));
-				FileUtils.renameFile(modelPath, tritonModelDirectoryPath + "/model.onnx");
+				FileUtils.renameFile(tritonModelDirectoryPath + "/" + modelFileName, tritonModelDirectoryPath + "/model.onnx");
+
 				// 모델에 필요한 파일들을 트리톤 디렉토리로 copy
 				for (String configPath : modelConfigPaths) {
 					FileUtils.copyFile(Path.of(storageHostPath + "/" + configPath), Path.of(tritonModelRootPath));
