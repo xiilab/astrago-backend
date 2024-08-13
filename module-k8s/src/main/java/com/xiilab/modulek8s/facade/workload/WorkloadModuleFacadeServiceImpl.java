@@ -605,6 +605,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 				svcService.createNodePortService(createSvcReqDTO);
 			}
 		} catch (Exception e) {
+			log.error(e.toString());
 			throw new RestApiException(DeployErrorCode.FAILED_CREATE_DEPLOY);
 		}
 		return createJobResDTO;

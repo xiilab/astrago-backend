@@ -11,6 +11,7 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.dto.APIBaseReqDTO;
 import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
+import com.xiilab.modulek8s.workload.dto.request.ModuleCreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleEnvReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
@@ -99,7 +100,33 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 				.deployModelId(modelId)
 				.build();
 		}else{
-			return null;
+			return ModuleCreateDeployReqDTO.builder()
+				.name(getName())
+				.description(getDescription())
+				.workspace(workspaceResourceName)
+				.workloadType(workloadType)
+				.image(image)
+				.ports(ports)
+				.workingDir(workingDir)
+				.command(command)
+				.cpuRequest(cpuRequest)
+				.gpuRequest(gpuRequest)
+				.memRequest(memRequest)
+				.creatorId(creatorId)
+				.creatorUserName(creatorUserName)
+				.creatorFullName(creatorFullName)
+				.nodeName(nodeName)
+				.gpuType(gpuType != null? gpuType : GPUType.NORMAL)
+				.gpuName(gpuName)
+				.gpuOnePerMemory(gpuOnePerMemory)
+				.resourcePresetId(resourcePresetId)
+				.imageSecretName(imageSecretName)
+				.replica(replica)
+				.imageType(ImageType.BUILT)
+				.volumes(volumes)
+				.deployType(deployType)
+				.deployModelId(modelId)
+				.build();
 		}
 	}
 
