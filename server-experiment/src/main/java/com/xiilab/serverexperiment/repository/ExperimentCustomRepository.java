@@ -93,6 +93,25 @@ public class ExperimentCustomRepository {
 		return logs.getMappedResults();
 	}
 
+	public List<ExperimentDataDTO.SearchRes> getGraphMetrics(List<String> experimentIds,
+		List<String> metrics) {
+		List<AggregationOperation> operations = new ArrayList<>();
+		operations.add(eqExperimentIds(experimentIds));
+		operations.add(filterMetric(metrics));
+		operations.add(arrayToObject()); // 필터링 후 arrayToObject 호출
+
+		operations.add(groupByWorkloadId());
+		operations.add(projectFields());
+
+		Aggregation aggregation = Aggregation.newAggregation(operations);
+
+		AggregationResults<ExperimentDataDTO.SearchRes> logs = mongoTemplate.aggregate(aggregation, "logs",
+			ExperimentDataDTO.SearchRes.class);
+		return logs.getMappedResults();
+	}
+
+
+
 	private MatchOperation eqExperimentIds(List<String> experimentIds) {
 		Criteria criteria = Criteria.where("workload_id").in(experimentIds);
 		return Aggregation.match(criteria);

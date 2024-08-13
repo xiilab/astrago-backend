@@ -1,5 +1,7 @@
 package com.xiilab.serverexperiment.service;
 
+import static com.xiilab.modulecommon.exception.errorcode.ChartErrorCode.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,8 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
+import com.xiilab.modulecommon.exception.CommonException;
 import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
 import com.xiilab.modulek8sdb.experiment.entity.ExperimentColumnEntity;
 import com.xiilab.modulek8sdb.experiment.repository.ChartRepository;
@@ -67,6 +71,13 @@ public class ExperimentDataService {
 		} else {
 			return null;
 		}
+	}
+
+	public List<ExperimentDataDTO.SearchRes> getGraphMetrics(ExperimentDataDTO.SearchReq searchReq) {
+		if (CollectionUtils.isEmpty(searchReq.getExperiments()) || CollectionUtils.isEmpty(searchReq.getMetrics())) {
+			throw new CommonException(CHART_ILLEGAL_ARGS);
+		}
+		return experimentCustomRepository.getGraphMetrics(searchReq.getExperiments(), searchReq.getMetrics());
 	}
 
 	public Page<ExperimentDataDTO.TableDTO> searchExperimentTableData(String userId, String workspace,

@@ -7,6 +7,8 @@ import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
 import com.xiilab.modulek8sdb.workload.history.dto.ExperimentQueryResult;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,8 +25,10 @@ public class ExperimentDataDTO {
 
 	@Getter
 	public static class SearchReq {
-		private List<String> experiments;
-		private List<String> metrics;
+		@NotEmpty
+		private List<@NotNull String> experiments;
+		@NotEmpty
+		private List<@NotNull String> metrics;
 	}
 
 	@Getter
