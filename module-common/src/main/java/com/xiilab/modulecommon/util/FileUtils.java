@@ -2,13 +2,20 @@ package com.xiilab.modulecommon.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.FileInfoDTO;
@@ -24,12 +31,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class FileUtils {
 	private static final String ROOT_PATH = "astrago";
+	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
 	public static String getUserFolderPath(String username) {
 		return System.getProperty("user.home") + File.separator + ROOT_PATH + File.separator + username;
 	}
 
-	private static Path createFolders(Path path) throws IOException {
+	public static Path createFolders(Path path) throws IOException {
 		return Files.createDirectories(path);
 	}
 
@@ -57,6 +65,22 @@ public class FileUtils {
 			Path targetPath = Paths.get(path);
 			Files.delete(targetPath);
 		} catch (IOException e) {
+			throw new RestApiException(CommonErrorCode.FILE_DELETE_FAIL);
+		}
+	}
+	public static void deleteAllDirectory(String path) {
+		try (Stream<Path> walk = Files.walk(Paths.get(path))) {
+			walk.sorted(Comparator.reverseOrder())
+				.forEach(p -> {
+					try {
+						Files.delete(p);
+					} catch (IOException e) {
+						log.error(e.toString());
+						throw new RestApiException(CommonErrorCode.FILE_DELETE_FAIL);
+					}
+				});
+		} catch (IOException e) {
+			log.error(e.toString());
 			throw new RestApiException(CommonErrorCode.FILE_DELETE_FAIL);
 		}
 	}

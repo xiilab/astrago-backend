@@ -37,22 +37,16 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 	@Getter
 	@SuperBuilder
 	public static class HubDetail extends FindHubInWorkloadResDTO {
-		public static HubDetail of(HubEntity hubEntity, NetworkCloseYN networkCloseYN, String privateRepositoryUrl) {
+		public static HubDetail of(HubEntity hubEntity, NetworkCloseYN networkCloseYN, String privateRegistryUrl) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
 				FindHubCommonResDTO.HubImage hubImageDto = new FindHubCommonResDTO.HubImage(
 					hubEntity.getHubImageEntity());
-				hubImageDto.setImageName(networkCloseYN == NetworkCloseYN.Y ?
-					privateRepositoryUrl + hubEntity.getHubImageEntity().getImageName() :
-					hubEntity.getHubImageEntity().getImageName());
 
 				return HubDetail.builder()
 					.id(hubEntity.getHubId())
 					.title(hubEntity.getTitle())
 					.hubImage(hubImageDto)
-					.sourceCodeUrl(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() :
-						hubEntity.getSourceCodeUrl())
-					.sourceCodeBranch(hubEntity.getSourceCodeBranch())
 					.sourceCodeMountPath(hubEntity.getDatasetMountPath())
 					.datasetMountPath(hubEntity.getDatasetMountPath())
 					.modelMountPath(hubEntity.getModelMountPath())
@@ -72,6 +66,10 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 				throw new RestApiException(HubErrorCode.FAILED_ENV_MAP_TO_JSON);
 			}
 		}
+		// null 체크와 함께 isBlank를 수행하는 메서드
+		public static boolean isBlankSafe(String str) {
+			return str == null || str.isBlank();
+		}
 	}
 
 	@Getter
@@ -81,10 +79,10 @@ public class FindHubInWorkloadResDTO extends ResDTO {
 		private int totalCount;
 
 		public static Hubs from(List<HubEntity> hubEntities, int totalCount, NetworkCloseYN networkCloseYN,
-			String privateRepositoryUrl) {
+			String privateRegistryUrl) {
 			return Hubs.builder()
 				.hubsDto(hubEntities.stream()
-					.map(hubEntity -> HubDetail.of(hubEntity, networkCloseYN, privateRepositoryUrl))
+					.map(hubEntity -> HubDetail.of(hubEntity, networkCloseYN, privateRegistryUrl))
 					.toList())
 				.totalCount(totalCount)
 				.build();

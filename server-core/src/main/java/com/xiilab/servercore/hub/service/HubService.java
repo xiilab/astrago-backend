@@ -19,4 +19,5 @@ public interface HubService {
 
 	// 허브 저장
 	void saveHub(HubReqDTO.SaveHub saveHubDTO);
+	String getHubReadMe(Long hubId);
 }

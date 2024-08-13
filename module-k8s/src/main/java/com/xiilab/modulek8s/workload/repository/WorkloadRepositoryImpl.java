@@ -24,6 +24,7 @@ import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.config.K8sAdapter;
+import com.xiilab.modulek8s.deploy.vo.DeployVO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
@@ -1098,6 +1099,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	@Override
+	public CreateJobResDTO createDeployWorkload(DeployVO deployVO) {
+		Deployment resource = (Deployment)createResource(deployVO.createResource());
+		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(deployVO.getCodes());
+		return new CreateJobResDTO(resource, codesInfoMap);
+	}
+
 	public MPIJob getDistributedJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.resources(MPIJob.class).inNamespace(workSpaceName).withName(workloadName).get();
@@ -1179,14 +1187,24 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	@Override
+	public String deleteDeployment(String workspaceName, String deployJobResourceName) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.apps().deployments().inNamespace(workspaceName).withName(deployJobResourceName).delete();
+			return deployJobResourceName;
+		}
+	}
+
 	private Map<Long, Map<String, String>> getCodesInfoMap(List<JobCodeVO> jobCodeVOList) {
 		Map<Long, Map<String, String>> codesMap = new HashMap<>();
-		for (JobCodeVO jobCodeVO : jobCodeVOList) {
-			Long id = jobCodeVO.id();
-			String mountPath = jobCodeVO.mountPath();
-			String branch = jobCodeVO.branch();
-			codesMap.computeIfAbsent(jobCodeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
-			codesMap.get(id).put("branch", branch);
+		if(jobCodeVOList != null && jobCodeVOList.size() > 0){
+			for (JobCodeVO jobCodeVO : jobCodeVOList) {
+				Long id = jobCodeVO.id();
+				String mountPath = jobCodeVO.mountPath();
+				String branch = jobCodeVO.branch();
+				codesMap.computeIfAbsent(jobCodeVO.id(), k -> new HashMap<>()).put("mountPath", mountPath);
+				codesMap.get(id).put("branch", branch);
+			}
 		}
 
 		return codesMap;

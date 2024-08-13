@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.facade.workload;
 import java.util.List;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
@@ -103,4 +104,8 @@ public interface WorkloadModuleFacadeService {
 	List<Pod> getWorkloadByWorkloadName(String resourceName);
 
 	GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName);
+
+	CreateJobResDTO createDeployWorkload(ModuleCreateDeployReqDTO moduleDTO);
+
+	void deleteDeployment(String workspaceResourceName, String deployJobResourceName);
 }

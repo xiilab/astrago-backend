@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -14,7 +15,9 @@ import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.DeployErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
+import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetResDTO;
 import com.xiilab.modulek8s.facade.dto.CreateLocalModelDTO;
@@ -70,6 +73,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private final LogService logService;
 	private final SecretService secretService;
 	private final NodeService nodeService;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	@Override
 	public CreateJobResDTO createJobWorkload(CreateWorkloadReqDTO moduleCreateWorkloadReqDTO) {
@@ -126,7 +131,8 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 			// Dataset PV 삭제
 /*			if (!ObjectUtils.isEmpty(moduleCreateWorkloadReqDTO.getDatasets())) {
 				for (ModuleVolumeReqDTO dataset : moduleCreateWorkloadReqDTO.getDatasets()) {
-					k8sVolumeService.deletePVC(dataset.getCreatePV().getPvcName(), dataset.getCreatePV().getNamespace());
+					k8sVolumeService.deletePVC(dataset.getCreatePV().getPvcName(),
+						dataset.getCreatePV().getNamespace());
 					k8sVolumeService.deletePV(dataset.getCreatePV().getPvName());
 				}
 			}
@@ -167,6 +173,20 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		}
 	}
 
+	private void createAndSetImageSecret(ModuleCreateDeployReqDTO moduleCreateDeployReqDTO) {
+		ModuleCredentialReqDTO credentialReqDTO = moduleCreateDeployReqDTO.getImage().getCredentialReqDTO();
+		String imageSecretName = null;
+		if (credentialReqDTO != null && credentialReqDTO.credentialId() != null
+			&& credentialReqDTO.credentialId() > 0) {
+			imageSecretName = secretService.createSecret(moduleCreateDeployReqDTO);
+			if (StringUtils.hasText(imageSecretName)) {
+				moduleCreateDeployReqDTO.setImageSecretName(imageSecretName);
+			}
+		} else {
+			throw new RuntimeException("이미지 Credential 정보가 올바르지 않습니다.");
+		}
+	}
+
 	@Override
 	public ModuleBatchJobResDTO getBatchWorkload(String workSpaceName, String workloadName) {
 		return workloadModuleService.getBatchJobWorkload(workSpaceName, workloadName);
@@ -200,6 +220,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		workloadModuleService.deleteDistributedWorkload(workspaceName, workloadName);
 	}
 
+	@Override
+	public void deleteDeployment(String workspaceResourceName, String deployJobResourceName) {
+		workloadModuleService.deleteDeployment(workspaceResourceName, deployJobResourceName);
+		svcService.deleteService(workspaceResourceName, deployJobResourceName);
+	}
 	@Override
 	public List<AbstractModuleWorkloadResDTO> getWorkloadList(String workSpaceName) {
 		List<AbstractModuleWorkloadResDTO> workloadList = new ArrayList<>();
@@ -554,6 +579,37 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		//node를 통해 gpu 정보 조회
 		return nodeService.getGpuInfoByNodeName(gpuName, nodeName);
 	}
+
+	@Override
+	public CreateJobResDTO createDeployWorkload(ModuleCreateDeployReqDTO moduleCreateDeployReqDTO) {
+		//생성 요청한 workspace가 존재하는지 확인
+		WorkspaceDTO.ResponseDTO workspaceByName = workspaceService.getWorkspaceByName(
+			moduleCreateDeployReqDTO.getWorkspace());
+
+		WorkloadType workloadType = moduleCreateDeployReqDTO.getWorkloadType();
+		// Secret 생성
+		if (moduleCreateDeployReqDTO.getImage().getRepositoryAuthType() == RepositoryAuthType.PRIVATE) {
+			createAndSetImageSecret(moduleCreateDeployReqDTO);
+		}
+
+		CreateJobResDTO createJobResDTO = null;
+		try {
+			createJobResDTO = workloadModuleService.createDeployWorkload(moduleCreateDeployReqDTO,
+				workspaceByName.getName());
+
+			if (!CollectionUtils.isEmpty(moduleCreateDeployReqDTO.getPorts())) {
+				CreateSvcReqDTO createSvcReqDTO = CreateSvcReqDTO.createDeployReqDTOToCreateServiceDto(
+					moduleCreateDeployReqDTO, createJobResDTO.getName(), createJobResDTO.getResourceName());
+
+				// 노드포트 연결
+				svcService.createNodePortService(createSvcReqDTO);
+			}
+		} catch (Exception e) {
+			throw new RestApiException(DeployErrorCode.FAILED_CREATE_DEPLOY);
+		}
+		return createJobResDTO;
+	}
+
 
 	@Override
 	public Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType) {

@@ -18,6 +18,7 @@ import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulecommon.util.ValidUtils;
+import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
@@ -213,7 +214,10 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public void deleteDistributedWorkload(String workspaceName, String workloadName) {
 		workloadRepository.deleteDistributedWorkload(workspaceName, workloadName);
 	}
-
+	@Override
+	public String deleteDeployment(String workspaceName, String deployJobResourceName) {
+		return workloadRepository.deleteDeployment(workspaceName, deployJobResourceName);
+	}
 	@Override
 	public ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName,
 		WorkloadType workloadType) {
@@ -463,6 +467,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName) {
 		return workloadRepository.getWorkloadRecentlyEvent(workloadName, workspaceName);
+	}
+
+	@Override
+	public CreateJobResDTO createDeployWorkload(ModuleCreateDeployReqDTO moduleCreateDeployReqDTO, String workspaceName) {
+		return workloadRepository.createDeployWorkload(moduleCreateDeployReqDTO.toDeployVO(workspaceName));
 	}
 
 	@Override

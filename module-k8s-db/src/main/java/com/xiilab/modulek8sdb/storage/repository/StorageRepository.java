@@ -20,4 +20,8 @@ public interface StorageRepository extends JpaRepository<StorageEntity, Long> {
 
 	@Query("select s from StorageEntity s where s.deleteYN = 'N'")
 	List<StorageEntity> findAll();
+
+	@Query("select s from StorageEntity s where s.defaultStorageYN = 'Y'")
+	StorageEntity getDefaultStorage();
+
 }

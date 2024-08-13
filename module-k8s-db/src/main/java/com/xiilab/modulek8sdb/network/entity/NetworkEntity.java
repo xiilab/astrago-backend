@@ -30,9 +30,6 @@ public class NetworkEntity {
 	@Column(name = "NETWORK_CLOSE_YN")
 	private NetworkCloseYN networkCloseYN;
 
-	@Column(name = "PRIVATE_REPOSITORY_URL")
-	private String privateRepositoryUrl;
-
 	@Column(name = "INIT_CONTAINER_IMAGE_URL")
 	@Comment("init container 용 도커 이미지 경로")
 	private String initContainerImageUrl;
@@ -41,16 +38,7 @@ public class NetworkEntity {
 	@Comment("로컬 데이터 셋, 모델 용 도커 이미지 경로")
 	private String localVolumeImageUrl;
 
-	public String getInitContainerURL(){
-		return networkCloseYN == NetworkCloseYN.Y ? privateRepositoryUrl + initContainerImageUrl : initContainerImageUrl;
-	}
-	public String getLocalVolumeImageURL(){
-		return networkCloseYN == NetworkCloseYN.Y ? privateRepositoryUrl + localVolumeImageUrl : localVolumeImageUrl;
-	}
 	public void modifyNetworkStatus(NetworkCloseYN networkCloseYN){
 		this.networkCloseYN = networkCloseYN;
-	}
-	public void modifyPrivateRepositoryUrl(String privateRepositoryUrl){
-		this.privateRepositoryUrl = privateRepositoryUrl;
 	}
 }

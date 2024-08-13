@@ -78,4 +78,7 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected String getUniqueResourceName() {
 		return ResourceType.WORKLOAD.getName() + "-" + UUID.randomUUID();
 	}
+	public void modifyImage(ModuleImageReqDTO image){
+		this.image = image;
+	}
 }
