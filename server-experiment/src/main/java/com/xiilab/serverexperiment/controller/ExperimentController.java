@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,6 +47,13 @@ public class ExperimentController {
 	) {
 		return new ResponseEntity<>(
 			experimentDataService.searchExperimentsGraphData(id, experiments), HttpStatus.OK);
+	}
+
+	@PostMapping("/metrics")
+	public ResponseEntity<List<ExperimentDataDTO.SearchRes>> searchExperimentsGraphDataMetrics(
+		@RequestBody @Validated ExperimentDataDTO.SearchReq trainDataDTO
+	) {
+		return new ResponseEntity<>(experimentDataService.getGraphMetrics(trainDataDTO), HttpStatus.OK);
 	}
 
 	@GetMapping("/table")
