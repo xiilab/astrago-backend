@@ -18,6 +18,7 @@ import com.xiilab.servercore.deploy.service.DeployFacadeServiceImpl;
 import com.xiilab.servercore.deploy.service.DeployService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,7 +32,7 @@ public class DeployController {
 	public ResponseEntity<HttpStatus> createDeploy(
 		@RequestPart(name = "createDeploy") CreateDeployReqDTO createDeployReqDTO,
 		@RequestPart(name = "tritonConfigFile", required = false) MultipartFile tritonConfigFile,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	){
 		deployFacadeService.createDeploy(createDeployReqDTO, tritonConfigFile, userInfoDTO);
 		return null;
