@@ -60,7 +60,9 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 	public void setNodeName(String nodeName){
 		this.nodeName = nodeName;
 	}
-
+	public void setPorts(List<ModulePortReqDTO> ports){
+		this.ports = ports;
+	}
 	public ModuleCreateDeployReqDTO toTritonModuleDTO(List<ModuleVolumeReqDTO> volumes) {
 		if(deployType == DeployType.TRITON){
 			ModuleImageReqDTO imageReqDTO = ModuleImageReqDTO.builder()

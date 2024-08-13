@@ -29,6 +29,7 @@ import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.K8sVolumeService;
+import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -165,6 +166,13 @@ public class DeployFacadeServiceImpl {
 					.createPV(createPV)
 					.createPVC(createPVC)
 					.build();
+				//ports 설정
+				List<ModulePortReqDTO> ports = new ArrayList<>();
+				ports.add(new ModulePortReqDTO("HTTP", 8000));
+				ports.add(new ModulePortReqDTO("GRPC", 8001));
+				ports.add(new ModulePortReqDTO("PROMETHEUS", 8002));
+				createDeployReqDTO.setPorts(ports);
+
 				//triton deployment 생성
 				CreateJobResDTO deployWorkload = workloadModuleFacadeService.createDeployWorkload(
 					createDeployReqDTO.toTritonModuleDTO(List.of(volume)));
