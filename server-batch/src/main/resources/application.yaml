@@ -64,7 +64,8 @@ admin:
   name: admin
   password: xiirocks
   init-password: xiirocks
-
+astrago:
+  private-registry-url: ""
 mig-profile-path: src/main/resources/MigProfile.json
 prometheus:
   url: http://10.61.3.12:30090/

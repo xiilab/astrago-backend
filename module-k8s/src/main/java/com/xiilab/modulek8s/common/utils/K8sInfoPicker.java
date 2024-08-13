@@ -66,7 +66,7 @@ public class K8sInfoPicker {
 	 * @return true -> astrago에서 생성한 resource, false -> astrago에서 생성하지 않은 resource
 	 */
 	public static boolean isAstragoResource(HasMetadata resource) {
-		return resource.getMetadata().getName().contains("wl-");
+		return resource.getMetadata().getName().contains("wl-") || resource.getMetadata().getName().contains("deploy-");
 	}
 
 	/**
