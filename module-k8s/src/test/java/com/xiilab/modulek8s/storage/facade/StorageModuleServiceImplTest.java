@@ -35,6 +35,7 @@
 // import com.xiilab.modulek8s.config.K8sAdapter;
 // import com.xiilab.modulek8s.facade.dto.CreateLocalDatasetDTO;
 // import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
+// import com.xiilab.modulek8s.facade.dto.SecretDTO;
 // import com.xiilab.modulek8s.facade.storage.StorageModuleServiceImpl;
 // import com.xiilab.modulek8s.facade.dto.CreateVolumeDTO;
 // import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -70,7 +71,10 @@
 // import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 // import io.fabric8.kubernetes.api.model.Pod;
 // import io.fabric8.kubernetes.api.model.PodCondition;
+// import io.fabric8.kubernetes.api.model.PodList;
 // import io.fabric8.kubernetes.api.model.Quantity;
+// import io.fabric8.kubernetes.api.model.Secret;
+// import io.fabric8.kubernetes.api.model.SecretBuilder;
 // import io.fabric8.kubernetes.api.model.Volume;
 // import io.fabric8.kubernetes.api.model.VolumeBuilder;
 // import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -96,7 +100,7 @@
 //
 // @SpringBootTest
 // @ContextConfiguration(classes = TestConfiguration.class)
-// @ActiveProfiles("test")
+// // @ActiveProfiles("test")
 // class StorageModuleServiceImplTest {
 // 	private static final Logger log = LoggerFactory.getLogger(StorageModuleServiceImplTest.class);
 //
@@ -929,53 +933,6 @@
 // 	}
 //
 // 	@Test
-// 	void insertIbmSec(){
-// 		SecretDTO secretDTO = SecretDTO.builder()
-// 			.secretName("test-secret")
-// 			.userName("testUserName")
-// 			.password("testPassword")
-// 			.build();
-//
-// 		try (KubernetesClient client = k8sAdapter.configServer()) {
-// 			Secret secret = new SecretBuilder()
-// 				.withNewMetadata()
-// 				.withName(secretDTO.getSecretName())
-// 				.withNamespace("ibm")
-// 				.endMetadata()
-// 				.withType("Opaque")
-// 				.addToData("username", secretDTO.getUserName())
-// 				.addToData("password", Base64.getEncoder()
-// 					.encodeToString(secretDTO.getPassword().getBytes(StandardCharsets.UTF_8)))
-// 				.build();
-// 			client.secrets()
-// 				.resource(secret)
-// 				.serverSideApply();
-// 			Secret ibmSecret = client.secrets().inNamespace("ibm").withName(secret.getMetadata().getName()).get();
-//
-// 			if(ibmSecret.getMetadata().getName().equals(secretDTO.getSecretName())){
-// 				client.secrets().inNamespace("ibm").withName(secret.getMetadata().getName()).delete();
-// 			}
-// 		}
-// 	}
-//
-// 	@Test
-// 	void createIbmStorage(){
-// 		StorageClass storageClass = new StorageClassBuilder()
-// 			.withNewMetadata()
-// 			.withName("ibm-block-" + "test-storage")
-// 			.endMetadata()
-// 			.withProvisioner("block.csi.ibm.com")
-// 			.addToParameters("pool", "demo-pool")
-// 			.addToParameters("SpaceEfficiency", "thin")
-// 			.addToParameters("virt_snap_func", "false")
-// 			.addToParameters("csi.storage.k8s.io/fstype", "xfs")
-// 			.addToParameters("csi.storage.k8s.io/secret-name", secretName)
-// 			.addToParameters("csi.storage.k8s.io/secret-namespace", "default")
-// 			.withAllowVolumeExpansion(true)
-// 			.build();
-// 	}
-//
-// 	@Test
 // 	void test2(){
 // 		try (KubernetesClient client = k8sAdapter.configServer()) {
 // 			Job job = client.batch().v1().jobs().inAnyNamespace()
@@ -1030,6 +987,16 @@
 // 				.withLabel("nvidia.com/mps.capable", "true")
 // 				.list()
 // 				.getItems();
+// 		}
+// 	}
+// 	@Test
+// 	void test1231(){
+// 		try (KubernetesClient client = k8sAdapter.configServer()) {
+// 			PodList pods = client.pods()
+// 				.inNamespace("ws-e95611a8-25e2-4219-97c6-60b7d4363f1d")
+// 				.withLabel("app", "deploy-5cd64fe0-25f4-4a04-96c5-84735a530efa")
+// 				.list();
+// 			System.out.println(pods);
 // 		}
 // 	}
 // }

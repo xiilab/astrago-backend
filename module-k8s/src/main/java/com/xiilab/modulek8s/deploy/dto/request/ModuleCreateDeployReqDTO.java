@@ -63,7 +63,7 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 			.creatorUserName(this.getCreatorUserName())
 			.creatorFullName(this.getCreatorFullName())
 			.image(this.image.toJobImageVO(this.workspace))
-			.volumes(this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList())
+			.volumes(this.volumes != null ? this.volumes.stream().map(ModuleVolumeReqDTO::toJobVolumeVO).toList() : null)
 			.ports(this.ports.stream().map(ModulePortReqDTO::toJobPortVO).toList())
 			.envs(this.envs.stream().map(ModuleEnvReqDTO::toJobEnvVO).toList())
 			.command(this.command)

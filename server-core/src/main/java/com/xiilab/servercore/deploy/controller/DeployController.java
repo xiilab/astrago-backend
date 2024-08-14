@@ -20,6 +20,7 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.dataset.dto.DatasetDTO;
 import com.xiilab.servercore.deploy.dto.CreateDeployReqDTO;
 import com.xiilab.servercore.deploy.dto.ResDeploys;
+import com.xiilab.servercore.deploy.dto.ResReplica;
 import com.xiilab.servercore.deploy.service.DeployFacadeServiceImpl;
 import com.xiilab.servercore.deploy.service.DeployService;
 
@@ -52,4 +53,16 @@ public class DeployController {
 		ResDeploys deploys = deployFacadeService.getDeploys(workspaceResourceName, deploySearchCondition);
 		return new ResponseEntity<>(deploys, HttpStatus.OK);
 	}
+	@GetMapping("/deploys/replicas")
+	@Operation(summary = "replica 리스트 조회")
+	public ResponseEntity<List<ResReplica>> getReplicasByDeployResourceName(
+		@RequestParam(value = "workspaceResourceName") String workspaceResourceName,
+		@RequestParam(value = "deployResourceName") String deployResourceName
+	){
+		List<ResReplica> replicas = deployFacadeService.getReplicasByDeployResourceName(
+			workspaceResourceName, deployResourceName);
+		return new ResponseEntity<>(replicas, HttpStatus.OK);
+	}
+
+
 }
