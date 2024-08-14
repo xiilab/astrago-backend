@@ -271,6 +271,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.replica(moduleDeployResDTO.getReplica())
 			.deployType(moduleDeployResDTO.getDeployType())
 			.modelRepoEntity(modelRepoEntity)
+			.modelVersion(moduleDeployResDTO.getModelVersion())
 			.build();
 
 		deployRepository.save(deployEntity);

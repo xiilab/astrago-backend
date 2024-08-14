@@ -86,6 +86,7 @@ public class DeployVO extends K8SResourceReqVO {
 	private String workingDir;        // 명령어를 실행 할 path
 	private String command;        // 워크로드 명령
 	private String jobName;
+	private String modelVersion;
 	private int replica;
 	protected long deployModelId;
 	protected DeployType deployType;
@@ -144,6 +145,7 @@ public class DeployVO extends K8SResourceReqVO {
 			ValidUtils.isNullOrZero(this.resourcePresetId) ? "" : String.valueOf(this.resourcePresetId));
 		annotationMap.put(AnnotationField.DEPLOY_TYPE.getField(), this.deployType.name());
 		annotationMap.put(AnnotationField.DEPLOY_MODEL_ID.getField(), String.valueOf(this.deployModelId));
+		annotationMap.put(AnnotationField.DEPLOY_MODEL_VERSION.getField(), String.valueOf(this.modelVersion));
 		return annotationMap;
 	}
 
