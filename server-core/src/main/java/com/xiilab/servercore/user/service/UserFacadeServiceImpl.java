@@ -167,6 +167,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void joinAdmin(UserReqVO userReqVO) {
 		String userId = userService.joinAdmin(userReqVO);
+		userService.joinDefaultGroup(userId);
 		//admin alert 정보 입력
 		alertService.initializeAdminAlertMappingSettings(userId);
 	}
