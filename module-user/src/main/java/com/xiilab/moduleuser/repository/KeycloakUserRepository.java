@@ -527,6 +527,7 @@ public class KeycloakUserRepository implements UserRepository {
 		UserResource userResource = getUserResourceById(userRep.getId());
 		userResource.resetPassword(userReqVO.createCredentialRep());
 		userResource.roles().realmLevel().add(List.of(getRolerepByName(AuthType.ROLE_ADMIN.name())));
+		joinDefaultGroup(userRep.getId());
 		return userRep.getId();
 	}
 }
