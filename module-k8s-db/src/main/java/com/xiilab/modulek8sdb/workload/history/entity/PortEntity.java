@@ -41,6 +41,10 @@ public class PortEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkloadEntity workload;
 
+	public void setWorkload(WorkloadEntity workload){
+		this.workload = workload;
+		workload.getPortList().add(this);
+	}
 	public static List<PortEntity> generatePortList(Map<String, Integer> ports, WorkloadEntity workload) {
 		if (CollectionUtils.isEmpty(ports)) {
 			return Collections.emptyList();

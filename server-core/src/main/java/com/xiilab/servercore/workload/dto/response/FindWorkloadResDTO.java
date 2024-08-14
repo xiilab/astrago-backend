@@ -75,6 +75,9 @@ public class FindWorkloadResDTO extends ResDTO {
 	protected Integer resourcePresetId;
 	protected String endTime;
 
+	public void setPorts(List<FindWorkloadResDTO.Port> ports){
+		this.ports = ports;
+	}
 	@Getter
 	@SuperBuilder
 	public static class SingleWorkloadDetail extends FindWorkloadResDTO {
@@ -339,11 +342,13 @@ public class FindWorkloadResDTO extends ResDTO {
 	public static class Port {
 		private String name;
 		private Integer port;
+		private Integer targetPort;
 		private String url;
 
 		public Port(PortEntity port) {
 			this.name = port.getName();
 			this.port = port.getPortNum();
+			this.targetPort = port.getTargetPortNum();
 		}
 
 		public Port(String name, Integer port, String url) {
