@@ -42,11 +42,10 @@ public class ExperimentController {
 
 	@GetMapping("/chart/{id}")
 	public ResponseEntity<ExperimentDataDTO.ChartRes> searchExperimentsGraphData(
-		@PathVariable(name = "id") Long id,
-		@RequestParam(name = "experiments") List<String> experiments
+		@PathVariable(name = "id") Long id
 	) {
 		return new ResponseEntity<>(
-			experimentDataService.searchExperimentsGraphData(id, experiments), HttpStatus.OK);
+			experimentDataService.searchExperimentsGraphData(id), HttpStatus.OK);
 	}
 
 	@PostMapping("/metrics")
