@@ -25,6 +25,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DeployErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
+import com.xiilab.modulek8s.deploy.repository.DeployK8sRepository;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
@@ -45,10 +46,12 @@ import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.deploy.dto.CreateDeployReqDTO;
 import com.xiilab.servercore.deploy.dto.ResDeploys;
+import com.xiilab.servercore.deploy.dto.ResReplica;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.storage.service.StorageService;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,6 +70,7 @@ public class DeployFacadeServiceImpl {
 	private final StorageService storageService;
 	private final K8sVolumeService k8sVolumeService;
 	private final DeployRepository deployRepository;
+	private final DeployK8sRepository deployK8sRepository;
 
 	@Transactional
 	public void createDeploy(CreateDeployReqDTO createDeployReqDTO, MultipartFile tritonConfigFile, UserDTO.UserInfo userInfoDTO) {
@@ -294,5 +298,17 @@ public class DeployFacadeServiceImpl {
 		List<DeployEntity> content = deploys.getContent();
 		long totalCount = deploys.getTotalElements();
 		return ResDeploys.entitiesToDtos(content, totalCount);
+	}
+
+	public List<ResReplica> getReplicasByDeployResourceName(String workspaceResourceName, String deployResourceName) {
+		List<ResReplica> replicas = new ArrayList<>();
+		List<Pod> pods = deployK8sRepository.getReplicasByDeployResourceName(
+			workspaceResourceName, deployResourceName);
+		for (int i = 0; i < pods.size(); i++) {
+			String replicaName = "replica_" + (i + 1);
+			String podResourceName = pods.get(i).getMetadata().getName();
+			replicas.add(new ResReplica(replicaName, podResourceName));
+		}
+		return replicas;
 	}
 }
