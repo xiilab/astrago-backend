@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
+import com.xiilab.modulecommon.enums.WorkloadType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class ExperimentQueryResult {
 	private String workloadResourceName;
 	private String workspaceName;
 	private WorkloadStatus status;
+	private WorkloadType type;
 	private String username;
 	private boolean isView;
 	private List<LabelDTO> labels = new ArrayList<>();
@@ -39,6 +41,7 @@ public class ExperimentQueryResult {
 		private String workloadResourceName;
 		private String workspaceName;
 		private WorkloadStatus status;
+		private WorkloadType type;
 		private String username;
 		private boolean isView;
 	}
