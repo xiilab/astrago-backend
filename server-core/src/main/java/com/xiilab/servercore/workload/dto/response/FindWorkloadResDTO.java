@@ -150,7 +150,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.workSpaceResourceName(workloadEntity.getWorkspaceResourceName())
 				.description(workloadEntity.getDescription())
 				.workloadType(workloadEntity.getWorkloadType())
-				.image(new Image(workloadEntity.getImage()))
+				.image(new Image(workloadEntity.getImageWorkloadMappingEntity().getImage()))
 				.ports(workloadEntity.getPortList().stream().map(Port::new).toList())
 				.envs(workloadEntity.getEnvList().stream().map(Env::new).toList())
 				.datasets(workloadEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
@@ -251,7 +251,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.workSpaceResourceName(distributedJobEntity.getWorkspaceResourceName())
 				.description(distributedJobEntity.getDescription())
 				.workloadType(distributedJobEntity.getWorkloadType())
-				.image(new Image(distributedJobEntity.getImage()))
+				.image(new Image(distributedJobEntity.getImageWorkloadMappingEntity().getImage()))
 				.ports(distributedJobEntity.getPortList().stream().map(Port::new).toList())
 				.envs(distributedJobEntity.getEnvList().stream().map(Env::new).toList())
 				.datasets(distributedJobEntity.getDatasetWorkloadMappingList().stream().map(Volume::new).toList())
@@ -300,7 +300,9 @@ public class FindWorkloadResDTO extends ResDTO {
 			super(imageEntity.getRegUser().getRegUserId(), imageEntity.getRegUser().getRegUserName(),
 				imageEntity.getRegUser().getRegUserRealName(), imageEntity.getRegDate(), imageEntity.getModDate());
 			this.id = imageEntity.getId();
-			this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)imageEntity).getTitle() :
+			// this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)imageEntity).getTitle() :
+			// 	imageEntity.getImageName();
+			this.title = imageEntity.isBuiltInImage() ? ((BuiltInImageEntity)Hibernate.unproxy(imageEntity)).getTitle() :
 				imageEntity.getImageName();
 			this.name = imageEntity.getImageName();
 			this.type = imageEntity.getImageType();
