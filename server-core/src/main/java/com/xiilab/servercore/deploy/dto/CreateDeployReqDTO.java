@@ -95,9 +95,9 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 				.imageSecretName(imageSecretName)
 				.replica(replica)
 				.imageType(ImageType.BUILT)
-				.volumes(volumes)
 				.deployType(deployType)
 				.deployModelId(modelId)
+				.modelVersion(modelVersion)
 				.build();
 		}else{
 			return ModuleCreateDeployReqDTO.builder()

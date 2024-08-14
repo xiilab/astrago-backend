@@ -46,6 +46,8 @@ public class DeployEntity extends WorkloadEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "MODEL_REPO_ID")
 	private ModelRepoEntity modelRepoEntity;
+	@Column(name = "MODEL_VERSION")
+	private String modelVersion;
 
 	@Builder
 	public DeployEntity(String uid, String name, String description, String resourceName, String workspaceName,
@@ -54,7 +56,8 @@ public class DeployEntity extends WorkloadEntity {
 		Map<String, String> envs,
 		Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
 		DeleteYN deleteYN, String ide, String workingDir,
-		WorkloadStatus workloadStatus, int replica, DeployType deployType, ModelRepoEntity modelRepoEntity) {
+		WorkloadStatus workloadStatus, int replica, DeployType deployType, ModelRepoEntity modelRepoEntity,
+		String modelVersion) {
 		this.uid = uid;
 		this.name = name;
 		this.description = description;
@@ -84,5 +87,6 @@ public class DeployEntity extends WorkloadEntity {
 		this.replica = replica;
 		this.deployType = deployType;
 		this.modelRepoEntity = modelRepoEntity;
+		this.modelVersion = modelVersion;
 	}
 }

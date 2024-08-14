@@ -9,7 +9,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,13 +35,16 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.deploy.dto.DeploySearchCondition;
+import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
+import com.xiilab.modulek8sdb.deploy.repository.DeployRepository;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelVersionEntity;
-import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.deploy.dto.CreateDeployReqDTO;
+import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.storage.service.StorageService;
@@ -62,6 +66,7 @@ public class DeployFacadeServiceImpl {
 	private final ModelRepoFacadeService modelRepoFacadeService;
 	private final StorageService storageService;
 	private final K8sVolumeService k8sVolumeService;
+	private final DeployRepository deployRepository;
 
 	@Transactional
 	public void createDeploy(CreateDeployReqDTO createDeployReqDTO, MultipartFile tritonConfigFile, UserDTO.UserInfo userInfoDTO) {
@@ -280,5 +285,14 @@ public class DeployFacadeServiceImpl {
 			}
 			return createWorkloadNodeName;
 		}
+	}
+
+	public ResDeploys getDeploys(String workspaceResourceName, DeploySearchCondition deploySearchCondition) {
+		PageRequest pageRequest = PageRequest.of(deploySearchCondition.getPageNo(), deploySearchCondition.getPageSize());
+		PageImpl<DeployEntity> deploys = deployRepository.getDeploys(workspaceResourceName, deploySearchCondition,
+			pageRequest);
+		List<DeployEntity> content = deploys.getContent();
+		long totalCount = deploys.getTotalElements();
+		return ResDeploys.entitiesToDtos(content, totalCount);
 	}
 }

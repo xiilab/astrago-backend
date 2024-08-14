@@ -19,6 +19,7 @@ public class ModuleDeployResDTO extends AbstractSingleWorkloadResDTO {
 	private Integer replica;
 	private DeployType deployType;
 	private Long deployModelId;
+	private String modelVersion;
 	public ModuleDeployResDTO(Deployment deployment) {
 		super(deployment);
 		Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
@@ -44,6 +45,7 @@ public class ModuleDeployResDTO extends AbstractSingleWorkloadResDTO {
 			deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_TYPE.getField()));
 		this.deployModelId = Long.valueOf(
 			deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_MODEL_ID.getField()));
+		this.modelVersion = deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_MODEL_VERSION.getField());
 	}
 
 	@Override

@@ -43,6 +43,7 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 	protected String imageSecretName;
 	protected String nodeName;
 	protected String gpuName;
+	protected String modelVersion;
 	protected GPUType gpuType;
 	protected Integer gpuOnePerMemory;
 	protected Integer resourcePresetId;
@@ -79,6 +80,7 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 			.replica(this.replica)
 			.deployType(this.deployType)
 			.deployModelId(this.deployModelId)
+			.modelVersion(this.modelVersion)
 			.build();
 	}
 	protected void initializeCollection() {

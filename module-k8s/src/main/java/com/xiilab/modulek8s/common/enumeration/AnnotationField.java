@@ -39,6 +39,7 @@ public enum AnnotationField {
 	RESOURCE_PRESET_ID("resource-preset-id"),
 	DEPLOY_TYPE("deploy-type"),
 	DEPLOY_MODEL_ID("deploy-model-id"),
+	DEPLOY_MODEL_VERSION("deploy-model-version"),
 	;
 
 	private final String field;
