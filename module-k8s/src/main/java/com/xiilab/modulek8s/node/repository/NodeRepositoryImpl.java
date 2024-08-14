@@ -165,7 +165,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 			for (Node node : nodes) {
 				boolean migCapable = getMigCapable(node);
 				boolean mpsCapable = getMpsCapable(node);
-				boolean isActiveMIG = isActiveMIG(node);
+				boolean isActiveMIG = isActiveMIGYN(node);
 				boolean isActiveMPS = isActiveMPS(node);
 				boolean migStatus = getMigStatus(node);
 				boolean isMasterNode = isMasterNode(node);
@@ -256,6 +256,18 @@ public class NodeRepositoryImpl implements NodeRepository {
 			node.getMetadata().getLabels().get("nvidia.com/mig.capable"));
 
 		return migConfigStatus && migCapableStatus;
+	}
+
+	private boolean isActiveMIGYN(Node node) {
+		String migConfigStatus = node.getMetadata().getLabels().get(MIG_CONFIG);
+		if (Objects.isNull(migConfigStatus)) {
+			return false;
+		}
+		MigStatus migStatus = MigStatus.valueOf(migConfigStatus.toUpperCase());
+		return switch (migStatus) {
+			case SUCCESS, FAILED -> false;
+			case PENDING, REBOOTING -> true;
+		};
 	}
 
 	private boolean isActiveMPS(Node node) {

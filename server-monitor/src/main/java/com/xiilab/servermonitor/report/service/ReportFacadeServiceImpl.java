@@ -146,25 +146,25 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 		String startDate = DataConverterUtil.getEndDate(endDate, reportType);
 
 		List<ResponseDTO.HistoryDTO> nodeInfo = prometheusService.getHistoryMetricBySystem(
-			"REPORT_SYSTEM_NODE_INFO", startDate, endDate);
+			"REPORT_SYSTEM_NODE_INFO", endDate, endDate);
 
 		List<ResponseDTO.HistoryDTO> cpuInfo = prometheusService.getHistoryMetricBySystem(
-			"REPORT_SYSTEM_INFO_CPU", startDate, endDate);
+			"REPORT_SYSTEM_INFO_CPU", endDate, endDate);
 
 		List<ResponseDTO.HistoryDTO> memInfo = prometheusService.getHistoryMetricBySystem(
-			"REPORT_SYSTEM_INFO_MEM", startDate, endDate);
+			"REPORT_SYSTEM_INFO_MEM", endDate, endDate);
 
 		List<ResponseDTO.HistoryDTO> diskInfo = prometheusService.getHistoryMetricBySystem(
-			"REPORT_SYSTEM_INFO_DISK", startDate, endDate);
+			"REPORT_SYSTEM_INFO_DISK", endDate, endDate);
 
 		List<ResponseDTO.HistoryDTO> gpuInfo = prometheusService.getHistoryMetricBySystem(
-			"REPORT_SYSTEM_INFO_GPU", startDate, endDate);
+			"REPORT_SYSTEM_INFO_GPU", endDate, endDate);
 
 		List<ResponseDTO.HistoryDTO> osInfo = prometheusService.getHistoryMetricBySystem(
-			"REPORT_SYSTEM_INFO_OS", startDate, endDate);
+			"REPORT_SYSTEM_INFO_OS", endDate, endDate);
 
 		List<ResponseDTO.HistoryDTO> gpuModel = prometheusService.getHistoryMetricBySystem(
-			"REPORT_SYSTEM_INFO_GPU_MODEL", startDate, endDate);
+			"REPORT_SYSTEM_INFO_GPU_MODEL", endDate, endDate);
 
 		nodeInfo.addAll(cpuInfo);
 		nodeInfo.addAll(memInfo);
