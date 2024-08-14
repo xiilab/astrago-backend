@@ -553,7 +553,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					.targetPortNum(servicePort.getNodePort())
 					.build();
 				portEntity.setWorkload(jobEntity);
-				portRepository.save(portEntity);
+				portRepository.saveAndFlush(portEntity);
 			}
 		}
 		saveMappings(interactiveJobResDTO, jobEntity);
