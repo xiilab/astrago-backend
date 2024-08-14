@@ -40,9 +40,9 @@ public class ExperimentDataDTO {
 		private final List<String> yAxis;
 		private final Double yAxisMin;
 		private final Double yAxisMax;
-		private final List<SearchRes> chartList;
+		// private final List<SearchRes> chartList;
 
-		public ChartRes(ChartEntity chartEntity, List<SearchRes> searchRes) {
+		public ChartRes(ChartEntity chartEntity) {
 			this.title = chartEntity.getTitle();
 			this.xAxis = chartEntity.getXAxis();
 			this.xAxisMin = chartEntity.getXAxisMin();
@@ -50,7 +50,7 @@ public class ExperimentDataDTO {
 			this.yAxis = chartEntity.getYAxis();
 			this.yAxisMin = chartEntity.getYAxisMin();
 			this.yAxisMax = chartEntity.getYAxisMax();
-			this.chartList = searchRes;
+			// this.chartList = searchRes;
 		}
 	}
 

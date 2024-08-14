@@ -60,14 +60,11 @@ public class ExperimentDataService {
 	}
 
 	public ExperimentDataDTO.ChartRes searchExperimentsGraphData(
-		Long id,
-		List<String> experiments) {
+		Long id) {
 		Optional<ChartEntity> chartOpt = chartRepository.findById(id);
 		if (chartOpt.isPresent()) {
 			ChartEntity chartEntity = chartOpt.get();
-			List<ExperimentDataDTO.SearchRes> searchRes = experimentCustomRepository.searchExperimentsGraphData(
-				experiments, chartEntity);
-			return new ExperimentDataDTO.ChartRes(chartEntity, searchRes);
+			return new ExperimentDataDTO.ChartRes(chartEntity);
 		} else {
 			return null;
 		}
