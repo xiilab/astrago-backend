@@ -38,6 +38,7 @@ public class PortEntity {
 	private Integer targetPortNum;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "WORKLOAD_ID")
+	@Column(name = "WORKLOAD_ID")
 	private WorkloadEntity workload;
 
 	public void setWorkload(WorkloadEntity workload){
