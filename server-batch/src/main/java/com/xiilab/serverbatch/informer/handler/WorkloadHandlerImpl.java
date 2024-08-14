@@ -545,8 +545,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		String resourceName = interactiveJobResDTO.getResourceName();
 		List<List<ServicePort>> ports = svcModuleFacadeService.getPortsByWorkloadResourceName(
 			namespace, resourceName);
-		log.info("!@#!@#!@#@!#@!#!@#@!!@#!@#!@#@!#@!#!@#@!!@#!@#!@#@!#@!#!@#@!!@#!@#!@#@!#@!#!@#@!!@#!@#!@#@!#@!#!@#@!");
-		log.info(String.valueOf(ports.size()));
 		for (List<ServicePort> port : ports) {
 			for (ServicePort servicePort : port) {
 				PortEntity portEntity = PortEntity.builder()
@@ -555,8 +553,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 					.targetPortNum(servicePort.getNodePort())
 					.build();
 				portEntity.setWorkload(jobEntity);
-				log.info(portEntity.getName());
-				log.info(portEntity.getWorkload().getName());
 				portRepository.save(portEntity);
 			}
 		}
