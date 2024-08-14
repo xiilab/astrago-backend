@@ -40,6 +40,7 @@ public class ExperimentCustomRepo {
 				workloadEntity.resourceName,
 				workloadEntity.workspaceName,
 				workloadEntity.workloadStatus,
+				workloadEntity.workloadType,
 				workloadEntity.creatorName,
 				experimentEntity.isViewYN
 			))
@@ -89,6 +90,7 @@ public class ExperimentCustomRepo {
 				exp.getWorkloadResourceName(),
 				exp.getWorkspaceName(),
 				exp.getStatus(),
+				exp.getType(),
 				exp.getUsername(),
 				exp.isView(),
 				labelMap.get(exp.getId())
