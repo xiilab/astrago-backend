@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.util.CollectionUtils;
@@ -47,7 +48,7 @@ public class PortEntity {
 	}
 	public static List<PortEntity> generatePortList(Map<String, Integer> ports, WorkloadEntity workload) {
 		if (CollectionUtils.isEmpty(ports)) {
-			return Collections.emptyList();
+			return new ArrayList<>();
 		}
 		return ports.entrySet().stream()
 			.map(entry ->

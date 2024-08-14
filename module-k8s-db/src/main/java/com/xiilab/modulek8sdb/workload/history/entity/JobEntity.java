@@ -71,4 +71,5 @@ public class JobEntity extends WorkloadEntity {
 		this.workloadStatus = workloadStatus;
 		this.parameter = JsonConvertUtil.convertMapToJson(parameter);
 	}
+
 }
