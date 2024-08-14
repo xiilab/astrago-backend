@@ -19,8 +19,6 @@ import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
-import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
@@ -260,22 +258,21 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
 
 		if (ObjectUtils.isEmpty(smtpEntities)) {
-			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
-		}
-		for (SmtpEntity smtpEntity : smtpEntities) {
-			SmtpDTO smtpDTO = SmtpDTO.builder()
-				.host(smtpEntity.getHost())
-				.port(smtpEntity.getPort())
-				.username(smtpEntity.getUserName())
-				.password(smtpEntity.getPassword())
-				.build();
+			for (SmtpEntity smtpEntity : smtpEntities) {
+				SmtpDTO smtpDTO = SmtpDTO.builder()
+					.host(smtpEntity.getHost())
+					.port(smtpEntity.getPort())
+					.username(smtpEntity.getUserName())
+					.password(smtpEntity.getPassword())
+					.build();
 
-			boolean result = mailService.sendMail(mailDTO, smtpDTO);
+				boolean result = mailService.sendMail(mailDTO, smtpDTO);
 
-			smtpEntity.increment();
+				smtpEntity.increment();
 
-			if (result) {
-				break;
+				if (result) {
+					break;
+				}
 			}
 		}
 	}
