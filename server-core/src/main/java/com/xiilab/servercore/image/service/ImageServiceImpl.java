@@ -104,6 +104,11 @@ public class ImageServiceImpl implements ImageService {
 		imageWorkloadMappingRepository.deleteByWorkloadId(jobId);
 	}
 
+	@Override
+	public ImageEntity findBuiltImageByName(String imageName) {
+		return imageRepository.findBuiltImageByName(imageName);
+	}
+
 	private Long saveBuiltInImage(ImageReqDTO.SaveImage saveImageDTO) {
 		BuiltInImageEntity builtInImage = BuiltInImageEntity.builder()
 			.imageName(saveImageDTO.getImageName())

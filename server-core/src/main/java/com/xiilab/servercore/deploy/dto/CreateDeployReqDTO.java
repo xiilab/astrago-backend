@@ -64,13 +64,8 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 	public void setPorts(List<ModulePortReqDTO> ports){
 		this.ports = ports;
 	}
-	public ModuleCreateDeployReqDTO toTritonModuleDTO(List<ModuleVolumeReqDTO> volumes) {
+	public ModuleCreateDeployReqDTO toTritonModuleDTO(List<ModuleVolumeReqDTO> volumes, ModuleImageReqDTO imageReqDTO) {
 		if(deployType == DeployType.TRITON){
-			ModuleImageReqDTO imageReqDTO = ModuleImageReqDTO.builder()
-				.name("nvcr.io/nvidia/tritonserver:23.02-py3")
-				.type(ImageType.BUILT)
-				.repositoryAuthType(RepositoryAuthType.PUBLIC)
-				.build();
 			return ModuleCreateDeployReqDTO.builder()
 				.name(getName())
 				.description(getDescription())

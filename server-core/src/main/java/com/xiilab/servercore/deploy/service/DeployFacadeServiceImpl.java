@@ -5,53 +5,92 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
+import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
+import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
+import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.DeployType;
 import com.xiilab.modulecommon.enums.GPUType;
+import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.RepositoryAuthType;
+import com.xiilab.modulecommon.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DeployErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
+import com.xiilab.modulecommon.util.MailServiceUtils;
+import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.deploy.repository.DeployK8sRepository;
+import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.K8sVolumeService;
+import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractDistributedWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadResDTO;
+import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.deploy.dto.DeploySearchCondition;
 import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
 import com.xiilab.modulek8sdb.deploy.repository.DeployRepository;
+import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelVersionEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
+import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
+import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.servercore.code.dto.CodeResDTO;
+import com.xiilab.servercore.code.service.CodeService;
+import com.xiilab.servercore.credential.dto.CredentialResDTO;
+import com.xiilab.servercore.credential.service.CredentialService;
 import com.xiilab.servercore.deploy.dto.CreateDeployReqDTO;
 import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.deploy.dto.ResReplica;
+import com.xiilab.servercore.image.dto.ImageResDTO;
+import com.xiilab.servercore.image.service.ImageService;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
+import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.storage.service.StorageService;
+import com.xiilab.servercore.user.service.UserFacadeService;
+import com.xiilab.servercore.volume.service.VolumeService;
+import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,7 +101,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DeployFacadeServiceImpl {
 
 	private final NodeFacadeService nodeFacadeService;
-	private final NetworkRepository networkRepository;
 	private final ApplicationEventPublisher eventPublisher;
 	private final WorkspaceService workspaceService;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
@@ -71,6 +109,13 @@ public class DeployFacadeServiceImpl {
 	private final K8sVolumeService k8sVolumeService;
 	private final DeployRepository deployRepository;
 	private final DeployK8sRepository deployK8sRepository;
+	private final CredentialService credentialService;
+	private final VolumeService volumeService;
+	private final ImageService imageService;
+	private final SvcModuleFacadeService svcModuleFacadeService;
+	private final NodeService nodeService;
+	private final CodeService codeService;
+	private final UserFacadeService userFacadeService;
 
 	@Transactional
 	public void createDeploy(CreateDeployReqDTO createDeployReqDTO, MultipartFile tritonConfigFile, UserDTO.UserInfo userInfoDTO) {
@@ -183,8 +228,16 @@ public class DeployFacadeServiceImpl {
 				createDeployReqDTO.setPorts(ports);
 
 				//triton deployment 생성
+				ImageEntity builtImage = imageService.findBuiltImageByName(
+					"nvcr.io/nvidia/tritonserver:23.02-py3");
+				ModuleImageReqDTO imageReqDTO = ModuleImageReqDTO.builder()
+					.id(builtImage.getId())
+					.name(builtImage.getImageName())
+					.type(builtImage.getImageType())
+					.repositoryAuthType(builtImage.getRepositoryAuthType())
+					.build();
 				CreateJobResDTO deployWorkload = workloadModuleFacadeService.createDeployWorkload(
-					createDeployReqDTO.toTritonModuleDTO(List.of(volume)));
+					createDeployReqDTO.toTritonModuleDTO(List.of(volume), imageReqDTO));
 				deployJobResourceName = deployWorkload.getResourceName();
 			}
 			catch (IOException e) {
@@ -310,5 +363,236 @@ public class DeployFacadeServiceImpl {
 			replicas.add(new ResReplica(replicaName, podResourceName));
 		}
 		return replicas;
+	}
+
+	public void stopDeploy(String workspaceResourceName, String deployResourceName, UserDTO.UserInfo userInfoDTO) throws
+		IOException {
+		FindWorkloadResDTO activeSingleWorkloadDetail = null;
+		ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
+			workspaceResourceName, deployResourceName);
+		activeSingleWorkloadDetail = getActiveWorkloadDetail(moduleInteractiveJobResDTO);
+		stopInteractiveJobWorkload(workspaceResourceName, deployResourceName, userInfoDTO);
+
+		if (!ObjectUtils.isEmpty(activeSingleWorkloadDetail)) {
+			PageNaviParam pageNaviParam = PageNaviParam.builder()
+				.workspaceResourceName(activeSingleWorkloadDetail.getWorkSpaceResourceName())
+				.workloadResourceName(activeSingleWorkloadDetail.getWorkloadResourceName())
+				.workloadType(activeSingleWorkloadDetail.getWorkloadType())
+				.build();
+
+			//서비스 종료 알림 발송
+			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), deployResourceName);
+			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
+			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
+				activeSingleWorkloadDetail.getWorkloadName());
+
+			String receiverMail = userFacadeService.getUserInfoById(activeSingleWorkloadDetail.getRegUserId())
+				.getEmail();
+			MailDTO mailDTO = MailServiceUtils.endWorkloadMail(activeSingleWorkloadDetail.getWorkloadName(),
+				receiverMail);
+
+			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
+				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeSingleWorkloadDetail.getRegUserId(), emailTitle,
+				title, message, workspaceResourceName, pageNaviParam, mailDTO);
+			eventPublisher.publishEvent(workspaceUserAlertEvent);
+		}
+
+	}
+
+	private void stopInteractiveJobWorkload(String workSpaceName, String workloadName,
+		UserDTO.UserInfo userInfoDTO) throws
+		IOException {
+		try {
+			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
+				WorkloadType.INTERACTIVE);
+			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
+		} catch (KubernetesClientException | K8sException ignored) {
+
+		}
+		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
+	}
+	private <T extends AbstractModuleWorkloadResDTO> FindWorkloadResDTO getActiveWorkloadDetail(
+		T moduleJobResDTO) {
+		String nodeName = workspaceService.getNodeName(moduleJobResDTO.getWorkspaceResourceName(),
+			moduleJobResDTO.getResourceName());
+		// 이미지 DTO 세팅
+		FindWorkloadResDTO.Image image = generateImageResDTO(moduleJobResDTO);
+		List<FindWorkloadResDTO.Volume> volumes = generateVolumeResDTO(moduleJobResDTO.getVolumeIds(),
+			moduleJobResDTO.getVolumeMountPathMap());
+		// 코드 세팅
+		List<FindWorkloadResDTO.Code> codes = generateCodeResDTO(moduleJobResDTO);
+		// PORT 세팅
+		List<FindWorkloadResDTO.Port> ports = generatePortResDTO(moduleJobResDTO);
+		// ENV 세팅
+		List<FindWorkloadResDTO.Env> envs = moduleJobResDTO.getEnvs()
+			.stream()
+			.map(env -> new FindWorkloadResDTO.Env(env.getName(), env.getValue()))
+			.toList();
+
+		return FindWorkloadResDTO.SingleWorkloadDetail.from((AbstractSingleWorkloadResDTO)moduleJobResDTO, image,
+			volumes, codes, ports, envs,
+			nodeName);
+
+	}
+	private Optional<ResponseDTO.NodeDTO> getConnectedNode() {
+		ResponseDTO.PageNodeDTO nodeList = nodeService.getNodeList(1, 1);
+		return nodeList.getNodes().stream().findFirst();
+	}
+	private <T extends AbstractModuleWorkloadResDTO> List<FindWorkloadResDTO.Port> generatePortResDTO(
+		T moduleJobResDTO) {
+		Optional<ResponseDTO.NodeDTO> node = getConnectedNode();
+		List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+		if (node.isPresent()) {
+			// 서비스 포트 찾기
+			SvcResDTO.FindSvcs findSvcs = svcModuleFacadeService.getServicesByResourceName(
+				moduleJobResDTO.getWorkspaceResourceName(), moduleJobResDTO.getResourceName());
+
+			for (SvcResDTO.FindSvcDetail findSvcDetail : findSvcs.getServices()) {
+				Map<Integer, Integer> portMap = findSvcDetail.getPorts()
+					.stream()
+					.collect(Collectors.toMap(SvcResDTO.Port::getPort, SvcResDTO.Port::getNodePort));
+				ports = moduleJobResDTO.getPorts()
+					.stream()
+					.map(port -> new FindWorkloadResDTO.Port(port.getName(), port.getOriginPort(),
+						node.get().getIp() + ":" + portMap.get(port.getOriginPort())))
+					.toList();
+			}
+		} else {
+			ports = moduleJobResDTO.getPorts()
+				.stream()
+				.map(port -> new FindWorkloadResDTO.Port(port.getName(), port.getOriginPort(), null))
+				.toList();
+		}
+
+		return ports;
+	}
+	private <T extends AbstractModuleWorkloadResDTO> FindWorkloadResDTO.Image generateImageResDTO(T moduleJobResDTO) {
+		if (StringUtils.hasText(String.valueOf(moduleJobResDTO.getImageType()))) {
+			if (moduleJobResDTO.getImageId() == null && moduleJobResDTO.getImageType().equals(ImageType.CUSTOM)) {
+				return createCustomTypeImageDTO(moduleJobResDTO);
+			} else {
+				return createOtherTypeImageDTO(moduleJobResDTO);
+			}
+		} else {
+			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_IMAGE_INFO);
+		}
+	}
+	private <T extends AbstractModuleWorkloadResDTO> FindWorkloadResDTO.Image createCustomTypeImageDTO(
+		T moduleJobResDTO) {
+		CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(moduleJobResDTO.getImageCredentialId());
+
+		return FindWorkloadResDTO.Image.customTypeImageResDTO()
+			.regUserId(moduleJobResDTO.getCreatorId())
+			.regUserName(moduleJobResDTO.getCreatorUserName())
+			.regUserRealName(moduleJobResDTO.getCreatorFullName())
+			.regDate(moduleJobResDTO.getCreatedAt())
+			.title(moduleJobResDTO.getImage())
+			.name(moduleJobResDTO.getImage())
+			.type(moduleJobResDTO.getImageType())
+			.repositoryAuthType(RepositoryAuthType.PUBLIC)
+			.credentialId(findCredential != null ? findCredential.getId() : null)
+			.credentialName(findCredential != null ? findCredential.getName() : null)
+			.build();
+	}
+	private CredentialResDTO.CredentialInfo getCredentialInfoDTO(Long credentialId) {
+		if (!ValidUtils.isNullOrZero(credentialId)) {
+			return credentialService.findCredentialById(credentialId, null);
+		} else {
+			return null;
+		}
+	}
+	private <T extends AbstractModuleWorkloadResDTO> FindWorkloadResDTO.Image createOtherTypeImageDTO(
+		T moduleJobResDTO) {
+		ImageResDTO.FindImage findImage = imageService.findImageById(moduleJobResDTO.getImageId());
+		return FindWorkloadResDTO.Image.otherTypeImageResDTO()
+			.regUserId(findImage.getRegUserId())
+			.regUserName(findImage.getRegUserName())
+			.regUserRealName(findImage.getRegUserRealName())
+			.regDate(findImage.getRegDate())
+			.title(StringUtils.hasText(findImage.getTitle()) ? findImage.getTitle() : findImage.getImageName())
+			.id(findImage.getId())
+			.name(findImage.getImageName())
+			.type(findImage.getImageType())
+			.repositoryAuthType(findImage.getRepositoryAuthType())
+			.build();
+	}
+	private List<FindWorkloadResDTO.Volume> generateVolumeResDTO(String ids, Map<Long, String> mountMap) {
+		List<FindWorkloadResDTO.Volume> datasets = new ArrayList<>();
+		if (StringUtils.hasText(ids)) {
+			String[] splitIds = ids.split(",");
+			for (String s : splitIds) {
+				long volumeId = Long.parseLong(s);
+				Volume findVolume = volumeService.findById(volumeId);
+				FindWorkloadResDTO.Volume datasetVol = FindWorkloadResDTO.Volume.volumeResDTO()
+					.regUserId(findVolume.getRegUser().getRegUserId())
+					.regUserName(findVolume.getRegUser().getRegUserName())
+					.regUserRealName(findVolume.getRegUser().getRegUserRealName())
+					.regDate(findVolume.getRegDate())
+					.modDate(findVolume.getModDate())
+					.id(findVolume.getVolumeId())
+					.name(findVolume.getVolumeName())
+					.mountPath(mountMap.get(findVolume.getVolumeId()))
+					.size(findVolume.getVolumeSize())
+					.division(findVolume.getDivision())
+					.storageType(findVolume.isAstragoVolume() ?
+						((AstragoVolumeEntity)findVolume).getStorageEntity().getStorageType() :
+						((LocalVolumeEntity)findVolume).getStorageType())
+					.deleteYN(findVolume.getDeleteYn())
+					.build();
+				datasets.add(datasetVol);
+			}
+		}
+		return datasets;
+	}
+	private <T extends AbstractModuleWorkloadResDTO> List<FindWorkloadResDTO.Code> generateCodeResDTO(
+		T moduleJobResDTO) {
+		List<FindWorkloadResDTO.Code> codes = new ArrayList<>();
+		if (!CollectionUtils.isEmpty(moduleJobResDTO.getCodes())) {
+			for (ModuleCodeResDTO code : moduleJobResDTO.getCodes()) {
+				FindWorkloadResDTO.Code addCode = null;
+				CredentialResDTO.CredentialInfo findCredential = getCredentialInfoDTO(code.getCredentialId());
+				// 커스텀 코드일 경우
+				if (ValidUtils.isNullOrZero(code.getSourceCodeId())
+					&& code.getRepositoryType() == RepositoryType.CUSTOM) {
+					addCode = FindWorkloadResDTO.Code.codeResDTO()
+						.id(null)
+						.regUserId(moduleJobResDTO.getCreatorId())
+						.regUserName(moduleJobResDTO.getCreatorUserName())
+						.regUserRealName(moduleJobResDTO.getCreatorFullName())
+						.regDate(moduleJobResDTO.getCreatedAt())
+						.title(code.getRepositoryUrl())
+						.repositoryURL(code.getRepositoryUrl())
+						.branch(code.getBranch())
+						.mountPath(code.getMountPath())
+						.codeType(code.getCodeType())
+						.repositoryAuthType(code.getRepositoryAuthType())
+						.credentialId(findCredential != null ? findCredential.getId() : null)
+						.credentialName(findCredential != null ? findCredential.getName() : null)
+						.repositoryType(code.getRepositoryType())
+						.build();
+				} else if (code.getRepositoryType() == RepositoryType.USER
+					|| code.getRepositoryType() == RepositoryType.WORKSPACE) {    // 공유 코드일 경우
+					CodeResDTO findCode = codeService.getCodeById(code.getSourceCodeId());
+					addCode = FindWorkloadResDTO.Code.codeResDTO()
+						.id(findCode.getId())
+						.regUserId(findCode.getRegUser().getRegUserId())
+						.regUserName(findCode.getRegUser().getRegUserName())
+						.regUserRealName(findCode.getRegUser().getRegUserRealName())
+						.regDate(findCode.getRegDate())
+						.title(code.getRepositoryUrl())
+						.repositoryURL(code.getRepositoryUrl())
+						.branch(code.getBranch())
+						.mountPath(code.getMountPath())
+						.codeType(code.getCodeType())
+						.repositoryAuthType(code.getRepositoryAuthType())
+						.credentialId(findCredential != null ? findCredential.getId() : null)
+						.credentialName(findCredential != null ? findCredential.getName() : null)
+						.repositoryType(code.getRepositoryType())
+						.build();
+				}
+				codes.add(addCode);
+			}
+		}
+		return codes;
 	}
 }
