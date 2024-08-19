@@ -353,9 +353,15 @@ public class WorkloadFacadeService {
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 
-		return workloadHistoryService.getWorkloadInfoByResourceName(
+		FindWorkloadResDTO workloadInfo = workloadHistoryService.getWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
+		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
+		String ip = connectedNode.getIp();
+		List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
+			new FindWorkloadResDTO.Port(port.getName(), port.getPort(),ip + ":" + port.getTargetPort())).toList();
+		workloadInfo.setPorts(ports);
+		return workloadInfo;
 		// 실행중일 떄
 		// try {
 		// 	UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());

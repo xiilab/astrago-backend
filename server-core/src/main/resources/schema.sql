@@ -595,7 +595,7 @@ create table if not exists TB_PORT
 );
 
 create index if not exists FKa6gnqfjb69gi5p5akpenxxb7v
-    on TB_PORT (workload_WORKLOAD_ID);
+    on TB_PORT (WORKLOAD_ID);
 
 create table if not exists TB_REPORT_RESERVATION
 (
