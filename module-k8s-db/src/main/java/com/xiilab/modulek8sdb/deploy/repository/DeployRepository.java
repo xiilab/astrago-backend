@@ -11,5 +11,5 @@ import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
 public interface DeployRepository extends JpaRepository<DeployEntity, Long>, DeployRepositoryCustom {
 
 	@Query("select de from TB_DEPLOY de where de.resourceName = :resourceName")
-	Optional<Object> findByResourceName(@Param("resourceName") String resourceName);
+	Optional<DeployEntity> findByResourceName(@Param("resourceName") String resourceName);
 }

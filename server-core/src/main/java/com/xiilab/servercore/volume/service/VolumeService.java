@@ -67,4 +67,5 @@ public interface VolumeService {
 	void updateWorkspaceVolume(UpdateWorkspaceVolumeDTO updateWorkspaceVolumeDTO, String workspaceResourceName,
 		Long volumeId, UserDTO.UserInfo userInfoDTO);
 
+	void deleteVolumeWorkloadMappingByDeployId(Long id);
 }
