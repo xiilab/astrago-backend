@@ -32,7 +32,8 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 	public WorkloadEntity findByWorkspaceNameRecently(String workspace, String username) {
 		return queryFactory
 			.selectFrom(workloadEntity)
-			.where(workloadEntity.workspaceResourceName.eq(workspace).and(workloadEntity.creatorName.eq(username)))
+			.where(workloadEntity.workspaceResourceName.eq(workspace).and(workloadEntity.creatorName.eq(username)),
+				notInWorkloadType(WorkloadType.DEPLOY))
 			.orderBy(workloadEntity.createdAt.desc())
 			.limit(1)
 			.fetchOne();
@@ -43,10 +44,12 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 		WorkloadType workloadType, WorkloadSortCondition sortCondition) {
 		return queryFactory.selectFrom(workloadEntity)
 			.where(workloadEntity.resourceName.in(pinResourceNameList),
-				eqWorkloadType(workloadType))
+				eqWorkloadType(workloadType),
+				notInWorkloadType(WorkloadType.DEPLOY))
 			.orderBy(createOrderSpecifier(sortCondition))
 			.fetch();
 	}
+
 
 	@Override
 	public Page<WorkloadEntity> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType,
@@ -61,7 +64,8 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 				eqUserId(userId),
 				eqWorkloadType(workloadType),
 				workloadStatusEq(workloadStatus),
-				workloadEntity.deleteYN.eq(DeleteYN.N)
+				workloadEntity.deleteYN.eq(DeleteYN.N),
+				notInWorkloadType(WorkloadType.DEPLOY)
 			).orderBy(createOrderSpecifier(workloadSortCondition))
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
@@ -76,7 +80,8 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 				eqUserId(userId),
 				eqWorkloadType(workloadType),
 				workloadStatusEq(workloadStatus),
-				workloadEntity.deleteYN.eq(DeleteYN.N)
+				workloadEntity.deleteYN.eq(DeleteYN.N),
+				notInWorkloadType(WorkloadType.DEPLOY)
 			).fetchOne();
 
 		return new PageImpl<>(jobEntities, pageRequest, totalCount);
@@ -91,7 +96,8 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 				eqName(searchName),
 				eqWorkloadType(workloadType),
 				workloadStatusEq(workloadStatus),
-				workloadEntity.deleteYN.eq(DeleteYN.N)
+				workloadEntity.deleteYN.eq(DeleteYN.N),
+				notInWorkloadType(WorkloadType.DEPLOY)
 			).orderBy(createOrderSpecifier(workloadSortCondition))
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
@@ -104,9 +110,15 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 				eqName(searchName),
 				eqWorkloadType(workloadType),
 				workloadStatusEq(workloadStatus),
-				workloadEntity.deleteYN.eq(DeleteYN.N)
+				workloadEntity.deleteYN.eq(DeleteYN.N),
+				notInWorkloadType(WorkloadType.DEPLOY)
 			).fetchOne();
 		return new PageImpl<>(jobEntities, pageRequest, totalCount);
+	}
+
+	private Predicate notInWorkloadType(WorkloadType workloadType) {
+		return workloadEntity.workloadType.notIn(workloadType);
+
 	}
 
 	private Predicate workloadStatusEq(WorkloadStatus workloadStatus){
