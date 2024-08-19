@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.workload.history.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.util.CollectionUtils;
@@ -12,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.util.Collections;
 import java.util.Map;
@@ -39,11 +41,17 @@ public class PortEntity {
 	@Column(name = "PORT_TARTGET_NUM")
 	private Integer targetPortNum;
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "WORKLOAD_ID")
 	private WorkloadEntity workload;
+
+	public void setWorkload(WorkloadEntity workload){
+		this.workload = workload;
+		workload.getPortList().add(this);
+	}
 
 	public static List<PortEntity> generatePortList(Map<String, Integer> ports, WorkloadEntity workload) {
 		if (CollectionUtils.isEmpty(ports)) {
-			return Collections.emptyList();
+			return new ArrayList<>();
 		}
 		return ports.entrySet().stream()
 			.map(entry ->
