@@ -82,6 +82,7 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 				.creatorId(creatorId)
 				.creatorUserName(creatorUserName)
 				.creatorFullName(creatorFullName)
+				.volumes(volumes)
 				.nodeName(nodeName)
 				.gpuType(gpuType != null? gpuType : GPUType.NORMAL)
 				.gpuName(gpuName)
