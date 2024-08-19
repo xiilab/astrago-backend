@@ -356,6 +356,12 @@ public class FindWorkloadResDTO extends ResDTO {
 			this.port = port;
 			this.url = url;
 		}
+		public Port(String name, Integer port, Integer targetPort, String url) {
+			this.name = name;
+			this.port = port;
+			this.targetPort = targetPort;
+			this.url = url;
+		}
 	}
 
 	@Getter
