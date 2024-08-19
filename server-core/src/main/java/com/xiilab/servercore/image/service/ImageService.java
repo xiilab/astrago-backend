@@ -1,5 +1,6 @@
 package com.xiilab.servercore.image.service;
 
+import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.servercore.image.dto.ImageReqDTO;
 import com.xiilab.servercore.image.dto.ImageResDTO;
 
@@ -13,4 +14,6 @@ public interface ImageService {
 	void deleteImageById(Long id);
 
 	void deleteImageWorkloadMapping(Long jobId);
+
+	ImageEntity findBuiltImageByName(String imageName);
 }

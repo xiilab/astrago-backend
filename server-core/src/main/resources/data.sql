@@ -213,7 +213,9 @@ values (false, 1, null, '2024-07-08 08:49:58.000000', 'HUB', 'xiilab/astrago:hub
        (false, 38, null, '2024-07-08 08:49:58.000000', 'BUILT', 'xiilab/astrago:tensorflow-20.12-cuda11.1', 'SYSTEM',
         'SYSTEM', 'SYSTEM', 'N', 'PUBLIC', 'BATCH'),
        (true, 39, null, '2024-07-08 08:49:58.000000', 'BUILT', 'xiilab/horovod', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
-        'PUBLIC', 'DISTRIBUTED')
+        'PUBLIC', 'DISTRIBUTED'),
+       (true, 40, null, '2024-07-08 08:49:58.000000', 'BUILT', 'nvcr.io/nvidia/tritonserver:23.02-py3', 'SYSTEM', 'SYSTEM', 'SYSTEM', 'N',
+        'PUBLIC', 'DEPLOY')
 ON DUPLICATE KEY UPDATE IMAGE_ID = IMAGE_ID;
 
 -- 허브 이미지 초기값
