@@ -14,6 +14,7 @@ import org.kubeflow.v2beta1.MPIJob;
 import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.Volumes;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -37,6 +38,7 @@ import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
+import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.storage.volume.repository.VolumeRepository;
@@ -71,12 +73,15 @@ import com.xiilab.modulek8sdb.storage.dto.StorageDto;
 import com.xiilab.modulek8sdb.storage.service.StorageService;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
+import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ServiceList;
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -104,6 +109,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final StorageModuleService storageModuleService;
 	private final VolumeRepository volumeRepository;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final PortRepository portRepository;
+	private final SvcModuleFacadeService svcModuleFacadeService;
 
 	@Override
 	public void batchJobAddHandler(Job job) {
@@ -496,7 +503,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
-	private void saveInteractiveWorkloadHistory(String namespace, ModuleInteractiveJobResDTO interactiveJobResDTO) {
+	@Transactional
+	public void saveInteractiveWorkloadHistory(String namespace, ModuleInteractiveJobResDTO interactiveJobResDTO) {
 		//이미 저장된 워크로드 일 경우 조기 리턴
 		if (workloadHistoryRepo.findByResourceName(interactiveJobResDTO.getResourceName()).isPresent()) {
 			return;
@@ -509,7 +517,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.workspaceName(interactiveJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
 			.envs(interactiveJobResDTO.getEnvsMap())
-			.ports(interactiveJobResDTO.getPortsMap())
 			.cpuReq(interactiveJobResDTO.getCpuRequest())
 			.memReq(interactiveJobResDTO.getMemRequest())
 			.gpuReq(interactiveJobResDTO.getGpuRequest())
@@ -533,7 +540,21 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);
-
+		//port entity 생성해야함
+		String resourceName = interactiveJobResDTO.getResourceName();
+		List<List<ServicePort>> ports = svcModuleFacadeService.getPortsByWorkloadResourceName(
+			namespace, resourceName);
+		for (List<ServicePort> port : ports) {
+			for (ServicePort servicePort : port) {
+				PortEntity portEntity = PortEntity.builder()
+					.name(servicePort.getName())
+					.portNum(servicePort.getPort())
+					.targetPortNum(servicePort.getNodePort())
+					.build();
+				portEntity.setWorkload(jobEntity);
+				portRepository.save(portEntity);
+			}
+		}
 		saveMappings(interactiveJobResDTO, jobEntity);
 	}
 

@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.workload.svc.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
@@ -10,6 +12,7 @@ import com.xiilab.modulek8s.workload.svc.vo.ClusterIPSvcVO;
 import com.xiilab.modulek8s.workload.svc.vo.NodeSvcVO;
 
 import io.fabric8.kubernetes.api.model.ServiceList;
+import io.fabric8.kubernetes.api.model.ServicePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,6 +47,11 @@ public class SvcServiceImpl implements SvcService {
 		ServiceList findServiceList = svcRepository.getServicesByResourceName(workspaceResourceName,
 			workloadResourcedName);
 		return SvcResDTO.FindSvcs.from(findServiceList, findServiceList.getItems().size());
+	}
+
+	@Override
+	public List<List<ServicePort>> getPortsByWorkloadResourceName(String namespace, String resourceName) {
+		return svcRepository.getPortsByWorkloadResourceName(namespace, resourceName);
 	}
 
 }
