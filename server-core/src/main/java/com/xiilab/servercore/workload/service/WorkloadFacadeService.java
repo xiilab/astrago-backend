@@ -388,7 +388,7 @@ public class WorkloadFacadeService {
 		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
 		String ip = connectedNode.getIp();
 		List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
-			new FindWorkloadResDTO.Port(port.getName(), port.getPort(),ip + ":" + port.getTargetPort())).toList();
+			new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),ip + ":" + port.getTargetPort())).toList();
 		workloadInfo.setPorts(ports);
 		try {
 			if (workloadInfo.getImage().getType() == ImageType.HUB) {
