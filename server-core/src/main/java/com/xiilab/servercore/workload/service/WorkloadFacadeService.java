@@ -382,20 +382,25 @@ public class WorkloadFacadeService {
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 
-		FindWorkloadResDTO findWorkloadResDTO = workloadHistoryService.getWorkloadInfoByResourceName(
+		FindWorkloadResDTO workloadInfo = workloadHistoryService.getWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
+		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
+		String ip = connectedNode.getIp();
+		List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
+			new FindWorkloadResDTO.Port(port.getName(), port.getPort(),ip + ":" + port.getTargetPort())).toList();
+		workloadInfo.setPorts(ports);
 		try {
-			if (findWorkloadResDTO.getImage().getType() == ImageType.HUB) {
+			if (workloadInfo.getImage().getType() == ImageType.HUB) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
 					workloadResourceName);
-				findWorkloadResDTO.updateHubPredictTime(moduleBatchJobResDTO.getEstimatedInitialTime(),
+				workloadInfo.updateHubPredictTime(moduleBatchJobResDTO.getEstimatedInitialTime(),
 					moduleBatchJobResDTO.getEstimatedRemainingTime());
 			}
 
-			return findWorkloadResDTO;
+			return workloadInfo;
 		} catch (Exception e) {
-			return findWorkloadResDTO;
+			return workloadInfo;
 		}
 
 		// HUB일 떄,
