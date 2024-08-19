@@ -67,7 +67,7 @@ public class DeployController {
 			workspaceResourceName, deployResourceName);
 		return new ResponseEntity<>(replicas, HttpStatus.OK);
 	}
-	@DeleteMapping("/deploys/{deployResourceName}")
+	@DeleteMapping("/deploys/{deployResourceName}/end")
 	@Operation(summary = "서비스 종료 api")
 	public ResponseEntity<HttpStatus> stopDeploy(
 		@RequestParam("workspaceResourceName") String workspaceResourceName,
@@ -75,6 +75,15 @@ public class DeployController {
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) throws IOException {
 		deployFacadeService.stopDeploy(workspaceResourceName, deployResourceName, userInfoDTO);
+		return ResponseEntity.ok().build();
+	}
+	@DeleteMapping("/deploys/{deployResourceName}/delete")
+	@Operation(summary = "서비스 삭제 api")
+	public ResponseEntity<HttpStatus> deleteDeploy(
+		@PathVariable(value = "deployResourceName") String deployResourceName,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
+	) {
+		deployFacadeService.deleteDeploy(deployResourceName, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 

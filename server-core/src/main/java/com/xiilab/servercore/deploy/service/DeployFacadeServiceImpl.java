@@ -27,6 +27,7 @@ import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
+import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.DeployType;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
@@ -71,6 +72,7 @@ import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -116,6 +118,7 @@ public class DeployFacadeServiceImpl {
 	private final NodeService nodeService;
 	private final CodeService codeService;
 	private final UserFacadeService userFacadeService;
+	private final PortRepository portRepository;
 
 	@Transactional
 	public void createDeploy(CreateDeployReqDTO createDeployReqDTO, MultipartFile tritonConfigFile, UserDTO.UserInfo userInfoDTO) {
@@ -594,5 +597,49 @@ public class DeployFacadeServiceImpl {
 			}
 		}
 		return codes;
+	}
+
+	@Transactional
+	public void deleteDeploy(String deployResourceName, UserDTO.UserInfo userInfoDTO) {
+		Optional<DeployEntity> deployEntity = deployRepository.findByResourceName(deployResourceName);
+		if(deployEntity.isPresent()){
+			DeployEntity deploy = deployEntity.get();
+			// owner 권한인 워크스페이스 목록 가져옴
+			List<String> loginUserOwnerWorkspaceList = userInfoDTO.getWorkspaces()
+				.stream()
+				.filter(workspace -> workspace.contains("/owner"))
+				.map(workspace -> workspace.split("/owner")[0])
+				.toList();
+			String workloadName = deploy.getName();
+			WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
+			// 워크로드 생성자가 삭제
+			if (deploy.getCreatorId().equals(userInfoDTO.getId())) {
+				String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
+				String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
+				String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
+				workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+					userInfoDTO.getId(), deploy.getCreatorId(), emailTitle, title, message,
+					deploy.getWorkspaceResourceName(), null, null);
+
+			} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || loginUserOwnerWorkspaceList.contains(
+				deploy.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
+				String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMailTitle(), workloadName);
+				String title = AlertMessage.WORKLOAD_DELETE_ADMIN.getTitle();
+				String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(),
+					userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
+				String receiverMail = userFacadeService.getUserInfoById(deploy.getCreatorId()).getEmail();
+				MailDTO mailDTO = MailServiceUtils.deleteWorkloadMail(deploy.getName(), receiverMail);
+				workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+					userInfoDTO.getId(), deploy.getCreatorId(), emailTitle, title, message,
+					deploy.getWorkspaceResourceName(), null, mailDTO);
+			} else {
+				throw new IllegalArgumentException("해당 유저는 서비스 삭제 권한이 없습니다.");
+			}
+			deployRepository.deleteById(deploy.getId());
+			imageService.deleteImageWorkloadMapping(deploy.getId());
+			codeService.deleteCodeWorkloadMapping(deploy.getId());
+			volumeService.deleteVolumeWorkloadMappingByDeployId(deploy.getId());
+			eventPublisher.publishEvent(workspaceUserAlertEvent);
+		}
 	}
 }

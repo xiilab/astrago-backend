@@ -25,6 +25,7 @@ public class ResDeploys {
 	@Getter
 	@Builder
 	public static class ResDeploy{
+		private Long id;
 		private String name;
 		private String deployResourceName;
 		private String description;
@@ -38,6 +39,7 @@ public class ResDeploys {
 
 		public static ResDeploys.ResDeploy toDto(DeployEntity deploy){
 			return ResDeploy.builder()
+				.id(deploy.getId())
 				.name(deploy.getName())
 				.deployResourceName(deploy.getResourceName())
 				.description(deploy.getDescription())
