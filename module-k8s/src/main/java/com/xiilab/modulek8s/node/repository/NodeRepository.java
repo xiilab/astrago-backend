@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.NodeType;
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
@@ -56,4 +57,6 @@ public interface NodeRepository {
 	void setMpsConfig(MPSGpuDTO.SetMPSDTO setMPSDTO);
 
 	GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName);
+
+	ResponseDTO.PageNodeResources getNodesByGpuName(Integer pageNo, Integer pageSize, GPUType gpuType, String gpuName, Boolean isMigMixed);
 }

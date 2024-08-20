@@ -3,6 +3,7 @@ package com.xiilab.servercore.node.dto;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -19,7 +20,7 @@ public abstract class NodeResDTO {
 	}
 
 	@Getter
-	@SuperBuilder
+	@Builder
 	public static class GPUInfo {
 		private String nodeName;
 		private Integer gpuOnePerMemory;

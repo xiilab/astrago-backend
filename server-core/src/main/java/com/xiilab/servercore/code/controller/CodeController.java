@@ -80,5 +80,4 @@ public class CodeController {
 		codeService.isCodeURLValid(codeURL, credentialId);
 		return ResponseEntity.ok().build();
 	}
-
 }

@@ -21,6 +21,7 @@ import com.xiilab.modulek8sdb.mig.repository.MigRepository;
 import com.xiilab.modulemonitor.dto.RequestDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
 import com.xiilab.modulemonitor.service.PrometheusService;
+import com.xiilab.servercore.node.dto.NodeReqDTO;
 import com.xiilab.servercore.node.dto.NodeResDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 
@@ -241,9 +242,9 @@ public class NodeFacadeService {
 	public void updateMIGProfile(MIGGpuDTO migGpuDTO) {
 		// 해당 노드의 MIG 적용되어 있는경우 update, 최초 설정인경우 save
 		List<MigInfoEntity> migInfoEntities = getNodeEntityByNodeName(migGpuDTO.getNodeName());
-		if(Objects.isNull(migInfoEntities)){
+		if (Objects.isNull(migInfoEntities)) {
 			saveMigInfo(migGpuDTO);
-		}else{
+		} else {
 			updateMigInfo(migGpuDTO, migInfoEntities);
 		}
 		nodeRepository.saveGpuProductTOLabel(migGpuDTO.getNodeName());
@@ -261,7 +262,7 @@ public class NodeFacadeService {
 
 	public MIGGpuDTO.MIGInfoStatus getNodeMigStatus(String nodeName) {
 		Map<String, Object> migConfigMap = nodeRepository.getMigConfigMap();
-		if(migConfigMap.get("custom-" + nodeName) == null){
+		if (migConfigMap.get("custom-" + nodeName) == null) {
 			syncMigConfig(nodeName);
 		}
 		return nodeRepository.getNodeMigStatus(nodeName);
@@ -277,7 +278,6 @@ public class NodeFacadeService {
 	}
 
 	public NodeResDTO.FindGpuResources getNodeGpus(NodeType nodeType) {
-
 		ResponseDTO.NodeGPUs nodeGPUs = nodeRepository.getNodeGPUs(nodeType);
 		Map<String, List<NodeResDTO.GPUInfo>> normalGpuMap = getGpuInfos(nodeGPUs.getNormalGPU(), GPUType.NORMAL);
 		Map<String, List<NodeResDTO.GPUInfo>> migGpuMap = getGpuInfos(nodeGPUs.getMigGPU(), GPUType.MIG);
@@ -288,6 +288,14 @@ public class NodeFacadeService {
 			.migGpuMap(migGpuMap)
 			.mpsGpuMap(mpsGpuMap)
 			.build();
+	}
+
+	public ResponseDTO.PageNodeResources getNodeResourcesByGpuName(String gpuName,
+		NodeReqDTO.FindSearchCondition findSearchCondition) {
+		// gpuName으로 검색
+		return nodeRepository.getNodesByGpuName(findSearchCondition.getPageNo(),
+			findSearchCondition.getPageSize(),
+			findSearchCondition.getGpuType(), gpuName, findSearchCondition.getIsMigMixed());
 	}
 
 	private Map<String, List<NodeResDTO.GPUInfo>> getGpuInfos(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuList,
@@ -337,7 +345,7 @@ public class NodeFacadeService {
 			.orElseGet(() -> 0);
 	}
 
-	private void saveMigInfo(MIGGpuDTO migGpuDTO){
+	private void saveMigInfo(MIGGpuDTO migGpuDTO) {
 		List<MigInfoEntity> migInfoEntities = migGpuDTO.getMigInfos().stream().map(migInfoDTO ->
 			MigInfoEntity.builder()
 				.profile(migInfoDTO.getProfile())
@@ -348,7 +356,7 @@ public class NodeFacadeService {
 		migRepository.saveAll(migInfoEntities);
 	}
 
-	private List<MigInfoEntity> getNodeEntityByNodeName(String nodeName){
+	private List<MigInfoEntity> getNodeEntityByNodeName(String nodeName) {
 		return migRepository.getAllByNodeName(nodeName);
 	}
 

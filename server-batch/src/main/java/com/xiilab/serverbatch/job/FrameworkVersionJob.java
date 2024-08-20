@@ -14,7 +14,6 @@ import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.modulek8sdb.version.entity.CompatibleFrameworkVersionEntity;
 import com.xiilab.modulek8sdb.version.entity.FrameWorkVersionEntity;
-import com.xiilab.modulek8sdb.version.entity.MaxCudaVersionEntity;
 import com.xiilab.modulek8sdb.version.repository.CompatibleFrameWorkVersionRepository;
 import com.xiilab.modulek8sdb.version.repository.FrameWorkVersionRepository;
 import com.xiilab.modulek8sdb.version.repository.MaxCudaVersionRepository;
@@ -56,7 +55,7 @@ public class FrameworkVersionJob extends QuartzJobBean{
 			// 현재 workerNodeDriverInfo에 대한 호환 가능한 프레임워크 버전 리스트
 			List<FrameWorkVersionEntity> compatibleFrameworkVersion = frameWorkVersionRepository.getCompatibleFrameworkVersion(getSubstringBeforeFirstDot(maxCudaVersion), getSubstringBeforeFirstDot(minCudaVersion));
 
-			// 중복된 값들을 추출하여 Set에 추가
+			// 중복된 값q들을 추출하여 Set에 추가
 			if (!duplicatedVersions.isEmpty()) {
 				duplicatedVersions.retainAll(compatibleFrameworkVersion);
 			} else {

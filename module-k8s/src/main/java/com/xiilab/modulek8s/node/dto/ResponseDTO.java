@@ -252,13 +252,16 @@ public class ResponseDTO {
 			private Integer gpuOnePerMemory;
 			private Integer count;
 			private boolean useAllGPUStatus;
+			private boolean isMigMixed;
 
-			public GPUInfo(String nodeName, Integer gpuOnePerMemory, Integer count, boolean useAllGPUStatus) {
+			@Builder
+			public GPUInfo(String nodeName, Integer gpuOnePerMemory, Integer count, boolean useAllGPUStatus, boolean isMigMixed) {
 				this.nodeName = nodeName;
 				// this.onePerMemory = DataConverterUtil.convertMbToGb(onePerMemory) + "GB";
 				this.gpuOnePerMemory = gpuOnePerMemory;
 				this.count = count;
 				this.useAllGPUStatus = useAllGPUStatus;
+				this.isMigMixed = isMigMixed;
 			}
 		}
 	}
@@ -275,4 +278,25 @@ public class ResponseDTO {
 
 	public record MIGProfileList(List<MIGProfile> migProfiles) {
 	}
+
+	@Getter
+	@Builder
+	public static class NodeResource {
+		private String nodeName;
+		private Integer totalCPUCores;
+		private Integer allocCPUCores;	// 사용중인 CPU
+		private Integer totalMemoryKi;
+		private Integer allocMemoryKi;	// 사용중인 Memory
+		private Integer totalGPUs;
+		private Integer allocGPUs;	// 사용중인 GPU
+	}
+
+	@Builder
+	@Getter
+	public static class PageNodeResources {
+		private List<NodeResource> nodeResources;
+		private long totalCount;
+		private long totalPageCount;
+	}
+
 }

@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.MPSStatus;
 import com.xiilab.modulecommon.enums.MigStatus;
 import com.xiilab.modulecommon.enums.NodeType;
@@ -85,6 +87,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	@Override
 	public List<Node> getGpuNodes(boolean isWorker) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
+			// 스케줄링이 off가 아닌, 워커 노드만 조회
 			if (isWorker) {
 				return client.nodes()
 					.list()
@@ -95,6 +98,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 						node.getSpec().getUnschedulable())))
 					.toList();
 			} else {
+				// 스케줄링이 off가 아닌, 모든 노드 조회
 				return client.nodes().list().getItems().stream()
 					.filter(node -> (Objects.isNull(node.getSpec().getUnschedulable()) || !Boolean.TRUE.equals(
 						node.getSpec().getUnschedulable())))
@@ -113,7 +117,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	public ResponseDTO.NodeGPUs getNodeGPUs(NodeType nodeType) {
 		List<Node> gpuNodes = getGpuNodes(false);
 		if (CollectionUtils.isEmpty(gpuNodes)) {
-			throw new RestApiException(NodeErrorCode.NOT_FOUND_WORKER_NODE);
+			throw new RestApiException(NodeErrorCode.NOT_FOUND_NODE);
 		}
 
 		Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap = new HashMap<>();
@@ -127,28 +131,33 @@ public class NodeRepositoryImpl implements NodeRepository {
 			}
 
 			String nodeName = gpuNode.getMetadata().getName();
-			Integer notMpsGPUCount = Integer.parseInt(gpuNode.getMetadata().getLabels().getOrDefault(GPU_COUNT, "0"));
-			int memory = Integer.parseInt(gpuNode.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
+			Map<String, String> nodeLabels = gpuNode.getMetadata().getLabels();
+			Integer normalGpuCount = Integer.parseInt(nodeLabels.getOrDefault(GPU_COUNT, "0"));
+			int normalGpuMemory = Integer.parseInt(nodeLabels.getOrDefault(GPU_MEMORY, "0"));
 
 			if (nodeType == NodeType.SINGLE) {
-				if (isActiveMIG(gpuNode)) {    // MIG 적용 여부 && MIG 전략 키 존재여부 확인
-					putMigGpuMap(migGPUMap, gpuNode, nodeName, gpuName, notMpsGPUCount);
-				} else if (isActiveMPS(gpuNode)) { // MIG 적용 여부 확인
-					putMpsGpuMap(mpsGPUMap, gpuNode, nodeName, gpuName);
+				if (isActiveMIG(gpuNode)) {     // MIG 적용 여부 확인
+					putMigGpuMap(migGPUMap, nodeLabels, nodeName, gpuName);
+				} else if (isActiveMPS(gpuNode)) { // MPS 적용 여부 확인
+					putMpsGpuMap(mpsGPUMap, nodeLabels, nodeName, gpuName);
 				} else {
 					Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu");
-					putGpuMap(normalGPUMap, nodeName, gpuName, memory, notMpsGPUCount, gpuUsageCount);
+					putGpuMap(normalGPUMap, nodeName, gpuName, normalGpuMemory, normalGpuCount, gpuUsageCount);
 				}
 			} else {    // 멀티노드일때, 분할안된 GPU만 반환
 				if (isActiveMPS(gpuNode) || isActiveMIG(gpuNode)) {
 					continue;
 				}
 				Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu");
-				putGpuMap(normalGPUMap, nodeName, gpuName, memory, notMpsGPUCount, gpuUsageCount);
+				putGpuMap(normalGPUMap, nodeName, gpuName, normalGpuMemory, normalGpuCount, gpuUsageCount);
 			}
 		}
 
-		return ResponseDTO.NodeGPUs.builder().normalGPU(normalGPUMap).migGPU(migGPUMap).mpsGPU(mpsGPUMap).build();
+		return ResponseDTO.NodeGPUs.builder()
+			.normalGPU(normalGPUMap)
+			.migGPU(migGPUMap)
+			.mpsGPU(mpsGPUMap)
+			.build();
 	}
 
 	@Override
@@ -252,8 +261,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 		boolean migConfigStatus =
 			node.getMetadata().getLabels().containsKey("nvidia.com/mig.config") && !"all-disabled".equals(
 				node.getMetadata().getLabels().get("nvidia.com/mig.config"));
-		boolean migCapableStatus = node.getMetadata().getLabels().containsKey("nvidia.com/mig.capable") && "true".equals(
-			node.getMetadata().getLabels().get("nvidia.com/mig.capable"));
+		boolean migCapableStatus =
+			node.getMetadata().getLabels().containsKey("nvidia.com/mig.capable") && "true".equals(
+				node.getMetadata().getLabels().get("nvidia.com/mig.capable"));
 
 		return migConfigStatus && migCapableStatus;
 	}
@@ -781,12 +791,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String migCapable = node.getMetadata().getLabels().get("nvidia.com/mig.capable");
 			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable");
 			int memory = 0;
-			if(Boolean.valueOf(migCapable)){ //mig
+			if (Boolean.valueOf(migCapable)) { //mig
 				String strategy = node.getMetadata().getLabels().get("nvidia.com/mig.strategy");
 				//single
-				if(strategy.equalsIgnoreCase("single")){
+				if (strategy.equalsIgnoreCase("single")) {
 					memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
-				}else{
+				} else {
 					//mixed
 					//mixedMigGpuName에 .memory 문자열 합쳐서 라벨 검색 후 memory 조회
 					//gpuName : A100-SXM4-40GB-MIG-1g.5gb
@@ -795,12 +805,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 					String mixedGpuMemoryLabelValue = "nvidia.com/" + mixedGpuName.toLowerCase() + ".memory";
 					memory = Integer.parseInt(node.getMetadata().getLabels().get(mixedGpuMemoryLabelValue));
 				}
-			}else if(Boolean.valueOf(mpsCapable)){//mps
+			} else if (Boolean.valueOf(mpsCapable)) {//mps
 				int gpuMemory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
 				int mpsCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"));
 				memory = gpuMemory / mpsCount;
 
-			}else{//normal
+			} else {//normal
 				memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
 				gpuName = node.getMetadata().getLabels().get("nvidia.com/gpu.product");
 			}
@@ -810,6 +820,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.build();
 		}
 	}
+
 	public static String extractPattern(String input, String pattern) {
 		java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(pattern);
 		java.util.regex.Matcher matcher = regexPattern.matcher(input);
@@ -903,8 +914,8 @@ public class NodeRepositoryImpl implements NodeRepository {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			List<Node> items = client.nodes().list().getItems();
 			for (Node item : items) {
-				boolean isMasterNode = isMasterNode(item);
-				if (!isMasterNode) {
+				// boolean isMasterNode = isMasterNode(item);
+				if (!isMasterNode(item)) {
 					String driverMajor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.major");
 					String driverMinor = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.minor");
 					String driverRev = item.getMetadata().getLabels().get("nvidia.com/cuda.driver.rev");
@@ -924,46 +935,147 @@ public class NodeRepositoryImpl implements NodeRepository {
 		return workerNodeDriverInfos;
 	}
 
-	private void putMpsGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap, Node node, String nodeName,
-		String gpuName) {
-		int mpsGPUCount = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(MPS_GPU_COUNT, "1")) *
-			Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_COUNT, "1"));
-		int memory = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
-		int onePerMemory = (mpsGPUCount != 0 || memory != 0) ? memory / mpsGPUCount : 0;
+	@Override
+	public ResponseDTO.PageNodeResources getNodesByGpuName(Integer pageNo, Integer pageSize, GPUType gpuType,
+		String gpuName,
+		Boolean isMigMixed) {
+		/*
+			MIG 일때, gpuName = "A100-SXM4-40GB-MIG-1g.5gb",
+			Normal, MPS일 때, gpuName = "A100-SXM4-40GB"
+		 */
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			Map<String, String> labelCondition = getLabelCondition(gpuType, gpuName, isMigMixed);
+			// TODO age순으로 정렬 필요
+			List<Node> nodes = client.nodes()
+				.withLabels(labelCondition)
+				.list()
+				.getItems();
+
+			int totalCount = nodes.size();
+			int totalPageSize = (int)Math.ceil((double)totalCount / pageSize);
+			int startIndex = pageNo * pageSize;
+			int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+			if (startIndex >= totalCount || endIndex <= startIndex) {
+				// 페이지 범위를 벗어나면 exception
+				return ResponseDTO.PageNodeResources.builder()
+					.nodeResources(null)
+					.totalCount(totalCount)
+					.totalPageCount(totalPageSize)
+					.build();
+			}
+
+			List<ResponseDTO.NodeResource> nodeList = nodes.subList(startIndex, endIndex).stream()
+				.map(node -> buildNodeResource(node, gpuType, gpuName))
+				.toList();
+
+			// 노드명, CPU 할당/총 사용량, MEM 할당/총 사용량, GPU 할당/총 사용량
+			return ResponseDTO.PageNodeResources.builder()
+				.nodeResources(nodeList)
+				.totalCount(totalCount)
+				.totalPageCount(totalPageSize)
+				.build();
+		}
+	}
+
+	private ResponseDTO.NodeResource buildNodeResource(Node node, GPUType gpuType, String gpuName) {
+		// 총 자원
+		Map<String, Quantity> capacityResourceMap = node.getStatus().getCapacity();
+		// 할당된 자원
+		Map<String, Quantity> allocatableResourceMap = node.getStatus().getAllocatable();
+		return ResponseDTO.NodeResource.builder()
+			.nodeName(node.getMetadata().getName())
+			.totalCPUCores(parseResource(capacityResourceMap.get("cpu")))
+			.allocCPUCores(parseResource(allocatableResourceMap.get("cpu")))
+			.totalMemoryKi(
+				parseResource(capacityResourceMap.get("memory")))
+			.allocMemoryKi(
+				parseResource(allocatableResourceMap.get("memory")))
+			.totalGPUs(getGpuCount(capacityResourceMap, gpuType, gpuName))
+			.allocGPUs(getGpuCount(allocatableResourceMap, gpuType, gpuName))
+			.build();
+	}
+
+	private Integer parseResource(Quantity quantity) {
+		return Integer.parseInt(quantity.toString().replaceAll("\\D", ""));
+	}
+
+	private int getGpuCount(Map<String, Quantity> resourceMap, GPUType gpuType, String gpuName) {
+		switch (gpuType) {
+			case NORMAL:
+				return parseResource(resourceMap.get("nvidia.com/gpu"));
+			case MPS:
+				return parseResource(resourceMap.get("nvidia.com/gpu.shared"));
+			case MIG:
+				String nvidiaGpuKey = "nvidia.com/" + gpuName.substring(gpuName.indexOf("MIG")).toLowerCase();
+				return parseResource(resourceMap.get(nvidiaGpuKey));
+			default:
+				return 0;
+		}
+	}
+
+	@NotNull
+	private Map<String, String> getLabelCondition(GPUType gpuType, String gpuName, Boolean isMigMixed) {
+		return (gpuType == GPUType.MIG && isMigMixed) ?
+			Map.of(
+				GPU_NAME, gpuName.substring(0, gpuName.indexOf("-MIG")),
+				MIG_STRATEGY, "mixed"
+			) :
+			Map.of(GPU_NAME, gpuName);
+	}
+
+	private void putMpsGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> mpsGPUMap, Map<String, String> nodeLabels,
+		String nodeName, String gpuName) {
+		int mpsGPUCount = Integer.parseInt(nodeLabels.getOrDefault(MPS_GPU_COUNT, "1")) *
+			Integer.parseInt(nodeLabels.getOrDefault(GPU_COUNT, "1"));
+		int gpuMemory = Integer.parseInt(nodeLabels.getOrDefault(GPU_MEMORY, "0"));
+		int onePerMemory = (mpsGPUCount != 0 || gpuMemory != 0) ? gpuMemory / mpsGPUCount : 0;
 		Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu.shared");
 		putGpuMap(mpsGPUMap, nodeName, gpuName, onePerMemory, mpsGPUCount, gpuUsageCount);
 	}
 
-	private void putMigGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap, Node node,
-		String nodeName, String gpuName, Integer notMpsGPUCount) {
+	private void putMigGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> migGPUMap, Map<String, String> nodeLabels,
+		String nodeName, String gpuName) {
 
-		if (isMIGSingleStrategy(node)) {    // mig 전략이 'single'이면
-			int onePerMemory = Integer.parseInt(node.getMetadata().getLabels().getOrDefault(GPU_MEMORY, "0"));
+		if (isSingleMIG(nodeLabels)) {   // mig 전략이 'single'이면
+			int gpuCount = Integer.parseInt(nodeLabels.getOrDefault(GPU_COUNT, "0"));
+			int gpuOnePerMemory = Integer.parseInt(nodeLabels.getOrDefault(GPU_MEMORY, "0"));
 			Integer gpuUsageCount = getGpuUsageCount(nodeName, "nvidia.com/gpu");
-			putGpuMap(migGPUMap, nodeName, gpuName, onePerMemory, notMpsGPUCount, gpuUsageCount);
+			putGpuMap(migGPUMap, nodeName, gpuName, gpuOnePerMemory, gpuCount, gpuUsageCount);
 		} else {
-			Map<String, Map<String, String>> migGpuInfoMap = node.getMetadata()
-				.getLabels()
+			Map<String, Map<String, String>> migGpuInfoMap = nodeLabels
 				.entrySet()
 				.stream()
-				.filter(entry -> entry.getKey().startsWith("nvidia.com/mig-") && entry.getKey().endsWith(".count")
-					|| entry.getKey().startsWith("nvidia.com/mig-") && entry.getKey().endsWith(".memory"))
+				.filter(entry -> entry.getKey().startsWith("nvidia.com/mig-") && entry.getKey().endsWith("count")
+					|| entry.getKey().startsWith("nvidia.com/mig-") && entry.getKey().endsWith("memory"))
 				.collect(Collectors.groupingBy(
-					entry -> entry.getKey().substring(entry.getKey().indexOf("mig-"), entry.getKey().lastIndexOf(".")),
+					entry -> entry.getKey()
+						.substring(entry.getKey().indexOf("mig-"), entry.getKey().lastIndexOf(".")),
 					Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)
 				));
 
+			/* "mig-2g.10gb": {
+				"nvidia.com/mig-2g.10gb.count": "1",
+				"nvidia.com/mig-2g.10gb.memory": "9984"
+			} */
 			for (String key : migGpuInfoMap.keySet()) {
-				String nvidiaKey = "nvidia.com/" + key;
-				if (!migGpuInfoMap.get(key).containsKey(nvidiaKey + ".count") || !migGpuInfoMap.get(key)
-					.containsKey(nvidiaKey + ".memory")) {
+				String valueKey = "nvidia.com/" + key;
+				if (!migGpuInfoMap.get(key).containsKey(valueKey + ".count") || !migGpuInfoMap.get(key)
+					.containsKey(valueKey + ".memory")) {
 					continue;
 				}
-				int gpuCount = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(nvidiaKey + ".count", "0"));
-				int gpuMemory = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(nvidiaKey + ".memory", "0"));
-				Integer gpuUsageCount = getGpuUsageCount(nodeName, nvidiaKey);
+
+				int gpuCount = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(valueKey + ".count", "0"));
+				int gpuOnePerMemory = Integer.parseInt(migGpuInfoMap.get(key).getOrDefault(valueKey + ".memory", "0"));
+				Integer gpuUsageCount = getGpuUsageCount(nodeName, key);
 				migGPUMap.putIfAbsent(gpuName + "-" + key.replaceAll("mig", "MIG"), new ArrayList<>())
-					.add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, gpuMemory, gpuCount, gpuCount <= gpuUsageCount));
+					.add(ResponseDTO.NodeGPUs.GPUInfo.builder()
+						.nodeName(nodeName)
+						.gpuOnePerMemory(gpuOnePerMemory)
+						.count(gpuCount)
+						.useAllGPUStatus(gpuCount <= gpuUsageCount)
+						.isMigMixed(true)
+						.build());
 			}
 		}
 	}
@@ -971,19 +1083,24 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private void putGpuMap(Map<String, List<ResponseDTO.NodeGPUs.GPUInfo>> gpuMap, String nodeName,
 		String gpuName, Integer onePerMemory, Integer gpuCount, Integer gpuUsageCount) {
 		gpuMap.computeIfAbsent(gpuName, k -> new ArrayList<>())
-			.add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, onePerMemory, gpuCount, gpuCount <= gpuUsageCount));
+			// .add(new ResponseDTO.NodeGPUs.GPUInfo(nodeName, onePerMemory, gpuCount, gpuCount <= gpuUsageCount));
+			.add(ResponseDTO.NodeGPUs.GPUInfo.builder()
+				.nodeName(nodeName)
+				.gpuOnePerMemory(onePerMemory)
+				.count(gpuCount)
+				.useAllGPUStatus(gpuCount <= gpuUsageCount)
+				.build());
 	}
 
 	/**
 	 * MIG 전략 "single"인지 확인
 	 */
-	private boolean isMIGSingleStrategy(Node node) {
-		if (!node.getMetadata().getLabels().containsKey(MIG_STRATEGY)) {
+	private boolean isSingleMIG(Map<String, String> nodeLabels) {
+		if (!nodeLabels.containsKey(MIG_STRATEGY)) {
 			return false;
 		}
 
-		return MIGStrategy.SINGLE.name().equals(node.getMetadata().getLabels().get(MIG_STRATEGY).toUpperCase());
+		return MIGStrategy.SINGLE.name().equals(nodeLabels.get(MIG_STRATEGY).toUpperCase());
 	}
-
 }
 
