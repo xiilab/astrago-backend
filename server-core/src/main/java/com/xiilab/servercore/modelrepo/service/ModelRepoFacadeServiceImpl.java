@@ -42,10 +42,10 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	private final ModelRepoVersionRepository versionRepository;
 
 	@Override
-	public PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, int pageNum, int pageSize) {
+	public PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, String search, int pageNum, int pageSize) {
 		// 해당 워크스페이스에 등록된 Model List 조회
 		List<ModelRepoEntity> modelRepoEntityList = getModelRepoEntityListByWorkspaceResourceName(
-			workspaceResourceName);
+			workspaceResourceName, search);
 		List<ModelRepoDTO.ResponseDTO> list = modelRepoEntityList.stream()
 			.map(ModelRepoDTO.ResponseDTO::convertModelRepoDTO)
 			.toList();
@@ -163,8 +163,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 
 	@Override
 	public PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize){
-		List<ModelVersionEntity> getVersionList = versionRepository.findByModelRepoEntityId(modelRepoId);
-		List<ModelRepoDTO.VersionDTO> versionDTOS = getVersionList.stream()
+		List<ModelVersionEntity> getModelRepoEntity = versionRepository.findByModelRepoEntityId(modelRepoId);
+		List<ModelRepoDTO.VersionDTO> versionDTOS = getModelRepoEntity.stream()
 			.map(ModelRepoDTO.VersionDTO::convertVersionDTO)
 			.toList();
 		return new PageDTO<>(versionDTOS, pageNum, pageSize);
@@ -185,8 +185,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		return labelRepository.findById(id).orElseThrow(() -> new RestApiException(LabelErrorCode.LABEL_NOT_FOUND));
 	}
 
-	private List<ModelRepoEntity> getModelRepoEntityListByWorkspaceResourceName(String workspaceResourceName) {
-		return modelRepoRepository.findAllByWorkspaceResourceName(workspaceResourceName);
+	private List<ModelRepoEntity> getModelRepoEntityListByWorkspaceResourceName(String workspaceResourceName, String search) {
+		return modelRepoRepository.findAllByWorkspaceResourceName(workspaceResourceName, search);
 	}
 
 	@Override
