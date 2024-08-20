@@ -12,7 +12,7 @@ public interface ModelRepoFacadeService {
 
 	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO);
 
-	PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, int pageNum, int pageSize);
+	PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, String search, int pageNum, int pageSize);
 
 	ModelRepoDTO.ResponseDTO getModelRepoById(String workspaceResourceName, long modelRepoId);
 
