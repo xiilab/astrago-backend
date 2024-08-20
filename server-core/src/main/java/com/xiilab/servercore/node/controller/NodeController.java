@@ -1,5 +1,6 @@
 package com.xiilab.servercore.node.controller;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,7 @@ import com.xiilab.modulek8s.node.dto.MIGGpuDTO;
 import com.xiilab.modulek8s.node.dto.MIGProfileDTO;
 import com.xiilab.modulek8s.node.dto.MPSGpuDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
+import com.xiilab.servercore.node.dto.NodeReqDTO;
 import com.xiilab.servercore.node.dto.NodeResDTO;
 import com.xiilab.servercore.node.dto.ScheduleDTO;
 import com.xiilab.servercore.node.service.NodeFacadeService;
@@ -118,10 +120,12 @@ public class NodeController {
 		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(nodeType), HttpStatus.OK);
 	}
 
-	/*@GetMapping("/{gpuName}/nodes")
+	@GetMapping("/{gpuName}/nodes")
 	@Operation(summary = "gpu에 해당하는 노드 목록 조회")
-	public ResponseEntity<NodeResDTO.FindGpuResources> getNodeListByGpuName(
-		@PathVariable(name = "gpuName") String gpuName) {
-		return new ResponseEntity<>(nodeFacadeService.getNodeGpus(nodeType), HttpStatus.OK);
-	}*/
+	public ResponseEntity<ResponseDTO.PageNodeResources> getNodeListByGpuName(
+		@PathVariable(name = "gpuName") String gpuName,
+		@ParameterObject NodeReqDTO.FindSearchCondition findSearchCondition
+	) {
+		return new ResponseEntity<>(nodeFacadeService.getNodeResourcesByGpuName(gpuName, findSearchCondition), HttpStatus.OK);
+	}
 }
