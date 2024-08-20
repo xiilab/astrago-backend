@@ -939,10 +939,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	public ResponseDTO.PageNodeResources getNodesByGpuName(Integer pageNo, Integer pageSize, GPUType gpuType,
 		String gpuName,
 		Boolean isMigMixed) {
-		/*
-			MIG 일때, gpuName = "A100-SXM4-40GB-MIG-1g.5gb",
-			Normal, MPS일 때, gpuName = "A100-SXM4-40GB"
-		 */
+
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Map<String, String> labelCondition = getLabelCondition(gpuType, gpuName, isMigMixed);
 			// TODO age순으로 정렬 필요
@@ -983,14 +980,17 @@ public class NodeRepositoryImpl implements NodeRepository {
 		Map<String, Quantity> capacityResourceMap = node.getStatus().getCapacity();
 		// 할당된 자원
 		Map<String, Quantity> allocatableResourceMap = node.getStatus().getAllocatable();
+		Integer totalCpuCores = parseResource(capacityResourceMap.get("cpu"));
+		Integer allocCPUCores = parseResource(allocatableResourceMap.get("cpu"));
+		Integer totalMemoryKi = parseResource(capacityResourceMap.get("memory"));
+		Integer allocMemoryKi = parseResource(allocatableResourceMap.get("memory"));
+
 		return ResponseDTO.NodeResource.builder()
 			.nodeName(node.getMetadata().getName())
-			.totalCPUCores(parseResource(capacityResourceMap.get("cpu")))
-			.allocCPUCores(parseResource(allocatableResourceMap.get("cpu")))
-			.totalMemoryKi(
-				parseResource(capacityResourceMap.get("memory")))
-			.allocMemoryKi(
-				parseResource(allocatableResourceMap.get("memory")))
+			.totalCPUCores(totalCpuCores)
+			.allocCPUCores(totalCpuCores - allocCPUCores)
+			.totalMemoryKi(totalMemoryKi)
+			.allocMemoryKi(totalMemoryKi - allocMemoryKi)
 			.totalGPUs(getGpuCount(capacityResourceMap, gpuType, gpuName))
 			.allocGPUs(getGpuCount(allocatableResourceMap, gpuType, gpuName))
 			.build();

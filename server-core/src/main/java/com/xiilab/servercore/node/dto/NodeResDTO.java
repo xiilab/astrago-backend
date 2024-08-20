@@ -26,6 +26,7 @@ public abstract class NodeResDTO {
 		private Integer gpuOnePerMemory;
 		private Integer maximumGpuCount;
 		private boolean useAllGPUStatus;
+		private boolean isMigMixed;
 	}
 
 }
