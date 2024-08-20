@@ -89,6 +89,9 @@ public class FindWorkloadResDTO extends ResDTO {
 		this.estimatedInitialTime = estimatedInitialTime;
 		this.estimatedRemainingTime = estimatedRemainingTime;
 	}
+	public void setPorts(List<FindWorkloadResDTO.Port> ports){
+		this.ports = ports;
+	}
 
 	@Getter
 	@SuperBuilder
@@ -366,16 +369,25 @@ public class FindWorkloadResDTO extends ResDTO {
 	public static class Port {
 		private String name;
 		private Integer port;
+		private Integer targetPort;
 		private String url;
 
 		public Port(PortEntity port) {
 			this.name = port.getName();
 			this.port = port.getPortNum();
+			this.targetPort = port.getTargetPortNum();
 		}
 
 		public Port(String name, Integer port, String url) {
 			this.name = name;
 			this.port = port;
+			this.url = url;
+		}
+
+		public Port(String name, Integer port, Integer targetPort, String url) {
+			this.name = name;
+			this.port = port;
+			this.targetPort = targetPort;
 			this.url = url;
 		}
 	}

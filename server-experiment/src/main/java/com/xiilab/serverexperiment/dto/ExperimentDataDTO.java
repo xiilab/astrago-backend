@@ -3,9 +3,14 @@ package com.xiilab.serverexperiment.dto;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+import com.xiilab.modulek8sdb.workload.history.dto.ExperimentQueryResult;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 public class ExperimentDataDTO {
@@ -20,8 +25,10 @@ public class ExperimentDataDTO {
 
 	@Getter
 	public static class SearchReq {
-		private List<String> experiments;
-		private List<String> metrics;
+		@NotEmpty
+		private List<@NotNull String> experiments;
+		@NotEmpty
+		private List<@NotNull String> metrics;
 	}
 
 	@Getter
@@ -33,9 +40,9 @@ public class ExperimentDataDTO {
 		private final List<String> yAxis;
 		private final Double yAxisMin;
 		private final Double yAxisMax;
-		private final List<SearchRes> chartList;
+		// private final List<SearchRes> chartList;
 
-		public ChartRes(ChartEntity chartEntity, List<SearchRes> searchRes) {
+		public ChartRes(ChartEntity chartEntity) {
 			this.title = chartEntity.getTitle();
 			this.xAxis = chartEntity.getXAxis();
 			this.xAxisMin = chartEntity.getXAxisMin();
@@ -43,7 +50,7 @@ public class ExperimentDataDTO {
 			this.yAxis = chartEntity.getYAxis();
 			this.yAxisMin = chartEntity.getYAxisMin();
 			this.yAxisMax = chartEntity.getYAxisMax();
-			this.chartList = searchRes;
+			// this.chartList = searchRes;
 		}
 	}
 
@@ -71,5 +78,17 @@ public class ExperimentDataDTO {
 		private Double wallTime;
 		private Double relativeTime;
 		private Map<String, Double> metrics;
+	}
+
+	@Getter
+	@Builder
+	public static class TableDTO {
+		private String id;
+		private String name;
+		private String resourceName;
+		private WorkloadStatus status;
+		private String userName;
+		private List<ExperimentQueryResult.LabelDTO> labels;
+		private MetricEntry metricEntry;
 	}
 }

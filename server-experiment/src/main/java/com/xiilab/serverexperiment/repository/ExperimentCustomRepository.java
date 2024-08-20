@@ -2,7 +2,9 @@ package com.xiilab.serverexperiment.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,6 +21,7 @@ import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import com.mongodb.BasicDBObject;
 import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
@@ -89,6 +92,25 @@ public class ExperimentCustomRepository {
 			ExperimentDataDTO.SearchRes.class);
 		return logs.getMappedResults();
 	}
+
+	public List<ExperimentDataDTO.SearchRes> getGraphMetrics(List<String> experimentIds,
+		List<String> metrics) {
+		List<AggregationOperation> operations = new ArrayList<>();
+		operations.add(eqExperimentIds(experimentIds));
+		operations.add(filterMetric(metrics));
+		operations.add(arrayToObject()); // 필터링 후 arrayToObject 호출
+
+		operations.add(groupByWorkloadId());
+		operations.add(projectFields());
+
+		Aggregation aggregation = Aggregation.newAggregation(operations);
+
+		AggregationResults<ExperimentDataDTO.SearchRes> logs = mongoTemplate.aggregate(aggregation, "logs",
+			ExperimentDataDTO.SearchRes.class);
+		return logs.getMappedResults();
+	}
+
+
 
 	private MatchOperation eqExperimentIds(List<String> experimentIds) {
 		Criteria criteria = Criteria.where("workload_id").in(experimentIds);
@@ -176,7 +198,8 @@ public class ExperimentCustomRepository {
 			.andInclude("uuid", "value");
 	}
 
-	public List<ExperimentDataDTO.Res> searchExperimentsTableData(List<String> experiments, List<String> metrics) {
+	public Map<String, ExperimentDataDTO.MetricEntry> searchExperimentsTableData(List<String> experiments,
+		List<String> metrics) {
 		Aggregation aggregation = Aggregation.newAggregation(
 			eqExperimentIds(experiments),
 			sortByStep(),
@@ -185,7 +208,18 @@ public class ExperimentCustomRepository {
 		);
 		AggregationResults<ExperimentDataDTO.Res> results = mongoTemplate.aggregate(aggregation, "logs",
 			ExperimentDataDTO.Res.class);
-		return results.getMappedResults();
+		List<ExperimentDataDTO.Res> mappedResults = results.getMappedResults();
+		if (!CollectionUtils.isEmpty(mappedResults)) {
+			return mappedResults.stream().collect(Collectors.toMap(
+				ExperimentDataDTO.Res::getWorkloadName,
+				entry -> new ExperimentDataDTO.MetricEntry(
+					entry.getStep(),
+					entry.getEpochs(),
+					entry.getWallTime(),
+					entry.getRelativeTime(),
+					entry.getLog())));
+		}
+		return Map.of();
 	}
 
 	private GroupOperation groupByWorkloadIdAndFirstRow() {

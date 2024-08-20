@@ -57,8 +57,9 @@ public class WorkspaceController {
 
 	@PostMapping("")
 	@Operation(summary = "워크스페이스 생성")
-	public ResponseEntity<HttpStatus> createWorkspace(@RequestBody WorkspaceApplicationForm workspaceApplicationForm,
-		UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<HttpStatus> createWorkspace(
+		@RequestBody WorkspaceApplicationForm workspaceApplicationForm,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		workspaceService.createWorkspace(workspaceApplicationForm, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -80,7 +81,7 @@ public class WorkspaceController {
 	@Operation(summary = "내가 속한 워크스페이스의 resource 현황 조회")
 	public ResponseEntity<List<WorkspaceDTO.WorkspaceResourceStatus>> getWorkspaceResourceStatus(
 		@RequestParam(value = "workspaceName", required = false) String workspaceName,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok(workspaceService.getUserWorkspaceResourceStatus(workspaceName, userInfoDTO));
 	}
 
@@ -97,7 +98,7 @@ public class WorkspaceController {
 		@RequestParam(value = "isMyWorkspace") boolean isMyWorkspace,
 		@RequestParam(value = "searchCondition", required = false) String searchCondition,
 		@RequestParam(value = "pageNum") int pageNum,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok(
 			workspaceService.getWorkspaceList(isMyWorkspace, searchCondition, pageNum, userInfoDTO));
 	}
@@ -127,8 +128,7 @@ public class WorkspaceController {
 		@RequestParam(value = "sortCondition", required = false) WorkspaceSortCondition sortCondition,
 		@RequestParam(value = "pageNum") int pageNum,
 		@RequestParam(value = "pageSize") int pageSize,
-		UserDTO.UserInfo userInfoDTO
-	) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok(
 			workspaceService.getAdminWorkspaceList(searchCondition, sortCondition, pageNum, pageSize, userInfoDTO)
 		);
@@ -146,15 +146,17 @@ public class WorkspaceController {
 
 	@DeleteMapping("/{name}")
 	@Operation(summary = "워크스페이스 삭제")
-	public ResponseEntity<HttpStatus> deleteWorkspaceByName(@PathVariable(name = "name") String name,
-		UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<HttpStatus> deleteWorkspaceByName(
+		@PathVariable(name = "name") String name,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		workspaceService.deleteWorkspaceByName(name, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/overview/pin")
 	@Operation(summary = "워크스페이스 OverView 조회")
-	public ResponseEntity<List<WorkspaceDTO.TotalResponseDTO>> getWorkspaceOverView(UserDTO.UserInfo userInfoDTO) {
+	public ResponseEntity<List<WorkspaceDTO.TotalResponseDTO>> getWorkspaceOverView(
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceOverView(userInfoDTO));
 	}
 
@@ -176,7 +178,8 @@ public class WorkspaceController {
 	@PostMapping("/resource")
 	@Operation(summary = "워크스페이스 resource 요청")
 	public ResponseEntity<HttpStatus> requestWorkspaceResource(
-		@RequestBody WorkspaceResourceReqDTO workspaceResourceReqDTO, UserDTO.UserInfo userInfoDTO) {
+		@RequestBody WorkspaceResourceReqDTO workspaceResourceReqDTO,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		workspaceService.requestWorkspaceResource(workspaceResourceReqDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
@@ -186,7 +189,7 @@ public class WorkspaceController {
 	public ResponseEntity<PageDTO<ResourceQuotaFormDTO>> getResourceQuotaList(
 		@RequestParam(value = "workspace") String workspace,
 		@RequestParam(value = "pageNum") int pageNum,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) {
 		return ResponseEntity.ok(workspaceService.getResourceQuotaRequests(workspace, pageNum, userInfoDTO));
 	}
@@ -196,7 +199,7 @@ public class WorkspaceController {
 	public ResponseEntity<PageDTO<ResourceQuotaFormDTO>> getAdminResourceQuotaList(
 		@RequestParam(value = "pageNum") int pageNum,
 		@RequestParam(value = "pageSize") int pageSize,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) {
 		return ResponseEntity.ok(workspaceService.getAdminResourceQuotaRequests(pageNum, pageSize, userInfoDTO));
 	}
@@ -212,7 +215,7 @@ public class WorkspaceController {
 	public ResponseEntity<HttpStatus> updateResourceQuota(
 		@PathVariable(value = "id") long id,
 		@RequestBody ResourceQuotaApproveDTO resourceQuotaApproveDTO,
-		UserDTO.UserInfo userInfoDTO
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO
 	) {
 		workspaceService.updateResourceQuota(id, resourceQuotaApproveDTO, userInfoDTO);
 		return ResponseEntity.ok().build();

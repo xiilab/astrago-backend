@@ -11,10 +11,14 @@ import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 
 @Repository
 public interface ModelRepoRepository extends JpaRepository<ModelRepoEntity, Long> {
-	@Query("select t from TB_MODEL_REPO t "
-		+ "left join t.modelLabelEntityList l "
-		+ "left join t.modelVersionList v "
-		+ "where t.workspaceResourceName = :workspaceResourceName "
-		+ "order by v.version desc")
-	List<ModelRepoEntity> findAllByWorkspaceResourceName(@Param("workspaceResourceName") String workspaceResourceName);
+	@Query("""
+		select t
+		from TB_MODEL_REPO t
+		left join t.modelLabelEntityList l
+		left join t.modelVersionList v
+		where t.workspaceResourceName = :workspaceResourceName
+		and (:search is null or :search = '' or t.modelName like concat('%', :search, '%'))
+		order by v.version desc
+		""")
+	List<ModelRepoEntity> findAllByWorkspaceResourceName(@Param("workspaceResourceName") String workspaceResourceName,@Param("search") String search);
 }

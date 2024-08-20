@@ -1,7 +1,7 @@
-package com.xiilab.servercore.experiment.column.entity;
+package com.xiilab.modulek8sdb.experiment.entity;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
-import com.xiilab.servercore.experiment.column.dto.ExperimentColumnDTO;
+import com.xiilab.modulek8sdb.experiment.dto.ExperimentColumnDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +26,7 @@ public class ExperimentColumnEntity extends BaseEntity {
 	private String name;
 	@Column(name = "ORDER")
 	private int order;
-	@Column(name = "workspace")
+	@Column(name = "WORKSPACE")
 	private String workspace;
 
 	public ExperimentColumnEntity(ExperimentColumnDTO.Req req) {

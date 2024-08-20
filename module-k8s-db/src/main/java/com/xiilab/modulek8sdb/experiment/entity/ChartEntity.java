@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.experiment.entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
@@ -72,7 +73,7 @@ public class ChartEntity extends BaseEntity {
 	}
 
 	public List<String> getAllAxis() {
-		List<String> allAxis = new ArrayList<>(yAxis);
+		List<String> allAxis = new ArrayList<>(yAxis != null ? yAxis : Collections.emptyList());
 		allAxis.add(xAxis);
 		return allAxis;
 	}

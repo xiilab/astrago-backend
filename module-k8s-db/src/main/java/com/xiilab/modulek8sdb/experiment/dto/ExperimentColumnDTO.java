@@ -1,4 +1,4 @@
-package com.xiilab.servercore.experiment.column.dto;
+package com.xiilab.modulek8sdb.experiment.dto;
 
 import lombok.Builder;
 import lombok.Getter;

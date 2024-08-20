@@ -10,6 +10,7 @@ import org.springframework.core.io.Resource;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
+import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
@@ -94,7 +95,6 @@ public interface WorkloadModuleService {
 	Pod getJobPod(String workspaceName, String workloadName, WorkloadType workloadType);
 
 	WorkloadResDTO.PageUsingDatasetDTO workloadsUsingDataset(Integer pageNo, Integer pageSize, Long id);
-
 	WorkloadResDTO.PageUsingVolumeDTO workloadsUsingVolume(Integer pageNo, Integer pageSize, Long id);
 
 	void createDatasetDeployment(CreateDatasetDeployment createDeployment);
@@ -153,4 +153,7 @@ public interface WorkloadModuleService {
 
 	Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName);
 
+	CreateJobResDTO createDeployWorkload(ModuleCreateDeployReqDTO moduleCreateDeployReqDTO, String name);
+
+	String deleteDeployment(String workspaceName, String deployJobResourceName);
 }

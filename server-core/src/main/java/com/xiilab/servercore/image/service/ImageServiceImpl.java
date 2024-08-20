@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -42,6 +43,8 @@ public class ImageServiceImpl implements ImageService {
 	private final CompatibleFrameWorkVersionRepository compatibleFrameWorkVersionRepository;
 	private final ImageWorkloadMappingRepository imageWorkloadMappingRepository;
 	private final NetworkRepository networkRepository;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 	@Override
 	@Transactional
 	public Long saveImage(ImageReqDTO.SaveImage saveImageDTO) {
@@ -66,7 +69,7 @@ public class ImageServiceImpl implements ImageService {
 			.orElseThrow(() -> new RestApiException(ImageErrorCode.NOT_FOUND_IMAGE));
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
-		return ImageResDTO.FindImage.from(findImage, networkCloseYN, network.getPrivateRepositoryUrl());
+		return ImageResDTO.FindImage.from(findImage, networkCloseYN, privateRegistryUrl);
 	}
 
 	@Override
@@ -88,7 +91,7 @@ public class ImageServiceImpl implements ImageService {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
-		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements(), networkCloseYN, network.getPrivateRepositoryUrl());
+		return ImageResDTO.FindImages.from(images.getContent(), images.getTotalElements(), networkCloseYN, privateRegistryUrl);
 	}
 
 	@Override
@@ -99,6 +102,11 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public void deleteImageWorkloadMapping(Long jobId) {
 		imageWorkloadMappingRepository.deleteByWorkloadId(jobId);
+	}
+
+	@Override
+	public ImageEntity findBuiltImageByName(String imageName) {
+		return imageRepository.findBuiltImageByName(imageName);
 	}
 
 	private Long saveBuiltInImage(ImageReqDTO.SaveImage saveImageDTO) {

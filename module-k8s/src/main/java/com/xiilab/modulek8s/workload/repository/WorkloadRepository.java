@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulek8s.deploy.vo.DeployVO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
@@ -193,4 +194,8 @@ public interface WorkloadRepository {
 	Deployment getInteractiveJob(String workspaceName, String workloadName);
 
 	List<Pod> getWorkloadsByWorkloadName(String resourceName);
+
+	CreateJobResDTO createDeployWorkload(DeployVO deployVO);
+
+	String deleteDeployment(String workspaceName, String deployJobResourceName);
 }

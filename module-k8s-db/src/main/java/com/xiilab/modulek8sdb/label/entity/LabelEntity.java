@@ -48,5 +48,4 @@ public class LabelEntity {
 		this.colorName = colorCodeName;
 		this.order = order;
 	}
-
 }

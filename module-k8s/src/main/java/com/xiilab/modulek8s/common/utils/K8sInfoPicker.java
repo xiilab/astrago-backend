@@ -30,6 +30,7 @@ import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDeployResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleEnvResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
@@ -65,7 +66,7 @@ public class K8sInfoPicker {
 	 * @return true -> astrago에서 생성한 resource, false -> astrago에서 생성하지 않은 resource
 	 */
 	public static boolean isAstragoResource(HasMetadata resource) {
-		return resource.getMetadata().getName().contains("wl-");
+		return resource.getMetadata().getName().contains("wl-") || resource.getMetadata().getName().contains("deploy-");
 	}
 
 	/**
@@ -116,6 +117,22 @@ public class K8sInfoPicker {
 			moduleInteractiveJobResDTO = getInteractiveWorkloadInfoFromNormalResource(deployment);
 		}
 		return moduleInteractiveJobResDTO;
+	}
+	/**
+	 * deploy 서비스 정보 조회 메소드
+	 * astra에서 생성 여부에 대해서 분기 처리
+	 *
+	 * @param deployment
+	 * @return
+	 */
+	public static ModuleDeployResDTO getDeployInfoFromResource(Deployment deployment) {
+		ModuleDeployResDTO moduleDeployResDTO;
+		if (isCreatedByAstra(deployment)) {
+			moduleDeployResDTO = new ModuleDeployResDTO(deployment);
+		} else {
+			moduleDeployResDTO = getDeployInfoFromNormalResource(deployment);
+		}
+		return moduleDeployResDTO;
 	}
 
 	public static ModuleDistributedJobResDTO getDistirubtedWorkloadInfoFromResource(MPIJob mpiJob) {
@@ -205,6 +222,27 @@ public class K8sInfoPicker {
 		Container container = getContainerFromHasMetadata(deployment);
 		ResourceDTO containerResourceReq = getContainerResourceReq(container);
 		return ModuleInteractiveJobResDTO.builder()
+			.name(metadata.getName())
+			.workspaceResourceName(metadata.getNamespace())
+			.cpuRequest(containerResourceReq.getCpuReq())
+			.memRequest(containerResourceReq.getMemReq())
+			.gpuRequest(containerResourceReq.getGpuReq())
+			.image(container.getImage())
+			.createdAt(LocalDateTime.parse(metadata.getCreationTimestamp(), DateTimeFormatter.ISO_DATE_TIME))
+			.deletedAt(LocalDateTime.now())
+			.build();
+	}
+	/**
+	 * 서버에서 생성된 k8s resource의 정보를 추출하는 메소드
+	 *
+	 * @param deployment k8s resource 객체
+	 * @return
+	 */
+	private static ModuleDeployResDTO getDeployInfoFromNormalResource(Deployment deployment) {
+		ObjectMeta metadata = deployment.getMetadata();
+		Container container = getContainerFromHasMetadata(deployment);
+		ResourceDTO containerResourceReq = getContainerResourceReq(container);
+		return ModuleDeployResDTO.builder()
 			.name(metadata.getName())
 			.workspaceResourceName(metadata.getNamespace())
 			.cpuRequest(containerResourceReq.getCpuReq())

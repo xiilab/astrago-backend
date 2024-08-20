@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 public enum ChartErrorCode implements ErrorCode {
 	CHART_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 ID의 chart가 없습니다."),
 	CHART_PANEL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 ID의 chart panel이 없습니다."),
-	UNAUTHORIZED_ERROR(HttpStatus.UNAUTHORIZED.value(), "해당 유저는 권한이 없습니다.");
+	UNAUTHORIZED_ERROR(HttpStatus.UNAUTHORIZED.value(), "해당 유저는 권한이 없습니다."),
+	CHART_ILLEGAL_ARGS(HttpStatus.BAD_REQUEST.value(), "잘못된 값을 입력하였습니다."),
+	;
 	private final int code;
 	private final String message;
 }

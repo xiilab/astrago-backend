@@ -395,6 +395,11 @@ public class VolumeServiceImpl implements VolumeService {
 		workSpaceMappingEntity.modifyDefaultPath(updateWorkspaceVolumeDTO.getDefaultPath());
 	}
 
+	@Override
+	public void deleteVolumeWorkloadMappingByDeployId(Long id) {
+		volumeWorkLoadMappingRepository.deleteByWorkloadId(id);
+	}
+
 	public void deleteVolumeWorkloadMappingById(Long volumeId) {
 		volumeWorkLoadMappingRepository.deleteByVolumeId(volumeId);
 	}

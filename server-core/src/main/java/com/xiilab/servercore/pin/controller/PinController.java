@@ -37,7 +37,7 @@ public class PinController {
 	public ResponseEntity<HttpStatus> deleteWorkspace(
 		@RequestParam(value = "resourceName") String resourceName,
 		@RequestParam(value = "pinType") PinType pinType,
-		UserDTO.UserInfo userInfoDTO) {
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		pinService.deletePin(resourceName, pinType, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

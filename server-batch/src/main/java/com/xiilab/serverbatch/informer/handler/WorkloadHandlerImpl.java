@@ -14,6 +14,7 @@ import org.kubeflow.v2beta1.MPIJob;
 import org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.Volumes;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -32,16 +33,19 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
+import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.facade.dto.AstragoDeploymentConnectPVC;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
+import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.storage.volume.repository.K8sVolumeRepository;
 import com.xiilab.modulek8s.workload.dto.response.ModuleBatchJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
+import com.xiilab.modulek8s.workload.dto.response.ModuleDeployResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleDistributedJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
@@ -54,6 +58,8 @@ import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
+import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
+import com.xiilab.modulek8sdb.deploy.repository.DeployRepository;
 import com.xiilab.modulek8sdb.image.entity.CustomImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
@@ -61,6 +67,9 @@ import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.label.repository.LabelRepository;
+import com.xiilab.modulek8sdb.model.repository.ModelRepository;
+import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
+import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
 import com.xiilab.modulek8sdb.storage.service.StorageService;
 import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
@@ -69,13 +78,16 @@ import com.xiilab.modulek8sdb.volume.repository.VolumeWorkLoadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.LabelWorkloadMappingEntity;
+import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.LabelWorkloadMappingRepository;
+import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.service.UserService;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.ServiceList;
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -109,6 +121,11 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	private final StorageModuleService storageModuleService;
 	private final K8sVolumeRepository k8sVolumeRepository;
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
+	private final DeployRepository deployRepository;
+	private final ModelRepoRepository modelRepoRepository;
+	private final PortRepository portRepository;
+	private final SvcModuleFacadeService svcModuleFacadeService;
+
 
 	@Override
 	public void batchJobAddHandler(Job job) {
@@ -193,14 +210,24 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	@Override
-	public void interactiveJobAddHandler(Deployment deployment) {
+	public void DeploymentAddHandler(Deployment deployment) {
 		if (isAstragoResource(deployment)) {
-			log.info("interactive job {}가 생성되었습니다.", deployment.getMetadata().getName());
-			String namespace = deployment.getMetadata().getNamespace();
-			ModuleInteractiveJobResDTO interactiveJobResDTO = getInteractiveWorkloadInfoFromResource(deployment);
-			// 잡 히스토리 저장
-			if (interactiveJobResDTO != null) {
-				saveInteractiveWorkloadHistory(namespace, interactiveJobResDTO);
+			if(WorkloadType.DEPLOY.getType().equalsIgnoreCase(deployment.getMetadata().getAnnotations().get("type"))){
+				log.info("deploy {}가 생성되었습니다.", deployment.getMetadata().getName());
+				String namespace = deployment.getMetadata().getNamespace();
+				ModuleDeployResDTO moduleDeployResDTO = getDeployInfoFromResource(deployment);
+				// 히스토리 저장
+				if (moduleDeployResDTO != null) {
+					saveDeployHistory(namespace, moduleDeployResDTO);
+				}
+			}else{
+				log.info("interactive job {}가 생성되었습니다.", deployment.getMetadata().getName());
+				String namespace = deployment.getMetadata().getNamespace();
+				ModuleInteractiveJobResDTO interactiveJobResDTO = getInteractiveWorkloadInfoFromResource(deployment);
+				// 잡 히스토리 저장
+				if (interactiveJobResDTO != null) {
+					saveInteractiveWorkloadHistory(namespace, interactiveJobResDTO);
+				}
 			}
 		} else if (deployment.getMetadata().getName().equals("astrago-backend-core")) {
 			List<StorageDto> storages = storageService.getStorages();
@@ -214,8 +241,52 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		}
 	}
 
+	@Transactional
+	protected void saveDeployHistory(String namespace, ModuleDeployResDTO moduleDeployResDTO) {
+		//이미 저장된 워크로드 일 경우 조기 리턴
+		if (deployRepository.findByResourceName(moduleDeployResDTO.getResourceName()).isPresent()) {
+			return;
+		}
+		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(moduleDeployResDTO.getDeployModelId()).get();
+		DeployEntity deployEntity = DeployEntity.builder()
+			.uid(moduleDeployResDTO.getUid())
+			.name(moduleDeployResDTO.getName())
+			.description(moduleDeployResDTO.getDescription())
+			.resourceName(moduleDeployResDTO.getResourceName())
+			.workspaceName(moduleDeployResDTO.getWorkspaceName())
+			.workspaceResourceName(namespace)
+			.ports(moduleDeployResDTO.getPortsMap())
+			.cpuReq(moduleDeployResDTO.getCpuRequest())
+			.memReq(moduleDeployResDTO.getMemRequest())
+			.gpuReq(moduleDeployResDTO.getGpuRequest())
+			.workloadCmd(moduleDeployResDTO.getCommand())
+			.workingDir(moduleDeployResDTO.getWorkingDir())
+			.createdAt(moduleDeployResDTO.getCreatedAt())
+			.deletedAt(moduleDeployResDTO.getDeletedAt())
+			.creatorName(moduleDeployResDTO.getCreatorUserName())
+			.creatorId(moduleDeployResDTO.getCreatorId())
+			.creatorRealName(moduleDeployResDTO.getCreatorFullName())
+			.workloadType(moduleDeployResDTO.getType())
+			.workspaceName(moduleDeployResDTO.getWorkspaceName())
+			.deleteYN(DeleteYN.N)
+			.ide(moduleDeployResDTO.getIde())
+			.workloadStatus(WorkloadStatus.PENDING)
+			.gpuType(moduleDeployResDTO.getGpuType() != null ? moduleDeployResDTO.getGpuType() : null)
+			.gpuName(moduleDeployResDTO.getGpuName() != null ? moduleDeployResDTO.getGpuName() : null)
+			.nodeName(moduleDeployResDTO.getNodeName())
+			.gpuOnePerMemory(moduleDeployResDTO.getGpuOnePerMemory())
+			.replica(moduleDeployResDTO.getReplica())
+			.deployType(moduleDeployResDTO.getDeployType())
+			.modelRepoEntity(modelRepoEntity)
+			.modelVersion(moduleDeployResDTO.getModelVersion())
+			.build();
+
+		deployRepository.save(deployEntity);
+		saveMappings(moduleDeployResDTO, deployEntity);
+	}
+
 	@Override
-	public void interactiveJobUpdateHandler(Deployment beforeDeployment, Deployment afterDeployment) {
+	public void deploymentUpdateHandler(Deployment beforeDeployment, Deployment afterDeployment) {
 		if (isAstragoResource(afterDeployment) && isResourceUpdate(beforeDeployment, afterDeployment)) {
 			// 인터렉티브 상태 조회
 			WorkloadStatus beforeStatus = getInteractiveWorkloadStatus(beforeDeployment.getStatus());
@@ -259,7 +330,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 	}
 
 	@Override
-	public void interactiveJobDeleteHandler(Deployment deployment) {
+	public void deploymentDeleteHandler(Deployment deployment) {
 		if (!isAstragoResource(deployment)) {
 			return;
 		}
@@ -507,7 +578,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		publisher.publishEvent(workspaceUserAlertEvent);
 	}
 
-	private void saveInteractiveWorkloadHistory(String namespace, ModuleInteractiveJobResDTO interactiveJobResDTO) {
+	@Transactional
+	public void saveInteractiveWorkloadHistory(String namespace, ModuleInteractiveJobResDTO interactiveJobResDTO) {
 		//이미 저장된 워크로드 일 경우 조기 리턴
 		if (workloadHistoryRepo.findByResourceName(interactiveJobResDTO.getResourceName()).isPresent()) {
 			return;
@@ -520,7 +592,6 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.workspaceName(interactiveJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
 			.envs(interactiveJobResDTO.getEnvsMap())
-			.ports(interactiveJobResDTO.getPortsMap())
 			.cpuReq(interactiveJobResDTO.getCpuRequest())
 			.memReq(interactiveJobResDTO.getMemRequest())
 			.gpuReq(interactiveJobResDTO.getGpuRequest())
@@ -542,9 +613,23 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.nodeName(interactiveJobResDTO.getNodeName())
 			.gpuOnePerMemory(interactiveJobResDTO.getGpuOnePerMemory())
 			.build();
-
 		workloadHistoryRepo.save(jobEntity);
 
+		//port entity 생성해야함
+		String resourceName = interactiveJobResDTO.getResourceName();
+		List<List<ServicePort>> ports = svcModuleFacadeService.getPortsByWorkloadResourceName(
+			namespace, resourceName);
+		for (List<ServicePort> port : ports) {
+			for (ServicePort servicePort : port) {
+				PortEntity portEntity = PortEntity.builder()
+					.name(servicePort.getName())
+					.portNum(servicePort.getPort())
+					.targetPortNum(servicePort.getNodePort())
+					.build();
+				portEntity.setWorkload(jobEntity);
+				portRepository.save(portEntity);
+			}
+		}
 		saveMappings(interactiveJobResDTO, jobEntity);
 	}
 

@@ -14,8 +14,8 @@ spring:
       matching-strategy: ant_path_matcher
   datasource:
     url: jdbc:mariadb://localhost:3306/astrago
-#    url: jdbc:mariadb://10.61.3.161:30010/astrago
 #    url: jdbc:mariadb://10.61.3.12:30010/astrago
+#    url: jdbc:mariadb://10.61.3.161:30010/astrago
     username: root
     password: root
     hikari:
@@ -72,6 +72,7 @@ astrago:
     dockerImage:
       name: xiilab/astrago-dataset-nginx
       hostPath: /usr/share/nginx/html/directory
+  private-registry-url: ""
 
 github:
   public:

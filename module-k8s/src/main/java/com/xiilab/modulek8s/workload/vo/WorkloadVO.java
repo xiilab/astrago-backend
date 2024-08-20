@@ -272,7 +272,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 			.build();
 		EnvVar url = new EnvVarBuilder()
 			.withName("ASTRAGO_URL")
-			.withValue("astrago-backend-experiment.astrago.svc.cluster.local")
+			.withValue("http://astrago-backend-experiment.astrago.svc.cluster.local:8080")
 			.build();
 		return List.of(wlNameEnv, userId, url);
 	}
