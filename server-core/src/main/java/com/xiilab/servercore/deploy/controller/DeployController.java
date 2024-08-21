@@ -87,5 +87,13 @@ public class DeployController {
 		return ResponseEntity.ok().build();
 	}
 
+	@GetMapping("/deploys/{deployResourceName}/end-log")
+	@Operation(summary = "종료된 deploy 로그 조회하기")
+	public ResponseEntity<byte[]> getDeployEndLog(
+		@PathVariable(name = "deployResourceName") String deployResourceName,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
+		return ResponseEntity.ok()
+			.body(deployFacadeService.getDeployEndLog(deployResourceName, userInfoDTO));
+	}
 
 }
