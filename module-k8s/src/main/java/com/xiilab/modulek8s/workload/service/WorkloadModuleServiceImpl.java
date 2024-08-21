@@ -227,6 +227,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return workloadRepository.connectBatchJobTerminal(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.DISTRIBUTED) {
 			return workloadRepository.connectDistributeJobTerminal(workspaceName, workloadName);
+		} else if(workloadType == WorkloadType.DEPLOY){
+			return workloadRepository.connectInteractiveJobTerminal(workspaceName, workloadName);
 		} else {
 			return null;
 		}
