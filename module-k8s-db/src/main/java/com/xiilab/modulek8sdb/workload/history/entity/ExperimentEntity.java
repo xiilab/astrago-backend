@@ -61,6 +61,8 @@ public class ExperimentEntity {
 						.build())
 				.toList();
 			this.labels.addAll(labelEntities);
+		} else {
+			this.labels.clear();
 		}
 	}
 }
