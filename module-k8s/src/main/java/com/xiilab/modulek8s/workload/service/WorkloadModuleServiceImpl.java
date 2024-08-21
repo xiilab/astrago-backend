@@ -240,6 +240,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return workloadRepository.getBatchJobPod(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.DISTRIBUTED) {
 			return workloadRepository.getDistributedLauncherPod(workspaceName, workloadName);
+		} else if(workloadType == WorkloadType.DEPLOY){
+			return workloadRepository.getInteractiveJobPod(workspaceName, workloadName);
 		} else {
 			return null;
 		}
