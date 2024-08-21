@@ -72,7 +72,9 @@ import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
+import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -119,6 +121,7 @@ public class DeployFacadeServiceImpl {
 	private final CodeService codeService;
 	private final UserFacadeService userFacadeService;
 	private final PortRepository portRepository;
+	private final WorkloadHistoryRepo workloadHistoryRepo;
 
 	@Transactional
 	public void createDeploy(CreateDeployReqDTO createDeployReqDTO, MultipartFile tritonConfigFile, UserDTO.UserInfo userInfoDTO) {
@@ -604,6 +607,7 @@ public class DeployFacadeServiceImpl {
 		Optional<DeployEntity> deployEntity = deployRepository.findByResourceName(deployResourceName);
 		if(deployEntity.isPresent()){
 			DeployEntity deploy = deployEntity.get();
+			WorkloadEntity jobEntity = workloadHistoryRepo.findById(deploy.getId()).get();
 			// owner 권한인 워크스페이스 목록 가져옴
 			List<String> loginUserOwnerWorkspaceList = userInfoDTO.getWorkspaces()
 				.stream()
@@ -635,7 +639,7 @@ public class DeployFacadeServiceImpl {
 			} else {
 				throw new IllegalArgumentException("해당 유저는 서비스 삭제 권한이 없습니다.");
 			}
-			deployRepository.deleteById(deploy.getId());
+			workloadHistoryRepo.deleteByWorkloadId(jobEntity.getId());
 			imageService.deleteImageWorkloadMapping(deploy.getId());
 			codeService.deleteCodeWorkloadMapping(deploy.getId());
 			volumeService.deleteVolumeWorkloadMappingByDeployId(deploy.getId());

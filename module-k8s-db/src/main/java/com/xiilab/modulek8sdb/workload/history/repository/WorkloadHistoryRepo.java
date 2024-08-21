@@ -70,4 +70,10 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 	void insertGpuInfo(@Param("resourceName") String resourceName, @Param("gpuName") String gpuName,
 		@Param("memory") int memory,
 		@Param("nodeName") String nodeName);
+
+	@Modifying
+	@Query("update TB_WORKLOAD tw "
+		+ "set tw.deleteYN = 'Y'"
+		+ "where tw.id =:workloadId")
+	void deleteByWorkloadId(@Param("workloadId") Long workloadId);
 }
