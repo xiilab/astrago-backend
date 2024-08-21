@@ -366,7 +366,8 @@ public class DeployFacadeServiceImpl {
 		for (int i = 0; i < pods.size(); i++) {
 			String replicaName = "replica_" + (i + 1);
 			String podResourceName = pods.get(i).getMetadata().getName();
-			replicas.add(new ResReplica(replicaName, podResourceName));
+			String nodeName = pods.get(i).getSpec().getNodeName();
+			replicas.add(new ResReplica(replicaName, podResourceName, nodeName));
 		}
 		return replicas;
 	}
