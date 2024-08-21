@@ -410,7 +410,7 @@ public class DeployFacadeServiceImpl {
 		IOException {
 		try {
 			String log = workloadModuleFacadeService.getWorkloadLogByWorkloadName(workSpaceName, workloadName,
-				WorkloadType.INTERACTIVE);
+				WorkloadType.DEPLOY);
 			FileUtils.saveLogFile(log, workloadName, userInfoDTO.getId());
 		} catch (KubernetesClientException | K8sException ignored) {
 
@@ -644,6 +644,16 @@ public class DeployFacadeServiceImpl {
 			codeService.deleteCodeWorkloadMapping(deploy.getId());
 			volumeService.deleteVolumeWorkloadMappingByDeployId(deploy.getId());
 			eventPublisher.publishEvent(workspaceUserAlertEvent);
+		}
+	}
+
+	public byte[] getDeployEndLog(String deployResourceName, UserDTO.UserInfo userInfoDTO) {
+		//저장된 로그 path 구하기
+		String logPath = FileUtils.getUserLogPath(userInfoDTO.getId(), deployResourceName);
+		try {
+			return Files.readAllBytes(Path.of(logPath));
+		} catch (IOException e) {
+			throw new RestApiException(WorkloadErrorCode.NOT_FOUND_JOB_LOG);
 		}
 	}
 }
