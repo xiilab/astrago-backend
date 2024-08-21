@@ -590,7 +590,7 @@ create table if not exists TB_PORT
     PORT_TARTGET_NUM     int          null,
     PORT_ID              bigint auto_increment
         primary key,
-    workload_WORKLOAD_ID bigint       null,
+    WORKLOAD_ID bigint       null,
     PORT_NAME            varchar(255) null
 );
 
