@@ -4,8 +4,9 @@ import static com.xiilab.modulecommon.enums.MailAttribute.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
@@ -94,13 +95,12 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 		log.info("hour : {}", hour);
 
 		//prometheus에서 기준치 이상을 넘은 워크로드 조회
-		List<ResponseDTO.RealTimeDTO> totalList = getOverResourcePodList(cpuLimit, memLimit, gpuLimit, hour);
-		List<ResponseDTO.RealTimeDTO> alarmList = getOverResourcePodList(cpuLimit, memLimit, gpuLimit, hour - 1);
+		List<ResponseDTO.RealTimeDTO> totalList = getUnderResourcePodList(cpuLimit, memLimit, gpuLimit, hour);
+		List<ResponseDTO.RealTimeDTO> alarmList = getUnderResourcePodList(cpuLimit, memLimit, gpuLimit, hour - 1);
 
 		//최적화 대상에 대한 distinct 처리 진행
 		List<ResourceOptimizationTargetDTO> alarmDistinctList = alarmList.stream()
 			.map(realTimeDTO -> new ResourceOptimizationTargetDTO(realTimeDTO.nameSpace(), realTimeDTO.podName()))
-			.distinct()
 			.toList();
 
 		List<AbstractModuleWorkloadResDTO> alarmParentList = workloadModuleService.getParentControllerList(
@@ -110,11 +110,8 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 		//최적화 대상에 대한 distinct 처리 진행
 		List<ResourceOptimizationTargetDTO> list = totalList.stream()
 			.map(realTimeDTO -> new ResourceOptimizationTargetDTO(realTimeDTO.nameSpace(), realTimeDTO.podName()))
-			.distinct()
 			.toList();
 
-		log.info("over resource total pod list count : {}", list.size());
-		List<AbstractModuleWorkloadResDTO> parentControllerList = workloadModuleService.getParentControllerList(list);
 		int resultCnt = workloadModuleService.optimizationInteractiveWorkload(list);
 
 		log.info("자원회수된 workload의 개수 : {}", resultCnt);
@@ -150,27 +147,37 @@ public class InteractiveResourceOptimizationJob extends QuartzJobBean {
 		}
 	}
 
-	private List<ResponseDTO.RealTimeDTO> getOverResourcePodList(int cpu, int mem, int gpu, int hour) {
+	private List<ResponseDTO.RealTimeDTO> getUnderResourcePodList(int cpu, int mem, int gpu, int hour) {
 		//통합을 위한 리스트 생성
-		List<ResponseDTO.RealTimeDTO> totalList = new ArrayList<>();
 		LocalDateTime now = LocalDateTime.now().minusHours(hour);
 		String unixTimeStamp = String.valueOf(now.atZone(ZoneId.systemDefault()).toEpochSecond());
 
-		//prometheus에서 기준치 이상을 넘은 워크로드 조회
-		List<ResponseDTO.RealTimeDTO> overResourceCPUPodList = prometheusService.getRealTimeMetric(
+		//prometheus에서 기준치 미만의 리소스를 사용하고 있는 pod 조회
+		List<ResponseDTO.RealTimeDTO> underResourceCPUPodList = prometheusService.getRealTimeMetric(
 			Promql.RESOURCE_OPTIMIZATION_CPU, String.valueOf(hour), String.valueOf(cpu), unixTimeStamp);
-		List<ResponseDTO.RealTimeDTO> overResourceGPUPodList = prometheusService.getRealTimeMetric(
+		List<ResponseDTO.RealTimeDTO> underResourceGPUPodList = prometheusService.getRealTimeMetric(
 			Promql.RESOURCE_OPTIMIZATION_GPU, String.valueOf(hour), String.valueOf(gpu), unixTimeStamp);
-		List<ResponseDTO.RealTimeDTO> overResourceMEMPodList = prometheusService.getRealTimeMetric(
+		List<ResponseDTO.RealTimeDTO> underResourceMEMPodList = prometheusService.getRealTimeMetric(
 			Promql.RESOURCE_OPTIMIZATION_MEM, String.valueOf(hour), String.valueOf(mem), unixTimeStamp);
-		log.info("over resource cpu pod list count : {}", overResourceCPUPodList.size());
-		log.info("over resource gpu pod list count : {}", overResourceGPUPodList.size());
-		log.info("over resource mem pod list count : {}", overResourceMEMPodList.size());
+		log.info("under resource cpu target pod list count : {}", underResourceCPUPodList.size());
+		log.info("under resource gpu target pod list count : {}", underResourceGPUPodList.size());
+		log.info("under resource mem target pod list count : {}", underResourceMEMPodList.size());
 
-		totalList.addAll(overResourceCPUPodList);
-		totalList.addAll(overResourceGPUPodList);
-		totalList.addAll(overResourceMEMPodList);
+		//기준치 미만의 pod들을 선별하기 위해 set으로 변경
+		Set<String> cpuPodName = underResourceCPUPodList.stream()
+			.map(ResponseDTO.RealTimeDTO::podName)
+			.collect(Collectors.toSet());
+		Set<String> memPodName = underResourceMEMPodList.stream()
+			.map(ResponseDTO.RealTimeDTO::podName)
+			.collect(Collectors.toSet());
+		Set<String> gpuPodName = underResourceGPUPodList.stream()
+			.map(ResponseDTO.RealTimeDTO::podName)
+			.collect(Collectors.toSet());
+		//기준치 미만의 pod들을 and 조건으로 선별
+		Set<String> selectedPod = cpuPodName.stream().filter(memPodName::contains).filter(gpuPodName::contains).collect(
+			Collectors.toSet());
 
-		return totalList;
+		log.info("resource optimization target pod list count : {}", selectedPod.size());
+		return underResourceCPUPodList.stream().filter(pod -> selectedPod.contains(pod.podName())).toList();
 	}
 }
