@@ -36,7 +36,7 @@ public class ModelRepoController {
 	@Operation(summary = "해당 워크스페이스에 전체 모델 리스트 조회 API")
 	public ResponseEntity<PageDTO<ModelRepoDTO.ResponseDTO>> getModelRepoList(
 		@PathVariable(name = "workspaceResourceName") String workspaceResourceName,
-		@RequestParam(value = "search", required = false) String search,
+		@RequestParam(value = "searchText", required = false) String search,
 		@RequestParam(value = "pageNum", required = false) int pageNum,
 		@RequestParam(value = "pageSize", required = false) int pageSize) {
 		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoList(workspaceResourceName, search, pageNum, pageSize), HttpStatus.OK);
@@ -91,8 +91,9 @@ public class ModelRepoController {
 	public ResponseEntity<PageDTO<ModelRepoDTO.VersionDTO>> updateModelRepoById(
 		@PathVariable(name = "modelRepoId") Long modelRepoId,
 		@RequestParam(value = "pageNum") int pageNum,
-		@RequestParam(value = "pageSize") int pageSize
+		@RequestParam(value = "pageSize") int pageSize,
+		@RequestParam(value = "sort") String sort
 	){
-		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoVersionList(modelRepoId,pageNum, pageSize), HttpStatus.OK);
+		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoVersionList(modelRepoId,pageNum, pageSize, sort), HttpStatus.OK);
 	}
 }

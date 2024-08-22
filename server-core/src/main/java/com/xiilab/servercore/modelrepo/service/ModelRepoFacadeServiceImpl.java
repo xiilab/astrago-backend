@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,11 +47,11 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		// 해당 워크스페이스에 등록된 Model List 조회
 		List<ModelRepoEntity> modelRepoEntityList = getModelRepoEntityListByWorkspaceResourceName(
 			workspaceResourceName, search);
-		List<ModelRepoDTO.ResponseDTO> list = modelRepoEntityList.stream()
+		List<ModelRepoDTO.ResponseDTO> modelRepoReqDtoList = modelRepoEntityList.stream()
 			.map(ModelRepoDTO.ResponseDTO::convertModelRepoDTO)
 			.toList();
 
-		return new PageDTO<>(list, pageNum, pageSize);
+		return new PageDTO<>(modelRepoReqDtoList, pageNum, pageSize);
 	}
 
 	private static FileInfoDTO copyModelToStorage(String wlModelPath, String storagePath) {
@@ -112,10 +113,14 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			// ModelRepoEntity save
 			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
 			setModelLabel(modelRepoReqDTO, saveModel);
-			// 해당 모델이 저장 되는 경로
-			String modelPath =
-				storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
-					saveModel.getModelRepoRealName().replace(" ", "");
+			String modelPath = "";
+			if(modelRepoReqDTO.getModelPath() == null) {
+				// 해당 모델이 저장 되는 경로
+				modelPath = storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
+						saveModel.getModelRepoRealName().replace(" ", "");
+			}else{
+				modelPath = storageEntity.getStoragePath() + saveModel.getModelRepoRealName().replace(" ", "");
+			}
 			saveModel.setModelPath(modelPath);
 			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
@@ -162,8 +167,9 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	}
 
 	@Override
-	public PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize){
-		List<ModelVersionEntity> getModelRepoEntity = versionRepository.findByModelRepoEntityId(modelRepoId);
+	public PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize, String sort){
+		Sort order = Sort.by(Sort.Direction.fromString(sort), "version");
+		List<ModelVersionEntity> getModelRepoEntity = versionRepository.findByModelRepoEntityId(modelRepoId, order);
 		List<ModelRepoDTO.VersionDTO> versionDTOS = getModelRepoEntity.stream()
 			.map(ModelRepoDTO.VersionDTO::convertVersionDTO)
 			.toList();
