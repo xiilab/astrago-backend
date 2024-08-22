@@ -7,11 +7,8 @@ import com.xiilab.modulecommon.enums.DeployType;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
-import com.xiilab.modulek8sdb.workload.history.entity.EnvEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
@@ -22,11 +19,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity(name = "TB_DEPLOY")
 @NoArgsConstructor
@@ -53,7 +48,7 @@ public class DeployEntity extends WorkloadEntity {
 	public DeployEntity(String uid, String name, String description, String resourceName, String workspaceName,
 		String workspaceResourceName, String nodeName, String gpuName, GPUType gpuType, Integer gpuOnePerMemory, Integer resourcePresetId, Float cpuReq, Integer gpuReq, Float memReq,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
-		Map<String, String> envs,
+		// Map<String, String> envs,
 		Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
 		DeleteYN deleteYN, String ide, String workingDir,
 		WorkloadStatus workloadStatus, int replica, DeployType deployType, ModelRepoEntity modelRepoEntity,
@@ -77,7 +72,7 @@ public class DeployEntity extends WorkloadEntity {
 		this.creatorId = creatorId;
 		this.creatorRealName = creatorRealName;
 		this.creatorName = creatorName;
-		this.envList = EnvEntity.generateEnvList(envs, this);
+		// this.envList = EnvEntity.generateEnvList(envs, this);
 		this.portList = PortEntity.generatePortList(ports, this);
 		this.workloadType = workloadType;
 		this.workingDir = workingDir;

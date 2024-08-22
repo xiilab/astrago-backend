@@ -35,8 +35,9 @@ public class JobEntity extends DevelopEntity {
 	JobEntity(String uid, String name, String description, String resourceName, String workspaceName,
 		String workspaceResourceName, String nodeName, String gpuName, GPUType gpuType, Integer gpuOnePerMemory, Integer resourcePresetId, Float cpuReq, Integer gpuReq, Float memReq,
 		LocalDateTime createdAt, LocalDateTime deletedAt, String creatorRealName, String creatorName, String creatorId,
-		Map<String, String> envs, // List<String> volumes,
-		Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
+		// Map<String, String> envs, // List<String> volumes,
+		Map<String, Integer> ports,
+		WorkloadType workloadType, String workloadCmd,
 		ImageEntity image, DeleteYN deleteYN, String ide, String workingDir, Map<String, String> parameter,
 		WorkloadStatus workloadStatus) {
 		this.uid = uid;
@@ -58,9 +59,9 @@ public class JobEntity extends DevelopEntity {
 		this.creatorId = creatorId;
 		this.creatorRealName = creatorRealName;
 		this.creatorName = creatorName;
-		this.envList = EnvEntity.generateEnvList(envs, this);
+		// this.envList = EnvEntity.generateEnvList(envs, this);
 		// this.volumeList = VolumeEntity.generateVolumeList(volumes, this);
-		this.portList = PortEntity.generatePortList(ports, this);
+		// this.portList = PortEntity.generatePortList(ports, this);
 		this.workloadType = workloadType;
 		this.workingDir = workingDir;
 		this.workloadCMD = workloadCmd;
