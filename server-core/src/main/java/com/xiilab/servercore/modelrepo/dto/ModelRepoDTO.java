@@ -27,6 +27,7 @@ public class ModelRepoDTO {
 	protected String modelName;
 	protected String description;
 	protected String workspaceResourceName;
+	protected String modelPath;
 	@Getter
 	@AllArgsConstructor
 	@NoArgsConstructor
@@ -39,7 +40,8 @@ public class ModelRepoDTO {
 			return ModelRepoEntity.builder()
 				.description(this.getDescription())
 				.modelName(this.getModelName())
-				.modelRepoRealName("model-" + UUID.randomUUID().toString().substring(6))
+				.modelRepoRealName(
+					this.modelPath != null ? this.getModelPath() : "model-" + UUID.randomUUID().toString().substring(6))
 				.workspaceResourceName(this.getWorkspaceResourceName())
 				.storageEntity(storageEntity)
 				.build();
@@ -58,7 +60,6 @@ public class ModelRepoDTO {
 		private String storageName;
 		private String ip;
 		private String storagePath;
-		private String modelPath;
 		private List<LabelDTO.ResponseDTO> labels;
 		private String creator;
 		private String creatorName;

@@ -24,6 +24,6 @@ public interface ModelRepoFacadeService {
 
 	void updateModelRepoById(long modelRepoId, ModelRepoDTO.UpdateDTO updateDTO);
 
-	PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize);
+	PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize, String sort);
 	ModelRepoEntity getModelRepoEntityById(long modelId);
 }
