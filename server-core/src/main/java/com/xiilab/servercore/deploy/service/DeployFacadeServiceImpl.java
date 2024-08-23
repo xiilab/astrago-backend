@@ -179,7 +179,8 @@ public class DeployFacadeServiceImpl {
 					throw new RestApiException(DeployErrorCode.NOT_FOUND_MODEL_VERSION);
 				}
 				String storageHostPath = findModel.getStorageEntity().getHostPath();
-				modelPath = storageHostPath + "/" + modelPath;  // /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
+				modelPath = storageHostPath + "/" + modelPath;
+				// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
 				// 모델 외 파일은 추후 작성
 				// default storage 조회 후 해당 경로에 triton model 디렉토리 생성
 				String deployUUID = "deploy-" + UUID.randomUUID().toString().substring(6);
@@ -226,14 +227,14 @@ public class DeployFacadeServiceImpl {
 					.requestVolume(defaultStorage.getRequestVolume())
 					.namespace(createDeployReqDTO.getWorkspaceResourceName())
 					.build();
-				k8sVolumeService.createPV(createPV);
+				// k8sVolumeService.createPV(createPV);
 				//pvc 생성
 				createPVC = CreatePVC.builder()
 					.pvcName(pvcName)
 					.namespace(createDeployReqDTO.getWorkspaceResourceName())
 					.requestVolume(defaultStorage.getRequestVolume())
 					.build();
-				k8sVolumeService.createPVC(createPVC);
+				// k8sVolumeService.createPVC(createPVC);
 				ModuleVolumeReqDTO volume = ModuleVolumeReqDTO.builder()
 					.mountPath("/models")
 					.createPV(createPV)
