@@ -146,7 +146,7 @@ public class DeployVO extends K8SResourceReqVO {
 			ValidUtils.isNullOrZero(this.resourcePresetId) ? "" : String.valueOf(this.resourcePresetId));
 		annotationMap.put(AnnotationField.DEPLOY_TYPE.getField(), this.deployType.name());
 		annotationMap.put(AnnotationField.DEPLOY_MODEL_ID.getField(), String.valueOf(this.deployModelId));
-		annotationMap.put(AnnotationField.DEPLOY_MODEL_VERSION.getField(), String.valueOf(this.modelVersion));
+		annotationMap.put(AnnotationField.DEPLOY_MODEL_VERSION.getField(), this.modelVersion == null ? "" : String.valueOf(this.modelVersion));
 		return annotationMap;
 	}
 

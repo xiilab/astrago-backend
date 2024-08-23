@@ -127,8 +127,10 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 			.resourcePresetId(resourcePresetId)
 			.imageSecretName(imageSecretName)
 			.replica(replica)
+			.imageType(ImageType.CUSTOM)
 			.deployType(deployType)
 			.deployModelId(modelId)
+			.modelVersion(modelVersion)
 			.build();
 	}
 
