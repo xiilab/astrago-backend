@@ -162,7 +162,7 @@ public class InteractiveJobVO extends WorkloadVO {
 		}
 		// GPU 지정
 		// TODO MIG MIXED일 때 처리 필요함
-		if (!StringUtils.isEmpty(this.gpuName) && gpuType != GPUType.MPS) {
+		if (!StringUtils.isEmpty(this.gpuName)) {
 			podSpecBuilder.withNodeSelector(Map.of("nvidia.com/gpu.product", this.gpuName));
 		}
 		cloneGitRepo(podSpecBuilder, codes);

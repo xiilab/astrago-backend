@@ -332,6 +332,7 @@ public class NodeFacadeService {
 							.gpuOnePerMemory(firstGpuInfo.getGpuOnePerMemory())
 							.maximumGpuCount(1)
 							.useAllGPUStatus(firstGpuInfo.isUseAllGPUStatus())
+							.isMigMixed(firstGpuInfo.isMigMixed())
 							.build());
 					}
 				}

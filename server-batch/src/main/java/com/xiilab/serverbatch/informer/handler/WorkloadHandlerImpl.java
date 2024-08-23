@@ -33,7 +33,6 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
-import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.DistributedJobRole;
 import com.xiilab.modulek8s.common.enumeration.EntityMappingType;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
@@ -67,7 +66,6 @@ import com.xiilab.modulek8sdb.image.repository.ImageRepository;
 import com.xiilab.modulek8sdb.image.repository.ImageWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.label.repository.LabelRepository;
-import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
@@ -247,7 +245,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (deployRepository.findByResourceName(moduleDeployResDTO.getResourceName()).isPresent()) {
 			return;
 		}
-		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(moduleDeployResDTO.getDeployModelId()).orElse(null);
+
+		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(moduleDeployResDTO.getDeployModelId()).get();
 		DeployEntity deployEntity = DeployEntity.builder()
 			.uid(moduleDeployResDTO.getUid())
 			.name(moduleDeployResDTO.getName())
@@ -591,7 +590,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourceName(interactiveJobResDTO.getResourceName())
 			.workspaceName(interactiveJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(interactiveJobResDTO.getEnvsMap())
+			// .envs(interactiveJobResDTO.getEnvsMap())
 			.cpuReq(interactiveJobResDTO.getCpuRequest())
 			.memReq(interactiveJobResDTO.getMemRequest())
 			.gpuReq(interactiveJobResDTO.getGpuRequest())
@@ -613,6 +612,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.nodeName(interactiveJobResDTO.getNodeName())
 			.gpuOnePerMemory(interactiveJobResDTO.getGpuOnePerMemory())
 			.build();
+
+		jobEntity.addEnvs(interactiveJobResDTO.getEnvsMap());
 		workloadHistoryRepo.save(jobEntity);
 
 		//port entity 생성해야함
@@ -646,7 +647,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourceName(batchJobResDTO.getResourceName())
 			.workspaceName(batchJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(batchJobResDTO.getEnvsMap())
+			// .envs(batchJobResDTO.getEnvsMap())
 			.ports(batchJobResDTO.getPortsMap())
 			.cpuReq(batchJobResDTO.getCpuRequest())
 			.memReq(batchJobResDTO.getMemRequest())
@@ -671,6 +672,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourcePresetId(batchJobResDTO.getResourcePresetId())
 			.build();
 
+		jobEntity.addEnvs(batchJobResDTO.getEnvsMap());
 		workloadHistoryRepo.save(jobEntity);
 
 		saveMappings(batchJobResDTO, jobEntity);
@@ -689,7 +691,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourceName(distributedJobResDTO.getResourceName())
 			.workspaceName(distributedJobResDTO.getWorkspaceName())
 			.workspaceResourceName(namespace)
-			.envs(distributedJobResDTO.getEnvsMap())
+			// .envs(distributedJobResDTO.getEnvsMap())
 			.ports(distributedJobResDTO.getPortsMap())
 			.launcherCpuRequest(distributedJobResDTO.getLauncherInfo().getCpuRequest())
 			.launcherMemRequest(distributedJobResDTO.getLauncherInfo().getMemRequest())
@@ -717,6 +719,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.resourcePresetId(distributedJobResDTO.getResourcePresetId())
 			.build();
 
+		distributedJob.addEnvs(distributedJobResDTO.getEnvsMap());
 		workloadHistoryRepo.save(distributedJob);
 
 		saveMappings(distributedJobResDTO, distributedJob);

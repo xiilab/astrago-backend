@@ -3,6 +3,7 @@ package com.xiilab.modulek8sdb.workload.history.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -158,5 +159,23 @@ public abstract class WorkloadEntity {
 			}
 			this.experimentList.add(experiment);
 		}
+	}
+
+	public void addEnvs(Map<String, String> envs) {
+		if (CollectionUtils.isEmpty(envs)) {
+			return ;
+		}
+
+		envs.forEach((key, value) -> {
+			EnvEntity envEntity = EnvEntity.builder()
+				.key(key)
+				.value(value)
+				.workload(this) // 양방향 연관관계 설정
+				.build();
+
+			if (!this.envList.contains(envEntity)) { // 중복 방지
+				this.envList.add(envEntity);
+			}
+		});
 	}
 }
