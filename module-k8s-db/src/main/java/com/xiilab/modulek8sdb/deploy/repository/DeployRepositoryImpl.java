@@ -47,6 +47,26 @@ public class DeployRepositoryImpl implements DeployRepositoryCustom{
 		return new PageImpl<>(deployEntities, pageRequest, count);
 	}
 
+	@Override
+	public PageImpl<DeployEntity> getDeploysUsingModel(PageRequest pageRequest, Long modelRepoId) {
+		List<DeployEntity> deployEntities = queryFactory.selectFrom(deployEntity)
+			.where(
+				deployEntity.modelRepoEntity.id.eq(modelRepoId),
+				deleteYnEqN()
+			)
+			.orderBy(deployEntity.createdAt.desc())
+			.offset(pageRequest.getOffset())
+			.limit(pageRequest.getPageSize())
+			.fetch();
+		Long count = queryFactory.select(deployEntity.count())
+			.from(deployEntity)
+			.where(
+				deployEntity.modelRepoEntity.id.eq(modelRepoId),
+				deleteYnEqN()
+			).fetchOne();
+		return new PageImpl<>(deployEntities, pageRequest, count);
+	}
+
 	private static BooleanExpression eqWorkloadStatus(WorkloadStatus deploySearchCondition) {
 		if(deploySearchCondition == null){
 			return null;

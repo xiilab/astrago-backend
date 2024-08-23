@@ -8,4 +8,6 @@ import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
 
 public interface DeployRepositoryCustom {
 	PageImpl<DeployEntity> getDeploys(String workspaceResourceName, DeploySearchCondition deploySearchCondition, PageRequest pageRequest);
+
+	PageImpl<DeployEntity> getDeploysUsingModel(PageRequest pageRequest, Long modelRepoId);
 }

@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
+import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 
 public interface ModelRepoFacadeService {
@@ -26,4 +27,6 @@ public interface ModelRepoFacadeService {
 
 	PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize, String sort);
 	ModelRepoEntity getModelRepoEntityById(long modelId);
+
+	ResDeploys getDeploysUsingModel(Long modelRepoId, int pageNum, int pageSize);
 }

@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,8 @@ import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelRepoErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
+import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
+import com.xiilab.modulek8sdb.deploy.repository.DeployRepository;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
@@ -25,6 +29,7 @@ import com.xiilab.modulek8sdb.modelrepo.enums.ModelRepoType;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoVersionRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.storage.service.StorageService;
 
@@ -41,6 +46,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	private final LabelRepository labelRepository;
 	private final StorageService storageService;
 	private final ModelRepoVersionRepository versionRepository;
+	private final DeployRepository deployRepository;
 
 	@Override
 	public PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, String search, int pageNum, int pageSize) {
@@ -199,6 +205,15 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	public ModelRepoEntity getModelRepoEntityById(long modelRepoId) {
 		return modelRepoRepository.findById(modelRepoId)
 			.orElseThrow(() -> new RestApiException(ModelRepoErrorCode.MODEL_REPO_NOT_FOUND));
+	}
+
+	@Override
+	public ResDeploys getDeploysUsingModel(Long modelRepoId, int pageNum, int pageSize) {
+		PageRequest pageRequest = PageRequest.of(pageNum - 1, pageSize);
+		PageImpl<DeployEntity> deploysUsingModel = deployRepository.getDeploysUsingModel(pageRequest, modelRepoId);
+		List<DeployEntity> content = deploysUsingModel.getContent();
+		long totalCount = deploysUsingModel.getTotalElements();
+		return ResDeploys.entitiesToDtos(content, totalCount);
 	}
 
 	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.WlModelRepoDTO wlModelRepoDTO) {
