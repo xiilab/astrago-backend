@@ -357,3 +357,7 @@ values  (1, 'SMALL', 'SMALL', null, null, 1, 2.0, 4.0, 'SINGLE', now(), null, 'S
         (6, 'MEDIUM', 'MEDIUM', 3.0, 7.0, 3, 4.0, 8.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM'),
         (8, 'SMALL', 'SMALL', 2.0, 5.0, 2, 2.0, 4.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM')
 ON DUPLICATE KEY UPDATE RESOURCE_PRESET_ID = RESOURCE_PRESET_ID;
+
+INSERT INTO TB_PLUGIN (ID, NAME, VERSION, INSTALL_YN)
+values  (1, 'DELL_UNITY', '2.11.0', 'N')
+ON DUPLICATE KEY UPDATE ID = ID;
