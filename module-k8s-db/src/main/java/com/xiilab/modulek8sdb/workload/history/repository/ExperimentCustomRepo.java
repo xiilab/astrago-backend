@@ -52,6 +52,7 @@ public class ExperimentCustomRepo {
 				eqUserId(userId),
 				eqStatus(status)
 			)
+			.orderBy(experimentEntity.createdTime.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();
