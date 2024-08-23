@@ -90,7 +90,7 @@ public class TusService {
 		//파일 업로드 경로
 		String filePath = modelRepoEntity.getModelPath() + "/v1/";
 		// 파일 저장
-		Long fileSize = getFilePath(request, filePath, filename);
+		getFilePath(request, filePath, filename);
 	}
 
 	private ModelRepoDTO.RequestDTO getModelRepoDTO(UploadInfo uploadInfo) {
@@ -103,6 +103,8 @@ public class TusService {
 			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
 		String workspaceResourceName = Optional.ofNullable(uploadInfo.getMetadata().get("workspaceResourceName"))
 			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
+		String modelPath = Optional.ofNullable(uploadInfo.getMetadata().get("modelPath"))
+			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
 		List<Long> labelsIds = getLabels(
 			Optional.ofNullable(uploadInfo.getMetadata().get("labelsIds"))
 				.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE)));
@@ -113,6 +115,7 @@ public class TusService {
 			.workspaceResourceName(workspaceResourceName)
 			.labelIds(labelsIds)
 			.storageId(storageId)
+			.modelPath(modelPath)
 			.build();
 	}
 

@@ -88,8 +88,9 @@ public class DeployVO extends K8SResourceReqVO {
 	private String jobName;
 	private String modelVersion;
 	private int replica;
-	protected long deployModelId;
-	protected DeployType deployType;
+	private long deployModelId;
+	private DeployType deployType;
+	private String initContainerUrl;
 
 	@Override
 	public Deployment createResource() {
@@ -158,10 +159,13 @@ public class DeployVO extends K8SResourceReqVO {
 		map.put(LabelField.JOB_NAME.getField(), jobName);
 		map.put(LabelField.GPU_NAME.getField(), gpuName);
 		map.put(LabelField.GPU_TYPE.getField(), gpuType.name());
+		map.put(LabelField.DEPLOY_MODEL_ID.getField(), String.valueOf(this.deployModelId));
+		if(this.volumes != null && this.volumes.size() > 0){
+			this.volumes.forEach(volume -> addVolumeMap(map, "vl-", volume.id()));
+		}
 		if(this.codes != null && this.codes.size() > 0){
 			this.codes.forEach(code -> addVolumeMap(map, "cd-", code.id()));
 		}
-
 		return map;
 	}
 
@@ -346,6 +350,9 @@ public class DeployVO extends K8SResourceReqVO {
 	}
 	private Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
+		if(this.volumes != null && this.volumes.size() > 0){
+			this.volumes.forEach(volume -> addVolumeMap(map, "vl-", volume.id()));
+		}
 		if(this.codes != null && this.codes.size() > 0){
 			this.codes.forEach(code -> {
 				if (!ValidUtils.isNullOrZero(code.id())) {

@@ -48,7 +48,7 @@ public class ResDeploys {
 				.creatorUserName(deploy.getCreatorName())
 				.creatorFullName(deploy.getCreatorRealName())
 				.createdAt(deploy.getCreatedAt())
-				.modelName(deploy.getModelRepoEntity().getModelName())
+				.modelName(deploy.getModelRepoEntity() != null ? deploy.getModelRepoEntity().getModelName() : null)
 				.modelVersion(deploy.getModelVersion())
 				.build();
 		}

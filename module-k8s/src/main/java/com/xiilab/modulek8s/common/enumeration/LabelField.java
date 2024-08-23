@@ -18,6 +18,7 @@ public enum LabelField {
 	JOB_NAME("job-name"),
 	GPU_NAME("gpu-name"),
 	GPU_TYPE("gpu-type"),
+	DEPLOY_MODEL_ID("deploy-model-id"),
 	APP("app");
 
 	private final String field;
