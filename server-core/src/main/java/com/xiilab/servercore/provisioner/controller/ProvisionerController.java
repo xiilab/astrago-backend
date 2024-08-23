@@ -59,7 +59,8 @@ public class ProvisionerController {
 	@Operation(summary = "플러그인 설치 ")
 	public ResponseEntity<HttpStatus> installPlugin(
 		@PathVariable(name = "id") Long id,
-		@PathVariable(name = "result") boolean result ) {
+		@PathVariable(name = "result") boolean result,
+		@RequestBody PluginDTO.DellUnityDTO dellUnityDTO) {
 		provisionerFacadeService.installPlugin(id, result);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

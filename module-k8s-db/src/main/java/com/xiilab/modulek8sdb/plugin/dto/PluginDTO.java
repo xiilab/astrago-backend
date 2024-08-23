@@ -31,4 +31,15 @@ public class PluginDTO {
 			this.installYN = plugin.getInstallYN().name();
 		}
 	}
+
+	@Getter
+	@SuperBuilder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class DellUnityDTO {
+		private String arrayId;
+		private String userName;
+		private String password;
+		private String endPoint;
+	}
 }
