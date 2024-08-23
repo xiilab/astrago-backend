@@ -1,5 +1,6 @@
 package com.xiilab.servercore.deploy.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,9 +13,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -33,6 +36,7 @@ import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -42,6 +46,7 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
+import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.deploy.repository.DeployK8sRepository;
 import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
@@ -49,6 +54,7 @@ import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.K8sVolumeService;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
@@ -61,12 +67,15 @@ import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadRes
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
+import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.deploy.dto.DeploySearchCondition;
 import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
 import com.xiilab.modulek8sdb.deploy.repository.DeployRepository;
 import com.xiilab.modulek8sdb.image.entity.ImageEntity;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelVersionEntity;
+import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
@@ -90,6 +99,7 @@ import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.storage.service.StorageService;
 import com.xiilab.servercore.user.service.UserFacadeService;
+import com.xiilab.servercore.volume.dto.VolumeResDTO;
 import com.xiilab.servercore.volume.service.VolumeService;
 import com.xiilab.servercore.workload.dto.response.FindWorkloadResDTO;
 
@@ -122,6 +132,9 @@ public class DeployFacadeServiceImpl {
 	private final UserFacadeService userFacadeService;
 	private final PortRepository portRepository;
 	private final WorkloadHistoryRepo workloadHistoryRepo;
+	private final NetworkRepository networkRepository;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	@Transactional
 	public void createDeploy(CreateDeployReqDTO createDeployReqDTO, MultipartFile tritonConfigFile, UserDTO.UserInfo userInfoDTO) {
@@ -272,10 +285,120 @@ public class DeployFacadeServiceImpl {
 				}
 				throw new RestApiException(DeployErrorCode.FAILED_CREATE_DEPLOY);
 			}
+		}else{
+			// 이미지 credential 세팅
+			if (!ObjectUtils.isEmpty(createDeployReqDTO.getImage().getCredentialId())
+				&& createDeployReqDTO.getImage().getCredentialId() > 0) {
+				setImageCredentialReqDTO(createDeployReqDTO.getImage(), userInfoDTO);
+			}
+			// 볼륨 추가
+			if (!CollectionUtils.isEmpty(createDeployReqDTO.getVolumes())) {
+				setVolumes(createDeployReqDTO.getWorkspaceResourceName(), createDeployReqDTO.getVolumes());
+			}
+
+			try {
+				NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
+				// 커스텀 이미지일 때만 이미지 데이터 저장
+				// workloadModuleFacadeService.createJobWorkload(moduleCreateWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
+				// 리소스 초과 알림
+				log.info("폐쇄망 : " + network.getNetworkCloseYN());
+				checkAndSendWorkspaceResourceOverAlert(createDeployReqDTO, userInfoDTO);
+				NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+
+				String initContainerUrl = "";
+				String imageName = "";
+				if(networkCloseYN == NetworkCloseYN.Y){
+					if(isBlankSafe(privateRegistryUrl)){
+						initContainerUrl = network.getInitContainerImageUrl();
+					}else{
+						initContainerUrl = privateRegistryUrl + "/" + network.getInitContainerImageUrl();
+					}
+				}else{
+					initContainerUrl = network.getInitContainerImageUrl();
+				}
+				if(createDeployReqDTO.getImage().getType() != ImageType.CUSTOM && networkCloseYN == NetworkCloseYN.Y){
+					if(isBlankSafe(privateRegistryUrl)){
+						imageName = createDeployReqDTO.getImage().getName();
+					}else{
+						imageName = privateRegistryUrl + "/" + createDeployReqDTO.getImage().getName();
+					}
+				}else{
+					imageName = createDeployReqDTO.getImage().getName();
+				}
+				ModuleImageReqDTO image = createDeployReqDTO.getImage();
+				image.modifyName(imageName);
+				ModuleCreateDeployReqDTO userModuleDTO = createDeployReqDTO.toUserModuleDTO(initContainerUrl);
+				userModuleDTO.modifyImage(image);
+				CreateJobResDTO deployWorkload = workloadModuleFacadeService.createDeployWorkload(userModuleDTO);
+			} catch (Exception e) {
+				log.error(e.toString());
+				//생성된 리소스들 삭제해야함
+				//추 후
+				throw new RestApiException(DeployErrorCode.FAILED_CREATE_DEPLOY);
+			}
+
 		}
 
 	}
 
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
+	}
+	private void setVolumes(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Volume findVolume = volumeService.findById(moduleVolumeReqDTO.getId());
+			VolumeResDTO.ResVolumeWithStorage resVolumeWithStorage = VolumeResDTO.ResVolumeWithStorage.toDto(
+				findVolume);
+			if (resVolumeWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
+				String storagePath = resVolumeWithStorage.getStoragePath();
+				String saveDirectoryName = resVolumeWithStorage.getSaveDirectoryName();
+
+				// storagePath의 끝이 '/'로 끝나는지 여부 확인
+				if (!storagePath.endsWith(File.separator)) {
+					storagePath += File.separator;
+				}
+
+				String filePath = storagePath + saveDirectoryName;
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
+					filePath,
+					resVolumeWithStorage.getStorageType());
+			} else {
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
+					resVolumeWithStorage.getStoragePath(), resVolumeWithStorage.getStorageType());
+			}
+		}
+	}
+
+	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
+		String storagePath, StorageType storageType) {
+		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
+		int requestVolume = 50;
+
+		// PV 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.ip(ip)
+			.storagePath(storagePath)
+			.namespace(workspaceName)
+			.storageType(storageType)
+			.requestVolume(requestVolume)
+			.build();
+		moduleVolumeReqDTO.setCreatePV(createPV);
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(workspaceName)
+			.requestVolume(requestVolume)
+			.build();
+		moduleVolumeReqDTO.setCreatePVC(createPVC);
+	}
+	private void setImageCredentialReqDTO(ModuleImageReqDTO moduleImageReqDTO, UserDTO.UserInfo userInfoDTO) {
+		CredentialResDTO.CredentialInfo findCredential = credentialService.findCredentialById(
+			moduleImageReqDTO.getCredentialId(), userInfoDTO);
+		moduleImageReqDTO.setCredentialReqDTO(findCredential.toModuleCredentialReqDTO());
+	}
 	private void checkAndSendWorkspaceResourceOverAlert(CreateDeployReqDTO createDeployReqDTO,
 		UserDTO.UserInfo userInfoDTO) {
 		WorkspaceDTO.WorkspaceResourceStatus workspaceResourceStatus = workspaceService.getWorkspaceResourceStatus(

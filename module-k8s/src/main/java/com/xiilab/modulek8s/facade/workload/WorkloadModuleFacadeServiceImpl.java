@@ -594,6 +594,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 
 		CreateJobResDTO createJobResDTO = null;
 		try {
+			createPVAndPVC(moduleCreateDeployReqDTO.getVolumes());
 			createJobResDTO = workloadModuleService.createDeployWorkload(moduleCreateDeployReqDTO,
 				workspaceByName.getName());
 

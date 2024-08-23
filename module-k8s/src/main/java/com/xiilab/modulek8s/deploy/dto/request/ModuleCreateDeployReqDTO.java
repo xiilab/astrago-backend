@@ -51,6 +51,7 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 	protected List<ModuleVolumeReqDTO> volumes;
 	protected long deployModelId;
 	protected DeployType deployType;
+	protected String initContainerUrl;
 
 	public DeployVO toDeployVO(String workspaceName) {
 		initializeCollection();
@@ -81,6 +82,8 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 			.deployType(this.deployType)
 			.deployModelId(this.deployModelId)
 			.modelVersion(this.modelVersion)
+			.workingDir(this.workingDir)
+			.initContainerUrl(this.initContainerUrl)
 			.build();
 	}
 	protected void initializeCollection() {
@@ -96,5 +99,8 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 	}
 	public void setImageSecretName(String imageSecretName) {
 		this.imageSecretName = imageSecretName;
+	}
+	public void modifyImage(ModuleImageReqDTO image){
+		this.image = image;
 	}
 }
