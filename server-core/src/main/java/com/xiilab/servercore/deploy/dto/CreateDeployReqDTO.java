@@ -31,6 +31,7 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 	private ModuleImageReqDTO image;
 	private List<ModulePortReqDTO> ports;
 	private List<ModuleEnvReqDTO> envs;
+	private List<ModuleVolumeReqDTO> volumes;
 	private String workingDir;
 	private String command;
 	private String creatorId;
@@ -52,20 +53,23 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 	private int replica;
 	//nvidia triton config file
 	private String tritonConfigText;
+	private String initContainerUrl;
 
 	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {
 		this.creatorId = creatorId;
 		this.creatorUserName = creatorName;
 		this.creatorFullName = creatorFullName;
 	}
-	public void setNodeName(String nodeName){
+
+	public void setNodeName(String nodeName) {
 		this.nodeName = nodeName;
 	}
-	public void setPorts(List<ModulePortReqDTO> ports){
+
+	public void setPorts(List<ModulePortReqDTO> ports) {
 		this.ports = ports;
 	}
+
 	public ModuleCreateDeployReqDTO toTritonModuleDTO(List<ModuleVolumeReqDTO> volumes, ModuleImageReqDTO imageReqDTO) {
-		if(deployType == DeployType.TRITON){
 			return ModuleCreateDeployReqDTO.builder()
 				.name(getName())
 				.description(getDescription())
@@ -84,7 +88,7 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 				.creatorFullName(creatorFullName)
 				.volumes(volumes)
 				.nodeName(nodeName)
-				.gpuType(gpuType != null? gpuType : GPUType.NORMAL)
+				.gpuType(gpuType != null ? gpuType : GPUType.NORMAL)
 				.gpuName(gpuName)
 				.gpuOnePerMemory(gpuOnePerMemory)
 				.resourcePresetId(resourcePresetId)
@@ -95,35 +99,37 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 				.deployModelId(modelId)
 				.modelVersion(modelVersion)
 				.build();
-		}else{
-			return ModuleCreateDeployReqDTO.builder()
-				.name(getName())
-				.description(getDescription())
-				.workspace(workspaceResourceName)
-				.workloadType(workloadType)
-				.image(image)
-				.ports(ports)
-				.workingDir(workingDir)
-				.command(command)
-				.cpuRequest(cpuRequest)
-				.gpuRequest(gpuRequest)
-				.memRequest(memRequest)
-				.creatorId(creatorId)
-				.creatorUserName(creatorUserName)
-				.creatorFullName(creatorFullName)
-				.nodeName(nodeName)
-				.gpuType(gpuType != null? gpuType : GPUType.NORMAL)
-				.gpuName(gpuName)
-				.gpuOnePerMemory(gpuOnePerMemory)
-				.resourcePresetId(resourcePresetId)
-				.imageSecretName(imageSecretName)
-				.replica(replica)
-				.imageType(ImageType.BUILT)
-				.volumes(volumes)
-				.deployType(deployType)
-				.deployModelId(modelId)
-				.build();
-		}
+	}
+
+	public ModuleCreateDeployReqDTO toUserModuleDTO(String initContainerUrl) {
+		return ModuleCreateDeployReqDTO.builder()
+			.name(getName())
+			.description(getDescription())
+			.workspace(workspaceResourceName)
+			.workloadType(workloadType)
+			.image(image)
+			.volumes(volumes)
+			.ports(ports)
+			.envs(envs)
+			.workingDir(workingDir)
+			.command(command)
+			.cpuRequest(cpuRequest)
+			.gpuRequest(gpuRequest)
+			.memRequest(memRequest)
+			.creatorId(creatorId)
+			.creatorUserName(creatorUserName)
+			.creatorFullName(creatorFullName)
+			.initContainerUrl(initContainerUrl)
+			.nodeName(nodeName)
+			.gpuType(gpuType != null ? gpuType : GPUType.NORMAL)
+			.gpuName(gpuName)
+			.gpuOnePerMemory(gpuOnePerMemory)
+			.resourcePresetId(resourcePresetId)
+			.imageSecretName(imageSecretName)
+			.replica(replica)
+			.deployType(deployType)
+			.deployModelId(modelId)
+			.build();
 	}
 
 }

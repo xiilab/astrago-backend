@@ -247,7 +247,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if (deployRepository.findByResourceName(moduleDeployResDTO.getResourceName()).isPresent()) {
 			return;
 		}
-		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(moduleDeployResDTO.getDeployModelId()).get();
+		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(moduleDeployResDTO.getDeployModelId()).orElse(null);
 		DeployEntity deployEntity = DeployEntity.builder()
 			.uid(moduleDeployResDTO.getUid())
 			.name(moduleDeployResDTO.getName())
