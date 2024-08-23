@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulek8s.common.dto.PageDTO;
+import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
 
@@ -95,5 +96,16 @@ public class ModelRepoController {
 		@RequestParam(value = "sort") String sort
 	){
 		return new ResponseEntity<>(modelRepoFacadeService.getModelRepoVersionList(modelRepoId,pageNum, pageSize, sort), HttpStatus.OK);
+	}
+
+
+	@GetMapping("/{modelRepoId}/deploys")
+	@Operation(summary = "해당 모델을 사용중인 서비스 목록 조회")
+	public ResponseEntity<ResDeploys> getDeploysUsingModel(@PathVariable(name = "modelRepoId") Long modelRepoId,
+		@RequestParam(value = "pageNum") int pageNum,
+		@RequestParam(value = "pageSize") int pageSize
+		){
+		ResDeploys deploys = modelRepoFacadeService.getDeploysUsingModel(modelRepoId, pageNum, pageSize);
+		return new ResponseEntity<>(deploys, HttpStatus.OK);
 	}
 }

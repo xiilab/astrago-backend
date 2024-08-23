@@ -93,5 +93,4 @@ public class DeployController {
 		return ResponseEntity.ok()
 			.body(deployFacadeService.getDeployEndLog(deployResourceName, userInfoDTO));
 	}
-
 }
