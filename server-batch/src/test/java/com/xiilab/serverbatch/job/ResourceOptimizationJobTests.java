@@ -13,15 +13,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.xiilab.modulecommon.service.MailService;
-import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
+import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8sdb.smtp.repository.SmtpRepository;
 import com.xiilab.modulemonitor.dto.ResponseDTO;
 import com.xiilab.modulemonitor.enumeration.Promql;
 import com.xiilab.modulemonitor.service.PrometheusService;
 import com.xiilab.moduleuser.service.UserService;
 
-@SpringBootTest(classes = {BatchResourceOptimizationJob.class})
-public class BatchResourceOptimizationJobTests {
+@SpringBootTest(classes = {ResourceOptimizationJob.class})
+public class ResourceOptimizationJobTests {
+	@Autowired
+	private ResourceOptimizationJob resourceOptimizationJob;
 	@MockBean
 	private PrometheusService prometheusService;
 	@MockBean
@@ -30,14 +32,10 @@ public class BatchResourceOptimizationJobTests {
 	private UserService userService;
 	@MockBean
 	private SmtpRepository smtpRepository;
-	@MockBean
-	private WorkloadModuleService workloadModuleService;
-	@Autowired
-	private BatchResourceOptimizationJob batchResourceOptimizationJob;
 
 	@Test
 	@DisplayName("podName의 and조건이 정상적으로 동작한다.")
-	void getOptimizationJobTests() {
+	void getOptimizationAndJobTests() {
 		//given
 		when(prometheusService.getRealTimeMetric(eq(Promql.RESOURCE_OPTIMIZATION_CPU), any(), any(), any()))
 			.thenReturn(List.of(
@@ -59,10 +57,43 @@ public class BatchResourceOptimizationJobTests {
 				ResponseDTO.RealTimeDTO.builder().podName("test7").build()
 			));
 		//when
-		List<ResponseDTO.RealTimeDTO> underResourcePodList = batchResourceOptimizationJob.getUnderResourcePodList(1, 1,
-			1, 1);
+		List<ResourceOptimizationTargetDTO> underResourcePodList = resourceOptimizationJob.getUnderResourcePodList(
+			1, 1,
+			1, 1, true);
 		//then
 		Assertions.assertEquals(2, underResourcePodList.size());
+	}
+
+	@Test
+	@DisplayName("podName의 or조건이 정상적으로 동작한다.")
+	void getOptimizationOrJobTests() {
+		//given
+		when(prometheusService.getRealTimeMetric(eq(Promql.RESOURCE_OPTIMIZATION_CPU), any(), any(), any()))
+			.thenReturn(List.of(
+				ResponseDTO.RealTimeDTO.builder().podName("test1").build(),
+				ResponseDTO.RealTimeDTO.builder().podName("test2").build(),
+				ResponseDTO.RealTimeDTO.builder().podName("test3").build()
+			));
+		when(prometheusService.getRealTimeMetric(eq(Promql.RESOURCE_OPTIMIZATION_GPU), any(), any(), any()))
+			.thenReturn(List.of(
+				ResponseDTO.RealTimeDTO.builder().podName("test1").build(),
+				ResponseDTO.RealTimeDTO.builder().podName("test3").build(),
+				ResponseDTO.RealTimeDTO.builder().podName("test4").build(),
+				ResponseDTO.RealTimeDTO.builder().podName("test5").build()
+			));
+		when(prometheusService.getRealTimeMetric(eq(Promql.RESOURCE_OPTIMIZATION_MEM), any(), any(), any()))
+			.thenReturn(List.of(
+				ResponseDTO.RealTimeDTO.builder().podName("test1").build(),
+				ResponseDTO.RealTimeDTO.builder().podName("test3").build(),
+				ResponseDTO.RealTimeDTO.builder().podName("test7").build()
+			));
+		//when
+		List<ResourceOptimizationTargetDTO> underResourcePodList = resourceOptimizationJob.getUnderResourcePodList(
+			1, 1,
+			1, 1, false);
+		//then
+		Assertions.assertEquals(6, underResourcePodList.size());
+
 	}
 
 	@Test
@@ -80,8 +111,9 @@ public class BatchResourceOptimizationJobTests {
 		when(prometheusService.getRealTimeMetric(eq(Promql.RESOURCE_OPTIMIZATION_MEM), any(), any(), any())).thenReturn(
 			List.of());
 		//when
-		List<ResponseDTO.RealTimeDTO> underResourcePodList = batchResourceOptimizationJob.getUnderResourcePodList(1, 1,
-			1, 1);
+		List<ResourceOptimizationTargetDTO> underResourcePodList = resourceOptimizationJob.getUnderResourcePodList(
+			1, 1,
+			1, 1, true);
 		//then
 		Assertions.assertEquals(0, underResourcePodList.size());
 	}
