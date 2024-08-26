@@ -154,7 +154,7 @@ public enum Promql {
 		"n시간 동안 최대 MEM 사용량이 일정 수준 미만인 워크로드 조회", "MEM"),
 	// GPU
 	RESOURCE_OPTIMIZATION_GPU(
-		"(max_over_time(DCGM_FI_DEV_GPU_UTIL{pod=~\"wl-.*\"}[%sh]) < %s and on (namespace, pod) (kube_pod_created < %s)) < %s",
+		"(max_over_time(DCGM_FI_DEV_GPU_UTIL{pod=~\"wl-.*\"}[%sh]) < %s and on (namespace, pod) (kube_pod_created < %s))",
 		"n시간 동안 최대 GPU 사용량이 일정 수준 미만인 워크로드 조회", "GPU"),
 
 	// REPORT
