@@ -2,6 +2,7 @@ spring:
   # mariadb configuration
   datasource:
     jdbc-url: jdbc:mariadb://localhost:3306/astrago
+    #    jdbc-url: jdbc:mariadb://10.61.3.12:30010/astrago
     username: root
     password: root
     driver-class-name: org.mariadb.jdbc.Driver
@@ -17,6 +18,7 @@ spring:
   data:
     mongodb:
       url: mongodb://root:root@127.0.0.1:27017/astrago?authSource=admin
+      #      url: mongodb://astrago:xiirocks@10.61.3.12:30011/astrago?authSource=admin
       authentication-database: admin
 tus:
   upload-path: /root/astrago/tus/meta

@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ExperimentCustomRepo {
+public class ExperimentMariaCustomRepo {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	public Page<ExperimentQueryResult> getExperiments(String searchCondition, String workspace, String userId,
@@ -110,6 +110,10 @@ public class ExperimentCustomRepo {
 			);
 
 		return PageableExecutionUtils.getPage(experimentQueryResults, pageable, countQuery::fetchOne);
+	}
+
+	public void deleteExperimentsByIds(List<String> ids) {
+		jpaQueryFactory.delete(experimentEntity).where(experimentEntity.uuid.in(ids)).execute();
 	}
 
 	private BooleanExpression containsSearchCondition(String searchCondition) {

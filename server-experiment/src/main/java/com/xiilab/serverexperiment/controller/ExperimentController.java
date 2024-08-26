@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,5 +67,11 @@ public class ExperimentController {
 		return new ResponseEntity<>(
 			experimentDataService.searchExperimentTableData(userId, workspace, name, status, pageable),
 			HttpStatus.OK);
+	}
+
+	@DeleteMapping()
+	public ResponseEntity<HttpStatus> deleteExperimentData(@RequestParam List<String> ids) {
+		experimentDataService.deleteExperimentByIds(ids);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

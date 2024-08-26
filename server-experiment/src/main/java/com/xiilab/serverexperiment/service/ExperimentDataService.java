@@ -18,17 +18,17 @@ import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
 import com.xiilab.modulek8sdb.experiment.entity.ExperimentColumnEntity;
 import com.xiilab.modulek8sdb.experiment.repository.ChartRepository;
 import com.xiilab.modulek8sdb.experiment.repository.ExperimentColumnRepository;
-import com.xiilab.modulek8sdb.experiment.repository.LabelExperimentMappingRepository;
-import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.workload.history.dto.ExperimentQueryResult;
+import com.xiilab.modulek8sdb.workload.history.entity.ExperimentEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
-import com.xiilab.modulek8sdb.workload.history.repository.ExperimentCustomRepo;
+import com.xiilab.modulek8sdb.workload.history.repository.ExperimentMariaCustomRepo;
+import com.xiilab.modulek8sdb.workload.history.repository.ExperimentRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.serverexperiment.domain.mongo.Experiment;
 import com.xiilab.serverexperiment.domain.mongo.Workload;
 import com.xiilab.serverexperiment.dto.ExperimentDataDTO;
-import com.xiilab.serverexperiment.repository.ExperimentCustomRepository;
-import com.xiilab.serverexperiment.repository.ExperimentRepository;
+import com.xiilab.serverexperiment.repository.ExperimentMongoCustomRepository;
+import com.xiilab.serverexperiment.repository.ExperimentMongoRepository;
 import com.xiilab.serverexperiment.repository.WorkloadLogRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -38,13 +38,12 @@ import lombok.RequiredArgsConstructor;
 public class ExperimentDataService {
 	private final WorkloadLogRepository workloadLogRepository;
 	private final WorkloadHistoryRepo workloadHistoryRepo;
-	private final ExperimentRepository experimentRepository;
-	private final ExperimentCustomRepository experimentCustomRepository;
-	private final ExperimentCustomRepo experimentCustomRepo;
+	private final ExperimentRepo experimentRepo;
+	private final ExperimentMongoRepository experimentMongoRepository;
+	private final ExperimentMongoCustomRepository experimentMongoCustomRepository;
+	private final ExperimentMariaCustomRepo experimentMariaCustomRepo;
 	private final ChartRepository chartRepository;
 	private final ExperimentColumnRepository experimentColumnRepository;
-	private final LabelExperimentMappingRepository labelExperimentMappingRepository;
-	private final LabelRepository labelRepository;
 
 	@Transactional
 	public void saveExperimentData(ExperimentDataDTO.Req trainDataReq) {
@@ -56,7 +55,7 @@ public class ExperimentDataService {
 	}
 
 	public List<String> getExperimentDataKeyByIds(List<String> ids) {
-		return experimentCustomRepository.getExperimentKeysByIds(ids);
+		return experimentMongoCustomRepository.getExperimentKeysByIds(ids);
 	}
 
 	public ExperimentDataDTO.ChartRes searchExperimentsGraphData(
@@ -74,18 +73,18 @@ public class ExperimentDataService {
 		if (CollectionUtils.isEmpty(searchReq.getExperiments()) || CollectionUtils.isEmpty(searchReq.getMetrics())) {
 			throw new CommonException(CHART_ILLEGAL_ARGS);
 		}
-		return experimentCustomRepository.getGraphMetrics(searchReq.getExperiments(), searchReq.getMetrics());
+		return experimentMongoCustomRepository.getGraphMetrics(searchReq.getExperiments(), searchReq.getMetrics());
 	}
 
 	public Page<ExperimentDataDTO.TableDTO> searchExperimentTableData(String userId, String workspace,
 		String searchCondition, WorkloadStatus status, Pageable pageable) {
-		Page<ExperimentQueryResult> experiments = experimentCustomRepo.getExperiments(searchCondition, workspace,
+		Page<ExperimentQueryResult> experiments = experimentMariaCustomRepo.getExperiments(searchCondition, workspace,
 			userId, status, pageable);
 		List<ExperimentColumnEntity> userColumnData = experimentColumnRepository.findByWorkspaceAndRegUser_RegUserId(
 			workspace, userId);
 		List<String> metrics = userColumnData.stream().map(ExperimentColumnEntity::getName).toList();
 		List<String> exps = experiments.map(ExperimentQueryResult::getId).toList();
-		Map<String, ExperimentDataDTO.MetricEntry> stringMetricEntryMap = experimentCustomRepository.searchExperimentsTableData(
+		Map<String, ExperimentDataDTO.MetricEntry> stringMetricEntryMap = experimentMongoCustomRepository.searchExperimentsTableData(
 			exps, metrics);
 		return experiments.map(exp -> ExperimentDataDTO.TableDTO.builder()
 			.id(exp.getId())
@@ -96,6 +95,18 @@ public class ExperimentDataService {
 			.labels(exp.getLabels())
 			.metricEntry(stringMetricEntryMap.get(exp.getId()))
 			.build());
+	}
+
+	@Transactional
+	public void deleteExperimentByIds(List<String> ids) {
+		List<ExperimentEntity> experiments = experimentRepo.findByUuidIn(ids);
+		if (!CollectionUtils.isEmpty(experiments)) {
+			//mariaDB에서 삭제
+			experimentRepo.deleteAll(experiments);
+			//mongoDB에서 삭제
+			experimentMongoCustomRepository.deleteExperimentsLogsByUUIDs(ids);
+			experimentMongoCustomRepository.deleteExperimentsByUUIDs(ids);
+		}
 	}
 
 	private void saveExperiment(ExperimentDataDTO.Req trainDataReq) {
@@ -116,6 +127,6 @@ public class ExperimentDataService {
 				.build())
 			.toList();
 
-		experimentRepository.saveAll(experimentList);
+		experimentMongoRepository.saveAll(experimentList);
 	}
 }

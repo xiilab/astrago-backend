@@ -36,7 +36,7 @@ import com.xiilab.modulek8sdb.workload.history.entity.DistributedJobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.LabelWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
-import com.xiilab.modulek8sdb.workload.history.repository.ExperimentCustomRepo;
+import com.xiilab.modulek8sdb.workload.history.repository.ExperimentMariaCustomRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.ExperimentRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.LabelWorkloadMappingRepository;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
@@ -61,7 +61,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	private final WorkloadHistoryRepoCustom workloadHistoryRepoCustom;
 	private final ApplicationEventPublisher publisher;
 	private final UserFacadeService userFacadeService;
-	private final ExperimentCustomRepo experimentCustomRepo;
+	private final ExperimentMariaCustomRepo experimentMariaCustomRepo;
 	private final ExperimentRepo experimentRepo;
 
 	@Override
@@ -268,7 +268,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	public Page<ExperimentDTO> getExperiments(String searchCondition, String workspace, String userId,
 		WorkloadStatus status,
 		Pageable pageable) {
-		Page<ExperimentQueryResult> experiments = experimentCustomRepo.getExperiments(searchCondition, workspace,
+		Page<ExperimentQueryResult> experiments = experimentMariaCustomRepo.getExperiments(searchCondition, workspace,
 			userId, status, pageable);
 		return experiments.map(ExperimentDTO::new);
 	}
