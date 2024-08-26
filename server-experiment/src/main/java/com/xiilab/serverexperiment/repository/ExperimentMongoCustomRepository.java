@@ -20,11 +20,14 @@ import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
 import com.mongodb.BasicDBObject;
 import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
+import com.xiilab.serverexperiment.domain.mongo.Experiment;
+import com.xiilab.serverexperiment.domain.mongo.Workload;
 import com.xiilab.serverexperiment.dto.ExperimentDataDTO;
 import com.xiilab.serverexperiment.repository.dto.UniqueKeysResult;
 
@@ -32,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ExperimentCustomRepository {
+public class ExperimentMongoCustomRepository {
 	private final MongoTemplate mongoTemplate;
 
 	public List<String> getExperimentKeysByIds(List<String> ids) {
@@ -99,7 +102,6 @@ public class ExperimentCustomRepository {
 		operations.add(eqExperimentIds(experimentIds));
 		operations.add(filterMetric(metrics));
 		operations.add(arrayToObject()); // 필터링 후 arrayToObject 호출
-
 		operations.add(groupByWorkloadId());
 		operations.add(projectFields());
 
@@ -110,7 +112,19 @@ public class ExperimentCustomRepository {
 		return logs.getMappedResults();
 	}
 
+	public void deleteExperimentsLogsByUUIDs(List<String> uuids) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("workload_id").in(uuids));
 
+		mongoTemplate.remove(query, Experiment.class);
+	}
+
+	public void deleteExperimentsByUUIDs(List<String> uuids) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("id").in(uuids));
+
+		mongoTemplate.remove(query, Workload.class);
+	}
 
 	private MatchOperation eqExperimentIds(List<String> experimentIds) {
 		Criteria criteria = Criteria.where("workload_id").in(experimentIds);
