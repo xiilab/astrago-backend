@@ -642,18 +642,6 @@ create table if not exists TB_RESOURCE_QUOTA
     RESOURCE_QUOTA_STATUS         enum ('WAITING', 'APPROVE', 'REJECT') null
 );
 
-create table if not exists TB_RESOURCE_SCHEDULER
-(
-    cpu     int                                                             null,
-    gpu     int                                                             null,
-    hour    int                                                             null,
-    mem     int                                                             null,
-    running bit                                                             null,
-    id      bigint auto_increment
-        primary key,
-    jobType enum ('BATCH_JOB_OPTIMIZATION', 'INTERACTIVE_JOB_OPTIMIZATION') null
-);
-
 create table if not exists TB_STORAGE
 (
     STORAGE_REQUEST_VOLUME  int                           null,
