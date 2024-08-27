@@ -30,9 +30,15 @@ import lombok.extern.slf4j.Slf4j;
 public class ExperimentController {
 	private final ExperimentDataService experimentDataService;
 
-	@PostMapping("/")
-	public ResponseEntity<HttpStatus> saveExperimentData(@RequestBody ExperimentDataDTO.Req trainDataDTO) {
-		experimentDataService.saveExperimentData(trainDataDTO);
+	@PostMapping("/train")
+	public ResponseEntity<HttpStatus> saveTrainExperimentData(@RequestBody ExperimentDataDTO.TrainReq trainDataDTO) {
+		experimentDataService.saveExperimentTrainData(trainDataDTO);
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
+
+	@PostMapping("/system")
+	public ResponseEntity<HttpStatus> saveSystemExperimentData(@RequestBody ExperimentDataDTO.SystemReq systemDataDTO) {
+		experimentDataService.saveExperimentSystemData(systemDataDTO);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
