@@ -333,7 +333,7 @@ public class FindWorkloadResDTO extends ResDTO {
 			this.type = imageEntity.getImageType();
 			this.repositoryAuthType = imageEntity.getRepositoryAuthType();
 			if (imageEntity.getImageType() == ImageType.CUSTOM
-				&& ((CustomImageEntity)imageEntity).getCredentialEntity() != null) {
+				&& ((CustomImageEntity)Hibernate.unproxy(imageEntity)).getCredentialEntity() != null) {
 				this.credentialId = ((CustomImageEntity)imageEntity).getCredentialEntity().getId();
 				this.credentialName = ((CustomImageEntity)imageEntity).getCredentialEntity().getName();
 			}

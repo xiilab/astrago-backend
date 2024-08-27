@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -54,19 +55,18 @@ import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import com.xiilab.modulek8s.storage.volume.service.K8sVolumeService;
-import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
 import com.xiilab.modulek8s.workload.dto.response.CreateJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleCodeResDTO;
 import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
-import com.xiilab.modulek8s.workload.dto.response.abst.AbstractDistributedWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.deploy.dto.DeploySearchCondition;
@@ -780,5 +780,18 @@ public class DeployFacadeServiceImpl {
 		} catch (IOException e) {
 			throw new RestApiException(WorkloadErrorCode.NOT_FOUND_JOB_LOG);
 		}
+	}
+
+	public ResDeploys.DeployInfo getDeployInfo(String workspaceResourceName, String deployResourceName, UserDTO.UserInfo userInfoDTO) {
+		WorkloadEntity workloadEntity = workloadHistoryRepo.findByWorkspaceResourceNameAndResourceName(
+				workspaceResourceName, deployResourceName)
+			.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_DEPLOY_INFO));
+		// 삭제된 워크로드는 다른 에러메시지 처리
+		if (workloadEntity.getDeleteYN() == DeleteYN.Y) {
+			throw new RestApiException(WorkloadErrorCode.DELETED_DEPLOY_INFO);
+		}
+		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
+		workloadEntity.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
+		return ResDeploys.DeployInfo.from((DeployEntity) workloadEntity);
 	}
 }

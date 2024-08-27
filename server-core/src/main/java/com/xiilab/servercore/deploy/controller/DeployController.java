@@ -93,4 +93,13 @@ public class DeployController {
 		return ResponseEntity.ok()
 			.body(deployFacadeService.getDeployEndLog(deployResourceName, userInfoDTO));
 	}
+	@GetMapping("/deploys/{deployResourceName}")
+	@Operation(summary = "deploy 상세 조회")
+	public ResponseEntity<ResDeploys.DeployInfo> getDeployInfo(@PathVariable(name = "deployResourceName") String deployResourceName,
+		@RequestParam("workspaceResourceName") String workspaceResourceName,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO){
+		ResDeploys.DeployInfo deployInfo = deployFacadeService.getDeployInfo(workspaceResourceName, deployResourceName,
+			userInfoDTO);
+		return new ResponseEntity<>(deployInfo, HttpStatus.OK);
+	}
 }

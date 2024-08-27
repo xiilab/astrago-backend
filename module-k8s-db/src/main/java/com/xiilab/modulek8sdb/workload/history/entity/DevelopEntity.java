@@ -38,10 +38,6 @@ public class DevelopEntity extends WorkloadEntity {
 	protected List<ModelWorkLoadMappingEntity> modelWorkloadMappingList = new ArrayList<>();
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
-	protected List<VolumeWorkLoadMappingEntity> volumeWorkloadMappingList = new ArrayList<>();
-	@Builder.Default
-	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
 	protected List<CodeWorkLoadMappingEntity> codeWorkloadMappingList = new ArrayList<>();
-	@OneToOne(mappedBy = "workload")
-	protected ImageWorkloadMappingEntity imageWorkloadMappingEntity;
+
 }
