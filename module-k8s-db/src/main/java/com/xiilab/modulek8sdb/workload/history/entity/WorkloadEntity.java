@@ -14,7 +14,9 @@ import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
+import com.xiilab.modulek8sdb.image.entity.ImageWorkloadMappingEntity;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
+import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -29,6 +31,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -119,6 +122,11 @@ public abstract class WorkloadEntity {
 	protected List<ExperimentEntity> experimentList = new ArrayList<>();
 	@Transient
 	protected boolean canBeDeleted;
+	@OneToOne(mappedBy = "workload")
+	protected ImageWorkloadMappingEntity imageWorkloadMappingEntity;
+	@Builder.Default
+	@OneToMany(mappedBy = "workload", fetch = FetchType.LAZY)
+	protected List<VolumeWorkLoadMappingEntity> volumeWorkloadMappingList = new ArrayList<>();
 
 	// public void updateImage(ImageEntity image) {
 	// 	this.image = image;
