@@ -48,4 +48,6 @@ public interface WorkloadHistoryService {
 	List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(String workspaceResourceName);
 
 	FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO);
+
+	WorkloadEntity findById(Long id);
 }
