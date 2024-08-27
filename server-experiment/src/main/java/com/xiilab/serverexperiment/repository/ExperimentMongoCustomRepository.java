@@ -26,8 +26,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.mongodb.BasicDBObject;
 import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
-import com.xiilab.serverexperiment.domain.mongo.Experiment;
-import com.xiilab.serverexperiment.domain.mongo.Workload;
+import com.xiilab.serverexperiment.domain.mongo.ExperimentTrainMetric;
 import com.xiilab.serverexperiment.dto.ExperimentDataDTO;
 import com.xiilab.serverexperiment.repository.dto.UniqueKeysResult;
 
@@ -116,14 +115,7 @@ public class ExperimentMongoCustomRepository {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("workload_id").in(uuids));
 
-		mongoTemplate.remove(query, Experiment.class);
-	}
-
-	public void deleteExperimentsByUUIDs(List<String> uuids) {
-		Query query = new Query();
-		query.addCriteria(Criteria.where("id").in(uuids));
-
-		mongoTemplate.remove(query, Workload.class);
+		mongoTemplate.remove(query, ExperimentTrainMetric.class);
 	}
 
 	private MatchOperation eqExperimentIds(List<String> experimentIds) {
