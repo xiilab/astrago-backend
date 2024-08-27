@@ -89,7 +89,10 @@ import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
+import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
+import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -118,6 +121,7 @@ import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -146,6 +150,7 @@ public class WorkloadFacadeService {
 	private final NetworkRepository networkRepository;
 	private final UserFacadeService userFacadeService;
 	private final NodeFacadeService nodeFacadeService;
+	private final PortRepository portRepository;
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 
@@ -379,17 +384,40 @@ public class WorkloadFacadeService {
 		return generatePortResDTO(moduleWorkloadResDTO);
 	}
 
+	@Transactional
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 
 		FindWorkloadResDTO workloadInfo = workloadHistoryService.getWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
+		WorkloadEntity workloadEntity = workloadHistoryService.findById(workloadInfo.getId());
 		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
 		String ip = connectedNode.getIp();
-		List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
-			new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),ip + ":" + port.getTargetPort())).toList();
-		workloadInfo.setPorts(ports);
+
+		if(workloadInfo.getPorts() == null || workloadInfo.getPorts().size() == 0){
+			List<List<ServicePort>> servicePorts = svcModuleFacadeService.getPortsByWorkloadResourceName(
+				workspaceName, workloadResourceName);
+			List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+			for (List<ServicePort> port : servicePorts) {
+				for (ServicePort servicePort : port) {
+					PortEntity portEntity = PortEntity.builder()
+						.name(servicePort.getName())
+						.portNum(servicePort.getPort())
+						.targetPortNum(servicePort.getNodePort())
+						.build();
+					portEntity.setWorkload(workloadEntity);
+					portRepository.save(portEntity);
+					ports.add(new FindWorkloadResDTO.Port(servicePort.getName(), servicePort.getPort(), servicePort.getNodePort(), ip + ":" + servicePort.getNodePort()));
+				}
+			}
+			workloadInfo.setPorts(ports);
+		}else{
+			List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
+				new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),ip + ":" + port.getTargetPort())).toList();
+			workloadInfo.setPorts(ports);
+		}
+
 		try {
 			if (workloadInfo.getImage().getType() == ImageType.HUB) {
 				ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
@@ -397,7 +425,6 @@ public class WorkloadFacadeService {
 				workloadInfo.updateHubPredictTime(moduleBatchJobResDTO.getEstimatedInitialTime(),
 					moduleBatchJobResDTO.getEstimatedRemainingTime());
 			}
-
 			return workloadInfo;
 		} catch (Exception e) {
 			return workloadInfo;

@@ -278,4 +278,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	public void updateExperimentViewYN(List<String> experimentUUIDs, boolean isViewYN) {
 		experimentRepo.findByUuidIn(experimentUUIDs).forEach(experiment -> experiment.updateIsViewYN(isViewYN));
 	}
+
+	@Override
+	public WorkloadEntity findById(Long id) {
+		return workloadHistoryRepo.findById(id).orElseThrow(() -> new RestApiException(WorkloadErrorCode.NOT_FOUND_WORKLOAD));
+	}
 }

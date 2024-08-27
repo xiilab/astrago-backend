@@ -57,4 +57,6 @@ public interface WorkloadHistoryService {
 		Pageable pageable);
 
 	void updateExperimentViewYN(List<String> experimentUUIDs, boolean isViewYN);
+
+	WorkloadEntity findById(Long id);
 }
