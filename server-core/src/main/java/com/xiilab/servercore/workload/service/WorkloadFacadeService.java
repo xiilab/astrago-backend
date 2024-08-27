@@ -84,7 +84,9 @@ import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
+import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -111,6 +113,7 @@ import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -137,6 +140,7 @@ public class WorkloadFacadeService {
 	private final NetworkRepository networkRepository;
 	private final UserFacadeService userFacadeService;
 	private final NodeFacadeService nodeFacadeService;
+	private final PortRepository portRepository;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserDTO.UserInfo userInfoDTO) {
@@ -317,50 +321,39 @@ public class WorkloadFacadeService {
 		return generatePortResDTO(moduleWorkloadResDTO);
 	}
 
+	@Transactional
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 
 		FindWorkloadResDTO workloadInfo = workloadHistoryService.getWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
+		WorkloadEntity workloadEntity = workloadHistoryService.findById(workloadInfo.getId());
 		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
 		String ip = connectedNode.getIp();
-		List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
-			new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(), ip + ":" + port.getTargetPort())).toList();
-		workloadInfo.setPorts(ports);
+		if(workloadInfo.getPorts() == null || workloadInfo.getPorts().size() == 0){
+			List<List<ServicePort>> servicePorts = svcModuleFacadeService.getPortsByWorkloadResourceName(
+				workspaceName, workloadResourceName);
+			List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+			for (List<ServicePort> port : servicePorts) {
+				for (ServicePort servicePort : port) {
+					PortEntity portEntity = PortEntity.builder()
+						.name(servicePort.getName())
+						.portNum(servicePort.getPort())
+						.targetPortNum(servicePort.getNodePort())
+						.build();
+					portEntity.setWorkload(workloadEntity);
+					portRepository.save(portEntity);
+					ports.add(new FindWorkloadResDTO.Port(servicePort.getName(), servicePort.getPort(), servicePort.getNodePort(), ip + ":" + servicePort.getNodePort()));
+				}
+			}
+			workloadInfo.setPorts(ports);
+		}else{
+			List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
+				new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),ip + ":" + port.getTargetPort())).toList();
+			workloadInfo.setPorts(ports);
+		}
 		return workloadInfo;
-		// 실행중일 떄
-		// try {
-		// 	UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
-		// 	Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
-		// 	// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
-		// 	if (workloadType == WorkloadType.BATCH) {
-		// 		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
-		// 			workloadResourceName);
-		// 		// 삭제권한 업데이트
-		// 		moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
-		//
-		// 		return getActiveWorkloadDetail(moduleBatchJobResDTO);
-		// 	} else if (workloadType == WorkloadType.INTERACTIVE) {
-		// 		ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
-		// 			workspaceName, workloadResourceName);
-		// 		//삭제권한 업데이트
-		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-		//
-		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-		// 	} else if (workloadType == WorkloadType.DISTRIBUTED) {
-		// 		ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
-		// 			workspaceName, workloadResourceName);
-		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-		//
-		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-		// 	}
-		// } catch (Exception e) {
-		// 	return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
-		// 		userInfoDTO);
-		// }
-		//
-		// return null;
 	}
 
 	private <T extends AbstractModuleWorkloadResDTO> FindWorkloadResDTO getActiveWorkloadDetail(

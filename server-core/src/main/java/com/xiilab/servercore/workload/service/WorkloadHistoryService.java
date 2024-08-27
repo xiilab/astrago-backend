@@ -52,4 +52,6 @@ public interface WorkloadHistoryService {
 	List<WorkloadResDTO.WorkloadReportDTO> getWorkloadsByWorkspaceIdsAndBetweenCreatedAt(List<String> workspaceIds, LocalDate startDate, LocalDate endDate);
 
 	FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO);
+
+	WorkloadEntity findById(Long id);
 }

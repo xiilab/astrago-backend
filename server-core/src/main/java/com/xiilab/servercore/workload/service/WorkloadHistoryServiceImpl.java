@@ -97,6 +97,11 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
+	public WorkloadEntity findById(Long id) {
+		return workloadHistoryRepo.findById(id).orElseThrow(() -> new RestApiException(WorkloadErrorCode.NOT_FOUND_WORKLOAD));
+	}
+
+	@Override
 	public void deleteWorkloadHistory(long id, UserDTO.UserInfo userInfoDTO) {
 		WorkloadEntity jobEntity = workloadHistoryRepo.findById(id).orElseThrow();
 		// owner 권한인 워크스페이스 목록 가져옴
