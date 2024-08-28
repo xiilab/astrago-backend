@@ -49,6 +49,8 @@ public interface K8sVolumeRepository {
 
 	void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO);
 
+	void deleteDellStorage(DeleteStorageReqDTO deleteStorageReqDTO);
+
 	List<VolumeMount> getAstragoVolumes();
 
 	void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> missingPVC);
@@ -56,4 +58,6 @@ public interface K8sVolumeRepository {
 	PersistentVolumeClaim createIbmPvc(String storageName);
 
 	void deleteIbmPvc(String storageName);
+
+	void createDellPVC(String pvcName, String storageName);
 }

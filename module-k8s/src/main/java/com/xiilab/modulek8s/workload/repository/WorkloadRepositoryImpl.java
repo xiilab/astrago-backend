@@ -25,8 +25,10 @@ import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.deploy.vo.DeployVO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
@@ -48,12 +50,17 @@ import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.OwnerReference;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
+import io.fabric8.kubernetes.api.model.PodSpecBuilder;
+import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
+import io.fabric8.kubernetes.api.model.VolumeDeviceBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
@@ -116,6 +123,50 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
+	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String accountName, String pvcName) {
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+			Deployment deployment = new DeploymentBuilder()
+				.withNewMetadata()
+				.withName(deploymentName)
+				.withNamespace("astrago")
+				.endMetadata()
+				.withNewSpec()
+				.withReplicas(1)
+				.withNewSelector()
+				.addToMatchLabels("app", connectTestLabelName) // selector 라벨과 template 라벨이 일치해야 함
+				.endSelector()
+				.withTemplate(new PodTemplateSpecBuilder()
+					.withNewMetadata()
+					.addToLabels("app", connectTestLabelName) // selector와 동일한 라벨
+					.endMetadata()
+					.withSpec(new PodSpecBuilder()
+						.withServiceAccountName(accountName)
+						.withHostNetwork(true)
+						.addNewContainer()
+						.withName("test")
+						.withImage("docker.io/centos:latest")
+						.withCommand("/bin/sleep", "3600")
+						.withVolumeDevices(new VolumeDeviceBuilder()
+							.withDevicePath("/data1")
+							.withName(pvcName)
+							.build())
+						.endContainer()
+						.withVolumes(new VolumeBuilder()
+							.withName(pvcName)
+							.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+								.withClaimName(pvcName)
+								.build())
+							.build())
+						.build())
+					.build())
+				.endSpec()
+				.build();
+
+			client.apps().deployments().inNamespace("astrago").resource(deployment).create();
+		}
+	}
+
+	@Override
 	public boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			//테스트용 pod 조회
@@ -172,6 +223,51 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 					.endTemplate()
 					.endSpec()
 					.build());
+		}
+	}
+
+	@Override
+	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName, String accountName){
+		try (KubernetesClient client = k8sAdapter.configServer()) {
+
+			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
+				.inNamespace(createStorageReqDTO.getNamespace())
+				.withName(pvcName)
+				.get();
+
+			Volume vol = new VolumeBuilder()
+				.withName(pvc.getSpec().getVolumeName())
+				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+					.withClaimName(pvcName)
+					.build()).build();
+
+			Deployment deployment = client.apps()
+				.deployments()
+				.inNamespace(createStorageReqDTO.getNamespace())
+				.withName(createStorageReqDTO.getAstragoDeploymentName())
+				.edit(astrago -> new DeploymentBuilder(astrago)
+					.editSpec()
+					.editOrNewTemplate()
+					.editSpec()
+					.addAllToVolumes(List.of(vol))
+					.editContainer(0)
+					.addNewVolumeDevice()
+					.withName(pvc.getSpec().getVolumeName())
+					.withDevicePath(createStorageReqDTO.getHostPath())
+					.endVolumeDevice()
+					.endContainer()
+					.endSpec()
+					.endTemplate()
+					.endSpec()
+					.build());
+			return StorageResDTO.builder()
+				.pvcName(pvcName)
+				.volumeName(pvc.getSpec().getVolumeName())
+				.pvName(pvc.getSpec().getVolumeName())
+				.ip("")
+				.astragoDeploymentName(deployment.getMetadata().getName())
+				.hostPath(createStorageReqDTO.getHostPath())
+				.build();
 		}
 	}
 

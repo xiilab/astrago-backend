@@ -35,11 +35,13 @@ import io.fabric8.kubernetes.api.model.PersistentVolume;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.PodSpecFluent;
 import io.fabric8.kubernetes.api.model.PodTemplateSpecFluent;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
+import io.fabric8.kubernetes.api.model.VolumeDevice;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
@@ -224,6 +226,39 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 					.removeFromVolumes(vol)
 					.editContainer(0)
 					.removeFromVolumeMounts(new VolumeMount(hostPath, null, volName, null, null, null))
+					.endContainer()
+					.endSpec()
+					.endTemplate()
+					.endSpec()
+					.build());
+		}
+	}
+
+	@Override
+	public void deleteDellStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			String pvcName = deleteStorageReqDTO.getPvcName();
+			String volName = deleteStorageReqDTO.getVolumeName();
+			String hostPath = deleteStorageReqDTO.getHostPath();
+			Volume vol = new VolumeBuilder()
+				.withName(volName)
+				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+					.withClaimName(pvcName)
+					.build()).build();
+
+			VolumeDevice volumeDevice = new VolumeDevice(hostPath, volName);
+
+			client.apps()
+				.deployments()
+				.inNamespace(deleteStorageReqDTO.getNamespace())
+				.withName(deleteStorageReqDTO.getAstragoDeploymentName())
+				.edit(d -> new DeploymentBuilder(d)
+					.editSpec()
+					.editOrNewTemplate()
+					.editSpec()
+					.removeFromVolumes(vol)
+					.editContainer(0)
+					.removeFromVolumeDevices(volumeDevice)
 					.endContainer()
 					.endSpec()
 					.endTemplate()
@@ -684,6 +719,26 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 	public void deleteIbmPvc(String pvcName) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			client.persistentVolumeClaims().inNamespace("ibm").withName(pvcName).delete();
+		}
+	}
+
+	@Override
+	public void createDellPVC(String pvcName, String storageName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			PersistentVolumeClaim pvc = new PersistentVolumeClaim().toBuilder()
+				.withNewMetadata()
+				.withName(pvcName)
+				.endMetadata()
+				.withNewSpec()
+				.withAccessModes(List.of("ReadWriteMany"))
+				.withVolumeMode("Block")
+				.withNewResources()
+				.addToRequests("storage", new Quantity("50Gi"))
+				.endResources()
+				.withStorageClassName(storageName)
+				.endSpec()
+				.build();
+			client.persistentVolumeClaims().inNamespace("astrago").resource(pvc).create();
 		}
 	}
 }

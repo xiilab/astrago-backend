@@ -21,6 +21,8 @@ public class StorageDTO {
 	private String storagePath;
 	private int requestVolume;
 	private SecretDTO secretDTO;
+	private String arrayId;
+	private String storagePool;
 
 	@Getter
 	@Builder

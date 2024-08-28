@@ -9,6 +9,6 @@ public enum StorageType {
 	PURE,
 	IBM,
 	WEKA_FS,
-	DELL
+	DELL_UNITY
 	;
 }

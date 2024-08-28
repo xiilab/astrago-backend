@@ -20,5 +20,7 @@ public class CreateStorageReqDTO {
 	private String connectionTestImageUrl;
 	private int requestVolume;
 	private SecretDTO secretDTO;
+	private String arrayId;
+	private String storagePool;
 
 }

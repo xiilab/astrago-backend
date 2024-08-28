@@ -38,8 +38,8 @@ public class PluginDTO {
 	@AllArgsConstructor
 	public static class DellUnityDTO {
 		private String arrayId;
-		private String userName;
+		private String username;
 		private String password;
-		private String endPoint;
+		private String endpoint;
 	}
 }

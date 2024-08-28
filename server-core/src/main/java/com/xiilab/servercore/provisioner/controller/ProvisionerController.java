@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,13 +54,19 @@ public class ProvisionerController {
 		return new ResponseEntity<>(provisionerFacadeService.getPluginList(), HttpStatus.OK);
 	}
 
-	@PatchMapping("/plugin/{id}/{result}")
+	@PostMapping("/plugin/install/{type}")
 	@Operation(summary = "플러그인 설치 ")
 	public ResponseEntity<HttpStatus> installPlugin(
-		@PathVariable(name = "id") Long id,
-		@PathVariable(name = "result") boolean result,
-		@RequestBody PluginDTO.DellUnityDTO dellUnityDTO) {
-		provisionerFacadeService.installPlugin(id, result);
+		@PathVariable(name = "type") String type,
+		@RequestBody(required = false) PluginDTO.DellUnityDTO dellUnityDTO) {
+		provisionerFacadeService.installPlugin(type, dellUnityDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	@DeleteMapping("/plugin/uninstall/{type}")
+	@Operation(summary = "플러그인 삭제 ")
+	public ResponseEntity<HttpStatus> unInstallPlugin(
+		@PathVariable(name = "type") String type) {
+		provisionerFacadeService.uninstallPlugin(type);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

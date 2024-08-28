@@ -48,6 +48,8 @@ public interface StorageModuleService {
 
 	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
 
+	StorageResDTO createDELLStorage(CreateStorageReqDTO createStorageReqDTO);
+
 	boolean storageClassConnectionTest(String storageType);
 
 	StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName);

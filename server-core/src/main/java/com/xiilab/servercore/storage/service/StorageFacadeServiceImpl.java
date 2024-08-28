@@ -23,11 +23,11 @@ import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
 import com.xiilab.modulek8sdb.dataset.repository.DatasetRepository;
 import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
-import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
@@ -130,6 +130,8 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.namespace(namespace)
 			.connectionTestImageUrl(volumeImageURL)
 			.secretDTO(storageDTO.getSecretDTO())
+			.arrayId(storageDTO.getArrayId())
+			.storagePool(storageDTO.getStoragePool())
 			.build();
 		if(storageDTO.getStorageType() == StorageType.NFS){
 			StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
@@ -165,6 +167,21 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.pvcName(ibmPvc.getMetadata().getName())
 				.requestVolume(storageDTO.getRequestVolume())
 				.secretName(secretName)
+				.build();
+			storageService.insertStorage(createStorage);
+		} else if (storageDTO.getStorageType() == StorageType.DELL_UNITY) {
+			// Storage class 생성
+			StorageResDTO dellStorage = storageModuleService.createDELLStorage(createStorageReqDTO);
+
+			StorageDTO.Create createStorage = StorageDTO.Create.builder()
+				.storageName(storageDTO.getStorageName())
+				.description(storageDTO.getDescription())
+				.storageType(storageDTO.getStorageType())
+				.ip(storageDTO.getIp())
+				.storagePath(storageDTO.getStoragePath())
+				.namespace(dellStorage.getNamespace())
+				.requestVolume(storageDTO.getRequestVolume())
+				.pvcName(dellStorage.getPvcName())
 				.build();
 			storageService.insertStorage(createStorage);
 		}

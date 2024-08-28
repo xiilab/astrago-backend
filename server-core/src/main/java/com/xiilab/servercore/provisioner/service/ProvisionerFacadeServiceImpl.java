@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ProvisionerFacadeServiceImpl implements ProvisionerFacadeService{
+public class ProvisionerFacadeServiceImpl implements ProvisionerFacadeService {
 	private final ProvisionerModuleService provisionerModuleService;
 	private final PluginService pluginService;
 
@@ -42,8 +42,20 @@ public class ProvisionerFacadeServiceImpl implements ProvisionerFacadeService{
 	}
 
 	@Override
-	public void installPlugin(long id, boolean result){
-		pluginService.installPlugin(id, result);
+	public void installPlugin(String type, PluginDTO.DellUnityDTO dellUnityDTO) {
+		if(StorageType.DELL_UNITY.name().equals(type)) {
+			pluginService.pluginDeleteYN(StorageType.DELL_UNITY, true);
+			provisionerModuleService.installDellProvisioner(dellUnityDTO.getArrayId(), dellUnityDTO.getUsername(),
+				dellUnityDTO.getPassword(), dellUnityDTO.getEndpoint());
+		}
+	}
+
+	@Override
+	public void uninstallPlugin(String type) {
+		if(StorageType.DELL_UNITY.name().equals(type)) {
+			pluginService.pluginDeleteYN(StorageType.DELL_UNITY, false);
+			provisionerModuleService.uninstallDellProvisioner();
+		}
 	}
 
 }

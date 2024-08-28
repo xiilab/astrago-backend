@@ -111,6 +111,10 @@ public class K8sVolumeService {
 		k8sVolumeRepository.deleteStorage(deleteStorageReqDTO);
 	}
 
+	public void deleteDellStorage(DeleteStorageReqDTO deleteStorageReqDTO) {
+		k8sVolumeRepository.deleteDellStorage(deleteStorageReqDTO);
+	}
+
 	public List<String> getAstragoVolumes() {
 		List<VolumeMount> astragoVolumes = k8sVolumeRepository.getAstragoVolumes();
 		return astragoVolumes.stream().map(volumeMount -> volumeMount.getName()).toList();
@@ -126,5 +130,9 @@ public class K8sVolumeService {
 
 	public void deleteIbmPvc(String storageName) {
 		k8sVolumeRepository.deleteIbmPvc(storageName);
+	}
+
+	public void createDellPVC(String pvcNamem, String storageName){
+		k8sVolumeRepository.createDellPVC(pvcNamem, storageName);
 	}
 }
