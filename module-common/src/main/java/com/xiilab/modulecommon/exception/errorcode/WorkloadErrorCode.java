@@ -23,6 +23,8 @@ public enum WorkloadErrorCode implements ErrorCode {
 	FAILED_SAVE_WORKLOAD_HISTORY(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 등록에 실패하였습니다."),
 	FAILED_LOAD_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"해당 이름의 워크로드가 존재하지 않습니다."),
 	FAILED_LOAD_DEPLOY_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"해당 이름의 서비스가 존재하지 않습니다."),
+	FAILED_MODIFY_DEPLOY(HttpStatus.INTERNAL_SERVER_ERROR.value(),"해당 유저는 서비스 수정 권한이 없습니다."),
+	FAILED_DELETE_DEPLOY(HttpStatus.INTERNAL_SERVER_ERROR.value(),"해당 유저는 서비스 삭제 권한이 없습니다."),
 	DELETED_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"삭제된 워크로드는 조회할 수 없습니다."),
 	DELETED_DEPLOY_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"삭제된 서비스는 조회할 수 없습니다."),
 	FAILED_UPDATE_END_WORKLOAD_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드 히스토리 수정에 실패하였습니다."),
