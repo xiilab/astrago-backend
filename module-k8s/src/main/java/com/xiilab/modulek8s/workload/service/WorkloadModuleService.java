@@ -11,8 +11,10 @@ import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
@@ -42,11 +44,15 @@ public interface WorkloadModuleService {
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
+	void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String accountName, String pvcName);
+
 	boolean isAvailableTestConnectPod(String connectTestLabelName, String namespace);
 
 	void deleteConnectTestDeployment(String deploymentName, String namespace);
 
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
+
+	StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName, String accountName);
 
 	/**
 	 * batch job workload 조회

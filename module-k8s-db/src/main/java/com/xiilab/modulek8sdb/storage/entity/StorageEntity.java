@@ -60,6 +60,8 @@ public class StorageEntity extends BaseEntity {
 	private DeleteYN deleteYN = DeleteYN.N;
 	@Column(name = "SECRET_NAME")
 	private String secretName;
+	@Column(name = "STORAGE_CLASS_NAME")
+	private String storageClassName;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "DEFAULT_STORAGE_YN")
@@ -67,7 +69,7 @@ public class StorageEntity extends BaseEntity {
 	@Builder
 	public StorageEntity(String storageName, int requestVolume, String description, StorageType storageType, String ip,
 		String storagePath, String hostPath, String astragoDeploymentName, String namespace, String pvName,
-		String pvcName, String volumeName, String secretName, DefaultStorageYN defaultStorageYN) {
+		String pvcName, String volumeName, String secretName, DefaultStorageYN defaultStorageYN, String storageClassName) {
 		this.storageName = storageName;
 		this.requestVolume = requestVolume;
 		this.description = description;
@@ -82,6 +84,7 @@ public class StorageEntity extends BaseEntity {
 		this.pvcName = pvcName;
 		this.secretName = secretName;
 		this.defaultStorageYN = defaultStorageYN;
+		this.storageClassName = storageClassName;
 	}
 
 	public void changeStorageName(String storageName) {

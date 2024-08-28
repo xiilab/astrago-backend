@@ -56,10 +56,12 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 		Map<String, String> nfsProvisioner = new HashMap<>();
 		nfsProvisioner.put("name", "NFS_Provisioner");
 		nfsProvisioner.put("type", "NFS");
-
 		Map<String, String> pureProvisioner = new HashMap<>();
 		pureProvisioner.put("name", "PURE_Provisioner");
 		pureProvisioner.put("type", "PURE");
+		Map<String, String> dellProvisioner = new HashMap<>();
+		pureProvisioner.put("name", "csu-unity");
+		pureProvisioner.put("type", "dell");
 
 		List<Map<String, String>> provisioners = new ArrayList<>();
 		provisioners.add(nfsProvisioner);
@@ -135,9 +137,6 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 			} else if (storageType == StorageType.WEKA_FS) {
 				// WEKA 스토리지 설치
 				wekaFsService.wekaFsInstall(client);
-			} else if (storageType == StorageType.DELL) {
-				// Dell CSI 스토리지 설치
-				dellService.dellCrdInstall();
 			}
 		}
 	}
@@ -152,11 +151,19 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 					.delete();
 			} else if (storageType == StorageType.IBM) {
 				ibmService.ibmDelete(client);
-			} else if (storageType == StorageType.DELL) {
-				dellService.dellCsiUnInstall();
 			} else if (storageType == StorageType.WEKA_FS) {
 				wekaFsService.wekaFsUnInstall();
 			}
 		}
+	}
+
+	@Override
+	public void installDellProvisioner(String arrayId, String userName, String password, String endPoint) {
+		dellService.installDellProvisioner(arrayId, userName, password, endPoint);
+	}
+
+	@Override
+	public void uninstallDellProvisioner() {
+		dellService.uninstallDellProvisioner();
 	}
 }

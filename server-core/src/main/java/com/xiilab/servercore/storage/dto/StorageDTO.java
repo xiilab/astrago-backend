@@ -21,6 +21,8 @@ public class StorageDTO {
 	private String storagePath;
 	private int requestVolume;
 	private SecretDTO secretDTO;
+	private String arrayId;
+	private String storagePool;
 
 	@Getter
 	@Builder
@@ -38,6 +40,7 @@ public class StorageDTO {
 		private String volumeName;
 		private int requestVolume;
 		private String secretName;
+		private String storageClassName;
 		@Setter
 		private DefaultStorageYN defaultStorageYN = DefaultStorageYN.N;
 
@@ -57,6 +60,7 @@ public class StorageDTO {
 				.volumeName(this.volumeName)
 				.secretName(this.secretName)
 				.defaultStorageYN(this.defaultStorageYN)
+				.storageClassName(this.storageClassName)
 				.build();
 		}
 	}

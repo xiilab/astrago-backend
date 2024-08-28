@@ -1,5 +1,6 @@
 package com.xiilab.modulek8sdb.plugin.entity;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 
 import jakarta.persistence.Column;
@@ -29,6 +30,9 @@ public class PluginEntity{
 	private String name;
 	@Column(name = "VERSION")
 	private String version;
+	@Column(name = "STORAGE_TYPE")
+	@Enumerated(EnumType.STRING)
+	private StorageType storageType;
 	@Column(name = "INSTALL_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN installYN;

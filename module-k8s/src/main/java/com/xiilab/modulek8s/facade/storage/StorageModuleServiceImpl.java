@@ -47,6 +47,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	private final StorageClassService storageClassService;
 	private final WorkloadModuleService workloadModuleService;
 	private final SecretService secretService;
+	private final String unityNamespace = "unity";
 
 	/**
 	 * 워크스페이스(namespace)에 볼륨 생성
@@ -156,6 +157,78 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	@Override
 	public void createStorageClass(CreateStorageClassDTO createStorageClassDTO) {
 		storageClassService.createStorageClass(createStorageClassDTO);
+	}
+
+	@Override
+	public StorageResDTO createDELLStorage(CreateStorageReqDTO createStorageReqDTO) {
+		String storageName = "astrago-storage-"+ UUID.randomUUID().toString().substring(6);
+		storageClassService.createDELLStorage(createStorageReqDTO, storageName);
+		// pv 생성
+		String pvcName = "storage-volume-"+ UUID.randomUUID().toString().substring(6);
+		k8sVolumeService.createDellPVC(pvcName, storageName);
+		// ServiceAccount 생성
+		String accountName = "astrago-account-"+ UUID.randomUUID().toString().substring(6);
+		storageClassService.createServiceAccount(accountName);
+		// deployment에 연결 테스트
+		String connectTestDeploymentName = "astrago-storage-deployment-"+ UUID.randomUUID().toString().substring(6);
+		String connectTestLabelName = "connect-test-"+ UUID.randomUUID().toString().substring(6);
+		workloadModuleService.createConnectTestDeployment(connectTestDeploymentName, connectTestLabelName, accountName, pvcName);
+		try {
+			Thread.sleep(20000);
+		}catch (InterruptedException e) {
+			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+		}
+
+		//deployment 상태 조회 - 컨테이너 실행 시간 대기
+		int failCount = 0;
+
+		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
+		//connection 실패
+		if(!isAvailable){
+			while(failCount < 5){
+				try {
+					Thread.sleep(2000);
+					failCount++;
+					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
+					if(isAvailable){
+						break;
+					}
+				} catch (InterruptedException e) {
+					throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+				}
+			}if(!isAvailable){
+				//pvc, pv, connect deployment 삭제
+				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, createStorageReqDTO.getNamespace());
+				storageClassService.deleteStorageClass(storageName);
+				k8sVolumeService.deletePVC(pvcName, createStorageReqDTO.getNamespace());
+				//연결 실패 응답
+				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			}
+		}
+		// 성공하면 deployment 삭제
+		workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, createStorageReqDTO.getNamespace());
+		try {
+			Thread.sleep(5000);
+		}catch (InterruptedException e) {
+			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+		}
+		// core 연결
+		StorageResDTO deployment = workloadModuleService.editAstragoDeployment(createStorageReqDTO, pvcName, accountName);
+
+		return StorageResDTO.builder()
+			.storageName(createStorageReqDTO.getStorageName())
+			.description(createStorageReqDTO.getDescription())
+			.storageType(createStorageReqDTO.getStorageType())
+			.ip(createStorageReqDTO.getIp())
+			.storagePath(createStorageReqDTO.getStoragePath())
+			.namespace(createStorageReqDTO.getNamespace())
+			.astragoDeploymentName(deployment.getAstragoDeploymentName())
+			.hostPath(createStorageReqDTO.getHostPath())
+			.pvcName(pvcName)
+			.requestVolume(createStorageReqDTO.getRequestVolume())
+			.volumeName(deployment.getVolumeName())
+			.storageClassName(storageName)
+			.build();
 	}
 
 	@Override
@@ -302,7 +375,13 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			storageClassService.deleteIbmStorage(deleteStorageReqDTO.getStorageName());
 			// secret 삭제
 			secretService.deleteIbmSecret(deleteStorageReqDTO.getSecretName());
-		}else{
+		} else if (deleteStorageReqDTO.getStorageType() == StorageType.DELL_UNITY) {
+			k8sVolumeService.deleteDellStorage(deleteStorageReqDTO);
+			//PVC 삭제
+			k8sVolumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
+			// Storage Class 삭제
+			k8sVolumeService.deleteStorageClass(deleteStorageReqDTO);
+		} else{
 			//astrago deployment에 볼륨 제거
 			k8sVolumeService.deleteStorage(deleteStorageReqDTO);
 			//PVC, PV 삭제

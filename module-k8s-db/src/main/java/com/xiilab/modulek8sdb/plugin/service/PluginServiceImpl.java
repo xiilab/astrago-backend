@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.plugin.dto.PluginDTO;
 import com.xiilab.modulek8sdb.plugin.entity.PluginEntity;
@@ -20,13 +21,6 @@ public class PluginServiceImpl implements PluginService {
 	private final PluginRepository pluginRepository;
 
 	@Override
-	@Transactional
-	public void installPlugin(long id, boolean result) {
-		PluginEntity pluginEntity = getPluginEntity(id);
-		pluginEntity.setInstallYN(result ? DeleteYN.Y : DeleteYN.N);
-	}
-
-	@Override
 	public List<PluginDTO.ResponseDTO> getPluginList() {
 		List<PluginEntity> pluginEntities = pluginRepository.findAll();
 
@@ -35,8 +29,13 @@ public class PluginServiceImpl implements PluginService {
 			.toList();
 	}
 
-	private PluginEntity getPluginEntity(long id) {
-		return pluginRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("id가 존재하지 않습니다."));
+	@Override
+	public void pluginDeleteYN(StorageType type, boolean result) {
+		PluginEntity pluginEntity = getPluginEntity(type);
+		pluginEntity.setInstallYN(result ? DeleteYN.Y : DeleteYN.N);
+	}
+
+	private PluginEntity getPluginEntity(StorageType type) {
+		return pluginRepository.getPluginEntityByStorageType(type);
 	}
 }

@@ -18,6 +18,7 @@ import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 import com.xiilab.modulek8s.storage.common.crd.NFS.status.History;
@@ -27,6 +28,7 @@ import com.xiilab.modulek8s.storage.storageclass.dto.response.VolumeDTO;
 import com.xiilab.modulek8s.storage.storageclass.vo.StorageClassVO;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
+import io.fabric8.kubernetes.api.model.ServiceAccount;
 import io.fabric8.kubernetes.api.model.storage.CSIDriver;
 import io.fabric8.kubernetes.api.model.storage.StorageClass;
 import io.fabric8.kubernetes.api.model.storage.StorageClassBuilder;
@@ -71,6 +73,29 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 		}
 	}
 
+	@Override
+	public StorageClass createDELLStorage(CreateStorageReqDTO createStorageReqDTO, String storageName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			StorageClass storageClass = new StorageClassBuilder()
+				.withNewMetadata()
+				.withName(storageName)
+				.endMetadata()
+				.withProvisioner("csi-unity.dellemc.com")
+				.withReclaimPolicy("Delete")
+				.withAllowVolumeExpansion(true)
+				.withVolumeBindingMode("WaitForFirstConsumer")
+				.addToParameters("protocol", "iSCSI")
+				.addToParameters("arrayId", createStorageReqDTO.getArrayId())
+				.addToParameters("storagePool", createStorageReqDTO.getStoragePool())
+				.addToParameters("thinProvisioned", "true")
+				.addToParameters("isDataReductionEnabled", "true")
+				.addToParameters("tieringPolicy", "0")
+				.addToParameters("csi.storage.k8s.io/fstype", "xfs")
+				.withMountOptions("context")
+				.build();
+			return client.storage().v1().storageClasses().resource(storageClass).create();
+		}
+	}
 	@Override
 	public boolean storageClassConnectionTest(String storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
@@ -232,6 +257,19 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.storageClasses()
 				.withName(storageName)
 				.delete();
+		}
+	}
+
+	@Override
+	public void createServiceAccount(String accountName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			ServiceAccount serviceAccount = new ServiceAccount().toBuilder()
+				.withNewMetadata()
+				.withName(accountName)
+				.withNamespace("astrago")
+				.endMetadata()
+				.build();
+			client.serviceAccounts().inNamespace("astrago").resource(serviceAccount).create();
 		}
 	}
 }

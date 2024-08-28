@@ -17,4 +17,5 @@ public class DeleteStorageReqDTO {
 	private StorageType storageType;
 	private String secretName;
 	private String storageName;
+	private String storageClassName;
 }
