@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.servercore.deploy.dto.ResDeploys;
@@ -29,4 +30,6 @@ public interface ModelRepoFacadeService {
 	ModelRepoEntity getModelRepoEntityById(long modelId);
 
 	ResDeploys getDeploysUsingModel(Long modelRepoId, int pageNum, int pageSize);
+
+	DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion);
 }
