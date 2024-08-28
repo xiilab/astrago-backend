@@ -51,9 +51,11 @@ public class TusService {
 			if (uploadInfo != null && !uploadInfo.isUploadInProgress()) {
 				// "metadata"로 넘어온 원본 파일명 추출
 				String filename = Optional.ofNullable(uploadInfo.getMetadata().get("filename"))
-					.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
+					.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE))
+					.toUpperCase();
 				String uploadType = Optional.ofNullable(uploadInfo.getMetadata().get("uploadType"))
-					.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
+					.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE))
+					.toUpperCase();
 
 				// TODO 삭제 예정
 				/*if ("DATASET".equals(uploadType)) {
