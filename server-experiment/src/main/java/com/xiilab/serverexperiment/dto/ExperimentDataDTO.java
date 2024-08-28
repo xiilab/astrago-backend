@@ -31,8 +31,15 @@ public class ExperimentDataDTO {
 		private Double wallTime;
 		private Double cpuUsage;
 		private Double memUsage;
+		private List<GPUInfo> gpuInfos;
+	}
+
+	@Getter
+	public static class GPUInfo {
+		private String name;
 		private Double gpuUsage;
-		private Double gpuTemp;
+		private Double memUsage;
+		private Double temperature;
 	}
 
 	@Getter

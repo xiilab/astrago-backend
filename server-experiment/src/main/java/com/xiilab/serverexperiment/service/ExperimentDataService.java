@@ -142,8 +142,7 @@ public class ExperimentDataService {
 			.workloadId(systemReq.getUuid())
 			.cpuUsage(systemReq.getCpuUsage())
 			.memUsage(systemReq.getMemUsage())
-			.gpuUsage(systemReq.getGpuUsage())
-			.gpuTemp(systemReq.getGpuTemp())
+			.gpuInfos(systemReq.getGpuInfos())
 			.wallTime(systemReq.getWallTime())
 			.build();
 
