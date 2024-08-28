@@ -227,6 +227,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.pvcName(pvcName)
 			.requestVolume(createStorageReqDTO.getRequestVolume())
 			.volumeName(deployment.getVolumeName())
+			.storageClassName(storageName)
 			.build();
 	}
 
@@ -376,9 +377,10 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			secretService.deleteIbmSecret(deleteStorageReqDTO.getSecretName());
 		} else if (deleteStorageReqDTO.getStorageType() == StorageType.DELL_UNITY) {
 			k8sVolumeService.deleteDellStorage(deleteStorageReqDTO);
-			//PVC, PV 삭제
+			//PVC 삭제
 			k8sVolumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
-			k8sVolumeService.deletePV(deleteStorageReqDTO.getPvName());
+			// Storage Class 삭제
+			k8sVolumeService.deleteStorageClass(deleteStorageReqDTO);
 		} else{
 			//astrago deployment에 볼륨 제거
 			k8sVolumeService.deleteStorage(deleteStorageReqDTO);

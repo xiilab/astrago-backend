@@ -198,6 +198,13 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 	}
 
 	@Override
+	public void deleteStorageClass(DeleteStorageReqDTO deleteStorageReqDTO) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			client.storage().v1().storageClasses().withName(deleteStorageReqDTO.getStorageClassName()).delete();
+		}
+	}
+
+	@Override
 	public void deletePV(String pvName) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			client.persistentVolumes().withName(pvName).delete();

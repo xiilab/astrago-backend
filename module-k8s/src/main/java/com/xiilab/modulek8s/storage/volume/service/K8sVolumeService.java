@@ -103,6 +103,10 @@ public class K8sVolumeService {
 		k8sVolumeRepository.deletePVC(pvcName, namespace);
 	}
 
+	public void deleteStorageClass(DeleteStorageReqDTO deleteStorageReqDTO) {
+		k8sVolumeRepository.deleteStorageClass(deleteStorageReqDTO);
+	}
+
 	public void deletePV(String pvName) {
 		k8sVolumeRepository.deletePV(pvName);
 	}

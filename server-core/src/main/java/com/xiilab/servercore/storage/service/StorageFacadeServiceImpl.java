@@ -83,6 +83,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.storageType(storageEntity.getStorageType())
 			.secretName(storageEntity.getSecretName())
 			.storageName(storageEntity.getStorageName())
+			.storageClassName(storageEntity.getStorageClassName())
 			.build();
 		storageModuleService.deleteStorage(deleteStorageReqDTO);
 		//스토리지 db 데이터 삭제
