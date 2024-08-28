@@ -84,4 +84,10 @@ public class DeployEntity extends WorkloadEntity {
 		this.modelRepoEntity = modelRepoEntity;
 		this.modelVersion = modelVersion;
 	}
+
+	public void modifyNameAndDescription(String name, String description) {
+		this.name = name;
+		this.description = description;
+	}
 }
+
