@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import lombok.Builder;
 
-@Document(collection = "logs")
+@Document(collection = "ExperimentTrainMetrics")
 @Builder
-public class Experiment {
+public class ExperimentTrainMetric {
 	@Id
 	private String id;
 	@Field("workload_id")

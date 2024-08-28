@@ -16,11 +16,30 @@ import lombok.Getter;
 public class ExperimentDataDTO {
 
 	@Getter
-	public static class Req {
+	public static class TrainReq {
 		private String uuid;
 		private String workloadName;
 		private String userId;
 		private List<MetricEntry> metrics;
+	}
+
+	@Getter
+	public static class SystemReq {
+		private String uuid;
+		private String workloadName;
+		private String userId;
+		private Double wallTime;
+		private Double cpuUsage;
+		private Double memUsage;
+		private List<GPUInfo> gpuInfos;
+	}
+
+	@Getter
+	public static class GPUInfo {
+		private String name;
+		private Double gpuUsage;
+		private Double memUsage;
+		private Double temperature;
 	}
 
 	@Getter

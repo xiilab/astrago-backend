@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -24,33 +25,43 @@ import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.ExperimentMariaCustomRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.ExperimentRepo;
 import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
-import com.xiilab.serverexperiment.domain.mongo.Experiment;
-import com.xiilab.serverexperiment.domain.mongo.Workload;
+import com.xiilab.serverexperiment.domain.mongo.ExperimentSystemMetric;
+import com.xiilab.serverexperiment.domain.mongo.ExperimentTrainMetric;
 import com.xiilab.serverexperiment.dto.ExperimentDataDTO;
 import com.xiilab.serverexperiment.repository.ExperimentMongoCustomRepository;
-import com.xiilab.serverexperiment.repository.ExperimentMongoRepository;
-import com.xiilab.serverexperiment.repository.WorkloadLogRepository;
+import com.xiilab.serverexperiment.repository.ExperimentSystemMetricMongoRepository;
+import com.xiilab.serverexperiment.repository.ExperimentTrainMetricMongoRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ExperimentDataService {
-	private final WorkloadLogRepository workloadLogRepository;
 	private final WorkloadHistoryRepo workloadHistoryRepo;
 	private final ExperimentRepo experimentRepo;
-	private final ExperimentMongoRepository experimentMongoRepository;
+	private final ExperimentTrainMetricMongoRepository experimentTrainMetricMongoRepository;
+	private final ExperimentSystemMetricMongoRepository experimentSystemMetricMongoRepository;
 	private final ExperimentMongoCustomRepository experimentMongoCustomRepository;
 	private final ExperimentMariaCustomRepo experimentMariaCustomRepo;
 	private final ChartRepository chartRepository;
 	private final ExperimentColumnRepository experimentColumnRepository;
 
 	@Transactional
-	public void saveExperimentData(ExperimentDataDTO.Req trainDataReq) {
-		Optional<WorkloadEntity> workloadOpt = workloadHistoryRepo.findByResourceName(trainDataReq.getWorkloadName());
+	public void saveExperimentTrainData(ExperimentDataDTO.TrainReq trainDataTrainReq) {
+		Optional<WorkloadEntity> workloadOpt = workloadHistoryRepo.findByResourceName(
+			trainDataTrainReq.getWorkloadName());
 		workloadOpt.ifPresent(workload -> {
-			workload.addExperiment(trainDataReq.getUuid());
-			saveExperiment(trainDataReq);
+			workload.addExperiment(trainDataTrainReq.getUuid());
+			saveExperimentTrainMetrics(trainDataTrainReq);
+		});
+	}
+
+	@Transactional
+	public void saveExperimentSystemData(ExperimentDataDTO.SystemReq systemReq) {
+		Optional<WorkloadEntity> workloadOpt = workloadHistoryRepo.findByResourceName(systemReq.getWorkloadName());
+		workloadOpt.ifPresent(workload -> {
+			workload.addExperiment(systemReq.getUuid());
+			saveExperimentSystemMetric(systemReq);
 		});
 	}
 
@@ -105,20 +116,15 @@ public class ExperimentDataService {
 			experimentRepo.deleteAll(experiments);
 			//mongoDB에서 삭제
 			experimentMongoCustomRepository.deleteExperimentsLogsByUUIDs(ids);
-			experimentMongoCustomRepository.deleteExperimentsByUUIDs(ids);
 		}
 	}
 
-	private void saveExperiment(ExperimentDataDTO.Req trainDataReq) {
-		Workload workload = workloadLogRepository.findByNameAndId(trainDataReq.getWorkloadName(),
-				trainDataReq.getUuid())
-			.orElseGet(() -> workloadLogRepository.save(Workload.builder()
-				.id(trainDataReq.getUuid())
-				.name(trainDataReq.getWorkloadName())
-				.build()));
-
-		List<Experiment> experimentList = trainDataReq.getMetrics().stream().map(req -> Experiment.builder()
-				.workloadId(workload.getId())
+	@Async
+	protected void saveExperimentTrainMetrics(ExperimentDataDTO.TrainReq trainDataTrainReq) {
+		List<ExperimentTrainMetric> experimentTrainMetricList = trainDataTrainReq.getMetrics()
+			.stream()
+			.map(req -> ExperimentTrainMetric.builder()
+				.workloadId(trainDataTrainReq.getUuid())
 				.step(req.getStep())
 				.epoch(req.getEpochs())
 				.relativeTime(req.getRelativeTime())
@@ -127,6 +133,19 @@ public class ExperimentDataService {
 				.build())
 			.toList();
 
-		experimentMongoRepository.saveAll(experimentList);
+		experimentTrainMetricMongoRepository.saveAll(experimentTrainMetricList);
+	}
+
+	@Async
+	protected void saveExperimentSystemMetric(ExperimentDataDTO.SystemReq systemReq) {
+		ExperimentSystemMetric expSystemMetric = ExperimentSystemMetric.builder()
+			.workloadId(systemReq.getUuid())
+			.cpuUsage(systemReq.getCpuUsage())
+			.memUsage(systemReq.getMemUsage())
+			.gpuInfos(systemReq.getGpuInfos())
+			.wallTime(systemReq.getWallTime())
+			.build();
+
+		experimentSystemMetricMongoRepository.save(expSystemMetric);
 	}
 }
