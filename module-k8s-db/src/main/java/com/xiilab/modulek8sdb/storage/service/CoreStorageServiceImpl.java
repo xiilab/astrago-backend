@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.storage.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,5 +22,10 @@ public class CoreStorageServiceImpl implements StorageService{
 	public List<StorageDto> getStorages() {
 		List<StorageEntity> storages = storageRepository.findAll();
 		return storages.stream().map(StorageDto::new).toList();
+	}
+
+	@Override
+	public Optional<StorageEntity> findById(Long storageId) {
+		return storageRepository.findById(storageId);
 	}
 }

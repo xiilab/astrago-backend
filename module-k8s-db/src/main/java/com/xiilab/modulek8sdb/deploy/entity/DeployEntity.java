@@ -9,6 +9,7 @@ import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 
@@ -19,6 +20,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +45,11 @@ public class DeployEntity extends WorkloadEntity {
 	private ModelRepoEntity modelRepoEntity;
 	@Column(name = "MODEL_VERSION")
 	private String modelVersion;
+	@Column(name = "MODEL_PATH")
+	private String modelPath;
+	@OneToOne
+	@JoinColumn(name = "STORAGE_ID")
+	private StorageEntity storageEntity;
 
 	@Builder
 	public DeployEntity(String uid, String name, String description, String resourceName, String workspaceName,
@@ -52,7 +59,7 @@ public class DeployEntity extends WorkloadEntity {
 		Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
 		DeleteYN deleteYN, String ide, String workingDir,
 		WorkloadStatus workloadStatus, int replica, DeployType deployType, ModelRepoEntity modelRepoEntity,
-		String modelVersion) {
+		String modelVersion, String modelPath, StorageEntity storageEntity) {
 		this.uid = uid;
 		this.name = name;
 		this.description = description;
@@ -83,6 +90,8 @@ public class DeployEntity extends WorkloadEntity {
 		this.deployType = deployType;
 		this.modelRepoEntity = modelRepoEntity;
 		this.modelVersion = modelVersion;
+		this.modelPath = modelPath;
+		this.storageEntity = storageEntity;
 	}
 
 	public void modifyNameAndDescription(String name, String description) {

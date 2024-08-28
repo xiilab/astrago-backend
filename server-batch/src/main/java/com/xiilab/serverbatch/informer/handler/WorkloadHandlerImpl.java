@@ -69,6 +69,7 @@ import com.xiilab.modulek8sdb.label.repository.LabelRepository;
 import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.storage.service.StorageService;
 import com.xiilab.modulek8sdb.volume.entity.VolumeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
@@ -251,6 +252,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		if(modelRepo.isPresent()){
 			modelRepoEntity = modelRepo.get();
 		}
+		Optional<StorageEntity> storageEntity = storageService.findById(moduleDeployResDTO.getStorageId());
 		DeployEntity deployEntity = DeployEntity.builder()
 			.uid(moduleDeployResDTO.getUid())
 			.name(moduleDeployResDTO.getName())
@@ -282,6 +284,8 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.deployType(moduleDeployResDTO.getDeployType())
 			.modelRepoEntity(modelRepoEntity)
 			.modelVersion(moduleDeployResDTO.getModelVersion())
+			.modelPath(moduleDeployResDTO.getModelPath())
+			.storageEntity(storageEntity.orElse(null))
 			.build();
 
 		deployRepository.save(deployEntity);

@@ -91,6 +91,8 @@ public class DeployVO extends K8SResourceReqVO {
 	private long deployModelId;
 	private DeployType deployType;
 	private String initContainerUrl;
+	private String modelPath;
+	private Long storageId;
 
 	@Override
 	public Deployment createResource() {
@@ -147,6 +149,8 @@ public class DeployVO extends K8SResourceReqVO {
 		annotationMap.put(AnnotationField.DEPLOY_TYPE.getField(), this.deployType.name());
 		annotationMap.put(AnnotationField.DEPLOY_MODEL_ID.getField(), String.valueOf(this.deployModelId));
 		annotationMap.put(AnnotationField.DEPLOY_MODEL_VERSION.getField(), this.modelVersion == null ? "" : String.valueOf(this.modelVersion));
+		annotationMap.put(AnnotationField.DEPLOY_MODEL_PATH.getField(), this.modelPath == null ? "" : String.valueOf(this.modelPath));
+		annotationMap.put(AnnotationField.DEPLOY_MODEL_STORAGE_ID.getField(), this.storageId == null ? "" : String.valueOf(this.storageId));
 		return annotationMap;
 	}
 
