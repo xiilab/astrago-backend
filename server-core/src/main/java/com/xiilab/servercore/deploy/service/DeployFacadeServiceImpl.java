@@ -47,6 +47,7 @@ import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
+import com.xiilab.modulek8s.deploy.dto.request.ModifyDeployDTO;
 import com.xiilab.modulek8s.deploy.dto.request.ModuleCreateDeployReqDTO;
 import com.xiilab.modulek8s.deploy.repository.DeployK8sRepository;
 import com.xiilab.modulek8s.facade.svc.SvcModuleFacadeService;
@@ -762,7 +763,7 @@ public class DeployFacadeServiceImpl {
 					userInfoDTO.getId(), deploy.getCreatorId(), emailTitle, title, message,
 					deploy.getWorkspaceResourceName(), null, mailDTO);
 			} else {
-				throw new IllegalArgumentException("해당 유저는 서비스 삭제 권한이 없습니다.");
+				throw new RestApiException(WorkloadErrorCode.FAILED_DELETE_DEPLOY);
 			}
 			workloadHistoryRepo.deleteByWorkloadId(jobEntity.getId());
 			imageService.deleteImageWorkloadMapping(deploy.getId());
@@ -793,5 +794,30 @@ public class DeployFacadeServiceImpl {
 		Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
 		workloadEntity.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
 		return ResDeploys.DeployInfo.from((DeployEntity) workloadEntity);
+	}
+
+	@Transactional
+	public void modifyDeploy(ModifyDeployDTO modifyDeployDTO, UserDTO.UserInfo userInfoDTO) {
+		Optional<DeployEntity> deployEntity = deployRepository.findByResourceName(modifyDeployDTO.getDeployResourceName());
+		if(deployEntity.isPresent()) {
+			DeployEntity deploy = deployEntity.get();
+			// owner 권한인 워크스페이스 목록 가져옴
+			List<String> loginUserOwnerWorkspaceList = userInfoDTO.getWorkspaces()
+				.stream()
+				.filter(workspace -> workspace.contains("/owner"))
+				.map(workspace -> workspace.split("/owner")[0])
+				.toList();
+			if (deploy.getCreatorId().equals(userInfoDTO.getId())) {
+				deploy.modifyNameAndDescription(modifyDeployDTO.getName(), modifyDeployDTO.getDescription());
+
+			} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || loginUserOwnerWorkspaceList.contains(
+				deploy.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 수정
+				deploy.modifyNameAndDescription(modifyDeployDTO.getName(), modifyDeployDTO.getDescription());
+			} else {
+				throw new RestApiException(WorkloadErrorCode.FAILED_MODIFY_DEPLOY);
+			}
+		}else{
+			throw new RestApiException(WorkloadErrorCode.FAILED_LOAD_DEPLOY_INFO);
+		}
 	}
 }
