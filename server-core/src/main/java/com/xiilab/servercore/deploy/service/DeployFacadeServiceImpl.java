@@ -180,6 +180,7 @@ public class DeployFacadeServiceImpl {
 					throw new RestApiException(DeployErrorCode.NOT_FOUND_MODEL_VERSION);
 				}
 				String storageHostPath = findModel.getStorageEntity().getHostPath();
+				String dbSaveModelPath = modelPath;
 				modelPath = storageHostPath + "/" + modelPath;
 				// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
 				// 모델 외 파일은 추후 작성
@@ -258,7 +259,7 @@ public class DeployFacadeServiceImpl {
 					.repositoryAuthType(builtImage.getRepositoryAuthType())
 					.build();
 				CreateJobResDTO deployWorkload = workloadModuleFacadeService.createDeployWorkload(
-					createDeployReqDTO.toTritonModuleDTO(List.of(volume), imageReqDTO));
+					createDeployReqDTO.toTritonModuleDTO(List.of(volume), imageReqDTO, findModel.getStorageEntity().getStorageId(), dbSaveModelPath));
 				deployJobResourceName = deployWorkload.getResourceName();
 			}
 			catch (IOException e) {

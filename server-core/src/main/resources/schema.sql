@@ -788,6 +788,10 @@ create table if not exists TB_DEPLOY
     REQ_GPU     int(11)                DEFAULT NULL,
     REQ_MEM     float                  DEFAULT NULL,
     DEPLOY_TYPE enum ('TRITON','USER') DEFAULT NULL,
+    MODEL_REPO_ID int(11) DEFAULT NULL,
+    MODEL_VERSION varchar(10) DEFAULT NULL,
+    MODEL_PATH varchar(255) DEFAULT NULL,
+    STORAGE_ID int(11) DEFAULT NULL,
     CONSTRAINT `PRIMARY` PRIMARY KEY (WORKLOAD_ID)
 );
 

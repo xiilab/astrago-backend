@@ -16,6 +16,7 @@ import com.xiilab.modulek8s.workload.dto.request.ModuleEnvReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModulePortReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,7 +70,7 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 		this.ports = ports;
 	}
 
-	public ModuleCreateDeployReqDTO toTritonModuleDTO(List<ModuleVolumeReqDTO> volumes, ModuleImageReqDTO imageReqDTO) {
+	public ModuleCreateDeployReqDTO toTritonModuleDTO(List<ModuleVolumeReqDTO> volumes, ModuleImageReqDTO imageReqDTO, Long storageId, String modelPath) {
 			return ModuleCreateDeployReqDTO.builder()
 				.name(getName())
 				.description(getDescription())
@@ -98,6 +99,8 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 				.deployType(deployType)
 				.deployModelId(modelId)
 				.modelVersion(modelVersion)
+				.storageId(storageId)
+				.modelPath(modelPath)
 				.build();
 	}
 

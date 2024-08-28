@@ -52,6 +52,8 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 	protected long deployModelId;
 	protected DeployType deployType;
 	protected String initContainerUrl;
+	protected String modelPath;
+	protected Long storageId;
 
 	public DeployVO toDeployVO(String workspaceName) {
 		initializeCollection();
@@ -84,6 +86,8 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 			.modelVersion(this.modelVersion)
 			.workingDir(this.workingDir)
 			.initContainerUrl(this.initContainerUrl)
+			.modelPath(this.modelPath)
+			.storageId(this.storageId)
 			.build();
 	}
 	protected void initializeCollection() {
