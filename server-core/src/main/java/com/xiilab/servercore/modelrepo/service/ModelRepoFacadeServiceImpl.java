@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
@@ -29,6 +31,7 @@ import com.xiilab.modulek8sdb.modelrepo.enums.ModelRepoType;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoVersionRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.storage.service.StorageService;
@@ -214,6 +217,15 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		List<DeployEntity> content = deploysUsingModel.getContent();
 		long totalCount = deploysUsingModel.getTotalElements();
 		return ResDeploys.entitiesToDtos(content, totalCount);
+	}
+
+	@Override
+	public DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion) {
+		ModelRepoEntity modelRepoEntity = getModelRepoEntityById(modelRepoId);
+		String hostPath = modelRepoEntity.getStorageEntity().getHostPath();// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a
+		String modelPath = hostPath + "/" + modelRepoEntity.getModelPath() + "/" + modelVersion;
+
+		return CoreFileUtils.getAstragoFiles(modelPath);
 	}
 
 	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.WlModelRepoDTO wlModelRepoDTO) {

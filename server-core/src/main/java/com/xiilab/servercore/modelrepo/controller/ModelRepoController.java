@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulek8s.common.dto.PageDTO;
 import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
@@ -108,4 +109,12 @@ public class ModelRepoController {
 		ResDeploys deploys = modelRepoFacadeService.getDeploysUsingModel(modelRepoId, pageNum, pageSize);
 		return new ResponseEntity<>(deploys, HttpStatus.OK);
 	}
+	@GetMapping("/{modelRepoId}/{modelVersion}/files")
+	@Operation(summary = "모델의 버전에 해당하는 파일 리스트 조회")
+	public ResponseEntity<DirectoryDTO> getModelFiles(@PathVariable(name = "modelRepoId") Long modelRepoId,
+		@PathVariable(name = "modelVersion") String modelVersion){
+		DirectoryDTO modelFiles = modelRepoFacadeService.getModelFiles(modelRepoId, modelVersion);
+		return new ResponseEntity(modelFiles, HttpStatus.OK);
+	}
+
 }
