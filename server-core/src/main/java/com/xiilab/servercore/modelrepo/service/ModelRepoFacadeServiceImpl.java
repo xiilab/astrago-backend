@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -220,12 +219,15 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	}
 
 	@Override
-	public DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion) {
-		ModelRepoEntity modelRepoEntity = getModelRepoEntityById(modelRepoId);
-		String hostPath = modelRepoEntity.getStorageEntity().getHostPath();// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a
-		String modelPath = hostPath + "/" + modelRepoEntity.getModelPath() + "/" + modelVersion;
-
-		return CoreFileUtils.getAstragoFiles(modelPath);
+	public DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion, String filePath) {
+		if(filePath == null || filePath.isBlank()){
+			ModelRepoEntity modelRepoEntity = getModelRepoEntityById(modelRepoId);
+			String hostPath = modelRepoEntity.getStorageEntity().getHostPath();// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a
+			String modelPath = hostPath + "/" + modelRepoEntity.getModelPath() + "/" + modelVersion;
+			return CoreFileUtils.getAstragoFiles(modelPath);
+		}else{
+			return CoreFileUtils.getAstragoFiles(filePath);
+		}
 	}
 
 	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.WlModelRepoDTO wlModelRepoDTO) {

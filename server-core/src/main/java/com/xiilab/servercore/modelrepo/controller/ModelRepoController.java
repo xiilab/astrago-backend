@@ -112,9 +112,12 @@ public class ModelRepoController {
 	@GetMapping("/{modelRepoId}/{modelVersion}/files")
 	@Operation(summary = "모델의 버전에 해당하는 파일 리스트 조회")
 	public ResponseEntity<DirectoryDTO> getModelFiles(@PathVariable(name = "modelRepoId") Long modelRepoId,
-		@PathVariable(name = "modelVersion") String modelVersion){
-		DirectoryDTO modelFiles = modelRepoFacadeService.getModelFiles(modelRepoId, modelVersion);
+		@PathVariable(name = "modelVersion") String modelVersion,
+		@RequestParam(value = "filePath", required = false) String filePath){
+		DirectoryDTO modelFiles = modelRepoFacadeService.getModelFiles(modelRepoId, modelVersion, filePath);
 		return new ResponseEntity(modelFiles, HttpStatus.OK);
 	}
+
+
 
 }
