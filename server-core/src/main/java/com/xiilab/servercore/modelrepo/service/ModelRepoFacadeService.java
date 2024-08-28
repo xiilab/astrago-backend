@@ -31,5 +31,5 @@ public interface ModelRepoFacadeService {
 
 	ResDeploys getDeploysUsingModel(Long modelRepoId, int pageNum, int pageSize);
 
-	DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion);
+	DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion, String filePath);
 }
