@@ -1,13 +1,24 @@
 package com.xiilab.servercore.hub.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,7 +58,8 @@ public class HubServiceImpl implements HubService {
 	private final HubCategoryMappingRepository hubCategoryMappingRepository;
 	private final HubRepository hubRepository;
 	private final NetworkRepository networkRepository;
-
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 	@Override
 	public FindHubResDTO.Hubs getHubList(String searchText, String[] categoryNames, Pageable pageable) {
 		if (ObjectUtils.isEmpty(categoryNames)) {
@@ -72,16 +84,25 @@ public class HubServiceImpl implements HubService {
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 		FindHubResDTO.HubDetail hubDetail = FindHubResDTO.HubDetail.from(hubEntity, typesMap);
 
-		hubDetail.changeSourceCodeUrl(
-			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() : hubEntity.getSourceCodeUrl());
-		FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
-		hubImage.setImageName(networkCloseYN == NetworkCloseYN.Y ? hubEntity.getHubImageEntity().getImageName() :
-			hubEntity.getHubImageEntity().getImageName());
-		hubDetail.setHubImage(hubImage);
-		hubDetail.setReadmeUrl(
-			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getReadmeUrl() : hubEntity.getReadmeUrl());
-		hubDetail.setThumbnailUrl(
-			networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrl() : hubEntity.getThumbnailUrl());
+		// hubDetail.changeSourceCodeUrl(
+		// 	networkCloseYN == NetworkCloseYN.Y ? hubEntity.getSourceCodeUrl() : hubEntity.getSourceCodeUrl());
+		// FindHubCommonResDTO.HubImage hubImage = new FindHubCommonResDTO.HubImage(hubEntity.getHubImageEntity());
+		// String hubImageUrl = "";
+		// if(networkCloseYN == NetworkCloseYN.Y){
+		// 	if(isBlankSafe(privateRegistryUrl)){
+		// 		hubImageUrl = hubEntity.getHubImageEntity().getImageName();
+		// 	}else{
+		// 		hubImageUrl = privateRegistryUrl + "/" + hubEntity.getHubImageEntity().getImageName();
+		// 	}
+		// }else{
+		// 	hubImageUrl = hubEntity.getHubImageEntity().getImageName();
+		// }
+		// hubImage.setImageName(hubImageUrl);
+		// hubDetail.setHubImage(hubImage);
+		// hubDetail.setReadmeUrl(
+		// 	networkCloseYN == NetworkCloseYN.Y ? hubEntity.getReadmeUrl() : hubEntity.getReadmeUrl());
+		// hubDetail.setThumbnailUrl(
+		// 	networkCloseYN == NetworkCloseYN.Y ? hubEntity.getThumbnailUrl() : hubEntity.getThumbnailUrl());
 
 		return hubDetail;
 	}
@@ -92,8 +113,7 @@ public class HubServiceImpl implements HubService {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
-		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size(), networkCloseYN,
-			network.getPrivateRepositoryUrl());
+		return FindHubInWorkloadResDTO.Hubs.from(findAll, findAll.size(),networkCloseYN, privateRegistryUrl);
 	}
 
 	@Override
@@ -110,16 +130,34 @@ public class HubServiceImpl implements HubService {
 		}
 	}
 
+	@Override
+	public String getHubReadMe(Long hubId) {
+		FindHubResDTO.HubDetail hub = getHubByHubId(hubId);
+		String readmeFileName = hub.getReadmeFileName();
+		// ClassPathResource를 사용하여 resources 디렉토리 내의 파일을 읽음
+		Resource resource = new ClassPathResource("static/hub/" + readmeFileName);
+		// Path path = null;
+		// try {
+		// 	path = resource.getFile().toPath();
+		// 	return new String(Files.readAllBytes(path));
+		// }
+		try (InputStream inputStream = resource.getInputStream();
+			 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+			return reader.lines().collect(Collectors.joining("\n"));
+		}
+		catch (IOException e) {
+			log.error(e.toString());
+			throw new RestApiException(HubErrorCode.GET_FAILED_HUB_REAM_ME);
+		}
+	}
+
 	private static HubEntity createHubEntity(HubReqDTO.SaveHub saveHubDTO, String strEnvJson, String strParamJson,
 		HubImageEntity hubImageEntity) {
 		return HubEntity.saveBuilder()
 			.title(saveHubDTO.getTitle())
 			.description(saveHubDTO.getDescription())
-			.thumbnailUrl(saveHubDTO.getThumbnailURL())
-			.readmeUrl(saveHubDTO.getReadmeURL())
-			.sourceCodeUrl(saveHubDTO.getSourceCodeUrl())
-			.sourceCodeBranch("master")
-			.sourceCodeMountPath(saveHubDTO.getSourceCodeMountPath())
+			.thumbnailFileName("")
+			.readmeFileName("")
 			.datasetMountPath(saveHubDTO.getDatasetMountPath())
 			.modelMountPath(saveHubDTO.getModelMountPath())
 			.envs(strEnvJson)
@@ -200,5 +238,9 @@ public class HubServiceImpl implements HubService {
 	/* MAP -> JSON 문자열로 변환 */
 	private String serializeToJson(Map<String, String> envMap) throws JsonProcessingException {
 		return envMap != null && !envMap.isEmpty() ? new ObjectMapper().writeValueAsString(envMap) : "{}";
+	}
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
 	}
 }

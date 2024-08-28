@@ -30,6 +30,7 @@ import com.xiilab.modulek8s.facade.dto.DeleteLocalModelDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.model.entity.AstragoModelEntity;
 import com.xiilab.modulek8sdb.model.entity.LocalModelEntity;
@@ -62,6 +63,8 @@ public class ModelFacadeServiceImpl implements ModelFacadeService {
 	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 	private final WebClientService webClientService;
 	private final NetworkRepository networkRepository;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	@Override
 	@Transactional
@@ -81,14 +84,23 @@ public class ModelFacadeServiceImpl implements ModelFacadeService {
 	@Transactional
 	public void insertLocalModel(ModelDTO.CreateLocalModel createLocalModel) {
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-
+		String volumeImageURL = "";
+		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
+			if(isBlankSafe(privateRegistryUrl)){
+				volumeImageURL = network.getLocalVolumeImageUrl();
+			}else{
+				volumeImageURL = privateRegistryUrl + "/" + network.getLocalVolumeImageUrl();
+			}
+		}else{
+			volumeImageURL = network.getLocalVolumeImageUrl();
+		}
 		CreateLocalModelDTO createDto = CreateLocalModelDTO.builder()
 			.namespace(namespace)
 			.modelName(createLocalModel.getModelName())
 			.ip(createLocalModel.getIp())
 			.storagePath(createLocalModel.getStoragePath())
 			// .dockerImage(dockerImage)
-			.dockerImage(network.getLocalVolumeImageURL())
+			.dockerImage(volumeImageURL)
 			.hostPath(hostPath)
 			.build();
 
@@ -346,5 +358,9 @@ public class ModelFacadeServiceImpl implements ModelFacadeService {
 		return userInfoDTO.getAuth() == AuthType.ROLE_ADMIN ||
 			(userInfoDTO.getAuth() == AuthType.ROLE_USER && userInfoDTO.getId()
 				.equals(model.getRegUser().getRegUserId()));
+	}
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
 	}
 }

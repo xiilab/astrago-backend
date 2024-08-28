@@ -52,14 +52,25 @@ public class ImageResDTO {
 		private FrameWorkType ide;
 
 		public static FindImage from(ImageEntity imageEntity, NetworkCloseYN networkCloseYN,
-			String privateRepositoryUrl) {
+			String privateRegistryUrl) {
 			if (imageEntity.isBuiltInImage()) {
 				BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)imageEntity;
 				ObjectMapper objectMapper = new ObjectMapper();
 				try {
+					String imageUrl = "";
+					if(networkCloseYN == NetworkCloseYN.Y){
+						if(isBlankSafe(privateRegistryUrl)){
+							imageUrl = imageEntity.getImageName();
+						}else{
+							imageUrl = privateRegistryUrl + "/" + imageEntity.getImageName();
+						}
+					}else{
+						imageUrl = imageEntity.getImageName();
+					}
+
 					return FindImage.builder()
 						.id(imageEntity.getId())
-						.imageName(networkCloseYN == NetworkCloseYN.Y ? privateRepositoryUrl + imageEntity.getImageName() : imageEntity.getImageName())
+						.imageName(imageUrl)
 						.repositoryAuthType(imageEntity.getRepositoryAuthType())
 						.imageType(imageEntity.getImageType())
 						.workloadType(imageEntity.getWorkloadType())
@@ -101,6 +112,10 @@ public class ImageResDTO {
 					.build();
 			}
 		}
+		// null 체크와 함께 isBlank를 수행하는 메서드
+		public static boolean isBlankSafe(String str) {
+			return str == null || str.isBlank();
+		}
 	}
 
 	@Getter
@@ -110,9 +125,9 @@ public class ImageResDTO {
 		private long totalCount;
 
 		public static FindImages from(List<ImageEntity> imageEntities, Long totalCount, NetworkCloseYN networkCloseYN,
-			String privateRepositoryUrl) {
+			String privateRegistryUrl) {
 			return FindImages.builder()
-				.findImages(imageEntities.stream().map(imageEntity -> FindImage.from(imageEntity, networkCloseYN, privateRepositoryUrl)).filter(Objects::nonNull).toList())
+				.findImages(imageEntities.stream().map(imageEntity -> FindImage.from(imageEntity, networkCloseYN, privateRegistryUrl)).filter(Objects::nonNull).toList())
 				.totalCount(totalCount)
 				.build();
 		}

@@ -1,10 +1,13 @@
 package com.xiilab.modulek8s.workload.svc.service;
 
+import java.util.List;
+
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 
 import io.fabric8.kubernetes.api.model.ServiceList;
+import io.fabric8.kubernetes.api.model.ServicePort;
 
 public interface SvcService {
 	/**
@@ -21,4 +24,6 @@ public interface SvcService {
 	void deleteServiceByResourceName(String svcName, String namespace);
 
 	SvcResDTO.FindSvcs getServicesByResourceName(String workspaceResourceName, String workloadResourcedName);
+
+	List<List<ServicePort>> getPortsByWorkloadResourceName(String namespace, String resourceName);
 }

@@ -63,4 +63,7 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 		JobImageVO jobImageVO = this.image.toJobImageVO(workspace);
 		return jobImageVO.credentialVO();
 	}
+	public void modifyImage(ModuleImageReqDTO image){
+		this.image = image;
+	}
 }

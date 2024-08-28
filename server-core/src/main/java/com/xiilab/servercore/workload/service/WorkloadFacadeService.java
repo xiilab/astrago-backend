@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
@@ -57,6 +58,7 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
+import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleVolumeReqDTO;
@@ -73,6 +75,7 @@ import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 import com.xiilab.modulek8s.workload.svc.dto.response.SvcResDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
+import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
 import com.xiilab.modulek8sdb.common.enums.RepositoryDivision;
 import com.xiilab.modulek8sdb.dataset.entity.AstragoDatasetEntity;
 import com.xiilab.modulek8sdb.dataset.entity.Dataset;
@@ -84,7 +87,9 @@ import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
+import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
+import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -111,6 +116,7 @@ import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
@@ -137,6 +143,9 @@ public class WorkloadFacadeService {
 	private final NetworkRepository networkRepository;
 	private final UserFacadeService userFacadeService;
 	private final NodeFacadeService nodeFacadeService;
+	private final PortRepository portRepository;
+	@Value("${astrago.private-registry-url}")
+	private String privateRegistryUrl;
 
 	@Transactional
 	public void createWorkload(CreateWorkloadJobReqDTO createWorkloadReqDTO, UserDTO.UserInfo userInfoDTO) {
@@ -185,8 +194,33 @@ public class WorkloadFacadeService {
 			// 리소스 초과 알림
 			log.info("폐쇄망 : " + network.getNetworkCloseYN());
 			checkAndSendWorkspaceResourceOverAlert(createWorkloadReqDTO, userInfoDTO);
-			workloadModuleFacadeService.createJobWorkload(
-				createWorkloadReqDTO.toModuleDTO(network.getInitContainerURL()));
+			NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+
+			String initContainerUrl = "";
+			String imageName = "";
+			if(networkCloseYN == NetworkCloseYN.Y){
+				if(isBlankSafe(privateRegistryUrl)){
+					initContainerUrl = network.getInitContainerImageUrl();
+				}else{
+					initContainerUrl = privateRegistryUrl + "/" + network.getInitContainerImageUrl();
+				}
+			}else{
+				initContainerUrl = network.getInitContainerImageUrl();
+			}
+			if(createWorkloadReqDTO.getImage().getType() != ImageType.CUSTOM && networkCloseYN == NetworkCloseYN.Y){
+				if(isBlankSafe(privateRegistryUrl)){
+					imageName = createWorkloadReqDTO.getImage().getName();
+				}else{
+					imageName = privateRegistryUrl + "/" + createWorkloadReqDTO.getImage().getName();
+				}
+			}else{
+				imageName = createWorkloadReqDTO.getImage().getName();
+			}
+			ModuleImageReqDTO image = createWorkloadReqDTO.getImage();
+			image.modifyName(imageName);
+			CreateWorkloadReqDTO moduleDTO = createWorkloadReqDTO.toModuleDTO(initContainerUrl);
+			moduleDTO.modifyImage(image);
+			workloadModuleFacadeService.createJobWorkload(moduleDTO);
 			// 워크로드
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -194,7 +228,10 @@ public class WorkloadFacadeService {
 		}
 
 	}
-
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
+	}
 	private String getMpsNodeName(String nodeNames) {
 		String[] splitNodeName = nodeNames.replaceAll(" ", "").split(",");
 		if (splitNodeName.length == 1) {
@@ -317,44 +354,40 @@ public class WorkloadFacadeService {
 		return generatePortResDTO(moduleWorkloadResDTO);
 	}
 
+	@Transactional
 	public FindWorkloadResDTO getWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
 
-		return workloadHistoryService.getWorkloadInfoByResourceName(
+		FindWorkloadResDTO workloadInfo = workloadHistoryService.getWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
-		// 실행중일 떄
-		// try {
-		// 	UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
-		// 	Set<String> workspaceList = userFacadeService.getWorkspaceList(userInfoDTO.getId(), true);
-		// 	// String nodeName = workspaceService.getNodeName(workspaceName, workloadResourceName);
-		// 	if (workloadType == WorkloadType.BATCH) {
-		// 		ModuleBatchJobResDTO moduleBatchJobResDTO = workloadModuleFacadeService.getBatchWorkload(workspaceName,
-		// 			workloadResourceName);
-		// 		// 삭제권한 업데이트
-		// 		moduleBatchJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), userInfo.getMyWorkspaces());
-		//
-		// 		return getActiveWorkloadDetail(moduleBatchJobResDTO);
-		// 	} else if (workloadType == WorkloadType.INTERACTIVE) {
-		// 		ModuleInteractiveJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getInteractiveWorkload(
-		// 			workspaceName, workloadResourceName);
-		// 		//삭제권한 업데이트
-		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-		//
-		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-		// 	} else if (workloadType == WorkloadType.DISTRIBUTED) {
-		// 		ModuleDistributedJobResDTO moduleInteractiveJobResDTO = workloadModuleFacadeService.getDistributedWorkload(
-		// 			workspaceName, workloadResourceName);
-		// 		moduleInteractiveJobResDTO.updateCanBeDeleted(userInfoDTO.getId(), workspaceList);
-		//
-		// 		return getActiveWorkloadDetail(moduleInteractiveJobResDTO);
-		// 	}
-		// } catch (Exception e) {
-		// 	return workloadHistoryService.getWorkloadInfoByResourceName(workspaceName, workloadResourceName,
-		// 		userInfoDTO);
-		// }
-		//
-		// return null;
+		WorkloadEntity workloadEntity = workloadHistoryService.findById(workloadInfo.getId());
+		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
+		String ip = connectedNode.getIp();
+
+		if(workloadInfo.getPorts() == null || workloadInfo.getPorts().size() == 0){
+			List<List<ServicePort>> servicePorts = svcModuleFacadeService.getPortsByWorkloadResourceName(
+				workspaceName, workloadResourceName);
+			List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
+			for (List<ServicePort> port : servicePorts) {
+				for (ServicePort servicePort : port) {
+					PortEntity portEntity = PortEntity.builder()
+						.name(servicePort.getName())
+						.portNum(servicePort.getPort())
+						.targetPortNum(servicePort.getNodePort())
+						.build();
+					portEntity.setWorkload(workloadEntity);
+					portRepository.save(portEntity);
+					ports.add(new FindWorkloadResDTO.Port(servicePort.getName(), servicePort.getPort(), servicePort.getNodePort(), ip + ":" + servicePort.getNodePort()));
+				}
+			}
+			workloadInfo.setPorts(ports);
+		}else{
+			List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
+				new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),ip + ":" + port.getTargetPort())).toList();
+			workloadInfo.setPorts(ports);
+		}
+		return workloadInfo;
 	}
 
 	private <T extends AbstractModuleWorkloadResDTO> FindWorkloadResDTO getActiveWorkloadDetail(
@@ -1124,9 +1157,17 @@ public class WorkloadFacadeService {
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(WorkloadType workloadType,
 		String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {
-		return workloadHistoryService.getAdminWorkloadInfoByResourceName(
+
+		FindWorkloadResDTO workloadInfo = workloadHistoryService.getAdminWorkloadInfoByResourceName(
 			workspaceName, workloadResourceName,
 			userInfoDTO);
+		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
+		String ip = connectedNode.getIp();
+		List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
+			new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(), ip + ":" + port.getTargetPort())).toList();
+		workloadInfo.setPorts(ports);
+		return workloadInfo;
+
 		// 실행중일 떄
 		// try {
 		// 	UserDTO.UserInfo userInfo = userFacadeService.getUserById(userInfoDTO.getId());
