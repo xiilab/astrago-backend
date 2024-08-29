@@ -62,6 +62,9 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 		this.creatorUserName = creatorName;
 		this.creatorFullName = creatorFullName;
 	}
+	public void setVolumes(List<ModuleVolumeReqDTO> volumes){
+		this.volumes = volumes;
+	}
 
 	public void setNodeName(String nodeName) {
 		this.nodeName = nodeName;
