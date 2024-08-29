@@ -391,6 +391,13 @@ public class DeployFacadeServiceImpl {
 						.createPVC(createPVC)
 						.build();
 
+					List<ModuleVolumeReqDTO> volumes = createDeployReqDTO.getVolumes();
+					if(volumes != null){
+						volumes.add(volume);
+					}else{
+						createDeployReqDTO.setVolumes(List.of(volume));
+					}
+
 					NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 					String initContainerUrl = "";
 					String imageName = "";
