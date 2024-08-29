@@ -46,7 +46,7 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 	private float cpuRequest;
 	private float memRequest;
 	private int gpuRequest;
-	private long modelId;
+	private Long modelId;
 	private String modelVersion;
 	private String modelSaveName;
 	private List<String> modelConfigNames;
