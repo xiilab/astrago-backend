@@ -92,6 +92,8 @@ public class ResDeploys {
 		private boolean canBeDeleted;
 		private String modelName;
 		private String modelVersion;
+		private String modelPath;
+		private String storageName;
 
 		public static DeployInfo from(DeployEntity deploy){
 			return DeployInfo.builder()
@@ -124,6 +126,8 @@ public class ResDeploys {
 				.nodeName(deploy.getNodeName())
 				.modelName(deploy.getModelRepoEntity() != null ? deploy.getModelRepoEntity().getModelName() : null)
 				.modelVersion(deploy.getModelVersion())
+				.modelPath(deploy.getModelPath())
+				.storageName(deploy.getStorageEntity() != null ? deploy.getStorageEntity().getStorageName() : null)
 				.build();
 		}
 	}
