@@ -58,15 +58,16 @@ public class ImageResDTO {
 				ObjectMapper objectMapper = new ObjectMapper();
 				try {
 					String imageUrl = "";
-					if(networkCloseYN == NetworkCloseYN.Y){
-						if(isBlankSafe(privateRegistryUrl)){
-							imageUrl = imageEntity.getImageName();
-						}else{
-							imageUrl = privateRegistryUrl + "/" + imageEntity.getImageName();
-						}
-					}else{
-						imageUrl = imageEntity.getImageName();
-					}
+					// if(networkCloseYN == NetworkCloseYN.Y){
+					// 	if(isBlankSafe(privateRegistryUrl)){
+					// 		imageUrl = imageEntity.getImageName();
+					// 	}else{
+					// 		imageUrl = privateRegistryUrl + "/" + imageEntity.getImageName();
+					// 	}
+					// }else{
+					// 	imageUrl = imageEntity.getImageName();
+					// }
+					imageUrl = imageEntity.getImageName();
 					return FindImage.builder()
 						.id(imageEntity.getId())
 						.imageName(imageUrl)
