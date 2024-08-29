@@ -160,8 +160,8 @@ public class BatchJobVO extends WorkloadVO {
 		}
 		if(!(this.image.imageType() == ImageType.HUB)){
 			cloneGitRepo(podSpecBuilder, this.codes);
+			addDefaultVolume(podSpecBuilder);
 		}
-		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, this.datasets);
 		addVolumes(podSpecBuilder, this.models);
 
