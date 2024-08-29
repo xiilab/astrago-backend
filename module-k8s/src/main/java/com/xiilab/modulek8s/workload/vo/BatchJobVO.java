@@ -158,8 +158,9 @@ public class BatchJobVO extends WorkloadVO {
 		if (!ObjectUtils.isEmpty(this.secretName)) {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
-
-		cloneGitRepo(podSpecBuilder, this.codes);
+		if(!(this.image.imageType() == ImageType.HUB)){
+			cloneGitRepo(podSpecBuilder, this.codes);
+		}
 		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, this.datasets);
 		addVolumes(podSpecBuilder, this.models);
