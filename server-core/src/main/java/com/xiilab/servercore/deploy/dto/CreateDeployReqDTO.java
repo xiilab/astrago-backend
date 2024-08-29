@@ -55,6 +55,7 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 	//nvidia triton config file
 	private String tritonConfigText;
 	private String initContainerUrl;
+	private String userModelMountPath;
 
 	public void setUserInfo(String creatorId, String creatorName, String creatorFullName) {
 		this.creatorId = creatorId;
@@ -104,7 +105,7 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 				.build();
 	}
 
-	public ModuleCreateDeployReqDTO toUserModuleDTO(String initContainerUrl) {
+	public ModuleCreateDeployReqDTO toUserModuleDTO(String initContainerUrl, String modelPath, Long storageId) {
 		return ModuleCreateDeployReqDTO.builder()
 			.name(getName())
 			.description(getDescription())
@@ -134,6 +135,8 @@ public class CreateDeployReqDTO extends APIBaseReqDTO {
 			.deployType(deployType)
 			.deployModelId(modelId)
 			.modelVersion(modelVersion)
+			.storageId(storageId)
+			.modelPath(modelPath)
 			.build();
 	}
 
