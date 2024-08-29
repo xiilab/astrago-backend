@@ -161,10 +161,13 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 	@Override
 	public StorageResDTO createDELLStorage(CreateStorageReqDTO createStorageReqDTO) {
+		// install check
+		storageClassService.dellPluginInstallCheck();
+		// storageClass 생성
 		String storageName = "astrago-storage-"+ UUID.randomUUID().toString().substring(6);
 		storageClassService.createDELLStorage(createStorageReqDTO, storageName);
 		// pv 생성
-		String pvcName = "storage-volume-"+ UUID.randomUUID().toString().substring(6);
+		String pvcName = "dell-unity-pvc-"+ UUID.randomUUID().toString().substring(6);
 		k8sVolumeService.createDellPVC(pvcName, storageName);
 		// ServiceAccount 생성
 		String accountName = "astrago-account-"+ UUID.randomUUID().toString().substring(6);
@@ -223,11 +226,11 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.storagePath(createStorageReqDTO.getStoragePath())
 			.namespace(createStorageReqDTO.getNamespace())
 			.astragoDeploymentName(deployment.getAstragoDeploymentName())
-			.hostPath(createStorageReqDTO.getHostPath())
 			.pvcName(pvcName)
 			.requestVolume(createStorageReqDTO.getRequestVolume())
 			.volumeName(deployment.getVolumeName())
 			.storageClassName(storageName)
+			.hostPath(createStorageReqDTO.getHostPath())
 			.build();
 	}
 

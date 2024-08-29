@@ -9,5 +9,5 @@ public interface PluginService {
 
 	List<PluginDTO.ResponseDTO> getPluginList();
 
-	void pluginDeleteYN(StorageType type, boolean result);
+	void pluginDeleteYN(StorageType type, boolean result, String userId, String userName);
 }

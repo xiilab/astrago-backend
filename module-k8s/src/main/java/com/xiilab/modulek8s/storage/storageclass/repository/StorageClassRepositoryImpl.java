@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.storage.storageclass.repository;
 
+import static com.xiilab.modulecommon.exception.errorcode.StorageErrorCode.*;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -270,6 +273,17 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.endMetadata()
 				.build();
 			client.serviceAccounts().inNamespace("astrago").resource(serviceAccount).create();
+		}
+	}
+
+	@Override
+	public void dellPluginInstallCheck() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			boolean size = client.pods().inNamespace("unity").list().getItems().stream()
+				.filter(pod -> !pod.getStatus().getPhase().equals("Running") && pod.getMetadata().getName().contains("csi-unity")).toList().size() > 0;
+			if(size){
+				throw new RestApiException(STORAGE_INSTALL_WAIT);
+			}
 		}
 	}
 }

@@ -7,7 +7,9 @@ import java.util.Base64;
 import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
@@ -50,6 +52,8 @@ public class DellService extends StorageUtils {
 				HelmRelease.class);
 			HelmRelease nfsResource = ProvisionerVO.createDellProvisioner();
 			helmClient.inNamespace(namespace).resource(nfsResource).create();
+			// 5. 설치 여부 검증
+			validateDellProvisioner(client);
 		} catch (KubernetesClientException e) {
 			throw new RestApiException(STORAGE_ALREADY_INSTALLED_DELL);
 		}
@@ -75,13 +79,13 @@ public class DellService extends StorageUtils {
 	}
 
 	private void createNamespace(KubernetesClient client) {
-		Namespace namespaceName = new NamespaceBuilder()
+		Namespace createNamespace = new NamespaceBuilder()
 			.withNewMetadata()
 			.withName(namespace)
 			.endMetadata()
 			.build();
 		if (client.namespaces().withName(namespace).get() == null) {
-			client.namespaces().create(namespaceName);
+			client.namespaces().resource(createNamespace).create();
 		}
 	}
 
@@ -140,5 +144,22 @@ public class DellService extends StorageUtils {
 
 	private void deleteNamespace(KubernetesClient client) {
 		client.namespaces().withName(namespace).delete();
+	}
+
+	private void validateDellProvisioner(KubernetesClient client) {
+		sleep();
+		boolean size = client.pods().inNamespace(namespace).list().getItems().stream()
+			.filter(pod -> !pod.getStatus().getPhase().equals("Running") && pod.getMetadata().getName().contains("csi-unity")).toList().size() > 0;
+		if(size){
+			throw new RestApiException(STORAGE_INSTALL_WAIT);
+		}
+	}
+
+	private void sleep(){
+		try {
+			Thread.sleep(10000);
+		}catch (InterruptedException e) {
+			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+		}
 	}
 }

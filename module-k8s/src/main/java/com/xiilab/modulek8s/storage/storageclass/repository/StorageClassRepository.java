@@ -35,4 +35,6 @@ public interface StorageClassRepository {
 	void deleteIbmStorage(String storageName);
 
 	void createServiceAccount(String accountName);
+
+	void dellPluginInstallCheck();
 }
