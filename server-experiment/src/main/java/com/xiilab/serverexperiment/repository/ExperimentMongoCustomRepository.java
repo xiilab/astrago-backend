@@ -3,7 +3,6 @@ package com.xiilab.serverexperiment.repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
@@ -59,7 +58,13 @@ public class ExperimentMongoCustomRepository {
 		AggregationResults<UniqueKeysResult> logs = mongoTemplate.aggregate(aggregation, "logs",
 			UniqueKeysResult.class);
 
-		return Objects.requireNonNull(logs.getUniqueMappedResult()).uniqueKes().stream()
+		UniqueKeysResult uniqueMappedResult = logs.getUniqueMappedResult();
+
+		if (uniqueMappedResult == null) {
+			return new ArrayList<>();
+		}
+
+		return uniqueMappedResult.uniqueKes().stream()
 			.distinct()
 			.toList();
 	}
