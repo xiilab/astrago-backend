@@ -1,5 +1,7 @@
 package com.xiilab.modulek8sdb.plugin.dto;
 
+import java.time.LocalDateTime;
+
 import com.xiilab.modulek8sdb.plugin.entity.PluginEntity;
 
 import jakarta.validation.constraints.NotNull;
@@ -25,12 +27,18 @@ public class PluginDTO {
 	public static class ResponseDTO extends PluginDTO {
 		private long id;
 		private String installYN;
+		private String regUserId;
+		private String regUserName;
+		private LocalDateTime regDate;
 		@Builder(builderClassName = "toDTOBuilder", builderMethodName = "toDTOBuilder")
 		public ResponseDTO(PluginEntity plugin){
 			this.id = plugin.getPluginId();
 			this.name = plugin.getName();
 			this.version = plugin.getVersion();
 			this.installYN = plugin.getInstallYN().name();
+			this.regDate = plugin.getRegDate();
+			this.regUserId = plugin.getRegUserId();
+			this.regUserName = plugin.getRegUserName();
 		}
 	}
 
