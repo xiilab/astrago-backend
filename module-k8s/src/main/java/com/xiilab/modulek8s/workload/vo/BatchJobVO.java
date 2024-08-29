@@ -180,7 +180,9 @@ public class BatchJobVO extends WorkloadVO {
 		}
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
-		addContainerSourceCode(podSpecContainer);
+		if(!(this.image.imageType() == ImageType.HUB)){
+			addContainerSourceCode(podSpecContainer);
+		}
 		addContainerResource(podSpecContainer);
 
 		return podSpecContainer.endContainer().build();
