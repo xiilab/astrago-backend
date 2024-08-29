@@ -180,7 +180,7 @@ public class DeployFacadeServiceImpl {
 					throw new RestApiException(DeployErrorCode.NOT_FOUND_MODEL_VERSION);
 				}
 				String storageHostPath = findModel.getStorageEntity().getHostPath();
-				String dbSaveModelPath = modelPath;
+
 				modelPath = storageHostPath + "/" + modelPath;
 				// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
 				// 모델 외 파일은 추후 작성
@@ -200,6 +200,7 @@ public class DeployFacadeServiceImpl {
 				// 모델을 트리톤 디렉토리로 copy
 				FileUtils.copyFile(Path.of(modelPath), Path.of(tritonModelDirectoryPath));
 				FileUtils.renameFile(tritonModelDirectoryPath + "/" + modelFileName, tritonModelDirectoryPath + "/model.onnx");
+				String dbSaveModelPath = tritonModelDirectoryPath + "/model.onnx";
 
 				// 모델에 필요한 파일들을 트리톤 디렉토리로 copy
 				for (String configPath : modelConfigPaths) {
@@ -306,33 +307,144 @@ public class DeployFacadeServiceImpl {
 				// 리소스 초과 알림
 				log.info("폐쇄망 : " + network.getNetworkCloseYN());
 				checkAndSendWorkspaceResourceOverAlert(createDeployReqDTO, userInfoDTO);
-				NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
 
-				String initContainerUrl = "";
-				String imageName = "";
-				if(networkCloseYN == NetworkCloseYN.Y){
-					if(isBlankSafe(privateRegistryUrl)){
+				CreatePV createPV = null;
+				CreatePVC createPVC = null;
+				String deployJobResourceName = null;
+				String deployDirectoryPath = null;
+				try {
+					String modelFileName = null;
+					//model로 storage 조회
+					ModelRepoEntity findModel = modelRepoFacadeService.getModelRepoEntityById(
+						createDeployReqDTO.getModelId());
+					String modelPath = findModel.getModelPath(); // /workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662
+					String modelConfigPath = findModel.getModelPath();
+					List<String> modelConfigPaths = new ArrayList<>();
+					boolean verionChk = false;
+					for (ModelVersionEntity modelVersionEntity : findModel.getModelVersionList()) {
+						if (modelVersionEntity.getVersion().equalsIgnoreCase(createDeployReqDTO.getModelVersion())) {
+							modelFileName = modelVersionEntity.getModelFileName();
+							modelPath +=
+								"/" + modelVersionEntity.getVersion() + "/"
+									+ modelFileName; // /workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
+							for (String modelConfigName : createDeployReqDTO.getModelConfigNames()) {
+								modelConfigPaths.add(
+									modelConfigPath + "/" + modelVersionEntity.getVersion() + "/" + modelConfigName);
+							}
+							verionChk = true;
+						}
+					}
+					if (!verionChk) {
+						throw new RestApiException(DeployErrorCode.NOT_FOUND_MODEL_VERSION);
+					}
+					String storageHostPath = findModel.getStorageEntity().getHostPath();
+
+					modelPath = storageHostPath + "/" + modelPath;
+					// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/models/model-4330c838-87a0-46e5-9bbb-0cb7c4e39662/v1/yolov8.onnx
+					// 모델 외 파일은 추후 작성
+					// default storage 조회 후 해당 경로에 triton model 디렉토리 생성
+					String deployUUID = "deploy-" + UUID.randomUUID().toString().substring(6);
+					// String deployUUID = "deploy-" + "test";
+					StorageEntity defaultStorage = storageService.getDefaultStorage();
+					deployDirectoryPath =
+						defaultStorage.getHostPath() + "/workspaces/" + createDeployReqDTO.getWorkspaceResourceName()
+							+ "/deploy/"
+							+ deployUUID; // /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/deploy/uuid
+					String directoryRootPath =
+						deployDirectoryPath + "/models/" + createDeployReqDTO.getModelId() + "/model_repository/";
+					// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a/workspaces/ws-e95611a8-25e2-4219-97c6-60b7d4363f1d/deploy/uuid/models/1/model_repository/
+					FileUtils.createFolders(Path.of(directoryRootPath));
+					// 모델을 트리톤 디렉토리로 copy
+					FileUtils.copyFile(Path.of(modelPath), Path.of(directoryRootPath));
+
+					String dbSaveModelPath = directoryRootPath + modelFileName;
+
+					// 모델에 필요한 파일들을 트리톤 디렉토리로 copy
+					for (String configPath : modelConfigPaths) {
+						FileUtils.copyFile(Path.of(storageHostPath + "/" + configPath), Path.of(directoryRootPath));
+					}
+					//pv 생성
+					String pvName = "service-user-pv-" + deployUUID;
+					String pvcName = "service-user-pvc-" + deployUUID;
+					String storagePath = defaultStorage.getStoragePath() + "/workspaces/" + createDeployReqDTO.getWorkspaceResourceName()
+						+ "/deploy/" + deployUUID + "/models/" + createDeployReqDTO.getModelId() + "/model_repository/";
+					createPV = CreatePV.builder()
+						.pvName(pvName)
+						.pvcName(pvcName)
+						.ip(defaultStorage.getIp())
+						.storagePath(storagePath)
+						.storageType(defaultStorage.getStorageType())
+						.requestVolume(defaultStorage.getRequestVolume())
+						.namespace(createDeployReqDTO.getWorkspaceResourceName())
+						.build();
+					// k8sVolumeService.createPV(createPV);
+					//pvc 생성
+					createPVC = CreatePVC.builder()
+						.pvcName(pvcName)
+						.namespace(createDeployReqDTO.getWorkspaceResourceName())
+						.requestVolume(defaultStorage.getRequestVolume())
+						.build();
+					// k8sVolumeService.createPVC(createPVC);
+					ModuleVolumeReqDTO volume = ModuleVolumeReqDTO.builder()
+						.mountPath(createDeployReqDTO.getUserModelMountPath())
+						.createPV(createPV)
+						.createPVC(createPVC)
+						.build();
+
+					NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
+					String initContainerUrl = "";
+					String imageName = "";
+					if (networkCloseYN == NetworkCloseYN.Y) {
+						if (isBlankSafe(privateRegistryUrl)) {
+							initContainerUrl = network.getInitContainerImageUrl();
+						} else {
+							initContainerUrl = privateRegistryUrl + "/" + network.getInitContainerImageUrl();
+						}
+					} else {
 						initContainerUrl = network.getInitContainerImageUrl();
-					}else{
-						initContainerUrl = privateRegistryUrl + "/" + network.getInitContainerImageUrl();
 					}
-				}else{
-					initContainerUrl = network.getInitContainerImageUrl();
-				}
-				if(createDeployReqDTO.getImage().getType() != ImageType.CUSTOM && networkCloseYN == NetworkCloseYN.Y){
-					if(isBlankSafe(privateRegistryUrl)){
+					if (createDeployReqDTO.getImage().getType() != ImageType.CUSTOM
+						&& networkCloseYN == NetworkCloseYN.Y) {
+						if (isBlankSafe(privateRegistryUrl)) {
+							imageName = createDeployReqDTO.getImage().getName();
+						} else {
+							imageName = privateRegistryUrl + "/" + createDeployReqDTO.getImage().getName();
+						}
+					} else {
 						imageName = createDeployReqDTO.getImage().getName();
-					}else{
-						imageName = privateRegistryUrl + "/" + createDeployReqDTO.getImage().getName();
 					}
-				}else{
-					imageName = createDeployReqDTO.getImage().getName();
+					ModuleImageReqDTO image = createDeployReqDTO.getImage();
+					image.modifyName(imageName);
+					ModuleCreateDeployReqDTO userModuleDTO = createDeployReqDTO.toUserModuleDTO(initContainerUrl, dbSaveModelPath, defaultStorage.getStorageId());
+					userModuleDTO.modifyImage(image);
+
+					CreateJobResDTO deployWorkload = workloadModuleFacadeService.createDeployWorkload(userModuleDTO);
+				}catch (IOException e) {
+					log.error(e.toString());
+					//생성된 directory 삭제
+					if(deployDirectoryPath != null){
+						FileUtils.deleteAllDirectory(deployDirectoryPath);
+					}
+					throw new RestApiException(DeployErrorCode.FAILED_CREATE_DEPLOY);
 				}
-				ModuleImageReqDTO image = createDeployReqDTO.getImage();
-				image.modifyName(imageName);
-				ModuleCreateDeployReqDTO userModuleDTO = createDeployReqDTO.toUserModuleDTO(initContainerUrl);
-				userModuleDTO.modifyImage(image);
-				CreateJobResDTO deployWorkload = workloadModuleFacadeService.createDeployWorkload(userModuleDTO);
+				catch (RuntimeException e){
+					log.error(e.toString());
+					//생성된 deployment & svc 삭제
+					if(deployJobResourceName != null){
+						workloadModuleFacadeService.deleteDeployment(createDeployReqDTO.getWorkspaceResourceName(), deployJobResourceName);
+					}
+					if(createPVC != null){
+						k8sVolumeService.deletePVC(createPVC.getPvcName(), createPVC.getNamespace());
+					}
+					if(createPV != null){
+						k8sVolumeService.deletePV(createPV.getPvName());
+					}
+					//생성된 directory 삭제
+					if(deployDirectoryPath != null){
+						FileUtils.deleteAllDirectory(deployDirectoryPath);
+					}
+					throw new RestApiException(DeployErrorCode.FAILED_CREATE_DEPLOY);
+				}
 			} catch (Exception e) {
 				log.error(e.toString());
 				//생성된 리소스들 삭제해야함
