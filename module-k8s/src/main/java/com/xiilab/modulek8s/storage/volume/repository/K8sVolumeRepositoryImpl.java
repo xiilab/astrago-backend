@@ -42,6 +42,7 @@ import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeDevice;
+import io.fabric8.kubernetes.api.model.VolumeDeviceBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
@@ -247,13 +248,17 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 			String pvcName = deleteStorageReqDTO.getPvcName();
 			String volName = deleteStorageReqDTO.getVolumeName();
 			String hostPath = deleteStorageReqDTO.getHostPath();
+
 			Volume vol = new VolumeBuilder()
 				.withName(volName)
 				.withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
 					.withClaimName(pvcName)
 					.build()).build();
 
-			VolumeDevice volumeDevice = new VolumeDevice(hostPath, volName);
+			VolumeDevice volumeDevice = new VolumeDeviceBuilder()
+				.withName(volName)
+				.withDevicePath(hostPath)
+				.build();
 
 			client.apps()
 				.deployments()
@@ -261,7 +266,7 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 				.withName(deleteStorageReqDTO.getAstragoDeploymentName())
 				.edit(d -> new DeploymentBuilder(d)
 					.editSpec()
-					.editOrNewTemplate()
+					.editTemplate()
 					.editSpec()
 					.removeFromVolumes(vol)
 					.editContainer(0)

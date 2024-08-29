@@ -3,7 +3,6 @@ package com.xiilab.modulek8sdb.plugin.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
@@ -15,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PluginServiceImpl implements PluginService {
 
 	private final PluginRepository pluginRepository;
@@ -30,9 +28,9 @@ public class PluginServiceImpl implements PluginService {
 	}
 
 	@Override
-	public void pluginDeleteYN(StorageType type, boolean result) {
+	public void pluginDeleteYN(StorageType type, boolean result, String userId, String userFullName) {
 		PluginEntity pluginEntity = getPluginEntity(type);
-		pluginEntity.setInstallYN(result ? DeleteYN.Y : DeleteYN.N);
+		pluginEntity.setInstallYN(result ? DeleteYN.Y : DeleteYN.N, userId, userFullName);
 	}
 
 	private PluginEntity getPluginEntity(StorageType type) {

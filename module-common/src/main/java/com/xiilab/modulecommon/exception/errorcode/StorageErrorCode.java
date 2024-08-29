@@ -20,8 +20,8 @@ public enum StorageErrorCode implements ErrorCode {
 	STORAGE_RETRY_AGAIN_INSTALL_IBM(HttpStatus.INTERNAL_SERVER_ERROR.value(), "IBM 스토리지 설치를 다시 해주세요."),
 	STORAGE_UNINSTALL_FAIL_IBM(HttpStatus.INTERNAL_SERVER_ERROR.value(), "IBM 스토리지가 삭제 실패하였습니다."),
 	FAILD_DELETE_USING_STORAGE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 스토리지를 사용중인 데이터 셋, 모델이 존재해 삭제할 수 없습니다."),
-	STORAGE_ALREADY_INSTALLED_DELL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Dell 스토리지가 이미 설치되어 있습니다"),
-
+	STORAGE_ALREADY_INSTALLED_DELL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Dell 플러그인이 이미 설치되어 있습니다"),
+	STORAGE_INSTALL_WAIT(HttpStatus.INTERNAL_SERVER_ERROR.value(),"DELL 플러그인 설치 진행중입니다. 잠시만 기다려주세요."),
 
 	;
 

@@ -41,6 +41,8 @@ public class StorageDTO {
 		private int requestVolume;
 		private String secretName;
 		private String storageClassName;
+		private String arrayId;
+		private String storagePool;
 		@Setter
 		private DefaultStorageYN defaultStorageYN = DefaultStorageYN.N;
 
@@ -61,6 +63,8 @@ public class StorageDTO {
 				.secretName(this.secretName)
 				.defaultStorageYN(this.defaultStorageYN)
 				.storageClassName(this.storageClassName)
+				.arrayId(this.arrayId)
+				.storagePool(this.storagePool)
 				.build();
 		}
 	}
@@ -77,6 +81,8 @@ public class StorageDTO {
 		private int requestVolume;
 		private LocalDate createdAt;
 		private String creatorName;
+		private String arrayId;
+		private String storagePool;
 
 		public static ResStorage toDto(StorageEntity storageEntity){
 			return ResStorage.builder()
@@ -89,6 +95,8 @@ public class StorageDTO {
 				.requestVolume(storageEntity.getRequestVolume())
 				.createdAt(storageEntity.getRegDate().toLocalDate())
 				.creatorName(storageEntity.getRegUser().getRegUserRealName())
+				.arrayId(storageEntity.getArrayId())
+				.storagePool(storageEntity.getStoragePool())
 				.build();
 		}
 	}
