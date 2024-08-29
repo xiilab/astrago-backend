@@ -166,7 +166,9 @@ public class BatchJobVO extends WorkloadVO {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
 
-		cloneGitRepo(podSpecBuilder, this.codes);
+		if(!(this.image.imageType() == ImageType.HUB)){
+			cloneGitRepo(podSpecBuilder, this.codes);
+		}
 		addDefaultVolume(podSpecBuilder);
 		// 삭제 예정
 		/*addVolumes(podSpecBuilder, this.datasets);
@@ -190,7 +192,9 @@ public class BatchJobVO extends WorkloadVO {
 		// addVolumeMount(podSpecContainer, datasets);
 		// addVolumeMount(podSpecContainer, models);
 		addVolumeMount(podSpecContainer, volumes);
-		addContainerSourceCode(podSpecContainer);
+		if(!(this.image.imageType() == ImageType.HUB)){
+			addContainerSourceCode(podSpecContainer);
+		}
 		addContainerResource(podSpecContainer);
 
 		return podSpecContainer.endContainer().build();
