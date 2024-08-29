@@ -175,7 +175,7 @@ public class BatchJobVO extends WorkloadVO {
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
 		addContainerCommand(podSpecContainer);
-		if (this.gpuType != GPUType.MPS) {
+		if (this.gpuType != GPUType.MPS && !(this.image.imageType() == ImageType.HUB)) {
 			addDefaultVolumeMountPath(podSpecContainer);
 		}
 		addVolumeMount(podSpecContainer, datasets);
