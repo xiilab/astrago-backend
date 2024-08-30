@@ -152,5 +152,9 @@ public class MonitorService {
 	public List<ResponseDTO.HistoryDTO> getMultiCPUUtilization(RequestDTO requestDTO) {
 		return monitorFacadeService.getMultiCPUUtilization(requestDTO);
 	}
+
+	public List<ResponseDTO.HistoryDTO> getDeployHistoryMetric(RequestDTO requestDTO) {
+		return prometheus.getDeployHistoryMetric(requestDTO);
+	}
 }
 

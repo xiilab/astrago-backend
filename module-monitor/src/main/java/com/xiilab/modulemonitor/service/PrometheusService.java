@@ -31,4 +31,6 @@ public interface PrometheusService {
 
 	ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate,
 		String resourceName);
+
+	List<ResponseDTO.HistoryDTO> getDeployHistoryMetric(RequestDTO requestDTO);
 }

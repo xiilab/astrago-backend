@@ -15,6 +15,7 @@ public class RequestDTO {
 	private String podName;
 	private String nodeName;
 	private String instance;
+	private String deployResourceName;
 
 	public RequestDTO(String metricName,
 		String startDate,
@@ -22,7 +23,8 @@ public class RequestDTO {
 		String namespace,
 		String podName,
 		String nodeName,
-		String instance
+		String instance,
+		String deployResourceName
 	) {
 		this.metricName = metricName;
 		this.startDate = startDate;
@@ -31,6 +33,7 @@ public class RequestDTO {
 		this.podName = podName;
 		this.nodeName = nodeName;
 		this.instance = instance;
+		this.deployResourceName = deployResourceName;
 	}
 
 	public String metricName() {
@@ -59,6 +62,9 @@ public class RequestDTO {
 
 	public String instance() {
 		return instance;
+	}
+	public String deployResourceName() {
+		return deployResourceName;
 	}
 
 	public void changeMetricName(String metricName){

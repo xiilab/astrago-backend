@@ -49,7 +49,7 @@ public class ModuleCreateDeployReqDTO extends K8SResourceReqDTO {
 	protected Integer resourcePresetId;
 	protected Integer replica;
 	protected List<ModuleVolumeReqDTO> volumes;
-	protected long deployModelId;
+	protected Long deployModelId;
 	protected DeployType deployType;
 	protected String initContainerUrl;
 	protected String modelPath;
