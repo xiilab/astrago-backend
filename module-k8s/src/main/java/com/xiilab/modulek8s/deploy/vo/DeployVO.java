@@ -2,11 +2,13 @@ package com.xiilab.modulek8s.deploy.vo;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
@@ -139,6 +141,7 @@ public class DeployVO extends K8SResourceReqVO {
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
 		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
 			"" : String.valueOf(getImage().id()));
+		annotationMap.put(AnnotationField.VOLUME_IDS.getField(), getIds(this.volumes, JobVolumeVO::id));
 		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
 		annotationMap.put(AnnotationField.NODE_NAME.getField(), this.nodeName);
 		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);
@@ -189,6 +192,16 @@ public class DeployVO extends K8SResourceReqVO {
 			.build();
 	}
 
+	protected <T> String getIds(Collection<T> list, Function<T, ?> idExtractor) {
+		if (CollectionUtils.isEmpty(list)) {
+			return "";
+		}
+
+		return list.stream()
+			.map(idExtractor)
+			.map(String::valueOf)
+			.collect(Collectors.joining(","));
+	}
 	// 파드 및 잡 상세 스펙 정의
 	public PodSpec createPodSpec() {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
