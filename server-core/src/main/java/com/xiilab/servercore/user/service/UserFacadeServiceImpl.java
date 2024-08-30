@@ -47,7 +47,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class KeycloakUserFacadeServiceImpl implements UserFacadeService {
+public class UserFacadeServiceImpl implements UserFacadeService {
 	private final UserService userService;
 	private final AlertService alertService;
 	private final ApplicationEventPublisher eventPublisher;
