@@ -80,6 +80,12 @@ public class ExperimentDataDTO {
 	}
 
 	@Getter
+	public static class SystemSearchRes {
+		private String uuid;
+		private List<ResourceEntry> value;
+	}
+
+	@Getter
 	public static class Res {
 		private String workloadName;
 		private Integer step;
@@ -97,6 +103,24 @@ public class ExperimentDataDTO {
 		private Double wallTime;
 		private Double relativeTime;
 		private Map<String, Double> metrics;
+	}
+
+	@Getter
+	@AllArgsConstructor
+	public static class ResourceEntry {
+		private Double cpuUsage;
+		private Double memUsage;
+		private List<GPUResourceEntry> gpuInfos;
+		private Double wallTime;
+	}
+
+	@Getter
+	@AllArgsConstructor
+	public static class GPUResourceEntry {
+		private String name;
+		private Double gpuUsage;
+		private Double memUsage;
+		private Double temperature;
 	}
 
 	@Getter

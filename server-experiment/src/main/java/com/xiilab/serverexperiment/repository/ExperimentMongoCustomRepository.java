@@ -55,7 +55,7 @@ public class ExperimentMongoCustomRepository {
 				projectFinal)
 		);
 
-		AggregationResults<UniqueKeysResult> logs = mongoTemplate.aggregate(aggregation, "logs",
+		AggregationResults<UniqueKeysResult> logs = mongoTemplate.aggregate(aggregation, "ExperimentTrainMetrics",
 			UniqueKeysResult.class);
 
 		UniqueKeysResult uniqueMappedResult = logs.getUniqueMappedResult();
@@ -95,7 +95,8 @@ public class ExperimentMongoCustomRepository {
 
 		Aggregation aggregation = Aggregation.newAggregation(operations);
 
-		AggregationResults<ExperimentDataDTO.SearchRes> logs = mongoTemplate.aggregate(aggregation, "logs",
+		AggregationResults<ExperimentDataDTO.SearchRes> logs = mongoTemplate.aggregate(aggregation,
+			"ExperimentTrainMetrics",
 			ExperimentDataDTO.SearchRes.class);
 		return logs.getMappedResults();
 	}
@@ -111,9 +112,58 @@ public class ExperimentMongoCustomRepository {
 
 		Aggregation aggregation = Aggregation.newAggregation(operations);
 
-		AggregationResults<ExperimentDataDTO.SearchRes> logs = mongoTemplate.aggregate(aggregation, "logs",
+		AggregationResults<ExperimentDataDTO.SearchRes> logs = mongoTemplate.aggregate(aggregation,
+			"ExperimentTrainMetrics",
 			ExperimentDataDTO.SearchRes.class);
 		return logs.getMappedResults();
+	}
+
+	public List<ExperimentDataDTO.SystemSearchRes> getSystemMetrics(List<String> experimentIds, List<String> metrics) {
+		// 1. AggregationOperation 리스트 초기화
+		List<AggregationOperation> operations = new ArrayList<>();
+
+		// 2. Experiment ID 필터 추가
+		operations.add(eqExperimentIds(experimentIds));
+
+		// 3. 필드 프로젝션 생성
+		operations.add(createProjectOperationWithWorkloadId(metrics));
+
+		// 4. workload_id로 그룹화
+		operations.add(createGroupOperation());
+
+		// 5. Aggregation 파이프라인 생성 및 실행
+		Aggregation aggregation = Aggregation.newAggregation(operations);
+		AggregationResults<ExperimentDataDTO.SystemSearchRes> results =
+			mongoTemplate.aggregate(aggregation, "ExperimentSystemMetrics", ExperimentDataDTO.SystemSearchRes.class);
+
+		// 6. 결과 반환 (실제 변환 로직 추가 필요)
+		return results.getMappedResults();
+	}
+
+	private ProjectionOperation createProjectOperationWithWorkloadId(List<String> metrics) {
+		// 기본적으로 workload_id를 포함한 프로젝션
+		ProjectionOperation project = Aggregation.project("workload_id");
+
+		if (metrics != null) {
+			for (String metric : metrics) {
+				if (metric != null && !metric.trim().isEmpty()) {
+					project = project.andInclude(metric);
+				}
+			}
+		}
+
+		return project;
+	}
+
+	private GroupOperation createGroupOperation() {
+		// workload_id로 그룹화하고 나머지 필드를 배열로 수집
+		return Aggregation.group("workload_id")
+			.first("workload_id").as("uuid")
+			.push(new BasicDBObject("cpuUsage", "$cpuUsage")
+				.append("memUsage", "$memUsage")
+				.append("gpuInfos", "$gpuInfos")
+				.append("wallTime", "$wallTime"))
+			.as("value");
 	}
 
 	public void deleteExperimentsLogsByUUIDs(List<String> uuids) {
@@ -217,7 +267,8 @@ public class ExperimentMongoCustomRepository {
 			groupByWorkloadIdAndFirstRow(),
 			projectTableFields()
 		);
-		AggregationResults<ExperimentDataDTO.Res> results = mongoTemplate.aggregate(aggregation, "logs",
+		AggregationResults<ExperimentDataDTO.Res> results = mongoTemplate.aggregate(aggregation,
+			"ExperimentTrainMetrics",
 			ExperimentDataDTO.Res.class);
 		List<ExperimentDataDTO.Res> mappedResults = results.getMappedResults();
 		if (!CollectionUtils.isEmpty(mappedResults)) {
@@ -252,5 +303,4 @@ public class ExperimentMongoCustomRepository {
 	private SortOperation sortByStep() {
 		return Aggregation.sort(Sort.by(Sort.Direction.DESC, "step"));
 	}
-
 }

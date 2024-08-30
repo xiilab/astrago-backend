@@ -62,6 +62,13 @@ public class ExperimentController {
 		return new ResponseEntity<>(experimentDataService.getGraphMetrics(trainDataDTO), HttpStatus.OK);
 	}
 
+	@PostMapping("/system/metrics")
+	public ResponseEntity<List<ExperimentDataDTO.SystemSearchRes>> searchSystemExperimentsGraphData(
+		@RequestBody @Validated ExperimentDataDTO.SearchReq systemDataDTO
+	) {
+		return new ResponseEntity<>(experimentDataService.getSystemMetrics(systemDataDTO), HttpStatus.OK);
+	}
+
 	@GetMapping("/table")
 	public ResponseEntity<Page<ExperimentDataDTO.TableDTO>> searchExperimentsTableData(
 		@RequestParam(name = "userId") String userId,
