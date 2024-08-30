@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class GroupFacadeServiceImpl implements GroupFacadeService {
+public class KeycloakGroupFacadeServiceImpl implements GroupFacadeService {
 	private final GroupService groupService;
 	private final WorkspaceAlertService workspaceAlertService;
 	private final ApplicationEventPublisher publisher;

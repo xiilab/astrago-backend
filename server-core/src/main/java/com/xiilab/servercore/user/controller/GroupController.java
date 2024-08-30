@@ -31,26 +31,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/core/group")
 public class GroupController {
-	private final GroupFacadeService groupFacadeService;
+	private final GroupFacadeService groupFacadeSerivce;
 
 	@GetMapping()
 	@Operation(summary = "그룹 리스트 조회")
 	public ResponseEntity<List<GroupSummaryDTO>> getGroupList(
 		@RequestParam(required = false, name = "searchText") String searchText) {
-		return ResponseEntity.ok(groupFacadeService.getGroupList(searchText));
+		return ResponseEntity.ok(groupFacadeSerivce.getGroupList(searchText));
 	}
 
 	@GetMapping("/{groupId}")
 	@Operation(summary = "그룹 상세 정보 조회")
 	public ResponseEntity<GroupInfoDTO> getGroupInfoById(@PathVariable(name = "groupId") String id) {
-		return ResponseEntity.ok(groupFacadeService.getGroupInfoById(id));
+		return ResponseEntity.ok(groupFacadeSerivce.getGroupInfoById(id));
 	}
 
 	@PostMapping()
 	@Operation(summary = "그룹 생성")
 	public ResponseEntity<HttpStatus> createAccountGroup(@RequestBody GroupReqDTO groupReqDTO,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfo) {
-		groupFacadeService.createAccountGroup(groupReqDTO, userInfo);
+		groupFacadeSerivce.createAccountGroup(groupReqDTO, userInfo);
 		return ResponseEntity.ok().build();
 	}
 
@@ -59,7 +59,7 @@ public class GroupController {
 	public ResponseEntity<HttpStatus> modifyAccountGroup(
 		@PathVariable(name = "groupId") String groupId,
 		@RequestBody GroupReqDTO.ModifyGroupDTO groupReqDTO) {
-		groupFacadeService.modifyAccountGroup(groupId, groupReqDTO);
+		groupFacadeSerivce.modifyAccountGroup(groupId, groupReqDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -68,7 +68,7 @@ public class GroupController {
 	public ResponseEntity<UserDTO.SearchGroupAndUser> getUserAndGroupBySearchText(
 		@RequestParam(name = "searchText") String searchText,
 		@RequestParam(required = false, name = "authType") AuthType authType) {
-		UserDTO.SearchGroupAndUser searchResults = groupFacadeService.getUserAndGroupBySearchText(searchText, authType);
+		UserDTO.SearchGroupAndUser searchResults = groupFacadeSerivce.getUserAndGroupBySearchText(searchText, authType);
 		return new ResponseEntity<>(searchResults, HttpStatus.OK);
 	}
 
@@ -76,7 +76,7 @@ public class GroupController {
 	@Operation(summary = "그룹 멤버 추가")
 	public ResponseEntity<HttpStatus> addGroupMember(@PathVariable(name = "groupId") String groupId,
 		@RequestBody List<String> userIdList) {
-		groupFacadeService.addGroupMember(groupId, userIdList);
+		groupFacadeSerivce.addGroupMember(groupId, userIdList);
 		return ResponseEntity.ok().build();
 	}
 
@@ -85,14 +85,14 @@ public class GroupController {
 	public ResponseEntity<HttpStatus> deleteGroupMemberByUserId(
 		@PathVariable(name = "groupId") String groupId,
 		@RequestBody List<String> userIdList) {
-		groupFacadeService.deleteGroupMemberByUserId(groupId, userIdList);
+		groupFacadeSerivce.deleteGroupMemberByUserId(groupId, userIdList);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/{groupId}")
 	@Operation(summary = "그룹 삭제")
 	public ResponseEntity<HttpStatus> deleteGroupById(@PathVariable(name = "groupId") String id) {
-		groupFacadeService.deleteGroupById(id);
+		groupFacadeSerivce.deleteGroupById(id);
 		return ResponseEntity.ok().build();
 	}
 
@@ -100,14 +100,14 @@ public class GroupController {
 	@Operation(summary = "그룹내 서브 그룹, 멤버 조회")
 	public ResponseEntity<GroupUserDTO.SubGroupUserDto> getGroupUsers(@PathVariable(name = "groupId") String groupId,
 		@RequestParam(required = false, name = "authType") AuthType authType) {
-		return ResponseEntity.ok(groupFacadeService.getGroupUsers(groupId, authType));
+		return ResponseEntity.ok(groupFacadeSerivce.getGroupUsers(groupId, authType));
 	}
 
 	@GetMapping("/ws/{groupName}")
 	@Operation(summary = "워크스페이스 멤버 조회")
 	public ResponseEntity<List<GroupUserDTO.UserDTO>> getWorkspaceMember(
 		@PathVariable(name = "groupName") String groupName) {
-		return ResponseEntity.ok(groupFacadeService.getWorkspaceMember(groupName));
+		return ResponseEntity.ok(groupFacadeSerivce.getWorkspaceMember(groupName));
 	}
 
 	@DeleteMapping("/ws/{groupName}")
@@ -116,7 +116,7 @@ public class GroupController {
 		@PathVariable(name = "groupName") String groupName,
 		@RequestBody List<String> userIdList,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
-		groupFacadeService.deleteWorkspaceMemberByUserId(groupName, userIdList, userInfoDTO);
+		groupFacadeSerivce.deleteWorkspaceMemberByUserId(groupName, userIdList, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -126,7 +126,7 @@ public class GroupController {
 		@PathVariable(name = "groupName") String groupName,
 		@RequestBody AddWorkspaceUsersDTO addWorkspaceUsersDTO,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
-		groupFacadeService.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO, userInfoDTO);
+		groupFacadeSerivce.addWorkspaceMemberByUserId(groupName, addWorkspaceUsersDTO, userInfoDTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -135,7 +135,7 @@ public class GroupController {
 	public ResponseEntity<List<GroupUserDTO>> getWorkspaceMemberBySearch(
 		@PathVariable(name = "groupName") String groupName,
 		@PathVariable(name = "search") String search) {
-		return new ResponseEntity<>(groupFacadeService.getWorkspaceMemberBySearch(groupName, search), HttpStatus.OK);
+		return new ResponseEntity<>(groupFacadeSerivce.getWorkspaceMemberBySearch(groupName, search), HttpStatus.OK);
 	}
 
 }

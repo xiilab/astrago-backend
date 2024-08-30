@@ -13,6 +13,7 @@ import com.xiilab.moduleuser.dto.SearchDTO;
 import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
+import com.xiilab.moduleuser.enums.UserAttribute;
 import com.xiilab.moduleuser.repository.UserRepository;
 import com.xiilab.moduleuser.vo.UserReqVO;
 
@@ -46,11 +47,18 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public void updateUserWorkspaceCreateLimit(List<String> userIdList, Integer createLimitCount) {
+		userRepository.updateUserAttribute(userIdList,
+			Map.of(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey(), String.valueOf(createLimitCount)));
+	}
+
+	@Override
 	public void updateUserApprovalYN(List<String> userIdList, boolean approvalYN) {
 		// false 일떄 해당 유저 keycloak 에서 삭제
 		if (approvalYN) {
 			//update attribute approval value
-			userRepository.updateUserAttribute(userIdList, Map.of("approvalYN", String.valueOf(approvalYN)));
+			userRepository.updateUserAttribute(userIdList,
+				Map.of(UserAttribute.APPROVAL_YN.getKey(), String.valueOf(approvalYN)));
 			//사용자 활성화 처리
 			userRepository.updateUserActivationYN(userIdList, true);
 		} else {

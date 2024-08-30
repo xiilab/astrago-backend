@@ -1,5 +1,5 @@
-INSERT INTO TB_WORKSPACE_SETTING (id, cpu, gpu, mem)
-values (1, 4, 8, 16)
+INSERT INTO TB_WORKSPACE_SETTING (id, cpu, gpu, mem, workspaceCreateLimit)
+values (1, 4, 8, 16, 1)
 ON DUPLICATE KEY UPDATE id = id;
 
 -- MIN 쿠다 버전 초기값
