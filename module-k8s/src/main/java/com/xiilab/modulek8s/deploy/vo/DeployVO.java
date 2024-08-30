@@ -90,7 +90,7 @@ public class DeployVO extends K8SResourceReqVO {
 	private String jobName;
 	private String modelVersion;
 	private int replica;
-	private long deployModelId;
+	private Long deployModelId;
 	private DeployType deployType;
 	private String initContainerUrl;
 	private String modelPath;
