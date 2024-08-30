@@ -71,6 +71,31 @@ public class MonitorController {
 			.build();
 		return new ResponseEntity<>(monitorService.getHistoryMetric(requestDTO), HttpStatus.OK);
 	}
+	/**
+	 * deploy 과거 모니터링 조회 API
+	 * @return 조회된 Monitor Metric
+	 */
+	@GetMapping("/history")
+	@Operation(summary = "Get deploy History Metric")
+	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getDeployHistoryMetric(
+		@RequestParam(name = "metricName") String metricName,
+		@RequestParam(name = "startDate", required = false) String startDate,
+		@RequestParam(name = "endDate", required = false) String endDate,
+		@RequestParam(name = "namespace", required = false) String namespace,
+		@RequestParam(name = "podName", required = false) String podName,
+		@RequestParam(name = "nodeName", required = false) String nodeName,
+		@RequestParam(name = "deployResourceName", required = false) String deployResourceName) {
+		RequestDTO requestDTO = RequestDTO.builder()
+			.metricName(metricName)
+			.startDate(startDate)
+			.endDate(endDate)
+			.namespace(namespace)
+			.podName(podName)
+			.nodeName(nodeName)
+			.deployResourceName(deployResourceName)
+			.build();
+		return new ResponseEntity<>(monitorService.getDeployHistoryMetric(requestDTO), HttpStatus.OK);
+	}
 
 	/**
 	 * k8s event list 조회 API

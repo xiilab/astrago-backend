@@ -121,6 +121,22 @@ public class PrometheusServiceImpl implements PrometheusService{
 		return extractResourceMetrics(historyMetricByQuery, resourceName);
 	}
 
+	@Override
+	public List<ResponseDTO.HistoryDTO> getDeployHistoryMetric(RequestDTO requestDTO) {
+		String deployResourceName = requestDTO.deployResourceName();
+		String namespace = requestDTO.namespace();
+		//replica pod list 조회
+
+		long step = DataConverterUtil.getFortyStep(requestDTO.startDate(), requestDTO.endDate());
+		// 검색시간 UnixTime로 변환
+		String startDate = DataConverterUtil.toUnixTime(requestDTO.startDate());
+		String endDate = DataConverterUtil.toUnixTime(requestDTO.endDate());
+		// Promql 생성
+		String promql = getPromql(requestDTO);
+		String result = prometheusRepository.getHistoryMetricByQuery(promql, startDate, endDate, step);
+		return extractHistoryMetrics(result, requestDTO.metricName());
+	}
+
 	private ReportDTO.ResourceDTO extractResourceMetrics(String metric, String resourceName){
 		try {
 			// JSON 파싱을 위한 ObjectMapper 생성

@@ -287,7 +287,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.modelPath(moduleDeployResDTO.getModelPath())
 			.storageEntity(storageEntity.orElse(null))
 			.build();
-
+		deployEntity.addEnvs(moduleDeployResDTO.getEnvsMap());
 		deployRepository.save(deployEntity);
 		saveMappings(moduleDeployResDTO, deployEntity);
 	}
