@@ -69,4 +69,8 @@ public class StorageClassService {
 	public void createServiceAccount(String accountName) {
 		storageClassRepository.createServiceAccount(accountName);
 	}
+
+	public void dellPluginInstallCheck(){
+		storageClassRepository.dellPluginInstallCheck();
+	}
 }

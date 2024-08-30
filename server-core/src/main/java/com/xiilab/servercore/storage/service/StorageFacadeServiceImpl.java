@@ -58,10 +58,6 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 
-	public static String getBase64EncodeString(String content){
-		// Base64 인코딩
-		return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
-	}
 	@Override
 	@Transactional
 	public void deleteStorage(Long storageId) {
@@ -182,7 +178,13 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.storagePath(storageDTO.getStoragePath())
 				.namespace(dellStorage.getNamespace())
 				.requestVolume(storageDTO.getRequestVolume())
+				.astragoDeploymentName(dellStorage.getAstragoDeploymentName())
 				.pvcName(dellStorage.getPvcName())
+				.arrayId(storageDTO.getArrayId())
+				.storagePool(storageDTO.getStoragePool())
+				.volumeName(dellStorage.getVolumeName())
+				.hostPath(dellStorage.getHostPath())
+				.storageClassName(dellStorage.getStorageClassName())
 				.build();
 			storageService.insertStorage(createStorage);
 		}
