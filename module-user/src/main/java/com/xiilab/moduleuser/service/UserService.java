@@ -23,6 +23,8 @@ public interface UserService {
 	//사용자 상세 조회
 	UserDTO.UserInfo getUserInfoById(String userId);
 
+	void updateUserWorkspaceCreateLimit(List<String> userIdList, Integer createLimitCount);
+
 	//사용자 승인/거절 업데이트
 	void updateUserApprovalYN(List<String> userIdList, boolean approvalYN);
 

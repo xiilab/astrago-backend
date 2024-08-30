@@ -21,6 +21,7 @@ import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulek8s.facade.dto.CreateWorkspaceDTO;
@@ -38,6 +39,7 @@ import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.workspace.repository.WorkspaceSettingRepo;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -45,11 +47,13 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class UserFacadeServiceImpl implements UserFacadeService {
+public class KeycloakUserFacadeServiceImpl implements UserFacadeService {
 	private final UserService userService;
 	private final AlertService alertService;
 	private final ApplicationEventPublisher eventPublisher;
 	private final WorkspaceModuleFacadeServiceImpl workspaceModuleFacadeService;
+	private final WorkspaceSettingRepo workspaceSettingRepo;
+	// private final WorkspaceFacadeServiceImpl workspaceFacadeService;
 	private final PinService pinService;
 	private final SmtpRepository smtpRepository;
 	private final MailService mailService;
@@ -64,6 +68,13 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		} else {
 			userService.joinDefaultGroup(userInfo.getId());
 		}
+
+		// workspace setting limit 조회
+		// updateUserWorkspaceCreateLimitById(userInfo.getId(),
+		// 	workspaceFacadeService.getWorkspaceResourceSetting().getWorkspaceCreateLimit());
+		updateUserWorkspaceCreateLimitById(userInfo.getId(),
+			workspaceSettingRepo.findAll().get(0).getWorkspaceCreateLimit());
+		// 기본 워크스페이스 생성
 		createDefaultWorkspace(userInfo);
 
 		// 회원가입 알림 메시지 발송
@@ -76,7 +87,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		MailDTO mailDTO = MailServiceUtils.createUserMail(userReqVO.getLastName() + userReqVO.getFirstName(),
 			userReqVO.getEmail(), userInfo.getJoinDate());
 
-		eventPublisher.publishEvent(new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), mailTitle, title, message, null, mailDTO));
+		eventPublisher.publishEvent(
+			new AdminAlertEvent(AlertName.ADMIN_USER_JOIN, userInfo.getId(), mailTitle, title, message, null, mailDTO));
 	}
 
 	@Override
@@ -92,6 +104,11 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public UserDTO.UserInfo getUserInfoById(String userId) {
 		return userService.getUserInfoById(userId);
+	}
+
+	@Override
+	public void updateUserWorkspaceCreateLimit(List<String> userIdList, Integer createLimitCount) {
+		userService.updateUserWorkspaceCreateLimit(userIdList, createLimitCount);
 	}
 
 	@Override
@@ -149,8 +166,20 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	}
 
 	@Override
+	public void updateUserWorkspaceCreateLimitById(String id, Integer workspaceCreateLimit) {
+		// 수정하려는 개수가 사용자가 이미 생성한 워크스페이스 개수보다 작을 경우 throw
+		if (workspaceCreateLimit < getMyOwnerWorkspaceCount(id)) {
+			throw new RestApiException(UserErrorCode.USER_WORKSPACES_CREATED_EXCEEDED);
+		}
+
+		userService.updateUserWorkspaceCreateLimit(List.of(id), workspaceCreateLimit);
+	}
+
+	@Override
 	public UserDTO.UserInfo getUserById(String id) {
-		return userService.getUserById(id);
+		UserDTO.UserInfo findUser = userService.getUserById(id);
+		findUser.setOwnerWorkspaceCount(getMyOwnerWorkspaceCount(id));
+		return findUser;
 	}
 
 	@Override
@@ -270,6 +299,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	 * @param userInfo
 	 */
 	private void createDefaultWorkspace(UserDTO.UserInfo userInfo) {
+		if (userInfo.getOwnerWorkspaceCount() == 0) {
+			return ;
+		}
 		// 사용자 기본 워크스페이스 생성
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
 			.name(userInfo.getUserFullName() + "'s workspace")
@@ -305,5 +337,14 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 				break;
 			}
 		}
+	}
+
+	private int getMyOwnerWorkspaceCount(String id) {
+		UserDTO.UserInfo findUser = userService.getUserById(id);
+		Set<String> myWorkspaces = findUser.getMyWorkspaces();
+		List<WorkspaceDTO.ResponseDTO> myWorkspaceList = workspaceModuleFacadeService.getWorkspaceList().stream()
+			.filter(workspace -> myWorkspaces.contains(workspace.getResourceName()))
+			.toList();
+		return myWorkspaceList.size();
 	}
 }

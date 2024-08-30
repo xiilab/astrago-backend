@@ -92,7 +92,6 @@ import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
-import com.xiilab.modulek8sdb.workload.history.repository.WorkloadHistoryRepo;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;

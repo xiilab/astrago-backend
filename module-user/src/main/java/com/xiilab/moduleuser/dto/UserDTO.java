@@ -14,9 +14,11 @@ import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
+import com.xiilab.moduleuser.enums.UserAttribute;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class UserDTO {
@@ -63,6 +65,7 @@ public class UserDTO {
 		private String email;
 		private LocalDateTime joinDate;
 		private SignUpPath signUpPath;
+		private Integer workspaceCreateLimit;
 		private AuthType auth;
 		private String enable;
 		private String approval;
@@ -71,6 +74,8 @@ public class UserDTO {
 		private String userFullName;
 		private String firstName;
 		private String lastName;
+		@Setter
+		private Integer ownerWorkspaceCount;
 
 		public UserInfo(UserRepresentation userRepresentation, List<GroupRepresentation> groupReps) {
 			this.id = userRepresentation.getId();
@@ -79,15 +84,19 @@ public class UserDTO {
 			this.lastName = userRepresentation.getLastName();
 			this.userFullName = lastName + firstName;
 			this.email = userRepresentation.getEmail();
-			this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ?
-				SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
+			this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
+				SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
+				null;
+			this.workspaceCreateLimit =
+				userRepresentation.getAttributes().containsKey(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey()) ?
+					Integer.parseInt(userRepresentation.getAttributes().get(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey()).get(0)) : null;
 			// 에포크 시간을 Instant로 변환
 			Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 			// 특정 시간대에 맞춰 LocalDateTime으로 변환
 			LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
 			this.joinDate = localDateTime;
 			this.enable = String.valueOf(userRepresentation.isEnabled());
-			this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
+			this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
 			this.auth = getUserRole(userRepresentation.getRealmRoles());
 			if (!CollectionUtils.isEmpty(groupReps)) {
 				this.groups = groupReps.stream()
