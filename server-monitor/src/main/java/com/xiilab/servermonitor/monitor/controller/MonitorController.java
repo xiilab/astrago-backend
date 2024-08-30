@@ -75,7 +75,7 @@ public class MonitorController {
 	 * deploy 과거 모니터링 조회 API
 	 * @return 조회된 Monitor Metric
 	 */
-	@GetMapping("/history")
+	@GetMapping("/deploy/history")
 	@Operation(summary = "Get deploy History Metric")
 	public ResponseEntity<List<ResponseDTO.HistoryDTO>> getDeployHistoryMetric(
 		@RequestParam(name = "metricName") String metricName,
