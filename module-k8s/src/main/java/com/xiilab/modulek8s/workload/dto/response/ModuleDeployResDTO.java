@@ -43,8 +43,9 @@ public class ModuleDeployResDTO extends AbstractSingleWorkloadResDTO {
 		this.replica = deployment.getSpec().getReplicas();
 		this.deployType = DeployType.valueOf(
 			deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_TYPE.getField()));
-		this.deployModelId = Long.valueOf(
-			deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_MODEL_ID.getField()));
+		this.deployModelId =deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_MODEL_ID.getField()) != null ?
+			Long.valueOf(deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_MODEL_ID.getField())) : null;
+			;
 		this.modelVersion = deployment.getMetadata().getAnnotations().get(AnnotationField.DEPLOY_MODEL_VERSION.getField());
 	}
 
