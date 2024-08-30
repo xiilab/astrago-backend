@@ -87,6 +87,13 @@ public class ExperimentDataService {
 		return experimentMongoCustomRepository.getGraphMetrics(searchReq.getExperiments(), searchReq.getMetrics());
 	}
 
+	public List<ExperimentDataDTO.SystemSearchRes> getSystemMetrics(ExperimentDataDTO.SearchReq searchReq) {
+		if (CollectionUtils.isEmpty(searchReq.getExperiments()) || CollectionUtils.isEmpty(searchReq.getMetrics())) {
+			throw new CommonException(CHART_ILLEGAL_ARGS);
+		}
+		return experimentMongoCustomRepository.getSystemMetrics(searchReq.getExperiments(), searchReq.getMetrics());
+	}
+
 	public Page<ExperimentDataDTO.TableDTO> searchExperimentTableData(String userId, String workspace,
 		String searchCondition, WorkloadStatus status, Pageable pageable) {
 		Page<ExperimentQueryResult> experiments = experimentMariaCustomRepo.getExperiments(searchCondition, workspace,
