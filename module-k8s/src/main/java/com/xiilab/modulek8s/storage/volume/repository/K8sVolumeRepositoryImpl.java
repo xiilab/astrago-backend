@@ -41,9 +41,8 @@ import io.fabric8.kubernetes.api.model.PodTemplateSpecFluent;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
-import io.fabric8.kubernetes.api.model.VolumeDevice;
-import io.fabric8.kubernetes.api.model.VolumeDeviceBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
+import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentFluent;
@@ -255,9 +254,9 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 					.withClaimName(pvcName)
 					.build()).build();
 
-			VolumeDevice volumeDevice = new VolumeDeviceBuilder()
+			VolumeMount volumeMount = new VolumeMountBuilder()
 				.withName(volName)
-				.withDevicePath(hostPath)
+				.withMountPath(hostPath)
 				.build();
 
 			client.apps()
@@ -270,7 +269,7 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 					.editSpec()
 					.removeFromVolumes(vol)
 					.editContainer(0)
-					.removeFromVolumeDevices(volumeDevice)
+					.removeFromVolumeMounts(volumeMount)
 					.endContainer()
 					.endSpec()
 					.endTemplate()
@@ -740,10 +739,11 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 			PersistentVolumeClaim pvc = new PersistentVolumeClaim().toBuilder()
 				.withNewMetadata()
 				.withName(pvcName)
+				.withNamespace("astrago")
 				.endMetadata()
 				.withNewSpec()
 				.withAccessModes(List.of("ReadWriteMany"))
-				.withVolumeMode("Block")
+				.withVolumeMode("Filesystem")
 				.withNewResources()
 				.addToRequests("storage", new Quantity("50Gi"))
 				.endResources()

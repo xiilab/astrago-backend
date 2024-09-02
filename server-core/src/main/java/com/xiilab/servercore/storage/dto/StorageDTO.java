@@ -23,6 +23,7 @@ public class StorageDTO {
 	private SecretDTO secretDTO;
 	private String arrayId;
 	private String storagePool;
+	private String nasServer;
 
 	@Getter
 	@Builder
@@ -43,6 +44,7 @@ public class StorageDTO {
 		private String storageClassName;
 		private String arrayId;
 		private String storagePool;
+		private String nasServer;
 		@Setter
 		private DefaultStorageYN defaultStorageYN = DefaultStorageYN.N;
 
@@ -65,6 +67,7 @@ public class StorageDTO {
 				.storageClassName(this.storageClassName)
 				.arrayId(this.arrayId)
 				.storagePool(this.storagePool)
+				.nasServer(this.nasServer)
 				.build();
 		}
 	}
@@ -83,6 +86,7 @@ public class StorageDTO {
 		private String creatorName;
 		private String arrayId;
 		private String storagePool;
+		private String nasServer;
 
 		public static ResStorage toDto(StorageEntity storageEntity){
 			return ResStorage.builder()
@@ -97,6 +101,7 @@ public class StorageDTO {
 				.creatorName(storageEntity.getRegUser().getRegUserRealName())
 				.arrayId(storageEntity.getArrayId())
 				.storagePool(storageEntity.getStoragePool())
+				.nasServer(storageEntity.getNasServer())
 				.build();
 		}
 	}

@@ -86,15 +86,15 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.withProvisioner("csi-unity.dellemc.com")
 				.withReclaimPolicy("Delete")
 				.withAllowVolumeExpansion(true)
-				.withVolumeBindingMode("WaitForFirstConsumer")
-				.addToParameters("protocol", "iSCSI")
+				.addToParameters("protocol", "NFS")
 				.addToParameters("arrayId", createStorageReqDTO.getArrayId())
 				.addToParameters("storagePool", createStorageReqDTO.getStoragePool())
 				.addToParameters("thinProvisioned", "true")
 				.addToParameters("isDataReductionEnabled", "true")
 				.addToParameters("tieringPolicy", "0")
-				.addToParameters("csi.storage.k8s.io/fstype", "xfs")
-				.withMountOptions("context")
+				.addToParameters("nasServer", createStorageReqDTO.getNasServer())
+				.addToParameters("hostIoSize", "8192")
+				.addToParameters("csi.storage.k8s.io/fstype", "nfs")
 				.build();
 			return client.storage().v1().storageClasses().resource(storageClass).create();
 		}
