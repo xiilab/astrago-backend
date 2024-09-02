@@ -11,12 +11,13 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.UserAttribute;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class UserSummary{
+public class UserSummary {
 	private final String uid;
 	private final String fullName;
 	private final String name;
@@ -34,7 +35,8 @@ public class UserSummary{
 		this.fullName = userRepresentation.getLastName() + userRepresentation.getFirstName();
 		this.name = userRepresentation.getUsername();
 		this.email = userRepresentation.getEmail();
-		this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ? SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
+		this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ?
+			SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
 		// 에포크 시간을 Instant로 변환
 		Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 		// 특정 시간대에 맞춰 LocalDateTime으로 변환
@@ -43,30 +45,42 @@ public class UserSummary{
 		this.enable = String.valueOf(userRepresentation.isEnabled());
 		this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
 		this.userGroupDTOList = groupRepresentationList != null ?
-			groupRepresentationList.stream().filter(groupRepresentation -> !groupRepresentation.getName().contains("ws")).map(groupRepresentation ->
-				UserGroupDTO.builder().groupId(groupRepresentation.getId()).groupName(groupRepresentation.getName()).build()).toList() : new ArrayList<>();
+			groupRepresentationList.stream()
+				.filter(groupRepresentation -> !groupRepresentation.getName().contains("ws"))
+				.map(groupRepresentation ->
+					UserGroupDTO.builder()
+						.groupId(groupRepresentation.getId())
+						.groupName(groupRepresentation.getName())
+						.build())
+				.toList() : new ArrayList<>();
 	}
+
 	public UserSummary(UserRepresentation userRepresentation) {
 		this.uid = userRepresentation.getId();
 		this.fullName = userRepresentation.getLastName() + userRepresentation.getFirstName();
 		this.name = userRepresentation.getUsername();
 		this.email = userRepresentation.getEmail();
-		this.signUpPath = userRepresentation.getAttributes().get("signUpPath") != null ? SignUpPath.valueOf(userRepresentation.getAttributes().get("signUpPath").get(0)) : null;
+		this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
+			SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
+			null;
 		// 에포크 시간을 Instant로 변환
 		Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 		// 특정 시간대에 맞춰 LocalDateTime으로 변환
 		LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
 		this.joinDate = localDateTime.toLocalDate();
 		this.enable = String.valueOf(userRepresentation.isEnabled());
-		this.approval = userRepresentation.getAttributes().get("approvalYN").get(0);
+		this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
 		this.userGroupDTOList = null;
 	}
-	public void setAuthType(AuthType authType){
+
+	public void setAuthType(AuthType authType) {
 		this.authType = authType;
 	}
-	public void setGroup(String group){
+
+	public void setGroup(String group) {
 		this.group = group;
 	}
+
 	@Builder
 	@Getter
 	public static class UserGroupDTO {

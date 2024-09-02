@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class KeycloakGroupRepository implements GroupRepository {
+public class KeycloakGroupRepositoryImpl implements GroupRepository {
 	private final KeycloakConfig keycloakConfig;
 	private final UserRepository userRepository;
 
