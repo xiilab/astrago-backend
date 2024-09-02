@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.xiilab.modulecommon.enums.AuthType;
+import com.xiilab.modulecommon.enums.UserAttribute;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.service.MailService;
@@ -38,10 +39,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class KeycloakUserRepository implements UserRepository {
+public class KeycloakUserRepositoryImpl implements UserRepository {
 	private final KeycloakConfig keycloakConfig;
 	private final MailService mailService;
-	private final String KEY_APPROVAL_YN = "approvalYN";
+	// private final String KEY_APPROVAL_YN = "approvalYN";
 	@Value("${admin.init-password}")
 	private String initPassword;
 
@@ -86,11 +87,11 @@ public class KeycloakUserRepository implements UserRepository {
 		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
 			.stream().filter(user
 				-> user.getAttributes() != null
-				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
-				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("true")
-				&& searchName(searchCondition.getSearchText(), user)
+				&& user.getAttributes().containsKey(UserAttribute.APPROVAL_YN.getKey())
+				&& user.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0).equals("true")
+				&& searchName(searchCondition != null ? searchCondition.getSearchText() : null, user)
 			)
-			.sorted(
+			.sorted(searchCondition != null ?
 				searchCondition.getUserSort() == UserSort.CREATED_AT_ASC ?
 					Comparator.comparing(UserRepresentation::getCreatedTimestamp) :
 					searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
@@ -98,7 +99,7 @@ public class KeycloakUserRepository implements UserRepository {
 						searchCondition.getUserSort() == UserSort.ENABLE_ASC ?
 							Comparator.comparing(UserRepresentation::isEnabled) :
 							Comparator.comparing(UserRepresentation::isEnabled).reversed()
-			)
+				: Comparator.comparing(UserRepresentation::getCreatedTimestamp))
 			.toList();
 		int userSize = users.size();
 
@@ -194,8 +195,8 @@ public class KeycloakUserRepository implements UserRepository {
 		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
 			.stream().filter(user
 				-> user.getAttributes() != null
-				&& user.getAttributes().containsKey(KEY_APPROVAL_YN)
-				&& user.getAttributes().get(KEY_APPROVAL_YN).get(0).equals("false")
+				&& user.getAttributes().containsKey(UserAttribute.APPROVAL_YN.getKey())
+				&& user.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0).equals("false")
 				&& searchName(searchCondition.getSearchText(), user)
 			)
 			.sorted(
@@ -207,7 +208,9 @@ public class KeycloakUserRepository implements UserRepository {
 		userSize = users.size();
 		List<UserSummary> userSummaries = users.stream()
 			.map(userRepresentation -> {
-				List<GroupRepresentation> groups = realmClient.users().get(userRepresentation.getId()).groups(0, Integer.MAX_VALUE)
+				List<GroupRepresentation> groups = realmClient.users()
+					.get(userRepresentation.getId())
+					.groups(0, Integer.MAX_VALUE)
 					.stream()
 					.filter(groupRepresentation -> !groupRepresentation.getName().equals("ws") &&
 						!groupRepresentation.getName().equals("owner") &&
@@ -285,9 +288,10 @@ public class KeycloakUserRepository implements UserRepository {
 			getUserResourceById(user).remove()
 		);
 	}
+
 	@Override
 	public void refuseUserById(List<String> userIdList) {
-		userIdList.forEach(user ->{
+		userIdList.forEach(user -> {
 			getUserResourceById(user).remove();
 		});
 	}

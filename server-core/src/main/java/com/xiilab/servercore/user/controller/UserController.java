@@ -80,6 +80,15 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
+	@PatchMapping("/{id}/workspaceCreateLimit")
+	@Operation(summary = "사용자 workspaceCreateLimit 업데이트")
+	public ResponseEntity<HttpStatus> updateWorkspaceCreateLimit(
+		@PathVariable(name = "id") String id,
+		@RequestParam(name = "workspaceCreateLimit") Integer workspaceCreateLimit) {
+		userFacadeService.updateUserWorkspaceCreateLimitById(id, workspaceCreateLimit);
+		return ResponseEntity.ok().build();
+	}
+
 	@PostMapping("/join")
 	@Operation(summary = "사용자 가입")
 	public ResponseEntity<HttpStatus> joinUser(
