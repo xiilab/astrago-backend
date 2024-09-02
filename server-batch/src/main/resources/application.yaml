@@ -3,7 +3,9 @@ spring:
     init:
       mode: always
   quartz:
-    job-store-type: memory
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
   servlet:
     multipart:
       max-request-size: 10MB
