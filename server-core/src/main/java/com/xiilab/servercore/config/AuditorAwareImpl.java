@@ -10,14 +10,14 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.repository.KeycloakUserRepository;
+import com.xiilab.moduleuser.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AuditorAwareImpl implements AuditorAware<RegUser> {
 	@Autowired
-	private KeycloakUserRepository repository;
+	private UserRepository repository;
 
 	@Override
 	public Optional<RegUser> getCurrentAuditor() {
