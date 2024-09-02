@@ -196,6 +196,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	@Override
 	public void joinAdmin(UserReqVO userReqVO) {
 		String userId = userService.joinAdmin(userReqVO);
+		userService.joinDefaultGroup(userId);
 		//admin alert 정보 입력
 		alertService.initializeAdminAlertMappingSettings(userId);
 	}
@@ -287,22 +288,21 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		List<SmtpEntity> smtpEntities = smtpRepository.findAll();
 
 		if (ObjectUtils.isEmpty(smtpEntities)) {
-			throw new RestApiException(SmtpErrorCode.SMTP_NOT_REGISTERED);
-		}
-		for (SmtpEntity smtpEntity : smtpEntities) {
-			SmtpDTO smtpDTO = SmtpDTO.builder()
-				.host(smtpEntity.getHost())
-				.port(smtpEntity.getPort())
-				.username(smtpEntity.getUserName())
-				.password(smtpEntity.getPassword())
-				.build();
+			for (SmtpEntity smtpEntity : smtpEntities) {
+				SmtpDTO smtpDTO = SmtpDTO.builder()
+					.host(smtpEntity.getHost())
+					.port(smtpEntity.getPort())
+					.username(smtpEntity.getUserName())
+					.password(smtpEntity.getPassword())
+					.build();
 
-			boolean result = mailService.sendMail(mailDTO, smtpDTO);
+				boolean result = mailService.sendMail(mailDTO, smtpDTO);
 
-			smtpEntity.increment();
+				smtpEntity.increment();
 
-			if (result) {
-				break;
+				if (result) {
+					break;
+				}
 			}
 		}
 	}
