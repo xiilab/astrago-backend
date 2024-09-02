@@ -200,6 +200,7 @@ public class DeployVO extends K8SResourceReqVO {
 		return list.stream()
 			.map(idExtractor)
 			.map(String::valueOf)
+			.filter(value -> !value.equals("null"))
 			.collect(Collectors.joining(","));
 	}
 	// 파드 및 잡 상세 스펙 정의
