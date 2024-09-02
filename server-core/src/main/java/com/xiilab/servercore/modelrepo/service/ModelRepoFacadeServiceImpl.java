@@ -49,6 +49,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	private final StorageService storageService;
 	private final ModelRepoVersionRepository versionRepository;
 	private final DeployRepository deployRepository;
+	private final ModelRepoVersionRepository modelRepoVersionRepository;
 
 	@Override
 	public PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, String search, int pageNum, int pageSize) {
@@ -120,6 +121,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
 			// ModelRepoEntity save
 			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
+
 			setModelLabel(modelRepoReqDTO, saveModel);
 			String modelPath = "";
 			if(modelRepoReqDTO.getModelPath() == null) {
@@ -227,6 +229,39 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			return CoreFileUtils.getAstragoFiles(modelPath);
 		}else{
 			return CoreFileUtils.getAstragoFiles(filePath);
+		}
+	}
+
+	@Override
+	public ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO, String filename,
+		Long fileSize) {
+		try {
+			// 스토리지 조회
+			StorageEntity storageEntity = storageService.findById(modelRepoReqDTO.getStorageId());
+			// ModelRepoEntity 생성
+			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
+			// ModelRepoEntity save
+			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
+			ModelVersionEntity modelVersionEntity = ModelVersionEntity.builder()
+				.version("v1")
+				.modelFileName(filename)
+				.modelFileSize(String.valueOf(fileSize))
+				.modelRepoEntity(modelRepoEntity)
+				.build();
+			modelRepoVersionRepository.save(modelVersionEntity);
+			setModelLabel(modelRepoReqDTO, saveModel);
+			String modelPath = "";
+			if(modelRepoReqDTO.getModelPath() == null) {
+				// 해당 모델이 저장 되는 경로
+				modelPath = storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
+					saveModel.getModelRepoRealName().replace(" ", "");
+			}else{
+				modelPath = storageEntity.getStoragePath() + saveModel.getModelRepoRealName().replace(" ", "");
+			}
+			saveModel.setModelPath(modelPath);
+			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
+		} catch (IllegalArgumentException e) {
+			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
 		}
 	}
 
