@@ -374,7 +374,11 @@ public class DeployVO extends K8SResourceReqVO {
 	private Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
 		if(this.volumes != null && this.volumes.size() > 0){
-			this.volumes.forEach(volume -> map.put("vl-" + volume.id(), volume.mountPath()));
+			for (JobVolumeVO volume : volumes) {
+				if(volume.id() != null){
+					map.put("vl-" + volume.id(), volume.mountPath());
+				}
+			}
 		}
 		if(this.codes != null && this.codes.size() > 0){
 			this.codes.forEach(code -> {
