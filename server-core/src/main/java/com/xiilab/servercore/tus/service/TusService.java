@@ -1,6 +1,7 @@
 package com.xiilab.servercore.tus.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -95,6 +96,7 @@ public class TusService {
 	}
 
 	private ModelRepoDTO.RequestDTO getModelRepoDTO(UploadInfo uploadInfo) {
+		List<Long> labelsIds = new ArrayList<>();
 		Long storageId = Optional.ofNullable(uploadInfo.getMetadata().get("storageId"))
 			.map(Long::valueOf)
 			.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE));
@@ -106,9 +108,9 @@ public class TusService {
 			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
 		String modelPath = Optional.ofNullable(uploadInfo.getMetadata().get("modelPath"))
 			.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE));
-		List<Long> labelsIds = getLabels(
-			Optional.ofNullable(uploadInfo.getMetadata().get("labelsIds"))
-				.orElseThrow(() -> new RestApiException(TusErrorCode.FILE_NAME_ERROR_MESSAGE)));
+		if(uploadInfo.getMetadata().get("labelsIds") != null){
+			labelsIds = getLabels(uploadInfo.getMetadata().get("labelsIds"));
+		}
 
 		return ModelRepoDTO.RequestDTO.builder()
 			.modelName(modelName)
