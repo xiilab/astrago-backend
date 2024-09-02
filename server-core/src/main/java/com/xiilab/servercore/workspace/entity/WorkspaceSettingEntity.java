@@ -20,10 +20,12 @@ public class WorkspaceSettingEntity {
 	private double cpu;
 	private double mem;
 	private int gpu;
+	private int workspaceCreateLimit;
 
-	public void updateResource(double cpu, double mem, int gpu) {
+	public void updateResource(double cpu, double mem, int gpu, int workspaceCreateLimit) {
 		this.cpu = cpu;
 		this.mem = mem;
 		this.gpu = gpu;
+		this.workspaceCreateLimit = workspaceCreateLimit;
 	}
 }
