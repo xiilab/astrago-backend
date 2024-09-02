@@ -75,7 +75,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		updateUserWorkspaceCreateLimitById(userInfo.getId(),
 			workspaceSettingRepo.findAll().get(0).getWorkspaceCreateLimit());
 		// 기본 워크스페이스 생성
-		createDefaultWorkspace(userInfo);
+		createDefaultWorkspace(userInfo, workspaceSettingRepo.findAll().get(0).getWorkspaceCreateLimit());
 
 		// 회원가입 알림 메시지 발송
 		AlertMessage userCreate = AlertMessage.USER_CREATE;
@@ -298,9 +298,9 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	 *
 	 * @param userInfo
 	 */
-	private void createDefaultWorkspace(UserDTO.UserInfo userInfo) {
-		if (userInfo.getOwnerWorkspaceCount() == 0) {
-			return ;
+	private void createDefaultWorkspace(UserDTO.UserInfo userInfo, int workspaceCreateLimit) {
+		if (workspaceCreateLimit == 0) {
+			return;
 		}
 		// 사용자 기본 워크스페이스 생성
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
