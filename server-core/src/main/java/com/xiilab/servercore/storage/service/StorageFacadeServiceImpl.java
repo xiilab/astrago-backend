@@ -188,6 +188,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.volumeName(dellStorage.getVolumeName())
 				.hostPath(dellStorage.getHostPath())
 				.storageClassName(dellStorage.getStorageClassName())
+				.nasServer(storageDTO.getNasServer())
 				.build();
 			storageService.insertStorage(createStorage);
 		}
