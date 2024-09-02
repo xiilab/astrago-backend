@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -299,6 +298,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
 		workspaceModuleFacadeService.updateWorkspaceInfoByName(workspaceName, updateDTO);
+		workloadHistoryService.updateWorkspaceName(workspaceName, updateDTO.getName());
 	}
 
 	@Override

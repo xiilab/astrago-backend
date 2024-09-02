@@ -100,6 +100,11 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	}
 
 	@Override
+	public void updateWorkspaceName(String workspaceResourceName, String workspaceName) {
+		workloadHistoryRepo.updateWorkspaceNameByWorkspaceResourceName(workspaceName, workspaceResourceName);
+	}
+
+	@Override
 	public void deleteWorkloadHistory(long id, UserDTO.UserInfo userInfoDTO) {
 		WorkloadEntity jobEntity = workloadHistoryRepo.findById(id).orElseThrow();
 		// owner 권한인 워크스페이스 목록 가져옴

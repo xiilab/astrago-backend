@@ -50,4 +50,6 @@ public interface WorkloadHistoryService {
 	FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName, String workloadResourceName, UserDTO.UserInfo userInfoDTO);
 
 	WorkloadEntity findById(Long id);
+
+	void updateWorkspaceName(String workspaceResourceName, String workspaceName);
 }
