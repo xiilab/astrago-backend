@@ -413,7 +413,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public int optimizationInteractiveWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
+	public int optimizationWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList) {
 		int totalResultCnt = 0;
 		for (ResourceOptimizationTargetDTO resourceOptimizationTargetDTO : resourceOptimizationTargetList) {
 			boolean parentResource = workloadRepository.optimizationResource(resourceOptimizationTargetDTO.getPodName(),

@@ -133,7 +133,7 @@ public interface WorkloadModuleService {
 
 	List<AbstractModuleWorkloadResDTO> getAstraBatchWorkloadList();
 
-	int optimizationInteractiveWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList);
+	int optimizationWorkload(List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList);
 
 	List<AbstractModuleWorkloadResDTO> getParentControllerList(
 		List<ResourceOptimizationTargetDTO> resourceOptimizationTargetList);

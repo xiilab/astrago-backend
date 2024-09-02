@@ -15,15 +15,13 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.xiilab.serverbatch.common.BatchJob;
 import com.xiilab.serverbatch.dto.ResourceOptimizationDTO;
 import com.xiilab.serverbatch.dto.ResourceOptimizerStatus;
-import com.xiilab.serverbatch.entity.ResourceSchedulerEntity;
 import com.xiilab.serverbatch.job.BatchResourceOptimizationJob;
 import com.xiilab.serverbatch.job.InteractiveResourceOptimizationJob;
-import com.xiilab.serverbatch.repository.ResourceSchedulerRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResourceOptimizationSchedulerService {
 	private final Scheduler scheduler;
-	private final ResourceSchedulerRepository resourceSchedulerRepository;
-	private static final String ASTRA = "astra";
+	private static final String ASTRA = "astrago";
 
 	public void registerResourceScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob)
 		throws SchedulerException {
@@ -50,17 +47,26 @@ public class ResourceOptimizationSchedulerService {
 		}
 	}
 
-	@Transactional
+	/**
+	 * quartz job을 등록하고 수정하는 메소드
+	 * 해당 메소드에서는 기존의 job이 존재할 경우, 수정하는 방식이 아닌, 삭제 후 재생성 하는 방식으로 진행한다.
+	 *
+	 * @param optimizationDTO 생성 or 수정 할 job에 대한 info dto
+	 * @param batchJob        batch, interactive type
+	 * @throws Exception
+	 */
 	public void updateResourceOptimizationScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob) throws
 		Exception {
-		ResourceSchedulerEntity resourceSchedulerEntity = resourceSchedulerRepository.findByJobType(batchJob);
 		if (optimizationDTO.isRunning()) {
+			//job을 바로 실행하는 경우기에 job, trigger를 등록한다.
 			stopResourceScheduler(batchJob);
 			registerResourceScheduler(optimizationDTO, batchJob);
-		} else if (!optimizationDTO.isRunning() && resourceSchedulerEntity.isRunning()) {
+		} else {
+			//job을 바로 실행하는 것이 아닌 경우 job만 생성하고 trigger는 생성하지 않는다.
 			stopResourceScheduler(batchJob);
+			JobDetail resourceOptimizationJob = createResourceOptimizationJob(batchJob, optimizationDTO);
+			scheduler.addJob(resourceOptimizationJob, true);
 		}
-		resourceSchedulerEntity.updateValue(optimizationDTO);
 	}
 
 	public void stopResourceScheduler(BatchJob batchJob) throws SchedulerException {
@@ -70,30 +76,7 @@ public class ResourceOptimizationSchedulerService {
 	}
 
 	public ResourceOptimizerStatus getResourceSchedulerStatus() throws SchedulerException {
-		ResourceOptimizerStatus resourceOptimizerStatus = new ResourceOptimizerStatus();
-		List<ResourceSchedulerEntity> schedulerList = resourceSchedulerRepository.findAll();
-		ResourceOptimizerStatus resourceOptimizerRealStatus = getResourceOptimizerStatus();
-		schedulerList.stream().forEach(scheduler -> {
-			if (scheduler.getJobType() == BatchJob.BATCH_JOB_OPTIMIZATION) {
-				resourceOptimizerStatus.setBatch(new ResourceOptimizationDTO(
-					scheduler.getCpu(),
-					scheduler.getMem(),
-					scheduler.getGpu(),
-					scheduler.getHour(),
-					resourceOptimizerStatus.getBatch() == null ? scheduler.isRunning() :
-						resourceOptimizerRealStatus.getBatch().isRunning()));
-			} else {
-				resourceOptimizerStatus.setInteractive(new ResourceOptimizationDTO(
-					scheduler.getCpu(),
-					scheduler.getMem(),
-					scheduler.getGpu(),
-					scheduler.getHour(),
-					resourceOptimizerStatus.getInteractive() == null ? scheduler.isRunning() :
-						resourceOptimizerRealStatus.getInteractive()
-							.isRunning()));
-			}
-		});
-		return resourceOptimizerStatus;
+		return getResourceOptimizerStatus();
 	}
 
 	private ResourceOptimizerStatus getResourceOptimizerStatus() throws SchedulerException {
@@ -103,11 +86,13 @@ public class ResourceOptimizationSchedulerService {
 		for (JobKey jobKey : jobSet) {
 			String name = jobKey.getName();
 			if (name.equals(BatchJob.BATCH_JOB_OPTIMIZATION.name())) {
+				boolean jobRunning = isJobRunning(jobKey);
 				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
-				batchOptimizationStatus = new ResourceOptimizationDTO(jobDetail.getJobDataMap());
+				batchOptimizationStatus = new ResourceOptimizationDTO(jobDetail.getJobDataMap(), jobRunning);
 			} else if (name.equals(BatchJob.INTERACTIVE_JOB_OPTIMIZATION.name())) {
+				boolean jobRunning = isJobRunning(jobKey);
 				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
-				interactiveOptimizationStatus = new ResourceOptimizationDTO(jobDetail.getJobDataMap());
+				interactiveOptimizationStatus = new ResourceOptimizationDTO(jobDetail.getJobDataMap(), jobRunning);
 			}
 		}
 		return new ResourceOptimizerStatus(batchOptimizationStatus, interactiveOptimizationStatus);
@@ -117,13 +102,29 @@ public class ResourceOptimizationSchedulerService {
 		if (jobType == BatchJob.BATCH_JOB_OPTIMIZATION) {
 			return JobBuilder.newJob(BatchResourceOptimizationJob.class)
 				.withIdentity(BatchJob.BATCH_JOB_OPTIMIZATION.name(), ASTRA)
+				.storeDurably(true)
 				.usingJobData(optimizationDTO.convertToJobDataMap())
 				.build();
 		} else {
 			return JobBuilder.newJob(InteractiveResourceOptimizationJob.class)
 				.withIdentity(BatchJob.INTERACTIVE_JOB_OPTIMIZATION.name(), ASTRA)
+				.storeDurably(true)
 				.usingJobData(optimizationDTO.convertToJobDataMap())
 				.build();
+		}
+	}
+
+	private boolean isJobRunning(JobKey jobKey) throws SchedulerException {
+		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(jobKey);
+		if (!CollectionUtils.isEmpty(triggersOfJob)) {
+			Trigger trigger = triggersOfJob.get(0);
+			Trigger.TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
+			return switch (triggerState) {
+				case PAUSED, BLOCKED, ERROR, COMPLETE, NONE -> false;
+				case NORMAL -> true;
+			};
+		} else {
+			return false;
 		}
 	}
 
