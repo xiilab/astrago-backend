@@ -55,7 +55,7 @@ public interface WorkloadRepository {
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
-	void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String accountName, String pvcName);
+	void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName);
 
 	boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace);
 
@@ -63,7 +63,7 @@ public interface WorkloadRepository {
 
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
 
-	StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName, String accountName);
+	StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName);
 
 	void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description);
 

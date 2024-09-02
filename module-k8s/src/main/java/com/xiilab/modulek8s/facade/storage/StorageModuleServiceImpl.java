@@ -164,18 +164,15 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		// install check
 		storageClassService.dellPluginInstallCheck();
 		// storageClass 생성
-		String storageName = "astrago-storage-"+ UUID.randomUUID().toString().substring(6);
+		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
 		storageClassService.createDELLStorage(createStorageReqDTO, storageName);
 		// pv 생성
 		String pvcName = "dell-unity-pvc-"+ UUID.randomUUID().toString().substring(6);
 		k8sVolumeService.createDellPVC(pvcName, storageName);
-		// ServiceAccount 생성
-		String accountName = "astrago-account-"+ UUID.randomUUID().toString().substring(6);
-		storageClassService.createServiceAccount(accountName);
 		// deployment에 연결 테스트
 		String connectTestDeploymentName = "astrago-storage-deployment-"+ UUID.randomUUID().toString().substring(6);
 		String connectTestLabelName = "connect-test-"+ UUID.randomUUID().toString().substring(6);
-		workloadModuleService.createConnectTestDeployment(connectTestDeploymentName, connectTestLabelName, accountName, pvcName);
+		workloadModuleService.createConnectTestDeployment(connectTestDeploymentName, connectTestLabelName, pvcName);
 		try {
 			Thread.sleep(20000);
 		}catch (InterruptedException e) {
@@ -184,13 +181,12 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 
 		//deployment 상태 조회 - 컨테이너 실행 시간 대기
 		int failCount = 0;
-
 		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
 		//connection 실패
 		if(!isAvailable){
 			while(failCount < 5){
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(5000);
 					failCount++;
 					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
 					if(isAvailable){
@@ -216,7 +212,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
 		}
 		// core 연결
-		StorageResDTO deployment = workloadModuleService.editAstragoDeployment(createStorageReqDTO, pvcName, accountName);
+		StorageResDTO deployment = workloadModuleService.editAstragoDeployment(createStorageReqDTO, pvcName);
 
 		return StorageResDTO.builder()
 			.storageName(createStorageReqDTO.getStorageName())

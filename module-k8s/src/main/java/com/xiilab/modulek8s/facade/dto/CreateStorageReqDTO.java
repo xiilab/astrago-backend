@@ -22,4 +22,5 @@ public class CreateStorageReqDTO {
 	private SecretDTO secretDTO;
 	private String arrayId;
 	private String storagePool;
+	private String nasServer;
 }

@@ -200,6 +200,7 @@ public class DeployVO extends K8SResourceReqVO {
 		return list.stream()
 			.map(idExtractor)
 			.map(String::valueOf)
+			.filter(value -> !value.equals("null"))
 			.collect(Collectors.joining(","));
 	}
 	// 파드 및 잡 상세 스펙 정의
@@ -356,6 +357,11 @@ public class DeployVO extends K8SResourceReqVO {
 			map.put(prefix + id, "true");
 		}
 	}
+	private void addVolumeMountMap(Map<String, String> map, String mountPath, String prefix, Long id) {
+		if (!ValidUtils.isNullOrZero(id)) {
+			map.put(prefix + id, mountPath);
+		}
+	}
 	private String getJobCodeIds(List<JobCodeVO> list) {
 		if (CollectionUtils.isEmpty(list)) {
 			return "";
@@ -368,7 +374,11 @@ public class DeployVO extends K8SResourceReqVO {
 	private Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
 		if(this.volumes != null && this.volumes.size() > 0){
-			this.volumes.forEach(volume -> addVolumeMap(map, "vl-", volume.id()));
+			for (JobVolumeVO volume : volumes) {
+				if(volume.id() != null){
+					map.put("vl-" + volume.id(), volume.mountPath());
+				}
+			}
 		}
 		if(this.codes != null && this.codes.size() > 0){
 			this.codes.forEach(code -> {

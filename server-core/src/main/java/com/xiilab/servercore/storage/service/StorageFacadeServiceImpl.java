@@ -127,8 +127,9 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.namespace(namespace)
 			.connectionTestImageUrl(volumeImageURL)
 			.secretDTO(storageDTO.getSecretDTO())
-			.arrayId(storageDTO.getArrayId())
+			.arrayId(storageDTO.getArrayId().toLowerCase())
 			.storagePool(storageDTO.getStoragePool())
+			.nasServer(storageDTO.getNasServer())
 			.build();
 		if(storageDTO.getStorageType() == StorageType.NFS){
 			StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
@@ -167,6 +168,8 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.build();
 			storageService.insertStorage(createStorage);
 		} else if (storageDTO.getStorageType() == StorageType.DELL_UNITY) {
+			// dell validation check
+			dellUnistValidationCheck(createStorageReqDTO);
 			// Storage class 생성
 			StorageResDTO dellStorage = storageModuleService.createDELLStorage(createStorageReqDTO);
 
@@ -214,6 +217,14 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		}
 	}
 
-
+	private void dellUnistValidationCheck(CreateStorageReqDTO createStorageReqDTO){
+		if(isBlankSafe(createStorageReqDTO.getArrayId())){
+			throw new RestApiException(StorageErrorCode.DELL_STORAGE_ARRAY_ID_NULL);
+		}else if(isBlankSafe(createStorageReqDTO.getStoragePool())){
+			throw new RestApiException(StorageErrorCode.DELL_STORAGE_STORAGE_POOL_NULL);
+		}else if(isBlankSafe(createStorageReqDTO.getNasServer())){
+			throw new RestApiException(StorageErrorCode.DELL_STORAGE_NAS_SERVER_NULL);
+		}
+	}
 
 }

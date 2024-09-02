@@ -84,8 +84,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String accountName, String pvcName){
-		workloadRepository.createConnectTestDeployment(deploymentName, connectTestLabelName, accountName, pvcName);
+	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName){
+		workloadRepository.createConnectTestDeployment(deploymentName, connectTestLabelName, pvcName);
 	}
 
 	@Override
@@ -104,8 +104,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName, String accountName){
-		return workloadRepository.editAstragoDeployment(createStorageReqDTO, pvcName, accountName);
+	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName){
+		return workloadRepository.editAstragoDeployment(createStorageReqDTO, pvcName);
 	}
 
 	@Override

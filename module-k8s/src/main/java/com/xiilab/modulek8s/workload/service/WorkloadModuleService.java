@@ -44,7 +44,7 @@ public interface WorkloadModuleService {
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
-	void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String accountName, String pvcName);
+	void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName);
 
 	boolean isAvailableTestConnectPod(String connectTestLabelName, String namespace);
 
@@ -52,7 +52,7 @@ public interface WorkloadModuleService {
 
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
 
-	StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName, String accountName);
+	StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName);
 
 	/**
 	 * batch job workload 조회
