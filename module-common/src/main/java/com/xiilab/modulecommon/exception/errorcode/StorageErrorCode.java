@@ -22,7 +22,9 @@ public enum StorageErrorCode implements ErrorCode {
 	FAILD_DELETE_USING_STORAGE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 스토리지를 사용중인 데이터 셋, 모델이 존재해 삭제할 수 없습니다."),
 	STORAGE_ALREADY_INSTALLED_DELL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Dell 플러그인이 이미 설치되어 있습니다"),
 	STORAGE_INSTALL_WAIT(HttpStatus.INTERNAL_SERVER_ERROR.value(),"DELL 플러그인 설치 진행중입니다. 잠시만 기다려주세요."),
-
+	DELL_STORAGE_ARRAY_ID_NULL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "DELL 스토리지 Array ID를 입력해주세요"),
+	DELL_STORAGE_STORAGE_POOL_NULL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "DELL 스토리지 STORAGE POOL를 입력해주세요."),
+	DELL_STORAGE_NAS_SERVER_NULL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "DELL 스토리지 NAS SERVER를 입력해주세요."),
 	;
 
 

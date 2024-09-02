@@ -60,7 +60,7 @@ import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
-import io.fabric8.kubernetes.api.model.VolumeDeviceBuilder;
+import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
@@ -123,7 +123,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String accountName, String pvcName) {
+	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			Deployment deployment = new DeploymentBuilder()
 				.withNewMetadata()
@@ -140,14 +140,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 					.addToLabels("app", connectTestLabelName) // selector와 동일한 라벨
 					.endMetadata()
 					.withSpec(new PodSpecBuilder()
-						.withServiceAccountName(accountName)
 						.withHostNetwork(true)
 						.addNewContainer()
 						.withName("test")
 						.withImage("docker.io/centos:latest")
 						.withCommand("/bin/sleep", "3600")
-						.withVolumeDevices(new VolumeDeviceBuilder()
-							.withDevicePath("/data1")
+						.withVolumeMounts(new VolumeMountBuilder()
+							.withMountPath("/data1")
 							.withName(pvcName)
 							.build())
 						.endContainer()
@@ -227,7 +226,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName, String accountName){
+	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName){
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 
 			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
@@ -251,10 +250,10 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 					.editSpec()
 					.addAllToVolumes(List.of(vol))
 					.editContainer(0)
-					.addNewVolumeDevice()
+					.addNewVolumeMount()
 					.withName(pvc.getSpec().getVolumeName())
-					.withDevicePath(createStorageReqDTO.getHostPath())
-					.endVolumeDevice()
+					.withMountPath(createStorageReqDTO.getHostPath())
+					.endVolumeMount()
 					.endContainer()
 					.endSpec()
 					.endTemplate()
