@@ -32,4 +32,6 @@ public interface ModelRepoFacadeService {
 	ResDeploys getDeploysUsingModel(Long modelRepoId, int pageNum, int pageSize);
 
 	DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion, String filePath);
+
+	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoDTO, String filename, Long fileSize);
 }
