@@ -27,6 +27,8 @@ public interface UserFacadeService {
 
 	// 사용자 정보 수정
 	void updateUserInfoById(String id, UpdateUserDTO updateUserDTO);
+	// 사용자 워크스페이스 생성 제한개수 업데이트
+	void updateUserWorkspaceCreateLimit(List<String> userIdList, Integer createLimitCount);
 
 	//사용자 승인/거절 업데이트
 	void updateUserApprovalYN(List<String> userIdList, boolean approvalYN);
@@ -45,7 +47,7 @@ public interface UserFacadeService {
 	void updateUserEnable(String id, boolean enable);
 
 	UserDTO.UserInfo getUserById(String id);
-
+	void updateUserWorkspaceCreateLimitById(String id, Integer workspaceCreateLimit);
 	List<UserDTO.UserInfo> getAdminList();
 
 	void joinAdmin(UserReqVO userReqVO);

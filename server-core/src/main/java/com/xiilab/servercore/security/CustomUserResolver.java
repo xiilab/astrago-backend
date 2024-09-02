@@ -10,13 +10,13 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.xiilab.moduleuser.dto.UserDTO;
-import com.xiilab.moduleuser.repository.KeycloakUserRepository;
+import com.xiilab.moduleuser.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CustomUserResolver implements HandlerMethodArgumentResolver {
-	private final KeycloakUserRepository repository;
+	private final UserRepository repository;
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {

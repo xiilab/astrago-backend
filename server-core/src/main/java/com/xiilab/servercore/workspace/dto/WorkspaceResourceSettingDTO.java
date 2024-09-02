@@ -11,5 +11,5 @@ public class WorkspaceResourceSettingDTO {
 	private double cpu;
 	private double mem;
 	private int gpu;
-
+	private int workspaceCreateLimit;
 }
