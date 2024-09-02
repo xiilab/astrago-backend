@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.storage.provisioner.dto.response.ProvisionerResDTO;
+import com.xiilab.modulek8sdb.plugin.dto.PluginDTO;
+import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.provisioner.dto.InstallProvisioner;
 import com.xiilab.servercore.provisioner.service.ProvisionerFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class ProvisionerController {
 	private final ProvisionerFacadeService provisionerFacadeService;
 
-	@GetMapping("/provisioners")
+	@GetMapping("/provisioners/installed")
 	@Operation(summary = "프로비저너 조회")
 	public ResponseEntity<List<ProvisionerResDTO>> findProvisioners() {
 		List<ProvisionerResDTO> provisioners = provisionerFacadeService.findProvisioners();
@@ -44,6 +47,30 @@ public class ProvisionerController {
 	@Operation(summary = "프로비저너 제거")
 	public ResponseEntity<Void> unInstallProvisioner(@PathVariable("type") StorageType storageType) {
 		provisionerFacadeService.unInstallProvisioner(storageType);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/plugin")
+	@Operation(summary = "플러그인 목록 조회")
+	public ResponseEntity<List<PluginDTO.ResponseDTO>> getInstallableProvisioners() {
+		return new ResponseEntity<>(provisionerFacadeService.getPluginList(), HttpStatus.OK);
+	}
+
+	@PostMapping("/plugin/install/{type}")
+	@Operation(summary = "플러그인 설치 ")
+	public ResponseEntity<HttpStatus> installPlugin(
+		@PathVariable(name = "type") String type,
+		@RequestBody(required = false) PluginDTO.DellUnityDTO dellUnityDTO,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
+		provisionerFacadeService.installPlugin(type, dellUnityDTO, userInfoDTO);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	@DeleteMapping("/plugin/uninstall/{type}")
+	@Operation(summary = "플러그인 삭제 ")
+	public ResponseEntity<HttpStatus> unInstallPlugin(
+		@PathVariable(name = "type") String type,
+		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
+		provisionerFacadeService.uninstallPlugin(type, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

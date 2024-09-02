@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
@@ -59,5 +60,13 @@ public class StorageClassService {
 
 	public void deleteIbmStorage(String storageName) {
 		storageClassRepository.deleteIbmStorage(storageName);
+	}
+
+	public void dellPluginInstallCheck(){
+		storageClassRepository.dellPluginInstallCheck();
+	}
+
+	public StorageClass createDELLStorage(CreateStorageReqDTO createStorageReqDTO, String storageName) {
+		return storageClassRepository.createDELLStorage(createStorageReqDTO, storageName);
 	}
 }

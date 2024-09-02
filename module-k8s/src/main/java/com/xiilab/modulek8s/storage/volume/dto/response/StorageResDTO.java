@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.storage.volume.dto.response;
 
 import com.xiilab.modulecommon.enums.StorageType;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,4 +20,5 @@ public class StorageResDTO {
 	private String pvcName;
 	private String volumeName;
 	private int requestVolume;
+	private String storageClassName;
 }

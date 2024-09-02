@@ -127,4 +127,16 @@ public class VolumeService {
 	public void deleteIbmPvc(String storageName) {
 		volumeRepository.deleteIbmPvc(storageName);
 	}
+
+	public void createDellPVC(String pvcNamem, String storageName){
+		volumeRepository.createDellPVC(pvcNamem, storageName);
+	}
+
+	public void deleteDellStorage(DeleteStorageReqDTO deleteStorageReqDTO){
+		volumeRepository.deleteDellStorage(deleteStorageReqDTO);
+	}
+
+	public void deleteStorageClass(DeleteStorageReqDTO deleteStorageReqDTO){
+		volumeRepository.deleteStorageClass(deleteStorageReqDTO);
+	}
 }

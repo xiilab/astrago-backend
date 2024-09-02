@@ -5,10 +5,12 @@ import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.SecretDTO;
+import com.xiilab.modulek8sdb.common.enums.DefaultStorageYN;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class StorageDTO {
@@ -19,6 +21,9 @@ public class StorageDTO {
 	private String storagePath;
 	private int requestVolume;
 	private SecretDTO secretDTO;
+	private String arrayId;
+	private String storagePool;
+	private String nasServer;
 
 	@Getter
 	@Builder
@@ -36,6 +41,12 @@ public class StorageDTO {
 		private String volumeName;
 		private int requestVolume;
 		private String secretName;
+		private String storageClassName;
+		private String arrayId;
+		private String storagePool;
+		private String nasServer;
+		@Setter
+		private DefaultStorageYN defaultStorageYN = DefaultStorageYN.N;
 
 		public StorageEntity toEntity(){
 			return StorageEntity.builder()
@@ -52,6 +63,11 @@ public class StorageDTO {
 				.pvcName(this.pvcName)
 				.volumeName(this.volumeName)
 				.secretName(this.secretName)
+				.defaultStorageYN(this.defaultStorageYN)
+				.storageClassName(this.storageClassName)
+				.arrayId(this.arrayId)
+				.storagePool(this.storagePool)
+				.nasServer(this.nasServer)
 				.build();
 		}
 	}
@@ -68,6 +84,9 @@ public class StorageDTO {
 		private int requestVolume;
 		private LocalDate createdAt;
 		private String creatorName;
+		private String arrayId;
+		private String storagePool;
+		private String nasServer;
 
 		public static ResStorage toDto(StorageEntity storageEntity){
 			return ResStorage.builder()
@@ -80,6 +99,9 @@ public class StorageDTO {
 				.requestVolume(storageEntity.getRequestVolume())
 				.createdAt(storageEntity.getRegDate().toLocalDate())
 				.creatorName(storageEntity.getRegUser().getRegUserRealName())
+				.arrayId(storageEntity.getArrayId())
+				.storagePool(storageEntity.getStoragePool())
+				.nasServer(storageEntity.getNasServer())
 				.build();
 		}
 	}
