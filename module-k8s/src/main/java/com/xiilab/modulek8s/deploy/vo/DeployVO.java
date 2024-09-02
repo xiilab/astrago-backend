@@ -154,9 +154,6 @@ public class DeployVO extends K8SResourceReqVO {
 		annotationMap.put(AnnotationField.DEPLOY_MODEL_VERSION.getField(), this.modelVersion == null ? "" : String.valueOf(this.modelVersion));
 		annotationMap.put(AnnotationField.DEPLOY_MODEL_PATH.getField(), this.modelPath == null ? "" : String.valueOf(this.modelPath));
 		annotationMap.put(AnnotationField.DEPLOY_MODEL_STORAGE_ID.getField(), this.storageId == null ? "" : String.valueOf(this.storageId));
-		if(this.volumes != null && this.volumes.size() > 0){
-			this.volumes.forEach(volume -> addVolumeMountMap(annotationMap, volume.mountPath(), "vl-", volume.id()));
-		}
 		return annotationMap;
 	}
 
@@ -377,7 +374,7 @@ public class DeployVO extends K8SResourceReqVO {
 	private Map<String, String> getPodAnnotationMap() {
 		Map<String, String> map = new HashMap<>();
 		if(this.volumes != null && this.volumes.size() > 0){
-			this.volumes.forEach(volume -> addVolumeMap(map, "vl-", volume.id()));
+			this.volumes.forEach(volume -> map.put("vl-" + volume.id(), volume.mountPath()));
 		}
 		if(this.codes != null && this.codes.size() > 0){
 			this.codes.forEach(code -> {
