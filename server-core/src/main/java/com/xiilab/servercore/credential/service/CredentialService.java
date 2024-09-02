@@ -12,10 +12,16 @@ import com.xiilab.servercore.credential.dto.CredentialResDTO;
 
 public interface CredentialService {
 	CredentialResDTO createCredential(CredentialReqDTO credentialReqDTO, UserDTO.UserInfo userInfoDTO);
+
 	CredentialResDTO.CredentialInfo findCredentialById(long id, UserDTO.UserInfo userInfoDTO);
+
 	Page<CredentialResDTO> getCredentialList(Pageable pageable, UserDTO.UserInfo userInfoDTO);
+
 	void deleteCredentialById(long id, UserDTO.UserInfo userInfoDTO);
+
 	void updateCredentialById(long id, CredentialReqDTO.UpdateDTO updateDTO, UserDTO.UserInfo userInfoDTO);
+
 	CredentialEntity getCredentialEntity(long id);
+
 	CredentialResDTO.CredentialInfos findCredentialByIdIn(List<Long> credentialIds, Pageable pageable);
 }
