@@ -15,9 +15,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.exception.CommonException;
-import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
 import com.xiilab.modulek8sdb.experiment.entity.ExperimentColumnEntity;
-import com.xiilab.modulek8sdb.experiment.repository.ChartRepository;
 import com.xiilab.modulek8sdb.experiment.repository.ExperimentColumnRepository;
 import com.xiilab.modulek8sdb.workload.history.dto.ExperimentQueryResult;
 import com.xiilab.modulek8sdb.workload.history.entity.ExperimentEntity;
@@ -43,7 +41,6 @@ public class ExperimentDataService {
 	private final ExperimentSystemMetricMongoRepository experimentSystemMetricMongoRepository;
 	private final ExperimentMongoCustomRepository experimentMongoCustomRepository;
 	private final ExperimentMariaCustomRepo experimentMariaCustomRepo;
-	private final ChartRepository chartRepository;
 	private final ExperimentColumnRepository experimentColumnRepository;
 
 	@Transactional
@@ -67,17 +64,6 @@ public class ExperimentDataService {
 
 	public List<String> getExperimentDataKeyByIds(List<String> ids) {
 		return experimentMongoCustomRepository.getExperimentKeysByIds(ids);
-	}
-
-	public ExperimentDataDTO.ChartRes searchExperimentsGraphData(
-		Long id) {
-		Optional<ChartEntity> chartOpt = chartRepository.findById(id);
-		if (chartOpt.isPresent()) {
-			ChartEntity chartEntity = chartOpt.get();
-			return new ExperimentDataDTO.ChartRes(chartEntity);
-		} else {
-			return null;
-		}
 	}
 
 	public List<ExperimentDataDTO.SearchRes> getGraphMetrics(ExperimentDataDTO.SearchReq searchReq) {

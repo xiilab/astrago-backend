@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.xiilab.modulecommon.enums.WorkloadStatus;
-import com.xiilab.modulek8sdb.experiment.entity.ChartEntity;
 import com.xiilab.modulek8sdb.workload.history.dto.ExperimentQueryResult;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -48,29 +47,6 @@ public class ExperimentDataDTO {
 		private List<@NotNull String> experiments;
 		@NotEmpty
 		private List<@NotNull String> metrics;
-	}
-
-	@Getter
-	public static class ChartRes {
-		private final String title;
-		private final String xAxis;
-		private final Double xAxisMin;
-		private final Double xAxisMax;
-		private final List<String> yAxis;
-		private final Double yAxisMin;
-		private final Double yAxisMax;
-		// private final List<SearchRes> chartList;
-
-		public ChartRes(ChartEntity chartEntity) {
-			this.title = chartEntity.getTitle();
-			this.xAxis = chartEntity.getXAxis();
-			this.xAxisMin = chartEntity.getXAxisMin();
-			this.xAxisMax = chartEntity.getXAxisMax();
-			this.yAxis = chartEntity.getYAxis();
-			this.yAxisMin = chartEntity.getYAxisMin();
-			this.yAxisMax = chartEntity.getYAxisMax();
-			// this.chartList = searchRes;
-		}
 	}
 
 	@Getter
