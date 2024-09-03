@@ -35,6 +35,7 @@ public class QuartzConfig {
 		schedulerFactoryBean.setTransactionManager(platformTransactionManager);
 		schedulerFactoryBean.setQuartzProperties(quartzProperties());
 		schedulerFactoryBean.setApplicationContextSchedulerContextKey("applicationContext");
+		schedulerFactoryBean.setDataSource(dataSource);
 		return schedulerFactoryBean;
 	}
 
