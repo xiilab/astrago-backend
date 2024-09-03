@@ -58,10 +58,23 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 
-	public static String getBase64EncodeString(String content){
-		// Base64 인코딩
-		return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
+	// null 체크와 함께 isBlank를 수행하는 메서드
+	public static boolean isBlankSafe(String str) {
+		return str == null || str.isBlank();
 	}
+
+	@Override
+	@Transactional
+	public void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage) {
+		//스토리지 테이블 수정
+		storageService.modifyStorage(storageId, modifyStorage);
+	}
+
+	public static String getBase64DecodeString(String content){
+		byte[] decodedBytes = Base64.getDecoder().decode(content);
+		return new String(decodedBytes, StandardCharsets.UTF_8);
+	}
+
 	@Override
 	@Transactional
 	public void deleteStorage(Long storageId) {
@@ -83,23 +96,11 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.storageType(storageEntity.getStorageType())
 			.secretName(storageEntity.getSecretName())
 			.storageName(storageEntity.getStorageName())
+			.storageClassName(storageEntity.getStorageClassName())
 			.build();
 		storageModuleService.deleteStorage(deleteStorageReqDTO);
-
 		//스토리지 db 데이터 삭제
 		storageService.deleteById(storageId);
-	}
-
-	@Override
-	@Transactional
-	public void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage) {
-		//스토리지 테이블 수정
-		storageService.modifyStorage(storageId, modifyStorage);
-	}
-
-	public static String getBase64DecodeString(String content){
-		byte[] decodedBytes = Base64.getDecoder().decode(content);
-		return new String(decodedBytes, StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -108,7 +109,6 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		Path hostPath = createPath(storageDTO.getStorageName());
 		//폐쇄망 확인 후 connection image url 조회
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
-		log.info("폐쇄망 : " + network.getNetworkCloseYN());
 		String volumeImageURL = "";
 		if(network.getNetworkCloseYN() == NetworkCloseYN.Y){
 			if(isBlankSafe(privateRegistryUrl)){
@@ -119,6 +119,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		}else{
 			volumeImageURL = network.getLocalVolumeImageUrl();
 		}
+		log.info("폐쇄망 : " + network.getNetworkCloseYN());
 		CreateStorageReqDTO createStorageReqDTO = CreateStorageReqDTO.builder()
 			.storageName(storageDTO.getStorageName())
 			.storageType(storageDTO.getStorageType())
@@ -131,6 +132,9 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.namespace(namespace)
 			.connectionTestImageUrl(volumeImageURL)
 			.secretDTO(storageDTO.getSecretDTO())
+			.arrayId(storageDTO.getArrayId().toLowerCase())
+			.storagePool(storageDTO.getStoragePool())
+			.nasServer(storageDTO.getNasServer())
 			.build();
 		if(storageDTO.getStorageType() == StorageType.NFS){
 			StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
@@ -168,10 +172,33 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.secretName(secretName)
 				.build();
 			storageService.insertStorage(createStorage);
+		} else if (storageDTO.getStorageType() == StorageType.DELL_UNITY) {
+			// dell validation check
+			dellUnistValidationCheck(createStorageReqDTO);
+			// Storage class 생성
+			StorageResDTO dellStorage = storageModuleService.createDELLStorage(createStorageReqDTO);
+
+			StorageDTO.Create createStorage = StorageDTO.Create.builder()
+				.storageName(storageDTO.getStorageName())
+				.description(storageDTO.getDescription())
+				.storageType(storageDTO.getStorageType())
+				.ip(storageDTO.getIp())
+				.storagePath(storageDTO.getStoragePath())
+				.namespace(dellStorage.getNamespace())
+				.requestVolume(storageDTO.getRequestVolume())
+				.astragoDeploymentName(dellStorage.getAstragoDeploymentName())
+				.pvcName(dellStorage.getPvcName())
+				.arrayId(storageDTO.getArrayId())
+				.storagePool(storageDTO.getStoragePool())
+				.volumeName(dellStorage.getVolumeName())
+				.hostPath(dellStorage.getHostPath())
+				.storageClassName(dellStorage.getStorageClassName())
+				.nasServer(storageDTO.getNasServer())
+				.build();
+			storageService.insertStorage(createStorage);
 		}
 
 	}
-
 	private Path createPath(String storageName) {
 		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
 			.toString()
@@ -191,10 +218,15 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			throw new K8sException(StorageErrorCode.STORAGE_DIRECTORY_CREATION_FAILED);
 		}
 	}
-	// null 체크와 함께 isBlank를 수행하는 메서드
-	public static boolean isBlankSafe(String str) {
-		return str == null || str.isBlank();
-	}
 
+	private void dellUnistValidationCheck(CreateStorageReqDTO createStorageReqDTO){
+		if(isBlankSafe(createStorageReqDTO.getArrayId())){
+			throw new RestApiException(StorageErrorCode.DELL_STORAGE_ARRAY_ID_NULL);
+		}else if(isBlankSafe(createStorageReqDTO.getStoragePool())){
+			throw new RestApiException(StorageErrorCode.DELL_STORAGE_STORAGE_POOL_NULL);
+		}else if(isBlankSafe(createStorageReqDTO.getNasServer())){
+			throw new RestApiException(StorageErrorCode.DELL_STORAGE_NAS_SERVER_NULL);
+		}
+	}
 
 }

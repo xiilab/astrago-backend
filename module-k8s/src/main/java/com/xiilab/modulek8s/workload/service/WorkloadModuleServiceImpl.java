@@ -18,10 +18,12 @@ import com.xiilab.modulecommon.enums.FileType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulecommon.util.ValidUtils;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
+import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.dto.ResourceOptimizationTargetDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
@@ -80,6 +82,10 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 		workloadRepository.createConnectTestDeployment(connectTestDTO);
 	}
 
+	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName){
+		workloadRepository.createConnectTestDeployment(deploymentName, connectTestLabelName, pvcName);
+	}
+
 	@Override
 	public boolean isAvailableTestConnectPod(String connectTestLabelName, String namespace) {
 		return workloadRepository.testConnectPodIsAvailable(connectTestLabelName, namespace);
@@ -93,6 +99,11 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	@Override
 	public void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment) {
 		workloadRepository.editAstragoDeployment(editAstragoDeployment);
+	}
+
+	@Override
+	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName){
+		return workloadRepository.editAstragoDeployment(createStorageReqDTO, pvcName);
 	}
 
 	@Override

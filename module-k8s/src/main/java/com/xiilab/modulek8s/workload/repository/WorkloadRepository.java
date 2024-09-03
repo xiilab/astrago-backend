@@ -7,8 +7,10 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalDatasetDeploymentDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyLocalModelDeploymentDTO;
+import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
@@ -52,11 +54,15 @@ public interface WorkloadRepository {
 
 	void createConnectTestDeployment(ConnectTestDTO connectTestDTO);
 
+	void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName);
+
 	boolean testConnectPodIsAvailable(String connectTestLabelName, String namespace);
 
 	void deleteConnectTestDeployment(String deploymentName, String namespace);
 
 	void editAstragoDeployment(EditAstragoDeployment editAstragoDeployment);
+
+	StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName);
 
 	void editBatchJob(String workspaceResourceName, String workloadResourceName, String name, String description);
 
