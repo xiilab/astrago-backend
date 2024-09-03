@@ -7,9 +7,17 @@ import com.xiilab.modulek8sdb.experiment.entity.PanelEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 public class ChartDTO {
+	@Getter
+	@AllArgsConstructor
+	public enum MetricType {
+		CUSTOM,
+		SYSTEM
+	}
+
 	@Getter
 	@AllArgsConstructor
 	public static class Req {
@@ -17,9 +25,17 @@ public class ChartDTO {
 		private String xAxis;
 		private Double xMin;
 		private Double xMax;
-		private List<String> yAxis;
+		private List<YAxis> yAxis;
 		private Double yMin;
 		private Double yMax;
+	}
+
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class YAxis {
+		private String metric;
+		private MetricType type;
 	}
 
 	@Getter
@@ -29,7 +45,7 @@ public class ChartDTO {
 		private final String xAxis;
 		private final Double xAxisMin;
 		private final Double xAxisMax;
-		private final List<String> yAxis;
+		private final List<YAxis> yAxis;
 		private final Double yAxisMin;
 		private final Double yAxisMax;
 
