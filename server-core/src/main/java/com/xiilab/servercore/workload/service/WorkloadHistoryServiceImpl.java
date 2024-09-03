@@ -283,4 +283,9 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 	public WorkloadEntity findById(Long id) {
 		return workloadHistoryRepo.findById(id).orElseThrow(() -> new RestApiException(WorkloadErrorCode.NOT_FOUND_WORKLOAD));
 	}
+
+	@Override
+	public void updateWorkspaceName(String workspaceResourceName, String workspaceName) {
+		workloadHistoryRepo.updateWorkspaceNameByWorkspaceResourceName(workspaceName, workspaceResourceName);
+	}
 }
