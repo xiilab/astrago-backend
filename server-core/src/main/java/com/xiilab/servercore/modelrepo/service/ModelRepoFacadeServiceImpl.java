@@ -241,8 +241,6 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			StorageEntity storageEntity = storageService.findById(modelRepoReqDTO.getStorageId());
 			// ModelRepoEntity 생성
 			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
-			// ModelRepoEntity save
-			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
 			ModelVersionEntity modelVersionEntity = ModelVersionEntity.builder()
 				.version("v1")
 				.modelFileName(filename)
@@ -250,6 +248,9 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 				.modelRepoEntity(modelRepoEntity)
 				.build();
 			modelRepoVersionRepository.save(modelVersionEntity);
+			// ModelRepoEntity save
+			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
+			saveModel.addModelVersionEntity(modelVersionEntity);
 			setModelLabel(modelRepoReqDTO, saveModel);
 			String modelPath = "";
 			if(modelRepoReqDTO.getModelPath() == null) {
@@ -260,7 +261,6 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 				modelPath = storageEntity.getStoragePath() + saveModel.getModelRepoRealName().replace(" ", "");
 			}
 			saveModel.setModelPath(modelPath);
-			saveModel.addModelVersionEntity(modelVersionEntity);
 			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
