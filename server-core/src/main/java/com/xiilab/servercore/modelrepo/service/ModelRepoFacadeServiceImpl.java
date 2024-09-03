@@ -233,6 +233,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	}
 
 	@Override
+	@Transactional
 	public ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO, String filename,
 		Long fileSize) {
 		try {
