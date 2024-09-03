@@ -19,6 +19,7 @@ import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
+import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
@@ -72,22 +73,22 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		if (!datasets.isEmpty() || !models.isEmpty() || !volumes.isEmpty()) {
 			throw new RestApiException(StorageErrorCode.FAILD_DELETE_USING_STORAGE);
 		}
-		// //K8s 스토리지 삭제 로직
-		// DeleteStorageReqDTO deleteStorageReqDTO = DeleteStorageReqDTO.builder()
-		// 	.pvcName(storageEntity.getPvcName())
-		// 	.pvName(storageEntity.getPvName())
-		// 	.volumeName(storageEntity.getVolumeName())
-		// 	.namespace(storageEntity.getNamespace())
-		// 	.hostPath(storageEntity.getHostPath())
-		// 	.astragoDeploymentName(storageEntity.getAstragoDeploymentName())
-		// 	.storageType(storageEntity.getStorageType())
-		// 	.secretName(storageEntity.getSecretName())
-		// 	.storageName(storageEntity.getStorageName())
-		// 	.storageClassName(storageEntity.getStorageClassName())
-		// 	.build();
-		// storageModuleService.deleteStorage(deleteStorageReqDTO);
-		// //스토리지 db 데이터 삭제
-		// storageService.deleteById(storageId);
+		//K8s 스토리지 삭제 로직
+		DeleteStorageReqDTO deleteStorageReqDTO = DeleteStorageReqDTO.builder()
+			.pvcName(storageEntity.getPvcName())
+			.pvName(storageEntity.getPvName())
+			.volumeName(storageEntity.getVolumeName())
+			.namespace(storageEntity.getNamespace())
+			.hostPath(storageEntity.getHostPath())
+			.astragoDeploymentName(storageEntity.getAstragoDeploymentName())
+			.storageType(storageEntity.getStorageType())
+			.secretName(storageEntity.getSecretName())
+			.storageName(storageEntity.getStorageName())
+			.storageClassName(storageEntity.getStorageClassName())
+			.build();
+		storageModuleService.deleteStorage(deleteStorageReqDTO);
+		//스토리지 db 데이터 삭제
+		storageService.deleteById(storageId);
 	}
 
 	@Override
