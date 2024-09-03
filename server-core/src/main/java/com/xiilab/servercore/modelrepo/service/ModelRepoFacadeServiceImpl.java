@@ -259,6 +259,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 				modelPath = storageEntity.getStoragePath() + saveModel.getModelRepoRealName().replace(" ", "");
 			}
 			saveModel.setModelPath(modelPath);
+			saveModel.addModelVersionEntity(modelVersionEntity);
 			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
