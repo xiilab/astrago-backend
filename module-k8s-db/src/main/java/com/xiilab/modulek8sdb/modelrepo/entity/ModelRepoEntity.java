@@ -58,6 +58,11 @@ public class ModelRepoEntity extends BaseEntity {
 
 		this.modelLabelEntityList = modelLabelEntities;
 	}
+	public void addModelVersionEntity(ModelVersionEntity modelVersionEntity){
+		if(modelVersionEntity != null){
+			this.modelVersionList.add(modelVersionEntity);
+		}
+	}
 
 	public void setModelPath(String datasetPath) {
 		this.modelPath = datasetPath;
