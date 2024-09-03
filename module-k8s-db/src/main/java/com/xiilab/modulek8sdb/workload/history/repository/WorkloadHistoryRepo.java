@@ -76,4 +76,9 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 		+ "set tw.deleteYN = 'Y'"
 		+ "where tw.id =:workloadId")
 	void deleteByWorkloadId(@Param("workloadId") Long workloadId);
+
+	@Transactional
+	@Modifying
+	@Query("update TB_WORKLOAD t set t.workspaceName = ?1 where t.workspaceResourceName = ?2")
+	void updateWorkspaceNameByWorkspaceResourceName(String workspaceName, String workspaceResourceName);
 }
