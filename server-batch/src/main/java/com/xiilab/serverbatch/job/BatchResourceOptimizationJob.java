@@ -60,6 +60,7 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 		int resultCnt = workloadModuleService.optimizationWorkload(optimizationDistinctList);
 
 		log.info("자원회수된 workload의 개수 : {}", resultCnt);
+		log.info("batch resource optimization alert job end....");
 	}
 }
 

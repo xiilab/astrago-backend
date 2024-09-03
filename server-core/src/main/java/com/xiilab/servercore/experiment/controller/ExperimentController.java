@@ -80,6 +80,12 @@ public class ExperimentController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
+	@GetMapping("/chart/{id}")
+	@Operation(summary = "chart를 조회하는 api")
+	public ResponseEntity<ChartDTO.Res> getChartInfoById(@PathVariable("id") Long id, UserDTO.UserInfo userInfo) {
+		return new ResponseEntity<>(experimentService.getChartInfoById(id, userInfo), HttpStatus.OK);
+	}
+
 	@PatchMapping("/chart/{id}")
 	@Operation(summary = "chart를 수정하는 api")
 	public ResponseEntity<HttpStatus> updateChartInfo(@PathVariable("id") Long chartId,

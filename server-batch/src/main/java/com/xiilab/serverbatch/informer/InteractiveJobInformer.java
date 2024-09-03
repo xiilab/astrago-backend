@@ -48,7 +48,7 @@ public class InteractiveJobInformer {
 			}
 		});
 
-		log.info("Starting all registered interative job informers");
+		log.info("Starting all registered interactive job informers");
 		informers.startAllRegisteredInformers();
 	}
 }

@@ -1,7 +1,5 @@
 package com.xiilab.modulek8sdb.experiment.entity;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
@@ -43,7 +41,7 @@ public class ChartEntity extends BaseEntity {
 	private Double xAxisMax;
 	@Column(name = "Y_AXIS")
 	@Convert(converter = ListToStringConverter.class)
-	private List<String> yAxis;
+	private List<ChartDTO.YAxis> yAxis;
 	@Column(name = "Y_AXIS_MIN")
 	private Double yAxisMin;
 	@Column(name = "Y_AXIS_MAX")
@@ -73,8 +71,9 @@ public class ChartEntity extends BaseEntity {
 	}
 
 	public List<String> getAllAxis() {
-		List<String> allAxis = new ArrayList<>(yAxis != null ? yAxis : Collections.emptyList());
-		allAxis.add(xAxis);
-		return allAxis;
+		// List<String> allAxis = new ArrayList<>(yAxis != null ? yAxis : Collections.emptyList());
+		// allAxis.add(xAxis);
+		// return allAxis;
+		return List.of();
 	}
 }

@@ -19,7 +19,6 @@ import com.xiilab.modulek8sdb.experiment.entity.ExperimentColumnEntity;
 import com.xiilab.modulek8sdb.experiment.entity.PanelEntity;
 import com.xiilab.modulek8sdb.experiment.repository.ChartRepository;
 import com.xiilab.modulek8sdb.experiment.repository.ExperimentColumnRepository;
-import com.xiilab.modulek8sdb.experiment.repository.LabelExperimentMappingRepository;
 import com.xiilab.modulek8sdb.experiment.repository.PanelRepository;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.label.repository.LabelRepository;
@@ -35,7 +34,6 @@ public class ExperimentService {
 	private final ChartRepository chartRepository;
 	private final PanelRepository panelRepository;
 	private final ExperimentColumnRepository experimentColumnRepository;
-	private final LabelExperimentMappingRepository labelExperimentMappingRepository;
 	private final ExperimentRepo experimentRepo;
 	private final LabelRepository labelRepository;
 
@@ -94,6 +92,15 @@ public class ExperimentService {
 			throw new CommonException(ChartErrorCode.UNAUTHORIZED_ERROR);
 		}
 		chartEntity.updateChart(chatReq);
+	}
+
+	@Transactional(readOnly = true)
+	public ChartDTO.Res getChartInfoById(Long chartId, UserDTO.UserInfo userInfo) {
+		ChartEntity chartEntity = getChartEntity(chartId);
+		if (!chartEntity.getRegUser().getRegUserId().equals(userInfo.getId())) {
+			throw new CommonException(ChartErrorCode.UNAUTHORIZED_ERROR);
+		}
+		return new ChartDTO.Res(chartEntity);
 	}
 
 	@Transactional

@@ -145,6 +145,8 @@ public class ExperimentMongoCustomRepository {
 		ProjectionOperation project = Aggregation.project("workload_id");
 
 		if (metrics != null) {
+			//wallTime 기본으로 추가
+			project = project.andInclude("wallTime");
 			for (String metric : metrics) {
 				if (metric != null && !metric.trim().isEmpty()) {
 					project = project.andInclude(metric);

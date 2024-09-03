@@ -1,5 +1,4 @@
-#quartz
-table init
+#quartz table init
 
 create table if not exists QRTZ_CALENDARS
 (

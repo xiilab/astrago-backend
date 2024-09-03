@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,14 +44,6 @@ public class ExperimentController {
 	@GetMapping("/key")
 	public ResponseEntity<List<String>> getExperimentKeysByIds(@RequestParam(name = "ids") List<String> ids) {
 		return new ResponseEntity<>(experimentDataService.getExperimentDataKeyByIds(ids), HttpStatus.OK);
-	}
-
-	@GetMapping("/chart/{id}")
-	public ResponseEntity<ExperimentDataDTO.ChartRes> searchExperimentsGraphData(
-		@PathVariable(name = "id") Long id
-	) {
-		return new ResponseEntity<>(
-			experimentDataService.searchExperimentsGraphData(id), HttpStatus.OK);
 	}
 
 	@PostMapping("/metrics")
