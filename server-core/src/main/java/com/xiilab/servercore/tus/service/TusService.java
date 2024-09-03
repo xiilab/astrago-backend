@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
@@ -40,6 +41,7 @@ public class TusService {
 	private final ModelRepoFacadeService modelRepoFacadeService;
 	private final ModelRepoRepository modelRepoRepository;
 
+	@Transactional
 	public void tusUpload(HttpServletRequest request, HttpServletResponse response) {
 		try {
 			// 업로드
@@ -57,12 +59,6 @@ public class TusService {
 					.orElseThrow(() -> new RestApiException(TusErrorCode.UPLOAD_TYPE_ERROR_MESSAGE))
 					.toUpperCase();
 
-				// TODO 삭제 예정
-				/*if ("DATASET".equals(uploadType)) {
-					saveDataset(request, uploadInfo, filename);
-				} else if ("MODEL".equals(uploadType)) {
-					saveModel(request, uploadInfo, filename);
-				} else*/
 				if ("MODEL_REPO".equals(uploadType)) {
 					saveModelRepo(request, uploadInfo, filename);
 				} else if ("VOLUME".equals(uploadType)) {
@@ -77,7 +73,6 @@ public class TusService {
 			throw new RestApiException(TusErrorCode.UPLOAD_FAILED_MESSAGE);
 		}
 	}
-
 	private void saveModelRepo(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
 		IOException,
 		TusException {
@@ -87,13 +82,13 @@ public class TusService {
 		// model repo DB 등록
 		ModelRepoDTO.ResponseDTO modelRepo = modelRepoFacadeService.createModelRepo(modelRepoDTO, uploadInfo);
 
-		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepo.getModelRepoId())
-			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
-		log.info("ModelRepoPath : " + modelRepoEntity.getModelPath());
-		//파일 업로드 경로
-		String filePath = modelRepoEntity.getModelPath() + "/v1/";
+		// ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepo.getModelRepoId())
+		// 	.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+		// log.info("ModelRepoPath : " + modelRepoEntity.getModelPath());
+		// //파일 업로드 경로
+		// String filePath = modelRepoEntity.getModelPath() + "/v1/";
 		// 파일 저장
-		getFilePath(request, filePath, filename);
+		getFilePath(request, modelRepo.getModelPath(), filename);
 	}
 
 	private ModelRepoDTO.RequestDTO getModelRepoDTO(UploadInfo uploadInfo) {

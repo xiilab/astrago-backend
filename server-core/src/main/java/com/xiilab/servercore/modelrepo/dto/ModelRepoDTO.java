@@ -88,6 +88,9 @@ public class ModelRepoDTO {
 				.createdAt(modelRepoEntity.getRegDate())
 				.build();
 		}
+		public void setModelPath(String modelPath){
+			this.modelPath = modelPath;
+		}
 	}
 
 	@Getter

@@ -82,8 +82,11 @@ public class ModelRepoEntity extends BaseEntity {
 		}
 	}
 
-	public void setModelPath(String datasetPath) {
-		this.modelPath = datasetPath;
+	public void setModelPath(String modelPath) {
+		this.modelPath = modelPath;
+	}
+	public void setModelRepoRealName(String modelRepoRealName) {
+		this.modelRepoRealName = modelRepoRealName;
 	}
 
 	public void updateModelRepoVersion(long versionInfo) {
