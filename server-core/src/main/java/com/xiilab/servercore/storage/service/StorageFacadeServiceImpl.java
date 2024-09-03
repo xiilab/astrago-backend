@@ -19,7 +19,6 @@ import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
-import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
 import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
@@ -31,6 +30,8 @@ import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.modulek8sdb.volume.entity.Volume;
+import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
 import com.xiilab.servercore.storage.dto.StorageDTO;
 
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
@@ -49,6 +50,8 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private final SecretService secretService;
 	private final DatasetRepository datasetRepository;
 	private final ModelRepository modelRepository;
+	private final VolumeRepository volumeRepository;
+
 	@Value("${astrago.namespace}")
 	private String namespace;
 	@Value("${astrago.deployment-name}")
@@ -65,25 +68,26 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		//스토리지를 사용중이면 삭제 안되게
 		List<Dataset> datasets = datasetRepository.findByStorageId(storageEntity);
 		List<Model> models = modelRepository.findByStorageId(storageEntity);
-		if (!datasets.isEmpty() || !models.isEmpty()) {
+		List<Volume> volumes = volumeRepository.findByStorageId(storageEntity);
+		if (!datasets.isEmpty() || !models.isEmpty() || !volumes.isEmpty()) {
 			throw new RestApiException(StorageErrorCode.FAILD_DELETE_USING_STORAGE);
 		}
-		//K8s 스토리지 삭제 로직
-		DeleteStorageReqDTO deleteStorageReqDTO = DeleteStorageReqDTO.builder()
-			.pvcName(storageEntity.getPvcName())
-			.pvName(storageEntity.getPvName())
-			.volumeName(storageEntity.getVolumeName())
-			.namespace(storageEntity.getNamespace())
-			.hostPath(storageEntity.getHostPath())
-			.astragoDeploymentName(storageEntity.getAstragoDeploymentName())
-			.storageType(storageEntity.getStorageType())
-			.secretName(storageEntity.getSecretName())
-			.storageName(storageEntity.getStorageName())
-			.storageClassName(storageEntity.getStorageClassName())
-			.build();
-		storageModuleService.deleteStorage(deleteStorageReqDTO);
-		//스토리지 db 데이터 삭제
-		storageService.deleteById(storageId);
+		// //K8s 스토리지 삭제 로직
+		// DeleteStorageReqDTO deleteStorageReqDTO = DeleteStorageReqDTO.builder()
+		// 	.pvcName(storageEntity.getPvcName())
+		// 	.pvName(storageEntity.getPvName())
+		// 	.volumeName(storageEntity.getVolumeName())
+		// 	.namespace(storageEntity.getNamespace())
+		// 	.hostPath(storageEntity.getHostPath())
+		// 	.astragoDeploymentName(storageEntity.getAstragoDeploymentName())
+		// 	.storageType(storageEntity.getStorageType())
+		// 	.secretName(storageEntity.getSecretName())
+		// 	.storageName(storageEntity.getStorageName())
+		// 	.storageClassName(storageEntity.getStorageClassName())
+		// 	.build();
+		// storageModuleService.deleteStorage(deleteStorageReqDTO);
+		// //스토리지 db 데이터 삭제
+		// storageService.deleteById(storageId);
 	}
 
 	@Override
