@@ -71,6 +71,7 @@ public class DellService extends StorageUtils {
 			MixedOperation<HelmRepository, KubernetesResourceList<HelmRepository>, Resource<HelmRepository>> helmRepo = client.resources(
 				HelmRepository.class);
 			helmRepo.inNamespace(namespace).withName("unity-helmrepository").delete();
+			checkDeleteDellPlugin(client);
 			// helm secret 삭제
 			deleteSecret(client);
 			// namespace 삭제
@@ -160,6 +161,21 @@ public class DellService extends StorageUtils {
 			Thread.sleep(10000);
 		}catch (InterruptedException e) {
 			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+		}
+	}
+
+	private void checkDeleteDellPlugin(KubernetesClient client) {
+		int count = 0;
+		while (count < 5){
+			try {
+				Thread.sleep(5000);
+			}catch (InterruptedException e) {
+				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			}
+			boolean b = client.pods().inNamespace("unity").list().getItems().size() == 0;
+			if(b){
+				break;
+			}
 		}
 	}
 }
