@@ -81,11 +81,11 @@ public class TusService {
 	private void saveModelRepo(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
 		IOException,
 		TusException {
-		Long fileSize = uploadInfo.getLength();
+
 		// model repo DTO 생성
 		ModelRepoDTO.RequestDTO modelRepoDTO = getModelRepoDTO(uploadInfo);
 		// model repo DB 등록
-		ModelRepoDTO.ResponseDTO modelRepo = modelRepoFacadeService.createModelRepo(modelRepoDTO, filename, fileSize);
+		ModelRepoDTO.ResponseDTO modelRepo = modelRepoFacadeService.createModelRepo(modelRepoDTO, uploadInfo);
 
 		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepo.getModelRepoId())
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));

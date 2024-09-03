@@ -1,11 +1,13 @@
 package com.xiilab.modulek8sdb.modelrepo.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -62,6 +64,10 @@ public class ModelVersionEntity extends BaseEntity {
 				this.modelMetaEntities.add(modelMetaEntity);
 			});
 		}
-
+	}
+	public void setRegUserInfo(RegUser regUser, LocalDateTime regDate, LocalDateTime modDate){
+		this.regUser = regUser;
+		this.regDate = regDate;
+		this.modDate = modDate;
 	}
 }

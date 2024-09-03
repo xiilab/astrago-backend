@@ -1,9 +1,11 @@
 package com.xiilab.modulek8sdb.modelrepo.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
@@ -18,15 +20,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "TB_MODEL_REPO")
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Getter
 public class ModelRepoEntity extends BaseEntity {
 	@Id
@@ -51,6 +50,24 @@ public class ModelRepoEntity extends BaseEntity {
 	@OneToMany(mappedBy = "modelRepoEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private List<ModelVersionEntity> modelVersionList = new ArrayList<>();
 
+	@Builder
+	public ModelRepoEntity(RegUser regUser, LocalDateTime regDate,
+		LocalDateTime modDate, long id, String modelName, String description, String modelRepoRealName,
+		String workspaceResourceName, String modelPath, StorageEntity storageEntity) {
+		super(regUser, regDate, modDate);
+		this.id = id;
+		this.modelName = modelName;
+		this.description = description;
+		this.modelRepoRealName = modelRepoRealName;
+		this.workspaceResourceName = workspaceResourceName;
+		this.modelPath = modelPath;
+		this.storageEntity = storageEntity;
+	}
+	public void setRegUserInfo(RegUser regUser, LocalDateTime regDate, LocalDateTime modDate){
+		this.regUser = regUser;
+		this.regDate = regDate;
+		this.modDate = modDate;
+	}
 	public void addModelLabelEntity(List<LabelEntity> labelEntityList) {
 		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
 			.map(labelEntity -> ModelLabelEntity.builder().labelEntity(labelEntity).modelRepoEntity(this).build())
@@ -58,6 +75,7 @@ public class ModelRepoEntity extends BaseEntity {
 
 		this.modelLabelEntityList = modelLabelEntities;
 	}
+
 	public void addModelVersionEntity(ModelVersionEntity modelVersionEntity){
 		if(modelVersionEntity != null){
 			this.modelVersionList.add(modelVersionEntity);

@@ -10,6 +10,8 @@ import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.servercore.deploy.dto.ResDeploys;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 
+import me.desair.tus.server.upload.UploadInfo;
+
 public interface ModelRepoFacadeService {
 
 	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO);
@@ -33,5 +35,5 @@ public interface ModelRepoFacadeService {
 
 	DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion, String filePath);
 
-	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoDTO, String filename, Long fileSize);
+	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoDTO, UploadInfo uploadInfo);
 }
