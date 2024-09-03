@@ -8,8 +8,10 @@ import java.util.Map;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CommonErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
@@ -149,6 +151,7 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 					HelmRelease.class);
 				helmClient.inNamespace("csi").withLabel(LabelField.STORAGE_TYPE.getField(), storageType.name())
 					.delete();
+				checkDeleteDellPlugin(client);
 			} else if (storageType == StorageType.IBM) {
 				ibmService.ibmDelete(client);
 			} else if (storageType == StorageType.WEKA_FS) {
@@ -165,5 +168,20 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 	@Override
 	public void uninstallDellProvisioner() {
 		dellService.uninstallDellProvisioner();
+	}
+
+	private void checkDeleteDellPlugin(KubernetesClient client) {
+		int count = 0;
+		while (count < 5){
+			try {
+				Thread.sleep(5000);
+			}catch (InterruptedException e) {
+				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			}
+			boolean b = client.pods().inNamespace("unity").list().getItems().size() == 0;
+			if(b){
+				break;
+			}
+		}
 	}
 }
