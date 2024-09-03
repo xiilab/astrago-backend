@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -250,6 +251,12 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			StorageEntity storageEntity = storageService.findById(modelRepoReqDTO.getStorageId());
 			// ModelRepoEntity 생성
 			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
+			String hostPath = storageEntity.getHostPath();
+			String modelRepoRealName = "model-" + UUID.randomUUID().toString().substring(6);
+			String modelRepoPath = "/workspace/" + modelRepoReqDTO.getWorkspaceResourceName() + "/models/" + modelRepoRealName;
+			modelRepoEntity.setModelPath(modelRepoPath);
+			modelRepoEntity.setModelRepoRealName(modelRepoRealName);
+
 			RegUser regUser = new RegUser(regUserId, regUserName, regUserRealName);
 			ModelVersionEntity modelVersionEntity = ModelVersionEntity.builder()
 				.version("v1")
@@ -264,16 +271,18 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
 			saveModel.addModelVersionEntity(modelVersionEntity);
 			setModelLabel(modelRepoReqDTO, saveModel);
-			String modelPath = "";
-			if(modelRepoReqDTO.getModelPath() == null) {
+			String modelPath = hostPath + modelRepoPath + "/v1";
+			/*if(modelRepoReqDTO.getModelPath() == null) {
 				// 해당 모델이 저장 되는 경로
 				modelPath = storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
 					saveModel.getModelRepoRealName().replace(" ", "");
 			}else{
-				modelPath = storageEntity.getStoragePath() + saveModel.getModelRepoRealName().replace(" ", "");
-			}
-			saveModel.setModelPath(modelPath);
-			return ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
+				modelPath = saveModel.getModelRepoRealName().replace(" ", "");
+			}*/
+			// saveModel.setModelPath(modelPath);
+			ModelRepoDTO.ResponseDTO responseDTO = ModelRepoDTO.ResponseDTO.convertModelRepoDTO(saveModel);
+			responseDTO.setModelPath(modelPath);
+			return responseDTO;
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_SAVE_FAIL);
 		}
