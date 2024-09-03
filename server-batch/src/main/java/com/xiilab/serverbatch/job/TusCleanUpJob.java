@@ -22,8 +22,9 @@ public class TusCleanUpJob extends QuartzJobBean {
 	@Override
 	protected void executeInternal(JobExecutionContext context) {
 		try {
+			log.info("TUS clean up job start....");
 			tusFileUploadService.cleanup();
-			log.info("TUS expiration time exceeded file deletion completed");
+			log.info("TUS clean up job end....");
 		} catch (IOException e) {
 			throw new RestApiException(TusErrorCode.CLEANUP_FAILED_MESSAGE);
 		}
