@@ -11,4 +11,8 @@ public interface ProvisionerModuleService {
 	void installProvisioner(StorageType storageType);
 
 	void unInstallProvisioner(StorageType storageType);
+
+	void installDellProvisioner(String arrayId, String userName, String password, String endPoint);
+
+	void uninstallDellProvisioner();
 }

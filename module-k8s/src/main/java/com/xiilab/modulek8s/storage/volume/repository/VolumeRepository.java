@@ -56,4 +56,10 @@ public interface VolumeRepository {
 	PersistentVolumeClaim createIbmPvc(String storageName);
 
 	void deleteIbmPvc(String storageName);
+
+	void createDellPVC(String pvcName, String storageName);
+
+	void deleteDellStorage(DeleteStorageReqDTO deleteStorageReqDTO);
+
+	void deleteStorageClass(DeleteStorageReqDTO deleteStorageReqDTO);
 }

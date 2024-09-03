@@ -4,6 +4,7 @@ import org.hibernate.annotations.SQLDelete;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.entity.BaseEntity;
+import com.xiilab.modulek8sdb.common.enums.DefaultStorageYN;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 
 import jakarta.persistence.Column;
@@ -59,10 +60,22 @@ public class StorageEntity extends BaseEntity {
 	private DeleteYN deleteYN = DeleteYN.N;
 	@Column(name = "SECRET_NAME")
 	private String secretName;
+	@Column(name = "STORAGE_CLASS_NAME")
+	private String storageClassName;
+	@Column(name = "ARRAY_ID")
+	private String arrayId;
+	@Column(name = "STORAGE_POOL")
+	private String storagePool;
+	@Column(name = "NAS_SERVER")
+	private String nasServer;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "DEFAULT_STORAGE_YN")
+	private DefaultStorageYN defaultStorageYN = DefaultStorageYN.N;
 	@Builder
 	public StorageEntity(String storageName, int requestVolume, String description, StorageType storageType, String ip,
 		String storagePath, String hostPath, String astragoDeploymentName, String namespace, String pvName,
-		String pvcName, String volumeName, String secretName) {
+		String pvcName, String volumeName, String secretName, DefaultStorageYN defaultStorageYN, String storageClassName,
+		String arrayId, String storagePool, String nasServer) {
 		this.storageName = storageName;
 		this.requestVolume = requestVolume;
 		this.description = description;
@@ -76,6 +89,11 @@ public class StorageEntity extends BaseEntity {
 		this.pvName = pvName;
 		this.pvcName = pvcName;
 		this.secretName = secretName;
+		this.defaultStorageYN = defaultStorageYN;
+		this.storageClassName = storageClassName;
+		this.arrayId = arrayId;
+		this.storagePool = storagePool;
+		this.nasServer = nasServer;
 	}
 
 	public void changeStorageName(String storageName) {

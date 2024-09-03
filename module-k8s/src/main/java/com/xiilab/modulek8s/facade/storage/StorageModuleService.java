@@ -69,4 +69,8 @@ public interface StorageModuleService {
 	void deleteStorage(DeleteStorageReqDTO deleteStorageReqDTO);
 
 	void astragoCoreDeploymentConnectPVC(List<AstragoDeploymentConnectPVC> mounts);
+
+	StorageResDTO createDELLStorage(CreateStorageReqDTO createStorageReqDTO);
+
+
 }
