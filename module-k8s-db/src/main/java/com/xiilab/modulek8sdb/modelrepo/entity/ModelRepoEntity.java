@@ -63,7 +63,11 @@ public class ModelRepoEntity extends BaseEntity {
 		this.modelPath = modelPath;
 		this.storageEntity = storageEntity;
 	}
-
+	public void setRegUserInfo(RegUser regUser, LocalDateTime regDate, LocalDateTime modDate){
+		this.regUser = regUser;
+		this.regDate = regDate;
+		this.modDate = modDate;
+	}
 	public void addModelLabelEntity(List<LabelEntity> labelEntityList) {
 		List<ModelLabelEntity> modelLabelEntities = labelEntityList.stream()
 			.map(labelEntity -> ModelLabelEntity.builder().labelEntity(labelEntity).modelRepoEntity(this).build())

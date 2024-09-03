@@ -3,8 +3,10 @@ package com.xiilab.servercore.modelrepo.service;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -18,8 +20,10 @@ import com.xiilab.modulecommon.dto.FileInfoDTO;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.LabelErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.ModelRepoErrorCode;
+import com.xiilab.modulecommon.exception.errorcode.TusErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
 import com.xiilab.modulek8s.common.dto.PageDTO;
+import com.xiilab.modulek8sdb.common.entity.RegUser;
 import com.xiilab.modulek8sdb.deploy.entity.DeployEntity;
 import com.xiilab.modulek8sdb.deploy.repository.DeployRepository;
 import com.xiilab.modulek8sdb.label.entity.LabelEntity;
@@ -37,6 +41,7 @@ import com.xiilab.servercore.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.desair.tus.server.upload.UploadInfo;
 
 @Service
 @RequiredArgsConstructor
@@ -234,21 +239,28 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 
 	@Override
 	@Transactional
-	public ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO, String filename,
-		Long fileSize) {
+	public ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoReqDTO, UploadInfo uploadInfo) {
 		try {
+			Long fileSize = uploadInfo.getLength();
+			String filename = uploadInfo.getMetadata().get("filename");
+			String regUserId = uploadInfo.getMetadata().get("regUserId");
+			String regUserName = uploadInfo.getMetadata().get("regUserName");
+			String regUserRealName = uploadInfo.getMetadata().get("regUserRealName");
 			// 스토리지 조회
 			StorageEntity storageEntity = storageService.findById(modelRepoReqDTO.getStorageId());
 			// ModelRepoEntity 생성
 			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
+			RegUser regUser = new RegUser(regUserId, regUserName, regUserRealName);
 			ModelVersionEntity modelVersionEntity = ModelVersionEntity.builder()
 				.version("v1")
 				.modelFileName(filename)
 				.modelFileSize(String.valueOf(fileSize))
 				.modelRepoEntity(modelRepoEntity)
 				.build();
+			modelVersionEntity.setRegUserInfo(regUser, LocalDateTime.now(), LocalDateTime.now());
 			modelRepoVersionRepository.save(modelVersionEntity);
 			// ModelRepoEntity save
+			modelRepoEntity.setRegUserInfo(regUser, LocalDateTime.now(), LocalDateTime.now());
 			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
 			saveModel.addModelVersionEntity(modelVersionEntity);
 			setModelLabel(modelRepoReqDTO, saveModel);
