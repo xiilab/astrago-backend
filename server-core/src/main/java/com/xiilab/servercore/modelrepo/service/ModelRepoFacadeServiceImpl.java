@@ -253,7 +253,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
 			String hostPath = storageEntity.getHostPath();
 			String modelRepoRealName = "model-" + UUID.randomUUID().toString().substring(6);
-			String modelRepoPath = "/workspace/" + modelRepoReqDTO.getWorkspaceResourceName() + "/models/" + modelRepoRealName;
+			String modelRepoPath = "/workspaces/" + modelRepoReqDTO.getWorkspaceResourceName() + "/models/" + modelRepoRealName;
 			modelRepoEntity.setModelPath(modelRepoPath);
 			modelRepoEntity.setModelRepoRealName(modelRepoRealName);
 
