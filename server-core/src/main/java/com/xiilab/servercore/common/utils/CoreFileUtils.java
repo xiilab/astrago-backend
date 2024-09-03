@@ -107,6 +107,12 @@ public class CoreFileUtils {
 		String filePath = path + File.separator + fileName.replace(" ", "_");
 		File file = new File(filePath);
 
+		// 디렉토리가 존재하지 않으면 생성
+		File parentDir = file.getParentFile();
+		if (!parentDir.exists()) {
+			parentDir.mkdirs();  // 디렉토리 생성
+		}
+
 		// 파일 저장
 		FileUtils.copyInputStreamToFile(inputStream, file);
 
