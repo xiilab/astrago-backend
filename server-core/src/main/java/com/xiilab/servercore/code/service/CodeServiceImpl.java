@@ -67,35 +67,14 @@ public class CodeServiceImpl implements CodeService {
 		// }
 
 		// 사용자 Credential 조회
-		String token = "";
+		// repoType이 private 일때만 조회
 		CredentialEntity credentialEntity = null;
-		if (codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE && codeReqDTO.getCredentialId() != null
-			&& codeReqDTO.getCredentialId() != 0) {
-			credentialEntity = Optional.ofNullable(credentialService.getCredentialEntity(codeReqDTO.getCredentialId()))
-				.orElseThrow(() -> new RestApiException(WorkloadErrorCode.FAILED_LOAD_CODE_CREDENTIAL_INFO));
-			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
+		if (codeReqDTO.getCredentialId() != null && codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE) {
+			credentialEntity = credentialService.getCredentialEntity(codeReqDTO.getCredentialId());
 		}
 
-		// 연결 가능한지 확인
-		if (codeReqDTO.getCodeType() == CodeType.GIT_HUB) {
-			GithubApi githubApi = new GithubApi(token);
-			githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeReqDTO.getCodeURL()));
-		} else {
-			// GITLAB API 검증
-			String codeURL = codeReqDTO.getCodeURL();
-			String baseUrl = getBaseUrl(codeURL);
-
-			GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
-			Pattern pattern = Pattern.compile(baseUrl + "/(.*?)/([^/.]+)(\\.git)?$");
-			Matcher matcher = pattern.matcher(codeReqDTO.getCodeURL());
-			if (matcher.find()) {
-				String namespace = matcher.group(1);
-				String project = matcher.group(2);
-				gitLabApi.isRepoConnected(namespace, project);
-			} else {
-				throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-			}
-		}
+		isCodeURLValid(codeReqDTO.getCodeURL(),
+			codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE ? codeReqDTO.getCredentialId() : null, codeReqDTO.getCodeType());
 
 		try {
 			CodeEntity saveCode = codeRepository.save(
@@ -125,18 +104,18 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
-	public Boolean isCodeURLValid(String codeURL, Long credentialId) {
+	public Boolean isCodeURLValid(String codeURL, Long credentialId, CodeType codeType) {
 		// 깃허브 또는 깃랩 URL인지 검증
 		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeURL);
 		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeURL);
 
 		// URL 검증
-		if (!isGitHubURL && !isGitLabURL) {
+		if(codeType == CodeType.GIT_HUB && !isGitHubURL){
 			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 		}
 
 		String token = "";
-		if (credentialId != 0) {
+		if (credentialId != null) {
 			CredentialEntity credentialEntity = credentialService.getCredentialEntity(credentialId);
 			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
 		}
@@ -147,18 +126,19 @@ public class CodeServiceImpl implements CodeService {
 				return true;
 			}
 		} else if (isGitLabURL) {
-			// // GITLAB API 검증
-			// GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
-			// Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
-			// Matcher matcher = pattern.matcher(codeURL);
-			// if (matcher.find()) {
-			// 	String namespace = matcher.group(1);
-			// 	String project = matcher.group(2);
-			// 	gitLabApi.isRepoConnected(namespace, project);
-			// }
+			// GITLAB API 검증
+			String gitlabUrl = getBaseUrl(codeURL);
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
+			Matcher matcher = pattern.matcher(codeURL);
+			if (matcher.find()) {
+				GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+				String namespace = matcher.group(1);
+				String project = matcher.group(2);
+				return gitLabApi.isRepoConnected(namespace, project);
+			}
 		}
 
-		return true;
+		return false;
 	}
 
 	@Override
@@ -168,7 +148,7 @@ public class CodeServiceImpl implements CodeService {
 		if (isAdminPage(pageMode)) {
 			codeEntityList = getAdminCodeList(workspaceName, pageable, codeSearchCondition);
 		} else {
-			codeEntityList = getNonAdminCodeList(workspaceName, userInfoDTO, pageable,codeSearchCondition);
+			codeEntityList = getNonAdminCodeList(workspaceName, userInfoDTO, pageable, codeSearchCondition);
 		}
 		return codeEntityList.map(CodeResDTO::new);
 	}
