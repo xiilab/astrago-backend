@@ -84,7 +84,7 @@ public class DellService extends StorageUtils {
 	public void addProvisionerNodeLabel(String arrayId) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			// 추가할 라벨의 키 생성
-			String key = "csi-unity.dellemc.com/" + arrayId + "-iscsi";
+			String key = "csi-unity.dellemc.com/" + arrayId + "-nfs";
 
 			// 클러스터 내의 모든 노드에 라벨 추가
 			client.nodes()
