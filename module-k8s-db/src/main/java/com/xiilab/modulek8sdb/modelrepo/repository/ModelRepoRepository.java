@@ -18,7 +18,7 @@ public interface ModelRepoRepository extends JpaRepository<ModelRepoEntity, Long
 		left join t.modelVersionList v
 		where t.workspaceResourceName = :workspaceResourceName
 		and (:search is null or :search = '' or t.modelName like concat('%', :search, '%'))
-		order by v.version desc
+		order by t.regDate desc
 		""")
 	List<ModelRepoEntity> findAllByWorkspaceResourceName(@Param("workspaceResourceName") String workspaceResourceName,@Param("search") String search);
 }
