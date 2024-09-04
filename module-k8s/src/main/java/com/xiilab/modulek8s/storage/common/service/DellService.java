@@ -103,9 +103,6 @@ public class DellService extends StorageUtils {
 
 					// 변경 사항을 클러스터에 적용
 					client.nodes().withName(node.getMetadata().getName()).patch(node);
-
-					// 결과 출력
-					System.out.println(node.getMetadata().getName() + " : " + key);
 				});
 		}
 	}
