@@ -1,6 +1,8 @@
 package com.xiilab.servercore.tus.controller;
 
-import org.springframework.http.HttpStatus;
+import java.io.IOException;
+
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,10 +20,11 @@ public class TusController {
 	private final TusService tusService;
 
 	@RequestMapping("/**")
-	public ResponseEntity<HttpStatus> uploadData(HttpServletRequest request,
+	public ResponseEntity<String> uploadData(HttpServletRequest request,
 		HttpServletResponse response) {
-		tusService.tusUpload(request, response);
-		return new ResponseEntity<>(HttpStatus.OK);
-
+		String result = tusService.tusUpload(request, response);
+		return ResponseEntity.ok()
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(result);
 	}
 }
