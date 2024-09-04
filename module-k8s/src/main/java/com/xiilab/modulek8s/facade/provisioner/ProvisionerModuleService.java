@@ -15,4 +15,6 @@ public interface ProvisionerModuleService {
 	void installDellProvisioner(String arrayId, String userName, String password, String endPoint);
 
 	void uninstallDellProvisioner();
+
+	void addProvisionerNodeLabel(String arrayId);
 }

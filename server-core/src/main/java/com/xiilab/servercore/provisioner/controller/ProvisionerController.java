@@ -65,6 +65,7 @@ public class ProvisionerController {
 		provisionerFacadeService.installPlugin(type, dellUnityDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 	@DeleteMapping("/plugin/uninstall/{type}")
 	@Operation(summary = "플러그인 삭제 ")
 	public ResponseEntity<HttpStatus> unInstallPlugin(

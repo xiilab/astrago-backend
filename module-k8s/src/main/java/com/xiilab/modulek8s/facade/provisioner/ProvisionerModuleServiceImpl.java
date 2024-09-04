@@ -41,4 +41,9 @@ public class ProvisionerModuleServiceImpl implements ProvisionerModuleService {
 	public void uninstallDellProvisioner() {
 		provisionerService.uninstallDellProvisioner();
 	}
+
+	@Override
+	public void addProvisionerNodeLabel(String arrayId){
+		provisionerService.addProvisionerNodeLabel(arrayId);
+	}
 }
