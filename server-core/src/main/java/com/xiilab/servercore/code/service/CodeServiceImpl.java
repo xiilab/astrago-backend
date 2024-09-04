@@ -118,7 +118,7 @@ public class CodeServiceImpl implements CodeService {
 		} else{
 			// GITLAB API 검증
 			String gitlabUrl = getBaseUrl(codeURL);
-			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/([^/.]+)(\\.git){1}");
 			Matcher matcher = pattern.matcher(codeURL);
 			if (matcher.find()) {
 				GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
