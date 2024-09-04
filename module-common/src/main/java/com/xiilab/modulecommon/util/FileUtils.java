@@ -10,6 +10,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -86,7 +87,7 @@ public class FileUtils {
 	}
 
 	public static List<FileInfoDTO> uploadFiles(String path, List<MultipartFile> files) {
-		List<FileInfoDTO> fileList = null;
+		List<FileInfoDTO> fileList = new ArrayList<>();
 		try {
 			Path targetPath = Paths.get(path);
 			// 파일 업로드
@@ -94,7 +95,7 @@ public class FileUtils {
 				// 각 파일의 원본 이름에서 공백을 언더스코어로 대체
 				String fileName = file.getOriginalFilename().replace(" ", "_");
 				// 지정된 경로에 파일을 복사
-				Files.copy(file.getInputStream(), targetPath.resolve(fileName));
+				Files.copy(file.getInputStream(), targetPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
 				fileList.add(FileInfoDTO.builder()
 					.fileName(fileName)
 					.size(String.valueOf(file.getSize()))
