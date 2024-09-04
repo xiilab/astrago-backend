@@ -35,12 +35,12 @@ public class ResourceQuotaServiceImpl implements ResourceQuotaService {
 			return ResourceQuotaResDTO.builder()
 				.name(resourceQuotas.getName())
 				.namespace(resourceQuotas.getNamespace())
-				.reqCPU(resourceQuotas.getReqCPU())
-				.reqGPU(resourceQuotas.getReqGPU())
-				.reqMEM(resourceQuotas.getReqMEM())
-				.limitCPU(resourceQuotas.getLimitCPU())
-				.limitMEM(resourceQuotas.getLimitMEM())
-				.limitGPU(resourceQuotas.getLimitGPU())
+				.reqCPU((int)resourceQuotas.getReqCPU())
+				.reqGPU((int)resourceQuotas.getReqGPU())
+				.reqMEM((int)resourceQuotas.getReqMEM())
+				.limitCPU((int)resourceQuotas.getLimitCPU())
+				.limitMEM((int)resourceQuotas.getLimitMEM())
+				.limitGPU((int)resourceQuotas.getLimitGPU())
 				.build();
 		} else {
 			return null;
@@ -57,12 +57,15 @@ public class ResourceQuotaServiceImpl implements ResourceQuotaService {
 		return resourceQuotaRepo.getResourceQuotasList().stream().map(resourceQuotas -> ResourceQuotaResDTO.builder()
 			.name(resourceQuotas.getName())
 			.namespace(resourceQuotas.getNamespace())
-			.reqCPU(resourceQuotas.getReqCPU())
-			.reqGPU(resourceQuotas.getReqGPU())
-			.reqMEM(resourceQuotas.getReqMEM())
-			.limitCPU(resourceQuotas.getLimitCPU())
-			.limitMEM(resourceQuotas.getLimitMEM())
-			.limitGPU(resourceQuotas.getLimitGPU())
+			.reqCPU((int)resourceQuotas.getReqCPU())
+			.reqGPU((int)resourceQuotas.getReqGPU())
+			.reqMEM((int)resourceQuotas.getReqMEM())
+			.limitCPU((int)resourceQuotas.getLimitCPU())
+			.limitMEM((int)resourceQuotas.getLimitMEM())
+			.limitGPU((int)resourceQuotas.getLimitGPU())
+			.useCPU((int)resourceQuotas.getUseCPU())
+			.useMEM((int)resourceQuotas.getUseMEM())
+			.useGPU((int)resourceQuotas.getUseGPU())
 			.build()).collect(Collectors.toList());
 	}
 
