@@ -17,8 +17,8 @@ public class ResourceQuotaResDTO extends K8SResourceResDTO {
 	private int limitCPU;
 	private int limitMEM;
 	private int limitGPU;
-	private int useCPU;
-	private int useMEM;
+	private float useCPU;
+	private float useMEM;
 	private int useGPU;
 
 	@Override

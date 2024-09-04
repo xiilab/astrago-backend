@@ -65,7 +65,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
 	 *
 	 * @param podSpecBuilder
-	 * @param codes 복사하려는 코드 목록
+	 * @param codes          복사하려는 코드 목록
 	 */
 	public void cloneGitRepo(PodSpecBuilder podSpecBuilder, List<JobCodeVO> codes) {
 		if (!CollectionUtils.isEmpty(codes)) {
@@ -124,8 +124,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	 * 마운트할 볼륨 정의
 	 *
 	 * @param podSpecBuilder
-	 * @param volumes 마운트 정의할 볼륨 목록
-	 *
+	 * @param volumes        마운트 정의할 볼륨 목록
 	 **/
 	public void addVolumes(PodSpecBuilder podSpecBuilder, List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
@@ -144,7 +143,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		Map<String, Quantity> result = new HashMap<>();
 		// 소수점 한자리로 변환
 		String strCpuRequest = String.valueOf(cpuRequest);
-		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
+		String strMemRequest = memRequest + ResourcesUnit.MEM_UNIT.getUnit();
 
 		if (ValidUtils.isNullOrZero(gpuRequest)) {
 			result.put("cpu", new Quantity(strCpuRequest));
