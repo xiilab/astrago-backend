@@ -376,7 +376,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
 		//connection 실패
 		if(!isAvailable){
-			while(failCount < 10){
+			while(failCount < 20){
 				try {
 					Thread.sleep(5000);
 					failCount++;

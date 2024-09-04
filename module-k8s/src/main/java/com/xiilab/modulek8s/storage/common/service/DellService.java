@@ -3,6 +3,8 @@ package com.xiilab.modulek8s.storage.common.service;
 import static com.xiilab.modulecommon.exception.errorcode.StorageErrorCode.*;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -79,6 +81,32 @@ public class DellService extends StorageUtils {
 		}
 	}
 
+	public void addProvisionerNodeLabel(String arrayId) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			// 추가할 라벨의 키 생성
+			String key = "csi-unity.dellemc.com/" + arrayId + "-nfs";
+
+			// 클러스터 내의 모든 노드에 라벨 추가
+			client.nodes()
+				.list()
+				.getItems()
+				.stream()
+				.filter(node -> !node.getMetadata().getLabels().containsKey(key))
+				.forEach(node -> {
+					// 노드의 메타데이터에서 라벨 추가
+					Map<String, String> labels = node.getMetadata().getLabels();
+					if (labels == null) {
+						labels = new HashMap<>();
+					}
+					labels.put(key, "true");
+					node.getMetadata().setLabels(labels);
+
+					// 변경 사항을 클러스터에 적용
+					client.nodes().withName(node.getMetadata().getName()).patch(node);
+				});
+		}
+	}
+
 	private void createNamespace(KubernetesClient client) {
 		Namespace createNamespace = new NamespaceBuilder()
 			.withNewMetadata()
@@ -139,7 +167,7 @@ public class DellService extends StorageUtils {
 		}
 	}
 
-	private void deleteSecret(KubernetesClient client){
+	private void deleteSecret(KubernetesClient client) {
 		client.secrets().inNamespace(namespace).delete();
 	}
 
@@ -148,31 +176,35 @@ public class DellService extends StorageUtils {
 	}
 
 	private void validateDellProvisioner(KubernetesClient client) {
-		sleep();
-		boolean size = client.pods().inNamespace(namespace).list().getItems().stream()
-			.filter(pod -> !pod.getStatus().getPhase().equals("Running") && pod.getMetadata().getName().contains("csi-unity")).toList().size() > 0;
-		if(size){
-			throw new RestApiException(STORAGE_INSTALL_WAIT);
+		int count = 0;
+		while (count < 10) {
+			try {
+				Thread.sleep(5000);
+				boolean b = client.pods().inNamespace(namespace).list().getItems().stream()
+					.filter(pod -> !pod.getStatus().getPhase().equals("Running") && pod.getMetadata()
+						.getName()
+						.contains("csi-unity")).toList().size() == 0;
+				;
+				if (b) {
+					break;
+				}
+			} catch (InterruptedException e) {
+				uninstallDellProvisioner();
+				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			}
 		}
 	}
 
-	private void sleep(){
-		try {
-			Thread.sleep(10000);
-		}catch (InterruptedException e) {
-			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
-		}
-	}
 	private void checkDeleteDellPlugin(KubernetesClient client) {
 		int count = 0;
-		while (count < 5){
+		while (count < 5) {
 			try {
 				Thread.sleep(5000);
-			}catch (InterruptedException e) {
+			} catch (InterruptedException e) {
 				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
 			}
 			boolean b = client.pods().inNamespace("unity").list().getItems().size() == 0;
-			if(b){
+			if (b) {
 				break;
 			}
 		}
