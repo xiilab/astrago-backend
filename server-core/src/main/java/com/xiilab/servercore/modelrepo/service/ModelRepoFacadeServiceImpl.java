@@ -289,6 +289,16 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		}
 	}
 
+	@Override
+	public void uploadMetaFiles(Long modelRepoId, String modelVersion, List<MultipartFile> files) {
+		ModelRepoEntity modelRepoEntity = modelRepoRepository.findById(modelRepoId)
+			.orElseThrow(() -> new RestApiException(ModelRepoErrorCode.MODEL_REPO_NOT_FOUND));
+		String modelPath = modelRepoEntity.getStorageEntity().getHostPath()
+			+ modelRepoEntity.getModelPath() + "/" + modelVersion;
+
+		FileUtils.uploadFiles(modelPath, files);
+	}
+
 	private ModelRepoDTO.ResponseDTO createNewModelRepo(ModelRepoDTO.WlModelRepoDTO wlModelRepoDTO) {
 		ModelRepoDTO.RequestDTO requestDTO = wlModelRepoDTO.convertRequestDTO();
 		// model repo 저장

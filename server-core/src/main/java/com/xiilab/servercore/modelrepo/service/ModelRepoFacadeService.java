@@ -36,4 +36,6 @@ public interface ModelRepoFacadeService {
 	DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion, String filePath);
 
 	ModelRepoDTO.ResponseDTO createModelRepo(ModelRepoDTO.RequestDTO modelRepoDTO, UploadInfo uploadInfo);
+
+	void uploadMetaFiles(Long modelRepoId, String modelVersion, List<MultipartFile> files);
 }
