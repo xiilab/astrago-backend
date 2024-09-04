@@ -126,8 +126,8 @@ public class WorkspaceDTO {
 		private int allocCPU;
 		private int allocMEM;
 		private int allocGPU;
-		private int useCPU;
-		private int useMEM;
+		private float useCPU;
+		private float useMEM;
 		private int useGPU;
 
 		public AdminResponseDTO(WorkspaceDTO.ResponseDTO workspace, ResourceQuotaResDTO resourceQuotaResDTO) {

@@ -15,7 +15,10 @@ public interface ResourceQuotaService {
 	void deleteResourceQuotas(String name, String workspace);
 
 	ResourceQuotaResDTO getResourceQuotas(String namespace);
+
 	void updateResourceQuota(String workspace, int cpuReq, int memReq, int gpuReq);
+
 	List<ResourceQuotaResDTO> getResourceQuotasList();
+
 	TotalResourceQuotaDTO getTotalResourceQuota();
 }

@@ -63,8 +63,8 @@ public class ResourceQuotaServiceImpl implements ResourceQuotaService {
 			.limitCPU((int)resourceQuotas.getLimitCPU())
 			.limitMEM((int)resourceQuotas.getLimitMEM())
 			.limitGPU((int)resourceQuotas.getLimitGPU())
-			.useCPU((int)resourceQuotas.getUseCPU())
-			.useMEM((int)resourceQuotas.getUseMEM())
+			.useCPU(resourceQuotas.getUseCPU())
+			.useMEM(resourceQuotas.getUseMEM())
 			.useGPU((int)resourceQuotas.getUseGPU())
 			.build()).collect(Collectors.toList());
 	}
