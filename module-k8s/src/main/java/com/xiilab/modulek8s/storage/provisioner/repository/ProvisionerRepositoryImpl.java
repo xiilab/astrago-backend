@@ -166,4 +166,9 @@ public class ProvisionerRepositoryImpl implements ProvisionerRepository {
 	public void uninstallDellProvisioner() {
 		dellService.uninstallDellProvisioner();
 	}
+
+	@Override
+	public void addProvisionerNodeLabel(String arrayId) {
+		dellService.addProvisionerNodeLabel(arrayId);
+	}
 }
