@@ -73,11 +73,11 @@ public class CodeController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/check")
-	@Operation(summary = "소스 코드URL 검증 API")
-	public ResponseEntity<HttpStatus> isCodeValid(@RequestParam(value = "codeURL") String codeURL,
-		@RequestParam(value = "credentialId") Long credentialId) {
-		codeService.isCodeURLValid(codeURL, credentialId);
-		return ResponseEntity.ok().build();
-	}
+	// @GetMapping("/check")
+	// @Operation(summary = "소스 코드URL 검증 API")
+	// public ResponseEntity<HttpStatus> isCodeValid(@RequestParam(value = "codeURL") String codeURL,
+	// 	@RequestParam(value = "credentialId") Long credentialId) {
+	// 	codeService.isCodeURLValid(codeURL, credentialId);
+	// 	return ResponseEntity.ok().build();
+	// }
 }
