@@ -9,17 +9,17 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.DatasetErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.TusErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.VolumeErrorCode;
-import com.xiilab.modulek8sdb.modelrepo.entity.ModelRepoEntity;
 import com.xiilab.modulek8sdb.modelrepo.repository.ModelRepoRepository;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
 import com.xiilab.servercore.common.utils.CoreFileUtils;
 import com.xiilab.servercore.modelrepo.dto.ModelRepoDTO;
 import com.xiilab.servercore.modelrepo.service.ModelRepoFacadeService;
+import com.xiilab.servercore.tus.dto.ResModelInfo;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,9 +40,10 @@ public class TusService {
 	private final VolumeRepository volumeRepository;
 	private final ModelRepoFacadeService modelRepoFacadeService;
 	private final ModelRepoRepository modelRepoRepository;
+	private final ObjectMapper objectMapper;
 
 	@Transactional
-	public void tusUpload(HttpServletRequest request, HttpServletResponse response) {
+	public String tusUpload(HttpServletRequest request, HttpServletResponse response) {
 		try {
 			// 업로드
 			tusFileUploadService.process(request, response);
@@ -60,20 +61,27 @@ public class TusService {
 					.toUpperCase();
 
 				if ("MODEL_REPO".equals(uploadType)) {
-					saveModelRepo(request, uploadInfo, filename);
+					ModelRepoDTO.ResponseDTO responseDTO = saveModelRepo(request, uploadInfo, filename);
+					ResModelInfo resModelInfo = ResModelInfo.builder()
+						.modelId(responseDTO.getModelRepoId())
+						.modelVersion("v1")
+						.build();
+					return objectMapper.writeValueAsString(resModelInfo);
 				} else if ("VOLUME".equals(uploadType)) {
 					saveVolume(request, uploadInfo, filename);
 				}
 
 				// 임시 파일 삭제
 				tusFileUploadService.deleteUpload(request.getRequestURI());
+
 			}
 		} catch (IOException | TusException e) {
 			log.error("exception was occurred. message={}", e.getMessage(), e);
 			throw new RestApiException(TusErrorCode.UPLOAD_FAILED_MESSAGE);
 		}
+		return null;
 	}
-	private void saveModelRepo(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
+	private ModelRepoDTO.ResponseDTO saveModelRepo(HttpServletRequest request, UploadInfo uploadInfo, String filename) throws
 		IOException,
 		TusException {
 
@@ -89,6 +97,7 @@ public class TusService {
 		// String filePath = modelRepoEntity.getModelPath() + "/v1/";
 		// 파일 저장
 		getFilePath(request, modelRepo.getModelPath(), filename);
+		return modelRepo;
 	}
 
 	private ModelRepoDTO.RequestDTO getModelRepoDTO(UploadInfo uploadInfo) {
