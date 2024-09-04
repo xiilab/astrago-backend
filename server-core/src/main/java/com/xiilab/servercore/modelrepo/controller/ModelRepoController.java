@@ -75,7 +75,7 @@ public class ModelRepoController {
 	@Operation(summary = "워크로드 모델 등록 및 기존 모델 등록 API")
 	public ResponseEntity<HttpStatus> registerOrVersionUpModelRepo(
 		@RequestPart(name = "files", required = false) List<MultipartFile> files,
-		@RequestBody ModelRepoDTO.WlModelRepoDTO modelRepoReqDTO) {
+		@RequestPart(name = "modelRepoReqDTO" ) ModelRepoDTO.WlModelRepoDTO modelRepoReqDTO) {
 		modelRepoFacadeService.registerOrVersionUpModelRepo(files, modelRepoReqDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
