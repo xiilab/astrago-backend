@@ -34,4 +34,8 @@ public class ProvisionerService {
 	public void uninstallDellProvisioner() {
 		provisionerRepository.uninstallDellProvisioner();
 	}
+
+	public void addProvisionerNodeLabel(String arrayId){
+		provisionerRepository.addProvisionerNodeLabel(arrayId);
+	}
 }
