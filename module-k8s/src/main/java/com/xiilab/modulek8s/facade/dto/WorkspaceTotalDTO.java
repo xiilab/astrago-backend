@@ -21,9 +21,9 @@ public class WorkspaceTotalDTO {
 	private String name;
 	private String resourceName;
 	private String description;
-	private int limitCPU;
-	private int limitMEM;
-	private int limitGPU;
+	private float limitCPU;
+	private float limitMEM;
+	private float limitGPU;
 	private AgeDTO age;
 	private int runningCnt;
 	private int endCnt;
