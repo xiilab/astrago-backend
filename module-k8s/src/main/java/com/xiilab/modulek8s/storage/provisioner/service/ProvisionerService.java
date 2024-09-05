@@ -26,4 +26,16 @@ public class ProvisionerService {
 	public void unInstallProvisioner(StorageType storageType) {
 		provisionerRepository.unInstallProvisioner(storageType);
 	}
+
+	public void installDellProvisioner(String arrayId, String userName, String password, String endPoint) {
+		provisionerRepository.installDellProvisioner(arrayId, userName, password, endPoint);
+	}
+
+	public void uninstallDellProvisioner() {
+		provisionerRepository.uninstallDellProvisioner();
+	}
+
+	public void addProvisionerNodeLabel(String arrayId){
+		provisionerRepository.addProvisionerNodeLabel(arrayId);
+	}
 }

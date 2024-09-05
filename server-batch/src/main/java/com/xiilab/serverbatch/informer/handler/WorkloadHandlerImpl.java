@@ -250,6 +250,9 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 
 					workloadHistoryRepo.insertWorkloadStartTime(afterDeployment.getMetadata().getName(),
 						LocalDateTime.now());
+				} else if (afterStatus == WorkloadStatus.ERROR || afterStatus == WorkloadStatus.END) {
+					workloadHistoryRepo.updateWorkloadEndTime(afterDeployment.getMetadata().getName(),
+						LocalDateTime.now());
 				}
 			}
 		}
@@ -369,6 +372,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		Optional<WorkloadEntity> workload = workloadHistoryRepo.findByResourceName(job.getMetadata().getName());
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END, job.getMetadata().getName());
+			workloadHistoryRepo.updateWorkloadEndTime(job.getMetadata().getName(), LocalDateTime.now());
 			handleNotificationsAndLog(wl, WorkloadStatus.END);
 		});
 	}
@@ -378,6 +382,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 		workload.ifPresent(wl -> {
 			workloadHistoryRepo.updateWorkloadStatusByResourceName(WorkloadStatus.END,
 				deployment.getMetadata().getName());
+			workloadHistoryRepo.updateWorkloadEndTime(deployment.getMetadata().getName(), LocalDateTime.now());
 			handleNotificationsAndLog(wl, WorkloadStatus.END);
 		});
 	}

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
+import com.xiilab.modulecommon.enums.UserAttribute;
 import com.xiilab.moduleuser.dto.SignUpPath;
 
 import jakarta.validation.constraints.Email;
@@ -46,8 +47,8 @@ public class UserReqVO {
 		userRepresentation.setEnabled(false);
 		userRepresentation.setRealmRoles(List.of("ROLE_USER"));
 		Map<String, List<String>> attributes = new HashMap<>();
-		attributes.put("approvalYN", List.of(String.valueOf(false)));
-		attributes.put("signUpPath", List.of(SignUpPath.ASTRAGO.name()));
+		attributes.put(UserAttribute.APPROVAL_YN.getKey(), List.of(String.valueOf(false)));
+		attributes.put(UserAttribute.SIGN_UP_PATH.getKey(), List.of(SignUpPath.ASTRAGO.name()));
 
 		userRepresentation.setAttributes(attributes);
 		return userRepresentation;
@@ -60,8 +61,8 @@ public class UserReqVO {
 		userRepresentation.setUsername(username);
 		userRepresentation.setEnabled(true);
 		Map<String, List<String>> attributes = new HashMap<>();
-		attributes.put("approvalYN", List.of(String.valueOf(true)));
-		attributes.put("signUpPath", List.of(SignUpPath.ASTRAGO.name()));
+		attributes.put(UserAttribute.APPROVAL_YN.getKey(), List.of(String.valueOf(true)));
+		attributes.put(UserAttribute.SIGN_UP_PATH.getKey(), List.of(SignUpPath.ASTRAGO.name()));
 
 		userRepresentation.setAttributes(attributes);
 		return userRepresentation;

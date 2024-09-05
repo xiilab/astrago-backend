@@ -1,5 +1,5 @@
-INSERT INTO TB_WORKSPACE_SETTING (id, cpu, gpu, mem)
-values (1, 4, 8, 16)
+INSERT INTO TB_WORKSPACE_SETTING (id, cpu, gpu, mem, workspaceCreateLimit)
+values (1, 4, 8, 16, 1)
 ON DUPLICATE KEY UPDATE id = id;
 
 -- MIN 쿠다 버전 초기값
@@ -269,3 +269,7 @@ values  (1, 'SMALL', 'SMALL', null, null, 1, 2.0, 4.0, 'SINGLE', now(), null, 'S
         (6, 'MEDIUM', 'MEDIUM', 3.0, 7.0, 3, 4.0, 8.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM'),
         (8, 'SMALL', 'SMALL', 2.0, 5.0, 2, 2.0, 4.0, 'MULTI', now(), null, 'SYSTEM', 'SYSTEM', 'SYSTEM')
 ON DUPLICATE KEY UPDATE RESOURCE_PRESET_ID = RESOURCE_PRESET_ID;
+
+INSERT INTO TB_PLUGIN (ID, NAME, VERSION, STORAGE_TYPE, INSTALL_YN, REG_DATE, REG_USER_ID, REG_USER_NAME)
+values  (1, 'DELL_UNITY', '2.11.0', 'DELL_UNITY', 'N', null, 'SYSTEM', 'SYSTEM')
+    ON DUPLICATE KEY UPDATE ID = ID;

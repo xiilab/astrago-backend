@@ -1,5 +1,7 @@
 package com.xiilab.modulek8s.storage.storageclass.repository;
 
+import static com.xiilab.modulecommon.exception.errorcode.StorageErrorCode.*;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.exception.K8sException;
+import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
@@ -18,6 +21,7 @@ import com.xiilab.modulek8s.common.enumeration.ProvisionerStatus;
 import com.xiilab.modulek8s.common.enumeration.ProvisionerType;
 import com.xiilab.modulek8s.config.K8sAdapter;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.common.crd.NFS.HelmRelease;
 import com.xiilab.modulek8s.storage.common.crd.NFS.status.History;
@@ -234,4 +238,40 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.delete();
 		}
 	}
+
+	@Override
+	public void dellPluginInstallCheck() {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			boolean size = client.pods().inNamespace("unity").list().getItems().stream()
+				.filter(pod -> !pod.getStatus().getPhase().equals("Running") && pod.getMetadata().getName().contains("csi-unity")).toList().size() > 0;
+			if(size){
+				throw new RestApiException(STORAGE_INSTALL_WAIT);
+			}
+		}
+	}
+
+	@Override
+	public StorageClass createDELLStorage(CreateStorageReqDTO createStorageReqDTO, String storageName) {
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			StorageClass storageClass = new StorageClassBuilder()
+				.withNewMetadata()
+				.withName(storageName)
+				.endMetadata()
+				.withProvisioner("csi-unity.dellemc.com")
+				.withReclaimPolicy("Delete")
+				.withAllowVolumeExpansion(true)
+				.addToParameters("protocol", "NFS")
+				.addToParameters("arrayId", createStorageReqDTO.getArrayId())
+				.addToParameters("storagePool", createStorageReqDTO.getStoragePool())
+				.addToParameters("thinProvisioned", "true")
+				.addToParameters("isDataReductionEnabled", "true")
+				.addToParameters("tieringPolicy", "0")
+				.addToParameters("nasServer", createStorageReqDTO.getNasServer())
+				.addToParameters("hostIoSize", "8192")
+				.addToParameters("csi.storage.k8s.io/fstype", "nfs")
+				.build();
+			return client.storage().v1().storageClasses().resource(storageClass).create();
+		}
+	}
+
 }

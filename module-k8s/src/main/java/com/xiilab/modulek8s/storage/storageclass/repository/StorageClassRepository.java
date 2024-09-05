@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.facade.dto.CreateStorageClassDTO;
+import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.ModifyStorageClassDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassResDTO;
 import com.xiilab.modulek8s.storage.storageclass.dto.response.StorageClassWithVolumesResDTO;
@@ -30,4 +31,8 @@ public interface StorageClassRepository {
 	StorageClass createIbmStorage(String secretName);
 
 	void deleteIbmStorage(String storageName);
+
+	void dellPluginInstallCheck();
+
+	StorageClass createDELLStorage(CreateStorageReqDTO createStorageReqDTO, String storageName);
 }

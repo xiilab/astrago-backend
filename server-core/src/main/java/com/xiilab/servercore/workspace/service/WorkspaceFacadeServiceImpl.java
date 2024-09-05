@@ -52,6 +52,7 @@ import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.dto.WorkspaceAlertSetDTO;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
+import com.xiilab.modulek8sdb.common.enums.PageInfo;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.modulek8sdb.workload.history.entity.JobEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
@@ -63,6 +64,7 @@ import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaCustomRepository
 import com.xiilab.modulek8sdb.workspace.repository.ResourceQuotaHistoryRepository;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
+import com.xiilab.moduleuser.dto.UserSummary;
 import com.xiilab.moduleuser.service.GroupService;
 import com.xiilab.servercore.alert.systemalert.service.WorkspaceAlertSetService;
 import com.xiilab.servercore.code.service.CodeService;
@@ -191,6 +193,13 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 
 	@Override
 	public void createWorkspace(WorkspaceApplicationForm applicationForm, UserDTO.UserInfo userInfoDTO) {
+		Integer workspaceCreateLimit = userInfoDTO.getWorkspaceCreateLimit();
+		int myOwnerWorkspaceCount = getMyOwnerWorkspaceCount(userInfoDTO.getId());
+		// 사용자가 생성한 워크스페이스가 설정된 워크스페이스 생성 제한 개수와 같거나 크면 throw
+		if (workspaceCreateLimit <= myOwnerWorkspaceCount) {
+			throw new RestApiException(UserErrorCode.WORKSPACE_CREATE_LIMIT_EXCEEDED);
+		}
+
 		//워크스페이스 생성
 		WorkspaceDTO.ResponseDTO workspace = workspaceModuleFacadeService.createWorkspace(CreateWorkspaceDTO.builder()
 			.name(applicationForm.getName())
@@ -696,7 +705,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	public WorkspaceResourceSettingDTO getWorkspaceResourceSetting() {
 		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
 		return new WorkspaceResourceSettingDTO(workspaceSettingEntity.getCpu(), workspaceSettingEntity.getMem(),
-			workspaceSettingEntity.getGpu());
+			workspaceSettingEntity.getGpu(), workspaceSettingEntity.getWorkspaceCreateLimit());
 	}
 
 	@Override
@@ -707,8 +716,20 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			throw new RestApiException(UserErrorCode.USER_AUTH_FAIL);
 		}
 		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
+		Integer beforeWorkspaceCreateLimit = workspaceSettingEntity.getWorkspaceCreateLimit();
 		workspaceSettingEntity.updateResource(workspaceResourceSettingDTO.getCpu(),
-			workspaceResourceSettingDTO.getMem(), workspaceResourceSettingDTO.getGpu());
+			workspaceResourceSettingDTO.getMem(), workspaceResourceSettingDTO.getGpu(),
+			workspaceResourceSettingDTO.getWorkspaceCreateLimit());
+
+		// 사용자 기본 워크스페이스 생성 개수가 수정되면 모든 사용자 정보 업데이트
+		if (beforeWorkspaceCreateLimit != workspaceResourceSettingDTO.getWorkspaceCreateLimit()) {
+			List<String> userIds = userService.getUserList(new PageInfo(1, Integer.MAX_VALUE), null)
+				.getUsers()
+				.stream()
+				.map(UserSummary::getUid)
+				.toList();
+			userService.updateUserWorkspaceCreateLimit(userIds, workspaceResourceSettingDTO.getWorkspaceCreateLimit());
+		}
 	}
 
 	// 예외를 처리하는 별도의 메소드
@@ -729,5 +750,14 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		} catch (K8sException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private int getMyOwnerWorkspaceCount(String id) {
+		UserDTO.UserInfo findUser = userService.getUserById(id);
+		Set<String> myWorkspaces = findUser.getMyWorkspaces();
+		List<WorkspaceDTO.ResponseDTO> myWorkspaceList = workspaceModuleFacadeService.getWorkspaceList().stream()
+			.filter(workspace -> myWorkspaces.contains(workspace.getResourceName()))
+			.toList();
+		return myWorkspaceList.size();
 	}
 }

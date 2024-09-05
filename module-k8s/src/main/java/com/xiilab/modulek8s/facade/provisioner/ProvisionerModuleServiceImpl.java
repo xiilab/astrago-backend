@@ -31,4 +31,19 @@ public class ProvisionerModuleServiceImpl implements ProvisionerModuleService {
 	public void unInstallProvisioner(StorageType storageType) {
 		provisionerService.unInstallProvisioner(storageType);
 	}
+
+	@Override
+	public void installDellProvisioner(String arrayId, String userName, String password, String endPoint) {
+		provisionerService.installDellProvisioner(arrayId, userName, password, endPoint);
+	}
+
+	@Override
+	public void uninstallDellProvisioner() {
+		provisionerService.uninstallDellProvisioner();
+	}
+
+	@Override
+	public void addProvisionerNodeLabel(String arrayId){
+		provisionerService.addProvisionerNodeLabel(arrayId);
+	}
 }

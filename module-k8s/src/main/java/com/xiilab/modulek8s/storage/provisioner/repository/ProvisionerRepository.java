@@ -12,4 +12,10 @@ public interface ProvisionerRepository {
 	void installProvisioner(StorageType storageType);
 
 	void unInstallProvisioner(StorageType storageType);
+
+	void installDellProvisioner(String arrayId, String userName, String password, String endPoint);
+
+	void uninstallDellProvisioner();
+
+	void addProvisionerNodeLabel(String arrayId);
 }
