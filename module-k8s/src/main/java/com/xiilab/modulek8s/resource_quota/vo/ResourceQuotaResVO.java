@@ -32,15 +32,15 @@ public class ResourceQuotaResVO extends K8SResourceResVO {
 		super(resourceQuota);
 		ResourceQuotaStatus resourceStatus = resourceQuota.getStatus();
 		this.namespace = resourceQuota.getMetadata().getNamespace();
-		this.reqCPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(REQUEST_CPU_KEY.getKey()));
-		this.limitCPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(LIMITS_CPU_KEY.getKey()));
-		this.useCPU = K8sInfoPicker.convertQuantity(resourceStatus.getUsed().get(REQUEST_CPU_KEY.getKey()));
-		this.reqMEM = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(REQUEST_MEMORY_KEY.getKey()));
-		this.limitMEM = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(LIMITS_MEMORY_KEY.getKey()));
-		this.useMEM = K8sInfoPicker.convertQuantity(resourceStatus.getUsed().get(REQUEST_MEMORY_KEY.getKey()));
-		this.reqGPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(REQUEST_GPU_KEY.getKey()));
-		this.limitGPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(LIMITS_GPU_KEY.getKey()));
-		this.useGPU = K8sInfoPicker.convertQuantity(resourceStatus.getUsed().get(REQUEST_GPU_KEY.getKey()));
+		this.reqCPU = K8sInfoPicker.convertCPUQuantity(resourceStatus.getHard().get(REQUEST_CPU_KEY.getKey()));
+		this.limitCPU = K8sInfoPicker.convertCPUQuantity(resourceStatus.getHard().get(LIMITS_CPU_KEY.getKey()));
+		this.useCPU = K8sInfoPicker.convertCPUQuantity(resourceStatus.getUsed().get(REQUEST_CPU_KEY.getKey()));
+		this.reqMEM = K8sInfoPicker.convertMEMQuantity(resourceStatus.getHard().get(REQUEST_MEMORY_KEY.getKey()));
+		this.limitMEM = K8sInfoPicker.convertMEMQuantity(resourceStatus.getHard().get(LIMITS_MEMORY_KEY.getKey()));
+		this.useMEM = K8sInfoPicker.convertMEMQuantity(resourceStatus.getUsed().get(REQUEST_MEMORY_KEY.getKey()));
+		this.reqGPU = K8sInfoPicker.convertMEMQuantity(resourceStatus.getHard().get(REQUEST_GPU_KEY.getKey()));
+		this.limitGPU = K8sInfoPicker.convertMEMQuantity(resourceStatus.getHard().get(LIMITS_GPU_KEY.getKey()));
+		this.useGPU = K8sInfoPicker.convertMEMQuantity(resourceStatus.getUsed().get(REQUEST_GPU_KEY.getKey()));
 	}
 
 	/**
