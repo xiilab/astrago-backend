@@ -20,6 +20,8 @@ public enum AlertName {
 	USER_WORKLOAD_END("워크로드 종료 알림"),
 	USER_WORKLOAD_ERROR("워크로드 에러 알림"),
 	USER_WORKLOAD_DELETE("워크로드 삭제 알림"),
+	USER_SERVICE_END("서비스 종료 알림"),
+	USER_SERVICE_DELETE("서비스 삭제 알림"),
 	ADMIN_LICENSE_EXPIRATION("라이센스 만료 경고 알림"),
 	ADMIN_NODE_ERROR("노드 장애 알림"),
 	ADMIN_NODE_MIG_APPLY("MIG 적용 알림"),

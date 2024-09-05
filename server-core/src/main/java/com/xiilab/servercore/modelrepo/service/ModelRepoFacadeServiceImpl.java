@@ -99,8 +99,10 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		modelRepoRepository.deleteById(modelRepoId);
 		// 해당 모델 파일 삭제
 		String modelPath = modelRepoEntity.getModelPath();
+		String hostPath = modelRepoEntity.getStorageEntity().getHostPath();
 		// 모델이 저장된 폴더 삭제
-		FileUtils.deleteDirectory(modelPath);
+		String directoryPath = hostPath + modelPath;
+		FileUtils.deleteDirectory(directoryPath);
 	}
 
 	@Override
