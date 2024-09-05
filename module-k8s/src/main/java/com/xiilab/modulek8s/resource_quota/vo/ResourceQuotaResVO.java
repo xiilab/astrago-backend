@@ -5,10 +5,12 @@ import static com.xiilab.modulek8s.resource_quota.enumeration.ResourceQuotaKey.*
 import java.util.Map;
 
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
+import com.xiilab.modulek8s.common.utils.K8sInfoPicker;
 import com.xiilab.modulek8s.common.vo.K8SResourceResVO;
 
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceQuota;
+import io.fabric8.kubernetes.api.model.ResourceQuotaStatus;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -16,23 +18,29 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ResourceQuotaResVO extends K8SResourceResVO {
 	private String namespace;
-	private int reqCPU;
-	private int reqMEM;
-	private int reqGPU;
-	private int limitCPU;
-	private int limitMEM;
-	private int limitGPU;
+	private float reqCPU;
+	private float reqMEM;
+	private float reqGPU;
+	private float useCPU;
+	private float useMEM;
+	private float useGPU;
+	private float limitCPU;
+	private float limitMEM;
+	private float limitGPU;
 
 	public ResourceQuotaResVO(ResourceQuota resourceQuota) {
 		super(resourceQuota);
+		ResourceQuotaStatus resourceStatus = resourceQuota.getStatus();
 		this.namespace = resourceQuota.getMetadata().getNamespace();
-		Map<String, Quantity> hard = resourceQuota.getSpec().getHard();
-		this.reqCPU = getAmountFromMap(hard, REQUEST_CPU_KEY.getKey());
-		this.reqMEM = getAmountFromMap(hard, REQUEST_MEMORY_KEY.getKey());
-		this.reqGPU = getAmountFromMap(hard, REQUEST_GPU_KEY.getKey());
-		this.limitCPU = getAmountFromMap(hard, LIMITS_CPU_KEY.getKey());
-		this.limitMEM = getAmountFromMap(hard, LIMITS_MEMORY_KEY.getKey());
-		this.limitGPU = getAmountFromMap(hard, LIMITS_GPU_KEY.getKey());
+		this.reqCPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(REQUEST_CPU_KEY.getKey()));
+		this.limitCPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(LIMITS_CPU_KEY.getKey()));
+		this.useCPU = K8sInfoPicker.convertQuantity(resourceStatus.getUsed().get(REQUEST_CPU_KEY.getKey()));
+		this.reqMEM = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(REQUEST_MEMORY_KEY.getKey()));
+		this.limitMEM = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(LIMITS_MEMORY_KEY.getKey()));
+		this.useMEM = K8sInfoPicker.convertQuantity(resourceStatus.getUsed().get(REQUEST_MEMORY_KEY.getKey()));
+		this.reqGPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(REQUEST_GPU_KEY.getKey()));
+		this.limitGPU = K8sInfoPicker.convertQuantity(resourceStatus.getHard().get(LIMITS_GPU_KEY.getKey()));
+		this.useGPU = K8sInfoPicker.convertQuantity(resourceStatus.getUsed().get(REQUEST_GPU_KEY.getKey()));
 	}
 
 	/**

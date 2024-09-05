@@ -2,10 +2,10 @@ package com.xiilab.servercore.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -76,12 +76,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(
-		MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status,
+		MethodArgumentNotValidException ex,
+		HttpHeaders headers,
+		HttpStatusCode status,
 		WebRequest request) {
 		log.error("handleIllegalArgument", ex);
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
-		return handleExceptionInternal(ex, errorCode);
+		return ResponseEntity.status(errorCode.getCode())
+			.body(makeErrorResponse(errorCode, Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage()));
+		// return makeErrorResponse(errorCode, Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage());
 	}
+
 
 	private ResponseEntity<Object> customExceptionInternal(ErrorCode errorCode) {
 		// return ResponseEntity.status(HttpStatus.OK)
