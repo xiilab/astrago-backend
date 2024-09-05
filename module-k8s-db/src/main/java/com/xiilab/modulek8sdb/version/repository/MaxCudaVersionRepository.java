@@ -10,8 +10,8 @@ public interface MaxCudaVersionRepository extends JpaRepository<MaxCudaVersionEn
 	@Query(value = "select tmcv.CUDA_VERSION "
 		+ "from TB_MAX_CUDA_VERSION tmcv "
 		+ "where tmcv.MAJOR_VERSION <= :driverMajor "
-		+ "and tmcv.MINOR_VERSION <= :driverMinor "
-		+ "and tmcv.REV <= :driverRev "
+		+ "and (tmcv.MAJOR_VERSION <= :driverMajor OR tmcv.MINOR_VERSION <= :driverMinor) "
+		+ "and (tmcv.MAJOR_VERSION <= :driverMajor OR tmcv.MINOR_VERSION <= :driverMinor OR tmcv.REV <= :driverRev) "
 		+ "order by tmcv.MAJOR_VERSION DESC "
 		+ "limit 1",
 	nativeQuery = true)

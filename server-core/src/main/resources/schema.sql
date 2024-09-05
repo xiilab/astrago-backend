@@ -889,3 +889,14 @@ create table if not exists TB_CHART
     constraint FKgrrgebm7rh7vn8xjmf3moal79
         foreign key (panel_ID) references TB_CHART_PANEL (ID)
 );
+
+create table if not exists TB_ONEVIEW_SETTING
+(
+    API_VERSION             int          null,
+    CONNECTION_FAILED_COUNT int          null,
+    ONEVIEW_ID              bigint auto_increment primary key,
+    API_SERVER_ADDRESS      varchar(255) null,
+    PASSWORD                varchar(255) null,
+    USER_NAME               varchar(255) null
+);
+
