@@ -168,10 +168,10 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			versionEntity.setModelFile(modelFile.getFileName(), modelFile.getSize());
 		}
 		// 그외 설정 파일 업로드
-		List<FileInfoDTO> metaFiles = FileUtils.uploadFiles(storagePath, files);
-		if (Objects.nonNull(metaFiles)) {
-			versionEntity.setModelMeta(metaFiles);
-		}
+		// List<FileInfoDTO> metaFiles = FileUtils.uploadFiles(storagePath, files);
+		// if (Objects.nonNull(metaFiles)) {
+		// 	versionEntity.setModelMeta(metaFiles);
+		// }
 	}
 
 	@Override
