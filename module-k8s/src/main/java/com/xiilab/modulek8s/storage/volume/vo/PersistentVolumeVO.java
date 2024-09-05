@@ -1,6 +1,7 @@
 package com.xiilab.modulek8s.storage.volume.vo;
 
 import java.util.Collections;
+import java.util.List;
 
 import com.xiilab.modulek8s.common.enumeration.AccessMode;
 import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
@@ -14,6 +15,7 @@ import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.PersistentVolumeBuilder;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeSpec;
 import io.fabric8.kubernetes.api.model.PersistentVolumeSpecBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -30,6 +32,7 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 	private String storagePath;
 	private String namespace;
 	private int requestVolume;
+	private String storageName;
 
 	@Override
 	public HasMetadata createResource() {
@@ -57,6 +60,7 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 			.storagePath(createPV.getStoragePath())
 			.storageType(createPV.getStorageType())
 			.requestVolume(createPV.getRequestVolume())
+			.storageName(createPV.getStorageName())
 			.build();
 	}
 	@Override
@@ -82,6 +86,14 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 				.withPath(storagePath)
 				.endNfs()
 				.withClaimRef(createObjectReference())
+				.build();
+		} else if (storageType.name().equals(StorageType.DELL_UNITY.name())) {
+			return new PersistentVolumeSpecBuilder()
+				.addToCapacity(Collections.singletonMap("storage", new Quantity(requestVolume + "Gi")))
+				.withPersistentVolumeReclaimPolicy(ReclaimPolicyType.RETAIN.getField())
+				.withAccessModes(AccessMode.RWM.getAccessMode())
+				.withVolumeMode("Filesystem")
+				.withStorageClassName(storageName)
 				.build();
 		}
 		return null;

@@ -22,6 +22,7 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 	private String pvcMetaName;
 	private String namespace;
 	private int requestVolume;
+	private String storageClassName;
 
 	@Override
 	public HasMetadata createResource() {
@@ -39,12 +40,22 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 			.build();
 	}
 	private PersistentVolumeClaimSpec createSpec() {
-		return new PersistentVolumeClaimSpecBuilder()
-			.withAccessModes(AccessMode.RWM.getAccessMode())
-			.withNewResources()
-			.addToRequests("storage", new Quantity(requestVolume + "Gi"))
-			.endResources()
-			.build();
+		if(storageClassName == null) {
+			return new PersistentVolumeClaimSpecBuilder()
+				.withAccessModes(AccessMode.RWM.getAccessMode())
+				.withNewResources()
+				.addToRequests("storage", new Quantity(requestVolume + "Gi"))
+				.endResources()
+				.build();
+		}else {
+			return new PersistentVolumeClaimSpecBuilder()
+				.withAccessModes(AccessMode.RWM.getAccessMode())
+				.withNewResources()
+				.addToRequests("storage", new Quantity(requestVolume + "Gi"))
+				.endResources()
+				.withStorageClassName(storageClassName)
+				.build();
+		}
 	}
 
 	public static PersistentVolumeClaimVO dtoToEntity(CreatePVC createPVC){
@@ -52,6 +63,7 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 			.pvcMetaName(createPVC.getPvcName())
 			.namespace(createPVC.getNamespace())
 			.requestVolume(createPVC.getRequestVolume())
+			.storageClassName(createPVC.getStorageClassName())
 			.build();
 	}
 	@Override
