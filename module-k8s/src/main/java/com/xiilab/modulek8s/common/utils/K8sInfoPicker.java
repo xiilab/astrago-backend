@@ -305,8 +305,8 @@ public class K8sInfoPicker {
 				Quantity mem = requests.get("memory");
 				Quantity gpu = requests.get("nvidia.com/gpu");
 
-				Float cpuReq = cpu != null ? convertQuantity(cpu) : null;
-				Float memReq = mem != null ? convertQuantity(mem) : null;
+				Float cpuReq = cpu != null ? convertCPUQuantity(cpu) : null;
+				Float memReq = mem != null ? convertMEMQuantity(mem) : null;
 				Integer gpuReq = gpu != null ? Integer.valueOf(gpu.getAmount()) : null;
 
 				return ResourceDTO.builder()
@@ -364,7 +364,7 @@ public class K8sInfoPicker {
 
 		for (Node node : items) {
 			cpu += Integer.parseInt(node.getStatus().getCapacity().get("cpu").getAmount());
-			mem += convertQuantity(node.getStatus().getCapacity().get("memory"));
+			mem += convertMEMQuantity(node.getStatus().getCapacity().get("memory"));
 			//MIG가 설정된 경우
 			if (node.getMetadata().getLabels().containsKey("nvidia.com/mig.config")) {
 				int capacityGPU = node.getStatus().getCapacity().get("nvidia.com/gpu") == null ?
@@ -390,7 +390,7 @@ public class K8sInfoPicker {
 		return new ClusterResourceDTO(cpu, mem, gpu);
 	}
 
-	public static float convertQuantity(Quantity quantity) {
+	public static float convertMEMQuantity(Quantity quantity) {
 		String format = quantity.getFormat();
 		float amount = Float.parseFloat(quantity.getAmount());
 
@@ -399,13 +399,11 @@ public class K8sInfoPicker {
 			return amount;
 		} else if (format.equals("Ki")) {
 			// KiB -> GB 변환
-			return (float)(amount / (1024.0 * 1024.0 * 1024.0 / 1024.0));
+			return (float)(amount / (1024.0 * 1024.0));
 		} else if (format.equals("Mi")) {
 			// MiB -> GB 변환
 			return (amount / 1024);
 		} else if (format.equals("m")) {
-			// CPU 자원인 m은 GB로 변환하는 것이 적절하지 않으므로, 예외 처리가 필요할 수 있음
-			// 여기서는 단순 예제로 m을 1000으로 나눈 값을 반환
 			return (float)((amount / 1000.0) / (1024 * 1024 * 1024));
 		} else if (format.equals("M")) {
 			// "M"이 실제로 메모리 단위로 사용될 경우 (Mebibyte 가정), GB로 변환
@@ -413,6 +411,19 @@ public class K8sInfoPicker {
 		} else {
 			// 확인되지 않은 단위에 대한 예외 처리
 			throw new IllegalArgumentException(format + " format은 확인되지 않은 format입니다.");
+		}
+	}
+
+	public static float convertCPUQuantity(Quantity quantity) {
+		String format = quantity.getFormat();
+		float amount = Float.parseFloat(quantity.getAmount());
+		// CPU 자원 처리
+		if (format.equals("m")) {
+			// CPU m 단위 -> 코어로 변환
+			return (amount / 1000.0f);
+		} else {
+			// CPU의 경우, 다른 단위는 없으므로 그대로 반환
+			return amount;
 		}
 	}
 

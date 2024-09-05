@@ -222,12 +222,12 @@ public class WorkspaceDTO {
 		private float gpuUsed;
 
 		public ResourceStatus(ResourceQuotaStatus resourceQuota) {
-			this.cpuLimit = K8sInfoPicker.convertQuantity(resourceQuota.getHard().get(REQUEST_CPU_KEY.getKey()));
-			this.cpuUsed = K8sInfoPicker.convertQuantity(resourceQuota.getUsed().get(REQUEST_CPU_KEY.getKey()));
+			this.cpuLimit = K8sInfoPicker.convertCPUQuantity(resourceQuota.getHard().get(REQUEST_CPU_KEY.getKey()));
+			this.cpuUsed = K8sInfoPicker.convertCPUQuantity(resourceQuota.getUsed().get(REQUEST_CPU_KEY.getKey()));
 			this.gpuLimit = Float.parseFloat(resourceQuota.getHard().get(REQUEST_GPU_KEY.getKey()).getAmount());
 			this.gpuUsed = Float.parseFloat(resourceQuota.getUsed().get(REQUEST_GPU_KEY.getKey()).getAmount());
-			this.memLimit = K8sInfoPicker.convertQuantity(resourceQuota.getHard().get(REQUEST_MEMORY_KEY.getKey()));
-			this.memUsed = K8sInfoPicker.convertQuantity(resourceQuota.getUsed().get(REQUEST_MEMORY_KEY.getKey()));
+			this.memLimit = K8sInfoPicker.convertMEMQuantity(resourceQuota.getHard().get(REQUEST_MEMORY_KEY.getKey()));
+			this.memUsed = K8sInfoPicker.convertMEMQuantity(resourceQuota.getUsed().get(REQUEST_MEMORY_KEY.getKey()));
 		}
 	}
 }
