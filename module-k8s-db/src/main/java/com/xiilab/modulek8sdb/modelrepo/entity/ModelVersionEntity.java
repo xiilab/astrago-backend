@@ -44,27 +44,12 @@ public class ModelVersionEntity extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "MODEL_REPO_ID")
 	private ModelRepoEntity modelRepoEntity;
-	@OneToMany(mappedBy = "modelVersionEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private List<ModelMetaEntity> modelMetaEntities = new ArrayList<>();
 
 	public void setModelFile(String modelFileName, String modelFileSize) {
 		this.modelFileName = modelFileName;
 		this.modelFileSize = modelFileSize;
 	}
 
-	public void setModelMeta(List<FileInfoDTO> metafileList) {
-
-		if (Objects.nonNull(metafileList)) {
-			metafileList.forEach(metafile -> {
-				ModelMetaEntity modelMetaEntity = ModelMetaEntity.builder()
-					.modelFileName(metafile.getFileName())
-					.modelFileSize(Long.parseLong(metafile.getSize()))
-					.modelVersionEntity(this)
-					.build();
-				this.modelMetaEntities.add(modelMetaEntity);
-			});
-		}
-	}
 	public void setRegUserInfo(RegUser regUser, LocalDateTime regDate, LocalDateTime modDate){
 		this.regUser = regUser;
 		this.regDate = regDate;
