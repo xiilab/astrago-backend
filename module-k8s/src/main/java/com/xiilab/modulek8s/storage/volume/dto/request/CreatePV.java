@@ -15,4 +15,5 @@ public class CreatePV {
 	private String namespace;
 	private StorageType storageType;
 	private int requestVolume;
+	private String storageName;
 }

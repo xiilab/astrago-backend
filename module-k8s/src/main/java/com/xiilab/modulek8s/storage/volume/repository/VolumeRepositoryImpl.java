@@ -268,7 +268,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.withName("astrago-backend-core")
 				.edit(d -> {
 					if (missingPVCs.size() != 0) {
-						PodSpecFluent<io.fabric8.kubernetes.api.model.PodTemplateSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>.ContainersNested<PodTemplateSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>
+						PodSpecFluent<PodTemplateSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>.ContainersNested<PodTemplateSpecFluent<DeploymentSpecFluent<io.fabric8.kubernetes.api.model.apps.DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>.SpecNested<DeploymentSpecFluent<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>.TemplateNested<DeploymentFluent<DeploymentBuilder>.SpecNested<DeploymentBuilder>>>>
 							specNestedContainersNested = new DeploymentBuilder(d)
 							.editSpec()
 							.editOrNewTemplate()
@@ -297,7 +297,12 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	public void createPVC(CreatePVC createPVC) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaimVO pvc = PersistentVolumeClaimVO.dtoToEntity(createPVC);
-			PersistentVolumeClaim resource = (PersistentVolumeClaim)pvc.createResource();
+			PersistentVolumeClaim resource = null;
+			if(createPVC.getStorageClassName() != null) {
+				resource = (PersistentVolumeClaim)pvc.createResource();
+			}else{
+				resource = (PersistentVolumeClaim)pvc.createResource();
+			}
 			client.persistentVolumeClaims().resource(resource).create();
 		}
 	}
