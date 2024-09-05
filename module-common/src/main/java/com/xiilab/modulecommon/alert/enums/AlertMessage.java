@@ -27,6 +27,10 @@ public enum AlertMessage {
 	WORKLOAD_ERROR_CREATOR("[Astrago] 워크로드(%s) 에러 알림", "워크로드 에러", "워크로드(%s)에 에러가 발생하였습니다."),
 	WORKLOAD_DELETE_ADMIN("[Astrago] 워크로드(%s) 삭제 알림", "워크로드 삭제", "%s(%s)가 워크로드(%s)을(를) 삭제하였습니다."),
 	WORKLOAD_DELETE_CREATOR("[Astrago] 워크로드(%s) 삭제 알림", "워크로드 삭제", "워크로드(%s)를 삭제했습니다."),
+	//서비스
+	SERVICE_END_CREATOR("[Astrago] 서비스(%s) 종료 알림", "서비스 종료", "서비스(%s)가 종료되었습니다."),
+	SERVICE_DELETE_CREATOR("[Astrago] 서비스(%s) 삭제 알림", "서비스 삭제", "서비스(%s)를 삭제했습니다."),
+	SERVICE_DELETE_ADMIN("[Astrago] 서비스(%s) 삭제 알림", "서비스 삭제", "%s(%s)가 서비스(%s)을(를) 삭제하였습니다."),
 	// 라이센스
 	LICENSE_EXPIRATION("[Astrago] 라이센스 만료 경고 알림", "라이센스 만료", "라이센스 만료 기한이 %s까지입니다."),
 	// 노드

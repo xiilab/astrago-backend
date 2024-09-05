@@ -654,9 +654,9 @@ public class DeployFacadeServiceImpl {
 				.build();
 
 			//서비스 종료 알림 발송
-			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), deployResourceName);
-			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
-			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
+			String emailTitle = String.format(AlertMessage.SERVICE_END_CREATOR.getMailTitle(), deployResourceName);
+			String title = AlertMessage.SERVICE_END_CREATOR.getTitle();
+			String message = String.format(AlertMessage.SERVICE_END_CREATOR.getMessage(),
 				activeSingleWorkloadDetail.getWorkloadName());
 
 			String receiverMail = userFacadeService.getUserInfoById(activeSingleWorkloadDetail.getRegUserId())
@@ -665,7 +665,7 @@ public class DeployFacadeServiceImpl {
 				receiverMail);
 
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeSingleWorkloadDetail.getRegUserId(), emailTitle,
+				AlertName.USER_SERVICE_END, userInfoDTO.getId(), activeSingleWorkloadDetail.getRegUserId(), emailTitle,
 				title, message, workspaceResourceName, pageNaviParam, mailDTO);
 			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
@@ -894,22 +894,22 @@ public class DeployFacadeServiceImpl {
 			WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 			// 워크로드 생성자가 삭제
 			if (deploy.getCreatorId().equals(userInfoDTO.getId())) {
-				String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMailTitle(), workloadName);
-				String title = AlertMessage.WORKLOAD_DELETE_CREATOR.getTitle();
-				String message = String.format(AlertMessage.WORKLOAD_DELETE_CREATOR.getMessage(), workloadName);
-				workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+				String emailTitle = String.format(AlertMessage.SERVICE_DELETE_CREATOR.getMailTitle(), workloadName);
+				String title = AlertMessage.SERVICE_DELETE_CREATOR.getTitle();
+				String message = String.format(AlertMessage.SERVICE_DELETE_CREATOR.getMessage(), workloadName);
+				workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_SERVICE_DELETE,
 					userInfoDTO.getId(), deploy.getCreatorId(), emailTitle, title, message,
 					deploy.getWorkspaceResourceName(), null, null);
 
 			} else if (userInfoDTO.getAuth() == AuthType.ROLE_ADMIN || loginUserOwnerWorkspaceList.contains(
 				deploy.getWorkspaceResourceName())) {    // 관리자 또는 워크스페이스 생성자가 삭제
-				String emailTitle = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMailTitle(), workloadName);
-				String title = AlertMessage.WORKLOAD_DELETE_ADMIN.getTitle();
-				String message = String.format(AlertMessage.WORKLOAD_DELETE_ADMIN.getMessage(),
+				String emailTitle = String.format(AlertMessage.SERVICE_DELETE_ADMIN.getMailTitle(), workloadName);
+				String title = AlertMessage.SERVICE_DELETE_ADMIN.getTitle();
+				String message = String.format(AlertMessage.SERVICE_DELETE_ADMIN.getMessage(),
 					userInfoDTO.getUserFullName(), userInfoDTO.getEmail(), workloadName);
 				String receiverMail = userFacadeService.getUserInfoById(deploy.getCreatorId()).getEmail();
 				MailDTO mailDTO = MailServiceUtils.deleteWorkloadMail(deploy.getName(), receiverMail);
-				workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_WORKLOAD_DELETE,
+				workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER, AlertName.USER_SERVICE_DELETE,
 					userInfoDTO.getId(), deploy.getCreatorId(), emailTitle, title, message,
 					deploy.getWorkspaceResourceName(), null, mailDTO);
 			} else {
