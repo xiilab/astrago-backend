@@ -137,7 +137,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		String strCpuRequest = String.valueOf(cpuRequest);
 		String strMemRequest = String.valueOf(memRequest);
 		result.put("cpu", new Quantity(strCpuRequest));
-		result.put("memory", new Quantity(strMemRequest));
+		result.put("memory", new Quantity(strMemRequest, "Gi"));
 
 		if (gpuRequest != null && gpuRequest > 0) {
 			if (gpuType == GPUType.MPS) {
