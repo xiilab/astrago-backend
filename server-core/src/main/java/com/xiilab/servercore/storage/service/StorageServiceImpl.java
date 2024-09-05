@@ -70,5 +70,15 @@ public class StorageServiceImpl implements StorageService {
 		storageEntity.changeStorageName(modifyStorage.getStorageName());
 	}
 
+	@Override
+	public String getDatasetStorageClassName(long id) {
+		return storageRepository.getDatasetStorageClassName(id);
+	}
+
+	@Override
+	public String getModelVolumeStorageClassName(long id) {
+		return storageRepository.getModelVolumeStorageClassName(id);
+	}
+
 
 }

@@ -17,4 +17,8 @@ public interface StorageService {
 	void deleteById(Long storageId);
 
 	void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage);
+
+	String getDatasetStorageClassName(long id);
+
+	String getModelVolumeStorageClassName(long id);
 }
