@@ -562,12 +562,18 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			searchCondition);
 		if (sortCondition != null) {
 			Comparator<WorkspaceDTO.AdminResponseDTO> comparator = switch (sortCondition) {
-				case CPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu);
-				case CPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCpu).reversed();
-				case MEM_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem);
-				case MEM_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getMem).reversed();
-				case GPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu);
-				case GPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getGpu).reversed();
+				case CPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getAllocCPU);
+				case CPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getAllocCPU).reversed();
+				case CPU_USE_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseCPU);
+				case CPU_USE_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseCPU).reversed();
+				case MEM_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getAllocMEM);
+				case MEM_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getAllocMEM).reversed();
+				case MEM_USE_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseMEM);
+				case MEM_USE_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseMEM).reversed();
+				case GPU_ASSIGN_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getAllocGPU);
+				case GPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getAllocGPU).reversed();
+				case GPU_USE_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseGPU);
+				case GPU_USE_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseGPU).reversed();
 				case CREATOR_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator);
 				case CREATOR_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed();
 				case CREATED_AT_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt);

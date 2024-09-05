@@ -94,9 +94,12 @@ public class WorkspaceDTO {
 		private String description;
 		private String creator;
 		private LocalDateTime createdAt;
-		private int cpu;
-		private int mem;
-		private int gpu;
+		private int allocCPU;
+		private int allocMEM;
+		private int allocGPU;
+		private float useCPU;
+		private float useMEM;
+		private int useGPU;
 
 		public AdminResponseDTO(WorkspaceDTO.ResponseDTO workspace, ResourceQuotaResDTO resourceQuotaResDTO) {
 			this.id = workspace.getId();
@@ -105,9 +108,12 @@ public class WorkspaceDTO {
 			this.description = workspace.getDescription();
 			this.creator = workspace.getCreatorFullName();
 			this.createdAt = workspace.getCreatedAt();
-			this.cpu = resourceQuotaResDTO.getReqCPU();
-			this.mem = resourceQuotaResDTO.getReqMEM();
-			this.gpu = resourceQuotaResDTO.getReqGPU();
+			this.allocCPU = resourceQuotaResDTO.getReqCPU();
+			this.allocMEM = resourceQuotaResDTO.getReqMEM();
+			this.allocGPU = resourceQuotaResDTO.getReqGPU();
+			this.useCPU = resourceQuotaResDTO.getUseCPU();
+			this.useMEM = resourceQuotaResDTO.getUseMEM();
+			this.useGPU = resourceQuotaResDTO.getUseGPU();
 		}
 
 		public AdminResponseDTO(WorkspaceDTO.ResponseDTO workspace) {
