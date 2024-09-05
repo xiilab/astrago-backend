@@ -17,15 +17,12 @@ import org.springframework.util.ObjectUtils;
 import com.xiilab.modulecommon.enums.DeployType;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.GitEnvType;
-import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
-import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.LabelField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 import com.xiilab.modulek8s.workload.enums.SchedulingType;
 import com.xiilab.modulek8s.workload.vo.JobCodeVO;
 import com.xiilab.modulek8s.workload.vo.JobEnvVO;
@@ -39,10 +36,6 @@ import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
-import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.KubernetesResource;
-import io.fabric8.kubernetes.api.model.ObjectFieldSelectorBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
@@ -57,10 +50,6 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpecBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
-import io.fabric8.kubernetes.api.model.batch.v1.JobSpecBuilder;
 import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -467,27 +456,26 @@ public class DeployVO extends K8SResourceReqVO {
 			podSpecBuilder.addAllToVolumes(addVolumes);
 		}
 	}
+
 	public Map<String, Quantity> getWorkloadResourceMap() {
 		Map<String, Quantity> result = new HashMap<>();
 		// 소수점 한자리로 변환
 		String strCpuRequest = String.valueOf(cpuRequest);
-		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
+		String strMemRequest = String.valueOf(memRequest);
+		result.put("cpu", new Quantity(strCpuRequest));
+		result.put("memory", new Quantity(strMemRequest, "Gi"));
 
-		if (ValidUtils.isNullOrZero(gpuRequest)) {
-			result.put("cpu", new Quantity(strCpuRequest));
-			result.put("memory", new Quantity(strMemRequest));
-		} else {
+		if (gpuRequest != null && gpuRequest > 0) {
 			if (gpuType == GPUType.MPS) {
 				result.put("nvidia.com/gpu.shared", new Quantity(String.valueOf(gpuRequest)));
 			} else {
 				result.put("nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)));
 			}
-			result.put("cpu", new Quantity(strCpuRequest));
-			result.put("memory", new Quantity(strMemRequest));
 		}
 
 		return result;
 	}
+
 	private List<EnvVar> getGithubEnvVarList(JobCodeVO codeVO) {
 		List<EnvVar> result = new ArrayList<>();
 		result.add(

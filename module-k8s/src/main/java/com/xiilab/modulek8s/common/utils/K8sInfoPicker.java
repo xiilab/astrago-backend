@@ -406,7 +406,7 @@ public class K8sInfoPicker {
 		} else if (format.equals("m")) {
 			// CPU 자원인 m은 GB로 변환하는 것이 적절하지 않으므로, 예외 처리가 필요할 수 있음
 			// 여기서는 단순 예제로 m을 1000으로 나눈 값을 반환
-			return (amount / 1000);
+			return (float)((amount / 1000.0) / (1024 * 1024 * 1024));
 		} else if (format.equals("M")) {
 			// "M"이 실제로 메모리 단위로 사용될 경우 (Mebibyte 가정), GB로 변환
 			return (amount / 1024);
