@@ -307,6 +307,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	@Override
 	public void updateWorkspace(String workspaceName, WorkspaceDTO.UpdateDTO updateDTO) {
 		workspaceModuleFacadeService.updateWorkspaceInfoByName(workspaceName, updateDTO);
+		workloadHistoryService.updateWorkspaceName(workspaceName, updateDTO.getName());
 	}
 
 	@Override

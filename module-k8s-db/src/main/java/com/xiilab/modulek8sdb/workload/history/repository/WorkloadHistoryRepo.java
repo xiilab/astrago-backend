@@ -67,4 +67,9 @@ public interface WorkloadHistoryRepo extends JpaRepository<WorkloadEntity, Long>
 		where t.resourceName = :resourceName
 """)
 	void insertGpuInfo(@Param("resourceName") String resourceName, @Param("gpuName") String gpuName, @Param("memory") int memory);
+
+	@Transactional
+	@Modifying
+	@Query("update TB_WORKLOAD t set t.workspaceName = ?1 where t.workspaceResourceName = ?2")
+	void updateWorkspaceNameByWorkspaceResourceName(String workspaceName, String workspaceResourceName);
 }
