@@ -112,9 +112,11 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		// 해당 ID의 버전 삭제
 		versionRepository.deleteById(versionId);
 		// 삭제될 버전의 주소
-		String versionPath = modelRepoEntity.getModelPath() + versionEntity.getVersion();
+		String versionPath = modelRepoEntity.getModelPath() + "/" + versionEntity.getVersion();
 		// 모델이 저장된 폴더 삭제
-		FileUtils.deleteDirectory(versionPath);
+		String hostPath = modelRepoEntity.getStorageEntity().getHostPath();
+		String modelPath = hostPath + versionPath;
+		FileUtils.deleteDirectory(modelPath);
 	}
 
 	@Override
