@@ -188,7 +188,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.astragoDeploymentName(dellStorage.getAstragoDeploymentName())
 				.pvcName(dellStorage.getPvcName())
 				.pvName(dellStorage.getVolumeName())
-				.arrayId(storageDTO.getArrayId())
+				.arrayId(storageDTO.getArrayId().toLowerCase())
 				.volumeName(dellStorage.getVolumeName())
 				.hostPath(dellStorage.getHostPath())
 				.storageClassName(dellStorage.getStorageClassName())
