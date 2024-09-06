@@ -10,6 +10,9 @@ import lombok.Getter;
 public class ResourceOptimizationTargetDTO {
 	private String namespace;
 	private String podName;
+	private float cpuUsage;
+	private float memUsage;
+	private float gpuUsage;
 
 	@Override
 	public boolean equals(Object o) {

@@ -84,7 +84,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName){
+	public void createConnectTestDeployment(String deploymentName, String connectTestLabelName, String pvcName) {
 		workloadRepository.createConnectTestDeployment(deploymentName, connectTestLabelName, pvcName);
 	}
 
@@ -104,7 +104,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName){
+	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName) {
 		return workloadRepository.editAstragoDeployment(createStorageReqDTO, pvcName);
 	}
 
@@ -226,10 +226,12 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public void deleteDistributedWorkload(String workspaceName, String workloadName) {
 		workloadRepository.deleteDistributedWorkload(workspaceName, workloadName);
 	}
+
 	@Override
 	public String deleteDeployment(String workspaceName, String deployJobResourceName) {
 		return workloadRepository.deleteDeployment(workspaceName, deployJobResourceName);
 	}
+
 	@Override
 	public ExecListenable connectWorkloadTerminal(String workloadName, String workspaceName,
 		WorkloadType workloadType) {
@@ -239,7 +241,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return workloadRepository.connectBatchJobTerminal(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.DISTRIBUTED) {
 			return workloadRepository.connectDistributeJobTerminal(workspaceName, workloadName);
-		} else if(workloadType == WorkloadType.DEPLOY){
+		} else if (workloadType == WorkloadType.DEPLOY) {
 			return workloadRepository.connectInteractiveJobTerminal(workspaceName, workloadName);
 		} else {
 			return null;
@@ -254,7 +256,7 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 			return workloadRepository.getBatchJobPod(workspaceName, workloadName);
 		} else if (workloadType == WorkloadType.DISTRIBUTED) {
 			return workloadRepository.getDistributedLauncherPod(workspaceName, workloadName);
-		} else if(workloadType == WorkloadType.DEPLOY){
+		} else if (workloadType == WorkloadType.DEPLOY) {
 			return workloadRepository.getInteractiveJobPod(workspaceName, workloadName);
 		} else {
 			return null;
@@ -486,7 +488,8 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	}
 
 	@Override
-	public CreateJobResDTO createDeployWorkload(ModuleCreateDeployReqDTO moduleCreateDeployReqDTO, String workspaceName) {
+	public CreateJobResDTO createDeployWorkload(ModuleCreateDeployReqDTO moduleCreateDeployReqDTO,
+		String workspaceName) {
 		return workloadRepository.createDeployWorkload(moduleCreateDeployReqDTO.toDeployVO(workspaceName));
 	}
 

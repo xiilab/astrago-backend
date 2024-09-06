@@ -1,4 +1,4 @@
-package com.xiilab.modulek8sdb.report.report;
+package com.xiilab.modulek8sdb.report.repository;
 
 import static com.xiilab.modulek8sdb.report.entity.QReportReservationEntity.*;
 import static com.xiilab.modulek8sdb.report.entity.QReportReservationHistoryEntity.*;
