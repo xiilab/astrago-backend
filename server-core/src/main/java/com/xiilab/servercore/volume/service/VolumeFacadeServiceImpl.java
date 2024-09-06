@@ -380,6 +380,8 @@ public class VolumeFacadeServiceImpl implements VolumeFacadeService {
 			if (fileExtension != null) {
 				switch (fileExtension.toLowerCase()) {
 					case "txt":
+					case "xml":
+					case "yaml":
 						break;
 					case "jpg":
 					case "jpeg":
