@@ -18,8 +18,8 @@ public interface CodeWorkLoadMappingRepository extends JpaRepository<CodeWorkLoa
 
 	@Modifying(clearAutomatically = true)
 	@Query("""
-		delete 
-		from CodeWorkLoadMappingEntity dwme
+		update CodeWorkLoadMappingEntity dwme
+		set dwme.deleteYN = 'Y' 
 		where dwme.code.id =:codeId
 """)
 	void deleteAllByCodeId(@Param("codeId") Long id);
