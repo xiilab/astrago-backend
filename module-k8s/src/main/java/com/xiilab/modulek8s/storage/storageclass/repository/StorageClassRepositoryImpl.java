@@ -262,11 +262,9 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 				.withAllowVolumeExpansion(true)
 				.addToParameters("protocol", "NFS")
 				.addToParameters("arrayId", createStorageReqDTO.getArrayId())
-				.addToParameters("storagePool", createStorageReqDTO.getStoragePool())
 				.addToParameters("thinProvisioned", "true")
 				.addToParameters("isDataReductionEnabled", "true")
 				.addToParameters("tieringPolicy", "0")
-				.addToParameters("nasServer", createStorageReqDTO.getNasServer())
 				.addToParameters("hostIoSize", "8192")
 				.addToParameters("csi.storage.k8s.io/fstype", "nfs")
 				.build();

@@ -22,8 +22,7 @@ public class StorageDTO {
 	private int requestVolume;
 	private SecretDTO secretDTO;
 	private String arrayId;
-	private String storagePool;
-	private String nasServer;
+	private String dellVolumeId;
 
 	@Getter
 	@Builder
@@ -43,8 +42,7 @@ public class StorageDTO {
 		private String secretName;
 		private String storageClassName;
 		private String arrayId;
-		private String storagePool;
-		private String nasServer;
+		private String dellVolumeId;
 		@Setter
 		private DefaultStorageYN defaultStorageYN = DefaultStorageYN.N;
 
@@ -66,8 +64,7 @@ public class StorageDTO {
 				.defaultStorageYN(this.defaultStorageYN)
 				.storageClassName(this.storageClassName)
 				.arrayId(this.arrayId)
-				.storagePool(this.storagePool)
-				.nasServer(this.nasServer)
+				.dellVolumeId(this.dellVolumeId)
 				.build();
 		}
 	}
@@ -85,8 +82,7 @@ public class StorageDTO {
 		private LocalDate createdAt;
 		private String creatorName;
 		private String arrayId;
-		private String storagePool;
-		private String nasServer;
+		private String dellVolumeId;
 
 		public static ResStorage toDto(StorageEntity storageEntity){
 			return ResStorage.builder()
@@ -100,8 +96,7 @@ public class StorageDTO {
 				.createdAt(storageEntity.getRegDate().toLocalDate())
 				.creatorName(storageEntity.getRegUser().getRegUserRealName())
 				.arrayId(storageEntity.getArrayId())
-				.storagePool(storageEntity.getStoragePool())
-				.nasServer(storageEntity.getNasServer())
+				.dellVolumeId(storageEntity.getDellVolumeId())
 				.build();
 		}
 	}

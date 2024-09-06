@@ -137,9 +137,7 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 	private void createPVAndPVC(List<ModuleVolumeReqDTO> list) {
 		if (!CollectionUtils.isEmpty(list)) {
 			for (ModuleVolumeReqDTO reqDto : list) {
-				if(reqDto.getCreatePV().getStorageType() != StorageType.DELL_UNITY){
-					volumeService.createPV(reqDto.getCreatePV());
-				}
+				volumeService.createPV(reqDto.getCreatePV());
 				volumeService.createPVC(reqDto.getCreatePVC());
 			}
 		}
