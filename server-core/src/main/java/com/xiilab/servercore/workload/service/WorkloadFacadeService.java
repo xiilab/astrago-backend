@@ -29,12 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
-import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
-import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
@@ -47,7 +44,6 @@ import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
-import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
@@ -460,22 +456,6 @@ public class WorkloadFacadeService {
 				.workloadResourceName(activeSingleWorkloadDetail.getWorkloadResourceName())
 				.workloadType(activeSingleWorkloadDetail.getWorkloadType())
 				.build();
-
-			//워크로드 종료 알림 발송
-			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
-			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
-			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
-				activeSingleWorkloadDetail.getWorkloadName());
-
-			String receiverMail = userFacadeService.getUserInfoById(activeSingleWorkloadDetail.getRegUserId())
-				.getEmail();
-			MailDTO mailDTO = MailServiceUtils.endWorkloadMail(activeSingleWorkloadDetail.getWorkloadName(),
-				receiverMail);
-
-			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeSingleWorkloadDetail.getRegUserId(), emailTitle,
-				title, message, workspaceName, pageNaviParam, mailDTO);
-			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
 	}
 
@@ -848,6 +828,8 @@ public class WorkloadFacadeService {
 
 				String filePath = storagePath + saveDirectoryName;
 				StorageEntity storageEntity = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
+
+				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
 					filePath,
 					resDatasetWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());
@@ -870,8 +852,10 @@ public class WorkloadFacadeService {
 				if (!storagePath.endsWith(File.separator)) {
 					storagePath += File.separator;
 				}
-				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
 				String filePath = storagePath + saveDirectoryName;
+				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
+
+				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
 					filePath,
 					resModelWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());

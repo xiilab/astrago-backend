@@ -200,6 +200,7 @@ public class InteractiveJobVO extends WorkloadVO {
 				.addNewVolumeMount()
 				.withName(volume.pvName())
 				.withMountPath(volume.mountPath())
+				.withSubPath(volume.subPath() != null? volume.subPath(): null)
 				.endVolumeMount());
 		}
 	}
