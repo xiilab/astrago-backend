@@ -121,13 +121,11 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
-	@Transactional
 	public void deleteCodeById(long id) {
 		// 코드 Entity 조회
 		CodeEntity codeEntity = getCodeEntity(id);
 		// 코드 삭제
 		codeRepository.deleteById(codeEntity.getId());
-		codeWorkLoadMappingRepository.deleteAllByCodeId(codeEntity.getId());
 	}
 
 	@Override
