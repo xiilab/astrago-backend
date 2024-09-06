@@ -4,9 +4,11 @@ import static com.xiilab.modulecommon.enums.MailAttribute.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -130,26 +132,36 @@ public class ResourceOptimizationJob {
 		List<ResponseDTO.RealTimeDTO> cpuPods,
 		List<ResponseDTO.RealTimeDTO> memPods,
 		List<ResponseDTO.RealTimeDTO> gpuPods) {
-		//기준치 미만의 pod들을 선별하기 위해 set으로 변경
-		Set<String> cpuPodName = cpuPods.stream()
-			.map(ResponseDTO.RealTimeDTO::podName)
-			.collect(Collectors.toSet());
-		Set<String> memPodName = memPods.stream()
-			.map(ResponseDTO.RealTimeDTO::podName)
-			.collect(Collectors.toSet());
-		Set<String> gpuPodName = gpuPods.stream()
-			.map(ResponseDTO.RealTimeDTO::podName)
-			.collect(Collectors.toSet());
-		//기준치 미만의 pod들을 and 조건으로 선별
-		Set<String> selectedPod = cpuPodName.stream()
-			.filter(memPodName::contains)
-			.filter(gpuPodName::contains)
+		// podName을 키로 사용하여 각 리소스를 매핑
+		Map<String, ResponseDTO.RealTimeDTO> cpuPodMap = cpuPods.stream()
+			.collect(Collectors.toMap(ResponseDTO.RealTimeDTO::podName, Function.identity()));
+		Map<String, ResponseDTO.RealTimeDTO> memPodMap = memPods.stream()
+			.collect(Collectors.toMap(ResponseDTO.RealTimeDTO::podName, Function.identity()));
+		Map<String, ResponseDTO.RealTimeDTO> gpuPodMap = gpuPods.stream()
+			.collect(Collectors.toMap(ResponseDTO.RealTimeDTO::podName, Function.identity()));
+
+		// 기준치 미만의 pod들을 and 조건으로 선별
+		Set<String> selectedPods = cpuPodMap.keySet().stream()
+			.filter(memPodMap::containsKey)
+			.filter(gpuPodMap::containsKey)
 			.collect(Collectors.toSet());
 
-		log.info("resource optimization target pod list count : {}", selectedPod.size());
-		return cpuPods.stream()
-			.filter(pod -> selectedPod.contains(pod.podName()))
-			.map(this::toResourceOptimizationTargetDTO)
+		log.info("resource optimization target pod list count : {}", selectedPods.size());
+
+		return selectedPods.stream()
+			.map(podName -> {
+				ResponseDTO.RealTimeDTO cpuPod = cpuPodMap.get(podName);
+				ResponseDTO.RealTimeDTO memPod = memPodMap.get(podName);
+				ResponseDTO.RealTimeDTO gpuPod = gpuPodMap.get(podName);
+
+				return new ResourceOptimizationTargetDTO(
+					cpuPod.nameSpace(),
+					cpuPod.podName(),
+					Float.parseFloat(cpuPod.value()),   // CPU 값
+					Float.parseFloat(memPod.value()),   // 메모리 값
+					Float.parseFloat(gpuPod.value())    // GPU 값
+				);
+			})
 			.distinct()
 			.toList();
 	}
@@ -158,17 +170,42 @@ public class ResourceOptimizationJob {
 		List<ResponseDTO.RealTimeDTO> cpuPods,
 		List<ResponseDTO.RealTimeDTO> memPods,
 		List<ResponseDTO.RealTimeDTO> gpuPods) {
-		List<ResponseDTO.RealTimeDTO> totalList = new ArrayList<>();
-		totalList.addAll(cpuPods);
-		totalList.addAll(memPods);
-		totalList.addAll(gpuPods);
-		return totalList.stream()
-			.map(this::toResourceOptimizationTargetDTO)
+
+		// podName을 키로 하여 각 pod 정보를 맵에 저장
+		Map<String, ResponseDTO.RealTimeDTO> cpuPodMap = cpuPods.stream()
+			.collect(Collectors.toMap(ResponseDTO.RealTimeDTO::podName, pod -> pod, (a, b) -> a));
+
+		Map<String, ResponseDTO.RealTimeDTO> memPodMap = memPods.stream()
+			.collect(Collectors.toMap(ResponseDTO.RealTimeDTO::podName, pod -> pod, (a, b) -> a));
+
+		Map<String, ResponseDTO.RealTimeDTO> gpuPodMap = gpuPods.stream()
+			.collect(Collectors.toMap(ResponseDTO.RealTimeDTO::podName, pod -> pod, (a, b) -> a));
+
+		// 세 리스트의 podName을 합집합으로 모음
+		Set<String> uniquePodNames = new HashSet<>();
+		uniquePodNames.addAll(cpuPodMap.keySet());
+		uniquePodNames.addAll(memPodMap.keySet());
+		uniquePodNames.addAll(gpuPodMap.keySet());
+
+		// 각 unique한 pod에 대해 CPU, MEM, GPU 값을 DTO로 매핑
+		return uniquePodNames.stream()
+			.map(podName -> {
+				// 맵을 통해 각 pod의 CPU, MEM, GPU 값을 O(1)로 조회
+				ResponseDTO.RealTimeDTO cpuPod = cpuPodMap.get(podName);
+				ResponseDTO.RealTimeDTO memPod = memPodMap.get(podName);
+				ResponseDTO.RealTimeDTO gpuPod = gpuPodMap.get(podName);
+
+				// 각 값을 DTO로 매핑 (널 체크 포함)
+				return new ResourceOptimizationTargetDTO(
+					cpuPod != null ? cpuPod.nameSpace() :
+						(memPod != null ? memPod.nameSpace() : (gpuPod != null ? gpuPod.nameSpace() : "")),
+					podName,
+					cpuPod != null ? Float.parseFloat(cpuPod.value()) : 0f,
+					memPod != null ? Float.parseFloat(memPod.value()) : 0f,
+					gpuPod != null ? Float.parseFloat(gpuPod.value()) : 0f
+				);
+			})
 			.distinct()
 			.toList();
-	}
-
-	private ResourceOptimizationTargetDTO toResourceOptimizationTargetDTO(ResponseDTO.RealTimeDTO realTimeDTO) {
-		return new ResourceOptimizationTargetDTO(realTimeDTO.nameSpace(), realTimeDTO.podName());
 	}
 }
