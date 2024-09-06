@@ -75,6 +75,7 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 			return FindWorkloadResDTO.SingleWorkloadDetail.from((JobEntity)workloadEntity);
 		}
 	}
+
 	@Override
 	public FindWorkloadResDTO getAdminWorkloadInfoByResourceName(String workspaceName,
 		String workloadResourceName, UserDTO.UserInfo userInfoDTO) {

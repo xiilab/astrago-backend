@@ -38,7 +38,7 @@ public class WorkspaceAlertService {
 					.alert(alert)
 					.workspaceResourceName(workspaceResourceName)
 					.userId(userId)
-					.systemAlertStatus(AlertStatus.ON)
+					.systemAlertStatus(AlertStatus.OFF)
 					.emailAlertStatus(AlertStatus.OFF)
 					.build();
 				workspaceAlertMappingRepository.save(workspaceAlertMappingEntity);
