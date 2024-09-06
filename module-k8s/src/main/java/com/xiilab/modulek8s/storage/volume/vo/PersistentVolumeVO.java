@@ -83,8 +83,8 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 			.withAccessModes(AccessMode.RWM.getAccessMode())
 			.withPersistentVolumeReclaimPolicy(ReclaimPolicyType.RETAIN.getField())
 			.withNewNfs()
-			.withServer(ip)
 			.withPath(storagePath)
+			.withServer(ip)
 			.endNfs()
 			.withClaimRef(createObjectReference())
 			.build();
