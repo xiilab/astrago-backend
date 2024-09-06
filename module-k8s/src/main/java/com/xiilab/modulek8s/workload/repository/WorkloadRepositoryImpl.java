@@ -879,9 +879,9 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public boolean isUsedModel(Long modelId) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			String label = "md-" + modelId;
-			if (getJobsInUseVolume(label, client).size() == 0 &&
-				getStatefulSetsInUseVolume(label, client).size() == 0 &&
-				getDeploymentsInUseVolume(label, client).size() == 0) {
+			if (getJobsInUseVolume(label, client).isEmpty() &&
+				getStatefulSetsInUseVolume(label, client).isEmpty() &&
+				getDeploymentsInUseVolume(label, client).isEmpty()) {
 				return false;
 			}
 			return true;
