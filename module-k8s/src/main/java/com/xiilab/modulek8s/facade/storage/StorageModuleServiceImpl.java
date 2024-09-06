@@ -307,7 +307,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			//PVC 삭제
 			volumeService.deletePVC(deleteStorageReqDTO.getPvcName(), deleteStorageReqDTO.getNamespace());
 			// Storage Class 삭제
-			volumeService.deleteStorageClass(deleteStorageReqDTO);
+			volumeService.deletePV(deleteStorageReqDTO.getPvName());
 		} else{
 			//astrago deployment에 볼륨 제거
 			volumeService.deleteStorage(deleteStorageReqDTO);
@@ -355,12 +355,12 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 	public StorageResDTO createDELLStorage(CreateStorageReqDTO createStorageReqDTO) {
 		// install check
 		storageClassService.dellPluginInstallCheck();
-		// storageClass 생성
-		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
-		storageClassService.createDELLStorage(createStorageReqDTO, storageName);
 		// pv 생성
+		String pvName = "dell-unity-pv-"+ UUID.randomUUID().toString().substring(6);
 		String pvcName = "dell-unity-pvc-"+ UUID.randomUUID().toString().substring(6);
-		volumeService.createDellPVC(pvcName, storageName);
+		volumeService.createDellPV(pvName, pvcName, createStorageReqDTO.getArrayId(), createStorageReqDTO.getDellVolumeId());
+		// pvc 생성
+		volumeService.createDellPVC(pvcName, pvName);
 		// deployment에 연결 테스트
 		String connectTestDeploymentName = "astrago-storage-deployment-"+ UUID.randomUUID().toString().substring(6);
 		String connectTestLabelName = "connect-test-"+ UUID.randomUUID().toString().substring(6);
@@ -390,7 +390,6 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			}if(!isAvailable){
 				//pvc, pv, connect deployment 삭제
 				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, createStorageReqDTO.getNamespace());
-				storageClassService.deleteStorageClass(storageName);
 				volumeService.deletePVC(pvcName, createStorageReqDTO.getNamespace());
 				//연결 실패 응답
 				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
@@ -417,7 +416,6 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.pvcName(pvcName)
 			.requestVolume(createStorageReqDTO.getRequestVolume())
 			.volumeName(deployment.getVolumeName())
-			.storageClassName(storageName)
 			.hostPath(createStorageReqDTO.getHostPath())
 			.build();
 	}

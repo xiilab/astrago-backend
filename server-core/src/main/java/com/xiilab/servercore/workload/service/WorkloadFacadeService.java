@@ -86,6 +86,7 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
@@ -846,13 +847,13 @@ public class WorkloadFacadeService {
 				}
 
 				String filePath = storagePath + saveDirectoryName;
-				String storageClassName = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
+				StorageEntity storageEntity = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
 					filePath,
-					resDatasetWithStorage.getStorageType(), storageClassName);
+					resDatasetWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-					resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType(), "");
+					resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType(), "", "", "");
 			}
 		}
 	}
@@ -869,20 +870,20 @@ public class WorkloadFacadeService {
 				if (!storagePath.endsWith(File.separator)) {
 					storagePath += File.separator;
 				}
-				String storageClassName = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
+				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
 				String filePath = storagePath + saveDirectoryName;
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
 					filePath,
-					resModelWithStorage.getStorageType(), storageClassName);
+					resModelWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType(), "");
+					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType(), "", "", "");
 			}
 		}
 	}
 
 	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
-		String storagePath, StorageType storageType, String storageClassName) {
+		String storagePath, StorageType storageType, String volumeName, String arrayId, String dellVolumeId) {
 		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
 		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
 		int requestVolume = 50;
@@ -896,13 +897,15 @@ public class WorkloadFacadeService {
 			.namespace(workspaceName)
 			.storageType(storageType)
 			.requestVolume(requestVolume)
+			.arrayId(arrayId)
+			.dellVolumeId(dellVolumeId)
 			.build();
 		moduleVolumeReqDTO.setCreatePV(createPV);
 		CreatePVC createPVC = CreatePVC.builder()
 			.pvcName(pvcName)
 			.namespace(workspaceName)
 			.requestVolume(requestVolume)
-			.storageClassName(storageClassName)
+			.volumeName(volumeName)
 			.build();
 		moduleVolumeReqDTO.setCreatePVC(createPVC);
 	}

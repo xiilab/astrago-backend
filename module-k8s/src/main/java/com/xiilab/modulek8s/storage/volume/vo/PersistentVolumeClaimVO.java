@@ -40,22 +40,12 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 			.build();
 	}
 	private PersistentVolumeClaimSpec createSpec() {
-		if(storageClassName == null) {
-			return new PersistentVolumeClaimSpecBuilder()
-				.withAccessModes(AccessMode.RWM.getAccessMode())
-				.withNewResources()
-				.addToRequests("storage", new Quantity(requestVolume + "Gi"))
-				.endResources()
-				.build();
-		}else {
-			return new PersistentVolumeClaimSpecBuilder()
-				.withAccessModes(AccessMode.RWM.getAccessMode())
-				.withNewResources()
-				.addToRequests("storage", new Quantity(requestVolume + "Gi"))
-				.endResources()
-				.withStorageClassName(storageClassName)
-				.build();
-		}
+		return new PersistentVolumeClaimSpecBuilder()
+			.withAccessModes(AccessMode.RWM.getAccessMode())
+			.withNewResources()
+			.addToRequests("storage", new Quantity(requestVolume + "Gi"))
+			.endResources()
+			.build();
 	}
 
 	public static PersistentVolumeClaimVO dtoToEntity(CreatePVC createPVC){
