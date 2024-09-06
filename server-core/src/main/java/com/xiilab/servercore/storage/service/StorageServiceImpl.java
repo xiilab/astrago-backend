@@ -71,12 +71,12 @@ public class StorageServiceImpl implements StorageService {
 	}
 
 	@Override
-	public String getDatasetStorageClassName(long id) {
+	public StorageEntity getDatasetStorageClassName(long id) {
 		return storageRepository.getDatasetStorageClassName(id);
 	}
 
 	@Override
-	public String getModelVolumeStorageClassName(long id) {
+	public StorageEntity getModelVolumeStorageClassName(long id) {
 		return storageRepository.getModelVolumeStorageClassName(id);
 	}
 

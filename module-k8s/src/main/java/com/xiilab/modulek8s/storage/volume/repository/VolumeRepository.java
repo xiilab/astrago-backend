@@ -57,7 +57,9 @@ public interface VolumeRepository {
 
 	void deleteIbmPvc(String storageName);
 
-	void createDellPVC(String pvcName, String storageName);
+	void createDellPVC(String pvcName, String pvName);
+
+	void createDellPV(String pvName, String pvcName, String arrayId, String volumeId);
 
 	void deleteDellStorage(DeleteStorageReqDTO deleteStorageReqDTO);
 

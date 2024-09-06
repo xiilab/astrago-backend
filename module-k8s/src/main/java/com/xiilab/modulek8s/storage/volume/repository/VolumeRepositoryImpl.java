@@ -32,6 +32,7 @@ import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolume;
+import io.fabric8.kubernetes.api.model.PersistentVolumeBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
@@ -184,8 +185,35 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	@Override
 	public void createPV(CreatePV createPV) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			PersistentVolumeVO persistentVolumeVO = PersistentVolumeVO.dtoToEntity(createPV);
-			PersistentVolume resource = (PersistentVolume)persistentVolumeVO.createResource();
+			PersistentVolume resource = null;
+			if(createPV.getStorageType() == StorageType.NFS) {
+				PersistentVolumeVO persistentVolumeVO = PersistentVolumeVO.dtoToEntity(createPV);
+				resource = (PersistentVolume)persistentVolumeVO.createResource();
+			}else if(createPV.getStorageType() == StorageType.DELL_UNITY) {
+				String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
+				String volumeHandle = "existingvol-NFS-" + createPV.getArrayId() + "-" + createPV.getDellVolumeId();
+				resource =  new PersistentVolumeBuilder()
+					.withNewMetadata()
+					.withName(createPV.getPvName())
+					.addToAnnotations("pv.kubernetes.io/provisioned-by", "csi-unity.dellemc.com")
+					.endMetadata()
+					.withNewSpec()
+					.addToAccessModes("ReadWriteMany")
+					.withCapacity(Map.of("storage", new Quantity("50Gi")))
+					.withNewCsi()
+					.withDriver("csi-unity.dellemc.com")
+					.withVolumeHandle(volumeHandle)
+					.endCsi()
+					.withPersistentVolumeReclaimPolicy("Retain")
+					.withNewClaimRef()
+					.withName(createPV.getPvcName())
+					.withNamespace(createPV.getNamespace())
+					.endClaimRef()
+					.withStorageClassName(storageName)
+					.withVolumeMode("Filesystem")
+					.endSpec()
+					.build();
+			}
 			client.persistentVolumes().resource(resource).create();
 		}
 	}
@@ -297,12 +325,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	public void createPVC(CreatePVC createPVC) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaimVO pvc = PersistentVolumeClaimVO.dtoToEntity(createPVC);
-			PersistentVolumeClaim resource = null;
-			if(createPVC.getStorageClassName() != null) {
-				resource = (PersistentVolumeClaim)pvc.createResource();
-			}else{
-				resource = (PersistentVolumeClaim)pvc.createResource();
-			}
+			PersistentVolumeClaim resource = (PersistentVolumeClaim)pvc.createResource();
 			client.persistentVolumeClaims().resource(resource).create();
 		}
 	}
@@ -695,7 +718,8 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	}
 
 	@Override
-	public void createDellPVC(String pvcName, String storageName) {
+	public void createDellPVC(String pvcName, String pvName) {
+		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim pvc = new PersistentVolumeClaim().toBuilder()
 				.withNewMetadata()
@@ -712,6 +736,38 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 				.endSpec()
 				.build();
 			client.persistentVolumeClaims().inNamespace("astrago").resource(pvc).create();
+		}
+	}
+
+	@Override
+	public void createDellPV(String pvName, String pvcName, String arrayId, String volumeId) {
+		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			String volumeHandle = "existingvol-NFS-" + arrayId + "-" + volumeId;
+			PersistentVolume pv = new PersistentVolumeBuilder()
+				.withNewMetadata()
+				.withName(pvName)
+				.addToAnnotations("pv.kubernetes.io/provisioned-by", "csi-unity.dellemc.com")
+				.endMetadata()
+				.withNewSpec()
+				.addToAccessModes("ReadWriteMany")
+				.withCapacity(Map.of("storage", new Quantity("50Gi")))
+				.withNewCsi()
+				.withDriver("csi-unity.dellemc.com")
+				.withVolumeHandle(volumeHandle)
+				.endCsi()
+				.withPersistentVolumeReclaimPolicy("Retain")
+				.withNewClaimRef()
+				.withName(pvcName)
+				.withNamespace("astrago")
+				.endClaimRef()
+				.withStorageClassName(storageName)
+				.withVolumeMode("Filesystem")
+				.endSpec()
+				.build();
+
+			// PersistentVolume 생성
+			client.persistentVolumes().create(pv);
 		}
 	}
 

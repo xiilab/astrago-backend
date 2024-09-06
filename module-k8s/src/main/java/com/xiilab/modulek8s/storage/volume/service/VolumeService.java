@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.storage.volume.service;
 
+import java.security.PublicKey;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -128,8 +129,12 @@ public class VolumeService {
 		volumeRepository.deleteIbmPvc(storageName);
 	}
 
-	public void createDellPVC(String pvcNamem, String storageName){
-		volumeRepository.createDellPVC(pvcNamem, storageName);
+	public void createDellPVC(String pvcNamem, String pvName){
+		volumeRepository.createDellPVC(pvcNamem, pvName);
+	}
+
+	public void createDellPV(String pvName, String pvcName, String arrayId, String volumeId){
+		volumeRepository.createDellPV(pvName, pvcName, arrayId, volumeId);
 	}
 
 	public void deleteDellStorage(DeleteStorageReqDTO deleteStorageReqDTO){
