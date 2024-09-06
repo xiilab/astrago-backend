@@ -358,7 +358,7 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		// pv 생성
 		String pvName = "dell-unity-pv-"+ UUID.randomUUID().toString().substring(6);
 		String pvcName = "dell-unity-pvc-"+ UUID.randomUUID().toString().substring(6);
-		volumeService.createDellPV(pvName, pvcName, createStorageReqDTO.getArrayId(), createStorageReqDTO.getDellVolumeId());
+		volumeService.createDellPV(pvName, pvcName, createStorageReqDTO.getArrayId().toLowerCase(), createStorageReqDTO.getDellVolumeId());
 		// pvc 생성
 		volumeService.createDellPVC(pvcName, pvName);
 		// deployment에 연결 테스트
