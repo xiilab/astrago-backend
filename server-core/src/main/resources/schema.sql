@@ -900,3 +900,30 @@ create table if not exists TB_ONEVIEW_SETTING
     USER_NAME               varchar(255) null
 );
 
+create table if not exists TB_RESOURCE_OPITMIZATION_JOB
+(
+    AND_YN             bit         null,
+    CPU_LIMIT          int         null,
+    GPU_CONDITION      int         null,
+    HOUR               int         null,
+    MEM_CONDITION      int         null,
+    OPTIMIZATION_COUNT int         null,
+    ID                 bigint auto_increment
+        primary key,
+    START_TIME         datetime(6) null
+);
+
+create table if not exists TB_RESOURCE_OPITMIZATION_WORKLOAD
+(
+    CPU_USAGE                  float        null,
+    GPU_USAGE                  float        null,
+    MEM_USAGE                  float        null,
+    ID                         bigint auto_increment
+        primary key,
+    resourceOptimizationJob_ID bigint       null,
+    WORKLOAD_RESOURCE_NAME     varchar(255) null,
+    WORKSPACE_RESOURCE_NAME    varchar(255) null,
+    constraint FK5f8s7pkm2tuqwxn9i0oo734kd
+        foreign key (resourceOptimizationJob_ID) references TB_RESOURCE_OPITMIZATION_JOB (ID)
+);
+
