@@ -11,4 +11,5 @@ public class CreatePVC {
 	private String namespace;
 	private int requestVolume;
 	private String storageClassName;
+	private String volumeName;
 }

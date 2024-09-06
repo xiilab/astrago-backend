@@ -24,6 +24,7 @@ import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulek8sdb.code.dto.CodeSearchCondition;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
+import com.xiilab.modulek8sdb.code.entity.CodeWorkLoadMappingEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeCustomRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeRepository;
 import com.xiilab.modulek8sdb.code.repository.CodeWorkLoadMappingRepository;
@@ -122,9 +123,9 @@ public class CodeServiceImpl implements CodeService {
 	@Override
 	public void deleteCodeById(long id) {
 		// 코드 Entity 조회
-		getCodeEntity(id);
+		CodeEntity codeEntity = getCodeEntity(id);
 		// 코드 삭제
-		codeRepository.deleteById(id);
+		codeRepository.deleteById(codeEntity.getId());
 	}
 
 	@Override

@@ -19,9 +19,9 @@ public interface StorageRepository extends JpaRepository<StorageEntity, Long> {
 	List<StorageEntity> findAll();
 
 
-	@Query("select a.storageEntity.storageClassName  from AstragoDatasetEntity a where a.datasetId = ?1")
-	String getDatasetStorageClassName(long id);
+	@Query("select a.storageEntity  from AstragoDatasetEntity a where a.datasetId = ?1")
+	StorageEntity getDatasetStorageClassName(long id);
 
-	@Query("select a.storageEntity.storageClassName  from AstragoModelEntity a where a.modelId = ?1")
-	String getModelVolumeStorageClassName(long id);
+	@Query("select a.storageEntity  from AstragoModelEntity a where a.modelId = ?1")
+	StorageEntity getModelVolumeStorageClassName(long id);
 }

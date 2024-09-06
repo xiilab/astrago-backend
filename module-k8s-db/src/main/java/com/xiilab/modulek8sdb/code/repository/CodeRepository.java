@@ -3,7 +3,9 @@ package com.xiilab.modulek8sdb.code.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.xiilab.modulecommon.enums.RepositoryType;
@@ -23,4 +25,12 @@ public interface CodeRepository  extends JpaRepository<CodeEntity, Long> {
 		where c.workspaceResourceName = ?1 and c.codeURL = ?2 and c.repositoryType = ?3 and c.deleteYn = ?4""")
 	List<CodeEntity> findByWorkspaceResourceNameAndCodeURLAndRepositoryTypeAndDeleteYn(String workspaceResourceName,
 		String codeURL, RepositoryType repositoryType, DeleteYN deleteYn);
+
+	// @Modifying
+	// @Query("""
+	// 	UPDATE CodeEntity tc
+	// 	SET tc.deleteYn = 'Y'
+	// 	WHERE tc.id = :codeId
+// """)
+// 	void deleteById(@Param("codeId") Long codeId);
 }
