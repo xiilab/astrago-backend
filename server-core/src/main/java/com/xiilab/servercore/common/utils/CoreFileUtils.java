@@ -51,7 +51,7 @@ public class CoreFileUtils {
 		String fileExtension = parts[parts.length - 1].toLowerCase();
 
 		return switch (fileExtension) {
-			case "txt" -> MediaType.TEXT_PLAIN;
+			case "txt", "yaml", "xml" -> MediaType.TEXT_PLAIN;
 			case "jpg", "jpeg" -> MediaType.IMAGE_JPEG;
 			case "png" -> MediaType.IMAGE_PNG;
 			case "pdf" -> MediaType.APPLICATION_PDF;
