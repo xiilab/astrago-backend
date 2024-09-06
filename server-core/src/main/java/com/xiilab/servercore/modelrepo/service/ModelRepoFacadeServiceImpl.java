@@ -102,7 +102,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		String hostPath = modelRepoEntity.getStorageEntity().getHostPath();
 		// 모델이 저장된 폴더 삭제
 		String directoryPath = hostPath + modelPath;
-		FileUtils.deleteDirectory(directoryPath);
+		FileUtils.deleteAllDirectory(directoryPath);
 	}
 
 	@Override
@@ -118,7 +118,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		// 모델이 저장된 폴더 삭제
 		String hostPath = modelRepoEntity.getStorageEntity().getHostPath();
 		String modelPath = hostPath + versionPath;
-		FileUtils.deleteDirectory(modelPath);
+		FileUtils.deleteAllDirectory(modelPath);
 	}
 
 	@Override
