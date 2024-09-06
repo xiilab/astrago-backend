@@ -455,22 +455,6 @@ public class WorkloadFacadeService {
 				.workloadResourceName(activeSingleWorkloadDetail.getWorkloadResourceName())
 				.workloadType(activeSingleWorkloadDetail.getWorkloadType())
 				.build();
-
-			//워크로드 종료 알림 발송
-			// String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
-			// String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
-			// String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
-			// 	activeSingleWorkloadDetail.getWorkloadName());
-			//
-			// String receiverMail = userFacadeService.getUserInfoById(activeSingleWorkloadDetail.getRegUserId())
-			// 	.getEmail();
-			// MailDTO mailDTO = MailServiceUtils.endWorkloadMail(activeSingleWorkloadDetail.getWorkloadName(),
-			// 	receiverMail);
-			//
-			// WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-			// 	AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeSingleWorkloadDetail.getRegUserId(), emailTitle,
-			// 	title, message, workspaceName, pageNaviParam, mailDTO);
-			// eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
 	}
 
