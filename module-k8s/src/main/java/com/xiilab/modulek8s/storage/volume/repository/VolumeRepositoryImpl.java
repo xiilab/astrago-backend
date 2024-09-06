@@ -207,7 +207,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 					.withPersistentVolumeReclaimPolicy("Retain")
 					.withNewClaimRef()
 					.withName(createPV.getPvcName())
-					.withNamespace("astrago")
+					.withNamespace(createPV.getNamespace())
 					.endClaimRef()
 					.withStorageClassName(storageName)
 					.withVolumeMode("Filesystem")
