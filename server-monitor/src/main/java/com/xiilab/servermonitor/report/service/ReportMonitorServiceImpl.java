@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
-import com.xiilab.modulek8sdb.report.report.ReservationRepository;
+import com.xiilab.modulek8sdb.report.repository.ReservationRepository;
 import com.xiilab.servermonitor.report.job.ReportJob;
 
 import jakarta.transaction.Transactional;
