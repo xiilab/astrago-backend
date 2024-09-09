@@ -12,7 +12,6 @@ import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.enums.AuthType;
-import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
@@ -24,7 +23,6 @@ import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.GroupService;
-import com.xiilab.moduleuser.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,8 +34,6 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final WorkspaceAlertService workspaceAlertService;
 	private final ApplicationEventPublisher publisher;
 	private final WorkspaceService workspaceService;
-	private final MailService mailService;
-	private final UserService userService;
 	@Override
 	public void createAccountGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfo) {
 		groupService.createAccountGroup(groupReqDTO, userInfo);

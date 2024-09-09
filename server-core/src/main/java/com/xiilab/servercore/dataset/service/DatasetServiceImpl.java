@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -87,9 +89,15 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode) {
+
+		Set<String> joinedWorkspaceResourceNames = userInfoDTO.getWorkspaces()
+			.stream()
+			.map(wsResourceName -> wsResourceName.substring(0, wsResourceName.indexOf("/")))
+			.collect(Collectors.toSet());
+
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
-			userInfoDTO.getAuth(), repositorySearchCondition, pageMode);
+			userInfoDTO.getAuth(), repositorySearchCondition, pageMode, joinedWorkspaceResourceNames);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 
