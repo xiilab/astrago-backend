@@ -322,6 +322,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			if (fileExtension != null) {
 				switch (fileExtension.toLowerCase()) {
 					case "txt":
+					case "xml":
+					case "yaml":
 						break;
 					case "jpg":
 					case "jpeg":
