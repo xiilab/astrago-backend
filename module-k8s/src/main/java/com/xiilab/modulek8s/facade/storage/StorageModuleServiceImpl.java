@@ -165,49 +165,22 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 		storageClassService.dellPluginInstallCheck();
 		// storageClass 생성
 		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
-		storageClassService.createDELLStorage(createStorageReqDTO, storageName);
 		// pv 생성
+		String pvName = "dell-unity-pv-"+ UUID.randomUUID().toString().substring(6);
 		String pvcName = "dell-unity-pvc-"+ UUID.randomUUID().toString().substring(6);
+		k8sVolumeService.createDellPV(pvName, pvcName, createStorageReqDTO.getArrayId().toLowerCase(), createStorageReqDTO.getDellVolumeId());
+		// pvc 생성
 		k8sVolumeService.createDellPVC(pvcName, storageName);
 		// deployment에 연결 테스트
 		String connectTestDeploymentName = "astrago-storage-deployment-"+ UUID.randomUUID().toString().substring(6);
 		String connectTestLabelName = "connect-test-"+ UUID.randomUUID().toString().substring(6);
 		workloadModuleService.createConnectTestDeployment(connectTestDeploymentName, connectTestLabelName, pvcName);
-		try {
-			Thread.sleep(20000);
-		}catch (InterruptedException e) {
-			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
-		}
-
-		//deployment 상태 조회 - 컨테이너 실행 시간 대기
-		int failCount = 0;
-		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
-		//connection 실패
-		if(!isAvailable){
-			while(failCount < 10){
-				try {
-					Thread.sleep(5000);
-					failCount++;
-					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
-					if(isAvailable){
-						break;
-					}
-				} catch (InterruptedException e) {
-					throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
-				}
-			}if(!isAvailable){
-				//pvc, pv, connect deployment 삭제
-				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, createStorageReqDTO.getNamespace());
-				storageClassService.deleteStorageClass(storageName);
-				k8sVolumeService.deletePVC(pvcName, createStorageReqDTO.getNamespace());
-				//연결 실패 응답
-				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
-			}
-		}
+		connectTestDeployment(createStorageReqDTO, connectTestLabelName, connectTestDeploymentName, storageName, pvcName);
 		// 성공하면 deployment 삭제
 		workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, createStorageReqDTO.getNamespace());
+		// deployment 삭제 대기
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(7000);
 		}catch (InterruptedException e) {
 			throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
 		}
@@ -228,6 +201,35 @@ public class StorageModuleServiceImpl implements StorageModuleService{
 			.storageClassName(storageName)
 			.hostPath(createStorageReqDTO.getHostPath())
 			.build();
+	}
+
+	private void connectTestDeployment(CreateStorageReqDTO createStorageReqDTO, String connectTestLabelName,
+		String connectTestDeploymentName, String storageName, String pvcName) {
+		//deployment 상태 조회 - 컨테이너 실행 시간 대기
+		int failCount = 0;
+		boolean isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
+		//connection 실패
+		if(!isAvailable){
+			while(failCount < 15){
+				try {
+					Thread.sleep(5000);
+					failCount++;
+					isAvailable = workloadModuleService.isAvailableTestConnectPod(connectTestLabelName, createStorageReqDTO.getNamespace());
+					if(isAvailable){
+						break;
+					}
+				} catch (InterruptedException e) {
+					throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+				}
+			}if(!isAvailable){
+				//pvc, pv, connect deployment 삭제
+				workloadModuleService.deleteConnectTestDeployment(connectTestDeploymentName, createStorageReqDTO.getNamespace());
+				storageClassService.deleteStorageClass(storageName);
+				k8sVolumeService.deletePVC(pvcName, createStorageReqDTO.getNamespace());
+				//연결 실패 응답
+				throw new K8sException(StorageErrorCode.STORAGE_CONNECTION_FAILED);
+			}
+		}
 	}
 
 	@Override

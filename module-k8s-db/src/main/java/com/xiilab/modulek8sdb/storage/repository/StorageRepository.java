@@ -24,4 +24,7 @@ public interface StorageRepository extends JpaRepository<StorageEntity, Long> {
 	@Query("select s from StorageEntity s where s.defaultStorageYN = 'Y'")
 	StorageEntity getDefaultStorage();
 
+	@Query("select a.storageEntity  from AstragoModelEntity a where a.modelId = ?1")
+	StorageEntity getStorageClassByVolumeId(long volumeId);
+
 }

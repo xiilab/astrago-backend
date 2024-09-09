@@ -19,5 +19,5 @@ public interface ProvisionerFacadeService {
 
 	void installPlugin(String type, PluginDTO.DellUnityDTO dellUnityDTO, UserDTO.UserInfo userInfoDTO);
 
-	void uninstallPlugin(String id, UserDTO.UserInfo userInfoDTO);
+	void uninstallPlugin(String id);
 }

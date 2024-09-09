@@ -62,4 +62,7 @@ public interface K8sVolumeRepository {
 	void deleteIbmPvc(String storageName);
 
 	void createDellPVC(String pvcName, String storageName);
+
+	void createDellPV(String pvName, String pvcName, String arrayId, String volumeId);
+
 }

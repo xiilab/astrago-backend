@@ -81,4 +81,9 @@ public class StorageServiceImpl implements StorageService {
 			.orElseThrow(() -> new K8sException(StorageErrorCode.STORAGE_NOT_FOUND));
 		storageEntity.changeStorageName(modifyStorage.getStorageName());
 	}
+
+	@Override
+	public StorageEntity getStorageClassByVolumeId(long volumeId) {
+		return storageRepository.getStorageClassByVolumeId(volumeId);
+	}
 }

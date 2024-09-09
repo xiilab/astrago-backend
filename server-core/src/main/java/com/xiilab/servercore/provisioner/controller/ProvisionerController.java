@@ -21,6 +21,7 @@ import com.xiilab.servercore.provisioner.service.ProvisionerFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -60,7 +61,7 @@ public class ProvisionerController {
 	@Operation(summary = "플러그인 설치 ")
 	public ResponseEntity<HttpStatus> installPlugin(
 		@PathVariable(name = "type") String type,
-		@RequestBody(required = false) PluginDTO.DellUnityDTO dellUnityDTO,
+		@Valid @RequestBody(required = false) PluginDTO.DellUnityDTO dellUnityDTO,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		provisionerFacadeService.installPlugin(type, dellUnityDTO, userInfoDTO);
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -68,9 +69,8 @@ public class ProvisionerController {
 	@DeleteMapping("/plugin/uninstall/{type}")
 	@Operation(summary = "플러그인 삭제 ")
 	public ResponseEntity<HttpStatus> unInstallPlugin(
-		@PathVariable(name = "type") String type,
-		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
-		provisionerFacadeService.uninstallPlugin(type, userInfoDTO);
+		@PathVariable(name = "type") String type) {
+		provisionerFacadeService.uninstallPlugin(type);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

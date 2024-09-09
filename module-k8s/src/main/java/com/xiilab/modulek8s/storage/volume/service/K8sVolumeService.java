@@ -139,4 +139,9 @@ public class K8sVolumeService {
 	public void createDellPVC(String pvcNamem, String storageName){
 		k8sVolumeRepository.createDellPVC(pvcNamem, storageName);
 	}
+
+	public void createDellPV(String pvName, String pvcName, String arrayId, String volumeId){
+		k8sVolumeRepository.createDellPV(pvName, pvcName, arrayId, volumeId);
+	}
+
 }

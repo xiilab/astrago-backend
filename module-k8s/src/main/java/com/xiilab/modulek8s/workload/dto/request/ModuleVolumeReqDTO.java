@@ -16,6 +16,8 @@ public class ModuleVolumeReqDTO {
 	private Long id;
 	private String mountPath;
 	@Setter
+	private String subPath;
+	@Setter
 	@JsonIgnore
 	private CreatePV createPV;
 	@Setter
@@ -36,6 +38,6 @@ public class ModuleVolumeReqDTO {
 	}
 
 	public JobVolumeVO toJobVolumeVO() {
-		return new JobVolumeVO(id, this.mountPath, createPV.getPvName(), createPV.getPvcName());
+		return new JobVolumeVO(id, this.mountPath, createPV.getPvName(), createPV.getPvcName(), this.subPath);
 	}
 }

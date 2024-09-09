@@ -142,7 +142,7 @@ public class DeploymentVO extends WorkloadVO {
 		securityContext.setFsGroup(101L);
 		podSpecBuilder.withSecurityContext(securityContext);
 
-		addVolumes(podSpecBuilder, List.of(new JobVolumeVO(volumeLabelSelectorName, pvcName)));
+		addVolumes(podSpecBuilder, List.of(new JobVolumeVO(volumeLabelSelectorName, pvcName, null)));
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.addNewContainer()
