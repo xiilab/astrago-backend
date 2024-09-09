@@ -86,6 +86,7 @@ public abstract class DistributedWorkloadVO extends K8SResourceReqVO {
 				org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.VolumeMounts volumeMounts = new org.kubeflow.v2beta1.mpijobspec.mpireplicaspecs.template.spec.containers.VolumeMounts();
 				volumeMounts.setName(volume.pvName());
 				volumeMounts.setMountPath(volume.mountPath());
+				volumeMounts.setSubPath(volume.subPath());
 				volumeMountsList.add(volumeMounts);
 			}
 			container.setVolumeMounts(volumeMountsList);

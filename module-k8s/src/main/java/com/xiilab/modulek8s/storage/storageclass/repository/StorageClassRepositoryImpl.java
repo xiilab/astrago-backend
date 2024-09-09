@@ -75,30 +75,6 @@ public class StorageClassRepositoryImpl implements StorageClassRepository {
 			client.storage().v1().storageClasses().resource(resource).create();
 		}
 	}
-
-	@Override
-	public StorageClass createDELLStorage(CreateStorageReqDTO createStorageReqDTO, String storageName) {
-		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			StorageClass storageClass = new StorageClassBuilder()
-				.withNewMetadata()
-				.withName(storageName)
-				.endMetadata()
-				.withProvisioner("csi-unity.dellemc.com")
-				.withReclaimPolicy("Delete")
-				.withAllowVolumeExpansion(true)
-				.addToParameters("protocol", "NFS")
-				.addToParameters("arrayId", createStorageReqDTO.getArrayId())
-				.addToParameters("storagePool", createStorageReqDTO.getStoragePool())
-				.addToParameters("thinProvisioned", "true")
-				.addToParameters("isDataReductionEnabled", "true")
-				.addToParameters("tieringPolicy", "0")
-				.addToParameters("nasServer", createStorageReqDTO.getNasServer())
-				.addToParameters("hostIoSize", "8192")
-				.addToParameters("csi.storage.k8s.io/fstype", "nfs")
-				.build();
-			return client.storage().v1().storageClasses().resource(storageClass).create();
-		}
-	}
 	@Override
 	public boolean storageClassConnectionTest(String storageType) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {

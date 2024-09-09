@@ -30,10 +30,6 @@ public class StorageClassService {
 		storageClassRepository.createStorageClass(createStorageClassDTO);
 	}
 
-	public StorageClass createDELLStorage(CreateStorageReqDTO createStorageReqDTO, String storageName) {
-		return storageClassRepository.createDELLStorage(createStorageReqDTO, storageName);
-	}
-
 	public boolean storageClassConnectionTest(String storageType) {
 		return storageClassRepository.storageClassConnectionTest(storageType);
 	}

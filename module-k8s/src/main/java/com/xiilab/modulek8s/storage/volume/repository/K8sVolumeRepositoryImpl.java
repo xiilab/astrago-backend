@@ -32,6 +32,7 @@ import com.xiilab.modulek8s.storage.volume.vo.VolumeVO;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.PersistentVolume;
+import io.fabric8.kubernetes.api.model.PersistentVolumeBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
@@ -751,6 +752,38 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 				.endSpec()
 				.build();
 			client.persistentVolumeClaims().inNamespace("astrago").resource(pvc).create();
+		}
+	}
+
+	@Override
+	public void createDellPV(String pvName, String pvcName, String arrayId, String volumeId) {
+		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
+		try (final KubernetesClient client = k8sAdapter.configServer()) {
+			String volumeHandle = "existingvol-NFS-" + arrayId + "-" + volumeId;
+			PersistentVolume pv = new PersistentVolumeBuilder()
+				.withNewMetadata()
+				.withName(pvName)
+				.addToAnnotations("pv.kubernetes.io/provisioned-by", "csi-unity.dellemc.com")
+				.endMetadata()
+				.withNewSpec()
+				.addToAccessModes("ReadWriteMany")
+				.withCapacity(Map.of("storage", new Quantity("50Gi")))
+				.withNewCsi()
+				.withDriver("csi-unity.dellemc.com")
+				.withVolumeHandle(volumeHandle)
+				.endCsi()
+				.withPersistentVolumeReclaimPolicy("Retain")
+				.withNewClaimRef()
+				.withName(pvcName)
+				.withNamespace("astrago")
+				.endClaimRef()
+				.withStorageClassName(storageName)
+				.withVolumeMode("Filesystem")
+				.endSpec()
+				.build();
+
+			// PersistentVolume 생성
+			client.persistentVolumes().create(pv);
 		}
 	}
 }

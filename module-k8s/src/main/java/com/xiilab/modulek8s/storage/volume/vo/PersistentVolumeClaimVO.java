@@ -22,6 +22,7 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 	private String pvcMetaName;
 	private String namespace;
 	private int requestVolume;
+	private String storageClassName;
 
 	@Override
 	public HasMetadata createResource() {
@@ -52,6 +53,7 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 			.pvcMetaName(createPVC.getPvcName())
 			.namespace(createPVC.getNamespace())
 			.requestVolume(createPVC.getRequestVolume())
+			.storageClassName(createPVC.getStorageClassName())
 			.build();
 	}
 	@Override

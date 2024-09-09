@@ -20,4 +20,6 @@ public interface StorageService {
 
 	void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage);
 
+	StorageEntity getStorageClassByVolumeId(long volumeId);
+
 }

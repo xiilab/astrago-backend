@@ -30,6 +30,8 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 	private String storagePath;
 	private String namespace;
 	private int requestVolume;
+	private String arrayId;
+	private String dellVolumeId;
 
 	@Override
 	public HasMetadata createResource() {
@@ -57,6 +59,8 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 			.storagePath(createPV.getStoragePath())
 			.storageType(createPV.getStorageType())
 			.requestVolume(createPV.getRequestVolume())
+			.arrayId(createPV.getArrayId())
+			.dellVolumeId(createPV.getDellVolumeId())
 			.build();
 	}
 	@Override

@@ -4,12 +4,14 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.SSLException;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,8 @@ public class WebClientService {
 	final long megabyte = kilobyte * 1024;
 	final long gigabyte = megabyte * 1024;
 
-	public <T> T postObjectFromUrl(String url, Map<String, String> headers, Object body, Class<?> bodyType, Class<T> responseType) throws SSLException {
+	public <T> T postObjectFromUrl(String url, Map<String, String> headers, Object body, Class<?> bodyType,
+		Class<T> responseType) throws SSLException {
 		WebClient webClient = createWebClient();
 		return webClient.post()
 			.uri(url)
@@ -63,7 +66,7 @@ public class WebClientService {
 			.block();
 	}
 
-	public byte[] downloadFile(String url, MediaType mediaType){
+	public byte[] downloadFile(String url, MediaType mediaType) {
 		return webClient.get()
 			.uri(url)
 			.accept(mediaType)
@@ -72,7 +75,7 @@ public class WebClientService {
 			.block();
 	}
 
-	public HttpHeaders getFileInfo(String url){
+	public HttpHeaders getFileInfo(String url) {
 		return webClient.head()
 			.uri(url)
 			.retrieve()
@@ -80,6 +83,7 @@ public class WebClientService {
 			.block()
 			.getHeaders();
 	}
+
 	public String retrieveFileName(String fileUrl) {
 		HttpHeaders headers = webClient.head()
 			.uri(fileUrl)
@@ -106,11 +110,11 @@ public class WebClientService {
 
 	public String formatFileSize(long bytes) {
 		if (bytes >= gigabyte) {
-			return String.format("%.2f GB", (double) bytes / gigabyte);
+			return String.format("%.2f GB", (double)bytes / gigabyte);
 		} else if (bytes >= megabyte) {
-			return String.format("%.2f MB", (double) bytes / megabyte);
+			return String.format("%.2f MB", (double)bytes / megabyte);
 		} else if (bytes >= kilobyte) {
-			return String.format("%.2f KB", (double) bytes / kilobyte);
+			return String.format("%.2f KB", (double)bytes / kilobyte);
 		} else {
 			return bytes + " Bytes";
 		}

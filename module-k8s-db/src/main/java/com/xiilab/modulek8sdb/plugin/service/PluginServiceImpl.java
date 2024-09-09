@@ -28,9 +28,9 @@ public class PluginServiceImpl implements PluginService {
 	}
 
 	@Override
-	public void pluginDeleteYN(StorageType type, boolean result, String userId, String userFullName) {
+	public void pluginDeleteYN(StorageType type, boolean result, PluginDTO pluginDTO) {
 		PluginEntity pluginEntity = getPluginEntity(type);
-		pluginEntity.setInstallYN(result ? DeleteYN.Y : DeleteYN.N, userId, userFullName);
+		pluginEntity.setInstallYN(result ? DeleteYN.Y : DeleteYN.N, pluginDTO);
 	}
 
 	private PluginEntity getPluginEntity(StorageType type) {

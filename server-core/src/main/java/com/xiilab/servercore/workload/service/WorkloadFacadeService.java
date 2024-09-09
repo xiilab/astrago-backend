@@ -85,6 +85,7 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.volume.entity.AstragoVolumeEntity;
 import com.xiilab.modulek8sdb.volume.entity.LocalVolumeEntity;
@@ -106,6 +107,7 @@ import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.storage.service.StorageService;
 import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.volume.dto.VolumeResDTO;
 import com.xiilab.servercore.volume.service.VolumeFacadeService;
@@ -150,6 +152,7 @@ public class WorkloadFacadeService {
 	private final UserFacadeService userFacadeService;
 	private final NodeFacadeService nodeFacadeService;
 	private final PortRepository portRepository;
+	private final StorageService storageService;
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 
@@ -964,20 +967,21 @@ public class WorkloadFacadeService {
 				if (!storagePath.endsWith(File.separator)) {
 					storagePath += File.separator;
 				}
-
 				String filePath = storagePath + saveDirectoryName;
+				StorageEntity storageEntity = storageService.getStorageClassByVolumeId(moduleVolumeReqDTO.getId());
+				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
 					filePath,
-					resVolumeWithStorage.getStorageType());
+					resVolumeWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
-					resVolumeWithStorage.getStoragePath(), resVolumeWithStorage.getStorageType());
+					resVolumeWithStorage.getStoragePath(), resVolumeWithStorage.getStorageType(), "", "", "");
 			}
 		}
 	}
 
 	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
-		String storagePath, StorageType storageType) {
+		String storagePath, StorageType storageType, String volumeName, String arrayId, String dellVolumeId) {
 		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
 		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
 		int requestVolume = 50;
@@ -991,12 +995,15 @@ public class WorkloadFacadeService {
 			.namespace(workspaceName)
 			.storageType(storageType)
 			.requestVolume(requestVolume)
+			.arrayId(arrayId)
+			.dellVolumeId(dellVolumeId)
 			.build();
 		moduleVolumeReqDTO.setCreatePV(createPV);
 		CreatePVC createPVC = CreatePVC.builder()
 			.pvcName(pvcName)
 			.namespace(workspaceName)
 			.requestVolume(requestVolume)
+			.volumeName(volumeName)
 			.build();
 		moduleVolumeReqDTO.setCreatePVC(createPVC);
 	}

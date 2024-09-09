@@ -16,8 +16,6 @@ public interface StorageClassRepository {
 
 	void createStorageClass(CreateStorageClassDTO createStorageClassDTO);
 
-	StorageClass createDELLStorage(CreateStorageReqDTO createStorageReqDTO, String storageName);
-
 	boolean storageClassConnectionTest(String storageType);
 
 	StorageClassResDTO findStorageClassByMetaName(String storageClassMetaName);
