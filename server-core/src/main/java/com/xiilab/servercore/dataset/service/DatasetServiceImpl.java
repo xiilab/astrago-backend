@@ -281,10 +281,8 @@ public class DatasetServiceImpl implements DatasetService {
 		Long datasetId = insertWorkspaceDatasetDTO.getDatasetId();
 
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId);
-		if (workSpaceMappingEntity != null) {
-			throw new RestApiException(DatasetErrorCode.DATASET_WORKSPACE_MAPPING_ALREADY);
-		}
+			workspaceResourceName, datasetId)
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_WORKSPACE_MAPPING_ALREADY));
 
 		//dataset entity 조회
 		Dataset dataset = datasetRepository.findById(datasetId)
@@ -303,16 +301,16 @@ public class DatasetServiceImpl implements DatasetService {
 	@Transactional
 	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId);
-		if (workSpaceMappingEntity == null) {
-			throw new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND);
-		}
+			workspaceResourceName, datasetId)
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+
 		//owner or 본인 체크
-		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser()
+		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) || !(workSpaceMappingEntity.getRegUser()
 			.getRegUserId()
 			.equalsIgnoreCase(userInfoDTO.getId()))) {
 			throw new RestApiException(DatasetErrorCode.DATASET_DELETE_FORBIDDEN);
 		}
+
 		datasetWorkspaceRepository.deleteByDatasetIdAndWorkspaceResourceName(datasetId, workspaceResourceName);
 	}
 
@@ -337,10 +335,9 @@ public class DatasetServiceImpl implements DatasetService {
 	public void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO,
 		String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId);
-		if (workSpaceMappingEntity == null) {
-			throw new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND);
-		}
+			workspaceResourceName, datasetId)
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+
 		//owner or 본인 체크
 		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser()
 			.getRegUserId()
