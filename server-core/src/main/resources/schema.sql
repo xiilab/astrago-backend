@@ -149,17 +149,17 @@ create table if not exists TB_CODE
     MOD_DATE                datetime(6)                          null,
     CODE_ARGS               varchar(1000)                        null,
     REG_DATE                datetime(6)                          null,
-    CODE_URL                varchar(255)                         null,
+    CODE_URL                varchar(500)                         null,
     REG_USER_ID             varchar(255)                         null,
     REG_USER_NAME           varchar(255)                         null,
     REG_USER_REAL_NAME      varchar(255)                         null,
     TITLE                   varchar(255)                         null,
     WORKSPACE_NAME          varchar(255)                         null,
     CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')          null,
-    CODE_CMD                varchar(255)                         null,
+    CODE_CMD                varchar(2000)                         null,
     DELETE_YN               enum ('Y', 'N')                      null,
     REPOSITORY_TYPE         enum ('WORKSPACE', 'USER', 'CUSTOM') null,
-    CODE_DEFAULT_MOUNT_PATH varchar(255) charset utf8mb4         null
+    CODE_DEFAULT_MOUNT_PATH varchar(2000) charset utf8mb4         null
 );
 
 create index if not exists FKfhqjmmbm3u5illhwv2axw3q5m
@@ -172,7 +172,7 @@ create table if not exists TB_CODE_WORKLOAD_MAPPING
         primary key,
     WORKLOAD_ID              bigint          null,
     branch                   varchar(255)    null,
-    mountPath                varchar(255)    null,
+    mountPath                varchar(2000)    null,
     DELETE_YN                enum ('Y', 'N') null
 );
 
@@ -727,8 +727,8 @@ create table if not exists TB_WORKLOAD
     GPU_NAME                varchar(255)                             DEFAULT NULL,
     NODE_NAME               varchar(255)                             DEFAULT NULL,
     WORKING_DIR             varchar(255)                            null comment '명령어를 실행 할 위치',
-    WORKLOAD_CMD               varchar(1200)                            null,
-    WORKLOAD_DESCRIPTION    varchar(1200)                            null,
+    WORKLOAD_CMD               varchar(2000)                            null,
+    WORKLOAD_DESCRIPTION    varchar(1500)                            null,
     DELETE_YN               enum ('Y', 'N')                         null,
     GPU_TYPE                enum ('MIG','MPS','NORMAL')              DEFAULT NULL,
     WORKLOAD_STATUS         enum ('PENDING','RUNNING','ERROR','END') DEFAULT NULL,
@@ -750,7 +750,7 @@ create table if not exists TB_WORKLOAD_JOB
     WORKLOAD_REQ_GPU int    null,
     WORKLOAD_REQ_MEM   float        DEFAULT NULL,
     REMAIN_TIME        int(11)      DEFAULT NULL,
-    WORKLOAD_PARAMETER varchar(255) DEFAULT NULL
+    WORKLOAD_PARAMETER varchar(1000) DEFAULT NULL
 );
 --
 -- -- astrago.TB_WORKLOAD_DISTRIBUTED_JOB definition
@@ -765,7 +765,7 @@ create table if not exists TB_WORKLOAD_DISTRIBUTED_JOB
     WORKER_MEM_REQUEST   float        DEFAULT NULL,
     WORKLOAD_ID          bigint(20) NOT NULL,
     REMAIN_TIME          int(11)      DEFAULT NULL,
-    WORKLOAD_PARAMETER   varchar(255) DEFAULT NULL
+    WORKLOAD_PARAMETER   varchar(1000) DEFAULT NULL
 );
 
 create table if not exists TB_EXPERIMENT
