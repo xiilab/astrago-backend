@@ -53,6 +53,7 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 		for (GroupRepresentation subGroup : subGroups) {
 			groups.add(new GroupSummaryDTO(subGroup));
 		}
+
 		return groups;
 	}
 
@@ -148,7 +149,8 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 		List<UserRepresentation> groupMembers = new ArrayList<>();
 		List<UserRepresentation> members = group.members(0, Integer.MAX_VALUE)
 			.stream()
-			.filter(userRepresentation -> userRepresentation.isEnabled() == true).toList();
+			.filter(UserRepresentation::isEnabled)
+			.toList();
 
 		if (authType == AuthType.ROLE_ADMIN) { // 관리자만 검색
 			for (UserRepresentation member : members) {
@@ -198,8 +200,9 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 		List<UserRepresentation> groupMembers = new ArrayList<>();
 		List<UserRepresentation> memberList = groupResource.members()
 			.stream()
-			.filter(userRepresentation -> userRepresentation.isEnabled() == true).toList();
-		;
+			.filter(UserRepresentation::isEnabled)
+			.toList();
+
 		for (UserRepresentation member : memberList) {
 			UserResource userResource = keycloakConfig.getRealmClient().users().get(member.getId());
 			if (hasOneGroup(userResource)) {
@@ -299,7 +302,7 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 		//그룹내 유저, 요청받은 유저 조회 후 중복 삭제
 		Set<String> userIds = new HashSet<>();
 		for (String userId : addWorkspaceUsersDTO.getUserIds()) {
-			// 이미 그룹에 등록된 회원인지 조회 후 있으면 Set에서 삭제
+			// 이미 그룹에 등록된 회원인지 조회
 			Optional<GroupUserDTO.UserDTO> findUser = findUsersByGroupId(workspace.getId(), null).getUsers().stream()
 				.filter(groupUserDTO -> groupUserDTO.getUserId().equals(userId))
 				.findFirst();
@@ -324,6 +327,7 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 				throw new K8sException(WorkspaceErrorCode.WORKSPACE_USER_ADD_FAIL);
 			}
 		}
+
 		return userIds;
 	}
 
@@ -338,7 +342,10 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 		List<UserRepresentation> members = groupResource.members(0, Integer.MAX_VALUE);
 		boolean isDefaultGroup = groupResource.toRepresentation().getPath().equals("/account/default");
 		for (UserRepresentation member : members) {
-			if (isDefaultGroup) {//default 그룹을 추가한건지 체크
+			if (!member.isEnabled()) continue;
+
+			if (isDefaultGroup) {
+				//default 그룹을 추가한건지 체크
 				int groupSize = keycloakConfig.getRealmClient()
 					.users()
 					.get(member.getId())
@@ -347,6 +354,7 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 					.filter(groupRepresentation -> groupRepresentation.getPath().contains("/account/"))
 					.toList()
 					.size();
+
 				if (groupSize == 1) {//default 그룹만 가진 유저면 추가
 					userIds.add(member.getId());
 				}
