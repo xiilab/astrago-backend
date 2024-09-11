@@ -280,9 +280,10 @@ public class DatasetServiceImpl implements DatasetService {
 		String workspaceResourceName = insertWorkspaceDatasetDTO.getWorkspaceResourceName();
 		Long datasetId = insertWorkspaceDatasetDTO.getDatasetId();
 
-		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId)
-			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_WORKSPACE_MAPPING_ALREADY));
+		datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(workspaceResourceName, datasetId)
+			.ifPresent(d -> {
+				throw new RestApiException(DatasetErrorCode.DATASET_WORKSPACE_MAPPING_ALREADY);
+			});
 
 		//dataset entity 조회
 		Dataset dataset = datasetRepository.findById(datasetId)
@@ -301,13 +302,13 @@ public class DatasetServiceImpl implements DatasetService {
 	@Transactional
 	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId)
+				workspaceResourceName, datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 
 		//owner or 본인 체크
-		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) || !(workSpaceMappingEntity.getRegUser()
+		if (!userInfoDTO.isMyWorkspace(workspaceResourceName) && !workSpaceMappingEntity.getRegUser()
 			.getRegUserId()
-			.equalsIgnoreCase(userInfoDTO.getId()))) {
+			.equalsIgnoreCase(userInfoDTO.getId())) {
 			throw new RestApiException(DatasetErrorCode.DATASET_DELETE_FORBIDDEN);
 		}
 
@@ -335,7 +336,7 @@ public class DatasetServiceImpl implements DatasetService {
 	public void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO,
 		String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId)
+				workspaceResourceName, datasetId)
 			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
 
 		//owner or 본인 체크
