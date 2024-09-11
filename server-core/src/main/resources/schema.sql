@@ -156,10 +156,10 @@ create table if not exists TB_CODE
     TITLE                   varchar(255)                         null,
     WORKSPACE_NAME          varchar(255)                         null,
     CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')          null,
-    CODE_CMD                varchar(255)                         null,
+    CODE_CMD                varchar(2000)                         null,
     DELETE_YN               enum ('Y', 'N')                      null,
     REPOSITORY_TYPE         enum ('WORKSPACE', 'USER', 'CUSTOM') null,
-    CODE_DEFAULT_MOUNT_PATH varchar(255) charset utf8mb4         null
+    CODE_DEFAULT_MOUNT_PATH varchar(2000) charset utf8mb4         null
 );
 
 create index if not exists FKfhqjmmbm3u5illhwv2axw3q5m
