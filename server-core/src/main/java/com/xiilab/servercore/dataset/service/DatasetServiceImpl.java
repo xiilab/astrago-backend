@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -87,9 +89,15 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public DatasetDTO.ResDatasets getDatasets(PageInfo pageInfo, RepositorySearchCondition repositorySearchCondition,
 		UserDTO.UserInfo userInfoDTO, PageMode pageMode) {
+
+		Set<String> joinedWorkspaceResourceNames = userInfoDTO.getWorkspaces()
+			.stream()
+			.map(wsResourceName -> wsResourceName.substring(0, wsResourceName.indexOf("/")))
+			.collect(Collectors.toSet());
+
 		PageRequest pageRequest = PageRequest.of(pageInfo.getPageNo() - 1, pageInfo.getPageSize());
 		Page<Dataset> datasets = datasetRepository.findByAuthorityWithPaging(pageRequest, userInfoDTO.getId(),
-			userInfoDTO.getAuth(), repositorySearchCondition, pageMode);
+			userInfoDTO.getAuth(), repositorySearchCondition, pageMode, joinedWorkspaceResourceNames);
 		List<Dataset> entities = datasets.getContent();
 		long totalCount = datasets.getTotalElements();
 
@@ -272,11 +280,10 @@ public class DatasetServiceImpl implements DatasetService {
 		String workspaceResourceName = insertWorkspaceDatasetDTO.getWorkspaceResourceName();
 		Long datasetId = insertWorkspaceDatasetDTO.getDatasetId();
 
-		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId);
-		if (workSpaceMappingEntity != null) {
-			throw new RestApiException(DatasetErrorCode.DATASET_WORKSPACE_MAPPING_ALREADY);
-		}
+		datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(workspaceResourceName, datasetId)
+			.ifPresent(d -> {
+				throw new RestApiException(DatasetErrorCode.DATASET_WORKSPACE_MAPPING_ALREADY);
+			});
 
 		//dataset entity 조회
 		Dataset dataset = datasetRepository.findById(datasetId)
@@ -295,16 +302,16 @@ public class DatasetServiceImpl implements DatasetService {
 	@Transactional
 	public void deleteWorkspaceDataset(String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId);
-		if (workSpaceMappingEntity == null) {
-			throw new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND);
-		}
+				workspaceResourceName, datasetId)
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+
 		//owner or 본인 체크
-		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser()
+		if (!userInfoDTO.isMyWorkspace(workspaceResourceName) && !workSpaceMappingEntity.getRegUser()
 			.getRegUserId()
-			.equalsIgnoreCase(userInfoDTO.getId()))) {
+			.equalsIgnoreCase(userInfoDTO.getId())) {
 			throw new RestApiException(DatasetErrorCode.DATASET_DELETE_FORBIDDEN);
 		}
+
 		datasetWorkspaceRepository.deleteByDatasetIdAndWorkspaceResourceName(datasetId, workspaceResourceName);
 	}
 
@@ -315,6 +322,7 @@ public class DatasetServiceImpl implements DatasetService {
 		if (datasets != null || datasets.size() != 0) {
 			return DatasetDTO.DatasetsInWorkspace.mappingEntitiesToDtos(datasets);
 		}
+
 		return null;
 	}
 
@@ -329,10 +337,9 @@ public class DatasetServiceImpl implements DatasetService {
 	public void updateWorkspaceDataset(UpdateWorkspaceDatasetDTO updateWorkspaceDatasetDTO,
 		String workspaceResourceName, Long datasetId, UserDTO.UserInfo userInfoDTO) {
 		DatasetWorkSpaceMappingEntity workSpaceMappingEntity = datasetWorkspaceRepository.findByWorkspaceResourceNameAndDatasetId(
-			workspaceResourceName, datasetId);
-		if (workSpaceMappingEntity == null) {
-			throw new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND);
-		}
+				workspaceResourceName, datasetId)
+			.orElseThrow(() -> new RestApiException(DatasetErrorCode.DATASET_NOT_FOUND));
+
 		//owner or 본인 체크
 		if (!(userInfoDTO.isMyWorkspace(workspaceResourceName)) && !(workSpaceMappingEntity.getRegUser()
 			.getRegUserId()

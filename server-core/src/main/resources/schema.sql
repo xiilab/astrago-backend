@@ -172,9 +172,9 @@ create table if not exists TB_CODE_WORKLOAD_MAPPING
         primary key,
     WORKLOAD_ID              bigint          null,
     branch                   varchar(255)    null,
-    mountPath                varchar(2000)    null,
+    mountPath                varchar(255)    null,
     DELETE_YN                enum ('Y', 'N') null,
-    CMD                      varchar(2000)    null
+    CMD                      varchar(500)    null
 );
 
 create index if not exists FK19uw3ftyw8nvw1hqh9ce8rj1s
@@ -676,8 +676,8 @@ create table if not exists TB_RESOURCE_QUOTA
     REG_USER_ID                   varchar(255)                          null,
     REG_USER_NAME                 varchar(255)                          null,
     REG_USER_REAL_NAME            varchar(255)                          null,
-    RESOURCE_QUOTA_REJECT_REASON  varchar(255)                          null,
-    RESOURCE_QUOTA_REQUEST_REASON varchar(255)                          null,
+    RESOURCE_QUOTA_REJECT_REASON  varchar(4000)                          null,
+    RESOURCE_QUOTA_REQUEST_REASON varchar(4000)                          null,
     WORKSPACE_NAME                varchar(255)                          null,
     WORKSPACE_RESOURCE_NAME       varchar(255)                          null,
     RESOURCE_QUOTA_STATUS         enum ('WAITING', 'APPROVE', 'REJECT') null
@@ -791,7 +791,7 @@ create table if not exists TB_WORKLOAD
     WORKLOAD_DELETED_AT        datetime(6)                                            null,
     image_IMAGE_ID             bigint                                                 null,
     DTYPE                      varchar(31)                                            not null,
-    WORKLOAD_CMD               varchar(2000)                                           null,
+    WORKLOAD_CMD               varchar(4000)                                           null,
     WORKLOAD_CREATOR           varchar(255)                                           null,
     WORKLOAD_CREATOR_ID        varchar(255)                                           null,
     WORKLOAD_CREATOR_REAL_NAME varchar(255)                                           null,
