@@ -39,7 +39,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 		Set<String> joinedWorkspaceResourceNames) {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 		OrderSpecifier<? extends Serializable> sort =
-			sortType == RepositorySortType.NAME ? dataset.datasetName.desc() :
+			sortType == RepositorySortType.NAME ? dataset.datasetName.toLowerCase().desc() :
 				sortType == RepositorySortType.CREATED_AT ? dataset.regDate.desc() : dataset.datasetSize.desc();
 
 		// BooleanBuilder builder = new BooleanBuilder();

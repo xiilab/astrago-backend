@@ -36,7 +36,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 
 		OrderSpecifier<? extends Serializable> sort =
-			sortType == RepositorySortType.NAME ? model.modelName.desc() :
+			sortType == RepositorySortType.NAME ? model.modelName.toLowerCase().desc() :
 				sortType == RepositorySortType.CREATED_AT ? model.regDate.desc() : model.modelSize.desc();
 
 		List<Model> models = queryFactory.selectFrom(model)
