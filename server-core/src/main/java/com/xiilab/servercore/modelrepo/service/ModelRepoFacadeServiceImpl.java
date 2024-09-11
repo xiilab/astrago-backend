@@ -271,6 +271,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			modelVersionEntity.setRegUserInfo(regUser, LocalDateTime.now(), LocalDateTime.now());
 			modelRepoVersionRepository.save(modelVersionEntity);
 
+
 			// ModelRepoEntity save
 			modelRepoEntity.setRegUserInfo(regUser, LocalDateTime.now(), LocalDateTime.now());
 			ModelRepoEntity saveModel = modelRepoRepository.save(modelRepoEntity);
