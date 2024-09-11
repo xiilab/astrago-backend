@@ -322,6 +322,7 @@ public class DatasetServiceImpl implements DatasetService {
 		if (datasets != null || datasets.size() != 0) {
 			return DatasetDTO.DatasetsInWorkspace.mappingEntitiesToDtos(datasets);
 		}
+
 		return null;
 	}
 

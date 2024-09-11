@@ -20,7 +20,6 @@ import com.xiilab.modulecommon.dto.SmtpDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.WorkspaceRole;
 import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.SmtpErrorCode;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
@@ -64,6 +63,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 		} else {
 			userService.joinDefaultGroup(userInfo.getId());
 		}
+
 		updateUserWorkspaceCreateLimitById(userInfo.getId(),
 			workspaceSettingRepo.findAll().get(0).getWorkspaceCreateLimit());
 

@@ -102,6 +102,7 @@ public class ModelRepositoryImpl implements ModelRepositoryCustom {
 		if (authType == AuthType.ROLE_USER || pageMode == PageMode.USER) {
 			return StringUtils.hasText(creator) ? model.regUser.regUserId.eq(creator) : null;
 		}
+
 		return null;
 	}
 }

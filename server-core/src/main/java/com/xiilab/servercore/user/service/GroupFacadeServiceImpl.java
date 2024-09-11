@@ -16,6 +16,7 @@ import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8s.workspace.service.WorkspaceService;
 import com.xiilab.modulek8sdb.alert.systemalert.service.WorkspaceAlertService;
+import com.xiilab.modulek8sdb.pin.enumeration.PinType;
 import com.xiilab.moduleuser.dto.AddWorkspaceUsersDTO;
 import com.xiilab.moduleuser.dto.GroupInfoDTO;
 import com.xiilab.moduleuser.dto.GroupReqDTO;
@@ -23,6 +24,7 @@ import com.xiilab.moduleuser.dto.GroupSummaryDTO;
 import com.xiilab.moduleuser.dto.GroupUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.GroupService;
+import com.xiilab.servercore.pin.service.PinService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +36,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 	private final WorkspaceAlertService workspaceAlertService;
 	private final ApplicationEventPublisher publisher;
 	private final WorkspaceService workspaceService;
+	private final PinService pinService;
 	@Override
 	public void createAccountGroup(GroupReqDTO groupReqDTO, UserDTO.UserInfo userInfo) {
 		groupService.createAccountGroup(groupReqDTO, userInfo);
@@ -81,6 +84,7 @@ public class GroupFacadeServiceImpl implements GroupFacadeService {
 		//삭제 된 멤버들 알람 매핑 데이터 삭제
 		for (String userId : userIdList) {
 			workspaceAlertService.deleteWorkspaceAlertMappingByUserIdAndWorkspaceName(userId, groupName);
+			pinService.deletePin(groupName, PinType.WORKSPACE, userId);
 		}
 
 		sendModifyWorkspaceMemberEvent(groupName, userInfoDTO, userIdList, false);
