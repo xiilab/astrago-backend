@@ -29,17 +29,26 @@ import lombok.RequiredArgsConstructor;
 public class OneViewServiceImpl implements OneViewService {
 	private final WebClientService webClientService;
 	private final OneViewSettingRepository oneViewSettingRepository;
+	@Override
+	public OneViewResDTO.FindOneViewSetting getOneViewSetting() {
+		OneViewSettingEntity optionalOneViewSettingEntity = oneViewSettingRepository.findAll()
+			.stream()
+			.findFirst()
+			.orElseThrow(() -> new RestApiException(OneViewErrorCode.NOT_FOUND_ONEVIEW_SETTING));
+
+		return new OneViewResDTO.FindOneViewSetting(optionalOneViewSettingEntity.getApiServerAddress());
+	}
 
 	@Override
 	@Transactional
 	public void saveOneViewSetting(OneViewReqDTO.SaveOneViewSetting saveOneViewSettingDTO) {
 		try {
 			// One View 버전 확인 API 호출
-			OneViewResDTO.FindApiVersion findApiVersionResDTO = webClientService.getObjectFromUrl(
-				saveOneViewSettingDTO.getApiServerAddress() + "/rest/version", OneViewResDTO.FindApiVersion.class);
+			OneViewResDTO.APIResponse.FindApiVersion findApiVersionResDTO = webClientService.getObjectFromUrl(
+				saveOneViewSettingDTO.getApiServerAddress() + "/rest/version", OneViewResDTO.APIResponse.FindApiVersion.class);
 
 			if (!Objects.isNull(findApiVersionResDTO.getCurrentVersion())) {
-				OneViewResDTO.SessionToken sessionTokenResDTO = issueSessionTokenAPI(
+				OneViewResDTO.APIResponse.SessionToken sessionTokenResDTO = issueSessionTokenAPI(
 					saveOneViewSettingDTO.getApiServerAddress(),
 					findApiVersionResDTO.getCurrentVersion(),
 					saveOneViewSettingDTO.getUserName(),
@@ -89,7 +98,7 @@ public class OneViewServiceImpl implements OneViewService {
 			.orElseThrow(() -> new RestApiException(OneViewErrorCode.DISCONNECTED_ONEVIEW_ACCOUNT));
 
 		try {
-			OneViewResDTO.SessionToken sessionToken = issueSessionTokenAPI(
+			OneViewResDTO.APIResponse.SessionToken sessionToken = issueSessionTokenAPI(
 				findOneViewSettingEntity.getApiServerAddress(),
 				findOneViewSettingEntity.getApiVersion(),
 				findOneViewSettingEntity.getUserName(),
@@ -115,7 +124,7 @@ public class OneViewServiceImpl implements OneViewService {
 		oneViewSettingRepository.save(findOneViewSettingEntity);
 	}
 
-	private OneViewResDTO.SessionToken issueSessionTokenAPI(String apiServerAddress,
+	private OneViewResDTO.APIResponse.SessionToken issueSessionTokenAPI(String apiServerAddress,
 		Integer apiVersion, String userName, String password) throws SSLException {
 
 		OneViewReqDTO.LoginSession loginSessionReqDTO = OneViewReqDTO.LoginSession.builder()
@@ -129,7 +138,7 @@ public class OneViewServiceImpl implements OneViewService {
 			Map.of("X-Api-Version", String.valueOf(apiVersion)),
 			loginSessionReqDTO,
 			OneViewReqDTO.LoginSession.class,
-			OneViewResDTO.SessionToken.class
+			OneViewResDTO.APIResponse.SessionToken.class
 		);
 	}
 }

@@ -607,12 +607,12 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				case GPU_ASSIGN_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getAllocGPU).reversed();
 				case GPU_USE_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseGPU);
 				case GPU_USE_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getUseGPU).reversed();
-				case CREATOR_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator);
-				case CREATOR_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreator).reversed();
+				case CREATOR_ASC -> Comparator.comparing(adminResponseDTO -> adminResponseDTO.getCreator().toLowerCase());
+				case CREATOR_DESC -> Comparator.comparing(adminResponseDTO -> adminResponseDTO.getCreator().toLowerCase(), Comparator.reverseOrder());
 				case CREATED_AT_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt);
 				case CREATED_AT_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getCreatedAt).reversed();
-				case WORKSPACE_NAME_ASC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getName);
-				case WORKSPACE_NAME_DESC -> Comparator.comparing(WorkspaceDTO.AdminResponseDTO::getName).reversed();
+				case WORKSPACE_NAME_ASC -> Comparator.comparing(adminResponseDTO -> adminResponseDTO.getName().toLowerCase());
+				case WORKSPACE_NAME_DESC -> Comparator.comparing(adminResponseDTO -> adminResponseDTO.getName().toLowerCase(), Comparator.reverseOrder());
 			};
 			workspaceList = workspaceList.stream().sorted(comparator).toList();
 		}
