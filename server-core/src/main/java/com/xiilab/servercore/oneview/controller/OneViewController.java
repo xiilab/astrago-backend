@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.xiilab.modulecommon.enums.OneViewAccountConnectionStatus;
 import com.xiilab.servercore.oneview.dto.OneViewReqDTO;
+import com.xiilab.servercore.oneview.dto.OneViewResDTO;
 import com.xiilab.servercore.oneview.service.OneViewService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,12 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/core/oneview")
 public class OneViewController {
 	private final OneViewService oneViewService;
+
+	@GetMapping
+	@Operation(summary = "원뷰 정보 조회")
+	public ResponseEntity<OneViewResDTO.FindOneViewSetting> findOneViewSetting() {
+		return ResponseEntity.ok().build();
+	}
 
 	@PostMapping
 	@Operation(summary = "원뷰 정보 설정")

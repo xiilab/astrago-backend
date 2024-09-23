@@ -1,24 +1,26 @@
 package com.xiilab.servercore.oneview.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 public abstract class OneViewResDTO {
 	@Getter
+	@AllArgsConstructor
 	public static class FindOneViewSetting {
-		private String minimumVersion;
-		private Integer currentVersion;
+		private String apiServerAddress;
 	}
 
-	@Getter
-	public static class FindApiVersion {
-		private String minimumVersion;
-		private Integer currentVersion;
-	}
+	public static class APIResponse {
+		@Getter
+		public static class FindApiVersion {
+			private String minimumVersion;
+			private Integer currentVersion;
+		}
 
-	@Getter
-	public static class SessionToken {
-		private String sessionID;
+		@Getter
+		public static class SessionToken {
+			private String sessionID;
+		}
 	}
-
 }
