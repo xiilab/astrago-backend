@@ -93,6 +93,11 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	@Override
 	@Transactional
 	public void deleteModelRepoById(long modelRepoId) {
+		//해당 모델을 사용중인 서비스가 있는지 체크 -> 있으면 삭제 X
+		List<DeployEntity> deploys = deployRepository.findByModelRepoId(modelRepoId);
+		if(deploys.size() != 0){
+			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_DELETE_FAIL);
+		}
 		// 모델 Entity 조회
 		ModelRepoEntity modelRepoEntity = getModelRepoEntityById(modelRepoId);
 		// 모델 삭제
