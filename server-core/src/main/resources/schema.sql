@@ -873,6 +873,7 @@ create table if not exists TB_WORKSPACE_ALERT_SETTING
 
 create table if not exists TB_WORKSPACE_SETTING
 (
+    workspaceCreateLimit int not null,
     cpu double not null,
     gpu int    not null,
     mem double not null,
