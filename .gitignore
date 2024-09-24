@@ -240,3 +240,6 @@ server-core/src/main/resources/static/
 /.idea/
 
 logs/
+**/src/main/**/generated/
+module-common/src/test/resources/zip
+hs_err_pid14758.log

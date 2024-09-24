@@ -470,6 +470,9 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		String workspaceNm = resourceQuotaEntity.getWorkspaceName();
 		WorkspaceUserAlertEvent workspaceUserAlertEvent = null;
 		String receiverEmail = userService.getUserInfoById(resourceQuotaEntity.getRegUser().getRegUserId()).getEmail();
+		PageNaviParam pageNaviParam = PageNaviParam.builder()
+			.workspaceResourceName(resourceQuotaEntity.getWorkspaceResourceName())
+			.build();
 		if (resourceQuotaApproveDTO.isApprovalYN()) {
 			resourceQuotaEntity.approval();
 			cpu = resourceQuotaApproveDTO.getCpu() != null ? resourceQuotaApproveDTO.getCpu() :
@@ -480,6 +483,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 				resourceQuotaEntity.getGpuReq();
 			workspaceModuleFacadeService.updateWorkspaceResourceQuota(resourceQuotaEntity.getWorkspaceResourceName(),
 				cpu, mem, gpu);
+
 			//리소스 승인 알림 발송
 			String emailTitle = String.format(AlertMessage.WORKSPACE_RESOURCE_REQUEST_RESULT_OWNER.getMailTitle(),
 				workspaceNm);
@@ -494,7 +498,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER,
 				AlertName.OWNER_RESOURCE_REQUEST_RESULT, userInfoDTO.getId(),
 				resourceQuotaEntity.getRegUser().getRegUserId(), emailTitle,
-				title, message, resourceQuotaEntity.getWorkspaceResourceName(), null, mailDTO);
+				title, message, resourceQuotaEntity.getWorkspaceResourceName(), pageNaviParam, mailDTO);
 		} else {
 			resourceQuotaEntity.denied(resourceQuotaApproveDTO.getRejectReason());
 			//리소스 반려 알림 발송
@@ -511,7 +515,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.OWNER,
 				AlertName.OWNER_RESOURCE_REQUEST_RESULT, userInfoDTO.getId(),
 				resourceQuotaEntity.getRegUser().getRegUserId(), emailTitle, title, message,
-				resourceQuotaEntity.getWorkspaceResourceName(), null, mailDTO);
+				resourceQuotaEntity.getWorkspaceResourceName(), pageNaviParam, mailDTO);
 		}
 		eventPublisher.publishEvent(workspaceUserAlertEvent);
 
