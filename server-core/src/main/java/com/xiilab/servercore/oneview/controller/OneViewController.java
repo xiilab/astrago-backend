@@ -27,7 +27,7 @@ public class OneViewController {
 	@GetMapping
 	@Operation(summary = "원뷰 정보 조회")
 	public ResponseEntity<OneViewResDTO.FindOneViewSetting> findOneViewSetting() {
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok().body(oneViewService.getOneViewSetting());
 	}
 
 	@PostMapping
