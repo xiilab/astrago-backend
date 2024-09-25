@@ -185,8 +185,35 @@ public class K8sVolumeRepositoryImpl implements K8sVolumeRepository {
 	@Override
 	public void createPV(CreatePV createPV) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
-			PersistentVolumeVO persistentVolumeVO = PersistentVolumeVO.dtoToEntity(createPV);
-			PersistentVolume resource = (PersistentVolume)persistentVolumeVO.createResource();
+			PersistentVolume resource = null;
+			if(createPV.getStorageType() == StorageType.NFS) {
+				PersistentVolumeVO persistentVolumeVO = PersistentVolumeVO.dtoToEntity(createPV);
+				resource = (PersistentVolume)persistentVolumeVO.createResource();
+			}else if(createPV.getStorageType() == StorageType.DELL_UNITY) {
+				String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
+				String volumeHandle = "existingvol-NFS-" + createPV.getArrayId() + "-" + createPV.getDellVolumeId();
+				resource =  new PersistentVolumeBuilder()
+					.withNewMetadata()
+					.withName(createPV.getPvName())
+					.addToAnnotations("pv.kubernetes.io/provisioned-by", "csi-unity.dellemc.com")
+					.endMetadata()
+					.withNewSpec()
+					.addToAccessModes("ReadWriteMany")
+					.withCapacity(Map.of("storage", new Quantity("50Gi")))
+					.withNewCsi()
+					.withDriver("csi-unity.dellemc.com")
+					.withVolumeHandle(volumeHandle)
+					.endCsi()
+					.withPersistentVolumeReclaimPolicy("Retain")
+					.withNewClaimRef()
+					.withName(createPV.getPvcName())
+					.withNamespace(createPV.getNamespace())
+					.endClaimRef()
+					.withStorageClassName(storageName)
+					.withVolumeMode("Filesystem")
+					.endSpec()
+					.build();
+			}
 			client.persistentVolumes().resource(resource).create();
 		}
 	}
