@@ -287,14 +287,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
-		String description) {
-		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
-			kubernetesClient.apps().deployments().inNamespace(workspaceResourceName)
-				.withName(workloadResourceName).edit(
-					deployment -> new DeploymentBuilder(deployment).editMetadata()
-						.addToAnnotations(AnnotationField.NAME.getField(), name)
-						.addToAnnotations(AnnotationField.DESCRIPTION.getField(), description)
+			public void editInteractiveJob(String workspaceResourceName, String workloadResourceName, String name,
+				String description) {
+				try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+					kubernetesClient.apps().deployments().inNamespace(workspaceResourceName)
+						.withName(workloadResourceName).edit(
+							deployment -> new DeploymentBuilder(deployment).editMetadata()
+								.addToAnnotations(AnnotationField.NAME.getField(), name)
+								.addToAnnotations(AnnotationField.DESCRIPTION.getField(), description)
 						.endMetadata()
 						.build()
 				);

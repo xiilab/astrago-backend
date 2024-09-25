@@ -22,4 +22,8 @@ public class CreateStorageReqDTO {
 	private SecretDTO secretDTO;
 	private String arrayId;
 	private String dellVolumeId;
+
+	public void setVolumeId(String volumeId){
+		this.dellVolumeId = volumeId;
+	}
 }

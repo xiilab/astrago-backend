@@ -73,6 +73,7 @@ public class ProvisionerFacadeServiceImpl implements ProvisionerFacadeService {
 			.regUserName(userInfoDTO == null ? "" : userInfoDTO.getUserFullName())
 			.dellUserName(dellUnityDTO == null ? "" : dellUnityDTO.getUsername())
 			.dellPassword(dellUnityDTO == null ? "" : dellUnityDTO.getPassword())
+			.dellEndpoint(dellUnityDTO == null ? "" : dellUnityDTO.getEndpoint())
 			.build();
 	}
 }

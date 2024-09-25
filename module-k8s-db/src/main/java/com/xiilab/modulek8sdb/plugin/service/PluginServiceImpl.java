@@ -33,6 +33,23 @@ public class PluginServiceImpl implements PluginService {
 		pluginEntity.setInstallYN(result ? DeleteYN.Y : DeleteYN.N, pluginDTO);
 	}
 
+	@Override
+	public PluginDTO.ResponseDTO getPlugin(StorageType type){
+		PluginEntity pluginEntity = getPluginEntity(type);
+		return PluginDTO.ResponseDTO.builder()
+			.id(pluginEntity.getPluginId())
+			.name(pluginEntity.getName())
+			.version(pluginEntity.getVersion())
+			.installYN(pluginEntity.getInstallYN().name())
+			.regDate(pluginEntity.getRegDate())
+			.regUserId(pluginEntity.getRegUserId())
+			.regUserName(pluginEntity.getRegUserName())
+			.dellUserName(pluginEntity.getDellUserName())
+			.dellPassword(pluginEntity.getDellPassword())
+			.dellEndpoint(pluginEntity.getDellEndpoint())
+			.build();
+	}
+
 	private PluginEntity getPluginEntity(StorageType type) {
 		return pluginRepository.getPluginEntityByStorageType(type);
 	}
