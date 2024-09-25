@@ -10,4 +10,6 @@ public interface PluginService {
 	List<PluginDTO.ResponseDTO> getPluginList();
 
 	void pluginDeleteYN(StorageType type, boolean result, PluginDTO pluginDTO);
+
+	PluginDTO.ResponseDTO getPlugin(StorageType type);
 }

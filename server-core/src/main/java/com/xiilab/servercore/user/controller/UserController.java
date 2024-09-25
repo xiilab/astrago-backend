@@ -47,6 +47,7 @@ public class UserController {
 	}
 	@PatchMapping("/{id}")
 	@Operation(summary = "사용자 정보 수정")
+
 	public ResponseEntity<HttpStatus> updateUserInfoById(@RequestBody UpdateUserDTO updateUserDTO,
 		@PathVariable(name = "id") String id) {
 		userFacadeService.updateUserInfoById(id, updateUserDTO);
