@@ -4,13 +4,11 @@ import static com.xiilab.modulek8sdb.dataset.entity.QDataset.*;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.BooleanBuilder;
@@ -35,8 +33,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 
 	@Override
 	public Page<Dataset> findByAuthorityWithPaging(PageRequest pageRequest, String userId, AuthType userAuth,
-		RepositorySearchCondition repositorySearchCondition, PageMode pageMode,
-		Set<String> joinedWorkspaceResourceNames) {
+		RepositorySearchCondition repositorySearchCondition, PageMode pageMode) {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 		OrderSpecifier<? extends Serializable> sort =
 			sortType == RepositorySortType.NAME ? dataset.datasetName.toLowerCase().desc() :
@@ -47,8 +44,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 			.and(creatorEq(userId, userAuth, pageMode))
 			.and(repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()))
 			.and(datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()))
-			.and(deleteYNEqN())
-			.or(eqWorkspaceResourceNames(joinedWorkspaceResourceNames));
+			.and(deleteYNEqN());
 
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
 			.where(whereBuilder)
@@ -104,10 +100,5 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 			return StringUtils.hasText(creator) ? dataset.regUser.regUserId.eq(creator) : null;
 		}
 		return null;
-	}
-
-	private Predicate eqWorkspaceResourceNames(Set<String> joinedWorkspaceResourceNames) {
-		return !CollectionUtils.isEmpty(joinedWorkspaceResourceNames) ?
-			dataset.workspaceMappingList.any().workspaceResourceName.in(joinedWorkspaceResourceNames) : null;
 	}
 }
