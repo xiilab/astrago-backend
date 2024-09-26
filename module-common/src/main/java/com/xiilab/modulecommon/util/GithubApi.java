@@ -18,9 +18,9 @@ public class GithubApi {
 
 	public GithubApi(String token) {
 		try {
-			if(!StringUtils.isBlank(token)){
+			if (!StringUtils.isBlank(token)) {
 				this.gitHub = new GitHubBuilder().withOAuthToken(token).build();
-			}else{
+			} else {
 				this.gitHub = GitHub.connectAnonymously();
 			}
 			gitHub.checkApiUrlValidity();
