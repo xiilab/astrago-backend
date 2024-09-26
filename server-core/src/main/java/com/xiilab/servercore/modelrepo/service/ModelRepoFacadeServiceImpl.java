@@ -58,7 +58,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	private final ModelRepoVersionRepository modelRepoVersionRepository;
 
 	@Override
-	public PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, String search, int pageNum, int pageSize) {
+	public PageDTO<ModelRepoDTO.ResponseDTO> getModelRepoList(String workspaceResourceName, String search, int pageNum,
+		int pageSize) {
 		// 해당 워크스페이스에 등록된 Model List 조회
 		List<ModelRepoEntity> modelRepoEntityList = getModelRepoEntityListByWorkspaceResourceName(
 			workspaceResourceName, search);
@@ -95,7 +96,7 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	public void deleteModelRepoById(long modelRepoId) {
 		//해당 모델을 사용중인 서비스가 있는지 체크 -> 있으면 삭제 X
 		List<DeployEntity> deploys = deployRepository.findByModelRepoId(modelRepoId);
-		if(deploys.size() != 0){
+		if (deploys.size() != 0) {
 			throw new RestApiException(ModelRepoErrorCode.MODEL_REPO_DELETE_FAIL);
 		}
 		// 모델 Entity 조회
@@ -139,11 +140,12 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 
 			setModelLabel(modelRepoReqDTO, saveModel);
 			String modelPath = "";
-			if(modelRepoReqDTO.getModelPath() == null) {
+			if (modelRepoReqDTO.getModelPath() == null) {
 				// 해당 모델이 저장 되는 경로
-				modelPath = storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
+				modelPath =
+					storageEntity.getStoragePath() + "/workspace/" + saveModel.getWorkspaceResourceName() + "/model/" +
 						saveModel.getModelRepoRealName().replace(" ", "");
-			}else{
+			} else {
 				modelPath = storageEntity.getStoragePath() + saveModel.getModelRepoRealName().replace(" ", "");
 			}
 			saveModel.setModelPath(modelPath);
@@ -167,11 +169,13 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		} else {
 			// 기존 모델에 추가
 			responseDTO = versionUpModelRepo(wlModelRepoDTO);
-			ModelVersionEntity versionEntity = versionRepository.findLatestByModelRepoEntityId(responseDTO.getModelRepoId());
+			ModelVersionEntity versionEntity = versionRepository.findLatestByModelRepoEntityId(
+				responseDTO.getModelRepoId());
 			storagePath = responseDTO.getModelPath() + "/" + versionEntity.getVersion() + "/";
 		}
 		// 모델 파일 복사
-		ModelVersionEntity versionEntity = versionRepository.findLatestByModelRepoEntityId(responseDTO.getModelRepoId());
+		ModelVersionEntity versionEntity = versionRepository.findLatestByModelRepoEntityId(
+			responseDTO.getModelRepoId());
 		FileInfoDTO modelFile = copyModelToStorage(wlModelRepoDTO.getWlModelPaths(), storagePath);
 		if (Objects.nonNull(modelFile)) {
 			versionEntity.setModelFile(modelFile.getFileName(), modelFile.getSize());
@@ -192,7 +196,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 	}
 
 	@Override
-	public PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize, String sort){
+	public PageDTO<ModelRepoDTO.VersionDTO> getModelRepoVersionList(long modelRepoId, int pageNum, int pageSize,
+		String sort) {
 		Sort order = Sort.by(Sort.Direction.fromString(sort), "version");
 		List<ModelVersionEntity> getModelRepoEntity = versionRepository.findByModelRepoEntityId(modelRepoId, order);
 		List<ModelRepoDTO.VersionDTO> versionDTOS = getModelRepoEntity.stream()
@@ -216,7 +221,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 		return labelRepository.findById(id).orElseThrow(() -> new RestApiException(LabelErrorCode.LABEL_NOT_FOUND));
 	}
 
-	private List<ModelRepoEntity> getModelRepoEntityListByWorkspaceResourceName(String workspaceResourceName, String search) {
+	private List<ModelRepoEntity> getModelRepoEntityListByWorkspaceResourceName(String workspaceResourceName,
+		String search) {
 		return modelRepoRepository.findAllByWorkspaceResourceName(workspaceResourceName, search);
 	}
 
@@ -237,12 +243,13 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 
 	@Override
 	public DirectoryDTO getModelFiles(Long modelRepoId, String modelVersion, String filePath) {
-		if(filePath == null || filePath.isBlank()){
+		if (filePath == null || filePath.isBlank()) {
 			ModelRepoEntity modelRepoEntity = getModelRepoEntityById(modelRepoId);
-			String hostPath = modelRepoEntity.getStorageEntity().getHostPath();// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a
+			String hostPath = modelRepoEntity.getStorageEntity()
+				.getHostPath();// /root/kube-storage/Astrago_real_storage-b3-5aba-475a-9969-78e5c7b1d73a
 			String modelPath = hostPath + "/" + modelRepoEntity.getModelPath() + "/" + modelVersion;
 			return CoreFileUtils.getAstragoFiles(modelPath);
-		}else{
+		} else {
 			return CoreFileUtils.getAstragoFiles(filePath);
 		}
 	}
@@ -262,7 +269,8 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 			ModelRepoEntity modelRepoEntity = modelRepoReqDTO.convertEntity(storageEntity);
 			String hostPath = storageEntity.getHostPath();
 			String modelRepoRealName = "model-" + UUID.randomUUID().toString().substring(6);
-			String modelRepoPath = "/workspaces/" + modelRepoReqDTO.getWorkspaceResourceName() + "/models/" + modelRepoRealName;
+			String modelRepoPath =
+				"/workspaces/" + modelRepoReqDTO.getWorkspaceResourceName() + "/models/" + modelRepoRealName;
 			modelRepoEntity.setModelPath(modelRepoPath);
 			modelRepoEntity.setModelRepoRealName(modelRepoRealName);
 
@@ -275,7 +283,6 @@ public class ModelRepoFacadeServiceImpl implements ModelRepoFacadeService {
 				.build();
 			modelVersionEntity.setRegUserInfo(regUser, LocalDateTime.now(), LocalDateTime.now());
 			modelRepoVersionRepository.save(modelVersionEntity);
-
 
 			// ModelRepoEntity save
 			modelRepoEntity.setRegUserInfo(regUser, LocalDateTime.now(), LocalDateTime.now());
