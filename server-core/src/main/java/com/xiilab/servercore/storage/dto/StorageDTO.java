@@ -22,6 +22,7 @@ public class StorageDTO {
 	private int requestVolume;
 	private SecretDTO secretDTO;
 	private String arrayId;
+	private String dellVolumeName;
 	private String dellVolumeId;
 
 	@Getter
@@ -82,6 +83,7 @@ public class StorageDTO {
 		private LocalDate createdAt;
 		private String creatorName;
 		private String arrayId;
+		private String dellVolumeId;
 
 		public static ResStorage toDto(StorageEntity storageEntity){
 			return ResStorage.builder()
@@ -95,6 +97,7 @@ public class StorageDTO {
 				.createdAt(storageEntity.getRegDate().toLocalDate())
 				.creatorName(storageEntity.getRegUser().getRegUserRealName())
 				.arrayId(storageEntity.getArrayId())
+				.dellVolumeId(storageEntity.getDellVolumeId())
 				.build();
 		}
 	}

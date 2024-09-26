@@ -24,6 +24,7 @@ public enum StorageErrorCode implements ErrorCode {
 	STORAGE_INSTALL_WAIT(HttpStatus.INTERNAL_SERVER_ERROR.value(),"DELL 플러그인 설치 진행중입니다. 잠시만 기다려주세요."),
 	DELL_STORAGE_ARRAY_ID_NULL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "DELL 스토리지 Array ID를 입력해주세요"),
 	DELL_STORAGE_VOLUME_ID_NULL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "DELL 스토리지 STORAGE VOLUME ID를 입력해주세요."),
+	DELL_STORAGE_VOLUME_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당 이름의 DELL 스토리지 없습니다."),
 	;
 
 

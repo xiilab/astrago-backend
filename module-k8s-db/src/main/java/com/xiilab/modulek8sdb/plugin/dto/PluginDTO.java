@@ -24,6 +24,7 @@ public class PluginDTO {
 	protected String regUserName;
 	protected String dellUserName;
 	protected String dellPassword;
+	protected String dellEndpoint;
 
 
 	@Getter
