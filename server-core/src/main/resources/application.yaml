@@ -74,7 +74,7 @@ astrago:
   private-registry-url: ""
 github:
   public:
-    token: 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
+    token:
 gitlab:
   token:
 
