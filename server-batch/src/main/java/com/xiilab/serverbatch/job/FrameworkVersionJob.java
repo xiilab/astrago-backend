@@ -14,7 +14,6 @@ import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
 import com.xiilab.modulek8sdb.version.entity.CompatibleFrameworkVersionEntity;
 import com.xiilab.modulek8sdb.version.entity.FrameWorkVersionEntity;
-import com.xiilab.modulek8sdb.version.entity.MaxCudaVersionEntity;
 import com.xiilab.modulek8sdb.version.repository.CompatibleFrameWorkVersionRepository;
 import com.xiilab.modulek8sdb.version.repository.FrameWorkVersionRepository;
 import com.xiilab.modulek8sdb.version.repository.MaxCudaVersionRepository;

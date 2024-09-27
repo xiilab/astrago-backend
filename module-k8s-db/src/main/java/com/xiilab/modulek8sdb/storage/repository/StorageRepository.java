@@ -19,7 +19,6 @@ public interface StorageRepository extends JpaRepository<StorageEntity, Long> {
 	@Query("select s from StorageEntity s where s.deleteYN = 'N'")
 	List<StorageEntity> findAll();
 
-
 	@Query("select a.storageEntity  from AstragoDatasetEntity a where a.datasetId = ?1")
 	StorageEntity getDatasetStorageClassName(long id);
 

@@ -46,7 +46,8 @@ public class OneViewServiceImpl implements OneViewService {
 		try {
 			// One View 버전 확인 API 호출
 			OneViewResDTO.APIResponse.FindApiVersion findApiVersionResDTO = webClientService.getObjectFromUrl(
-				saveOneViewSettingDTO.getApiServerAddress() + "/rest/version", OneViewResDTO.APIResponse.FindApiVersion.class);
+				saveOneViewSettingDTO.getApiServerAddress() + "/rest/version",
+				OneViewResDTO.APIResponse.FindApiVersion.class);
 
 			if (!Objects.isNull(findApiVersionResDTO.getCurrentVersion())) {
 				OneViewResDTO.APIResponse.SessionToken sessionTokenResDTO = issueSessionTokenAPI(
