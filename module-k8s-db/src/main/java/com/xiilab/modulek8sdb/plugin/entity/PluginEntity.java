@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
+import com.xiilab.modulek8sdb.plugin.dto.PluginDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,12 +25,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class PluginEntity{
-	@Column(name = "REG_USER_ID")
-	protected String regUserId;
-	@Column(name = "REG_USER_NAME")
-	protected String regUserName;
-	@Column(name = "REG_DATE")
-	protected LocalDateTime regDate;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
@@ -41,19 +36,34 @@ public class PluginEntity{
 	@Column(name = "STORAGE_TYPE")
 	@Enumerated(EnumType.STRING)
 	private StorageType storageType;
+	@Column(name = "DELL_USER_NAME")
+	private String dellUserName;
+	@Column(name = "DELL_PASSWORD")
+	private String dellPassword;
+	@Column(name = "DELL_ENDPOINT")
+	private String dellEndpoint;
 	@Column(name = "INSTALL_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN installYN;
+	@Column(name = "REG_USER_ID")
+	private String regUserId;
+	@Column(name = "REG_USER_NAME")
+	private String regUserName;
+	@Column(name = "REG_DATE")
+	private LocalDateTime regDate;
 
-	public void setInstallYN(DeleteYN installYN, String userId, String userName) {
+	public void setInstallYN(DeleteYN installYN, PluginDTO pluginDTO) {
 		this.installYN = installYN;
 		if(DeleteYN.Y.equals(installYN)) {
 			this.regDate = LocalDateTime.now();
 		}else {
 			this.regDate = null;
 		}
-		this.regUserId = userId;
-		this.regUserName = userName;
+		this.regUserId = pluginDTO.getRegUserId();
+		this.regUserName = pluginDTO.getRegUserName();
 		this.regDate = LocalDateTime.now();
+		this.dellUserName = pluginDTO.getDellUserName();
+		this.dellPassword = pluginDTO.getDellPassword();
+		this.dellEndpoint = pluginDTO.getDellEndpoint();
 	}
 }
