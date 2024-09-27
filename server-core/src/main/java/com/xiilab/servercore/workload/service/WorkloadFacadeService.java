@@ -812,60 +812,6 @@ public class WorkloadFacadeService {
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 	}
 
-	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
-		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
-			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
-			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
-				findDataset);
-			if (resDatasetWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
-				String storagePath = resDatasetWithStorage.getStoragePath();
-				String saveDirectoryName = resDatasetWithStorage.getSaveDirectoryName();
-
-				// storagePath의 끝이 '/'로 끝나는지 여부 확인
-				if (!storagePath.endsWith(File.separator)) {
-					storagePath += File.separator;
-				}
-
-				String filePath = storagePath + saveDirectoryName;
-				StorageEntity storageEntity = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
-
-				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
-				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-					filePath,
-					resDatasetWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());
-			} else {
-				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-					resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType(), "", "", "");
-			}
-		}
-	}
-
-	private void setModelVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
-		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
-			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
-			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
-			if (resModelWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
-				String storagePath = resModelWithStorage.getStoragePath();
-				String saveDirectoryName = resModelWithStorage.getSaveDirectoryName();
-
-				// storagePath의 끝이 '/'로 끝나는지 여부 확인
-				if (!storagePath.endsWith(File.separator)) {
-					storagePath += File.separator;
-				}
-				String filePath = storagePath + saveDirectoryName;
-				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
-
-				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
-				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-					filePath,
-					resModelWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());
-			} else {
-				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType(), "", "", "");
-			}
-		}
-	}
-
 	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
 		String storagePath, StorageType storageType, String volumeName, String arrayId, String dellVolumeId) {
 		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
@@ -892,6 +838,62 @@ public class WorkloadFacadeService {
 			.volumeName(volumeName)
 			.build();
 		moduleVolumeReqDTO.setCreatePVC(createPVC);
+	}
+
+	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
+			DatasetDTO.ResDatasetWithStorage resDatasetWithStorage = DatasetDTO.ResDatasetWithStorage.toDto(
+				findDataset);
+			if (resDatasetWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
+				String storagePath = resDatasetWithStorage.getStoragePath();
+				String saveDirectoryName = resDatasetWithStorage.getSaveDirectoryName();
+
+				// storagePath의 끝이 '/'로 끝나는지 여부 확인
+				if (!storagePath.endsWith(File.separator)) {
+					storagePath += File.separator;
+				}
+
+				String filePath = storagePath + saveDirectoryName;
+				StorageEntity storageEntity = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
+
+				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
+					filePath,
+					resDatasetWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(),
+					storageEntity.getDellVolumeId());
+			} else {
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
+					resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType(), "", "", "");
+			}
+		}
+	}
+
+	private void setModelVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
+		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
+			Model findModel = modelService.findById(moduleVolumeReqDTO.getId());
+			ModelDTO.ResModelWithStorage resModelWithStorage = ModelDTO.ResModelWithStorage.toDto(findModel);
+			if (resModelWithStorage.getDivision() == RepositoryDivision.ASTRAGO) {
+				String storagePath = resModelWithStorage.getStoragePath();
+				String saveDirectoryName = resModelWithStorage.getSaveDirectoryName();
+
+				// storagePath의 끝이 '/'로 끝나는지 여부 확인
+				if (!storagePath.endsWith(File.separator)) {
+					storagePath += File.separator;
+				}
+				String filePath = storagePath + saveDirectoryName;
+				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
+
+				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
+					filePath,
+					resModelWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(),
+					storageEntity.getDellVolumeId());
+			} else {
+				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
+					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType(), "", "", "");
+			}
+		}
 	}
 
 	public boolean workloadMkdir(String workloadName, String workspaceName, WorkloadType workloadType, String path) {

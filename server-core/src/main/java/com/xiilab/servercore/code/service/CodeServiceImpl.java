@@ -21,7 +21,6 @@ import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.GitLabApi;
-import com.xiilab.servercore.common.utils.GithubApi;
 import com.xiilab.modulek8sdb.code.dto.CodeSearchCondition;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeCustomRepository;
@@ -33,6 +32,7 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
+import com.xiilab.servercore.common.utils.GithubApi;
 import com.xiilab.servercore.credential.service.CredentialService;
 
 import io.micrometer.common.util.StringUtils;
@@ -48,6 +48,15 @@ public class CodeServiceImpl implements CodeService {
 	private final CodeCustomRepository codeCustomRepository;
 	private final CredentialService credentialService;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
+
+	public static String getBaseUrl(String url) {
+		int endIndex = url.indexOf("/", "http://".length());
+		if (endIndex == -1) {
+			return url; // 슬래시가 없는 경우는 그대로 반환
+		} else {
+			return url.substring(0, endIndex);
+		}
+	}
 
 	@Override
 	@Transactional
@@ -72,8 +81,8 @@ public class CodeServiceImpl implements CodeService {
 		}
 
 		isCodeURLValid(codeReqDTO.getCodeURL(),
-			codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE ? codeReqDTO.getCredentialId() : null, codeReqDTO.getCodeType());
-
+			codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE ? codeReqDTO.getCredentialId() : null,
+			codeReqDTO.getCodeType());
 		try {
 			CodeEntity saveCode = codeRepository.save(
 				CodeEntity.dtoConverter()
@@ -89,15 +98,6 @@ public class CodeServiceImpl implements CodeService {
 			return new CodeResDTO(saveCode);
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(CodeErrorCode.FAILED_SAVE_USER_CODE);
-		}
-	}
-
-	public static String getBaseUrl(String url) {
-		int endIndex = url.indexOf("/", "http://".length());
-		if (endIndex == -1) {
-			return url; // 슬래시가 없는 경우는 그대로 반환
-		} else {
-			return url.substring(0, endIndex);
 		}
 	}
 
@@ -139,7 +139,7 @@ public class CodeServiceImpl implements CodeService {
 		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeURL);
 
 		// URL 검증
-		if(codeType == CodeType.GIT_HUB && !isGitHubURL){
+		if (codeType == CodeType.GIT_HUB && !isGitHubURL) {
 			// if (!isGitHubURL && !isGitLabURL) {
 			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 		}

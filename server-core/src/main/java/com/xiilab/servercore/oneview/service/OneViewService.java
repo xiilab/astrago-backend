@@ -6,7 +6,10 @@ import com.xiilab.servercore.oneview.dto.OneViewResDTO;
 
 public interface OneViewService {
 	OneViewResDTO.FindOneViewSetting getOneViewSetting();
+
 	void saveOneViewSetting(OneViewReqDTO.SaveOneViewSetting saveOneViewSettingDTO);
+
 	OneViewAccountConnectionStatus getOneViewAccountConnectionStatus();
+
 	String getOneViewSessionToken();
 }

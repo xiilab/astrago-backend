@@ -1,7 +1,5 @@
 package com.xiilab.modulek8sdb.code.repository;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,9 +16,9 @@ public interface CodeWorkLoadMappingRepository extends JpaRepository<CodeWorkLoa
 
 	@Modifying(clearAutomatically = true)
 	@Query("""
-		update CodeWorkLoadMappingEntity dwme
-		set dwme.deleteYN = 'Y' 
-		where dwme.code.id =:codeId
-""")
+				update CodeWorkLoadMappingEntity dwme
+				set dwme.deleteYN = 'Y' 
+				where dwme.code.id =:codeId
+		""")
 	void deleteAllByCodeId(@Param("codeId") Long id);
 }

@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
-import org.kohsuke.github.GitHubBuilder;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 

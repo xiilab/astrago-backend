@@ -224,7 +224,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private void dellUnistValidationCheck(CreateStorageReqDTO createStorageReqDTO){
 		if(isBlankSafe(createStorageReqDTO.getArrayId())){
 			throw new RestApiException(StorageErrorCode.DELL_STORAGE_ARRAY_ID_NULL);
-		}else if(isBlankSafe(createStorageReqDTO.getDellVolumeId())){
+		} else if (isBlankSafe(createStorageReqDTO.getDellVolumeId())) {
 			throw new RestApiException(StorageErrorCode.DELL_STORAGE_STORAGE_VOLUME_ID_NULL);
 		}
 	}
