@@ -734,7 +734,7 @@ create table if not exists TB_STORAGE
     DELL_VOLUME_ID          varchar(255)                  null,
     ARRAY_ID                varchar(255)                  null,
     STORAGE_CLASS_NAME      varchar(255)                  null,
-    DEFAULT_STORAGE_YN      enum ('Y', 'N')               null,
+    DEFAULT_STORAGE_YN      enum ('Y', 'N')               null
 );
 
 create table if not exists TB_SYSTEM_ALERT
