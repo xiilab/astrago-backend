@@ -888,7 +888,7 @@ create table if not exists TB_PLUGIN
     REG_DATE         datetime(6)        null,
     DELL_ENDPOINT    varchar(255)       null,
     DELL_PASSWORD    varchar(255)       null,
-    DELL_USERNAME    varchar(255)       null,
+    DELL_USER_NAME    varchar(255)       null,
     NAME             varchar(255)       null,
     REG_USER_ID      varchar(255)       null,
     REG_USER_NAME     varchar(255)       null,
