@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.xiilab.modulecommon.enums.StorageType;
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8sdb.storage.dto.StorageDto;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.storage.repository.StorageRepository;
@@ -21,5 +24,13 @@ public class CoreStorageServiceImpl implements StorageService{
 	public List<StorageDto> getStorages() {
 		List<StorageEntity> storages = storageRepository.findAll();
 		return storages.stream().map(StorageDto::new).toList();
+	}
+
+	@Override
+	public void storageUsageCheck(StorageType storageType) {
+		int storageUsageCount = storageRepository.storageUsageCountByType(storageType);
+		if(storageUsageCount > 0){
+			throw new RestApiException(StorageErrorCode.STORAGE_USAGE_DELETE_FAIL);
+		}
 	}
 }

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.xiilab.modulek8sdb.plugin.entity.PluginEntity;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,11 @@ import lombok.experimental.SuperBuilder;
 public class PluginDTO {
 	protected String name;
 	protected String version;
+	protected String regUserId;
+	protected String regUserName;
+	protected String dellUserName;
+	protected String dellPassword;
+	protected String dellEndpoint;
 
 	@Getter
 	@SuperBuilder
@@ -27,8 +33,6 @@ public class PluginDTO {
 	public static class ResponseDTO extends PluginDTO {
 		private long id;
 		private String installYN;
-		private String regUserId;
-		private String regUserName;
 		private LocalDateTime regDate;
 		@Builder(builderClassName = "toDTOBuilder", builderMethodName = "toDTOBuilder")
 		public ResponseDTO(PluginEntity plugin){
@@ -51,6 +55,8 @@ public class PluginDTO {
 		@Size(min = 10, message = "arrayId는 Dell System View에서 확인이 가능합니다.")
 		private String arrayId;
 		@NotNull(message = "endpoint은 필수 값입니다.")
+		@Pattern(regexp = ".*/$", message = "endpoint는 반드시 /로 끝나야 합니다.")
+		@Pattern(regexp = "^http.*", message = "endpoint는 http로 시작해야 합니다.")
 		private String endpoint;
 		@NotNull(message = "username은 필수 값입니다.")
 		private String username;
