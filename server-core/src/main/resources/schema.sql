@@ -899,5 +899,3 @@ create table if not exists TB_PLUGIN
 
 create index if not exists FKeg0s0dscviqh2xu5bc1u8mys8
     on TB_PLUGIN (ID);
-
-
