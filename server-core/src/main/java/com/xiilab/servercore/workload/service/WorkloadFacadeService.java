@@ -857,7 +857,9 @@ public class WorkloadFacadeService {
 				String filePath = storagePath + saveDirectoryName;
 				StorageEntity storageEntity = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
 
-				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+				if(storageEntity.getStorageType().equals(StorageType.DELL_UNITY)){
+					moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+				}
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
 					filePath,
 					resDatasetWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(),
@@ -884,7 +886,9 @@ public class WorkloadFacadeService {
 				String filePath = storagePath + saveDirectoryName;
 				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
 
-				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+				if(storageEntity.getStorageType().equals(StorageType.DELL_UNITY)){
+					moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+				}
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
 					filePath,
 					resModelWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(),
