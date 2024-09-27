@@ -178,6 +178,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		} else if (storageDTO.getStorageType() == StorageType.DELL_UNITY) {
 			// dell volume ID 조회
 			String dellVolumeId = getDellVolumeId(storageDTO);
+			createStorageReqDTO.setVolumeId(dellVolumeId);
 			// dell validation check
 			dellUnistValidationCheck(createStorageReqDTO);
 			// Storage class 생성
