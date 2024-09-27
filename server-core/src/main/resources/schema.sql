@@ -895,9 +895,9 @@ create table if not exists TB_PLUGIN
     REG_USER_NAME     varchar(255)       null,
     VERSION          varchar(255)       null,
     INSTALL_YN   enum ('Y', 'N')    null,
-    STORAGE_TYPE enum ('NFS', 'CLOUD', 'PURE', 'IBM', 'WEKA_FS', 'DELL_UNITY') null,
-    );
+    STORAGE_TYPE enum ('NFS', 'CLOUD', 'PURE', 'IBM', 'WEKA_FS', 'DELL_UNITY') null
+);
 
 create index if not exists FKeg0s0dscviqh2xu5bc1u8mys8
-    on TB_PLUGIN (ALERT_ID);
+    on TB_PLUGIN (ID);
 
