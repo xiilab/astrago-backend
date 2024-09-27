@@ -903,3 +903,13 @@ create table if not exists TB_PLUGIN
 
 create index if not exists FKeg0s0dscviqh2xu5bc1u8mys8
     on TB_PLUGIN (ID);
+
+create table if not exists TB_ONEVIEW_SETTING
+(
+    API_VERSION             int          null,
+    CONNECTION_FAILED_COUNT int          null,
+    ONEVIEW_ID              bigint auto_increment primary key,
+    API_SERVER_ADDRESS      varchar(255) null,
+    PASSWORD                varchar(255) null,
+    USER_NAME               varchar(255) null
+);
