@@ -37,7 +37,7 @@ public class PinController {
 		@RequestParam(value = "resourceName") String resourceName,
 		@RequestParam(value = "pinType") PinType pinType,
 		UserDTO.UserInfo userInfoDTO) {
-		pinService.deletePin(resourceName, pinType, userInfoDTO);
+		pinService.deletePin(resourceName, pinType, userInfoDTO.getId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

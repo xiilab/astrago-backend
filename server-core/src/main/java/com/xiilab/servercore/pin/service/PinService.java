@@ -13,7 +13,7 @@ public interface PinService {
 
 	void createPin(String resourceName, PinType pinType, UserDTO.UserInfo userInfoDTO);
 
-	void deletePin(String resourceName, PinType pinType, UserDTO.UserInfo userInfoDTO);
+	void deletePin(String resourceName, PinType pinType, String userId);
 
 	void deletePin(String resourceName, PinType pinType);
 

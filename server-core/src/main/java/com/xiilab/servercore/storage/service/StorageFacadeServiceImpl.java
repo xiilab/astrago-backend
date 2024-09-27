@@ -188,7 +188,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.astragoDeploymentName(dellStorage.getAstragoDeploymentName())
 				.pvcName(dellStorage.getPvcName())
 				.pvName(dellStorage.getVolumeName())
-				.arrayId(storageDTO.getArrayId())
+				.arrayId(storageDTO.getArrayId().toLowerCase())
 				.volumeName(dellStorage.getVolumeName())
 				.hostPath(dellStorage.getHostPath())
 				.storageClassName(dellStorage.getStorageClassName())
@@ -199,7 +199,10 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 
 	}
 	private Path createPath(String storageName) {
-		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
+		// String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
+		// 	.toString()
+		// 	.substring(6);
+		String path = "/tmp/kube-storage" + storageDefaultPath + storageName + "-" + UUID.randomUUID()
 			.toString()
 			.substring(6);
 

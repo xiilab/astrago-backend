@@ -79,7 +79,7 @@ public abstract class WorkloadEntity {
 	protected WorkloadType workloadType;
 	@Column(name = "WORKING_DIR")
 	protected String workingDir;
-	@Column(name = "WORKLOAD_CMD", length = 2000)
+	@Column(name = "WORKLOAD_CMD", length = 4000)
 	protected String workloadCMD;
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "WORKLOAD_STATUS")

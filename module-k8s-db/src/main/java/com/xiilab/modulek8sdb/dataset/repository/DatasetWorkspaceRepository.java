@@ -1,6 +1,7 @@
 package com.xiilab.modulek8sdb.dataset.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,7 +26,7 @@ public interface DatasetWorkspaceRepository extends JpaRepository<DatasetWorkSpa
 		+ "where dwm.dataset.datasetId = :datasetId "
 		+ "and dwm.dataset.deleteYn = 'N'"
 		+ "and dwm.workspaceResourceName like :workspaceResourceName")
-	DatasetWorkSpaceMappingEntity findByWorkspaceResourceNameAndDatasetId(@Param("workspaceResourceName") String workspaceResourceName, @Param("datasetId")Long datasetId);
+	Optional<DatasetWorkSpaceMappingEntity> findByWorkspaceResourceNameAndDatasetId(@Param("workspaceResourceName") String workspaceResourceName, @Param("datasetId")Long datasetId);
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("delete "

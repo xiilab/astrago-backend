@@ -23,7 +23,5 @@ public abstract class OneViewReqDTO {
 	@NoArgsConstructor
 	@SuperBuilder
 	public static class LoginSession extends OneViewReqDTO {
-		private String userName;
-		private String password;
 	}
 }
