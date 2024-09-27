@@ -728,11 +728,13 @@ create table if not exists TB_STORAGE
     STORAGE_NAME            varchar(255)                  null,
     STORAGE_PATH            varchar(255)                  null,
     VOLUME_NAME             varchar(255)                  null,
-    STORAGE_TYPE            enum ('NFS', 'CLOUD', 'PURE') null,
+    STORAGE_TYPE            enum ('NFS', 'CLOUD', 'PURE', 'IBM', 'WEKA_FS', 'DELL_UNITY') null,
     DELETE_YN               enum ('Y', 'N')               null,
     SECRET_NAME             varchar(255)                  null,
     DELL_VOLUME_ID          varchar(255)                  null,
-    ARRAY_ID                varchar(255)                  null
+    ARRAY_ID                varchar(255)                  null,
+    STORAGE_CLASS_NAME      varchar(255)                  null,
+    DEFAULT_STORAGE_YN      enum ('Y', 'N')               null,
 );
 
 create table if not exists TB_SYSTEM_ALERT
