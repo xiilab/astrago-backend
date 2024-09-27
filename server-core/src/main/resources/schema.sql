@@ -880,6 +880,26 @@ create table if not exists TB_WORKSPACE_SETTING
         primary key
 );
 
+create table if not exists TB_PLUGIN
+(
+    PLUGIN_ID bigint auto_increment
+    primary key,
+    ID               bigint             null,
+    REG_DATE         datetime(6)        null,
+    DELL_ENDPOINT    varchar(255)       null,
+    DELL_PASSWORD    varchar(255)       null,
+    DELL_USERNAME    varchar(255)       null,
+    NAME             varchar(255)       null,
+    REG_USER_ID      varchar(255)       null,
+    REG_USER_NAME     varchar(255)       null,
+    VERSION          varchar(255)       null,
+    INSTALL_YN   enum ('Y', 'N')    null,
+    STORAGE_TYPE enum ('NFS', 'CLOUD', 'PURE', 'IBM', 'WEKA_FS', 'DELL_UNITY') null
+    );
+
+create index if not exists FKeg0s0dscviqh2xu5bc1u8mys8
+    on TB_PLUGIN (ID);
+
 
 create table if not exists TB_PLUGIN
 (
@@ -897,7 +917,6 @@ create table if not exists TB_PLUGIN
     INSTALL_YN   enum ('Y', 'N')    null,
     STORAGE_TYPE enum ('NFS', 'CLOUD', 'PURE', 'IBM', 'WEKA_FS', 'DELL_UNITY') null
 );
-
 create index if not exists FKeg0s0dscviqh2xu5bc1u8mys8
     on TB_PLUGIN (ID);
 
