@@ -215,11 +215,13 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 				.path(FileType.D == file.getFileType() ? filePath + file.getName() + File.separator :
 					filePath + file.getName())
 				.build();
+
 			if (file.getFileType() == FileType.D) {
 				directoryCnt += 1;
 			} else {
 				fileCnt += 1;
 			}
+
 			fileList.add(children);
 		}
 		return DirectoryDTO.builder().children(fileList).directoryCnt(directoryCnt).fileCnt(fileCnt).build();
@@ -322,6 +324,8 @@ public class DatasetFacadeServiceImpl implements DatasetFacadeService {
 			if (fileExtension != null) {
 				switch (fileExtension.toLowerCase()) {
 					case "txt":
+					case "xml":
+					case "yaml":
 						break;
 					case "jpg":
 					case "jpeg":

@@ -4,6 +4,7 @@ import static com.xiilab.modulecommon.enums.RepositoryType.*;
 import static com.xiilab.modulecommon.util.DataConverterUtil.*;
 
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulecommon.dto.RegexPatterns;
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
-import com.xiilab.modulecommon.util.GithubApi;
+import com.xiilab.modulecommon.util.GitLabApi;
 import com.xiilab.modulek8sdb.code.dto.CodeSearchCondition;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeCustomRepository;
@@ -30,6 +32,7 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
+import com.xiilab.servercore.common.utils.GithubApi;
 import com.xiilab.servercore.credential.service.CredentialService;
 
 import io.micrometer.common.util.StringUtils;
@@ -45,6 +48,15 @@ public class CodeServiceImpl implements CodeService {
 	private final CodeCustomRepository codeCustomRepository;
 	private final CredentialService credentialService;
 	private final CodeWorkLoadMappingRepository codeWorkLoadMappingRepository;
+
+	public static String getBaseUrl(String url) {
+		int endIndex = url.indexOf("/", "http://".length());
+		if (endIndex == -1) {
+			return url; // 슬래시가 없는 경우는 그대로 반환
+		} else {
+			return url.substring(0, endIndex);
+		}
+	}
 
 	@Override
 	@Transactional
@@ -69,8 +81,8 @@ public class CodeServiceImpl implements CodeService {
 		}
 
 		isCodeURLValid(codeReqDTO.getCodeURL(),
-			codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE ? codeReqDTO.getCredentialId() : null);
-
+			codeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE ? codeReqDTO.getCredentialId() : null,
+			codeReqDTO.getCodeType());
 		try {
 			CodeEntity saveCode = codeRepository.save(
 				CodeEntity.dtoConverter()
@@ -87,43 +99,6 @@ public class CodeServiceImpl implements CodeService {
 		} catch (IllegalArgumentException e) {
 			throw new RestApiException(CodeErrorCode.FAILED_SAVE_USER_CODE);
 		}
-	}
-
-	@Override
-	public Boolean isCodeURLValid(String codeURL, Long credentialId) {
-		// 깃허브 또는 깃랩 URL인지 검증
-		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeURL);
-		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeURL);
-
-		// URL 검증
-		if (!isGitHubURL && !isGitLabURL) {
-			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-		}
-
-		String token = "";
-		if (credentialId != null) {
-			CredentialEntity credentialEntity = credentialService.getCredentialEntity(credentialId);
-			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
-		}
-
-		if (isGitHubURL) {
-			GithubApi githubApi = new GithubApi(token);
-			if (githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeURL))) {
-				return true;
-			}
-		} else if (isGitLabURL) {
-			// // GITLAB API 검증
-			// GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
-			// Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/(.*)");
-			// Matcher matcher = pattern.matcher(codeURL);
-			// if (matcher.find()) {
-			// 	String namespace = matcher.group(1);
-			// 	String project = matcher.group(2);
-			// 	gitLabApi.isRepoConnected(namespace, project);
-			// }
-		}
-
-		return true;
 	}
 
 	@Override
@@ -147,9 +122,9 @@ public class CodeServiceImpl implements CodeService {
 	@Override
 	public void deleteCodeById(long id) {
 		// 코드 Entity 조회
-		getCodeEntity(id);
+		CodeEntity codeEntity = getCodeEntity(id);
 		// 코드 삭제
-		codeRepository.deleteById(id);
+		codeRepository.deleteById(codeEntity.getId());
 	}
 
 	@Override
@@ -158,24 +133,44 @@ public class CodeServiceImpl implements CodeService {
 	}
 
 	@Override
-	@Transactional
-	public void modifyCode(Long codeId, ModifyCodeReqDTO modifyCodeReqDTO) {
-		CodeEntity codeEntity = getCodeEntity(codeId);
+	public Boolean isCodeURLValid(String codeURL, Long credentialId, CodeType codeType) {
+		// 깃허브 또는 깃랩 URL인지 검증
+		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeURL);
+		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeURL);
 
-		CredentialEntity credentialEntity = null;
-		if (modifyCodeReqDTO.getCredentialId() != null) {
-			credentialEntity = credentialService.getCredentialEntity(modifyCodeReqDTO.getCredentialId());
+		// URL 검증
+		if (codeType == CodeType.GIT_HUB && !isGitHubURL) {
+			// if (!isGitHubURL && !isGitLabURL) {
+			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 		}
 
-		//해당 소스코드 URL 검증
-		isCodeURLValid(codeEntity.getCodeURL(), modifyCodeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE ?
-			modifyCodeReqDTO.getCredentialId() : null);
+		String token = "";
+		if (credentialId != null) {
+			CredentialEntity credentialEntity = credentialService.getCredentialEntity(credentialId);
+			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
+		}
 
-		codeEntity.updateCodeInfo(
-			modifyCodeReqDTO.getDefaultPath(),
-			modifyCodeReqDTO.getCmd(),
-			modifyCodeReqDTO.getCodeArgs(),
-			credentialEntity);
+		if (isGitHubURL) {
+			GithubApi githubApi = new GithubApi(token);
+			String repoName = convertGitHubRepoUrlToRepoName(codeURL);
+			String[] split = repoName.split("/");
+			if (githubApi.isRepoConnected(split[0], split[1])) {
+				return true;
+			}
+		} else {
+			// GITLAB API 검증
+			String gitlabUrl = getBaseUrl(codeURL);
+			Pattern pattern = Pattern.compile(gitlabUrl + "/(.*?)/([^/.]+)(\\.git){1}");
+			Matcher matcher = pattern.matcher(codeURL);
+			if (matcher.find()) {
+				GitLabApi gitLabApi = new GitLabApi(gitlabUrl, token);
+				String namespace = matcher.group(1);
+				String project = matcher.group(2);
+				return gitLabApi.isRepoConnected(namespace, project);
+			}
+		}
+
+		return false;
 	}
 
 	private CodeEntity getCodeEntity(long id) {
@@ -244,4 +239,24 @@ public class CodeServiceImpl implements CodeService {
 		}
 	}
 
+	@Override
+	@Transactional
+	public void modifyCode(Long codeId, ModifyCodeReqDTO modifyCodeReqDTO) {
+		CodeEntity codeEntity = getCodeEntity(codeId);
+
+		CredentialEntity credentialEntity = null;
+		if (modifyCodeReqDTO.getCredentialId() != null) {
+			credentialEntity = credentialService.getCredentialEntity(modifyCodeReqDTO.getCredentialId());
+		}
+
+		//해당 소스코드 URL 검증
+		isCodeURLValid(codeEntity.getCodeURL(), modifyCodeReqDTO.getRepositoryAuthType() == RepositoryAuthType.PRIVATE ?
+			modifyCodeReqDTO.getCredentialId() : null, codeEntity.getCodeType());
+
+		codeEntity.updateCodeInfo(
+			modifyCodeReqDTO.getDefaultPath(),
+			modifyCodeReqDTO.getCmd(),
+			modifyCodeReqDTO.getCodeArgs(),
+			credentialEntity);
+	}
 }

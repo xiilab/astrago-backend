@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.dto.DirectoryDTO;
-import com.xiilab.modulecommon.enums.CompressFileType;
 import com.xiilab.modulecommon.enums.PageMode;
 import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -295,6 +294,7 @@ public class ModelServiceImpl implements ModelService {
 			.equalsIgnoreCase(userInfoDTO.getId()))) {
 			throw new RestApiException(ModelErrorCode.MODEL_DELETE_FORBIDDEN);
 		}
+
 		modelWorkspaceRepository.deleteByModelIdAndWorkspaceResourceName(modelId, workspaceResourceName);
 	}
 

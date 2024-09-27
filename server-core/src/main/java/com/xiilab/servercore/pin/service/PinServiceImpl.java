@@ -47,11 +47,11 @@ public class PinServiceImpl implements PinService {
 
 	@Override
 	@Transactional
-	public void deletePin(String resourceName, PinType pinType, UserDTO.UserInfo userInfoDTO) {
+	public void deletePin(String resourceName, PinType pinType, String userId) {
 		if (pinType == PinType.WORKLOAD) {
-			deleteWorkloadPin(resourceName, userInfoDTO);
+			deleteWorkloadPin(resourceName, userId);
 		} else {
-			deleteWorkspacePin(resourceName, userInfoDTO);
+			deleteWorkspacePin(resourceName, userId);
 		}
 	}
 
@@ -106,13 +106,13 @@ public class PinServiceImpl implements PinService {
 		pinRepository.save(new PinEntity(PinType.WORKLOAD, resourceName));
 	}
 
-	private void deleteWorkspacePin(String resourceName, UserDTO.UserInfo userInfoDTO) {
+	private void deleteWorkspacePin(String resourceName, String userId) {
 		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKSPACE, resourceName,
-			userInfoDTO.getId());
+			userId);
 	}
 
-	private void deleteWorkloadPin(String resourceId, UserDTO.UserInfo userInfoDTO) {
+	private void deleteWorkloadPin(String resourceId, String userId) {
 		pinRepository.deleteByTypeAndResourceNameAndRegUser_RegUserId(PinType.WORKLOAD, resourceId,
-			userInfoDTO.getId());
+			userId);
 	}
 }

@@ -15,7 +15,6 @@ import com.xiilab.modulecommon.enums.GitEnvType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
-import com.xiilab.modulek8s.workload.enums.ResourcesUnit;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -52,6 +51,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	String gpuName;
 	Integer gpuOnePerMemory;
 	Integer resourcePresetId;
+	String subPath;
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트
@@ -136,19 +136,16 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 		Map<String, Quantity> result = new HashMap<>();
 		// 소수점 한자리로 변환
 		String strCpuRequest = String.valueOf(cpuRequest);
-		String strMemRequest = String.format("%.1f", memRequest) + ResourcesUnit.MEM_UNIT.getUnit();
+		String strMemRequest = String.valueOf(memRequest);
+		result.put("cpu", new Quantity(strCpuRequest));
+		result.put("memory", new Quantity(strMemRequest, "Gi"));
 
-		if (ValidUtils.isNullOrZero(gpuRequest)) {
-			result.put("cpu", new Quantity(strCpuRequest));
-			result.put("memory", new Quantity(strMemRequest));
-		} else {
+		if (gpuRequest != null && gpuRequest > 0) {
 			if (gpuType == GPUType.MPS) {
 				result.put("nvidia.com/gpu.shared", new Quantity(String.valueOf(gpuRequest)));
 			} else {
 				result.put("nvidia.com/gpu", new Quantity(String.valueOf(gpuRequest)));
 			}
-			result.put("cpu", new Quantity(strCpuRequest));
-			result.put("memory", new Quantity(strMemRequest));
 		}
 
 		return result;

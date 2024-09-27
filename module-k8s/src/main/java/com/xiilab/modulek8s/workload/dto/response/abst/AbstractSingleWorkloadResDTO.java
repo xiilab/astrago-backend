@@ -26,7 +26,7 @@ public abstract class AbstractSingleWorkloadResDTO extends AbstractModuleWorkloa
 		Quantity cpu = resourceRequests.get("cpu");
 		Quantity memory = resourceRequests.get("memory");
 		this.gpuRequest = gpu != null ? Integer.parseInt(gpu.getAmount()) : 0;
-		this.cpuRequest = cpu != null ? K8sInfoPicker.convertQuantity(cpu) : 0;
-		this.memRequest = memory != null ? (K8sInfoPicker.convertQuantity(memory)) : 0;
+		this.cpuRequest = cpu != null ? K8sInfoPicker.convertCPUQuantity(cpu) : 0;
+		this.memRequest = memory != null ? (K8sInfoPicker.convertMEMQuantity(memory)) : 0;
 	}
 }

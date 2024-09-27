@@ -156,10 +156,10 @@ create table if not exists TB_CODE
     TITLE                   varchar(255)                         null,
     WORKSPACE_NAME          varchar(255)                         null,
     CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')          null,
-    CODE_CMD                varchar(255)                         null,
+    CODE_CMD                varchar(2000)                 null,
     DELETE_YN               enum ('Y', 'N')                      null,
     REPOSITORY_TYPE         enum ('WORKSPACE', 'USER', 'CUSTOM') null,
-    CODE_DEFAULT_MOUNT_PATH varchar(255) charset utf8mb4         null
+    CODE_DEFAULT_MOUNT_PATH varchar(2000) charset utf8mb4 null
 );
 
 create index if not exists FKfhqjmmbm3u5illhwv2axw3q5m
@@ -676,8 +676,8 @@ create table if not exists TB_RESOURCE_QUOTA
     REG_USER_ID                   varchar(255)                          null,
     REG_USER_NAME                 varchar(255)                          null,
     REG_USER_REAL_NAME            varchar(255)                          null,
-    RESOURCE_QUOTA_REJECT_REASON  varchar(255)                          null,
-    RESOURCE_QUOTA_REQUEST_REASON varchar(255)                          null,
+    RESOURCE_QUOTA_REJECT_REASON  varchar(4000) null,
+    RESOURCE_QUOTA_REQUEST_REASON varchar(4000) null,
     WORKSPACE_NAME                varchar(255)                          null,
     WORKSPACE_RESOURCE_NAME       varchar(255)                          null,
     RESOURCE_QUOTA_STATUS         enum ('WAITING', 'APPROVE', 'REJECT') null
@@ -791,12 +791,12 @@ create table if not exists TB_WORKLOAD
     WORKLOAD_DELETED_AT        datetime(6)                                            null,
     image_IMAGE_ID             bigint                                                 null,
     DTYPE                      varchar(31)                                            not null,
-    WORKLOAD_CMD               varchar(255)                                           null,
+    WORKLOAD_CMD         varchar(4000) null,
     WORKLOAD_CREATOR           varchar(255)                                           null,
     WORKLOAD_CREATOR_ID        varchar(255)                                           null,
     WORKLOAD_CREATOR_REAL_NAME varchar(255)                                           null,
     WORKLOAD_PARAMETER         varchar(1000)                                          null,
-    WORKLOAD_DESCRIPTION       varchar(255)                                           null,
+    WORKLOAD_DESCRIPTION varchar(1500) null,
     WORKING_DIR                varchar(255)                                           null comment '명령어를 실행 할 위치',
     WORKLOAD_RESOURCE_NAME     varchar(255)                                           null,
     WORKSPACE_NAME             varchar(255)                                           null,
@@ -866,13 +866,13 @@ create table if not exists TB_WORKSPACE_ALERT_SETTING
     WORKLOAD_END_ALERT      bit          null,
     WORKLOAD_ERROR_ALERT    bit          null,
     WORKLOAD_START_ALERT    bit          null,
-    ID                      bigint auto_increment
-        primary key,
+    ID bigint auto_increment primary key,
     WORKSPACE_NAME          varchar(255) null
 );
 
 create table if not exists TB_WORKSPACE_SETTING
 (
+    workspaceCreateLimit int not null,
     cpu double not null,
     gpu int    not null,
     mem double not null,

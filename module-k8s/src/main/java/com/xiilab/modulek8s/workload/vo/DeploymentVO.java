@@ -4,12 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.workload.dto.request.ConnectTestDTO;
 import com.xiilab.modulek8s.workload.dto.request.CreateDatasetDeployment;
 import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
-import com.xiilab.modulecommon.enums.WorkloadType;
 
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -142,7 +142,7 @@ public class DeploymentVO extends WorkloadVO {
 		securityContext.setFsGroup(101L);
 		podSpecBuilder.withSecurityContext(securityContext);
 
-		addVolumes(podSpecBuilder, List.of(new JobVolumeVO(volumeLabelSelectorName, pvcName)));
+		addVolumes(podSpecBuilder, List.of(new JobVolumeVO(volumeLabelSelectorName, pvcName, null)));
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.addNewContainer()

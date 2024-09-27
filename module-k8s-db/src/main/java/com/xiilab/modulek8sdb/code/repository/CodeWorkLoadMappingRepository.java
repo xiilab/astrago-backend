@@ -13,4 +13,12 @@ public interface CodeWorkLoadMappingRepository extends JpaRepository<CodeWorkLoa
 		+ "set dwme.deleteYN = 'Y'"
 		+ "where dwme.workload.id =:jobId")
 	void deleteByWorkloadId(@Param("jobId") Long jobId);
+
+	@Modifying(clearAutomatically = true)
+	@Query("""
+				update CodeWorkLoadMappingEntity dwme
+				set dwme.deleteYN = 'Y' 
+				where dwme.code.id =:codeId
+		""")
+	void deleteAllByCodeId(@Param("codeId") Long id);
 }

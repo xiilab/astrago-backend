@@ -2,10 +2,10 @@ package com.xiilab.modulek8s.storage.volume.vo;
 
 import java.util.Collections;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.enumeration.AccessMode;
 import com.xiilab.modulek8s.common.enumeration.ReclaimPolicyType;
 import com.xiilab.modulek8s.common.enumeration.ResourceType;
-import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 
@@ -30,6 +30,8 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 	private String storagePath;
 	private String namespace;
 	private int requestVolume;
+	private String arrayId;
+	private String dellVolumeId;
 
 	@Override
 	public HasMetadata createResource() {
@@ -57,6 +59,8 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 			.storagePath(createPV.getStoragePath())
 			.storageType(createPV.getStorageType())
 			.requestVolume(createPV.getRequestVolume())
+			.arrayId(createPV.getArrayId())
+			.dellVolumeId(createPV.getDellVolumeId())
 			.build();
 	}
 	@Override
@@ -72,18 +76,15 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 		return ResourceType.PV;
 	}
 	private PersistentVolumeSpec createSpec() {
-		if(storageType.name().equals(StorageType.NFS.name())){
-			return new PersistentVolumeSpecBuilder()
-				.addToCapacity(Collections.singletonMap("storage", new Quantity(requestVolume + "Gi")))
-				.withAccessModes(AccessMode.RWM.getAccessMode())
-				.withPersistentVolumeReclaimPolicy(ReclaimPolicyType.RETAIN.getField())
-				.withNewNfs()
-				.withServer(ip)
-				.withPath(storagePath)
-				.endNfs()
-				.withClaimRef(createObjectReference())
-				.build();
-		}
-		return null;
+		return new PersistentVolumeSpecBuilder()
+			.addToCapacity(Collections.singletonMap("storage", new Quantity(requestVolume + "Gi")))
+			.withAccessModes(AccessMode.RWM.getAccessMode())
+			.withPersistentVolumeReclaimPolicy(ReclaimPolicyType.RETAIN.getField())
+			.withNewNfs()
+			.withPath(storagePath)
+			.withServer(ip)
+			.endNfs()
+			.withClaimRef(createObjectReference())
+			.build();
 	}
 }

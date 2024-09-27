@@ -1,8 +1,8 @@
 package com.xiilab.servercore.storage.service;
 
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
-import com.xiilab.servercore.storage.dto.StorageDTO;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
+import com.xiilab.servercore.storage.dto.StorageDTO;
 
 public interface StorageService {
 
@@ -17,4 +17,8 @@ public interface StorageService {
 	void deleteById(Long storageId);
 
 	void modifyStorage(Long storageId, StorageDTO.ModifyStorage modifyStorage);
+
+	StorageEntity getDatasetStorageClassName(long id);
+
+	StorageEntity getModelVolumeStorageClassName(long id);
 }

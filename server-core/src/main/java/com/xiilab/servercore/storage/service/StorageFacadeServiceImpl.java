@@ -133,8 +133,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.connectionTestImageUrl(volumeImageURL)
 			.secretDTO(storageDTO.getSecretDTO())
 			.arrayId(storageDTO.getArrayId().toLowerCase())
-			.storagePool(storageDTO.getStoragePool())
-			.nasServer(storageDTO.getNasServer())
+			.dellVolumeId(storageDTO.getDellVolumeId())
 			.build();
 		if(storageDTO.getStorageType() == StorageType.NFS){
 			StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
@@ -188,19 +187,22 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.requestVolume(storageDTO.getRequestVolume())
 				.astragoDeploymentName(dellStorage.getAstragoDeploymentName())
 				.pvcName(dellStorage.getPvcName())
-				.arrayId(storageDTO.getArrayId())
-				.storagePool(storageDTO.getStoragePool())
+				.pvName(dellStorage.getVolumeName())
+				.arrayId(storageDTO.getArrayId().toLowerCase())
 				.volumeName(dellStorage.getVolumeName())
 				.hostPath(dellStorage.getHostPath())
 				.storageClassName(dellStorage.getStorageClassName())
-				.nasServer(storageDTO.getNasServer())
+				.dellVolumeId(storageDTO.getDellVolumeId())
 				.build();
 			storageService.insertStorage(createStorage);
 		}
 
 	}
 	private Path createPath(String storageName) {
-		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
+		// String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
+		// 	.toString()
+		// 	.substring(6);
+		String path = "/tmp/kube-storage" + storageDefaultPath + storageName + "-" + UUID.randomUUID()
 			.toString()
 			.substring(6);
 
@@ -222,10 +224,8 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private void dellUnistValidationCheck(CreateStorageReqDTO createStorageReqDTO){
 		if(isBlankSafe(createStorageReqDTO.getArrayId())){
 			throw new RestApiException(StorageErrorCode.DELL_STORAGE_ARRAY_ID_NULL);
-		}else if(isBlankSafe(createStorageReqDTO.getStoragePool())){
-			throw new RestApiException(StorageErrorCode.DELL_STORAGE_STORAGE_POOL_NULL);
-		}else if(isBlankSafe(createStorageReqDTO.getNasServer())){
-			throw new RestApiException(StorageErrorCode.DELL_STORAGE_NAS_SERVER_NULL);
+		} else if (isBlankSafe(createStorageReqDTO.getDellVolumeId())) {
+			throw new RestApiException(StorageErrorCode.DELL_STORAGE_STORAGE_VOLUME_ID_NULL);
 		}
 	}
 

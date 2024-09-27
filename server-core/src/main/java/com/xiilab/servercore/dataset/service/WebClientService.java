@@ -5,14 +5,23 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+
+import javax.net.ssl.SSLException;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 @Service
 @Transactional
@@ -22,6 +31,29 @@ public class WebClientService {
 	final long kilobyte = 1024;
 	final long megabyte = kilobyte * 1024;
 	final long gigabyte = megabyte * 1024;
+
+	public <T> T postObjectFromUrl(String url, Map<String, String> headers, Object body, Class<?> bodyType,
+		Class<T> responseType) throws SSLException {
+		WebClient webClient = createWebClient();
+		return webClient.post()
+			.uri(url)
+			.headers(httpHeaders -> headers.forEach(httpHeaders::add))
+			.accept(MediaType.APPLICATION_JSON)
+			.body(Mono.just(body), bodyType)
+			.retrieve()
+			.bodyToMono(responseType)
+			.block();
+	}
+
+	public <T> T getObjectFromUrl(String url, Class<T> responseType) throws SSLException {
+		//검증없이 모든 SSL 인증서 사용
+		WebClient webClient = createWebClient();
+		return webClient.get().uri(url)
+			.accept(MediaType.APPLICATION_JSON)
+			.retrieve()
+			.bodyToMono(responseType)
+			.block();
+	}
 
 	public <T> List<T> getObjectsFromUrl(String url, Class<T> responseType) {
 		return webClient.get().uri(url)
@@ -93,5 +125,16 @@ public class WebClientService {
 			return formatter.format(lastModifiedDateTime);
 		}
 		return "Last-Modified not available";
+	}
+
+	// 검증없이 모든 SSL 인증서 사용
+	private WebClient createWebClient() throws SSLException {
+		SslContext sslContext = SslContextBuilder
+			.forClient()
+			.trustManager(InsecureTrustManagerFactory.INSTANCE)
+			.build();
+		HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+		WebClient webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+		return webClient;
 	}
 }

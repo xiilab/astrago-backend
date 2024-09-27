@@ -8,7 +8,6 @@ import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpec;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpecBuilder;
@@ -22,6 +21,7 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 	private String pvcMetaName;
 	private String namespace;
 	private int requestVolume;
+	private String storageClassName;
 
 	@Override
 	public HasMetadata createResource() {
@@ -52,6 +52,7 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 			.pvcMetaName(createPVC.getPvcName())
 			.namespace(createPVC.getNamespace())
 			.requestVolume(createPVC.getRequestVolume())
+			.storageClassName(createPVC.getStorageClassName())
 			.build();
 	}
 	@Override

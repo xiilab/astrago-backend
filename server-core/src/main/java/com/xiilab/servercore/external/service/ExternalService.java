@@ -1,6 +1,5 @@
 package com.xiilab.servercore.external.service;
 
-
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,11 +12,11 @@ import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.GitLabApi;
-import com.xiilab.modulecommon.util.GithubApi;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
+import com.xiilab.servercore.common.utils.GithubApi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +64,8 @@ public class ExternalService {
 			token = (token == null)? publicToken : token;
 			GithubApi githubApi = new GithubApi(token);
 			String repo = convertGitHubRepoUrlToRepoName(repoName);
-			return githubApi.getBranchList(repo);
+			String[] split = repo.split("/");
+			return githubApi.getBranchList(split[0], split[1]);
 		}
 		throw new RestApiException(CodeErrorCode.CODE_GET_BLANCHES_FAIL);
 	}

@@ -29,12 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.alert.enums.AlertMessage;
 import com.xiilab.modulecommon.alert.enums.AlertName;
-import com.xiilab.modulecommon.alert.enums.AlertRole;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
-import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
-import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
@@ -47,7 +44,6 @@ import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.WorkloadErrorCode;
 import com.xiilab.modulecommon.util.FileUtils;
-import com.xiilab.modulecommon.util.MailServiceUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulecommon.vo.PageNaviParam;
 import com.xiilab.modulek8s.common.dto.AgeDTO;
@@ -86,6 +82,7 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
 import com.xiilab.modulek8sdb.pin.enumeration.PinType;
+import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
@@ -106,6 +103,7 @@ import com.xiilab.servercore.model.service.ModelService;
 import com.xiilab.servercore.node.service.NodeFacadeService;
 import com.xiilab.servercore.node.service.NodeService;
 import com.xiilab.servercore.pin.service.PinService;
+import com.xiilab.servercore.storage.service.StorageService;
 import com.xiilab.servercore.user.service.UserFacadeService;
 import com.xiilab.servercore.workload.dto.request.CreateWorkloadJobReqDTO;
 import com.xiilab.servercore.workload.dto.request.WorkloadEventReqDTO;
@@ -144,6 +142,8 @@ public class WorkloadFacadeService {
 	private final UserFacadeService userFacadeService;
 	private final NodeFacadeService nodeFacadeService;
 	private final PortRepository portRepository;
+	private final StorageService storageService;
+
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 
@@ -456,22 +456,6 @@ public class WorkloadFacadeService {
 				.workloadResourceName(activeSingleWorkloadDetail.getWorkloadResourceName())
 				.workloadType(activeSingleWorkloadDetail.getWorkloadType())
 				.build();
-
-			//워크로드 종료 알림 발송
-			String emailTitle = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMailTitle(), workloadName);
-			String title = AlertMessage.WORKLOAD_END_CREATOR.getTitle();
-			String message = String.format(AlertMessage.WORKLOAD_END_CREATOR.getMessage(),
-				activeSingleWorkloadDetail.getWorkloadName());
-
-			String receiverMail = userFacadeService.getUserInfoById(activeSingleWorkloadDetail.getRegUserId())
-				.getEmail();
-			MailDTO mailDTO = MailServiceUtils.endWorkloadMail(activeSingleWorkloadDetail.getWorkloadName(),
-				receiverMail);
-
-			WorkspaceUserAlertEvent workspaceUserAlertEvent = new WorkspaceUserAlertEvent(AlertRole.USER,
-				AlertName.USER_WORKLOAD_END, userInfoDTO.getId(), activeSingleWorkloadDetail.getRegUserId(), emailTitle,
-				title, message, workspaceName, pageNaviParam, mailDTO);
-			eventPublisher.publishEvent(workspaceUserAlertEvent);
 		}
 	}
 
@@ -828,6 +812,34 @@ public class WorkloadFacadeService {
 		workloadModuleFacadeService.deleteInteractiveJobWorkload(workSpaceName, workloadName);
 	}
 
+	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
+		String storagePath, StorageType storageType, String volumeName, String arrayId, String dellVolumeId) {
+		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
+		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
+		int requestVolume = 50;
+
+		// PV 생성
+		CreatePV createPV = CreatePV.builder()
+			.pvcName(pvcName)
+			.pvName(pvName)
+			.ip(ip)
+			.storagePath(storagePath)
+			.namespace(workspaceName)
+			.storageType(storageType)
+			.requestVolume(requestVolume)
+			.arrayId(arrayId)
+			.dellVolumeId(dellVolumeId)
+			.build();
+		moduleVolumeReqDTO.setCreatePV(createPV);
+		CreatePVC createPVC = CreatePVC.builder()
+			.pvcName(pvcName)
+			.namespace(workspaceName)
+			.requestVolume(requestVolume)
+			.volumeName(volumeName)
+			.build();
+		moduleVolumeReqDTO.setCreatePVC(createPVC);
+	}
+
 	private void setDatasetVolume(String workspaceName, List<ModuleVolumeReqDTO> list) {
 		for (ModuleVolumeReqDTO moduleVolumeReqDTO : list) {
 			Dataset findDataset = datasetService.findById(moduleVolumeReqDTO.getId());
@@ -843,13 +855,16 @@ public class WorkloadFacadeService {
 				}
 
 				String filePath = storagePath + saveDirectoryName;
+				StorageEntity storageEntity = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
 
+				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
 					filePath,
-					resDatasetWithStorage.getStorageType());
+					resDatasetWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(),
+					storageEntity.getDellVolumeId());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
-					resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType());
+					resDatasetWithStorage.getStoragePath(), resDatasetWithStorage.getStorageType(), "", "", "");
 			}
 		}
 	}
@@ -866,41 +881,19 @@ public class WorkloadFacadeService {
 				if (!storagePath.endsWith(File.separator)) {
 					storagePath += File.separator;
 				}
-
 				String filePath = storagePath + saveDirectoryName;
+				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
+
+				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
 					filePath,
-					resModelWithStorage.getStorageType());
+					resModelWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(),
+					storageEntity.getDellVolumeId());
 			} else {
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
-					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType());
+					resModelWithStorage.getStoragePath(), resModelWithStorage.getStorageType(), "", "", "");
 			}
 		}
-	}
-
-	private static void setPvAndPVC(String workspaceName, ModuleVolumeReqDTO moduleVolumeReqDTO, String ip,
-		String storagePath, StorageType storageType) {
-		String pvcName = "astrago-storage-pvc-" + UUID.randomUUID().toString().substring(6);
-		String pvName = "astrago-storage-pv-" + UUID.randomUUID().toString().substring(6);
-		int requestVolume = 50;
-
-		// PV 생성
-		CreatePV createPV = CreatePV.builder()
-			.pvcName(pvcName)
-			.pvName(pvName)
-			.ip(ip)
-			.storagePath(storagePath)
-			.namespace(workspaceName)
-			.storageType(storageType)
-			.requestVolume(requestVolume)
-			.build();
-		moduleVolumeReqDTO.setCreatePV(createPV);
-		CreatePVC createPVC = CreatePVC.builder()
-			.pvcName(pvcName)
-			.namespace(workspaceName)
-			.requestVolume(requestVolume)
-			.build();
-		moduleVolumeReqDTO.setCreatePVC(createPVC);
 	}
 
 	public boolean workloadMkdir(String workloadName, String workspaceName, WorkloadType workloadType, String path) {

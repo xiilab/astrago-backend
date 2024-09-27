@@ -470,6 +470,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private String credentialName;
 		private RepositoryType repositoryType;
 		private String cmd;
+		private Boolean isPrivateRepository;
 
 		public Code(CodeWorkLoadMappingEntity codeWorkLoadMappingEntity) {
 			super(codeWorkLoadMappingEntity.getCode().getRegUser().getRegUserId(),
@@ -486,9 +487,11 @@ public class FindWorkloadResDTO extends ResDTO {
 			if (codeWorkLoadMappingEntity.getCode().getCredentialEntity() == null) {
 				this.repositoryAuthType = RepositoryAuthType.PUBLIC;
 				this.credentialId = null;
+				this.isPrivateRepository = false;
 			} else {
 				this.repositoryAuthType = RepositoryAuthType.PRIVATE;
 				this.credentialId = codeWorkLoadMappingEntity.getCode().getCredentialEntity().getId();
+				this.isPrivateRepository = true;
 			}
 			this.repositoryType = codeWorkLoadMappingEntity.getCode().getRepositoryType();
 			this.cmd = codeWorkLoadMappingEntity.getCmd();

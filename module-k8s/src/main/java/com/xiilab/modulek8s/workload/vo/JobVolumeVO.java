@@ -4,9 +4,10 @@ public record JobVolumeVO(
 	Long id,
 	String mountPath,
 	String pvName,
-	String pvcName
+	String pvcName,
+	String subPath
 ) {
-	public JobVolumeVO(String name, String pvcName) {
-		this(0L, "", name, pvcName);
+	public JobVolumeVO(String name, String pvcName, String subPath) {
+		this(0L, "", name, pvcName, subPath);
 	}
 }

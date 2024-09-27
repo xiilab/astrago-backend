@@ -27,9 +27,9 @@ public class ResourceQuotaEntity extends BaseEntity {
 	private String workspaceName;
 	@Column(name = "WORKSPACE_RESOURCE_NAME")
 	private String workspaceResourceName;
-	@Column(name = "RESOURCE_QUOTA_REQUEST_REASON")
+	@Column(name = "RESOURCE_QUOTA_REQUEST_REASON", length = 4000)
 	private String requestReason;
-	@Column(name = "RESOURCE_QUOTA_REJECT_REASON")
+	@Column(name = "RESOURCE_QUOTA_REJECT_REASON", length = 4000)
 	private String rejectReason;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "RESOURCE_QUOTA_STATUS")

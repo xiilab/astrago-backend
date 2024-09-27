@@ -3,7 +3,9 @@ spring:
     init:
       mode: always
   quartz:
-    job-store-type: memory
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
   servlet:
     multipart:
       max-request-size: 10MB
@@ -19,7 +21,7 @@ spring:
       matching-strategy: ant_path_matcher
   datasource:
     url: jdbc:mariadb://localhost:3306/astrago
-#    url: jdbc:mariadb://10.61.3.12:30010/astrago
+    #    url: jdbc:mariadb://10.61.3.12:30010/astrago
     username: root
     password: root
     hikari:

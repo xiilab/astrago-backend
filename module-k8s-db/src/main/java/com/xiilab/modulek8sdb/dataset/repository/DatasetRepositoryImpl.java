@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -35,16 +36,18 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 		RepositorySearchCondition repositorySearchCondition, PageMode pageMode) {
 		RepositorySortType sortType = repositorySearchCondition.getSort();
 		OrderSpecifier<? extends Serializable> sort =
-			sortType == RepositorySortType.NAME ? dataset.datasetName.desc() :
+			sortType == RepositorySortType.NAME ? dataset.datasetName.toLowerCase().desc() :
 				sortType == RepositorySortType.CREATED_AT ? dataset.regDate.desc() : dataset.datasetSize.desc();
 
+		// BooleanBuilder builder = new BooleanBuilder();
+		BooleanBuilder whereBuilder = new BooleanBuilder()
+			.and(creatorEq(userId, userAuth, pageMode))
+			.and(repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()))
+			.and(datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()))
+			.and(deleteYNEqN());
+
 		List<Dataset> datasets = queryFactory.selectFrom(dataset)
-			.where(
-				creatorEq(userId, userAuth, pageMode),
-				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
-				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				deleteYNEqN()
-			)
+			.where(whereBuilder)
 			.orderBy(sort)
 			.offset(pageRequest.getOffset())
 			.limit(pageRequest.getPageSize())
@@ -52,12 +55,7 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
 
 		Long count = queryFactory.select(dataset.count())
 			.from(dataset)
-			.where(
-				creatorEq(userId, userAuth, pageMode),
-				repositoryDivisionEq(repositorySearchCondition.getRepositoryDivision()),
-				datasetNameOrCreatorNameContains(repositorySearchCondition.getSearchText()),
-				deleteYNEqN()
-			)
+			.where(whereBuilder)
 			.fetchOne();
 		return new PageImpl<>(datasets, pageRequest, count);
 	}

@@ -30,6 +30,7 @@ public class CodeResDTO {
 	private String defaultPath;
 	private String cmd;
 	private Map<String, String> codeArgs;
+	private Boolean isPrivateRepository;
 
 	public CodeResDTO(CodeEntity codeEntity) {
 		this.id = codeEntity.getId();
@@ -44,5 +45,6 @@ public class CodeResDTO {
 		this.defaultPath = codeEntity.getCodeDefaultMountPath();
 		this.cmd = codeEntity.getCmd();
 		this.codeArgs = codeEntity.getCodeArgs() != null ? JsonConvertUtil.convertJsonToMap(codeEntity.getCodeArgs()) : null;
+		this.isPrivateRepository = codeEntity.getCredentialEntity() != null ? true : false;
 	}
 }

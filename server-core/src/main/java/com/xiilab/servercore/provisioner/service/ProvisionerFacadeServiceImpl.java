@@ -45,9 +45,10 @@ public class ProvisionerFacadeServiceImpl implements ProvisionerFacadeService {
 	@Override
 	public void installPlugin(String type, PluginDTO.DellUnityDTO dellUnityDTO,  UserDTO.UserInfo userInfoDTO) {
 		if(StorageType.DELL_UNITY.name().equals(type)) {
-			provisionerModuleService.installDellProvisioner(dellUnityDTO.getArrayId(), dellUnityDTO.getUsername(),
+			provisionerModuleService.installDellProvisioner(dellUnityDTO.getArrayId().toLowerCase(),
+				dellUnityDTO.getUsername(),
 				dellUnityDTO.getPassword(), dellUnityDTO.getEndpoint());
-			provisionerModuleService.addProvisionerNodeLabel(dellUnityDTO.getArrayId());
+			provisionerModuleService.addProvisionerNodeLabel(dellUnityDTO.getArrayId().toLowerCase());
 			pluginService.pluginDeleteYN(StorageType.DELL_UNITY, true, userInfoDTO.getId(), userInfoDTO.getUserFullName());
 		}
 	}
