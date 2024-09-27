@@ -178,6 +178,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		} else if (storageDTO.getStorageType() == StorageType.DELL_UNITY) {
 			// dell volume ID 조회
 			String dellVolumeId = getDellVolumeId(storageDTO);
+			createStorageReqDTO.setVolumeId(dellVolumeId);
 			// dell validation check
 			dellUnistValidationCheck(createStorageReqDTO);
 			// Storage class 생성
@@ -205,10 +206,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 
 	}
 	private Path createPath(String storageName) {
-		// String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
-		// 	.toString()
-		// 	.substring(6);
-		String path = "/tmp/kube-storage" + storageDefaultPath + storageName + "-" + UUID.randomUUID()
+		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
 			.toString()
 			.substring(6);
 
