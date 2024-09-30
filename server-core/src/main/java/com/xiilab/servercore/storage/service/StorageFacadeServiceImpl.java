@@ -1,6 +1,8 @@
 package com.xiilab.servercore.storage.service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,6 +23,7 @@ import com.xiilab.modulecommon.exception.errorcode.StorageErrorCode;
 import com.xiilab.modulek8s.facade.dto.CreateStorageReqDTO;
 import com.xiilab.modulek8s.facade.dto.DeleteStorageReqDTO;
 import com.xiilab.modulek8s.facade.storage.StorageModuleService;
+import com.xiilab.modulek8s.storage.common.utils.StorageUtils;
 import com.xiilab.modulek8s.storage.volume.dto.response.StorageResDTO;
 import com.xiilab.modulek8s.workload.secret.service.SecretService;
 import com.xiilab.modulek8sdb.common.enums.NetworkCloseYN;
@@ -30,9 +33,12 @@ import com.xiilab.modulek8sdb.model.entity.Model;
 import com.xiilab.modulek8sdb.model.repository.ModelRepository;
 import com.xiilab.modulek8sdb.network.entity.NetworkEntity;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
+import com.xiilab.modulek8sdb.plugin.dto.PluginDTO;
+import com.xiilab.modulek8sdb.plugin.service.PluginService;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 import com.xiilab.modulek8sdb.volume.entity.Volume;
 import com.xiilab.modulek8sdb.volume.repository.VolumeRepository;
+import com.xiilab.servercore.dataset.service.WebClientService;
 import com.xiilab.servercore.storage.dto.StorageDTO;
 
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
@@ -52,6 +58,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 	private final DatasetRepository datasetRepository;
 	private final ModelRepository modelRepository;
 	private final VolumeRepository volumeRepository;
+	private final PluginService pluginService;
 
 	@Value("${astrago.namespace}")
 	private String namespace;
@@ -98,7 +105,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		storageService.modifyStorage(storageId, modifyStorage);
 	}
 
-	public static String getBase64DecodeString(String content){
+	public static String getBase64DecodeString(String content) {
 		byte[] decodedBytes = Base64.getDecoder().decode(content);
 		return new String(decodedBytes, StandardCharsets.UTF_8);
 	}
@@ -133,7 +140,6 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 			.connectionTestImageUrl(volumeImageURL)
 			.secretDTO(storageDTO.getSecretDTO())
 			.arrayId(storageDTO.getArrayId().toLowerCase())
-			.dellVolumeId(storageDTO.getDellVolumeId().toLowerCase())
 			.build();
 		if(storageDTO.getStorageType() == StorageType.NFS){
 			StorageResDTO storage = storageModuleService.createStorage(createStorageReqDTO);
@@ -172,6 +178,9 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.build();
 			storageService.insertStorage(createStorage);
 		} else if (storageDTO.getStorageType() == StorageType.DELL_UNITY) {
+			// dell volume ID 조회
+			String dellVolumeId = getDellVolumeId(storageDTO);
+			createStorageReqDTO.setVolumeId(dellVolumeId);
 			// dell validation check
 			dellUnistValidationCheck(createStorageReqDTO);
 			// Storage class 생성
@@ -191,16 +200,19 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 				.volumeName(dellStorage.getVolumeName())
 				.hostPath(dellStorage.getHostPath())
 				.storageClassName(dellStorage.getStorageClassName())
-				.dellVolumeId(storageDTO.getDellVolumeId())
+				//TODO
+				.dellVolumeId("")
 				.build();
 			storageService.insertStorage(createStorage);
 		}
 
 	}
+
 	// null 체크와 함께 isBlank를 수행하는 메서드
 	public static boolean isBlankSafe(String str) {
 		return str == null || str.isBlank();
 	}
+
 	private Path createPath(String storageName) {
 		String path = System.getProperty("user.home") + storageDefaultPath + storageName + "-" + UUID.randomUUID()
 			.toString()
@@ -213,7 +225,7 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		return hostPath;
 	}
 
-	private void createDirectories(Path hostPath){
+	private void createDirectories(Path hostPath) {
 		try {
 			Files.createDirectories(hostPath);
 		} catch (IOException e) {
@@ -221,12 +233,28 @@ public class StorageFacadeServiceImpl implements StorageFacadeService {
 		}
 	}
 
-	private void dellUnistValidationCheck(CreateStorageReqDTO createStorageReqDTO){
-		if(isBlankSafe(createStorageReqDTO.getArrayId())){
+	private void dellUnistValidationCheck(CreateStorageReqDTO createStorageReqDTO) {
+		if (isBlankSafe(createStorageReqDTO.getArrayId())) {
 			throw new RestApiException(StorageErrorCode.DELL_STORAGE_ARRAY_ID_NULL);
-		}else if(isBlankSafe(createStorageReqDTO.getDellVolumeId())){
+		} else if (isBlankSafe(createStorageReqDTO.getDellVolumeId())) {
 			throw new RestApiException(StorageErrorCode.DELL_STORAGE_VOLUME_ID_NULL);
 		}
+	}
+
+	private String getDellVolumeId(StorageDTO storageDTO) {
+
+		PluginDTO.ResponseDTO plugin = pluginService.getPlugin(StorageType.DELL_UNITY);
+
+		String[] command = {
+			"curl", "-i", "-k", "-L",
+			"-u", plugin.getDellUserName() + ":" + plugin.getDellPassword(),
+			"-c", "cookie.txt",
+			"-H", "Accept: application/json",
+			"-H", "Content-Type: application/json",
+			"-H", "X-EMC-REST-CLIENT: true",
+			plugin.getDellEndpoint() + "api/types/filesystem/instances?filter=name%20eq%20%22" + storageDTO.getDellVolumeName() + "%22",
+		};
+		return StorageUtils.runShellCommand(command);
 	}
 
 }

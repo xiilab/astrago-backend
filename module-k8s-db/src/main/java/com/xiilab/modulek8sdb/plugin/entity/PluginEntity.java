@@ -40,6 +40,8 @@ public class PluginEntity{
 	private String dellUserName;
 	@Column(name = "DELL_PASSWORD")
 	private String dellPassword;
+	@Column(name = "DELL_ENDPOINT")
+	private String dellEndpoint;
 	@Column(name = "INSTALL_YN")
 	@Enumerated(EnumType.STRING)
 	private DeleteYN installYN;
@@ -61,5 +63,6 @@ public class PluginEntity{
 		this.regDate = LocalDateTime.now();
 		this.dellUserName = pluginDTO.getDellUserName();
 		this.dellPassword = pluginDTO.getDellPassword();
+		this.dellEndpoint = pluginDTO.getDellEndpoint();
 	}
 }

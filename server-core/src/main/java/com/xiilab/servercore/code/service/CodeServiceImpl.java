@@ -21,7 +21,7 @@ import com.xiilab.modulecommon.enums.RepositoryType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.GitLabApi;
-import com.xiilab.modulecommon.util.GithubApi;
+import com.xiilab.servercore.common.utils.GithubApi;
 import com.xiilab.modulek8sdb.code.dto.CodeSearchCondition;
 import com.xiilab.modulek8sdb.code.entity.CodeEntity;
 import com.xiilab.modulek8sdb.code.repository.CodeCustomRepository;
@@ -112,7 +112,9 @@ public class CodeServiceImpl implements CodeService {
 
 		if (isGitHubURL) {
 			GithubApi githubApi = new GithubApi(token);
-			if (githubApi.isRepoConnected(convertGitHubRepoUrlToRepoName(codeURL))) {
+			String repoName = convertGitHubRepoUrlToRepoName(codeURL);
+			String[] split = repoName.split("/");
+			if (githubApi.isRepoConnected(split[0], split[1])) {
 				return true;
 			}
 		} else{

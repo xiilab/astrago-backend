@@ -91,16 +91,16 @@ public class KeycloakUserRepositoryImpl implements UserRepository {
 				&& user.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0).equals("true")
 				&& searchName(searchCondition != null ? searchCondition.getSearchText() : null, user)
 			)
-			.sorted(searchCondition != null ?
-				searchCondition.getUserSort() == UserSort.CREATED_AT_ASC ?
-					Comparator.comparing(UserRepresentation::getCreatedTimestamp) :
-					searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
-						Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
-						searchCondition.getUserSort() == UserSort.ENABLE_ASC ?
-							Comparator.comparing(UserRepresentation::isEnabled) :
-							Comparator.comparing(UserRepresentation::isEnabled).reversed()
-				: Comparator.comparing(UserRepresentation::getCreatedTimestamp)
-			)
+			// .sorted(searchCondition != null ?
+			// 	searchCondition.getUserSort() == UserSort.CREATED_AT_ASC ?
+			// Comparator.comparing(UserRepresentation::getCreatedTimestamp) :
+			// 		searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
+			// 			Comparator.comparing(UserRepresentation::getCreatedTimestamp).reversed() :
+			// 			searchCondition.getUserSort() == UserSort.ENABLE_ASC ?
+			// 				Comparator.comparing(UserRepresentation::isEnabled) :
+			// 				Comparator.comparing(UserRepresentation::isEnabled).reversed()
+			// 	: Comparator.comparing(UserRepresentation::getCreatedTimestamp)
+			// )
 			.toList();
 		int userSize = users.size();
 
@@ -129,6 +129,19 @@ public class KeycloakUserRepositoryImpl implements UserRepository {
 					}
 					return userSummary;
 				}
+			).sorted(searchCondition != null ?
+				searchCondition.getUserSort() == UserSort.CREATED_AT_ASC ?
+					Comparator.comparing(UserSummary::getJoinDate) :
+					searchCondition.getUserSort() == UserSort.CREATED_AT_DESC ?
+						Comparator.comparing(UserSummary::getJoinDate).reversed() :
+						searchCondition.getUserSort() == UserSort.ENABLE_ASC ?
+							Comparator.comparing(UserSummary::getEnable) :
+								searchCondition.getUserSort() == UserSort.ENABLE_DESC ?
+									Comparator.comparing(UserSummary::getEnable).reversed() :
+										searchCondition.getUserAuth() == AuthType.ROLE_ADMIN ?
+											Comparator.comparing(UserSummary::getAuthType) :
+											Comparator.comparing(UserSummary::getAuthType).reversed()
+				: Comparator.comparing(UserSummary::getJoinDate)
 			)
 			.toList();
 
