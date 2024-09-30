@@ -122,6 +122,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 					user.getLastName() + user.getFirstName(),
 					user.getEmail());
 			} else {
+				userService.refuseUserById(userId);
 				mailDTO = MailServiceUtils.refuseUserMail(
 					user.getUserFullName(), user.getEmail());
 			}
