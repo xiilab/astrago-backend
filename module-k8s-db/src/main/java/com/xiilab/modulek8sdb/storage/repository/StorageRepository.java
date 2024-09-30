@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 import com.xiilab.modulek8sdb.storage.entity.StorageEntity;
 
@@ -18,10 +19,12 @@ public interface StorageRepository extends JpaRepository<StorageEntity, Long> {
 	@Query("select s from StorageEntity s where s.deleteYN = 'N'")
 	List<StorageEntity> findAll();
 
-
 	@Query("select a.storageEntity  from AstragoDatasetEntity a where a.datasetId = ?1")
 	StorageEntity getDatasetStorageClassName(long id);
 
 	@Query("select a.storageEntity  from AstragoModelEntity a where a.modelId = ?1")
 	StorageEntity getModelVolumeStorageClassName(long id);
+
+	@Query("select count(*) from StorageEntity s where s.storageType = ?1 and s.deleteYN = 'N'")
+	int storageUsageCountByType(StorageType storageType);
 }

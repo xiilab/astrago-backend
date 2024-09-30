@@ -26,7 +26,8 @@ public interface DatasetWorkspaceRepository extends JpaRepository<DatasetWorkSpa
 		+ "where dwm.dataset.datasetId = :datasetId "
 		+ "and dwm.dataset.deleteYn = 'N'"
 		+ "and dwm.workspaceResourceName like :workspaceResourceName")
-	Optional<DatasetWorkSpaceMappingEntity> findByWorkspaceResourceNameAndDatasetId(@Param("workspaceResourceName") String workspaceResourceName, @Param("datasetId")Long datasetId);
+	Optional<DatasetWorkSpaceMappingEntity> findByWorkspaceResourceNameAndDatasetId(
+		@Param("workspaceResourceName") String workspaceResourceName, @Param("datasetId") Long datasetId);
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("delete "

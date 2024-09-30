@@ -156,10 +156,10 @@ create table if not exists TB_CODE
     TITLE                   varchar(255)                         null,
     WORKSPACE_NAME          varchar(255)                         null,
     CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')          null,
-    CODE_CMD                varchar(2000)                         null,
+    CODE_CMD                varchar(2000)                 null,
     DELETE_YN               enum ('Y', 'N')                      null,
     REPOSITORY_TYPE         enum ('WORKSPACE', 'USER', 'CUSTOM') null,
-    CODE_DEFAULT_MOUNT_PATH varchar(2000) charset utf8mb4         null
+    CODE_DEFAULT_MOUNT_PATH varchar(2000) charset utf8mb4 null
 );
 
 create index if not exists FKfhqjmmbm3u5illhwv2axw3q5m
@@ -676,8 +676,8 @@ create table if not exists TB_RESOURCE_QUOTA
     REG_USER_ID                   varchar(255)                          null,
     REG_USER_NAME                 varchar(255)                          null,
     REG_USER_REAL_NAME            varchar(255)                          null,
-    RESOURCE_QUOTA_REJECT_REASON  varchar(4000)                          null,
-    RESOURCE_QUOTA_REQUEST_REASON varchar(4000)                          null,
+    RESOURCE_QUOTA_REJECT_REASON  varchar(4000) null,
+    RESOURCE_QUOTA_REQUEST_REASON varchar(4000) null,
     WORKSPACE_NAME                varchar(255)                          null,
     WORKSPACE_RESOURCE_NAME       varchar(255)                          null,
     RESOURCE_QUOTA_STATUS         enum ('WAITING', 'APPROVE', 'REJECT') null
@@ -728,9 +728,13 @@ create table if not exists TB_STORAGE
     STORAGE_NAME            varchar(255)                  null,
     STORAGE_PATH            varchar(255)                  null,
     VOLUME_NAME             varchar(255)                  null,
-    STORAGE_TYPE            enum ('NFS', 'CLOUD', 'PURE') null,
+    STORAGE_TYPE            enum ('NFS', 'CLOUD', 'PURE', 'IBM', 'WEKA_FS', 'DELL_UNITY') null,
     DELETE_YN               enum ('Y', 'N')               null,
-    SECRET_NAME             varchar(255)                  null
+    SECRET_NAME             varchar(255)                  null,
+    DELL_VOLUME_ID          varchar(255)                  null,
+    ARRAY_ID                varchar(255)                  null,
+    STORAGE_CLASS_NAME      varchar(255)                  null,
+    DEFAULT_STORAGE_YN      enum ('Y', 'N')               null
 );
 
 create table if not exists TB_SYSTEM_ALERT
@@ -791,12 +795,12 @@ create table if not exists TB_WORKLOAD
     WORKLOAD_DELETED_AT        datetime(6)                                            null,
     image_IMAGE_ID             bigint                                                 null,
     DTYPE                      varchar(31)                                            not null,
-    WORKLOAD_CMD               varchar(4000)                                           null,
+    WORKLOAD_CMD         varchar(4000) null,
     WORKLOAD_CREATOR           varchar(255)                                           null,
     WORKLOAD_CREATOR_ID        varchar(255)                                           null,
     WORKLOAD_CREATOR_REAL_NAME varchar(255)                                           null,
     WORKLOAD_PARAMETER         varchar(1000)                                          null,
-    WORKLOAD_DESCRIPTION       varchar(1500)                                           null,
+    WORKLOAD_DESCRIPTION varchar(1500) null,
     WORKING_DIR                varchar(255)                                           null comment '명령어를 실행 할 위치',
     WORKLOAD_RESOURCE_NAME     varchar(255)                                           null,
     WORKSPACE_NAME             varchar(255)                                           null,
@@ -866,7 +870,7 @@ create table if not exists TB_WORKSPACE_ALERT_SETTING
     WORKLOAD_END_ALERT      bit          null,
     WORKLOAD_ERROR_ALERT    bit          null,
     WORKLOAD_START_ALERT    bit          null,
-    ID                      bigint auto_increment primary key,
+    ID bigint auto_increment primary key,
     WORKSPACE_NAME          varchar(255) null
 );
 
@@ -880,3 +884,32 @@ create table if not exists TB_WORKSPACE_SETTING
         primary key
 );
 
+create table if not exists TB_PLUGIN
+(
+    PLUGIN_ID bigint auto_increment
+    primary key,
+    ID               bigint             null,
+    REG_DATE         datetime(6)        null,
+    DELL_ENDPOINT    varchar(255)       null,
+    DELL_PASSWORD    varchar(255)       null,
+    DELL_USER_NAME    varchar(255)       null,
+    NAME             varchar(255)       null,
+    REG_USER_ID      varchar(255)       null,
+    REG_USER_NAME     varchar(255)       null,
+    VERSION          varchar(255)       null,
+    INSTALL_YN   enum ('Y', 'N')    null,
+    STORAGE_TYPE enum ('NFS', 'CLOUD', 'PURE', 'IBM', 'WEKA_FS', 'DELL_UNITY') null
+    );
+
+create index if not exists FKeg0s0dscviqh2xu5bc1u8mys8
+    on TB_PLUGIN (ID);
+
+create table if not exists TB_ONEVIEW_SETTING
+(
+    API_VERSION             int          null,
+    CONNECTION_FAILED_COUNT int          null,
+    ONEVIEW_ID              bigint auto_increment primary key,
+    API_SERVER_ADDRESS      varchar(255) null,
+    PASSWORD                varchar(255) null,
+    USER_NAME               varchar(255) null
+);

@@ -32,7 +32,8 @@ public class WebClientService {
 	final long megabyte = kilobyte * 1024;
 	final long gigabyte = megabyte * 1024;
 
-	public <T> T postObjectFromUrl(String url, Map<String, String> headers, Object body, Class<?> bodyType, Class<T> responseType) throws SSLException {
+	public <T> T postObjectFromUrl(String url, Map<String, String> headers, Object body, Class<?> bodyType,
+		Class<T> responseType) throws SSLException {
 		WebClient webClient = createWebClient();
 		return webClient.post()
 			.uri(url)

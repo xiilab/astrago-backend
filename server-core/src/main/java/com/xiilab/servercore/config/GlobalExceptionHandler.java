@@ -83,10 +83,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		log.error("handleIllegalArgument", ex);
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
 		return ResponseEntity.status(errorCode.getCode())
-			.body(makeErrorResponse(errorCode, Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage()));
+			.body(makeErrorResponse(errorCode,
+				Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage()));
 		// return makeErrorResponse(errorCode, Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage());
 	}
-
 
 	private ResponseEntity<Object> customExceptionInternal(ErrorCode errorCode) {
 		// return ResponseEntity.status(HttpStatus.OK)

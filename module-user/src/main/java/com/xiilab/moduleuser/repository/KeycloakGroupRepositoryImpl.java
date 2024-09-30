@@ -342,7 +342,8 @@ public class KeycloakGroupRepositoryImpl implements GroupRepository {
 		List<UserRepresentation> members = groupResource.members(0, Integer.MAX_VALUE);
 		boolean isDefaultGroup = groupResource.toRepresentation().getPath().equals("/account/default");
 		for (UserRepresentation member : members) {
-			if (!member.isEnabled()) continue;
+			if (!member.isEnabled())
+				continue;
 
 			if (isDefaultGroup) {
 				//default 그룹을 추가한건지 체크

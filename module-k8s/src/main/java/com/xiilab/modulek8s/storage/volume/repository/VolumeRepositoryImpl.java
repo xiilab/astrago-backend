@@ -186,13 +186,13 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 	public void createPV(CreatePV createPV) {
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolume resource = null;
-			if(createPV.getStorageType() == StorageType.NFS) {
+			if (createPV.getStorageType() == StorageType.NFS) {
 				PersistentVolumeVO persistentVolumeVO = PersistentVolumeVO.dtoToEntity(createPV);
 				resource = (PersistentVolume)persistentVolumeVO.createResource();
-			}else if(createPV.getStorageType() == StorageType.DELL_UNITY) {
-				String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
+			} else if (createPV.getStorageType() == StorageType.DELL_UNITY) {
+				String storageName = "dell-storage-" + UUID.randomUUID().toString().substring(6);
 				String volumeHandle = "existingvol-NFS-" + createPV.getArrayId() + "-" + createPV.getDellVolumeId();
-				resource =  new PersistentVolumeBuilder()
+				resource = new PersistentVolumeBuilder()
 					.withNewMetadata()
 					.withName(createPV.getPvName())
 					.addToAnnotations("pv.kubernetes.io/provisioned-by", "csi-unity.dellemc.com")
@@ -719,7 +719,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 
 	@Override
 	public void createDellPVC(String pvcName, String pvName) {
-		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
+		String storageName = "dell-storage-" + UUID.randomUUID().toString().substring(6);
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			PersistentVolumeClaim pvc = new PersistentVolumeClaim().toBuilder()
 				.withNewMetadata()
@@ -741,7 +741,7 @@ public class VolumeRepositoryImpl implements VolumeRepository {
 
 	@Override
 	public void createDellPV(String pvName, String pvcName, String arrayId, String volumeId) {
-		String storageName = "dell-storage-"+ UUID.randomUUID().toString().substring(6);
+		String storageName = "dell-storage-" + UUID.randomUUID().toString().substring(6);
 		try (final KubernetesClient client = k8sAdapter.configServer()) {
 			String volumeHandle = "existingvol-NFS-" + arrayId + "-" + volumeId;
 			PersistentVolume pv = new PersistentVolumeBuilder()

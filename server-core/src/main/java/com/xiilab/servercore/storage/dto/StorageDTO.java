@@ -22,6 +22,7 @@ public class StorageDTO {
 	private int requestVolume;
 	private SecretDTO secretDTO;
 	private String arrayId;
+	private String dellVolumeName;
 	private String dellVolumeId;
 
 	@Getter

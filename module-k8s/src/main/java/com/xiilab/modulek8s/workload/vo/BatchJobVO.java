@@ -199,14 +199,14 @@ public class BatchJobVO extends WorkloadVO {
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
 		List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
-			volumes.forEach(volume ->{
-				if(volume.subPath() == null){
+			volumes.forEach(volume -> {
+				if (volume.subPath() == null) {
 					podSpecContainer
 						.addNewVolumeMount()
 						.withName(volume.pvName())
 						.withMountPath(volume.mountPath())
 						.endVolumeMount();
-				}else{
+				} else {
 					podSpecContainer
 						.addNewVolumeMount()
 						.withName(volume.pvName())
