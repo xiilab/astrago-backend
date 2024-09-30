@@ -52,4 +52,6 @@ public interface UserService {
 	List<UserDTO.UserInfo> getAdminList();
 
 	String joinAdmin(UserReqVO userReqVO);
+
+	void refuseUserById(String userId);
 }
