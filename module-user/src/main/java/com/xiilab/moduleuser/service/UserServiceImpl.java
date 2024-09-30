@@ -61,9 +61,6 @@ public class UserServiceImpl implements UserService {
 				Map.of(UserAttribute.APPROVAL_YN.getKey(), String.valueOf(approvalYN)));
 			//사용자 활성화 처리
 			userRepository.updateUserActivationYN(userIdList, true);
-		} else {
-			//사용자 반려 처리
-			userRepository.refuseUserById(userIdList);
 		}
 	}
 
@@ -146,6 +143,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public String joinAdmin(UserReqVO userReqVO) {
 		return userRepository.joinAdmin(userReqVO);
+	}
+
+	@Override
+	public void refuseUserById(String userId) {
+		userRepository.refuseUserById(List.of(userId));
 	}
 
 }

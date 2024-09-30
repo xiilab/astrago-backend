@@ -174,6 +174,7 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 				.withValue(String.valueOf(codeVO.id()))
 				.build());
 		}
+
 		// GITHUB 크레덴셜 정보 환경변수로 저장
 		if (codeVO.credentialVO() != null && StringUtils.hasText(codeVO.credentialVO().credentialLoginId())
 			&& StringUtils.hasText(codeVO.credentialVO().credentialLoginPw())) {
