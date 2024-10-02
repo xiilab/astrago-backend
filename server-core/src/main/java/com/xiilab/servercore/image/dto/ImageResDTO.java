@@ -85,7 +85,7 @@ public class ImageResDTO {
 								}) : null)
 						.command(builtInImageEntity.getCommand())
 						.recommendStatus(builtInImageEntity.getRecommendStatus())
-						.availableStatus(builtInImageEntity.getAvailableStatus())
+						.availableStatus(true)
 						.regUserId(imageEntity.getRegUser().getRegUserId())
 						.regUserName(imageEntity.getRegUser().getRegUserName())
 						.regDate(imageEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))

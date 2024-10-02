@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.ImageErrorCode;
 import com.xiilab.modulecommon.util.ValidUtils;
@@ -84,9 +83,9 @@ public class ImageServiceImpl implements ImageService {
 		Page<ImageEntity> images = imageRepository.findByImages(findSearchCondition.getImageType(),
 			findSearchCondition.getWorkloadType(), findSearchCondition.isMultiNode(), pageRequest);
 
-		if (findSearchCondition.getImageType() == ImageType.BUILT) {
-			getRecommendAndSetAvailableBuiltInImages(images.getContent());
-		}
+		// if (findSearchCondition.getImageType() == ImageType.BUILT) {
+		// 	getRecommendAndSetAvailableBuiltInImages(images.getContent());
+		// }
 
 		NetworkEntity network = networkRepository.findTopBy(Sort.by("networkId").descending());
 		NetworkCloseYN networkCloseYN = network.getNetworkCloseYN();
@@ -156,7 +155,7 @@ public class ImageServiceImpl implements ImageService {
 			return ;
 		}
 
-		// 사용가능한 쿠다 maximum 버전
+		// 사용가능한 이미지 목록 중 가장 상위 버전의 쿠다버전 조회
 		Float maxCudaVersion = findComFrameworkVersionEntities.stream()
 			.map(compatibleFrameworkVersionEntity -> Float.parseFloat(
 				compatibleFrameworkVersionEntity.getFrameWorkVersionEntity().getCudaVersion()))
@@ -174,6 +173,7 @@ public class ImageServiceImpl implements ImageService {
 		for (int i = 0; i < sortImages.size(); i++) {
 			BuiltInImageEntity builtInImageEntity = (BuiltInImageEntity)sortImages.get(i);
 			Float imageCudaVersion = Float.parseFloat(builtInImageEntity.getCudaVersion());
+
 			if (!ValidUtils.isNullOrZero(imageCudaVersion)) {
 				// maxCudaVersion보다 낮거나 같은 것만 사용
 				if (imageCudaVersion.compareTo(maxCudaVersion) <= 0) {
