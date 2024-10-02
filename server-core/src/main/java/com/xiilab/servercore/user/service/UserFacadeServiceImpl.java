@@ -198,6 +198,8 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	public void joinAdmin(UserReqVO userReqVO) {
 		String userId = userService.joinAdmin(userReqVO);
 		userService.joinDefaultGroup(userId);
+		updateUserWorkspaceCreateLimitById(userId,
+			workspaceSettingRepo.findAll().get(0).getWorkspaceCreateLimit());
 		//admin alert 정보 입력
 		alertService.initializeAdminAlertMappingSettings(userId);
 	}
