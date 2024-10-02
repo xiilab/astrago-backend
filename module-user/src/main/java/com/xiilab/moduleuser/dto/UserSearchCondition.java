@@ -14,11 +14,9 @@ import lombok.Setter;
 public class UserSearchCondition {
 	private String searchText;
 	private UserSort userSort;
-	private AuthType userAuth;
 
 	public UserSearchCondition(String searchText, UserSort userSort) {
 		this.searchText = StringUtils.isBlank(searchText) ? null : searchText.replace(" ", "");
 		this.userSort = userSort == null ? UserSort.CREATED_AT_ASC : userSort;
-		this.userAuth = userAuth == null ? AuthType.ROLE_ADMIN : AuthType.ROLE_USER;
 	}
 }

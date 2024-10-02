@@ -138,7 +138,7 @@ public class KeycloakUserRepositoryImpl implements UserRepository {
 							Comparator.comparing(UserSummary::getEnable) :
 								searchCondition.getUserSort() == UserSort.ENABLE_DESC ?
 									Comparator.comparing(UserSummary::getEnable).reversed() :
-										searchCondition.getUserAuth() == AuthType.ROLE_ADMIN ?
+										searchCondition.getUserSort() == UserSort.ROLE_ADMIN ?
 											Comparator.comparing(UserSummary::getAuthType) :
 											Comparator.comparing(UserSummary::getAuthType).reversed()
 				: Comparator.comparing(UserSummary::getJoinDate)
