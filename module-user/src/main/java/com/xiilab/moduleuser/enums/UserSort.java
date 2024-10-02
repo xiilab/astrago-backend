@@ -10,5 +10,6 @@ public enum UserSort {
 	CREATED_AT_DESC,
 	ENABLE_ASC,
 	ENABLE_DESC,
-
+	ROLE_ADMIN,
+	ROLE_USER,
 }
