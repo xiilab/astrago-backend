@@ -969,7 +969,11 @@ public class WorkloadFacadeService {
 				}
 				String filePath = storagePath + saveDirectoryName;
 				StorageEntity storageEntity = storageService.getStorageClassByVolumeId(moduleVolumeReqDTO.getId());
-				moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+
+				if(storageEntity.getStorageType().equals(StorageType.DELL_UNITY)){
+					moduleVolumeReqDTO.setSubPath(saveDirectoryName);
+				}
+
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resVolumeWithStorage.getIp(),
 					filePath,
 					resVolumeWithStorage.getStorageType(), storageEntity.getVolumeName(), storageEntity.getArrayId(), storageEntity.getDellVolumeId());

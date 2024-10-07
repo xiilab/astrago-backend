@@ -356,7 +356,10 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 			if (!StringUtils.isEmpty(nodeName)) {
 				return List.of(kubernetesClient.nodes().withName(nodeName).get());
 			} else {
-				return kubernetesClient.nodes().list().getItems();
+				List<Node> nodeList = kubernetesClient.nodes().list().getItems();
+
+				return nodeList.stream().filter(node -> node.getStatus().getConditions().stream()
+					.noneMatch(condition -> "NodeStatusUnknown".equals(condition.getReason()))).toList();
 			}
 		}
 	}
@@ -372,8 +375,8 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 				.sum();
 			case GPU -> nodeList.stream()
 				.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu")))
-				.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
-				.sum();
+					.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu").toString()))
+					.sum();
 			case "MIG" -> nodeList.stream()
 				.filter(node -> Objects.nonNull(node.getStatus().getCapacity().get("nvidia.com/gpu.shared")))
 				.mapToInt(node -> Integer.parseInt(node.getStatus().getCapacity().get("nvidia.com/gpu.shared").toString()))
