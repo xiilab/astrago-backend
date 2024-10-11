@@ -55,7 +55,7 @@ public class CredentialResDTO {
 		}
 
 		public ModuleCredentialReqDTO toModuleCredentialReqDTO() {
-			return new ModuleCredentialReqDTO(getId(), getLoginId(), getLoginPw(), getName(), getType());
+			return new ModuleCredentialReqDTO(getId(), getLoginId(), getLoginPw(), getName(), getType(), getPrivateRegistryUrl());
 		}
 	}
 
