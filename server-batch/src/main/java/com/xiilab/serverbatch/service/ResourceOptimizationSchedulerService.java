@@ -35,9 +35,6 @@ public class ResourceOptimizationSchedulerService {
 
 	public void registerResourceScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob)
 		throws SchedulerException {
-		if (optimizationDTO.getHour() < 5 || optimizationDTO.getHour() > 24) {
-			throw new IllegalArgumentException(WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR.getMessage());
-		}
 		if (optimizationDTO.isRunning()) {
 			//resource optimization job, trigger 생성
 			JobDetail resourceOptimizationJob = createResourceOptimizationJob(batchJob, optimizationDTO);
@@ -57,6 +54,9 @@ public class ResourceOptimizationSchedulerService {
 	 */
 	public void updateResourceOptimizationScheduler(ResourceOptimizationDTO optimizationDTO, BatchJob batchJob) throws
 		Exception {
+		if (optimizationDTO.getHour() < 2 || optimizationDTO.getHour() > 24) {
+			throw new IllegalArgumentException(WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR.getMessage());
+		}
 		if (optimizationDTO.isRunning()) {
 			//job을 바로 실행하는 경우기에 job, trigger를 등록한다.
 			stopResourceScheduler(batchJob);
