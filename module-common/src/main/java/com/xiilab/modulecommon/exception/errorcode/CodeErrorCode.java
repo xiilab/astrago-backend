@@ -21,6 +21,7 @@ public enum CodeErrorCode implements ErrorCode {
 	CODE_INPUT_ERROR(HttpStatus.BAD_REQUEST.value(), "입력 데이터를 다시 확인해주세요"),
 	CODE_GET_BLANCHES_FAIL(HttpStatus.BAD_REQUEST.value(), "해당 코드의 브랜치를 가져오는데 실패했습니다. 입력 데이터를 다시 확인해주세요"),
 	FAILED_JSON_TO_MAP(HttpStatus.INTERNAL_SERVER_ERROR.value(), "저장된 ARGUMENT를 변환하는데 실패하였습니다."),
+	BITBUCKET_CREDENTIALS_REQUIRED_MESSAGE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "BitBucket 코드를 가져오기 위해서는 크레덴셜 입력이 필수입니다. 크레덴셜읋 등록 후 사용해주세요.")
 	;
 	private final int code;
 	private final String message;
