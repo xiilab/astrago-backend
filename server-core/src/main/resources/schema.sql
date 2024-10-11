@@ -194,6 +194,7 @@ create table if not exists TB_CREDENTIAL
     CREDENTIAL_LOGIN_ID    varchar(255)           null,
     CREDENTIAL_LOGIN_PW    varchar(255)           null,
     CREDENTIAL_NAME        varchar(255)           null,
+    CREDENTIAL_PRIVATE_REGISTRY_URL     varchar(255)           null,
     REG_USER_ID            varchar(255)           null,
     REG_USER_NAME          varchar(255)           null,
     REG_USER_REAL_NAME     varchar(255)           null,
