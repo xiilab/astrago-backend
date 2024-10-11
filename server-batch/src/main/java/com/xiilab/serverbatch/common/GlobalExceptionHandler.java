@@ -14,17 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-	@ExceptionHandler({SchedulerException.class})
+	@ExceptionHandler(SchedulerException.class)
 	public ResponseEntity<Object> handleSchedulerException(SchedulerException ex) {
-		log.error("handleAllException", ex);
-		log.error(String.valueOf(ex.getStackTrace()));
 		return ResponseEntity.internalServerError().body(ex.getMessage());
 	}
 
-	@ExceptionHandler({IllegalArgumentException.class})
+	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<Object> hadleIllegalArgsException(IllegalArgumentException ex) {
-		log.error("handleAllException", ex);
-		log.error(String.valueOf(ex.getStackTrace()));
 		return ResponseEntity.badRequest().body(ex.getMessage());
 	}
 }

@@ -16,8 +16,8 @@ import com.xiilab.modulecommon.exception.errorcode.ReportErrorCode;
 import com.xiilab.modulecommon.util.DataConverterUtil;
 import com.xiilab.modulek8sdb.report.dto.ReportReservationDTO;
 import com.xiilab.modulek8sdb.report.entity.ReportReservationEntity;
-import com.xiilab.modulek8sdb.report.report.ReservationRepository;
-import com.xiilab.modulek8sdb.report.report.ReservationRepositoryCustom;
+import com.xiilab.modulek8sdb.report.repository.ReservationRepository;
+import com.xiilab.modulek8sdb.report.repository.ReservationRepositoryCustom;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.service.UserService;
 
