@@ -43,6 +43,7 @@ public class ResourceOptimizationService {
 			.andYn(reportDTO.isAndYN())
 			.hour(reportDTO.getHour())
 			.optimizationCount(reportDTO.getOptimizationResultCnt())
+			.startTime(reportDTO.getStartTime())
 			.build();
 	}
 
