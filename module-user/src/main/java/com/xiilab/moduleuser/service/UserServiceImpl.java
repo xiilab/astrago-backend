@@ -148,4 +148,9 @@ public class UserServiceImpl implements UserService {
 		return userRepository.joinAdmin(userReqVO);
 	}
 
+	@Override
+	public void refuseUserById(String userId) {
+		userRepository.refuseUserById(List.of(userId));
+	}
+
 }

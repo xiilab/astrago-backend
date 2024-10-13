@@ -305,9 +305,7 @@ public class KeycloakUserRepositoryImpl implements UserRepository {
 
 	@Override
 	public void refuseUserById(List<String> userIdList) {
-		userIdList.forEach(user -> {
-			getUserResourceById(user).remove();
-		});
+		userIdList.forEach(user -> getUserResourceById(user).remove());
 	}
 
 	@Override
