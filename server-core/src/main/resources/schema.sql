@@ -155,7 +155,7 @@ create table if not exists TB_CODE
     REG_USER_REAL_NAME      varchar(255)                         null,
     TITLE                   varchar(255)                         null,
     WORKSPACE_NAME          varchar(255)                         null,
-    CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')          null,
+    CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB', 'BIT_BUCKET')          null,
     CODE_CMD                varchar(2000)                 null,
     DELETE_YN               enum ('Y', 'N')                      null,
     REPOSITORY_TYPE         enum ('WORKSPACE', 'USER', 'CUSTOM') null,

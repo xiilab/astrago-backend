@@ -32,6 +32,7 @@ import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeReqDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.dto.ModifyCodeReqDTO;
+import com.xiilab.servercore.common.utils.BitBucketApi;
 import com.xiilab.servercore.common.utils.GithubApi;
 import com.xiilab.servercore.credential.service.CredentialService;
 
@@ -136,13 +137,7 @@ public class CodeServiceImpl implements CodeService {
 	public Boolean isCodeURLValid(String codeURL, Long credentialId, CodeType codeType) {
 		// 깃허브 또는 깃랩 URL인지 검증
 		boolean isGitHubURL = Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, codeURL);
-		boolean isGitLabURL = Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, codeURL);
-
-		// URL 검증
-		if (codeType == CodeType.GIT_HUB && !isGitHubURL) {
-			// if (!isGitHubURL && !isGitLabURL) {
-			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-		}
+		boolean isBitBucketURL = Pattern.matches(RegexPatterns.BITBUCKET_URL_PATTERN, codeURL);
 
 		String token = "";
 		if (credentialId != null) {
@@ -150,13 +145,16 @@ public class CodeServiceImpl implements CodeService {
 			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
 		}
 
-		if (isGitHubURL) {
+		if (isGitHubURL && codeType == CodeType.GIT_HUB) {
 			GithubApi githubApi = new GithubApi(token);
 			String repoName = convertGitHubRepoUrlToRepoName(codeURL);
 			String[] split = repoName.split("/");
 			if (githubApi.isRepoConnected(split[0], split[1])) {
 				return true;
 			}
+		} else if (isBitBucketURL && codeType == CodeType.BIT_BUCKET) {
+			BitBucketApi bitBucketApi = new BitBucketApi(codeURL, token);
+			return bitBucketApi.isRepoConnected();
 		} else {
 			// GITLAB API 검증
 			String gitlabUrl = getBaseUrl(codeURL);
