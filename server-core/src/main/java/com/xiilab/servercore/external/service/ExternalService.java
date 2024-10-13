@@ -12,10 +12,12 @@ import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.GitLabApi;
+import com.xiilab.modulecommon.util.RepositoryUrlUtils;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.modulek8sdb.credential.repository.CredentialRepository;
 import com.xiilab.modulek8sdb.network.repository.NetworkRepository;
+import com.xiilab.servercore.common.utils.BitBucketApi;
 import com.xiilab.servercore.common.utils.GithubApi;
 
 import lombok.RequiredArgsConstructor;
@@ -35,11 +37,11 @@ public class ExternalService {
 
 	/**
 	 * @param credentialId
-	 * @param repoName     ex) jojoldu/blog-code.git
+	 * @param gitCloneUrl     ex) jojoldu/blog-code.git
 	 * @param codeType
 	 * @return
 	 */
-	public List<String> getGitHubRepoBranchList(Long credentialId, String repoName, CodeType codeType) {
+	public List<String> getGitHubRepoBranchList(Long credentialId, String gitCloneUrl, CodeType codeType) {
 		String token = null;
 		if (!ValidUtils.isNullOrZero(credentialId)) {
 			CredentialEntity findCredential = credentialRepository.findById(credentialId)
@@ -48,25 +50,29 @@ public class ExternalService {
 		}
 
 		// repository/project 형태로 넣어줘야함
-		if(codeType == CodeType.GIT_LAB){
-			String baseUrl = getBaseUrl(repoName);
+		if (codeType == CodeType.GIT_LAB) {
+			String baseUrl = getBaseUrl(gitCloneUrl);
 			token = (token == null) ? gitlabToken : token;
 			GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
 			Pattern pattern = Pattern.compile(baseUrl + "/(.*?)/([^/.]+)(\\.git)?$");
-			Matcher matcher = pattern.matcher(repoName);
+			Matcher matcher = pattern.matcher(gitCloneUrl);
 			if (matcher.find()) {
 				String namespace = matcher.group(1);
 				String project = matcher.group(2);
-			return gitLabApi.getBranchList(namespace, project);
+				return gitLabApi.getBranchList(namespace, project);
 			}
-		}else{
+		} else if (codeType == CodeType.BIT_BUCKET) {
+			BitBucketApi bitBucketApi = new BitBucketApi(gitCloneUrl, token);
+			return bitBucketApi.getBranchList();
+		} else if (codeType == CodeType.GIT_HUB){
 			// 토큰값 전달 안되면 PublicToken 넣음
-			token = (token == null)? publicToken : token;
+			token = (token == null) ? publicToken : token;
 			GithubApi githubApi = new GithubApi(token);
-			String repo = convertGitHubRepoUrlToRepoName(repoName);
+			String repo = RepositoryUrlUtils.convertRepoUrlToRepoName(gitCloneUrl);
 			String[] split = repo.split("/");
 			return githubApi.getBranchList(split[0], split[1]);
 		}
+
 		throw new RestApiException(CodeErrorCode.CODE_GET_BLANCHES_FAIL);
 	}
 
@@ -78,14 +84,41 @@ public class ExternalService {
 			return url.substring(0, endIndex);
 		}
 	}
-	public static String convertGitHubRepoUrlToRepoName(String url){
-		// GitHub URL에서 마지막 슬래시 뒤의 문자열을 추출하여 리턴
-		String[] parts = url.split("com/");
-		String repoName = parts[parts.length - 1];
-		// ".git" 확장자가 있다면 제거
-		if (repoName.endsWith(".git")) {
-			repoName = repoName.substring(0, repoName.length() - 4);
-		}
-		return repoName;
-	}
+
+	// public static String convertRepoUrlToRepoName(String url) {
+	// 	if (Objects.isNull(url)) {
+	// 		throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
+	// 	} else if (url.contains(".com")) {
+	// 		return getRepoName(url.split("com/"));
+	// 	} else if (url.contains(".org")) {
+	// 		return getRepoName(url.split("org/"));
+	// 	} else if (url.contains("scm/")){
+	// 		return getRepoName(url.split("scm/"));
+	// 	}
+	//
+	// 	throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
+	// }
+	//
+	// private static String getRepoName(String[] parts) {
+	// 	// URL에서 마지막 슬래시 뒤의 문자열을 추출하여 리턴
+	// 	String repoName = parts[parts.length - 1];
+	// 	// ".git" 확장자가 있다면 제거
+	// 	if (repoName.endsWith(".git")) {
+	// 		repoName = repoName.substring(0, repoName.length() - 4);
+	// 	}
+	// 	return repoName;
+	// }
+	//
+	// private String extractDomain(String url) {
+	// 	// 정규식을 통해 https:// 뒤에 오는 도메인만 추출
+	// 	String regex = "(https?://[^/]+)";
+	// 	Pattern pattern = Pattern.compile(regex);
+	// 	Matcher matcher = pattern.matcher(url);
+	//
+	// 	if (matcher.find()) {
+	// 		return matcher.group(1);
+	// 	} else {
+	// 		throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
+	// 	}
+	// }
 }

@@ -8,11 +8,12 @@ public record ModuleCredentialReqDTO(
 	String credentialLoginId,
 	String credentialLoginPw,
 	String credentialName,
-	CredentialType credentialType
+	CredentialType credentialType,
+	String privateRegistryUrl
 ) {
 
 	public CredentialVO toCredentialVO(String workspaceName) {
 		return new CredentialVO(workspaceName, credentialId, credentialLoginId, credentialLoginPw,
-			credentialName, credentialType);
+			credentialName, credentialType, privateRegistryUrl);
 	}
 }

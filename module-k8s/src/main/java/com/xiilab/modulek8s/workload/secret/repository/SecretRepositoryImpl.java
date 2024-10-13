@@ -61,7 +61,7 @@ public class SecretRepositoryImpl implements SecretRepository {
 	}
 
 	private Secret createDockerSecret(CredentialVO credentialVO) {
-		return KubernetesResourceUtil.createDockerRegistrySecret(DOCKER_HUB_API_URL,
+		return KubernetesResourceUtil.createDockerRegistrySecret(credentialVO.privateRegistryUrl(),
 			credentialVO.credentialLoginId(), credentialVO.credentialLoginPw(), "sc-" + UUID.randomUUID());
 	}
 

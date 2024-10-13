@@ -155,7 +155,7 @@ create table if not exists TB_CODE
     REG_USER_REAL_NAME      varchar(255)                         null,
     TITLE                   varchar(255)                         null,
     WORKSPACE_NAME          varchar(255)                         null,
-    CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB')          null,
+    CODE_TYPE               enum ('GIT_HUB', 'GIT_LAB', 'BIT_BUCKET')          null,
     CODE_CMD                varchar(2000)                 null,
     DELETE_YN               enum ('Y', 'N')                      null,
     REPOSITORY_TYPE         enum ('WORKSPACE', 'USER', 'CUSTOM') null,
@@ -194,6 +194,7 @@ create table if not exists TB_CREDENTIAL
     CREDENTIAL_LOGIN_ID    varchar(255)           null,
     CREDENTIAL_LOGIN_PW    varchar(255)           null,
     CREDENTIAL_NAME        varchar(255)           null,
+    CREDENTIAL_PRIVATE_REGISTRY_URL     varchar(255)           null,
     REG_USER_ID            varchar(255)           null,
     REG_USER_NAME          varchar(255)           null,
     REG_USER_REAL_NAME     varchar(255)           null,
@@ -913,3 +914,31 @@ create table if not exists TB_ONEVIEW_SETTING
     PASSWORD                varchar(255) null,
     USER_NAME               varchar(255) null
 );
+
+create table if not exists TB_RESOURCE_OPITMIZATION_JOB
+(
+    AND_YN             bit         null,
+    CPU_LIMIT          int         null,
+    GPU_CONDITION      int         null,
+    HOUR               int         null,
+    MEM_CONDITION      int         null,
+    OPTIMIZATION_COUNT int         null,
+    ID                 bigint auto_increment
+        primary key,
+    START_TIME         datetime(6) null
+);
+
+create table if not exists TB_RESOURCE_OPITMIZATION_WORKLOAD
+(
+    CPU_USAGE                  float        null,
+    GPU_USAGE                  float        null,
+    MEM_USAGE                  float        null,
+    ID                         bigint auto_increment
+        primary key,
+    resourceOptimizationJob_ID bigint       null,
+    WORKLOAD_RESOURCE_NAME     varchar(255) null,
+    WORKSPACE_RESOURCE_NAME    varchar(255) null,
+    constraint FK5f8s7pkm2tuqwxn9i0oo734kd
+        foreign key (resourceOptimizationJob_ID) references TB_RESOURCE_OPITMIZATION_JOB (ID)
+);
+

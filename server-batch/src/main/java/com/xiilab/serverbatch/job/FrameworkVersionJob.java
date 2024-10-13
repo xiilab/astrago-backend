@@ -19,7 +19,10 @@ import com.xiilab.modulek8sdb.version.repository.FrameWorkVersionRepository;
 import com.xiilab.modulek8sdb.version.repository.MaxCudaVersionRepository;
 import com.xiilab.modulek8sdb.version.repository.MinCudaVersionRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class FrameworkVersionJob extends QuartzJobBean{
 	@Autowired
 	private FrameWorkVersionRepository frameWorkVersionRepository;
@@ -36,6 +39,7 @@ public class FrameworkVersionJob extends QuartzJobBean{
 	@Override
 	@Transactional
 	protected void executeInternal(JobExecutionContext context) {
+		log.info("FrameworkVersionJob job start....");
 		List<ResponseDTO.WorkerNodeDriverInfo> workerNodeDriverInfos = nodeRepository.getWorkerNodeDriverInfos();
 		// 중복된 값들을 담을 Set
 		Set<FrameWorkVersionEntity> duplicatedVersions = new HashSet<>();
@@ -72,6 +76,7 @@ public class FrameworkVersionJob extends QuartzJobBean{
 				.build();
 			compatibleFrameWorkVersionRepository.save(compatibleFrameworkVersionEntity);
 		}
+		log.info("FrameworkVersionJob job end....");
 	}
 	public static float getSubstringBeforeFirstDot(String str) {
 		String[] split = str.split("\\.");

@@ -60,8 +60,10 @@ public class ModuleCodeResDTO {
 					this.repositoryUrl = envVarValue;
 					if (Pattern.matches(RegexPatterns.GITHUB_URL_PATTERN, envVarValue)) {
 						this.codeType = CodeType.GIT_HUB;
-					} else {
+					} else if(Pattern.matches(RegexPatterns.GITLAB_URL_PATTERN, envVarValue)){
 						this.codeType = CodeType.GIT_LAB;
+					} else if (Pattern.matches(RegexPatterns.BITBUCKET_URL_PATTERN, envVarValue)) {
+						this.codeType = CodeType.BIT_BUCKET;
 					}
 					break;
 				case GIT_SYNC_BRANCH:

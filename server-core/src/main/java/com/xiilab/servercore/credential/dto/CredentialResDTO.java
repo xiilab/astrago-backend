@@ -42,6 +42,7 @@ public class CredentialResDTO {
 		private String loginPw;
 		private String creatorId;
 		private String creatorUserName;
+		private String privateRegistryUrl;
 
 		public CredentialInfo(CredentialEntity credential) {
 			super(credential.getId(), credential.getName(), credential.getDescription(), credential.getType(),
@@ -50,10 +51,11 @@ public class CredentialResDTO {
 			this.loginPw = credential.getLoginPw();
 			this.creatorId = credential.getRegUser().getRegUserId();
 			this.creatorUserName = credential.getRegUser().getRegUserName();
+			this.privateRegistryUrl = credential.getPrivateRegistryUrl();
 		}
 
 		public ModuleCredentialReqDTO toModuleCredentialReqDTO() {
-			return new ModuleCredentialReqDTO(getId(), getLoginId(), getLoginPw(), getName(), getType());
+			return new ModuleCredentialReqDTO(getId(), getLoginId(), getLoginPw(), getName(), getType(), getPrivateRegistryUrl());
 		}
 	}
 
