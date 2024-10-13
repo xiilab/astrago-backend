@@ -1,5 +1,6 @@
 package com.xiilab.serverbatch.job;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.quartz.DisallowConcurrentExecution;
@@ -33,7 +34,7 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 	@Override
 	protected void executeInternal(JobExecutionContext context) {
 		log.info("batch resource optimization alert job start....");
-
+		LocalDateTime now = LocalDateTime.now();
 		JobDataMap jobDataMap = context.getMergedJobDataMap();
 		int cpuLimit = (int)jobDataMap.get("cpu");
 		int memLimit = (int)jobDataMap.get("mem");
@@ -71,6 +72,7 @@ public class BatchResourceOptimizationJob extends QuartzJobBean {
 				.gpuLimit(gpuLimit)
 				.hour(hour)
 				.andYN(andYN)
+				.startTime(now)
 				.optimizationResultCnt(resultCnt)
 				.resourceOptimizationTargets(optimizationDistinctList)
 				.build()
