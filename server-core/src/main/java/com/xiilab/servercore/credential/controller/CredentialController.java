@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiilab.modulecommon.enums.CredentialType;
 import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.credential.dto.CredentialResDTO;
@@ -30,8 +32,9 @@ public class CredentialController {
 	@GetMapping()
 	public ResponseEntity<Page<CredentialResDTO>> getCredentialList(
 		Pageable pageable,
+		@RequestParam(value = "type", required = false) CredentialType credentialType,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
-		return new ResponseEntity<>(credentialService.getCredentialList(pageable, userInfoDTO), HttpStatus.OK);
+		return new ResponseEntity<>(credentialService.getCredentialList(pageable, userInfoDTO, credentialType), HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
