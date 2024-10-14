@@ -37,7 +37,8 @@ public class CredentialEntity extends BaseEntity {
 	private String loginId;
 	@Column(name = "CREDENTIAL_LOGIN_PW")
 	private String loginPw;
-
+	@Column(name = "CREDENTIAL_PRIVATE_REGISTRY_URL")
+	private String privateRegistryUrl;
 	@Column(name = "CREDENTIAL_CREATED_AT")
 	private LocalDateTime createdAt;
 	@Column(name = "CREDENTIAL_TYPE")
@@ -51,6 +52,7 @@ public class CredentialEntity extends BaseEntity {
 		this.loginId = credentialReqDTO.getId();
 		this.loginPw = credentialReqDTO.getPw();
 		this.type = credentialReqDTO.getType();
+		this.privateRegistryUrl = credentialReqDTO.getPrivateRegistryUrl();
 		this.createdAt = LocalDateTime.now();
 	}
 
@@ -59,5 +61,6 @@ public class CredentialEntity extends BaseEntity {
 		this.description = updateDTO.getDescription();
 		this.loginId = updateDTO.getId();
 		this.loginPw = updateDTO.getPw();
+		this.privateRegistryUrl = updateDTO.getPrivateRegistryUrl();
 	}
 }
