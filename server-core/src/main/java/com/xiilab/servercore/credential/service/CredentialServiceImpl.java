@@ -48,7 +48,7 @@ public class CredentialServiceImpl implements CredentialService {
 	@Override
 	public Page<CredentialResDTO> getCredentialList(Pageable pageable, UserDTO.UserInfo userInfoDTO,
 		CredentialType credentialType) {
-		Page<CredentialEntity> credentialEntities = credentialRepository.findByRegUser_RegUserIdAAndType(
+		Page<CredentialEntity> credentialEntities = credentialRepository.findByRegUser_RegUserIdAndType(
 			userInfoDTO.getId(), credentialType, pageable);
 		return Objects.requireNonNull(credentialEntities).map(CredentialResDTO::new);
 	}
