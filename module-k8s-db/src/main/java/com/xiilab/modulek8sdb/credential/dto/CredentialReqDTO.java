@@ -14,6 +14,7 @@ public class CredentialReqDTO {
 	private String description;
 	private String id;
 	private String pw;
+	private String privateRegistryUrl;
 	private CredentialType type;
 	@Getter
 	@AllArgsConstructor
@@ -23,5 +24,6 @@ public class CredentialReqDTO {
 		private String description;
 		private String id;
 		private String pw;
+		private String privateRegistryUrl;
 	}
 }

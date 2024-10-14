@@ -8,6 +8,7 @@ public record CredentialVO (
 	String credentialLoginId,
 	String credentialLoginPw,
 	String credentialName,
-	CredentialType credentialType
+	CredentialType credentialType,
+	String privateRegistryUrl
 ){
 }
