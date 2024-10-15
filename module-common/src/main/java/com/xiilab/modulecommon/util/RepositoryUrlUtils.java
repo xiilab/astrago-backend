@@ -8,7 +8,9 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @UtilityClass
 public class RepositoryUrlUtils {
 
@@ -23,6 +25,7 @@ public class RepositoryUrlUtils {
 			return getRepoName(url.split("scm/"));
 		}
 
+		log.error("convertRepoUrlToRepoName() URL format error. url = {}", url);
 		throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 	}
 
@@ -37,6 +40,7 @@ public class RepositoryUrlUtils {
 		if (matcher.find()) {
 			return matcher.group(1);
 		} else {
+			log.error("extractDomain() URL format error. url = {}", url);
 			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 		}
 	}
