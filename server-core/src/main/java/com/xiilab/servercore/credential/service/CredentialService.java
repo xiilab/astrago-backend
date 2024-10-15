@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.xiilab.modulecommon.enums.CredentialType;
 import com.xiilab.modulek8sdb.credential.dto.CredentialReqDTO;
 import com.xiilab.modulek8sdb.credential.entity.CredentialEntity;
 import com.xiilab.moduleuser.dto.UserDTO;
@@ -15,7 +16,8 @@ public interface CredentialService {
 
 	CredentialResDTO.CredentialInfo findCredentialById(long id, UserDTO.UserInfo userInfoDTO);
 
-	Page<CredentialResDTO> getCredentialList(Pageable pageable, UserDTO.UserInfo userInfoDTO);
+	Page<CredentialResDTO> getCredentialList(Pageable pageable, UserDTO.UserInfo userInfoDTO,
+		CredentialType credentialType);
 
 	void deleteCredentialById(long id, UserDTO.UserInfo userInfoDTO);
 

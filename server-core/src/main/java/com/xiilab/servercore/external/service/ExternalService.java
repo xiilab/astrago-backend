@@ -43,9 +43,11 @@ public class ExternalService {
 	 */
 	public List<String> getGitHubRepoBranchList(Long credentialId, String gitCloneUrl, CodeType codeType) {
 		String token = null;
+		String userName = null;
 		if (!ValidUtils.isNullOrZero(credentialId)) {
 			CredentialEntity findCredential = credentialRepository.findById(credentialId)
 				.orElseThrow();
+			userName = findCredential.getLoginId();
 			token = findCredential.getLoginPw();
 		}
 
@@ -62,7 +64,7 @@ public class ExternalService {
 				return gitLabApi.getBranchList(namespace, project);
 			}
 		} else if (codeType == CodeType.BIT_BUCKET) {
-			BitBucketApi bitBucketApi = new BitBucketApi(gitCloneUrl, token);
+			BitBucketApi bitBucketApi = new BitBucketApi(gitCloneUrl, userName, token);
 			return bitBucketApi.getBranchList();
 		} else if (codeType == CodeType.GIT_HUB){
 			// 토큰값 전달 안되면 PublicToken 넣음
