@@ -32,7 +32,7 @@ public class CredentialController {
 	@GetMapping()
 	public ResponseEntity<Page<CredentialResDTO>> getCredentialList(
 		Pageable pageable,
-		@RequestParam(value = "type") CredentialType credentialType,
+		@RequestParam(value = "type", required = false) CredentialType credentialType,
 		@Parameter(hidden = true) UserDTO.UserInfo userInfoDTO) {
 		return new ResponseEntity<>(credentialService.getCredentialList(pageable, userInfoDTO, credentialType), HttpStatus.OK);
 	}
