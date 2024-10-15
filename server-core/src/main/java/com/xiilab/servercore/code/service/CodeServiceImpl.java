@@ -140,8 +140,10 @@ public class CodeServiceImpl implements CodeService {
 		boolean isBitBucketURL = Pattern.matches(RegexPatterns.BITBUCKET_URL_PATTERN, codeURL);
 
 		String token = "";
+		String userName = null;
 		if (credentialId != null) {
 			CredentialEntity credentialEntity = credentialService.getCredentialEntity(credentialId);
+			userName = credentialEntity != null? credentialEntity.getLoginId() : "";
 			token = credentialEntity != null ? credentialEntity.getLoginPw() : "";
 		}
 
@@ -153,7 +155,7 @@ public class CodeServiceImpl implements CodeService {
 				return true;
 			}
 		} else if (isBitBucketURL && codeType == CodeType.BIT_BUCKET) {
-			BitBucketApi bitBucketApi = new BitBucketApi(codeURL, token);
+			BitBucketApi bitBucketApi = new BitBucketApi(codeURL, userName, token);
 			return bitBucketApi.isRepoConnected();
 		} else {
 			// GITLAB API 검증

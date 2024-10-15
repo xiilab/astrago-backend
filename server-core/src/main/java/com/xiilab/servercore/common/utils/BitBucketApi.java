@@ -16,22 +16,29 @@ import com.xiilab.modulecommon.util.RepositoryUrlUtils;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import lombok.extern.slf4j.Slf4j;
 import reactor.netty.http.client.HttpClient;
 
+@Slf4j
 public class BitBucketApi {
 	private WebClient webClient;
 	private String projectKey;
 	private String repositorySlug;
 
-	public BitBucketApi(String gitCloneURL, String token) {
+	public BitBucketApi(String gitCloneURL, String userName, String token) {
 		// 토큰 없으면 exception
 		if (Objects.isNull(token)) {
+			log.error("Token is null.");
 			throw new RestApiException(CodeErrorCode.BITBUCKET_CREDENTIALS_REQUIRED_MESSAGE);
 		}
-		initializeRepositoryClient(gitCloneURL, token);
+		if (Objects.isNull(userName)) {
+			log.error("Username is null.");
+			throw new RestApiException(CodeErrorCode.BITBUCKET_CREDENTIALS_REQUIRED_MESSAGE);
+		}
+		initializeRepositoryClient(gitCloneURL, userName, token);
 	}
 
-	private void initializeRepositoryClient(String gitCloneURL, String token) {
+	private void initializeRepositoryClient(String gitCloneURL, String userName, String token) {
 		String baseUri = RepositoryUrlUtils.extractDomain(gitCloneURL);
 		String repository = RepositoryUrlUtils.convertRepoUrlToRepoName(gitCloneURL);
 		if (repository.split("/").length != 2) {
@@ -39,7 +46,7 @@ public class BitBucketApi {
 		}
 		String[] splitRepoName = repository.split("/");
 
-		this.webClient = createWebClient(baseUri, token);
+		this.webClient = createWebClient(baseUri, userName, token);
 		this.projectKey = splitRepoName[0].toUpperCase();
 		this.repositorySlug = splitRepoName[1];
 	}
@@ -64,7 +71,7 @@ public class BitBucketApi {
 			.block();
 	}
 
-	private WebClient createWebClient(String bitBucketApiBaseUri, String token) {
+	private WebClient createWebClient(String bitBucketApiBaseUri, String userName, String token) {
 		try {
 			SslContext sslContext = SslContextBuilder
 				.forClient()
@@ -76,13 +83,14 @@ public class BitBucketApi {
 				WebClient.builder()
 					.clientConnector(new ReactorClientHttpConnector(httpClient))
 					.baseUrl(bitBucketApiBaseUri)
-					.defaultHeader("Authorization", "Bearer " + token)
+					.defaultHeaders(hearder -> hearder.setBasicAuth(userName, token))
 					.build() :
 				WebClient.builder()
 					.baseUrl(bitBucketApiBaseUri)
 					.clientConnector(new ReactorClientHttpConnector(httpClient))
 					.build();
 		} catch (SSLException e) {
+			log.error("SSLException error.");
 			throw new RestApiException(CodeErrorCode.CONNECTION_ERROR_MESSAGE);
 		}
 	}
