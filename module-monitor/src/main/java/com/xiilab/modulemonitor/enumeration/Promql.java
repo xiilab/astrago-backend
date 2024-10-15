@@ -27,19 +27,33 @@ public enum Promql {
 	NODE_COUNT("sum(kube_node_info)","총 노드 개수 조회", "NODE"),
 	NODE_MEM_USAGE("label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","Node 메모리 사용률 조회","NODE"),
 	NODE_MEM_USAGE_KI("sum((node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes + node_memory_Slab_bytes)) / 1024)", "NODE의 Mem 사용량 조회", "NODE"),
-	NODE_DISK_SIZE("max by (mountpoint) (sum(label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s}))","Node의 Disk Size 조회","NODE"),
+	NODE_DISK_SIZE("max by (mountpoint) "
+		+ "(sum(label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s}"
+		+ " or "
+		+ "label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s}"
+		+ " or "
+		+ "label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s}))"
+		,"Node의 Disk Size 조회","NODE"),
 	NODE_DISK_USAGE_SIZE("max by (mountpoint) (label_replace(node_filesystem_avail_bytes{job=\"node-exporter\", fstype!=\"\", mountpoint!=\"\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s})","Node Disk 사용량 조회","NODE"),
 	NODE_ROOT_DISK_SIZE(
-		"sum(label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s})",
+		"sum("
+			+ "label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{} or "
+			+ "label_replace(node_filesystem_size_bytes{fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{} or "
+			+ "label_replace(node_filesystem_size_bytes{fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{} "
+			+ ")",
 		"Node의 Disk Size 조회", "NODE"),
 	NODE_ROOT_DISK_USAGE_SIZE(
-		"label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} - label_replace(node_filesystem_avail_bytes{mountpoint=\"/\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}",
+		"(label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or "
+			+ "label_replace(node_filesystem_size_bytes{fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or "
+			+ "label_replace(node_filesystem_size_bytes{fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}) - "
+			+ "(label_replace(node_filesystem_avail_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or "
+			+ "label_replace(node_filesystem_avail_bytes{fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or "
+			+ "label_replace(node_filesystem_avail_bytes{fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})",
 		"Node Disk 사용량 조회", "NODE"),
-	NODE_DISK_USAGE("(max by (mountpoint) (sum(label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})) "
-		+ "- max by (mountpoint) (sum(label_replace(node_filesystem_avail_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}))) "
-		+ "/ max by (mountpoint) (sum(label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})) * 100 ", "Node Disk 사용량", "NODE"),
-	TOTAL_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{fstype=\"ext4\"})", "전체 노드의 DISK SIZE(Bytes) 조회", "NODE"),
-	USAGE_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{fstype=\"ext4\"}) - sum(node_filesystem_avail_bytes{fstype=\"ext4\"})", "전체 노드의 DISK 사용중인 Bytes 조회", "NODE"),
+	NODE_DISK_USAGE("(max by (mountpoint) (sum(label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})) - max by (mountpoint) (sum(label_replace(node_filesystem_avail_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or label_replace(node_filesystem_avail_bytes{job=\"node-exporter\", fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or label_replace(node_filesystem_avail_bytes{job=\"node-exporter\", fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}))) / max by (mountpoint) (sum(\n"
+		+ "label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or label_replace(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})) * 100 ", "Node Disk 사용량", "NODE"),
+	TOTAL_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{fstype=\"ext4\"} or node_filesystem_size_bytes{fstype=\"vfat\"} or node_filesystem_size_bytes{fstype=\"xfs\"})", "전체 노드의 DISK SIZE(Bytes) 조회", "NODE"),
+	USAGE_NODE_DISK_SIZE_BYTES("sum(node_filesystem_size_bytes{fstype=\"ext4\"} or node_filesystem_size_bytes{fstype=\"vfat\"} or node_filesystem_size_bytes{fstype=\"xfs\"}) - sum(node_filesystem_avail_bytes{fstype=\"ext4\"} or node_filesystem_avail_bytes{fstype=\"vfat\"} or node_filesystem_avail_bytes{fstype=\"xfs\"})", "전체 노드의 DISK 사용중인 Bytes 조회", "NODE"),
 	NODE_LOAD1("label_replace((avg(node_load1) by(nodename, job, instance, container,service)), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","1분 단위 GPU 평균 부하","NODE"),
 	NODE_LOAD5("label_replace((avg(node_load5) by(nodename, job, instance, container,service)), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","5분 단위 GPU 평균 부하","NODE"),
 	NODE_LOAD15("label_replace((avg(node_load15) by(nodename, job, instance, container,service)), \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{%s}","15분 단위 GPU 평균 부하","NODE"),
@@ -67,8 +81,24 @@ public enum Promql {
 	NODE_MEMORY_MEM_TOTAL("label_replace(node_memory_MemTotal_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NODE MEM Total 조회", "NODE"),
 	NODE_MEMORY_MEM_FREE("label_replace(node_memory_MemFree_bytes, \"internal_ip\",\"$1\",\"instance\",\"(.*):(.*)\") * on(internal_ip) group_right kube_node_info{%s}", "NDOE MEM Free 조회", "NODE"),
 	NODE_CPU_TOTAL_BY_NODE_NAME("sum(kube_node_status_capacity{resource=\"cpu\", %s})", "", "NODE"),
-	NODE_TOTAL_DISK_SIZE_BYTE("sum(label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%s})", "", "NODE"),
-	NODE_USAGE_DISK_SIZE_BYTE("sum(label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} - label_replace(node_filesystem_avail_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})","","NODE"),
+	NODE_TOTAL_DISK_SIZE_BYTE("sum(label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}"
+		+ " or "
+		+ "label_replace(node_filesystem_size_bytes{fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}"
+		+ " or "
+		+ "label_replace(node_filesystem_size_bytes{fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s}"
+		+ ")", "", "NODE"),
+	NODE_USAGE_DISK_SIZE_BYTE("sum((label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} "
+		+ "or "
+		+ "label_replace(node_filesystem_size_bytes{fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} "
+		+ "or "
+		+ "label_replace(node_filesystem_size_bytes{fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})"
+		+ " - "
+		+ "label_replace(node_filesystem_avail_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} "
+		+ "or "
+		+ "label_replace(node_filesystem_avail_bytes{fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} "
+		+ "or "
+		+ "label_replace(node_filesystem_avail_bytes{fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s})"
+		,"","NODE"),
 
 
 
@@ -185,8 +215,8 @@ public enum Promql {
 	REPORT_SYSTEM_MAX_CPU("label_replace(100 * (1 - min by (instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))), \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}", "", ""),
 	REPORT_SYSTEM_AVG_MEM("label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}", "", ""),
 	REPORT_SYSTEM_MAX_MEM("max(label_replace(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}) by(node)", "", ""),
-	REPORT_SYSTEM_DISK_USAGE_90("label_replace((sum(node_filesystem_size_bytes{fstype=\"ext4\"}) - sum(node_filesystem_avail_bytes{fstype=\"ext4\"})) / (sum(node_filesystem_size_bytes{fstype=\"ext4\"})) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{} > 90","",""),
-	REPORT_SYSTEM_DISK_USAGE("label_replace((sum(node_filesystem_size_bytes{fstype=\"ext4\"}) - sum(node_filesystem_avail_bytes{fstype=\"ext4\"}) / (sum(node_filesystem_size_bytes{fstype=\"ext4\"})) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}","",""),
+	REPORT_SYSTEM_DISK_USAGE_90("label_replace((sum(node_filesystem_size_bytes{fstype=\"ext4\"} or node_filesystem_size_bytes{fstype=\"vfat\"} or node_filesystem_size_bytes{fstype=\"xfs\"}) - sum(node_filesystem_avail_bytes{fstype=\"ext4\"} or node_filesystem_avail_bytes{fstype=\"vfat\"} or node_filesystem_avail_bytes{fstype=\"xfs\"})) / (sum(node_filesystem_size_bytes{fstype=\"ext4\"} or node_filesystem_size_bytes{fstype=\"vfat\"} or node_filesystem_size_bytes{fstype=\"xfs\"})) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{} > 90","",""),
+	REPORT_SYSTEM_DISK_USAGE("label_replace(sum(node_filesystem_size_bytes{fstype=\"ext4\"} or node_filesystem_size_bytes{fstype=\"vfat\"} or node_filesystem_size_bytes{fstype=\"xfs\"}) - sum(node_filesystem_avail_bytes{fstype=\"ext4\"} or node_filesystem_avail_bytes{fstype=\"vfat\"} or node_filesystem_avail_bytes{fstype=\"xfs\"}) / (sum(node_filesystem_size_bytes{fstype=\"ext4\"} or node_filesystem_size_bytes{fstype=\"vfat\"} or node_filesystem_size_bytes{fstype=\"xfs\"})) * 100,  \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\") * on (internal_ip) group_left(node) kube_node_info{}","",""),
 	REPORT_SYSTEM_INFO_GPU_MODEL("avg(label_replace(DCGM_FI_DEV_GPU_TEMP, \"node\", \"$1\", \"kubernetes_node\", \"(.*)\") * on(node) group_left kube_node_info{}) by(node, modelName)", "", ""),
 	REPORT_SYSTEM_AVG_GPU_TEMP("avg(DCGM_FI_DEV_GPU_TEMP) by(kubernetes_node, gpu)","",""),
 	REPORT_SYSTEM_MAX_GPU_TEMP("max(DCGM_FI_DEV_GPU_TEMP) by(kubernetes_node, gpu)","",""),
@@ -218,7 +248,7 @@ public enum Promql {
 	// SYSTEM
 	SYSTEM_CPU_CORE_COUNT("avg(machine_cpu_cores{%s}) by (node)", "NODE CPU 코어 총 갯수 조회, 필수 값 nodeName, 단위 : Core", "NODE"),
 	SYSTEM_MEMORY_BYTE("avg(machine_memory_bytes{%s}) by (node)", "NODE의 총 메모리, 필수 값 nodeName, 단위 : Byte", "NODE"),
-	SYSTEM_DISK_BYTE("max by (mountpoint) (sum(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"), %s})", "NDOE의 총 DISK, 필수 값 nodeName, 단위 : Byte ", "INSTANCE"),
+	SYSTEM_DISK_BYTE("max by (mountpoint) (sum(node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"ext4\"), %1$s} or node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"vfat\"), %1$s} or node_filesystem_size_bytes{job=\"node-exporter\", fstype=\"xfs\"), %1$s})", "NDOE의 총 DISK, 필수 값 nodeName, 단위 : Byte ", "INSTANCE"),
 	SYSTEM_GPU_MODEL("count(DCGM_FI_DEV_GPU_TEMP{%s}) by(kubernetes_node, modelName)", "GPU 모델명 및 개수 조회, 필수 값 instance, 단위 : 개", "GPU")
 	;
 	// GPU 사용량, GPU Limit, GPU Request
