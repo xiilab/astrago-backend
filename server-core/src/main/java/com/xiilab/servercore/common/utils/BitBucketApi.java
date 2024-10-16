@@ -41,14 +41,14 @@ public class BitBucketApi {
 	private void initializeRepositoryClient(String gitCloneURL, String userName, String token) {
 		String baseUri = RepositoryUrlUtils.extractDomain(gitCloneURL);
 		String repository = RepositoryUrlUtils.convertRepoUrlToRepoName(gitCloneURL);
-		if (repository.split("/").length != 2) {
+		if (repository.split("/").length != 3) {
 			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 		}
 		String[] splitRepoName = repository.split("/");
 
 		this.webClient = createWebClient(baseUri, userName, token);
-		this.projectKey = splitRepoName[0].toUpperCase();
-		this.repositorySlug = splitRepoName[1];
+		this.projectKey = splitRepoName[1].toUpperCase();
+		this.repositorySlug = splitRepoName[2];
 	}
 
 	public boolean isRepoConnected() {
