@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 
@@ -14,15 +15,18 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class RepositoryUrlUtils {
 
-	public static String convertRepoUrlToRepoName(String url) {
+	public static String convertRepoUrlToRepoName(CodeType codeType, String url) {
 		if (Objects.isNull(url)) {
 			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-		} else if (url.contains(".com")) {
+		}
+		if (url.contains("/scm/") && codeType == CodeType.BIT_BUCKET) {
+			return getRepoName(url.split("/scm/"));
+		}
+		if (url.contains(".com") && codeType != CodeType.BIT_BUCKET) {
 			return getRepoName(url.split("com/"));
-		} else if (url.contains(".org")) {
+		}
+		if (url.contains(".org")) {
 			return getRepoName(url.split("org/"));
-		} else if (url.contains("scm/")){
-			return getRepoName(url.split("scm/"));
 		}
 
 		log.error("convertRepoUrlToRepoName() URL format error. url = {}", url);
