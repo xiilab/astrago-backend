@@ -120,7 +120,31 @@ public class NodeFacadeService {
 	private Map<String, com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> listToMap(
 		List<com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO> list) {
 		return list.stream()
-			.collect(Collectors.toMap(com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO::nodeName, dto -> dto));
+			.collect(Collectors.toMap(
+				com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO::nodeName,
+				dto -> dto
+				, this::mergeRealTimeDTOs
+			));
+	}
+
+	private com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO mergeRealTimeDTOs(
+		com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO existingDto,
+		com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO newDto
+	) {
+		long summedValue = Long.parseLong(existingDto.value()) + Long.parseLong(newDto.value());
+		return new com.xiilab.modulemonitor.dto.ResponseDTO.RealTimeDTO(
+			existingDto.metricName(),
+			existingDto.dateTime(),
+			existingDto.nameSpace(),
+			existingDto.nodeName(),
+			existingDto.kubeNodeName(),
+			existingDto.podName(),
+			existingDto.instance(),
+			existingDto.modelName(),
+			existingDto.gpuIndex(),
+			existingDto.resource(),
+			String.valueOf(summedValue) // Use the summed value
+		);
 	}
 
 	/**

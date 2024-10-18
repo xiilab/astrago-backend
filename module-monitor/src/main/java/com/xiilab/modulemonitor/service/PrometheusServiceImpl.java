@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PrometheusServiceImpl implements PrometheusService{
+public class PrometheusServiceImpl implements PrometheusService {
 	private final PrometheusRepository prometheusRepository;
 
 	@Override
@@ -30,6 +30,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		String promql = getPromql(requestDTO);
 		// Prometheus 조회
 		String realTimeMetricByQuery = prometheusRepository.getRealTimeMetricByQuery(promql);
+		System.out.println("realTimeMetricByQuery = " + realTimeMetricByQuery);
 		return extractMetrics(realTimeMetricByQuery, requestDTO.metricName());
 	}
 
@@ -58,7 +59,8 @@ public class PrometheusServiceImpl implements PrometheusService{
 	}
 
 	@Override
-	public List<ResponseDTO.RealTimeDTO> getRealTimeMetric(Promql promql, String time, String limitResource, String unixTimeStamp) {
+	public List<ResponseDTO.RealTimeDTO> getRealTimeMetric(Promql promql, String time, String limitResource,
+		String unixTimeStamp) {
 		String realTimeMetricByQuery = prometheusRepository.getRealTimeMetricByQuery(
 			String.format(promql.getQuery(), time, limitResource, unixTimeStamp));
 		return extractMetrics(realTimeMetricByQuery, promql.name());
@@ -82,7 +84,8 @@ public class PrometheusServiceImpl implements PrometheusService{
 		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
 		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
 
-		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(), startUnixTime, endUnixTime, systemStep);
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
+			startUnixTime, endUnixTime, systemStep);
 
 		return extractHistoryMetrics(historyMetric, promql);
 	}
@@ -92,23 +95,27 @@ public class PrometheusServiceImpl implements PrometheusService{
 		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
 		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
 
-		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(), startUnixTime, endUnixTime, 86400L);
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
+			startUnixTime, endUnixTime, 86400L);
 
 		return extractHistoryMetrics(historyMetric, promql);
 	}
 
 	@Override
-	public List<ResponseDTO.HistoryDTO> getHistoryMetricByWarning(String promql, String startDate, String endDate, Long step) {
+	public List<ResponseDTO.HistoryDTO> getHistoryMetricByWarning(String promql, String startDate, String endDate,
+		Long step) {
 		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
 		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
 
-		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(), startUnixTime, endUnixTime, step);
+		String historyMetric = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
+			startUnixTime, endUnixTime, step);
 
 		return extractHistoryMetrics(historyMetric, promql);
 	}
 
 	@Override
-	public ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate, String resourceName) {
+	public ReportDTO.ResourceDTO getHistoryResourceReport(String promql, String startDate, String endDate,
+		String resourceName) {
 		long step = DataConverterUtil.getFortyStep(endDate, startDate);
 		// 검색시간 UnixTime로 변환
 		String startDateUnix = DataConverterUtil.toUnixTime(startDate);
@@ -117,11 +124,10 @@ public class PrometheusServiceImpl implements PrometheusService{
 		String historyMetricByQuery = prometheusRepository.getHistoryMetricByQuery(Promql.valueOf(promql).getQuery(),
 			endDateUnix, startDateUnix, step);
 
-
 		return extractResourceMetrics(historyMetricByQuery, resourceName);
 	}
 
-	private ReportDTO.ResourceDTO extractResourceMetrics(String metric, String resourceName){
+	private ReportDTO.ResourceDTO extractResourceMetrics(String metric, String resourceName) {
 		try {
 			// JSON 파싱을 위한 ObjectMapper 생성
 			JsonNode jsonparser = DataConverterUtil.jsonparser(metric);
@@ -135,7 +141,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		}
 	}
 
-	private long getAvgHistoryMetric(String historyMetric){
+	private long getAvgHistoryMetric(String historyMetric) {
 		long total = 0;
 		try {
 			// JSON 파싱을 위한 ObjectMapper 생성
@@ -146,14 +152,14 @@ public class PrometheusServiceImpl implements PrometheusService{
 
 			JsonNode values;
 
-			if(results.get(0) != null) {
+			if (results.get(0) != null) {
 				values = results.get(0).get("values");
 				for (JsonNode value : values) {
 					// 리스트에 추가
 					total = total + Long.parseLong(value.get(1).textValue());
 				}
 				return total / values.size();
-			}else {
+			} else {
 				return 0;
 			}
 		} catch (JsonProcessingException e) {
@@ -186,6 +192,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		}
 		return responseDTOS;
 	}
+
 	/**
 	 * JsonNode를 ResponseDTO로 변환하는 메소드
 	 *
@@ -217,9 +224,9 @@ public class PrometheusServiceImpl implements PrometheusService{
 	private ReportDTO.ResourceDTO createResourceDTO(JsonNode result, String resourceName) {
 		// 결과 값 추출
 		JsonNode values;
-		if(result.get(0) != null){
+		if (result.get(0) != null) {
 			values = result.get(0).path("values");
-		}else{
+		} else {
 			values = null;
 		}
 		return new ReportDTO.ResourceDTO().builder()
@@ -241,6 +248,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			throw new RestApiException(CommonErrorCode.MONITOR_METRIC_NOT_FOUND);
 		}
 	}
+
 	/**
 	 * 조회된 Prometheus History Metrics 추출하여 HistoryDTO List 반환하는 메소드
 	 *
@@ -267,6 +275,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		}
 		return responseDTOS;
 	}
+
 	/**
 	 * JsonNode를 ResponseDTO로 변환하는 메소드
 	 *
@@ -294,6 +303,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 			.valueDTOS(createHistoryValue(values))
 			.build();
 	}
+
 	/**
 	 * 과거 Values 생성 메소드
 	 * @param values 조회된 Value
@@ -312,6 +322,7 @@ public class PrometheusServiceImpl implements PrometheusService{
 		}
 		return valueDTOList;
 	}
+
 	private List<ReportDTO.ValueDTO> createReportValue(JsonNode values) {
 		List<ReportDTO.ValueDTO> valueDTOList = new ArrayList<>();
 		if (values != null && values.isArray()) {
@@ -326,7 +337,6 @@ public class PrometheusServiceImpl implements PrometheusService{
 		return valueDTOList;
 	}
 
-
 	/**
 	 * Promql 생성하는 메소드
 	 * @param promql Client가 요청한 promql
@@ -340,30 +350,32 @@ public class PrometheusServiceImpl implements PrometheusService{
 			if (requestDTO.nodeName() != null && !requestDTO.nodeName().isBlank()) {
 				result = "kubernetes_node=\"" + requestDTO.nodeName() + "\",";
 			}
-		}else if(promql.getType().equals("NODE")){
+		} else if (promql.getType().equals("NODE")) {
 			if (requestDTO.nodeName() != null && !requestDTO.nodeName().isBlank()) {
 				result = "node=\"" + requestDTO.nodeName() + "\",";
 			}
-		}
-		else {
+		} else {
 			if (requestDTO.namespace() != null && !requestDTO.namespace().isBlank()) {
 				result = "namespace=\"" + requestDTO.namespace() + "\",";
 			}
 		}
+
 		if (requestDTO.podName() != null && !requestDTO.podName().isBlank()) {
 			result = result + "pod=~\"" + requestDTO.podName() + ".*\"";
 		}
-		if(promql.getType().equals("TERMINAL") && Promql.TERMINAL_CPU_UTILIZATION.name().equals(requestDTO.metricName())){
+		if (promql.getType().equals("TERMINAL") && Promql.TERMINAL_CPU_UTILIZATION.name()
+			.equals(requestDTO.metricName())) {
 			String nodeName = requestDTO.nodeName() == null ? "" : "node =~ \"" + requestDTO.nodeName() + ".*\"";
 			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"", nodeName);
 		}
 		if (Promql.TERMINAL_MULTI_CPU_UTILIZATION.name().equals(requestDTO.metricName())) {
 			return String.format(promql.getQuery(), "pod =~\"" + requestDTO.podName() + ".*\"");
 		}
-		if(promql.getType().equals("INSTANCE")){
+		if (promql.getType().equals("INSTANCE")) {
 			return String.format(promql.getQuery(), "instance =~\"" + requestDTO.instance() + ".*\"");
 		}
 
+		System.out.println("promql = " + String.format(promql.getQuery(), result.toLowerCase()));
 		return String.format(promql.getQuery(), result.toLowerCase());
 	}
 }
