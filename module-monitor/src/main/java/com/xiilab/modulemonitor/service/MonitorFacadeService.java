@@ -63,7 +63,7 @@ public class MonitorFacadeService {
 			.collect(Collectors.groupingBy(ResponseDTO.RealTimeDTO::nameSpace));
 
 		List<ResponseDTO.WorkspaceDTO> result = new ArrayList<>();
-		for(Map.Entry<String, List<ResponseDTO.RealTimeDTO>> value : collect.entrySet()){
+		for (Map.Entry<String, List<ResponseDTO.RealTimeDTO>> value : collect.entrySet()) {
 			String wsName = "default";
 			double gpu = 0.0;
 			double cpu = 0.0;
@@ -72,8 +72,8 @@ public class MonitorFacadeService {
 			long pending = 0;
 			long error = 0;
 			wsName = k8sMonitorService.getWorkspaceName(value.getKey());
-			for(ResponseDTO.RealTimeDTO realTimeDTO : value.getValue()){
-				switch (realTimeDTO.metricName()){
+			for (ResponseDTO.RealTimeDTO realTimeDTO : value.getValue()) {
+				switch (realTimeDTO.metricName()) {
 					case "gpuUsage" -> gpu = Double.parseDouble(realTimeDTO.value());
 					case "cpuUsage" -> cpu = Double.parseDouble(realTimeDTO.value());
 					case "memUsage" -> mem = Double.parseDouble(realTimeDTO.value());
@@ -98,7 +98,7 @@ public class MonitorFacadeService {
 	}
 
 	public ResponseDTO.NodeResourceDTO getNodeResource(String nodeName) {
-		String node = "node=" + "\"" + nodeName  + "\"";
+		String node = "node=" + "\"" + nodeName + "\"";
 		// CPU 총량
 		String cpuMetric = prometheusService.getRealTimeMetricByQuery(
 			String.format(Promql.NODE_CPU_USAGE.getQuery(), node));
@@ -112,7 +112,8 @@ public class MonitorFacadeService {
 		ResponseDTO.ResponseClusterDTO clusterCPU = k8sMonitorService.getDashboardClusterCPU(nodeName,
 			DataConverterUtil.formatRoundTo(cpuResponse));
 
-		ResponseDTO.ResponseClusterDTO clusterMEM = k8sMonitorService.getDashboardClusterMemByNode(nodeName, memResponse);
+		ResponseDTO.ResponseClusterDTO clusterMEM = k8sMonitorService.getDashboardClusterMemByNode(nodeName,
+			memResponse);
 		// GPU
 		ResponseDTO.ResponseClusterDTO clusterGPU = k8sMonitorService.getDashboardClusterGPU(nodeName);
 		// MIG
@@ -182,7 +183,8 @@ public class MonitorFacadeService {
 		Iterator<JsonNode> wlRunningSizesIterator = DataConverterUtil.formatJsonNode(wlRunningMetric);
 
 		while (gpuIterator.hasNext() && cpuSizesIterator.hasNext() && memSizesIterator.hasNext()
-			&& memQuotaSizesIterator.hasNext() && wlPendingSizesIterator.hasNext() && wlRunningSizesIterator.hasNext()) {
+			&& memQuotaSizesIterator.hasNext() && wlPendingSizesIterator.hasNext()
+			&& wlRunningSizesIterator.hasNext()) {
 			JsonNode gpuResult = gpuIterator.next();
 			JsonNode cpuResult = cpuSizesIterator.next();
 			JsonNode memResult = memSizesIterator.next();
@@ -212,7 +214,7 @@ public class MonitorFacadeService {
 					.workspaceName(workspaceName)
 					.gpuUsage(gpu)
 					.cpuUsage(cpu)
-					.memUsage((mem/ memQuota ) * 100)
+					.memUsage((mem / memQuota) * 100)
 					.wlRunningCount(wlRunning)
 					.wlCount(wlCount)
 					.errorCount(workspaceErrorCount)
@@ -321,7 +323,8 @@ public class MonitorFacadeService {
 		String startDate = DataConverterUtil.subtractMinutesFromCurrentTime(minute);
 
 		// Pending History 조회
-		List<ResponseDTO.HistoryDTO> historyMetricByQuery = prometheusService.getHistoryMetricByQuery(promql, startDate, endDate);
+		List<ResponseDTO.HistoryDTO> historyMetricByQuery = prometheusService.getHistoryMetricByQuery(promql, startDate,
+			endDate);
 
 		List<ResponseDTO.ClusterPendingDTO> clusterPendingDTOList = new ArrayList<>();
 
@@ -344,8 +347,8 @@ public class MonitorFacadeService {
 			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
 				(oldValue, newValue) -> oldValue, LinkedHashMap::new));
 	}
-	
-	public Map<String, Map<String, Long>> getClusterContainerRestart(long minute){
+
+	public Map<String, Map<String, Long>> getClusterContainerRestart(long minute) {
 		// Cluster Pending History 조회 Promql
 		String promql = Promql.CONTAINER_RESTART.getQuery();
 		// 검색 기간
@@ -377,7 +380,7 @@ public class MonitorFacadeService {
 				(oldValue, newValue) -> oldValue, LinkedHashMap::new));
 	}
 
-	public List<ResponseDTO.ClusterPodInfo> getClusterPendingAndFailPod(){
+	public List<ResponseDTO.ClusterPodInfo> getClusterPendingAndFailPod() {
 		// Cluster Pending History 조회 Promql
 		String promql = Promql.POD_PENDING_FAIL_INFO.getQuery();
 		String realTimeMetricByQuery = prometheusService.getRealTimeMetricByQuery(promql);
@@ -385,36 +388,26 @@ public class MonitorFacadeService {
 		List<ResponseDTO.RealTimeDTO> realTimeDTOS = prometheusService.extractMetrics(realTimeMetricByQuery, "");
 
 		List<ResponseDTO.ClusterPodInfo> result = new ArrayList<>();
-		for(ResponseDTO.RealTimeDTO realTimeDTO : realTimeDTOS){
+		for (ResponseDTO.RealTimeDTO realTimeDTO : realTimeDTOS) {
 			result.add(k8sMonitorService.getClusterPendingAndFailPod(realTimeDTO.podName(), realTimeDTO.nameSpace()));
 		}
 
 		return result;
 	}
 
-	public List<ClusterObjectDTO> getClusterObjectByObject(ClusterObject clusterObject){
+	public List<ClusterObjectDTO> getClusterObjectByObject(ClusterObject clusterObject) {
 
-		return switch (clusterObject){
-			case POD_RUNNING ->
-				k8sMonitorService.getClusterRunningPods();
-			case POD_PENDING ->
-				k8sMonitorService.getClusterPendingPods();
-			case POD_FAILED ->
-				k8sMonitorService.getClusterFailPods();
-			case NODE_READY ->
-				k8sMonitorService.getReadyNodes();
-			case UNHEALTHY_DEPOLYMENTS ->
-				k8sMonitorService.getUnhealthyDeployments();
-			case UNHEALTHY_HPA ->
-				k8sMonitorService.getUnhealthyHpas();
-			case UNHEALTHY_DAEMONSET ->
-				k8sMonitorService.getUnhealthyDaemonSets();
-			case UNHEALTHY_STATEFULSET ->
-				k8sMonitorService.getUnhealthyStatefulSets();
-			case CONTAINER_RESTART ->
-				k8sMonitorService.getContainerRestart();
-			case CONTAINER_IMAGE_RESTART ->
-				k8sMonitorService.getContainerImageRestart();
+		return switch (clusterObject) {
+			case POD_RUNNING -> k8sMonitorService.getClusterRunningPods();
+			case POD_PENDING -> k8sMonitorService.getClusterPendingPods();
+			case POD_FAILED -> k8sMonitorService.getClusterFailPods();
+			case NODE_READY -> k8sMonitorService.getReadyNodes();
+			case UNHEALTHY_DEPOLYMENTS -> k8sMonitorService.getUnhealthyDeployments();
+			case UNHEALTHY_HPA -> k8sMonitorService.getUnhealthyHpas();
+			case UNHEALTHY_DAEMONSET -> k8sMonitorService.getUnhealthyDaemonSets();
+			case UNHEALTHY_STATEFULSET -> k8sMonitorService.getUnhealthyStatefulSets();
+			case CONTAINER_RESTART -> k8sMonitorService.getContainerRestart();
+			case CONTAINER_IMAGE_RESTART -> k8sMonitorService.getContainerImageRestart();
 		};
 	}
 
