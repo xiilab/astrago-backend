@@ -40,7 +40,7 @@ public enum Promql {
 			+ "label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{} or "
 			+ "label_replace(node_filesystem_size_bytes{fstype=\"vfat\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{} or "
 			+ "label_replace(node_filesystem_size_bytes{fstype=\"xfs\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{} "
-			+ ")",
+			+ ") by (node)",
 		"Node의 Disk Size 조회", "NODE"),
 	NODE_ROOT_DISK_USAGE_SIZE(
 		"(label_replace(node_filesystem_size_bytes{fstype=\"ext4\"}, \"internal_ip\", \"$1\", \"instance\", \"(.*):.*\") * on(internal_ip) group_left(node) kube_node_info{%1$s} or "

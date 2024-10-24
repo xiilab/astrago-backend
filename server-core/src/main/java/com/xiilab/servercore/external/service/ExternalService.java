@@ -70,7 +70,7 @@ public class ExternalService {
 			// 토큰값 전달 안되면 PublicToken 넣음
 			token = (token == null) ? publicToken : token;
 			GithubApi githubApi = new GithubApi(token);
-			String repo = RepositoryUrlUtils.convertRepoUrlToRepoName(gitCloneUrl);
+			String repo = RepositoryUrlUtils.convertRepoUrlToRepoName(codeType, gitCloneUrl);
 			String[] split = repo.split("/");
 			return githubApi.getBranchList(split[0], split[1]);
 		}
@@ -86,41 +86,4 @@ public class ExternalService {
 			return url.substring(0, endIndex);
 		}
 	}
-
-	// public static String convertRepoUrlToRepoName(String url) {
-	// 	if (Objects.isNull(url)) {
-	// 		throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-	// 	} else if (url.contains(".com")) {
-	// 		return getRepoName(url.split("com/"));
-	// 	} else if (url.contains(".org")) {
-	// 		return getRepoName(url.split("org/"));
-	// 	} else if (url.contains("scm/")){
-	// 		return getRepoName(url.split("scm/"));
-	// 	}
-	//
-	// 	throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-	// }
-	//
-	// private static String getRepoName(String[] parts) {
-	// 	// URL에서 마지막 슬래시 뒤의 문자열을 추출하여 리턴
-	// 	String repoName = parts[parts.length - 1];
-	// 	// ".git" 확장자가 있다면 제거
-	// 	if (repoName.endsWith(".git")) {
-	// 		repoName = repoName.substring(0, repoName.length() - 4);
-	// 	}
-	// 	return repoName;
-	// }
-	//
-	// private String extractDomain(String url) {
-	// 	// 정규식을 통해 https:// 뒤에 오는 도메인만 추출
-	// 	String regex = "(https?://[^/]+)";
-	// 	Pattern pattern = Pattern.compile(regex);
-	// 	Matcher matcher = pattern.matcher(url);
-	//
-	// 	if (matcher.find()) {
-	// 		return matcher.group(1);
-	// 	} else {
-	// 		throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-	// 	}
-	// }
 }

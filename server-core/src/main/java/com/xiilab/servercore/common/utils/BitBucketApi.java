@@ -9,6 +9,7 @@ import javax.net.ssl.SSLException;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.xiilab.modulecommon.enums.CodeType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.CodeErrorCode;
 import com.xiilab.modulecommon.util.RepositoryUrlUtils;
@@ -22,6 +23,7 @@ import reactor.netty.http.client.HttpClient;
 @Slf4j
 public class BitBucketApi {
 	private WebClient webClient;
+	private String domain;
 	private String projectKey;
 	private String repositorySlug;
 
@@ -39,16 +41,26 @@ public class BitBucketApi {
 	}
 
 	private void initializeRepositoryClient(String gitCloneURL, String userName, String token) {
-		String baseUri = RepositoryUrlUtils.extractDomain(gitCloneURL);
-		String repository = RepositoryUrlUtils.convertRepoUrlToRepoName(gitCloneURL);
-		if (repository.split("/").length != 3) {
+		String domain = RepositoryUrlUtils.extractDomain(gitCloneURL);
+		String repositoryName = RepositoryUrlUtils.convertRepoUrlToRepoName(CodeType.BIT_BUCKET, gitCloneURL);
+		String projectKey = "";
+		String repositorySlug = "";
+
+		String[] splitRepoName = repositoryName.split("/");
+		if (splitRepoName.length == 2) {
+			projectKey = splitRepoName[0].toUpperCase();
+			repositorySlug = splitRepoName[1];
+		} else if (splitRepoName.length == 3) {
+			projectKey = splitRepoName[1].toUpperCase();
+			repositorySlug = splitRepoName[2];
+		} else {
 			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 		}
-		String[] splitRepoName = repository.split("/");
 
-		this.webClient = createWebClient(baseUri, userName, token);
-		this.projectKey = splitRepoName[1].toUpperCase();
-		this.repositorySlug = splitRepoName[2];
+		this.domain = domain;
+		this.webClient = createWebClient(domain, userName, token);
+		this.projectKey = projectKey;
+		this.repositorySlug = repositorySlug;
 	}
 
 	public boolean isRepoConnected() {
@@ -61,8 +73,9 @@ public class BitBucketApi {
 	}
 
 	public List<String> getBranchList() {
+		log.info("Branch List restAPI URL: \"{}/rest/api/latest/projects/{}/repos/{}/branches\"", this.domain, this.projectKey, this.repositorySlug);
 		return webClient.get()
-			.uri("/rest/api/latest/projects/{projectKey}/repos/{repositorySlug}/branches", projectKey, repositorySlug)
+			.uri("/rest/api/latest/projects/{projectKey}/repos/{repositorySlug}/branches", this.projectKey, this.repositorySlug)
 			.retrieve()
 			.bodyToFlux(Map.class)
 			.flatMapIterable(response -> (List<Map<String, Object>>) response.get("values"))  // "values" 리스트 추출
