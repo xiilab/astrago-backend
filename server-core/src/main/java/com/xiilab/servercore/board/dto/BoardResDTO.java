@@ -1,6 +1,6 @@
 package com.xiilab.servercore.board.dto;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import com.xiilab.modulecommon.enums.PopUpYN;
 import com.xiilab.modulecommon.util.DataConverterUtil;
@@ -27,14 +27,11 @@ public class BoardResDTO extends ResDTO {
 			.regUserId(boardEntity.getRegUser().getRegUserId())
 			.regUserName(boardEntity.getRegUser().getRegUserName())
 			.regUserRealName(boardEntity.getRegUser().getRegUserRealName())
-			.regDate(formatDate(boardEntity.getRegDate()))
-			.modDate(formatDate(boardEntity.getModDate()))
+			.regDate(DataConverterUtil.convertLDTToString(boardEntity.getRegDate(), "yyyy-MM-dd HH:mm:ss"))
+			.modDate(DataConverterUtil.convertLDTToString(boardEntity.getModDate(), "yyyy-MM-dd HH:mm:ss"))
 			.build();
 	}
 
-	protected static String formatDate(LocalDateTime dateTime) {
-		return dateTime != null ? DataConverterUtil.convertLDTToString(dateTime, "yyyy-MM-dd HH:mm:ss") : null;
-	}
 	@Getter
 	@SuperBuilder
 	public static class FindBoard extends BoardResDTO {
@@ -48,15 +45,29 @@ public class BoardResDTO extends ResDTO {
 				.title(boardEntity.getTitle())
 				.contents(boardEntity.getContents())
 				.popUpYN(boardEntity.getPopUpYN())
-				.popupStartDTM(formatDate(boardEntity.getPopupStartDTM()))
-				.popupEndDTM(formatDate(boardEntity.getPopupEndDTM()))
+				.popupStartDTM(DataConverterUtil.convertLDTToString(boardEntity.getPopupStartDTM(), "yyyy-MM-dd HH:mm:ss"))
+				.popupEndDTM(DataConverterUtil.convertLDTToString(boardEntity.getPopupEndDTM(), "yyyy-MM-dd HH:mm:ss"))
 				.readCount(boardEntity.getReadCount())
 				.regUserId(boardEntity.getRegUser().getRegUserId())
 				.regUserName(boardEntity.getRegUser().getRegUserName())
 				.regUserRealName(boardEntity.getRegUser().getRegUserRealName())
-				.regDate(formatDate(boardEntity.getRegDate()))
-				.modDate(formatDate(boardEntity.getModDate()))
+				.regDate(DataConverterUtil.convertLDTToString(boardEntity.getRegDate(), "yyyy-MM-dd HH:mm:ss"))
+				.modDate(DataConverterUtil.convertLDTToString(boardEntity.getModDate(), "yyyy-MM-dd HH:mm:ss"))
 				.build();
+		}
+	}
+
+	@Getter
+	@SuperBuilder
+	public static class FindBoards {
+		private List<BoardResDTO> boards;
+		private long totalCount;
+		public static FindBoards from(List<BoardEntity> boardEntities, long totalCount) {
+			return FindBoards.builder()
+				.boards(boardEntities.stream().map(BoardResDTO::of).toList())
+				.totalCount(totalCount)
+				.build();
+
 		}
 	}
 }

@@ -57,19 +57,9 @@ public class BoardEntity extends BaseEntity {
 	@Column(name = "POPUP_END_DTM")
 	private LocalDateTime popupEndDTM;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "DELETE_YN", nullable = false)
-	private DeleteYN deleteYN = DeleteYN.N; // 기본값 설정
-
-/*	// 엔티티가 저장되기 전 기본 값을 설정하는 메서드
-	@PrePersist
-	public void onCreate() {
-		if (readCount == null) {
-			readCount = 0; // 기본 조회수 설정
-		}
-		if (deleteYN == null) {
-			deleteYN = DeleteYN.N; // 삭제되지 않은 상태로 기본 설정
-		}
-	}*/
+	private DeleteYN deleteYN = DeleteYN.N;
 
 	@Builder(builderClassName = "SaveBoardBuilder", builderMethodName = "saveBoard")
 	public BoardEntity(BoardType boardType, String title,
@@ -92,6 +82,15 @@ public class BoardEntity extends BaseEntity {
 		this.popUpYN = popUpYN;
 		this.popupStartDTM = popupStartDTM;
 		this.popupEndDTM = popupEndDTM;
+	}
+
+	// readCount 1증가
+	public void countRead() {
+		this.readCount++;
+	}
+
+	public void updateContents(String contents) {
+		this.contents = contents;
 	}
 }
 

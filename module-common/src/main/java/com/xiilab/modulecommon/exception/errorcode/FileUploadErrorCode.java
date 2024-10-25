@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum BoardErrorCode implements ErrorCode {
-	NOT_FOUND_BOARD(HttpStatus.INTERNAL_SERVER_ERROR.value(), "해당하는 게시글을 찾을 수 없습니다."),
-	NOT_FOUND_CONTENTS_FILE(HttpStatus.NOT_FOUND.value(), "해당하는 게시글에 포함된 이미지를 찾을 수 없습니다.")
+public enum FileUploadErrorCode implements ErrorCode {
+	FAILED_SAVE_FILE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
+	FAILED_READ_FILE(HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 조회에 실패했습니다.")
 	;
 	private final int code;
 	private final String message;

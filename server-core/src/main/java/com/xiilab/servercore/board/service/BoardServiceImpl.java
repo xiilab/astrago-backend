@@ -1,27 +1,83 @@
 package com.xiilab.servercore.board.service;
 
+import java.io.File;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.xiilab.modulecommon.enums.SortType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.BoardErrorCode;
+import com.xiilab.modulecommon.service.FileUploadService;
+import com.xiilab.modulek8sdb.board.entity.BoardAttachEntity;
 import com.xiilab.modulek8sdb.board.entity.BoardEntity;
+import com.xiilab.modulek8sdb.board.repository.BoardAttachRepository;
 import com.xiilab.modulek8sdb.board.repository.BoardRepository;
 import com.xiilab.servercore.board.dto.BoardReqDTO;
+import com.xiilab.servercore.board.dto.BoardResDTO;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Getter
+@Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoardServiceImpl implements BoardService {
 	private final BoardRepository boardRepository;
+	private final BoardAttachRepository boardAttachRepository;
+	private final FileUploadService fileUploadService;
+	@Value("${editor.attach-file-upload-path}")
+	private String attachFileUploadPath;
+	@Value("${editor.content-file-upload-path}")
+	private String contentFileUploadPath;
 
 	@Override
 	@Transactional
-	public Long saveBoard(BoardReqDTO.Edit.SaveBoard saveBoardReqDTO) {
+	public Long saveBoard(BoardReqDTO.Edit.SaveBoard saveBoardReqDTO, List<MultipartFile> attachedFiles) {
+		BoardEntity saveBoardEntity = saveBoardEntity(saveBoardReqDTO);
+		saveAttachedFiles(attachedFiles, saveBoardEntity);
+
+		//게시글 본문 html src 경로 수정 uuid > boardId
+		String replaceContents = saveBoardEntity.getContents()
+			.replaceAll("UUID_[0-9]{10}", String.valueOf(saveBoardEntity.getBoardId()));
+		saveBoardEntity.updateContents(replaceContents);
+
+		// 파일 디렉토리명 수정
+		File beforeContentsDir = new File(fileUploadService.getRootFilePath() + File.separator + contentFileUploadPath + File.separator
+			+ saveBoardReqDTO.getTempId());
+		File afterContentsDir = new File(fileUploadService.getRootFilePath() + File.separator + contentFileUploadPath + File.separator
+			+ saveBoardEntity.getBoardId());
+		beforeContentsDir.renameTo(afterContentsDir);
+
+		return saveBoardEntity.getBoardId();
+	}
+
+	private void saveAttachedFiles(List<MultipartFile> attachFiles, BoardEntity saveBoardEntity) {
+		for (MultipartFile attachFile : attachFiles) {
+			String saveFileFullPath = fileUploadService.saveMultipartFileToFile(
+				contentFileUploadPath + File.separator + saveBoardEntity.getBoardId(),
+				attachFile);
+			String saveFilePath = saveFileFullPath.substring(0, saveFileFullPath.lastIndexOf("/"));
+			String saveFileName = saveFileFullPath.substring(saveFileFullPath.lastIndexOf("/") + 1);
+
+			BoardAttachEntity boardAttachEntity = BoardAttachEntity.saveBoardAttach()
+				.boardEntity(saveBoardEntity)
+				.originFileName(attachFile.getOriginalFilename())
+				.saveFileName(saveFileName)
+				.savePath(saveFilePath)
+				.dataSize(attachFile.getSize())
+				.fileExtension(saveFileFullPath.substring(saveFileFullPath.lastIndexOf(".") + 1))
+				.build();
+
+			boardAttachRepository.save(boardAttachEntity);
+		}
+	}
+
+	private BoardEntity saveBoardEntity(BoardReqDTO.Edit.SaveBoard saveBoardReqDTO) {
 		BoardEntity saveBoardEntity = BoardEntity.saveBoard()
 			.title(saveBoardReqDTO.getTitle())
 			.contents(saveBoardReqDTO.getContents())
@@ -32,14 +88,14 @@ public class BoardServiceImpl implements BoardService {
 			.build();
 
 		boardRepository.save(saveBoardEntity);
-		return saveBoardEntity.getBoardId();
+		return saveBoardEntity;
 	}
 
 	@Override
 	@Transactional
 	public void updateBoardById(Long boardId, BoardReqDTO.Edit.UpdateBoard updateBoardReqDTO) {
 		BoardEntity findBoardEntity = boardRepository.findById(boardId)
-			.orElseThrow(() -> new RestApiException(BoardErrorCode.NOT_FOUND_NOTICE));
+			.orElseThrow(() -> new RestApiException(BoardErrorCode.NOT_FOUND_BOARD));
 
 		findBoardEntity.updateBoard(
 			updateBoardReqDTO.getTitle(),
@@ -52,17 +108,38 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public Object findBoards(SortType sortType, String searchText, Pageable pageable) {
-		return boardRepository.findBoards(sortType, searchText, pageable);
+	public BoardResDTO.FindBoards findBoards(SortType sortType, String searchText, Pageable pageable) {
+		Page<BoardEntity> boards = boardRepository.findBoards(sortType, searchText, pageable);
+		return BoardResDTO.FindBoards.from(boards.getContent(), boards.getTotalElements());
 	}
 
 	@Override
-	public Object findBoardById() {
-		return null;
+	@Transactional
+	public BoardResDTO.FindBoard findBoardById(long boardId) {
+		BoardEntity findBoardEntity = boardRepository.findById(boardId)
+			.orElseThrow(() -> new RestApiException(BoardErrorCode.NOT_FOUND_BOARD));
+		findBoardEntity.countRead();
+
+		return BoardResDTO.FindBoard.from(findBoardEntity);
 	}
 
 	@Override
-	public void deleteBoard() {
+	@Transactional
+	public void deleteBoardById(long id) {
+		if (!boardRepository.existsById(id)) {
+			throw new RestApiException(BoardErrorCode.NOT_FOUND_BOARD);
+		}
+		boardRepository.deleteById(id);
+	}
 
+	@Override
+	public String saveContentsFile(MultipartFile contentsFile, String id) {
+		String saveFullPath = fileUploadService.saveMultipartFileToFile(contentFileUploadPath + File.separator + id, contentsFile);
+		return saveFullPath.substring(saveFullPath.lastIndexOf("/") + 1);
+	}
+
+	@Override
+	public byte[] getContentsFile(String saveFileName, String id) {
+		return fileUploadService.getFileBytes(contentFileUploadPath + File.separator + id, saveFileName);
 	}
 }

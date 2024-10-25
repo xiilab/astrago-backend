@@ -18,12 +18,13 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.SortType;
 import com.xiilab.modulek8sdb.board.entity.BoardEntity;
+import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class BoardRepositoryCustomImpl implements BoardRepositoryCustom{
+public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
@@ -38,7 +39,8 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom{
 		return queryFactory.select(boardEntity.count())
 			.from(boardEntity)
 			.where(
-				likeSearchText(searchText)
+				likeSearchText(searchText),
+				boardEntity.deleteYN.eq(DeleteYN.N)
 			)
 			.fetchOne();
 	}
@@ -46,7 +48,8 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom{
 	private List<BoardEntity> getBoards(SortType sortType, String searchText, Pageable pageable) {
 		JPAQuery<BoardEntity> findBoardEntityQuery = queryFactory.selectFrom(boardEntity)
 			.where(
-				likeSearchText(searchText)
+				likeSearchText(searchText),
+				boardEntity.deleteYN.eq(DeleteYN.N)
 			)
 			.orderBy(createOrderSpecifier(sortType));
 
@@ -67,10 +70,11 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom{
 	}
 
 	private OrderSpecifier createOrderSpecifier(SortType sortType) {
-		return switch (sortType) {
+		return sortType == null ? new OrderSpecifier<>(Order.DESC, boardEntity.regDate) : switch (sortType) {
 			case LATEST -> new OrderSpecifier<>(Order.DESC, boardEntity.regDate);
 			case OLDEST -> new OrderSpecifier<>(Order.ASC, boardEntity.regDate);
 			case NAME -> new OrderSpecifier<>(Order.DESC, boardEntity.title);
-		};
+		}
+			;
 	}
 }
