@@ -84,6 +84,11 @@ server:
 prometheus:
   url: http://10.61.3.12:30090/
 
+editor:
+  root-file-upload-path: /root/astrago
+  attach-file-upload-path: /board/attaches
+  content-file-upload-path: /board/contents
+
 tus:
   upload-path: /root/astrago/tus/meta
   expire-period: 60000
