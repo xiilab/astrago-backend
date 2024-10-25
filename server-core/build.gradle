@@ -39,6 +39,7 @@ dependencies {
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     // tus 프로토콜
     implementation "me.desair.tus:tus-java-server:1.0.0-3.0"
+    implementation 'org.jsoup:jsoup:1.18.1'
 }
 
 def querydslSrcDir = "src/main/generated"

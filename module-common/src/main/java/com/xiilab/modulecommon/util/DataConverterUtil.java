@@ -501,9 +501,9 @@ public class DataConverterUtil {
 	}
 
 	// LDT to "yyyy-MM-dd HH:mm:ss" 포맷 출력
-	public static String convertLocalDateTimeToString(LocalDateTime date) {
+	public static String convertLDTToString(LocalDateTime date, String datePattern) {
 		try {
-			return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			return date.format(DateTimeFormatter.ofPattern(datePattern));
 		} catch (Exception e) {
 			return null;
 		}
