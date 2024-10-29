@@ -1,6 +1,7 @@
 package com.xiilab.servercore.board.service;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,7 @@ import com.xiilab.modulecommon.enums.SortType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.BoardErrorCode;
 import com.xiilab.modulecommon.service.FileUploadService;
-import com.xiilab.modulek8sdb.board.entity.BoardAttachEntity;
+import com.xiilab.modulek8sdb.board.entity.BoardAttachedFileEntity;
 import com.xiilab.modulek8sdb.board.entity.BoardEntity;
 import com.xiilab.modulek8sdb.board.repository.BoardAttachRepository;
 import com.xiilab.modulek8sdb.board.repository.BoardRepository;
@@ -56,46 +57,13 @@ public class BoardServiceImpl implements BoardService {
 		return saveBoardEntity.getBoardId();
 	}
 
-	private void saveAttachedFiles(List<MultipartFile> attachFiles, BoardEntity saveBoardEntity) {
-		for (MultipartFile attachFile : attachFiles) {
-			String saveFileFullPath = fileUploadService.saveMultipartFileToFile(
-				contentFileUploadPath + File.separator + saveBoardEntity.getBoardId(),
-				attachFile);
-			String saveFilePath = saveFileFullPath.substring(0, saveFileFullPath.lastIndexOf("/"));
-			String saveFileName = saveFileFullPath.substring(saveFileFullPath.lastIndexOf("/") + 1);
-
-			BoardAttachEntity boardAttachEntity = BoardAttachEntity.saveBoardAttach()
-				.boardEntity(saveBoardEntity)
-				.originFileName(attachFile.getOriginalFilename())
-				.saveFileName(saveFileName)
-				.savePath(saveFilePath)
-				.dataSize(attachFile.getSize())
-				.fileExtension(saveFileFullPath.substring(saveFileFullPath.lastIndexOf(".") + 1))
-				.build();
-
-			boardAttachRepository.save(boardAttachEntity);
-		}
-	}
-
-	private BoardEntity saveBoardEntity(BoardReqDTO.Edit.SaveBoard saveBoardReqDTO) {
-		BoardEntity saveBoardEntity = BoardEntity.saveBoard()
-			.title(saveBoardReqDTO.getTitle())
-			.contents(saveBoardReqDTO.getContents())
-			.popUpYN(saveBoardReqDTO.getPopUpYN())
-			.popupStartDTM(saveBoardReqDTO.getPopUpStartDTM())
-			.popupEndDTM(saveBoardReqDTO.getPopUpEndDTM())
-			.boardType(saveBoardReqDTO.getBoardType())
-			.build();
-
-		boardRepository.save(saveBoardEntity);
-		return saveBoardEntity;
-	}
-
 	@Override
 	@Transactional
-	public void updateBoardById(Long boardId, BoardReqDTO.Edit.UpdateBoard updateBoardReqDTO) {
+	public void updateBoardById(Long boardId, BoardReqDTO.Edit.UpdateBoard updateBoardReqDTO, List<MultipartFile> attachedFiles) {
 		BoardEntity findBoardEntity = boardRepository.findById(boardId)
 			.orElseThrow(() -> new RestApiException(BoardErrorCode.NOT_FOUND_BOARD));
+
+		updateAttachedFiles(updateBoardReqDTO.getDeleteBoardAttachedFileIds(), findBoardEntity, attachedFiles);
 
 		findBoardEntity.updateBoard(
 			updateBoardReqDTO.getTitle(),
@@ -118,9 +86,10 @@ public class BoardServiceImpl implements BoardService {
 	public BoardResDTO.FindBoard findBoardById(long boardId) {
 		BoardEntity findBoardEntity = boardRepository.findById(boardId)
 			.orElseThrow(() -> new RestApiException(BoardErrorCode.NOT_FOUND_BOARD));
+		List<BoardAttachedFileEntity> findBoardAttachedFileEntities = boardAttachRepository.findByBoardEntity(findBoardEntity);
 		findBoardEntity.countRead();
 
-		return BoardResDTO.FindBoard.from(findBoardEntity);
+		return BoardResDTO.FindBoard.from(findBoardEntity, findBoardAttachedFileEntities);
 	}
 
 	@Override
@@ -141,5 +110,58 @@ public class BoardServiceImpl implements BoardService {
 	@Override
 	public byte[] getContentsFile(String saveFileName, String id) {
 		return fileUploadService.getFileBytes(contentFileUploadPath + File.separator + id, saveFileName);
+	}
+
+	private void saveAttachedFiles(List<MultipartFile> attachedFiles, BoardEntity saveBoardEntity) {
+		List<BoardAttachedFileEntity> attachedFileEntities = new ArrayList<>();
+		for (MultipartFile attachFile : attachedFiles) {
+			String saveFileFullPath = fileUploadService.saveMultipartFileToFile(
+				contentFileUploadPath + File.separator + saveBoardEntity.getBoardId(),
+				attachFile);
+			String saveFilePath = saveFileFullPath.substring(0, saveFileFullPath.lastIndexOf("/"));
+			String saveFileName = saveFileFullPath.substring(saveFileFullPath.lastIndexOf("/") + 1);
+
+			BoardAttachedFileEntity boardAttachedFileEntity = BoardAttachedFileEntity.saveBoardAttach()
+				.boardEntity(saveBoardEntity)
+				.originFileName(attachFile.getOriginalFilename())
+				.saveFileName(saveFileName)
+				.savePath(saveFilePath)
+				.dataSize(attachFile.getSize())
+				.fileExtension(saveFileFullPath.substring(saveFileFullPath.lastIndexOf(".") + 1))
+				.build();
+
+			attachedFileEntities.add(boardAttachedFileEntity);
+		}
+		boardAttachRepository.saveAll(attachedFileEntities);
+	}
+
+	@Override
+	public String getSaveBoardAttachedFileFullPath(long boardAttachedFileId) {
+		BoardAttachedFileEntity findBoardAttachedFileEntity = boardAttachRepository.findById(boardAttachedFileId)
+			.orElseThrow(() -> new RestApiException(BoardErrorCode.NOT_FOUND_ATTACHED_FILE));
+
+		return findBoardAttachedFileEntity.getSavePath() + File.separator + findBoardAttachedFileEntity.getSaveFileName();
+	}
+
+	private BoardEntity saveBoardEntity(BoardReqDTO.Edit.SaveBoard saveBoardReqDTO) {
+		BoardEntity saveBoardEntity = BoardEntity.saveBoard()
+			.title(saveBoardReqDTO.getTitle())
+			.contents(saveBoardReqDTO.getContents())
+			.popUpYN(saveBoardReqDTO.getPopUpYN())
+			.popupStartDTM(saveBoardReqDTO.getPopUpStartDTM())
+			.popupEndDTM(saveBoardReqDTO.getPopUpEndDTM())
+			.boardType(saveBoardReqDTO.getBoardType())
+			.build();
+
+		boardRepository.save(saveBoardEntity);
+		return saveBoardEntity;
+	}
+
+	// 기존 첨부 파일을 삭제하고 새로운 파일을 추가하는 메서드
+	private void updateAttachedFiles(List<Long> deleteBoardAttachedFileIds, BoardEntity boardEntity, List<MultipartFile> newAttachedFiles) {
+		boardAttachRepository.deleteAllById(deleteBoardAttachedFileIds);
+
+		// 새로운 파일 저장
+		saveAttachedFiles(newAttachedFiles, boardEntity);
 	}
 }

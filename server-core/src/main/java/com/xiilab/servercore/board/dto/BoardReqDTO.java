@@ -1,6 +1,7 @@
 package com.xiilab.servercore.board.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,6 +35,7 @@ public abstract class BoardReqDTO {
 
 		@Getter
 		public static class UpdateBoard extends Edit {
+			private List<Long> deleteBoardAttachedFileIds;
 		}
 	}
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.xiilab.modulecommon.enums.PopUpYN;
 import com.xiilab.modulecommon.util.DataConverterUtil;
+import com.xiilab.modulek8sdb.board.entity.BoardAttachedFileEntity;
 import com.xiilab.modulek8sdb.board.entity.BoardEntity;
 import com.xiilab.servercore.common.dto.ResDTO;
 
@@ -38,8 +39,9 @@ public class BoardResDTO extends ResDTO {
 		private PopUpYN popUpYN;
 		private String popupStartDTM;
 		private String popupEndDTM;
+		private List<BoardAttachedFileResDTO> boardAttachedFiles;
 
-		public static FindBoard from(BoardEntity boardEntity) {
+		public static FindBoard from(BoardEntity boardEntity, List<BoardAttachedFileEntity> boardAttachEntities) {
 			return FindBoard.builder()
 				.id(boardEntity.getBoardId())
 				.title(boardEntity.getTitle())
@@ -48,6 +50,7 @@ public class BoardResDTO extends ResDTO {
 				.popupStartDTM(DataConverterUtil.convertLDTToString(boardEntity.getPopupStartDTM(), "yyyy-MM-dd HH:mm:ss"))
 				.popupEndDTM(DataConverterUtil.convertLDTToString(boardEntity.getPopupEndDTM(), "yyyy-MM-dd HH:mm:ss"))
 				.readCount(boardEntity.getReadCount())
+				.boardAttachedFiles(boardAttachEntities.stream().map(BoardAttachedFileResDTO::of).toList())
 				.regUserId(boardEntity.getRegUser().getRegUserId())
 				.regUserName(boardEntity.getRegUser().getRegUserName())
 				.regUserRealName(boardEntity.getRegUser().getRegUserRealName())
@@ -67,7 +70,6 @@ public class BoardResDTO extends ResDTO {
 				.boards(boardEntities.stream().map(BoardResDTO::of).toList())
 				.totalCount(totalCount)
 				.build();
-
 		}
 	}
 }

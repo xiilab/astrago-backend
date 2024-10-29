@@ -53,3 +53,8 @@ keycloak:
   principal-attribute: preferred_username
 server:
   max-http-request-header-size: 40KB
+
+editor:
+  root-file-upload-path: /root/astrago
+  attach-file-upload-path: /board/attaches
+  content-file-upload-path: /board/contents
