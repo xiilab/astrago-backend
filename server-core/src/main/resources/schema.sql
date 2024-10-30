@@ -974,7 +974,7 @@ create table if not exists TB_BOARD_ATTACHED_FILE
     REG_USER_REAL_NAME varchar(255) null,
     SAVE_FILENAME      varchar(255) null,
     SAVE_PATH          varchar(255) null,
-    DELETE_YN          enum ('Y', 'N')  not null
-    constraint FK4tso4tos4pgjp2w0qmx3lq2bh
+    DELETE_YN          enum ('Y', 'N')  not null,
+    constraint FK4tso4tos4pgjp2w0qmx3lq2wq
         foreign key (BOARD_ID) references TB_BOARD (BOARD_ID)
 );
