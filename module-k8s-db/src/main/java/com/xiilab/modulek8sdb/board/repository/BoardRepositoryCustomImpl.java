@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -17,6 +19,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.xiilab.modulecommon.enums.SortType;
+import com.xiilab.modulek8sdb.board.entity.BoardAttachedFileEntity;
 import com.xiilab.modulek8sdb.board.entity.BoardEntity;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
 
@@ -26,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
+	private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 	@Override
 	public Page<BoardEntity> findBoards(SortType sortType, String searchText, Pageable pageable) {
@@ -33,6 +37,18 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 		List<BoardEntity> result = getBoards(sortType, searchText, pageable);
 
 		return new PageImpl<>(result, pageable, totalCount);
+	}
+
+	@Override
+	public void saveAll(List<BoardAttachedFileEntity> boardAttachedFileEntities) {
+		final String sql = """
+                    INSERT INTO TB_BOARD_ATTACHED_FILE (BOARD_ID, ORIGIN_FILENAME, SAVE_FILENAME, SAVE_PATH, DATA_SIZE, FILE_EXTENSION) 
+                    VALUES (:boardId, :originFileName, :saveFileName, :savePath, :dataSize, :fileExtension)
+                """;
+		MapSqlParameterSource[] parameterSources = getBoardAttachedFileEntitiesToSqlParameterSources(
+			boardAttachedFileEntities);
+
+		namedParameterJdbcTemplate.batchUpdate(sql, parameterSources);
 	}
 
 	private Long getBoardTotalCount(String searchText) {
@@ -76,5 +92,22 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 			case NAME -> new OrderSpecifier<>(Order.DESC, boardEntity.title);
 		}
 			;
+	}
+
+	private MapSqlParameterSource[] getBoardAttachedFileEntitiesToSqlParameterSources(List<BoardAttachedFileEntity> boardAttachedFileEntities) {
+		return boardAttachedFileEntities.stream()
+			.map(this::getBoardAttachedFileEntityToSqlParameterSource)
+			.toArray(MapSqlParameterSource[]::new);
+	}
+
+	private MapSqlParameterSource getBoardAttachedFileEntityToSqlParameterSource(BoardAttachedFileEntity boardAttachedFileEntity) {
+		return new MapSqlParameterSource()
+			.addValue("boardId", boardAttachedFileEntity.getBoardEntity().getBoardId())
+			.addValue("originFileName", boardAttachedFileEntity.getOriginFileName())
+			.addValue("saveFileName", boardAttachedFileEntity.getSaveFileName())
+			.addValue("savePath", boardAttachedFileEntity.getSavePath())
+			.addValue("dataSize", boardAttachedFileEntity.getDataSize())
+			.addValue("fileExtension", boardAttachedFileEntity.getFileExtension())
+			.addValue("deleteYN", boardAttachedFileEntity.getDeleteYN());
 	}
 }

@@ -102,6 +102,7 @@ public class BoardController {
 	}
 
 	@GetMapping(value = "/download/{boardAttachFileId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@Operation(summary = "Board 첨부 파일 다운로드")
 	public void downloadAttachFile(
 		@PathVariable("boardAttachFileId") long boardAttachFileId,
 		HttpServletResponse response,
