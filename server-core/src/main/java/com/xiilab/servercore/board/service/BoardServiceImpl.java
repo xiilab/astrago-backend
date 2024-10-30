@@ -113,6 +113,9 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	private void saveAttachedFiles(List<MultipartFile> attachedFiles, BoardEntity saveBoardEntity) {
+		if (attachedFiles == null) {
+			return ;
+		}
 		List<BoardAttachedFileEntity> attachedFileEntities = new ArrayList<>();
 		for (MultipartFile attachFile : attachedFiles) {
 			String saveFileFullPath = fileUploadService.saveMultipartFileToFile(
