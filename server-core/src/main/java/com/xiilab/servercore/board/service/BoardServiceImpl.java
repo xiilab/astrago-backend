@@ -21,6 +21,7 @@ import com.xiilab.modulek8sdb.board.repository.BoardAttachRepository;
 import com.xiilab.modulek8sdb.board.repository.BoardRepository;
 import com.xiilab.servercore.board.dto.BoardReqDTO;
 import com.xiilab.servercore.board.dto.BoardResDTO;
+import com.xiilab.servercore.utils.PageableUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -77,7 +78,7 @@ public class BoardServiceImpl implements BoardService {
 
 	@Override
 	public BoardResDTO.FindBoards findBoards(SortType sortType, String searchText, Pageable pageable) {
-		Page<BoardEntity> boards = boardRepository.findBoards(sortType, searchText, pageable);
+		Page<BoardEntity> boards = boardRepository.findBoards(sortType, searchText, PageableUtils.normalizePageable(pageable));
 		return BoardResDTO.FindBoards.from(boards.getContent(), boards.getTotalElements());
 	}
 
