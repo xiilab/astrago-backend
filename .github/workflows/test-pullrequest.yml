@@ -12,7 +12,7 @@ on:
       - synchronize
       - reopened
     branches:
-      - develop
+      - katech-dev
 
 jobs:
   build:

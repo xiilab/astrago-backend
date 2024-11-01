@@ -7,11 +7,11 @@ on:
       - synchronize
       - reopened
     branches:
-      - main
+      - katech
 
 env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443
-  HARBOR_REPOSITORY: harbor.xiilab.com:32443/astrago
+  HARBOR_REPOSITORY: harbor.xiilab.com:32443/katech-astrago
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
@@ -135,6 +135,7 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           repository: ${{ env.DEPLOYMENT_REPOSITORY }}
+          ref: katech
 
       - name: stage 이미지 정보 수정
         uses: mikefarah/yq@master

@@ -4,11 +4,11 @@ on:
   pull_request:
     types: [ closed ]
     branches:
-      - develop
+      - katech-dev
 
 env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443
-  HARBOR_REPOSITORY: harbor.xiilab.com:32443/astrago
+  HARBOR_REPOSITORY: harbor.xiilab.com:32443/katech-astrago
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
       - name: Set Image Tag
         id: extract_image_tag
         run: |
-          IMAGE_TAG=dev-$(git rev-parse --short=4 HEAD)
+          IMAGE_TAG=katech-dev-$(git rev-parse --short=4 HEAD)
           echo "image-tag=$IMAGE_TAG"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT     
 
@@ -129,7 +129,7 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           repository: ${{ env.DEPLOYMENT_REPOSITORY }}
-          ref: develop
+          ref: katech-dev
 
       - name: stage 이미지 정보 수정
         uses: mikefarah/yq@master
