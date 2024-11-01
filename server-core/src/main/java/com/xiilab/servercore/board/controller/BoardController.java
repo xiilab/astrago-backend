@@ -34,6 +34,7 @@ import com.xiilab.servercore.board.dto.BoardResDTO;
 import com.xiilab.servercore.board.service.BoardService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -85,34 +86,28 @@ public class BoardController {
 
 	@PostMapping("/contents/file")
 	@Operation(summary = "Board Contents에 파일 추가")
-	public ResponseEntity<String> saveContentsFile(
-		@RequestPart(name = "contentsFile") MultipartFile contentsFile,
-		@RequestPart(name = "id") String id
-	) {
+	public ResponseEntity<String> saveContentsFile(@RequestPart(name = "contentsFile") MultipartFile contentsFile,
+		@RequestPart(name = "id") String id) {
 		return new ResponseEntity<>(boardService.saveContentsFile(contentsFile, id), HttpStatus.OK);
 	}
 
 	@GetMapping("/contents/file/{saveFileName}")
 	@Operation(summary = "Board Contents 파일 조회")
-	public ResponseEntity<byte[]> getContentsFile(
-		@PathVariable(name = "saveFileName") String saveFileName,
-		@RequestParam(name = "id") String id
-	) {
+	public ResponseEntity<byte[]> getContentsFile(@PathVariable(name = "saveFileName") String saveFileName,
+		@RequestParam(name = "id") String id) {
 		return new ResponseEntity<>(boardService.getContentsFile(saveFileName, id), HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/download/{boardAttachFileId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@Operation(summary = "Board 첨부 파일 다운로드")
-	public void downloadAttachFile(
-		@PathVariable("boardAttachFileId") long boardAttachFileId,
+	public void downloadAttachFile(@PathVariable("boardAttachFileId") long boardAttachFileId,
 		HttpServletResponse response,
-		@RequestHeader("User-Agent") String agent) {
+		@Parameter(description = "클라이언트에서 서버로 요청시, HTTP 헤더에 포함되어 있는 브라우저 및 OS 정보")
+		@RequestHeader(value = "User-Agent", required = false) String agent) {
 		String saveFullPath = boardService.getSaveBoardAttachedFileFullPath(boardAttachFileId);
 
-		try (
-			InputStream is = new BufferedInputStream(new FileInputStream(saveFullPath));
-			OutputStream out = response.getOutputStream();
-		) {
+		try (InputStream is = new BufferedInputStream(
+			new FileInputStream(saveFullPath)); OutputStream out = response.getOutputStream();) {
 			Path saveFilePath = Path.of(saveFullPath);
 			String fileName = String.valueOf(saveFilePath.getFileName());
 			String onlyFileName = fileName.substring(fileName.lastIndexOf("_") + 1);
