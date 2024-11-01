@@ -8,6 +8,9 @@ on:
       - reopened
     branches:
       - katech
+  push:
+    branches:
+      - katech
 
 env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443

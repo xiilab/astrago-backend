@@ -5,6 +5,10 @@ on:
     types: [ closed ]
     branches:
       - katech-dev
+  push:
+    branches:
+      - katech-dev
+
 
 env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443
