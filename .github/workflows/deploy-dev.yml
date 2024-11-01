@@ -17,7 +17,7 @@ env:
 
 jobs:
   integration:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on: [ self-hosted, linux ]
     permissions:
       contents: write
