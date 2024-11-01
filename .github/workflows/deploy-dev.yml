@@ -1,4 +1,4 @@
-name: Deploy to Develop Workflow
+name: 한자연 개발 빌드
 run-name: ${{ github.actor }} Deploys to Development 🚀
 on:
   pull_request:

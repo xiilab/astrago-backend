@@ -1,4 +1,4 @@
-name: Deploy to Staging Workflow
+name: 한자연 배포용 빌드
 run-name: ${{ github.actor }} Deploys to Staging 🚀
 on:
   pull_request:
