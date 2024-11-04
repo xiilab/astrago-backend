@@ -1,18 +1,24 @@
 package com.xiilab.servercore.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.xiilab.modulecommon.exception.ErrorCode;
@@ -82,10 +88,31 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		WebRequest request) {
 		log.error("handleIllegalArgument", ex);
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
-		return ResponseEntity.status(errorCode.getCode())
-			.body(makeErrorResponse(errorCode,
-				Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage()));
-		// return makeErrorResponse(errorCode, Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage());
+		// String errorMessage = String.format(INVALID_DTO_FIELD_ERROR_MESSAGE_FORMAT, firstFieldError.getField(),
+		// 	firstFieldError.getDefaultMessage(), firstFieldError.getRejectedValue());
+		return handleExceptionInternal(ex, errorCode);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException ex,
+		HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
+		// String errorMessage = String.format(INVALID_DTO_FIELD_ERROR_MESSAGE_FORMAT, firstFieldError.getField(),
+		// 	firstFieldError.getDefaultMessage(), firstFieldError.getRejectedValue());
+		return handleExceptionInternal(ex, errorCode);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleMissingServletRequestParameter(
+		MissingServletRequestParameterException ex,
+		HttpHeaders headers,
+		HttpStatusCode status,
+		WebRequest request) {
+		log.error("handleMissingServletRequestParameter", ex);
+		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
+		// String errorMessage = String.format(INVALID_DTO_FIELD_ERROR_MESSAGE_FORMAT, firstFieldError.getField(),
+		// 	firstFieldError.getDefaultMessage(), firstFieldError.getRejectedValue());
+		return handleExceptionInternal(ex, errorCode);
 	}
 
 	private ResponseEntity<Object> customExceptionInternal(ErrorCode errorCode) {
@@ -117,7 +144,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			.body(makeErrorResponse(e, errorCode));
 	}
 
+	private ResponseEntity<Object> handleExceptionInternal(MissingServletRequestParameterException ex,
+		ErrorCode errorCode) {
+		return ResponseEntity.status(errorCode.getCode())
+			.body(makeErrorResponse(ex, errorCode));
+	}
+
 	private ResponseEntity<Object> handleExceptionInternal(ConstraintViolationException ex,
+		ErrorCode errorCode) {
+		return ResponseEntity.status(errorCode.getCode())
+			.body(makeErrorResponse(ex, errorCode));
+	}
+
+	private ResponseEntity<Object> handleExceptionInternal(HandlerMethodValidationException ex,
 		ErrorCode errorCode) {
 		return ResponseEntity.status(errorCode.getCode())
 			.body(makeErrorResponse(ex, errorCode));
@@ -163,4 +202,43 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			.build();
 	}
 
+	private ErrorResponse makeErrorResponse(MissingServletRequestParameterException ex, ErrorCode errorCode) {
+		// List<ErrorResponse.ValidationError> errorList = new ArrayList<>();
+		// for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+		// 	String field = violation.getPropertyPath().toString().split("\\.")[1];
+		// 	String message = violation.getMessage();
+		// 	errorList.add(ErrorResponse.ValidationError.of(field, message));
+		// }
+		return ErrorResponse.builder()
+			.resultCode(errorCode.getCode())
+			.resultMsg(ex.getParameterName() + "가 누락되었습니다.")
+			// .errors(errorList)
+			.build();
+	}
+
+	private ErrorResponse makeErrorResponse(HandlerMethodValidationException ex, ErrorCode errorCode) {
+		Optional<MessageSourceResolvable> messageSourceResolvable = ex.getAllValidationResults().stream()
+			.findFirst() // 첫 번째 유효성 검사 결과 가져오기
+			.flatMap(
+				validationResult -> validationResult.getResolvableErrors().stream().findFirst());// 첫 번째 해결 가능한 오류 가져오기
+
+		String defaultMessage = messageSourceResolvable
+			.map(MessageSourceResolvable::getDefaultMessage) // 기본 메시지 가져오기
+			.orElse("요청이 올바르지 않습니다."); // 기본 메시지 설정
+		String parameter = messageSourceResolvable
+			.map(MessageSourceResolvable::getArguments)
+			.map(Arrays::stream)
+			.orElseGet(Stream::empty)
+			.map(arg -> (DefaultMessageSourceResolvable) arg)
+			.map(DefaultMessageSourceResolvable::getDefaultMessage)
+			.findFirst()
+			.orElse("UNKNOWN");
+
+		log.error("Parameter is null : {}", parameter);
+
+		return ErrorResponse.builder()
+			.resultCode(errorCode.getCode())
+			.resultMsg(defaultMessage)
+			.build();
+	}
 }

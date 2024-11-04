@@ -15,6 +15,7 @@ public interface BoardService {
 	BoardResDTO.FindBoards findBoards(SortType sortType, String searchText, Pageable pageable);
 	BoardResDTO.FindBoard findBoardById(long boardId);
 	void deleteBoardById(long id);
+	void deleteBoardByIds(List<Long> ids);
 	String saveContentsFile(MultipartFile contentsFile, String id);
 	byte[] getContentsFile(String saveFileName, String id);
 	String getSaveBoardAttachedFileFullPath(long boardAttachedFileId);

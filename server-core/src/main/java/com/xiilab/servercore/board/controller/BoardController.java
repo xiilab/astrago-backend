@@ -38,6 +38,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "BoardController", description = "게시판 api")
@@ -79,8 +81,18 @@ public class BoardController {
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "Board 삭제")
-	public ResponseEntity<Void> deleteBoard(@PathVariable(name = "id") long boardId) {
+	public ResponseEntity<Void> deleteBoardById(@PathVariable(name = "id") long boardId) {
 		boardService.deleteBoardById(boardId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@DeleteMapping
+	@Operation(summary = "Board 삭제")
+	public ResponseEntity<Void> deleteBoardByIds(
+		@NotNull(message = "삭제할 게시글을 선택해주세요.")
+		@NotEmpty(message = "삭제할 게시글을 선택해주세요.")
+		@RequestParam(name = "boardIds") List<Long> boardIds) {
+		boardService.deleteBoardByIds(boardIds);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

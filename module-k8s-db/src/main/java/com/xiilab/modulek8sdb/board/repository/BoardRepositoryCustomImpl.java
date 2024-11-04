@@ -3,6 +3,7 @@ package com.xiilab.modulek8sdb.board.repository;
 import static com.xiilab.modulek8sdb.board.entity.QBoardEntity.*;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -70,13 +71,16 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 			: null;
 	}
 
-	private OrderSpecifier createOrderSpecifier(SortType sortType) {
-		return sortType == null ? new OrderSpecifier<>(Order.DESC, boardEntity.regDate) : switch (sortType) {
-			case LATEST -> new OrderSpecifier<>(Order.DESC, boardEntity.regDate);
-			case OLDEST -> new OrderSpecifier<>(Order.ASC, boardEntity.regDate);
-			case NAME -> new OrderSpecifier<>(Order.DESC, boardEntity.title);
-		}
-			;
+	private OrderSpecifier<?> createOrderSpecifier(SortType sortType) {
+		// 기본 정렬을 정할 수 있는 맵 생성
+		Map<SortType, OrderSpecifier<?>> orderSpecifiers = Map.of(
+			SortType.LATEST, new OrderSpecifier<>(Order.DESC, boardEntity.regDate),
+			SortType.OLDEST, new OrderSpecifier<>(Order.ASC, boardEntity.regDate),
+			SortType.NAME, new OrderSpecifier<>(Order.DESC, boardEntity.title)
+		);
+
+		// 정렬 타입에 따라 OrderSpecifier 반환
+		return orderSpecifiers.getOrDefault(sortType, new OrderSpecifier<>(Order.DESC, boardEntity.regDate));
 	}
 
 	/*@Override
