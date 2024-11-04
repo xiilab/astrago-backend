@@ -103,6 +103,16 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
+	@Transactional
+	public void deleteBoardByIds(List<Long> ids) {
+		if (ids.isEmpty() || ids.size() != boardRepository.countByBoardIdIn(ids)) {
+			throw new RestApiException(BoardErrorCode.NOT_FOUND_BOARDS);
+		}
+
+		boardRepository.deleteAllById(ids);
+	}
+
+	@Override
 	public String saveContentsFile(MultipartFile contentsFile, String id) {
 		String saveFullPath = fileUploadService.saveMultipartFileToFile(contentFileUploadPath + File.separator + id, contentsFile);
 		return saveFullPath.substring(saveFullPath.lastIndexOf("/") + 1);
