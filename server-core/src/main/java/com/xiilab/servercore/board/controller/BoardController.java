@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.xiilab.modulecommon.enums.SortType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.BoardErrorCode;
 import com.xiilab.servercore.board.dto.BoardReqDTO;
@@ -69,8 +69,10 @@ public class BoardController {
 
 	@GetMapping
 	@Operation(summary = "Board 목록 조회")
-	public ResponseEntity<BoardResDTO.FindBoards> findBoards(SortType sortType, String searchText, Pageable pageable) {
-		return new ResponseEntity<>(boardService.findBoards(sortType, searchText, pageable), HttpStatus.OK);
+	public ResponseEntity<BoardResDTO.FindBoards> findBoards(
+		@ParameterObject BoardReqDTO.FindSearchCondition findSearchCondition,
+		@ParameterObject Pageable pageable) {
+		return new ResponseEntity<>(boardService.findBoards(findSearchCondition, pageable), HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")

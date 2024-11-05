@@ -4,6 +4,7 @@ import static com.xiilab.modulek8sdb.board.entity.QBoardEntity.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,6 +19,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.xiilab.modulecommon.enums.PopUpYN;
 import com.xiilab.modulecommon.enums.SortType;
 import com.xiilab.modulek8sdb.board.entity.BoardEntity;
 import com.xiilab.modulek8sdb.common.enums.DeleteYN;
@@ -31,26 +33,28 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 	private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 	@Override
-	public Page<BoardEntity> findBoards(SortType sortType, String searchText, Pageable pageable) {
-		Long totalCount = getBoardTotalCount(searchText);
-		List<BoardEntity> result = getBoards(sortType, searchText, pageable);
+	public Page<BoardEntity> findBoards(SortType sortType, String searchText, PopUpYN popUpYN, Pageable pageable) {
+		Long totalCount = getBoardTotalCount(searchText, popUpYN);
+		List<BoardEntity> result = getBoards(sortType, searchText, popUpYN, pageable);
 
 		return new PageImpl<>(result, pageable, totalCount);
 	}
-	private Long getBoardTotalCount(String searchText) {
+	private Long getBoardTotalCount(String searchText, PopUpYN popUpYN) {
 		return queryFactory.select(boardEntity.count())
 			.from(boardEntity)
 			.where(
 				likeSearchText(searchText),
+				eqPopupYN(popUpYN),
 				boardEntity.deleteYN.eq(DeleteYN.N)
 			)
 			.fetchOne();
 	}
 
-	private List<BoardEntity> getBoards(SortType sortType, String searchText, Pageable pageable) {
+	private List<BoardEntity> getBoards(SortType sortType, String searchText, PopUpYN popUpYN, Pageable pageable) {
 		JPAQuery<BoardEntity> findBoardEntityQuery = queryFactory.selectFrom(boardEntity)
 			.where(
 				likeSearchText(searchText),
+				eqPopupYN(popUpYN),
 				boardEntity.deleteYN.eq(DeleteYN.N)
 			)
 			.orderBy(createOrderSpecifier(sortType));
@@ -71,6 +75,10 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 			: null;
 	}
 
+	private BooleanExpression eqPopupYN(PopUpYN popUpYN) {
+		return !Objects.isNull(popUpYN)? boardEntity.popUpYN.eq(popUpYN) : null;
+	}
+
 	private OrderSpecifier<?> createOrderSpecifier(SortType sortType) {
 		// 기본 정렬을 정할 수 있는 맵 생성
 		Map<SortType, OrderSpecifier<?>> orderSpecifiers = Map.of(
@@ -79,8 +87,12 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom {
 			SortType.NAME, new OrderSpecifier<>(Order.DESC, boardEntity.title)
 		);
 
-		// 정렬 타입에 따라 OrderSpecifier 반환
-		return orderSpecifiers.getOrDefault(sortType, new OrderSpecifier<>(Order.DESC, boardEntity.regDate));
+		if (sortType == null) {
+			return orderSpecifiers.get(SortType.LATEST);
+		} else {
+			// 정렬 타입에 따라 OrderSpecifier 반환
+			return orderSpecifiers.getOrDefault(sortType, new OrderSpecifier<>(Order.DESC, boardEntity.regDate));
+		}
 	}
 
 	/*@Override

@@ -18,6 +18,9 @@ public class BoardResDTO extends ResDTO {
 	protected String title;
 	protected String contents;
 	protected Integer readCount;
+	private PopUpYN popUpYN;
+	private String popupStartDTM;
+	private String popupEndDTM;
 
 	protected static BoardResDTO of(BoardEntity boardEntity) {
 		return BoardResDTO.builder()
@@ -25,6 +28,9 @@ public class BoardResDTO extends ResDTO {
 			.title(boardEntity.getTitle())
 			.contents(boardEntity.getContents())
 			.readCount(boardEntity.getReadCount())
+			.popUpYN(boardEntity.getPopUpYN())
+			.popupStartDTM(DataConverterUtil.convertLDTToString(boardEntity.getPopupStartDTM(), "yyyy-MM-dd HH:mm:ss"))
+			.popupEndDTM(DataConverterUtil.convertLDTToString(boardEntity.getPopupEndDTM(), "yyyy-MM-dd HH:mm:ss"))
 			.regUserId(boardEntity.getRegUser().getRegUserId())
 			.regUserName(boardEntity.getRegUser().getRegUserName())
 			.regUserRealName(boardEntity.getRegUser().getRegUserRealName())
@@ -36,9 +42,6 @@ public class BoardResDTO extends ResDTO {
 	@Getter
 	@SuperBuilder
 	public static class FindBoard extends BoardResDTO {
-		private PopUpYN popUpYN;
-		private String popupStartDTM;
-		private String popupEndDTM;
 		private List<BoardAttachedFileResDTO> boardAttachedFiles;
 
 		public static FindBoard from(BoardEntity boardEntity, List<BoardAttachedFileEntity> boardAttachEntities) {

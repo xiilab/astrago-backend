@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.xiilab.modulecommon.enums.SortType;
 import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.BoardErrorCode;
 import com.xiilab.modulecommon.service.FileUploadService;
@@ -77,8 +76,8 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public BoardResDTO.FindBoards findBoards(SortType sortType, String searchText, Pageable pageable) {
-		Page<BoardEntity> boards = boardRepository.findBoards(sortType, searchText, PageableUtils.normalizePageable(pageable));
+	public BoardResDTO.FindBoards findBoards(BoardReqDTO.FindSearchCondition findSearchCondition, Pageable pageable) {
+		Page<BoardEntity> boards = boardRepository.findBoards(findSearchCondition.getSortType(), findSearchCondition.getSearchText(), findSearchCondition.getPopUpYN(), PageableUtils.normalizePageable(pageable));
 		return BoardResDTO.FindBoards.from(boards.getContent(), boards.getTotalElements());
 	}
 
