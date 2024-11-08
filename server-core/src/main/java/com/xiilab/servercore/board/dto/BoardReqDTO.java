@@ -1,6 +1,8 @@
 package com.xiilab.servercore.board.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,6 +36,7 @@ public abstract class BoardReqDTO {
 
 		@Getter
 		public static class UpdateBoard extends Edit {
+			private List<Long> deleteBoardAttachedFileIds;
 		}
 	}
 
@@ -43,11 +46,17 @@ public abstract class BoardReqDTO {
 		private String id;
 	}
 
-
 	@Getter
 	public static class FindSearchCondition {
-		private SortType boardSortType;
+		private SortType sortType;
 		private String searchText;
+		private PopUpYN popUpYN;
+
+		public FindSearchCondition(SortType sortType, String searchText, PopUpYN popUpYN) {
+			this.sortType = sortType;
+			this.searchText = searchText;
+			this.popUpYN = Objects.isNull(popUpYN)? null : popUpYN;
+		}
 	}
 
 }

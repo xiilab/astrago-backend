@@ -61,6 +61,7 @@ public class BoardEntity extends BaseEntity {
 	@Column(name = "DELETE_YN", nullable = false)
 	private DeleteYN deleteYN = DeleteYN.N;
 
+
 	@Builder(builderClassName = "SaveBoardBuilder", builderMethodName = "saveBoard")
 	public BoardEntity(BoardType boardType, String title,
 		String contents, PopUpYN popUpYN,
@@ -93,4 +94,3 @@ public class BoardEntity extends BaseEntity {
 		this.contents = contents;
 	}
 }
-

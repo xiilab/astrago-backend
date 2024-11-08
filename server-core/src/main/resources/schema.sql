@@ -901,9 +901,9 @@ create table if not exists TB_BOARD
     POPUP_YN           enum ('Y', 'N') null
 );
 
-create table if not exists TB_BOARD_ATTACH_FILE
+create table if not exists TB_BOARD_ATTACHED_FILE
 (
-    BOARD_ATTACH_ID    bigint auto_increment primary key,
+    BOARD_ATTACHED_FILE_ID    bigint auto_increment primary key,
     BOARD_ID           bigint       null,
     DATA_SIZE          bigint       null,
     MOD_DATE           datetime(6)  null,
@@ -915,7 +915,8 @@ create table if not exists TB_BOARD_ATTACH_FILE
     REG_USER_REAL_NAME varchar(255) null,
     SAVE_FILENAME      varchar(255) null,
     SAVE_PATH          varchar(255) null,
-    constraint FK4tso4tos4pgjp2w0qmx3lq2bh
+    DELETE_YN          enum ('Y', 'N')  not null,
+    constraint FK4tso4tos4pgjp2w0qmx3lq2wq
         foreign key (BOARD_ID) references TB_BOARD (BOARD_ID)
 );
 
