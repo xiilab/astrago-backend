@@ -16,6 +16,7 @@ env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443
   HARBOR_REPOSITORY: harbor.xiilab.com:32443/katech-astrago
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
+  DOCKER_REPOSITORY: xiilab/astrago
 
 jobs:
   integration:
@@ -54,35 +55,19 @@ jobs:
       - name: Set Image Tag
         id: extract_image_tag
         run: |
-          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)
+          IMAGE_TAG=katech-$(git rev-parse --short=4 HEAD)
           echo "image-tag=$IMAGE_TAG"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT     
 
-      - name: Docker Setup Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-flags: --debug --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
-          platforms: linux/amd64
-          driver-opts: |
-            network=host
-          #config: /etc/buildkit/buildkitd.toml
-          buildkitd-config-inline: |
-            [registry."${{ env.HARBOR_REGISTRY }}"]
-              http = true
-              insecure = true
-              mirrors = ["${{ env.HARBOR_REGISTRY }}"]
-              ca=["/etc/docker/certs.d/${{ env.HARBOR_REGISTRY }}/ca.crt"]
-              [[registry."${{ env.HARBOR_REGISTRY }}".keypair]]
-                key="/home/runner/tls/tls.key"
-                cert="/home/runner/tls/tls.crt"
 
-      # Harbor에 로그인
-      - name: harbor 로그인
-        uses: docker/login-action@v3.0.0
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          registry: ${{ env.HARBOR_REGISTRY }}
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
 
       # core image build & push
       - name: Build and push Core Docker images
