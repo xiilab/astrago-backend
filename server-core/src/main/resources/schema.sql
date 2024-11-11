@@ -593,12 +593,12 @@ create table if not exists TB_PORT
     PORT_TARTGET_NUM     int          null,
     PORT_ID              bigint auto_increment
         primary key,
-    workload_WORKLOAD_ID bigint       null,
+    WORKLOAD_ID bigint       null,
     PORT_NAME            varchar(255) null
 );
 
 create index if not exists FKa6gnqfjb69gi5p5akpenxxb7v
-    on TB_PORT (workload_WORKLOAD_ID);
+    on TB_PORT (WORKLOAD_ID);
 
 create table if not exists TB_REPORT_RESERVATION
 (
@@ -882,4 +882,44 @@ create table if not exists TB_WORKSPACE_SETTING
     id  bigint auto_increment
         primary key
 );
+
+create table if not exists TB_BOARD
+(
+    READ_COUNT         int             not null,
+    BOARD_ID           bigint auto_increment primary key,
+    MOD_DATE           datetime(6)     null,
+    POPUP_END_DTM      datetime(6)     null,
+    POPUP_START_DTM    datetime(6)     null,
+    REG_DATE           datetime(6)     null,
+    CONTENTS           text     null,
+    REG_USER_ID        varchar(255)    null,
+    REG_USER_NAME      varchar(255)    null,
+    REG_USER_REAL_NAME varchar(255)    null,
+    TITLE              varchar(255)    not null,
+    BOARD_TYPE         enum ('NOTICE') not null,
+    DELETE_YN          enum ('Y', 'N') not null,
+    POPUP_YN           enum ('Y', 'N') null
+);
+
+create table if not exists TB_BOARD_ATTACHED_FILE
+(
+    BOARD_ATTACHED_FILE_ID    bigint auto_increment primary key,
+    BOARD_ID           bigint       null,
+    DATA_SIZE          bigint       null,
+    MOD_DATE           datetime(6)  null,
+    REG_DATE           datetime(6)  null,
+    FILE_EXTENSION     varchar(255) null,
+    ORIGIN_FILENAME    varchar(255) not null,
+    REG_USER_ID        varchar(255) null,
+    REG_USER_NAME      varchar(255) null,
+    REG_USER_REAL_NAME varchar(255) null,
+    SAVE_FILENAME      varchar(255) null,
+    SAVE_PATH          varchar(255) null,
+    DELETE_YN          enum ('Y', 'N')  not null,
+    constraint FK4tso4tos4pgjp2w0qmx3lq2wq
+        foreign key (BOARD_ID) references TB_BOARD (BOARD_ID)
+);
+
+
+
 

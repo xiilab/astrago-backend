@@ -5,10 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.springframework.util.ObjectUtils;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -24,7 +21,6 @@ public abstract class ResDTO {
 		this.regUserId = regUserId;
 		this.regUserName = regUserName;
 		this.regUserRealName = regUserRealName;
-		// .regDate(imageEntity.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 		this.regDate = !ObjectUtils.isEmpty(regDate)? regDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
 		this.modDate = !ObjectUtils.isEmpty(modDate)? modDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
 	}

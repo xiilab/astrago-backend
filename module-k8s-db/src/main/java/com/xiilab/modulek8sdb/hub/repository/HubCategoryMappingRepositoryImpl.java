@@ -1,9 +1,8 @@
 package com.xiilab.modulek8sdb.hub.repository;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static com.xiilab.modulek8sdb.hub.entity.QHubCategoryMappingEntity.*;
+
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
