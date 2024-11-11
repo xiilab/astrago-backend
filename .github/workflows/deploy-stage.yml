@@ -76,7 +76,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -87,7 +87,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -98,7 +98,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -109,7 +109,7 @@ jobs:
           context: ./server-experiment
           file: server-experiment/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/experiment:${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/experiment:${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
