@@ -129,10 +129,10 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.imageTag = "core-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "batch-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.experiment.imageTag = "experiment-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "katech-core-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "katech-batch-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "katech-monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.experiment.imageTag = "katech-experiment-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |
