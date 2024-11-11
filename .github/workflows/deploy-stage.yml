@@ -55,7 +55,7 @@ jobs:
       - name: Set Image Tag
         id: extract_image_tag
         run: |
-          IMAGE_TAG=katech-$(git rev-parse --short=4 HEAD)
+          IMAGE_TAG=$(git rev-parse --short=4 HEAD)
           echo "image-tag=$IMAGE_TAG"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT     
 
@@ -76,7 +76,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:core-${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-core-${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -87,7 +87,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:batch-${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-batch-${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -98,7 +98,7 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:monitor-${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-monitor-${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -109,7 +109,7 @@ jobs:
           context: ./server-experiment
           file: server-experiment/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPOSITORY }}:experiment-${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-experiment-${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
