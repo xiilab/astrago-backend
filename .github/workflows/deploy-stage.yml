@@ -1,4 +1,4 @@
-name: Deploy to Staging Workflow
+name: 한자연 배포용 빌드
 run-name: ${{ github.actor }} Deploys to Staging 🚀
 on:
   pull_request:
@@ -7,18 +7,22 @@ on:
       - synchronize
       - reopened
     branches:
-      - main
+      - katech
+  push:
+    branches:
+      - katech
 
 env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443
-  HARBOR_REPOSITORY: harbor.xiilab.com:32443/astrago
+  HARBOR_REPOSITORY: harbor.xiilab.com:32443/katech-astrago
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
+  DOCKER_REPOSITORY: xiilab/astrago
 
 jobs:
   integration:
-    if: >
-      startsWith(github.head_ref, 'release/') || 
-      startsWith(github.head_ref, 'hotfix/')
+    # if: >
+    #   startsWith(github.head_ref, 'release/') || 
+    #   startsWith(github.head_ref, 'hotfix/')
     runs-on: [ self-hosted, linux ]
     permissions:
       contents: write
@@ -51,7 +55,7 @@ jobs:
       - name: Set Image Tag
         id: extract_image_tag
         run: |
-          IMAGE_TAG=stag-$(git rev-parse --short=4 HEAD)
+          IMAGE_TAG=$(git rev-parse --short=4 HEAD)
           echo "image-tag=$IMAGE_TAG"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT     
 
@@ -73,13 +77,12 @@ jobs:
                 key="/home/runner/tls/tls.key"
                 cert="/home/runner/tls/tls.crt"
 
-      # Harbor에 로그인
-      - name: harbor 로그인
-        uses: docker/login-action@v3.0.0
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          registry: ${{ env.HARBOR_REGISTRY }}
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
 
       # core image build & push
       - name: Build and push Core Docker images
@@ -88,7 +91,7 @@ jobs:
           context: ./server-core
           file: server-core/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/core:${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-core-${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -99,7 +102,7 @@ jobs:
           context: ./server-batch
           file: server-batch/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/batch:${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-batch-${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -110,7 +113,18 @@ jobs:
           context: ./server-monitor
           file: server-monitor/Dockerfile
           push: true
-          tags: ${{ env.HARBOR_REPOSITORY }}/monitor:${{ steps.extract_image_tag.outputs.image-tag }}
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-monitor-${{ steps.extract_image_tag.outputs.image-tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # experiment image build & push
+      - name: Build and push Experiment Docker images
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: ./server-experiment
+          file: server-experiment/Dockerfile
+          push: true
+          tags: ${{ env.DOCKER_REPOSITORY }}:katech-experiment-${{ steps.extract_image_tag.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -124,14 +138,16 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           repository: ${{ env.DEPLOYMENT_REPOSITORY }}
+          ref: katech
 
       - name: stage 이미지 정보 수정
         uses: mikefarah/yq@master
         with:
           cmd: |
-            yq -i '.astrago.core.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.core.imageTag = "katech-core-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.batch.imageTag = "katech-batch-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.monitor.imageTag = "katech-monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+            yq -i '.astrago.experiment.imageTag = "katech-experiment-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |

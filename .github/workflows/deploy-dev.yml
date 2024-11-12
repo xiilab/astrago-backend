@@ -1,19 +1,23 @@
-name: Deploy to Develop Workflow
+name: 한자연 개발 빌드
 run-name: ${{ github.actor }} Deploys to Development 🚀
 on:
   pull_request:
     types: [ closed ]
     branches:
-      - develop
+      - katech-dev
+  push:
+    branches:
+      - katech-dev
+
 
 env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443
-  HARBOR_REPOSITORY: harbor.xiilab.com:32443/astrago
+  HARBOR_REPOSITORY: harbor.xiilab.com:32443/katech-astrago
   DEPLOYMENT_REPOSITORY: xiilab/astrago-deployment
 
 jobs:
   integration:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on: [ self-hosted, linux ]
     permissions:
       contents: write
@@ -46,7 +50,7 @@ jobs:
       - name: Set Image Tag
         id: extract_image_tag
         run: |
-          IMAGE_TAG=dev-$(git rev-parse --short=4 HEAD)
+          IMAGE_TAG=katech-dev-$(git rev-parse --short=4 HEAD)
           echo "image-tag=$IMAGE_TAG"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT     
 
@@ -109,6 +113,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # experiment image build & push
+      - name: Build and push Experiment Docker images
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: ./server-experiment
+          file: server-experiment/Dockerfile
+          push: true
+          tags: ${{ env.HARBOR_REPOSITORY }}/experiment:${{ steps.extract_image_tag.outputs.image-tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   delivery:
     needs: [ integration ]
@@ -119,6 +133,7 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           repository: ${{ env.DEPLOYMENT_REPOSITORY }}
+          ref: katech-dev
 
       - name: stage 이미지 정보 수정
         uses: mikefarah/yq@master
@@ -127,6 +142,7 @@ jobs:
             yq -i '.astrago.core.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/dev/values.yaml'
             yq -i '.astrago.batch.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/dev/values.yaml'
             yq -i '.astrago.monitor.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/dev/values.yaml'
+            yq -i '.astrago.experiment.imageTag = "${{ needs.integration.outputs.image-tag }}"' 'environments/dev/values.yaml'
 
       - name: Commit and Push
         run: |
