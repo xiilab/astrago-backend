@@ -70,3 +70,8 @@ admin:
 mig-profile-path: src/main/resources/MigProfile.json
 prometheus:
   url: http://10.61.3.12:30090/
+
+editor:
+  root-file-upload-path: /root/astrago
+  attach-file-upload-path: /board/attaches
+  content-file-upload-path: /board/contents
