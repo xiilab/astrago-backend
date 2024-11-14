@@ -129,7 +129,7 @@ public class BoardServiceImpl implements BoardService {
 		List<BoardAttachedFileEntity> attachedFileEntities = new ArrayList<>();
 		for (MultipartFile attachFile : attachedFiles) {
 			String saveFileFullPath = fileUploadService.saveMultipartFileToFile(
-				contentFileUploadPath + File.separator + saveBoardEntity.getBoardId(),
+				attachFileUploadPath + File.separator + saveBoardEntity.getBoardId(),
 				attachFile);
 			String saveFilePath = saveFileFullPath.substring(0, saveFileFullPath.lastIndexOf("/"));
 			String saveFileName = saveFileFullPath.substring(saveFileFullPath.lastIndexOf("/") + 1);
