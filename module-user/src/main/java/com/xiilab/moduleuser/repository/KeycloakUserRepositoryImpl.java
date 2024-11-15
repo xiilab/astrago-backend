@@ -87,8 +87,9 @@ public class KeycloakUserRepositoryImpl implements UserRepository {
 		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
 			.stream().filter(user
 				-> user.getAttributes() != null
-				&& user.getAttributes().containsKey(UserAttribute.APPROVAL_YN.getKey())
-				&& user.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0).equals("true")
+				// je.kim approvalYN 은 true 으로 하드코딩
+				// && user.getAttributes().containsKey(UserAttribute.APPROVAL_YN.getKey())
+				// && user.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0).equals("true")
 				&& searchName(searchCondition != null ? searchCondition.getSearchText() : null, user)
 			)
 			// .sorted(searchCondition != null ?
@@ -209,8 +210,9 @@ public class KeycloakUserRepositoryImpl implements UserRepository {
 		List<UserRepresentation> users = realmClient.users().list(0, Integer.MAX_VALUE)
 			.stream().filter(user
 				-> user.getAttributes() != null
-				&& user.getAttributes().containsKey(UserAttribute.APPROVAL_YN.getKey())
-				&& user.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0).equals("false")
+				// je.kim approvalYN 은 true 으로 하드코딩
+				// && user.getAttributes().containsKey(UserAttribute.APPROVAL_YN.getKey())
+				// && user.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0).equals("false")
 				&& searchName(searchCondition.getSearchText(), user)
 			)
 			.sorted(

@@ -84,21 +84,31 @@ public class UserDTO {
 			this.lastName = userRepresentation.getLastName();
 			this.userFullName = lastName + firstName;
 			this.email = userRepresentation.getEmail();
-			this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
-				SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
-				null;
-			this.workspaceCreateLimit =
-				userRepresentation.getAttributes().containsKey(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey()) ?
-					Integer.parseInt(
-						userRepresentation.getAttributes().get(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey()).get(0)) :
-					null;
+			
+			// je.kim signUpPath 은 ASTRAGO 으로 하드코딩
+			// this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
+			// 	SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
+			// 	null;
+			this.signUpPath = SignUpPath.ASTRAGO;
+			
+			// je.kim workspaceCreateLimit 은 1 으로 하드코딩
+			
+			// this.workspaceCreateLimit =
+			// 	userRepresentation.getAttributes().containsKey(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey()) ?
+			// 		Integer.parseInt(
+			// 			userRepresentation.getAttributes().get(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey()).get(0)) :
+			// 		null;
+			this.workspaceCreateLimit = 1;
+
 			// 에포크 시간을 Instant로 변환
 			Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 			// 특정 시간대에 맞춰 LocalDateTime으로 변환
 			LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
 			this.joinDate = localDateTime;
 			this.enable = String.valueOf(userRepresentation.isEnabled());
-			this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
+			// je.kim approvalYN 은 true 으로 하드코딩
+			// this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
+			this.approval = "true";
 			this.auth = getUserRole(userRepresentation.getRealmRoles());
 			if (!CollectionUtils.isEmpty(groupReps)) {
 				this.groups = groupReps.stream()

@@ -46,11 +46,12 @@ public class UserReqVO {
 		userRepresentation.setUsername(username);
 		userRepresentation.setEnabled(false);
 		userRepresentation.setRealmRoles(List.of("ROLE_USER"));
-		Map<String, List<String>> attributes = new HashMap<>();
-		attributes.put(UserAttribute.APPROVAL_YN.getKey(), List.of(String.valueOf(false)));
-		attributes.put(UserAttribute.SIGN_UP_PATH.getKey(), List.of(SignUpPath.ASTRAGO.name()));
+		// je.kim attributes approvalYN signUpPath 업데이트 금지
+		// Map<String, List<String>> attributes = new HashMap<>();
+		// attributes.put(UserAttribute.APPROVAL_YN.getKey(), List.of(String.valueOf(false)));
+		// attributes.put(UserAttribute.SIGN_UP_PATH.getKey(), List.of(SignUpPath.ASTRAGO.name()));
 
-		userRepresentation.setAttributes(attributes);
+		// userRepresentation.setAttributes(attributes);
 		return userRepresentation;
 	}
 	public UserRepresentation convertAdminRep() {
@@ -60,11 +61,12 @@ public class UserReqVO {
 		userRepresentation.setEmail(this.email);
 		userRepresentation.setUsername(username);
 		userRepresentation.setEnabled(true);
-		Map<String, List<String>> attributes = new HashMap<>();
-		attributes.put(UserAttribute.APPROVAL_YN.getKey(), List.of(String.valueOf(true)));
-		attributes.put(UserAttribute.SIGN_UP_PATH.getKey(), List.of(SignUpPath.ASTRAGO.name()));
+		// je.kim APPROVAL_YN  SIGN_UP_PATH업데이트 금지
+		// Map<String, List<String>> attributes = new HashMap<>();
+		// attributes.put(UserAttribute.APPROVAL_YN.getKey(), List.of(String.valueOf(true)));
+		// attributes.put(UserAttribute.SIGN_UP_PATH.getKey(), List.of(SignUpPath.ASTRAGO.name()));
 
-		userRepresentation.setAttributes(attributes);
+		// userRepresentation.setAttributes(attributes);
 		return userRepresentation;
 	}
 
