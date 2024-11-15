@@ -35,16 +35,22 @@ public class UserSummary {
 		this.fullName = userRepresentation.getLastName() + userRepresentation.getFirstName();
 		this.name = userRepresentation.getUsername();
 		this.email = userRepresentation.getEmail();
-		this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
-			SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
-			null;
-		// 에포크 시간을 Instant로 변환
+		
+		// je.kim signUpPath 은 ASTRAGO 으로 하드코딩
+		// this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
+		// 	SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
+		// 	null;
+		this.signUpPath = SignUpPath.ASTRAGO;
+		
+			// 에포크 시간을 Instant로 변환
 		Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 		// 특정 시간대에 맞춰 LocalDateTime으로 변환
 		LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
 		this.joinDate = localDateTime.toLocalDate();
 		this.enable = String.valueOf(userRepresentation.isEnabled());
-		this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
+		// je.kim approvalYN 은 true 으로 하드코딩
+		// this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
+		this.approval = "true";
 		this.userGroupDTOList = groupRepresentationList != null ?
 			groupRepresentationList.stream()
 				.filter(groupRepresentation -> !groupRepresentation.getName().contains("ws"))
@@ -61,16 +67,21 @@ public class UserSummary {
 		this.fullName = userRepresentation.getLastName() + userRepresentation.getFirstName();
 		this.name = userRepresentation.getUsername();
 		this.email = userRepresentation.getEmail();
-		this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
-			SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
-			null;
+		// je.kim signUpPath 은 ASTRAGO 으로 하드코딩
+		// this.signUpPath = userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()) != null ?
+		// 	SignUpPath.valueOf(userRepresentation.getAttributes().get(UserAttribute.SIGN_UP_PATH.getKey()).get(0)) :
+		// 	null;
+		this.signUpPath = SignUpPath.ASTRAGO;
+		
 		// 에포크 시간을 Instant로 변환
 		Instant instant = Instant.ofEpochMilli(userRepresentation.getCreatedTimestamp());
 		// 특정 시간대에 맞춰 LocalDateTime으로 변환
 		LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
 		this.joinDate = localDateTime.toLocalDate();
 		this.enable = String.valueOf(userRepresentation.isEnabled());
-		this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
+		// je.kim approvalYN 은 true 으로 하드코딩
+		// this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
+		this.approval = "true";
 		this.userGroupDTOList = null;
 	}
 

@@ -48,17 +48,21 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void updateUserWorkspaceCreateLimit(List<String> userIdList, Integer createLimitCount) {
-		userRepository.updateUserAttribute(userIdList,
-			Map.of(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey(), String.valueOf(createLimitCount)));
+		// je.kim workspaceCreateLimit 업데이트 금지
+		// userRepository.updateUserAttribute(userIdList,
+		// 	Map.of(UserAttribute.WORKSPACE_CREATE_LIMIT.getKey(), String.valueOf(createLimitCount)));
 	}
-
+	
 	@Override
 	public void updateUserApprovalYN(List<String> userIdList, boolean approvalYN) {
 		// false 일떄 해당 유저 keycloak 에서 삭제
 		if (approvalYN) {
 			//update attribute approval value
-			userRepository.updateUserAttribute(userIdList,
-				Map.of(UserAttribute.APPROVAL_YN.getKey(), String.valueOf(approvalYN)));
+
+			// je.kim approvalYN 업데이트 금지
+			// userRepository.updateUserAttribute(userIdList,
+			// 	Map.of(UserAttribute.APPROVAL_YN.getKey(), String.valueOf(approvalYN)));
+			
 			//사용자 활성화 처리
 			userRepository.updateUserActivationYN(userIdList, true);
 		}
