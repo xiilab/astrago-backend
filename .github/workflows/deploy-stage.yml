@@ -65,7 +65,9 @@ jobs:
           buildkitd-flags: --debug --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
           platforms: linux/amd64
           driver-opts: |
+            image=harbor.xiilab.com:32443/library/moby/buildkit:master
             network=host
+
           #config: /etc/buildkit/buildkitd.toml
           buildkitd-config-inline: |
             [registry."${{ env.HARBOR_REGISTRY }}"]
@@ -129,14 +131,21 @@ jobs:
           repository: ${{ env.DEPLOYMENT_REPOSITORY }}
           ref: katech
 
+      # - name: stage 이미지 정보 수정
+      #   uses: mikefarah/yq@master
+      #   with:
+      #     cmd: |
+      #       yq -i '.astrago.core.imageTag = "katech-core-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+      #       yq -i '.astrago.batch.imageTag = "katech-batch-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+      #       yq -i '.astrago.monitor.imageTag = "katech-monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+      #       yq -i '.astrago.experiment.imageTag = "katech-experiment-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+      
       - name: stage 이미지 정보 수정
-        uses: mikefarah/yq@master
-        with:
-          cmd: |
-            yq -i '.astrago.core.imageTag = "katech-core-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.batch.imageTag = "katech-batch-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.monitor.imageTag = "katech-monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
-            yq -i '.astrago.experiment.imageTag = "katech-experiment-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+        run: |
+          yq -i '.astrago.core.imageTag = "katech-core-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+          yq -i '.astrago.batch.imageTag = "katech-batch-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+          yq -i '.astrago.monitor.imageTag = "katech-monitor-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
+          yq -i '.astrago.experiment.imageTag = "katech-experiment-${{ needs.integration.outputs.image-tag }}"' 'environments/stage/values.yaml'
 
       - name: Commit and Push
         run: |
