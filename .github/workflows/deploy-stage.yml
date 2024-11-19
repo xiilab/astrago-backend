@@ -94,8 +94,8 @@ jobs:
           file: server-core/Dockerfile
           push: true
           tags: ${{ env.DOCKER_REPOSITORY }}:katech-core-${{ steps.extract_image_tag.outputs.image-tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
       # batch image build & push
       - name: Build and push Batch Docker images
@@ -105,8 +105,8 @@ jobs:
           file: server-batch/Dockerfile
           push: true
           tags: ${{ env.DOCKER_REPOSITORY }}:katech-batch-${{ steps.extract_image_tag.outputs.image-tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
       # monitor image build & push
       - name: Build and push Monitor Docker images
@@ -116,8 +116,8 @@ jobs:
           file: server-monitor/Dockerfile
           push: true
           tags: ${{ env.DOCKER_REPOSITORY }}:katech-monitor-${{ steps.extract_image_tag.outputs.image-tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
 
   delivery:
