@@ -3,7 +3,6 @@ package com.xiilab.modulek8s.workload.dto.response;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import org.hibernate.validator.internal.util.logging.Log_.logger;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
