@@ -542,6 +542,7 @@ public class WorkloadHandlerImpl implements WorkloadHandler {
 			.gpuName(interactiveJobResDTO.getGpuName() != null? interactiveJobResDTO.getGpuName() : null)
 			.nodeName(interactiveJobResDTO.getNodeName())
 			.gpuOnePerMemory(interactiveJobResDTO.getGpuOnePerMemory())
+			.expirationTime(interactiveJobResDTO.getExpirationTime())
 			.build();
 
 		workloadHistoryRepo.save(jobEntity);

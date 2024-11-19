@@ -794,7 +794,7 @@ create table if not exists TB_WORKLOAD
     WORKLOAD_NAME              varchar(255)                                           null,
     WORKLOAD_CREATED_AT        datetime(6)                                            null,
     WORKLOAD_DELETED_AT        datetime(6)                                            null,
-    EXPIRATION_TIME            datetime(6)                                            null,
+    EXPIRATION_TIME            datetime(6)                                            null comment '한자연 전용 종료 예정 시간 기입',
     image_IMAGE_ID             bigint                                                 null,
     DTYPE                      varchar(31)                                            not null,
     WORKLOAD_CMD         varchar(4000) null,

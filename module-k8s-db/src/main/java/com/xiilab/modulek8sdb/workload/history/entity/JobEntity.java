@@ -39,7 +39,7 @@ public class JobEntity extends WorkloadEntity {
 		Map<String, String> envs,
 		List<String> volumes, Map<String, Integer> ports, WorkloadType workloadType, String workloadCmd,
 		ImageEntity image, DeleteYN deleteYN, String ide, String workingDir, Map<String, String> parameter,
-		WorkloadStatus workloadStatus) {
+		WorkloadStatus workloadStatus, LocalDateTime expirationTime ) {
 		this.uid = uid;
 		this.name = name;
 		this.description = description;
@@ -70,5 +70,6 @@ public class JobEntity extends WorkloadEntity {
 		this.deleteYN = deleteYN;
 		this.workloadStatus = workloadStatus;
 		this.parameter = JsonConvertUtil.convertMapToJson(parameter);
+		this.expirationTime = expirationTime;
 	}
 }

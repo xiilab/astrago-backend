@@ -1,5 +1,8 @@
 package com.xiilab.modulek8s.workload.dto.response;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -33,6 +36,18 @@ public class ModuleInteractiveJobResDTO extends AbstractSingleWorkloadResDTO {
 		super.status = K8sInfoPicker.getInteractiveWorkloadStatus(deployment.getStatus());
 		this.ide = deployment.getMetadata().getAnnotations().get(AnnotationField.IDE.getField()) == null ? "CUSTOM" :
 			deployment.getMetadata().getAnnotations().get(AnnotationField.IDE.getField());
+		
+
+		// deployment 에서 EXPIRATION_TIME Annotations 을 읽어와서 디비에 적재한다.
+		try {
+			super.expirationTime = 
+				deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) == null || 
+				deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) == "" 
+				? null: LocalDateTime.parse(deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) , DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+		} catch (Exception e) {
+			super.expirationTime = null;
+		}
+
 	}
 
 	@Override
