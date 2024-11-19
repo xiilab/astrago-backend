@@ -65,7 +65,6 @@ jobs:
           buildkitd-flags: --debug --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
           platforms: linux/amd64
           driver-opts: |
-            image=harbor.xiilab.com:32443/library/moby/buildkit:master
             network=host
 
           #config: /etc/buildkit/buildkitd.toml
