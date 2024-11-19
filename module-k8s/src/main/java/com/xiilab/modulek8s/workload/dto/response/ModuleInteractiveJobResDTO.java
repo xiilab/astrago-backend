@@ -3,6 +3,7 @@ package com.xiilab.modulek8s.workload.dto.response;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.hibernate.validator.internal.util.logging.Log_.logger;
 import org.springframework.util.CollectionUtils;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -13,8 +14,10 @@ import com.xiilab.modulek8s.workload.dto.response.abst.AbstractSingleWorkloadRes
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 
 @SuperBuilder
+@Slf4j
 public class ModuleInteractiveJobResDTO extends AbstractSingleWorkloadResDTO {
 	public ModuleInteractiveJobResDTO(Deployment deployment) {
 		super(deployment);
@@ -44,7 +47,9 @@ public class ModuleInteractiveJobResDTO extends AbstractSingleWorkloadResDTO {
 				deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) == null || 
 				deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) == "" 
 				? null: LocalDateTime.parse(deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) , DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+			log.info("생성된 잡의 종료예정시간은 {} 입니다" , super.expirationTime);
 		} catch (Exception e) {
+			log.error("귀하의 코드가 거지같아서 에러가 발생했습니다. ㅋㅋㅋㅋ" , e);
 			super.expirationTime = null;
 		}
 
