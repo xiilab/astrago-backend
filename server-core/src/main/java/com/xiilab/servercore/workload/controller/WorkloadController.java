@@ -58,6 +58,12 @@ public class WorkloadController {
 	private final ModelService modelService;
 	private final HubService hubService;
 
+	/**
+	 * 워크로드 생성 API
+	 * @param createWorkloadJobReqDTO
+	 * @param userInfoDTO
+	 * @return
+	 */
 	@PostMapping("/workloads")
 	@Operation(summary = "워크로드 생성")
 	public ResponseEntity<HttpStatus> createWorkload(

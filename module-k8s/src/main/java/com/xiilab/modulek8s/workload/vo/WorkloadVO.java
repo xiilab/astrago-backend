@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.vo;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,9 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 	Integer gpuOnePerMemory;
 	Integer resourcePresetId;
 	String subPath;
+
+	LocalDateTime expirationTime;	//je.kim 한자연 커스텀 : 종료예정시간 추가
+
 
 	/**
 	 * init 컨테이너에 소스코드 복사하고 emptyDir 볼륨 마운트

@@ -1,7 +1,10 @@
 package com.xiilab.servercore.workload.dto.request;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.WorkloadType;
@@ -20,6 +23,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * 워크로드 생성 API Request Data (기본)
+ */
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,7 +52,8 @@ public abstract class CreateWorkloadJobReqDTO extends APIBaseReqDTO {
 	protected Integer gpuOnePerMemory;
 	protected Integer resourcePresetId;
 	@Setter
-	protected FrameWorkType ide;
+	protected FrameWorkType ide;	
+
 
 	public abstract CreateWorkloadReqDTO toModuleDTO(String initContainerUrl);
 

@@ -104,6 +104,10 @@ public class InteractiveJobVO extends WorkloadVO {
 			ValidUtils.isNullOrZero(this.gpuOnePerMemory) ? "" : String.valueOf(this.gpuOnePerMemory));
 		annotationMap.put(AnnotationField.RESOURCE_PRESET_ID.getField(),
 			ValidUtils.isNullOrZero(this.resourcePresetId) ? "" : String.valueOf(this.resourcePresetId));
+		// 한자연 종료시간 추가
+		annotationMap.put(AnnotationField.EXPIRATION_TIME.getField(),
+			this.expirationTime == null ? "" : this.expirationTime.toString());
+
 
 		return annotationMap;
 	}
