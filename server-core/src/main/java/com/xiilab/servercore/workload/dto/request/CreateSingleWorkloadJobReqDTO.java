@@ -8,6 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+
+/**
+ * 워크로드 생성 API Request Data(CPU MEM)
+ */
 @Getter
 @SuperBuilder
 @AllArgsConstructor
@@ -46,6 +50,7 @@ public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 			.gpuName(gpuName)
 			.gpuOnePerMemory(gpuOnePerMemory)
 			.resourcePresetId(resourcePresetId)
+			.expirationTime(expirationTime)
 			.build();
 	}
 

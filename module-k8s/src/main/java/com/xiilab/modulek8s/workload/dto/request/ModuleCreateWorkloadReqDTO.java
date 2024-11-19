@@ -71,6 +71,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.gpuName(this.gpuName)
 			.gpuOnePerMemory(this.gpuOnePerMemory)
 			.resourcePresetId(this.resourcePresetId)
+			.expirationTime(this.expirationTime)
 			.build();
 	}
 }

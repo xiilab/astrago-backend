@@ -32,7 +32,11 @@ public enum AnnotationField {
 	GPU_NAME("gpu-name"),
 	GPU_ONE_PER_MEMORY("gpu-one-per-memory"),
 	NODE_NAME("node-name"),
-	RESOURCE_PRESET_ID("resource-preset-id")
+	RESOURCE_PRESET_ID("resource-preset-id"),
+	/**
+	 * 한자연 종료시간 추가
+	 */
+	EXPIRATION_TIME("expiration_time")
 	;
 
 	private final String field;

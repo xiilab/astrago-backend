@@ -1,5 +1,6 @@
 package com.xiilab.modulek8s.workload.dto.request;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,9 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected GPUType gpuType;
 	protected Integer gpuOnePerMemory;
 	protected Integer resourcePresetId;
+
+	protected LocalDateTime expirationTime; //je.kim 한자연 커스텀 : 종료예정시간 추가
+	
 
 	protected void initializeCollection() {
 		this.codes = getListIfNotEmpty(this.codes);

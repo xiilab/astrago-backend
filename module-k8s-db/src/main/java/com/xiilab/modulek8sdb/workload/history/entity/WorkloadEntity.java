@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.SQLDelete;
 
 import com.xiilab.modulecommon.enums.GPUType;
@@ -108,6 +109,12 @@ public abstract class WorkloadEntity {
 	protected Integer gpuOnePerMemory;
 	@Column(name = "RESOURCE_PRESET_ID")
 	protected Integer resourcePresetId;
+
+	// je.kim 종료 예정 시간 추가
+	@Column(name = "EXPIRATION_TIME")
+	@Comment("한자연 전용 종료 예정 시간 기입")
+	protected LocalDateTime expirationTime;
+	
 	@Builder.Default
 	@OneToMany(mappedBy = "workload", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	protected List<EnvEntity> envList = new ArrayList<>();
