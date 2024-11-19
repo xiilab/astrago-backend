@@ -39,6 +39,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public abstract class AbstractModuleWorkloadResDTO {
+	protected LocalDateTime expirationTime;        // 한자연 전용 종료 예정시간
 	protected String uid;                          // 워크로드 고유 ID
 	protected String name;                         // 사용자가 입력한 워크로드의 이름
 	protected String resourceName;                 // 워크로드 실제 이름

@@ -42,6 +42,7 @@ public class WorkloadSummaryDTO {
 	private String estimatedRemainingTime;
 	@Setter
 	private String startTime;    // 파드 실행시간
+	private String expirationTime; 		// 한자연 전용 종료 예정 시간
 
 	public WorkloadSummaryDTO(WorkloadEntity workload) {
 		this.id = workload.getId();
@@ -64,6 +65,9 @@ public class WorkloadSummaryDTO {
 			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "0";
 		this.startTime = workload.getStartTime() != null ?
 			workload.getStartTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null;
+		
+		this.expirationTime = workload.getExpirationTime() != null ?
+			workload.getExpirationTime().format((DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) : null;
 	}
 
 	public void updateCanBeDeleted(String creator, Set<String> ownerWorkspace) {
