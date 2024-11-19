@@ -45,7 +45,7 @@ public class ModuleInteractiveJobResDTO extends AbstractSingleWorkloadResDTO {
 			super.expirationTime = 
 				deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) == null || 
 				deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) == "" 
-				? null: LocalDateTime.parse(deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) , DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm"));
+				? null: LocalDateTime.parse(deployment.getMetadata().getAnnotations().get(AnnotationField.EXPIRATION_TIME.getField()) , DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
 			log.info("생성된 잡의 종료예정시간은 {} 입니다" , super.expirationTime);
 		} catch (Exception e) {
 			log.error("날짜 파싱간 에러 발생" , e);
