@@ -17,6 +17,8 @@ public interface WorkloadHistoryRepoCustom {
 	List<WorkloadEntity> getWorkloadHistoryInResourceNames(List<String> pinResourceNameList, WorkloadType workloadType,
 		WorkloadSortCondition sortCondition);
 
+	List<WorkloadEntity> getExpiredTimeWorkloadList();
+
 	Page<WorkloadEntity> getOverViewWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
 		String userId,
 		List<String> pinResourceNameList, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest,

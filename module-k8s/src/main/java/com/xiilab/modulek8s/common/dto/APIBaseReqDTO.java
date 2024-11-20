@@ -23,6 +23,6 @@ public abstract class APIBaseReqDTO {
 	//resource에 대한 설명
 	protected String description;
  	
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	protected LocalDateTime expirationTime; //je.kim 한자연 커스텀 : 종료예정시간 추가
 }

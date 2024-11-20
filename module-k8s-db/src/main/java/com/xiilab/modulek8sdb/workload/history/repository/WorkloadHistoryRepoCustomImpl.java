@@ -2,6 +2,8 @@ package com.xiilab.modulek8sdb.workload.history.repository;
 
 import static com.xiilab.modulek8sdb.workload.history.entity.QWorkloadEntity.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -80,6 +82,24 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 		return new PageImpl<>(jobEntities, pageRequest, totalCount);
 	}
 
+
+	/**
+	 * 종료시간이 된 워크로드 불려오기
+	 */
+	@Override
+	public List<WorkloadEntity> getExpiredTimeWorkloadList() {
+		List<WorkloadEntity> jobEntities = queryFactory.selectFrom(workloadEntity)
+			.where(
+				eqRunningJob(),
+				eqInteractiveJob(),
+				loeExpiredTimes()
+			)
+			.fetch()
+		;
+
+		return jobEntities;
+	}
+
 	@Override
 	public Page<WorkloadEntity> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName,
 		WorkloadSortCondition workloadSortCondition, PageRequest pageRequest, WorkloadStatus workloadStatus) {
@@ -148,4 +168,19 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 		}
 		return workloadEntity.workspaceResourceName.eq(workspaceName);
 	}
+
+	private BooleanExpression loeExpiredTimes(){
+		LocalDateTime today = LocalDate.now().atStartOfDay();
+		return workloadEntity.expirationTime.loe(today);
+	}
+
+	private BooleanExpression eqInteractiveJob(){
+		return workloadEntity.workloadType.eq(WorkloadType.INTERACTIVE);
+	}
+	
+	private BooleanExpression eqRunningJob(){
+		return workloadEntity.workloadStatus.eq(WorkloadStatus.RUNNING);
+	}
+
+	
 }
