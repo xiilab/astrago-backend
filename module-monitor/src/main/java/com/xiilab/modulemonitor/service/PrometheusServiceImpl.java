@@ -80,7 +80,6 @@ public class PrometheusServiceImpl implements PrometheusService {
 	public List<ResponseDTO.HistoryDTO> getHistoryMetricBySystem(String promql, String startDate, String endDate) {
 
 		long systemStep = DataConverterUtil.getFortyStep(startDate, endDate);
-		// 2024.02.03(start) ~ 2024.02.15(end)
 		String startUnixTime = DataConverterUtil.toUnixTime(startDate);
 		String endUnixTime = DataConverterUtil.toUnixTime(endDate);
 
@@ -88,6 +87,12 @@ public class PrometheusServiceImpl implements PrometheusService {
 			startUnixTime, endUnixTime, systemStep);
 
 		return extractHistoryMetrics(historyMetric, promql);
+	}
+
+	@Override
+	public List<ResponseDTO.HistoryDTO> getRealTimeMetricHistory(String promql) {
+		String historyMetric = prometheusRepository.getRealTimeMetricByQuery(Promql.valueOf(promql).getQuery());
+		return extractRealtimeHistory(historyMetric, promql);
 	}
 
 	@Override
@@ -277,6 +282,33 @@ public class PrometheusServiceImpl implements PrometheusService {
 	}
 
 	/**
+	 * 조회된 Prometheus History Metrics 추출하여 HistoryDTO List 반환하는 메소드
+	 *
+	 * @param jsonResponse 조회된 Metric 객체
+	 * @param metricName Metric 이름
+	 * @return 반환될 HistoryDTO List
+	 */
+	public List<ResponseDTO.HistoryDTO> extractRealtimeHistory(String jsonResponse, String metricName) {
+		List<ResponseDTO.HistoryDTO> responseDTOS = new ArrayList<>();
+
+		try {
+			// JSON 파싱을 위한 ObjectMapper 생성
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+
+			// result 필드 추출
+			JsonNode results = jsonNode.path("data").path("result");
+			for (JsonNode result : results) {
+				// 리스트에 추가
+				responseDTOS.add(createRealTimeHistoryDTO(result, metricName));
+			}
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
+		return responseDTOS;
+	}
+
+	/**
 	 * JsonNode를 ResponseDTO로 변환하는 메소드
 	 *
 	 * @param result  Prometheus result 필드 값
@@ -305,6 +337,29 @@ public class PrometheusServiceImpl implements PrometheusService {
 	}
 
 	/**
+	 * JsonNode를 ResponseDTO로 변환하는 메소드
+	 *
+	 * @param result  Prometheus result 필드 값
+	 * @param metric  Metric Name
+	 * @return 생성된 ResponseDTO
+	 */
+	private ResponseDTO.HistoryDTO createRealTimeHistoryDTO(JsonNode result, String metric) {
+		JsonNode metricData = result.path("metric");
+
+		// 결과 값 추출
+		JsonNode values = result.path("value");
+		// ResponseDTO 객체 생성하여 반환
+		return ResponseDTO.HistoryDTO.builder()
+			.metricName(metric)
+			.internalIp(DataConverterUtil.getStringOrNullByJsonNode(metricData, "internal_ip"))
+			.nodeName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "node"))
+			.modelName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "modelName"))
+			.prettyName(DataConverterUtil.getStringOrNullByJsonNode(metricData, "pretty_name"))
+			.valueDTOS(createRealTimeHistoryValue(values))
+			.build();
+	}
+
+	/**
 	 * 과거 Values 생성 메소드
 	 * @param values 조회된 Value
 	 * @return 생성된 ValueDTO List
@@ -313,12 +368,35 @@ public class PrometheusServiceImpl implements PrometheusService {
 		List<ResponseDTO.ValueDTO> valueDTOList = new ArrayList<>();
 		if (values.isArray()) {
 			for (JsonNode node : values) {
-				// values DTO List에 추가
+				// values DTOi List에 추가
 				valueDTOList.add(ResponseDTO.ValueDTO.builder()
 					.dateTime(DataConverterUtil.formatDateTime(node.get(0).asDouble()))
 					.value(node.get(1).textValue())
 					.build());
 			}
+		}
+		return valueDTOList;
+	}
+
+	/**
+	 * 과거 Values 생성 메소드
+	 * @param values 조회된 Value
+	 * @return 생성된 ValueDTO List
+	 */
+	private List<ResponseDTO.ValueDTO> createRealTimeHistoryValue(JsonNode values) {
+		List<ResponseDTO.ValueDTO> valueDTOList = new ArrayList<>();
+		if (values.isArray()) {
+			valueDTOList.add(ResponseDTO.ValueDTO.builder()
+				.dateTime(DataConverterUtil.formatDateTime(values.get(0).asDouble()))
+				.value(values.get(1).textValue())
+				.build());
+			/*for (JsonNode node : values) {
+				// values DTOi List에 추가
+				valueDTOList.add(ResponseDTO.ValueDTO.builder()
+					.dateTime(DataConverterUtil.formatDateTime(node.get(0).asDouble()))
+					.value(node.get(1).textValue())
+					.build());
+			}*/
 		}
 		return valueDTOList;
 	}

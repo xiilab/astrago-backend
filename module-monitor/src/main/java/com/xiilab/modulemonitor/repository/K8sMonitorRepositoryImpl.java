@@ -455,17 +455,23 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	}
 
 	private String calculateTotalGpuRequests(List<Pod> podList) {
-		String containerResult = podList.stream()
+		Integer containerResult = podList.stream()
 			.flatMap(pod -> pod.getSpec().getContainers().stream())
-			.filter(container -> container.getResources().getRequests().get("nvidia.com/gpu.shared") != null)
 			.map(container -> {
-				String gpuAmount = container.getResources().getRequests().get("nvidia.com/gpu.shared").getAmount();
-				return gpuAmount;
+				// "nvidia.com/gpu"로 시작하는 키의 값을 모두 합산
+				return container.getResources().getRequests().entrySet().stream()
+					.filter(entry -> entry.getKey().startsWith("nvidia.com/gpu") || entry.getKey().startsWith("nvidia.com/mig")) // 접두어 필터링
+					.mapToInt(entry -> {
+						String amount = entry.getValue() != null ? entry.getValue().getAmount() : "0";
+						return Integer.parseInt(amount); // 문자열을 숫자로 변환
+					})
+					.sum();
 			})
-			.reduce("0", (acc, val) -> String.valueOf(Integer.parseInt(acc) + Integer.parseInt(val)));
+			.reduce(0, Integer::sum);// 모든 컨테이너의 GPU 요청 합산
 
-		return String.valueOf(Integer.parseInt(containerResult));
+		return String.valueOf(containerResult);
 	}
+
 
 	private String calculateTotalMemRequests(List<Pod> podList) {
 		String containerResult = podList.stream()

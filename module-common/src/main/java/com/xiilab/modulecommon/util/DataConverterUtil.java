@@ -269,9 +269,9 @@ public class DataConverterUtil {
 			// Date -> 밀리세컨즈
 			long timeMil1 = start.getTime();
 			long timeMil2 = end.getTime();
-			long setp = (timeMil2 - timeMil1);
+			long step = (timeMil2 - timeMil1);
 
-			return setp;
+			return step == 0? 1 : step;
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
@@ -370,9 +370,10 @@ public class DataConverterUtil {
 		if (type.equals(ReportType.WEEKLY_CLUSTER) || type.equals(ReportType.WEEKLY_SYSTEM)) {
 			endDate = dateTime.minusDays(6);
 		} else {
-			endDate = dateTime.minusMonths(1);
+			// endDate = dateTime.minusMonths(1);
+			endDate = dateTime.withDayOfMonth(1);
 		}
-		return endDate.toString().replace("T", " ") + ":00";
+		return endDate.toString().replace("T", " ");
 	}
 
 	public static String plusDay(String date, long plusAmount) {
@@ -436,7 +437,8 @@ public class DataConverterUtil {
 		localDate = localDate.with(TemporalAdjusters.firstDayOfMonth());
 		LocalDateTime startDate = localDate.plusWeeks(weekSeq - 1);
 		if (localDate.getMonth() != startDate.getMonth()) {
-			throw new RestApiException(CommonErrorCode.MONTH_WEEKS_OUT_OF_RANGE);
+			startDate = localDate.with(TemporalAdjusters.lastDayOfMonth());
+			// throw new RestApiException(CommonErrorCode.MONTH_WEEKS_OUT_OF_RANGE);
 		}
 		LocalDateTime mondayDate = getMondayDate(startDate);
 		LocalDateTime sundayDate = getSundayDate(startDate);

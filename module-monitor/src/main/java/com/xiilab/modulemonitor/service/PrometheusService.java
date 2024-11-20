@@ -13,6 +13,7 @@ public interface PrometheusService {
 	List<ResponseDTO.HistoryDTO> getHistoryMetric(RequestDTO requestDTO);
 
 	String getRealTimeMetricByQuery(String promql);
+	List<ResponseDTO.HistoryDTO> getRealTimeMetricHistory(String promql);
 
 	List<ResponseDTO.HistoryDTO> getHistoryMetricByQuery(String promql, String startDate, String endDate);
 

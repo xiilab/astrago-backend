@@ -1,53 +1,11 @@
 package com.xiilab.servercore.board.controller;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.List;
-
-import org.apache.commons.io.IOUtils;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.xiilab.modulecommon.exception.RestApiException;
-import com.xiilab.modulecommon.exception.errorcode.BoardErrorCode;
-import com.xiilab.servercore.board.dto.BoardReqDTO;
-import com.xiilab.servercore.board.dto.BoardResDTO;
-import com.xiilab.servercore.board.service.BoardService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import lombok.RequiredArgsConstructor;
-
-@Tag(name = "BoardController", description = "게시판 api")
+/*@Tag(name = "BoardController", description = "게시판 api")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/core/boards")
+@RequestMapping("/api/v1/core/boards")*/
 public class BoardController {
-	private final BoardService boardService;
+	/*private final BoardService boardService;
 
 	@PostMapping("")
 	@Operation(summary = "Board 등록")
@@ -137,6 +95,6 @@ public class BoardController {
 		} catch (Exception e) {
 			throw new RestApiException(BoardErrorCode.FAILED_DOWNLOAD_ATTACHED_FILE);
 		}
-	}
+	}*/
 
 }
