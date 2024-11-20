@@ -58,3 +58,6 @@ editor:
   root-file-upload-path: /root/astrago
   attach-file-upload-path: /board/attaches
   content-file-upload-path: /board/contents
+
+astrago:
+  private-registry-url: ""
