@@ -217,7 +217,8 @@ public class PrometheusServiceImpl implements PrometheusService {
 			DataConverterUtil.getStringOrNullByJsonNode(metricData, "modelName"),
 			DataConverterUtil.getStringOrNullByJsonNode(metricData, "gpu"),
 			DataConverterUtil.getStringOrNullByJsonNode(metricData, "resource"),
-			String.valueOf(value)
+			String.valueOf(value),
+			DataConverterUtil.getStringOrNullByJsonNode(metricData, "container")
 		);
 	}
 
