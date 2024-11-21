@@ -1,11 +1,14 @@
 package com.xiilab.servercore.node.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
 
+import io.fabric8.kubernetes.api.model.Node;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -25,5 +28,9 @@ public class NodeService {
 	}
 	public ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize) {
 		return nodeRepository.getNodeList(pageNo, pageSize, null);
+	}
+
+	public List<Node> getNodeListIsWorker(boolean isWorker) {
+		return nodeRepository.getGpuNodes(isWorker);
 	}
 }
