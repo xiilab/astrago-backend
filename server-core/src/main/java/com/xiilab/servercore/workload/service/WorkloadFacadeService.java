@@ -87,6 +87,7 @@ import com.xiilab.modulek8sdb.version.enums.FrameWorkType;
 import com.xiilab.modulek8sdb.workload.history.entity.PortEntity;
 import com.xiilab.modulek8sdb.workload.history.entity.WorkloadEntity;
 import com.xiilab.modulek8sdb.workload.history.repository.PortRepository;
+import com.xiilab.modulemonitor.service.MonitorFacadeService;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.servercore.code.dto.CodeResDTO;
 import com.xiilab.servercore.code.service.CodeService;
@@ -114,6 +115,7 @@ import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
 
+import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -143,7 +145,7 @@ public class WorkloadFacadeService {
 	private final NodeFacadeService nodeFacadeService;
 	private final PortRepository portRepository;
 	private final StorageService storageService;
-
+	private final MonitorFacadeService monitorFacadeService;
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 
@@ -198,28 +200,43 @@ public class WorkloadFacadeService {
 
 			String initContainerUrl = "";
 			String imageName = "";
-			if(networkCloseYN == NetworkCloseYN.Y){
-				if(isBlankSafe(privateRegistryUrl)){
+			if (networkCloseYN == NetworkCloseYN.Y) {
+				if (isBlankSafe(privateRegistryUrl)) {
 					initContainerUrl = network.getInitContainerImageUrl();
-				}else{
+				} else {
 					initContainerUrl = privateRegistryUrl + "/" + network.getInitContainerImageUrl();
 				}
-			}else{
+			} else {
 				initContainerUrl = network.getInitContainerImageUrl();
 			}
-			if(createWorkloadReqDTO.getImage().getType() != ImageType.CUSTOM && networkCloseYN == NetworkCloseYN.Y){
-				if(isBlankSafe(privateRegistryUrl)){
+			if (createWorkloadReqDTO.getImage().getType() != ImageType.CUSTOM && networkCloseYN == NetworkCloseYN.Y) {
+				if (isBlankSafe(privateRegistryUrl)) {
 					imageName = createWorkloadReqDTO.getImage().getName();
-				}else{
+				} else {
 					imageName = privateRegistryUrl + "/" + createWorkloadReqDTO.getImage().getName();
 				}
-			}else{
+			} else {
 				imageName = createWorkloadReqDTO.getImage().getName();
 			}
 			ModuleImageReqDTO image = createWorkloadReqDTO.getImage();
 			image.modifyName(imageName);
 			CreateWorkloadReqDTO moduleDTO = createWorkloadReqDTO.toModuleDTO(initContainerUrl);
 			moduleDTO.modifyImage(image);
+			// 노드 자원량 확인
+			List<Node> workerNodeList = nodeService.getNodeListIsWorker(true);
+			for (Node node : workerNodeList) {
+				com.xiilab.modulemonitor.dto.ResponseDTO.NodeResourceDTO nodeResource = monitorFacadeService.getNodeResource(
+					node.getMetadata().getName());
+				double availableCpuCount = (double)nodeResource.cpuTotal() - nodeResource.cpuUsage();
+				double availableGpuCount = nodeResource.gpuTotal() - nodeResource.gpuUsage();
+				double availableMemCount = Math.abs(nodeResource.memTotal() - nodeResource.memUsage()) / 1000000000;
+
+				if (createWorkloadReqDTO.getTotalCpuRequest() >= availableCpuCount
+					|| createWorkloadReqDTO.getTotalGpuRequest() >= availableGpuCount
+					|| createWorkloadReqDTO.getTotalMemoryRequest() >= availableMemCount) {
+					throw new RestApiException(WorkloadErrorCode.WAITING_FOR_RESOURCE_ALLOCATION);
+				}
+			}
 			workloadModuleFacadeService.createJobWorkload(moduleDTO);
 			// 워크로드
 		} catch (Exception e) {
@@ -228,10 +245,12 @@ public class WorkloadFacadeService {
 		}
 
 	}
+
 	// null 체크와 함께 isBlank를 수행하는 메서드
 	public static boolean isBlankSafe(String str) {
 		return str == null || str.isBlank();
 	}
+
 	private String getMpsNodeName(String nodeNames) {
 		String[] splitNodeName = nodeNames.replaceAll(" ", "").split(",");
 		if (splitNodeName.length == 1) {
@@ -365,7 +384,7 @@ public class WorkloadFacadeService {
 		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
 		String ip = connectedNode.getIp();
 
-		if(workloadInfo.getPorts() == null || workloadInfo.getPorts().size() == 0){
+		if (workloadInfo.getPorts() == null || workloadInfo.getPorts().size() == 0) {
 			List<List<ServicePort>> servicePorts = svcModuleFacadeService.getPortsByWorkloadResourceName(
 				workspaceName, workloadResourceName);
 			List<FindWorkloadResDTO.Port> ports = new ArrayList<>();
@@ -378,13 +397,15 @@ public class WorkloadFacadeService {
 						.build();
 					portEntity.setWorkload(workloadEntity);
 					portRepository.save(portEntity);
-					ports.add(new FindWorkloadResDTO.Port(servicePort.getName(), servicePort.getPort(), servicePort.getNodePort(), ip + ":" + servicePort.getNodePort()));
+					ports.add(new FindWorkloadResDTO.Port(servicePort.getName(), servicePort.getPort(),
+						servicePort.getNodePort(), ip + ":" + servicePort.getNodePort()));
 				}
 			}
 			workloadInfo.setPorts(ports);
-		}else{
+		} else {
 			List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
-				new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),ip + ":" + port.getTargetPort())).toList();
+				new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),
+					ip + ":" + port.getTargetPort())).toList();
 			workloadInfo.setPorts(ports);
 		}
 		return workloadInfo;
@@ -697,7 +718,6 @@ public class WorkloadFacadeService {
 				.build())
 			.toList();
 
-
 		return new PageDTO<>(result, workloadEventReqDTO.getPageNum(), workloadEventReqDTO.getPageSize());
 	}
 
@@ -857,7 +877,7 @@ public class WorkloadFacadeService {
 				String filePath = storagePath + saveDirectoryName;
 				StorageEntity storageEntity = storageService.getDatasetStorageClassName(moduleVolumeReqDTO.getId());
 
-				if(storageEntity.getStorageType().equals(StorageType.DELL_UNITY)){
+				if (storageEntity.getStorageType().equals(StorageType.DELL_UNITY)) {
 					moduleVolumeReqDTO.setSubPath(saveDirectoryName);
 				}
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resDatasetWithStorage.getIp(),
@@ -886,7 +906,7 @@ public class WorkloadFacadeService {
 				String filePath = storagePath + saveDirectoryName;
 				StorageEntity storageEntity = storageService.getModelVolumeStorageClassName(moduleVolumeReqDTO.getId());
 
-				if(storageEntity.getStorageType().equals(StorageType.DELL_UNITY)){
+				if (storageEntity.getStorageType().equals(StorageType.DELL_UNITY)) {
 					moduleVolumeReqDTO.setSubPath(saveDirectoryName);
 				}
 				setPvAndPVC(workspaceName, moduleVolumeReqDTO, resModelWithStorage.getIp(),
@@ -1161,7 +1181,8 @@ public class WorkloadFacadeService {
 		ResponseDTO.NodeDTO connectedNode = getConnectedNode().get();
 		String ip = connectedNode.getIp();
 		List<FindWorkloadResDTO.Port> ports = workloadInfo.getPorts().stream().map(port ->
-			new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(), ip + ":" + port.getTargetPort())).toList();
+			new FindWorkloadResDTO.Port(port.getName(), port.getPort(), port.getTargetPort(),
+				ip + ":" + port.getTargetPort())).toList();
 		workloadInfo.setPorts(ports);
 		return workloadInfo;
 

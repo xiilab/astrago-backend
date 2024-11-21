@@ -27,7 +27,8 @@ public enum WorkloadErrorCode implements ErrorCode {
 	FAILED_LOAD_CODE_CREDENTIAL_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"코드의 크레덴셜 정보 조회에 실패하였습니다."),
 	FAILED_LOAD_IMAGE_INFO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"워크로드의 이미지 정보를 조회할 수 없습니다."),
 	WORKLOAD_OPTIMIZATION_HOUR_INPUT_ERROR(HttpStatus.BAD_REQUEST.value(), "워크로드 최적화 정책 생성은 2시간 이상, 24시간 이하만 가능합니다."),
-	FAILED_POD_START_DATE_CONVERSION(HttpStatus.INTERNAL_SERVER_ERROR.value(), "워크로드 실제 실행시간 포맷을 변경하는 중에 오류가 발생하였습니다.")
+	FAILED_POD_START_DATE_CONVERSION(HttpStatus.INTERNAL_SERVER_ERROR.value(), "워크로드 실제 실행시간 포맷을 변경하는 중에 오류가 발생하였습니다."),
+	WAITING_FOR_RESOURCE_ALLOCATION(420, "자원이 부족하여 워크로드를 바로 실행할 수 없습니다.\n자원을 할당받으면 실행되는 대기상태로 생성하시겠습니까?")
 	;
 
 	private final int code;
