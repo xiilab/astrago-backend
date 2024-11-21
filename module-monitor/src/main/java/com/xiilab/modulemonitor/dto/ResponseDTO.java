@@ -139,7 +139,8 @@ public record ResponseDTO() {
 	@Builder
 	public record WorkloadResponseDTO(String wlName,
 									  String wsName,
-									  String status) {
+									  String status 
+									  ) {
 	}
 
 	/**

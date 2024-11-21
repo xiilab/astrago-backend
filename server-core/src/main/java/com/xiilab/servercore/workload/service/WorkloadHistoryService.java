@@ -43,6 +43,8 @@ public interface WorkloadHistoryService {
 		List<String> pinResourceNameList, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition,
 		PageRequest pageRequest);
 
+	List<WorkloadSummaryDTO> getWorkloadUsedList();
+	
 	OverViewWorkloadResDTO<WorkloadSummaryDTO> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, Boolean isCreatedByMe, WorkloadStatus workloadStatus, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest);
 
 	List<WorkloadEntity> getWorkloadHistoryByUsingDivisionGPU(String workspaceResourceName);
@@ -52,4 +54,5 @@ public interface WorkloadHistoryService {
 	WorkloadEntity findById(Long id);
 
 	void updateWorkspaceName(String workspaceResourceName, String workspaceName);
+
 }

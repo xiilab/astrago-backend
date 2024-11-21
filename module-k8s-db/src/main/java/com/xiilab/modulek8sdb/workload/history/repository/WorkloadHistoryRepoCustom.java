@@ -25,4 +25,6 @@ public interface WorkloadHistoryRepoCustom {
 		WorkloadStatus workloadStatus);
 
 	Page<WorkloadEntity> getAdminWorkloadList(String workspaceName, WorkloadType workloadType, String searchName, WorkloadSortCondition workloadSortCondition, PageRequest pageRequest, WorkloadStatus workloadStatus);
+
+    List<WorkloadEntity> getWorkloadUsedList();
 }

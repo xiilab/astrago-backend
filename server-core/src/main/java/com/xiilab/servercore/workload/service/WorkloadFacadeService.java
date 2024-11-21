@@ -516,6 +516,14 @@ public class WorkloadFacadeService {
 		return new PageDTO<>(totalSize, totalPageNum, workloadResDTOList);
 	}
 
+	/**
+	 * 현재 사용중인 워크로드 가져오기
+	 * @return
+	 */
+	public List<WorkloadSummaryDTO> getWorkloadUsedList() {
+		return workloadHistoryService.getWorkloadUsedList();
+    }
+
 	public DirectoryDTO getFileListInWorkloadContainer(String workloadName, String workspaceName,
 		WorkloadType workloadType, String path) throws IOException {
 		return workloadModuleService.getDirectoryDTOListInWorkloadContainer(workloadName, workspaceName, workloadType,
@@ -1199,4 +1207,5 @@ public class WorkloadFacadeService {
 		// }
 		// return null;
 	}
+    
 }

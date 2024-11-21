@@ -219,7 +219,7 @@ public class PrometheusServiceImpl implements PrometheusService {
 			DataConverterUtil.getStringOrNullByJsonNode(metricData, "resource"),
 			String.valueOf(value),
 			DataConverterUtil.getStringOrNullByJsonNode(metricData, "container")
-		);
+			);
 	}
 
 	private ReportDTO.ResourceDTO createResourceDTO(JsonNode result, String resourceName) {

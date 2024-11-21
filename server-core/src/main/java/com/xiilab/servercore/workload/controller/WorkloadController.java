@@ -140,6 +140,13 @@ public class WorkloadController {
 			HttpStatus.OK);
 	}
 
+	@GetMapping("/workloads/jobList/all")
+	@Operation(summary = "구동중인 워크로드 리스트 조회")
+	public ResponseEntity<List<WorkloadSummaryDTO>> getWorkloadUsedList() {
+		return new ResponseEntity<>(
+			workloadFacadeService.getWorkloadUsedList(), HttpStatus.OK);
+	}
+
 	@GetMapping("/workloads/jobList")
 	@Operation(summary = "워크로드 리스트 조회")
 	public ResponseEntity<PageDTO<WorkloadSummaryDTO>> getWorkloadList(

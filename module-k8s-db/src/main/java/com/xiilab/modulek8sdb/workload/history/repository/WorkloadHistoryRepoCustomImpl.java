@@ -82,6 +82,18 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 		return new PageImpl<>(jobEntities, pageRequest, totalCount);
 	}
 
+	/**
+	 * 사용중인 워크로드 전체 목록
+	 */
+	@Override
+	public List<WorkloadEntity> getWorkloadUsedList() {
+		return queryFactory.selectFrom(workloadEntity)
+			.where(
+				eqRunningJob()
+			)
+			.fetch();
+	}
+
 
 	/**
 	 * 종료시간이 된 워크로드 불려오기

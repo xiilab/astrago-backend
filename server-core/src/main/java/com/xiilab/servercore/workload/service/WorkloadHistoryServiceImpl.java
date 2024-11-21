@@ -225,6 +225,15 @@ public class WorkloadHistoryServiceImpl implements WorkloadHistoryService {
 		return new OverViewWorkloadResDTO<>(totalCount, workloads);
 	}
 
+	/**
+	 * 현재 사용중인 전체 워크로드 불려오기
+	 */
+	@Override
+	public List<WorkloadSummaryDTO> getWorkloadUsedList() {
+		List<WorkloadEntity> workloadEntities = workloadHistoryRepoCustom.getWorkloadUsedList();
+		return workloadEntities.stream().map(WorkloadSummaryDTO::new).toList();
+	}
+
 	@Override
 	public OverViewWorkloadResDTO<WorkloadSummaryDTO> getAdminWorkloadList(String workspaceName,
 		WorkloadType workloadType, String searchName, Boolean isCreatedByMe, WorkloadStatus workloadStatus,
