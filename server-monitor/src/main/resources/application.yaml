@@ -53,4 +53,3 @@ keycloak:
   principal-attribute: preferred_username
 server:
   max-http-request-header-size: 40KB
-  port: 8082
