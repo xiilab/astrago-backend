@@ -20,4 +20,5 @@ public interface WorkspaceService {
 	void createPodAnnotationsRoleBinding(String workspaceResourceName);
 
 	String getNodeName(String workspaceResourceName, String workloadResourceName);
+
 }
