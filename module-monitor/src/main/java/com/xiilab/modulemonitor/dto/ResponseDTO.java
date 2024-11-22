@@ -20,8 +20,7 @@ public record ResponseDTO() {
 							  String modelName,
 							  String gpuIndex,
 							  String resource,
-							  String value,
-							  String container) {
+							  String value) {
 	}
 
 	/**

@@ -143,8 +143,7 @@ public class NodeFacadeService {
 			existingDto.modelName(),
 			existingDto.gpuIndex(),
 			existingDto.resource(),
-			String.valueOf(summedValue), // Use the summed value
-			existingDto.resource()
+			String.valueOf(summedValue) // Use the summed value
 		);
 	}
 
