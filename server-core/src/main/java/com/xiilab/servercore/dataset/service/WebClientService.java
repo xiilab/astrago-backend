@@ -1,9 +1,12 @@
 package com.xiilab.servercore.dataset.service;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +18,9 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.xiilab.modulecommon.exception.RestApiException;
+import com.xiilab.modulecommon.exception.errorcode.OneViewErrorCode;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -33,7 +39,7 @@ public class WebClientService {
 	final long gigabyte = megabyte * 1024;
 
 	public <T> T postObjectFromUrl(String url, Map<String, String> headers, Object body, Class<?> bodyType,
-		Class<T> responseType) throws SSLException {
+		Class<T> responseType) {
 		WebClient webClient = createWebClient();
 		return webClient.post()
 			.uri(url)
@@ -45,7 +51,22 @@ public class WebClientService {
 			.block();
 	}
 
-	public <T> T getObjectFromUrl(String url, Class<T> responseType) throws SSLException {
+	public <T> T postObjectFromUrl(URI url, Map<String, String> headers, Object body, Class<?> bodyType,
+		Class<T> responseType, String username, String password) {
+		String credentials = username + ":" + password;
+		String authHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+		WebClient webClient = createAuthenticatedWebClient(authHeader);
+		return webClient.post()
+			.uri(url)
+			.headers(httpHeaders -> headers.forEach(httpHeaders::add))
+			.accept(MediaType.APPLICATION_JSON)
+			.body(Mono.just(body), bodyType)
+			.retrieve()
+			.bodyToMono(responseType)
+			.block();
+	}
+
+	public <T> T getObjectFromUrl(String url, Class<T> responseType) {
 		//검증없이 모든 SSL 인증서 사용
 		WebClient webClient = createWebClient();
 		return webClient.get().uri(url)
@@ -64,7 +85,55 @@ public class WebClientService {
 			.block();
 	}
 
-	public byte[] downloadFile(String url, MediaType mediaType){
+	public <T> T getObjectFromUrl(URI url, Class<T> responseType, String username, String password) {
+		//검증없이 모든 SSL 인증서 사용
+		String credentials = username + ":" + password;
+		String authHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+		WebClient webClient = createAuthenticatedWebClient(authHeader);
+		return webClient.get().uri(url)
+			.accept(MediaType.APPLICATION_JSON)
+			.retrieve()
+			.bodyToMono(responseType)
+			.block();
+	}
+
+	public <T> List<T> getObjectsFromUrl(URI url, Class<T> responseType, String username, String password) {
+		String credentials = username + ":" + password;
+		String authHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+		WebClient webClient = createAuthenticatedWebClient(authHeader);
+		return webClient.get().uri(url)
+			.accept(MediaType.APPLICATION_JSON)
+			.retrieve()
+			.bodyToFlux(responseType)
+			.collectList()
+			.block();
+	}
+
+	public <T> T headObjectFromUrl(URI url, Class<T> responseType, String username, String password) {
+		String credentials = username + ":" + password;
+		String authHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+		WebClient webClient = createAuthenticatedWebClient(authHeader);
+		return webClient.head().uri(url)
+			.accept(MediaType.APPLICATION_JSON)
+			.retrieve()
+			.bodyToMono(responseType)
+			.block();
+	}
+
+	public <T> T deleteObjectFromUrl(URI url, Class<T> responseType, String username, String password) throws
+		SSLException {
+		//검증없이 모든 SSL 인증서 사용
+		String credentials = username + ":" + password;
+		String authHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+		WebClient webClient = createAuthenticatedWebClient(authHeader);
+		return webClient.delete().uri(url)
+			.accept(MediaType.APPLICATION_JSON)
+			.retrieve()
+			.bodyToMono(responseType)
+			.block();
+	}
+
+	public byte[] downloadFile(String url, MediaType mediaType) {
 		return webClient.get()
 			.uri(url)
 			.accept(mediaType)
@@ -73,7 +142,7 @@ public class WebClientService {
 			.block();
 	}
 
-	public HttpHeaders getFileInfo(String url){
+	public HttpHeaders getFileInfo(String url) {
 		return webClient.head()
 			.uri(url)
 			.retrieve()
@@ -81,6 +150,7 @@ public class WebClientService {
 			.block()
 			.getHeaders();
 	}
+
 	public String retrieveFileName(String fileUrl) {
 		HttpHeaders headers = webClient.head()
 			.uri(fileUrl)
@@ -107,11 +177,11 @@ public class WebClientService {
 
 	public String formatFileSize(long bytes) {
 		if (bytes >= gigabyte) {
-			return String.format("%.2f GB", (double) bytes / gigabyte);
+			return String.format("%.2f GB", (double)bytes / gigabyte);
 		} else if (bytes >= megabyte) {
-			return String.format("%.2f MB", (double) bytes / megabyte);
+			return String.format("%.2f MB", (double)bytes / megabyte);
 		} else if (bytes >= kilobyte) {
-			return String.format("%.2f KB", (double) bytes / kilobyte);
+			return String.format("%.2f KB", (double)bytes / kilobyte);
 		} else {
 			return bytes + " Bytes";
 		}
@@ -128,13 +198,37 @@ public class WebClientService {
 	}
 
 	// 검증없이 모든 SSL 인증서 사용
-	private WebClient createWebClient() throws SSLException {
-		SslContext sslContext = SslContextBuilder
-			.forClient()
-			.trustManager(InsecureTrustManagerFactory.INSTANCE)
-			.build();
-		HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-		WebClient webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
-		return webClient;
+	private WebClient createWebClient() {
+		try {
+			SslContext sslContext = SslContextBuilder
+				.forClient()
+				.trustManager(InsecureTrustManagerFactory.INSTANCE)
+				.build();
+			HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+			WebClient webClient = WebClient.builder()
+				.clientConnector(new ReactorClientHttpConnector(httpClient))
+				.build();
+			return webClient;
+		} catch (SSLException e) {
+			throw new RestApiException(OneViewErrorCode.FAILED_SSL_VERIFICATION_MESSAGE);
+		}
+	}
+
+	// 인증이 필요한 WebClient 생성 (Basic Auth 포함)
+	private WebClient createAuthenticatedWebClient(String basicAuthHeader) {
+		try {
+			SslContext sslContext = SslContextBuilder
+				.forClient()
+				.trustManager(InsecureTrustManagerFactory.INSTANCE)
+				.build();
+			HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+			return WebClient.builder()
+				.clientConnector(new ReactorClientHttpConnector(httpClient))
+				.defaultHeader(HttpHeaders.AUTHORIZATION, basicAuthHeader)
+				.build();
+		} catch (SSLException e) {
+			throw new RestApiException(OneViewErrorCode.FAILED_SSL_VERIFICATION_MESSAGE);
+		}
 	}
 }

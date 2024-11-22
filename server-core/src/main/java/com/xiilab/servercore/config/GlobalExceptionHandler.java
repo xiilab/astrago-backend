@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.xiilab.modulecommon.exception.ErrorCode;
@@ -47,6 +48,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			return customExceptionInternal(errorCode, msg);
 		}
 		log.error("restApiException :" + errorCode.getMessage());
+		return customExceptionInternal(errorCode);
+	}
+
+	@ExceptionHandler({WebClientResponseException.class})
+	public ResponseEntity<Object> handleWebClientException(WebClientResponseException e) {
+		//HTTP 오류 처리
+		int rawStatusCode = e.getRawStatusCode();
+		String errMsg = e.getResponseBodyAsString();
+		log.error(errMsg);
+		ErrorCode errorCode = switch (rawStatusCode) {
+			case 400 -> CommonErrorCode.INVALID_PARAMETER;
+			case 401 -> CommonErrorCode.UNAUTHORIZED_ERROR;
+			case 409 -> CommonErrorCode.CONFLICT_ERROR;
+			case 500 -> CommonErrorCode.INTERNAL_SERVER_ERROR;
+			default -> null;
+		};
 		return customExceptionInternal(errorCode);
 	}
 
