@@ -721,7 +721,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	public WorkspaceResourceSettingDTO getWorkspaceResourceSetting() {
 		WorkspaceSettingEntity workspaceSettingEntity = workspaceSettingRepo.findAll().get(0);
 		return new WorkspaceResourceSettingDTO(workspaceSettingEntity.getCpu(), workspaceSettingEntity.getMem(),
-			workspaceSettingEntity.getGpu(), workspaceSettingEntity.getWorkspaceCreateLimit());
+			workspaceSettingEntity.getGpu(), workspaceSettingEntity.getWorkspaceCreateLimit(),
+			workspaceSettingEntity.getWorkloadPendingCreateYN());
 	}
 
 	@Override
@@ -735,7 +736,8 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		Integer beforeWorkspaceCreateLimit = workspaceSettingEntity.getWorkspaceCreateLimit();
 		workspaceSettingEntity.updateResource(workspaceResourceSettingDTO.getCpu(),
 			workspaceResourceSettingDTO.getMem(), workspaceResourceSettingDTO.getGpu(),
-			workspaceResourceSettingDTO.getWorkspaceCreateLimit());
+			workspaceResourceSettingDTO.getWorkspaceCreateLimit(),
+			workspaceResourceSettingDTO.getWorkloadPendingCreateYN());
 
 		// 사용자 기본 워크스페이스 생성 개수가 수정되면 모든 사용자 정보 업데이트
 		if (beforeWorkspaceCreateLimit != workspaceResourceSettingDTO.getWorkspaceCreateLimit()) {

@@ -885,6 +885,9 @@ create table if not exists TB_WORKSPACE_SETTING
         primary key
 );
 
+ALTER TABLE TB_WORKSPACE_SETTING
+ADD COLUMN IF NOT EXISTS workloadPendingCreateYN ENUM('Y', 'N') NULL DEFAULT 'Y';
+
 create table if not exists TB_PLUGIN
 (
     PLUGIN_ID bigint auto_increment

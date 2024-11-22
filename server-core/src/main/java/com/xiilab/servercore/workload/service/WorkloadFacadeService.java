@@ -32,6 +32,7 @@ import com.xiilab.modulecommon.alert.enums.AlertName;
 import com.xiilab.modulecommon.alert.event.AdminAlertEvent;
 import com.xiilab.modulecommon.dto.DirectoryDTO;
 import com.xiilab.modulecommon.dto.FileInfoDTO;
+import com.xiilab.modulecommon.enums.DefaultYN;
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
 import com.xiilab.modulecommon.enums.RepositoryAuthType;
@@ -114,6 +115,8 @@ import com.xiilab.servercore.workload.dto.response.OverViewWorkloadResDTO;
 import com.xiilab.servercore.workload.dto.response.WorkloadSummaryDTO;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventAgeSortCondition;
 import com.xiilab.servercore.workload.enumeration.WorkloadEventTypeSortCondition;
+import com.xiilab.servercore.workspace.dto.WorkspaceResourceSettingDTO;
+import com.xiilab.servercore.workspace.service.WorkspaceSettingService;
 
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.ServicePort;
@@ -146,6 +149,7 @@ public class WorkloadFacadeService {
 	private final PortRepository portRepository;
 	private final StorageService storageService;
 	private final MonitorFacadeService monitorFacadeService;
+	private final WorkspaceSettingService workspaceSettingService;
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 
@@ -223,20 +227,25 @@ public class WorkloadFacadeService {
 			CreateWorkloadReqDTO moduleDTO = createWorkloadReqDTO.toModuleDTO(initContainerUrl);
 			moduleDTO.modifyImage(image);
 			// 노드 자원량 확인
-			List<Node> workerNodeList = nodeService.getNodeListIsWorker(true);
-			for (Node node : workerNodeList) {
-				com.xiilab.modulemonitor.dto.ResponseDTO.NodeResourceDTO nodeResource = monitorFacadeService.getNodeResource(
-					node.getMetadata().getName());
-				double availableCpuCount = (double)nodeResource.cpuTotal() - nodeResource.cpuUsage();
-				double availableGpuCount = nodeResource.gpuTotal() - nodeResource.gpuUsage();
-				double availableMemCount = Math.abs(nodeResource.memTotal() - nodeResource.memUsage()) / 1000000000;
+			WorkspaceResourceSettingDTO workspaceResourceSetting = workspaceSettingService.getWorkspaceResourceSetting();
+			if (workspaceResourceSetting.getWorkloadPendingCreateYN() == DefaultYN.N) {
+				List<Node> workerNodeList = nodeService.getNodeListIsWorker(true);
+				for (Node node : workerNodeList) {
+					com.xiilab.modulemonitor.dto.ResponseDTO.NodeResourceDTO nodeResource = monitorFacadeService.getNodeResource(
+						node.getMetadata().getName());
+					double availableCpuCount = nodeResource.cpuTotal() - nodeResource.cpuUsage();
+					double availableGpuCount = nodeResource.gpuTotal() - nodeResource.gpuUsage();
+					double availableMemCount = Math.abs(
+						(nodeResource.memTotal() - nodeResource.memUsage()) / 1000000000);
 
-				if (createWorkloadReqDTO.getTotalCpuRequest() >= availableCpuCount
-					|| createWorkloadReqDTO.getTotalGpuRequest() >= availableGpuCount
-					|| createWorkloadReqDTO.getTotalMemoryRequest() >= availableMemCount) {
-					throw new RestApiException(WorkloadErrorCode.WAITING_FOR_RESOURCE_ALLOCATION);
+					if (createWorkloadReqDTO.getTotalCpuRequest() >= availableCpuCount
+						|| createWorkloadReqDTO.getTotalGpuRequest() >= availableGpuCount
+						|| createWorkloadReqDTO.getTotalMemoryRequest() >= availableMemCount) {
+						throw new RestApiException(WorkloadErrorCode.WAITING_FOR_RESOURCE_ALLOCATION);
+					}
 				}
 			}
+
 			workloadModuleFacadeService.createJobWorkload(moduleDTO);
 			// 워크로드
 		} catch (Exception e) {
