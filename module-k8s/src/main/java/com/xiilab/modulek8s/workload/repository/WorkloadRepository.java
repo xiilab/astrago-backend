@@ -22,6 +22,7 @@ import com.xiilab.modulek8s.workload.dto.response.ModuleInteractiveJobResDTO;
 import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
+import com.xiilab.modulek8s.workload.vo.CommitImageJobVO;
 import com.xiilab.modulek8s.workload.vo.DistributedJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
 
@@ -195,4 +196,7 @@ public interface WorkloadRepository {
 	Deployment getInteractiveJob(String workspaceName, String workloadName);
 
 	List<Pod> getWorkloadsByWorkloadName(String resourceName);
+
+	//workload의 image를 커밋하는 Job 생성
+	void commitImage(CommitImageJobVO commitImageJobVO);
 }
