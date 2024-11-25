@@ -114,6 +114,14 @@ public class UserDTO {
 			}
 		}
 
+		public String getUserId() {
+			if (this.userName.contains("@")) {
+				return this.userName.split("@")[0];
+			} else {
+				return this.userName;
+			}
+		}
+
 		private AuthType getUserRole(List<String> roles) {
 			//admin이면 admin 권한 넣고 user는 user넣고
 			return roles != null && roles.contains(AuthType.ROLE_ADMIN.name()) ? AuthType.ROLE_ADMIN :
