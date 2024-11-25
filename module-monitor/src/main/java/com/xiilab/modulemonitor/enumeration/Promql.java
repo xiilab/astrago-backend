@@ -20,6 +20,7 @@ public enum Promql {
 	GPU_POWER_USAGE("avg(DCGM_FI_DEV_POWER_USAGE{%s}) by(gpu, kubernetes_node, modelName)","GPU 전력 사용률 조회","GPU"),
 	GPU_AVG_POWER_USAGE("DCGM_FI_DEV_POWER_USAGE{%s}","GPU 전력 사용량 조회","GPU"),
 	GPU_MEM_CLOCK_SPEED("DCGM_FI_DEV_MEM_CLOCK{%s}","GPU MEW 클럭 속도 조회","GPU"),
+	DCGM_FI_DEV_FB_TOTAL("DCGM_FI_DEV_FB_TOTAL{%s}","GPU MEM 총용량", "GPU"),
 
 	// NODE
 	NODE_CPU_USAGE("(label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100), \"internal_ip\", \"$1\", \"instance\", \"(.*):(.*)\")) * on (internal_ip) group_left(node) kube_node_info{%s}","CPU 사용량 조회","NODE"),
