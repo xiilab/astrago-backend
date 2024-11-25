@@ -32,8 +32,8 @@ public class ExpiredPodTerminatorQuartzConfig {
     @Transactional
     public void collectExpiredPods(){
         List<WorkloadEntity> list = workloadHistoryRepoCustom.getExpiredTimeWorkloadList();
-        log.info("end time containers : {}" , list.size());
         list.stream().forEach(o -> {
+            log.info("end time containers : {}" , list.size());
             log.info("삭제 이벤트 발생\n워크스페이스: {}\n워크로드: {}\n삭제 시작" , o.getWorkspaceResourceName(), o.getResourceName());
             workloadModuleFacadeService.deleteInteractiveJobWorkload(
                 o.getWorkspaceResourceName(),
