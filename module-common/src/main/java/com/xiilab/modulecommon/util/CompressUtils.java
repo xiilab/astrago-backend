@@ -1,6 +1,7 @@
 package com.xiilab.modulecommon.util;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,13 +48,15 @@ public class CompressUtils {
 		Path destPath = initializeDestPath(targetPaths, destinationPath, compressFileType);
 
 		if (compressFileType == CompressFileType.ZIP) {
-			try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(new FileOutputStream(destPath.toFile()))) {
+			try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(
+				new BufferedOutputStream(new FileOutputStream(destPath.toFile())))) {
 				compressDirectoriesAndFiles(targetPaths, zipOut);
 			} catch (IOException e) {
 				throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_ZIP_FILE);
 			}
 		} else if (compressFileType == CompressFileType.TAR) {
-			try (TarArchiveOutputStream tarOut = new TarArchiveOutputStream(new FileOutputStream(destPath.toFile()))) {
+			try (TarArchiveOutputStream tarOut = new TarArchiveOutputStream(
+				new BufferedOutputStream(new FileOutputStream(destPath.toFile())))) {
 				compressDirectoriesAndFiles(targetPaths, tarOut);
 			} catch (IOException e) {
 				throw new RestApiException(UtilsErrorCode.FAILED_COMPRESS_TAR_FILE);
@@ -112,15 +115,12 @@ public class CompressUtils {
 			getSaveFileName(FileNameUtils.getBaseName(targetPaths.get(0)), compressFileType) :
 			getSaveFileName("archive", compressFileType);
 
-		// destinationPath 없으면, 압축할 파일과 동일한 경로 반환
-		if (ObjectUtils.isEmpty(destinationPath)) {
-			destinationPath = Path.of(
-				targetPaths.get(0).getParent().toString() + File.separator + saveCompressFileName);
-		} else {
-			destinationPath = Path.of(
-				destinationPath + File.separator + saveCompressFileName
-			);
-		}
+		// destinationPath 없으면, 압축할 파일이 위치한 경로 반환
+		destinationPath = ObjectUtils.isEmpty(destinationPath) ? Path.of(
+			targetPaths.get(0).getParent().toString() + File.separator + saveCompressFileName)
+			: Path.of(
+			destinationPath + File.separator + saveCompressFileName
+		);
 
 		// 파일명 중복되면 파일명 수정
 		int cnt = 1;
@@ -213,8 +213,8 @@ public class CompressUtils {
 	 */
 	private static <T extends ArchiveOutputStream<?>> void addFile(Path targetFilePath, String parentEntryName, T os) {
 		File targetFile = targetFilePath.toFile();
-
 		long fileSize = targetFilePath.toFile().length();
+
 		try (InputStream is = new BufferedInputStream(new FileInputStream(targetFile))) {
 			String entryName = parentEntryName + targetFile.getName();
 			putArchiveEntry(entryName, fileSize, os);
@@ -235,7 +235,7 @@ public class CompressUtils {
 
 				ZipArchiveEntry zipArchiveEntry = new ZipArchiveEntry(entryName);
 				zipArchiveEntry.setSize(fileSize);
-				((ZipArchiveOutputStream)os).putArchiveEntry(zipArchiveEntry);
+				zos.putArchiveEntry(zipArchiveEntry);
 			} else if (os instanceof TarArchiveOutputStream) {
 				TarArchiveOutputStream tos = (TarArchiveOutputStream)os;
 				tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);

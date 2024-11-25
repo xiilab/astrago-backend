@@ -373,7 +373,16 @@ public class DataConverterUtil {
 			// endDate = dateTime.minusMonths(1);
 			endDate = dateTime.withDayOfMonth(1);
 		}
-		return endDate.toString().replace("T", " ");
+
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			sdf.setLenient(false);
+			sdf.parse(endDate.toString().replace("T", " "));
+			return endDate.toString().replace("T", " ");
+		} catch (ParseException e) {
+			return endDate.toString().replace("T", " ") + ":00";
+		}
+		// return endDate.toString().replace("T", " ");
 	}
 
 	public static String plusDay(String date, long plusAmount) {
