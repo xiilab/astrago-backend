@@ -439,7 +439,10 @@ public class K8sInfoPicker {
 		String format = quantity.getFormat();
 		float amount = Float.parseFloat(quantity.getAmount());
 
-		if (!StringUtils.hasText(format) || format.equals("Gi")) {
+		if (!StringUtils.hasText(format) || format.equals("Ti")) {
+			// Ti -> GB 변환
+			return (float)(amount * 1024.0);
+		} else if (format.equals("Gi")) {
 			// Gi는 이미 GB 단위이므로, 직접 반환
 			return amount;
 		} else if (format.equals("Ki")) {
