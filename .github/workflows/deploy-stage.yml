@@ -16,7 +16,7 @@ env:
   HARBOR_REGISTRY: harbor.xiilab.com:32443
   HARBOR_REPOSITORY: harbor.xiilab.com:32443/katech-astrago
   DEPLOYMENT_REPOSITORY: xiilab/katech-astrago-deployment
-  DOCKER_REPOSITORY: xiilab/astrago
+  DOCKER_REPOSITORY: xiilab/katech-astrago
 
 jobs:
   integration:
