@@ -88,6 +88,7 @@ public class FindWorkloadResDTO extends ResDTO {
 		private String ide;
 		private String estimatedInitialTime;
 		private String estimatedRemainingTime;
+		private LocalDateTime expirationTime;
 
 		public static <T extends AbstractSingleWorkloadResDTO> SingleWorkloadDetail from(
 			T moduleJobResDTO
@@ -137,6 +138,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.gpuName(moduleJobResDTO.getGpuName())
 				.gpuType(moduleJobResDTO.getGpuType())
 				.resourcePresetId(moduleJobResDTO.getResourcePresetId())
+				.expirationTime(moduleJobResDTO.getExpirationTime())
 				.build();
 		}
 
