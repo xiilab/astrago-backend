@@ -226,10 +226,14 @@ public class WorkloadFacadeService {
 			image.modifyName(imageName);
 			CreateWorkloadReqDTO moduleDTO = createWorkloadReqDTO.toModuleDTO(initContainerUrl);
 			moduleDTO.modifyImage(image);
+
 			// 노드 자원량 확인
 			WorkspaceResourceSettingDTO workspaceResourceSetting = workspaceSettingService.getWorkspaceResourceSetting();
+
 			if (workspaceResourceSetting.getWorkloadPendingCreateYN() == DefaultYN.N) {
-				List<Node> workerNodeList = nodeService.getNodeListIsWorker(true);
+				boolean nodeAvailableFlag = false;
+				List<Node> workerNodeList = nodeService.getNodeListIsWorker(true, createWorkloadReqDTO.getGpuName());
+
 				for (Node node : workerNodeList) {
 					com.xiilab.modulemonitor.dto.ResponseDTO.NodeResourceDTO nodeResource = monitorFacadeService.getNodeResource(
 						node.getMetadata().getName());
@@ -238,11 +242,18 @@ public class WorkloadFacadeService {
 					double availableMemCount = Math.abs(
 						(nodeResource.memTotal() - nodeResource.memUsage()) / 1000000000);
 
-					if (createWorkloadReqDTO.getTotalCpuRequest() >= availableCpuCount
-						|| createWorkloadReqDTO.getTotalGpuRequest() >= availableGpuCount
-						|| createWorkloadReqDTO.getTotalMemoryRequest() >= availableMemCount) {
-						throw new RestApiException(WorkloadErrorCode.WAITING_FOR_RESOURCE_ALLOCATION);
+					if (createWorkloadReqDTO.getTotalCpuRequest() > availableCpuCount
+						|| createWorkloadReqDTO.getTotalGpuRequest() > availableGpuCount
+						|| createWorkloadReqDTO.getTotalMemoryRequest() > availableMemCount) {
+						nodeAvailableFlag = false;
+					} else {
+						nodeAvailableFlag = true;
+						break;
 					}
+				}
+
+				if (!nodeAvailableFlag) {
+					throw new RestApiException(WorkloadErrorCode.WAITING_FOR_RESOURCE_ALLOCATION);
 				}
 			}
 
