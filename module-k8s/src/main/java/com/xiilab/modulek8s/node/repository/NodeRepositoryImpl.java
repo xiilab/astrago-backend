@@ -83,16 +83,19 @@ public class NodeRepositoryImpl implements NodeRepository {
 	private final String MPS_CAPABLE = "nvidia.com/mps.capable";
 
 	@Override
-	public List<Node> getGpuNodes(boolean isWorker) {
+	public List<Node> getGpuNodes(boolean isWorker, String gpuName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 			if (isWorker) {
 				return client.nodes()
 					.list()
 					.getItems()
 					.stream()
-					.filter(node -> !node.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane")
-						&& (Objects.isNull(node.getSpec().getUnschedulable()) || !Boolean.TRUE.equals(
-						node.getSpec().getUnschedulable())))
+					.filter(
+						node -> !node.getMetadata().getLabels().containsKey("node-role.kubernetes.io/control-plane") &&
+							(Objects.isNull(node.getSpec().getUnschedulable()) || !Boolean.TRUE.equals(
+								node.getSpec().getUnschedulable())) &&
+							(gpuName == null || node.getMetadata().getLabels().getOrDefault("nvidia.com/gpu.product", "").equals(gpuName))
+					)
 					.toList();
 			} else {
 				return client.nodes().list().getItems().stream()
@@ -111,7 +114,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 	 */
 	@Override
 	public ResponseDTO.NodeGPUs getNodeGPUs(NodeType nodeType) {
-		List<Node> gpuNodes = getGpuNodes(false);
+		List<Node> gpuNodes = getGpuNodes(false, null);
 		if (CollectionUtils.isEmpty(gpuNodes)) {
 			throw new RestApiException(NodeErrorCode.NOT_FOUND_WORKER_NODE);
 		}
@@ -252,8 +255,9 @@ public class NodeRepositoryImpl implements NodeRepository {
 		boolean migConfigStatus =
 			node.getMetadata().getLabels().containsKey("nvidia.com/mig.config") && !"all-disabled".equals(
 				node.getMetadata().getLabels().get("nvidia.com/mig.config"));
-		boolean migCapableStatus = node.getMetadata().getLabels().containsKey("nvidia.com/mig.capable") && "true".equals(
-			node.getMetadata().getLabels().get("nvidia.com/mig.capable"));
+		boolean migCapableStatus =
+			node.getMetadata().getLabels().containsKey("nvidia.com/mig.capable") && "true".equals(
+				node.getMetadata().getLabels().get("nvidia.com/mig.capable"));
 
 		return migConfigStatus && migCapableStatus;
 	}
@@ -770,12 +774,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 			String migCapable = node.getMetadata().getLabels().get("nvidia.com/mig.capable");
 			String mpsCapable = node.getMetadata().getLabels().get("nvidia.com/mps.capable");
 			int memory = 0;
-			if(Boolean.valueOf(migCapable)){ //mig
+			if (Boolean.valueOf(migCapable)) { //mig
 				String strategy = node.getMetadata().getLabels().get("nvidia.com/mig.strategy");
 				//single
-				if(strategy.equalsIgnoreCase("single")){
+				if (strategy.equalsIgnoreCase("single")) {
 					memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
-				}else{
+				} else {
 					//mixed
 					//mixedMigGpuName에 .memory 문자열 합쳐서 라벨 검색 후 memory 조회
 					//gpuName : A100-SXM4-40GB-MIG-1g.5gb
@@ -784,12 +788,12 @@ public class NodeRepositoryImpl implements NodeRepository {
 					String mixedGpuMemoryLabelValue = "nvidia.com/" + mixedGpuName.toLowerCase() + ".memory";
 					memory = Integer.parseInt(node.getMetadata().getLabels().get(mixedGpuMemoryLabelValue));
 				}
-			}else if(Boolean.valueOf(mpsCapable)){//mps
+			} else if (Boolean.valueOf(mpsCapable)) {//mps
 				int gpuMemory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
 				int mpsCount = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.replicas"));
 				memory = gpuMemory / mpsCount;
 
-			}else{//normal
+			} else {//normal
 				memory = Integer.parseInt(node.getMetadata().getLabels().get("nvidia.com/gpu.memory"));
 				gpuName = node.getMetadata().getLabels().get("nvidia.com/gpu.product");
 			}
@@ -799,6 +803,7 @@ public class NodeRepositoryImpl implements NodeRepository {
 				.build();
 		}
 	}
+
 	public static String extractPattern(String input, String pattern) {
 		java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(pattern);
 		java.util.regex.Matcher matcher = regexPattern.matcher(input);

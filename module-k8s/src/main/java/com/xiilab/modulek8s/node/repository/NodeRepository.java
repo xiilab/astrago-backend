@@ -15,7 +15,7 @@ import com.xiilab.modulek8s.node.enumeration.ScheduleType;
 import io.fabric8.kubernetes.api.model.Node;
 
 public interface NodeRepository {
-	List<Node> getGpuNodes(boolean isWorker);
+	List<Node> getGpuNodes(boolean isWorker, String gpuName);
 	ResponseDTO.NodeGPUs getNodeGPUs(NodeType nodeType);
 	ResponseDTO.PageNodeDTO getNodeList(int pageNo, int pageSize, String searchText);
 

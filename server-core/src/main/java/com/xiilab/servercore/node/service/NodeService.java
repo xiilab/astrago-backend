@@ -30,7 +30,7 @@ public class NodeService {
 		return nodeRepository.getNodeList(pageNo, pageSize, null);
 	}
 
-	public List<Node> getNodeListIsWorker(boolean isWorker) {
-		return nodeRepository.getGpuNodes(isWorker);
+	public List<Node> getNodeListIsWorker(boolean isWorker, String gpuName) {
+		return nodeRepository.getGpuNodes(isWorker, gpuName);
 	}
 }
