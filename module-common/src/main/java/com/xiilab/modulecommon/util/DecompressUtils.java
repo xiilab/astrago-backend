@@ -2,7 +2,6 @@ package com.xiilab.modulecommon.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -81,16 +80,16 @@ public class DecompressUtils {
 
 		// 상위 디렉토리 생성
 		String targetFileName = FileNameUtils.getBaseName(targetPath);
-		Path parentDirPath = Path.of(targetPath.getParent() + File.separator + targetFileName);
+		Path dirPath = Path.of(destinationPath + File.separator + targetFileName);
 
 		int cnt = 1;
-		while (parentDirPath.toFile().exists()) {
-			parentDirPath = parentDirPath.resolveSibling(targetFileName + "_" + cnt);
+		while (dirPath.toFile().exists()) {
+			dirPath = dirPath.resolveSibling(targetFileName + "_" + cnt);
 			cnt++;
 		}
 
-		parentDirPath.toFile().mkdirs();
-		return parentDirPath;
+		dirPath.toFile().mkdirs();
+		return dirPath;
 	}
 
 	/**

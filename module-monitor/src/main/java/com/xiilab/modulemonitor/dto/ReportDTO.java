@@ -105,6 +105,7 @@ public class ReportDTO {
 		private long disk;
 		private String gpuModelName;
 		private long gpu;
+		private boolean masterNode;
 	}
 
 	@Builder

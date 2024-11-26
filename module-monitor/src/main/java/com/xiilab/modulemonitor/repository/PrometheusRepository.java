@@ -6,4 +6,6 @@ public interface PrometheusRepository {
 	String getHistoryMetricByQuery(String promql, String startDate, String endDate);
 
 	String getHistoryMetricByQuery(String promql, String startDate, String endDate, long step);
+
+	// String getHistoryMetricByQuery(String promql, String endDate, long step);
 }

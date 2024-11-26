@@ -40,6 +40,7 @@ import com.xiilab.modulek8s.workload.dto.response.WorkloadResDTO;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workload.enums.WorkloadResourceType;
 import com.xiilab.modulek8s.workload.vo.BatchJobVO;
+import com.xiilab.modulek8s.workload.vo.CommitImageJobVO;
 import com.xiilab.modulek8s.workload.vo.DeploymentVO;
 import com.xiilab.modulek8s.workload.vo.DistributedJobVO;
 import com.xiilab.modulek8s.workload.vo.InteractiveJobVO;
@@ -1122,6 +1123,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	public List<Pod> getWorkloadsByWorkloadName(String resourceName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.pods().inAnyNamespace().withLabel("app", resourceName).list().getItems();
+		}
+	}
+
+	@Override
+	public void commitImage(CommitImageJobVO commitImageJobVO) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			kubernetesClient.resource(commitImageJobVO.getJobManifest()).create();
 		}
 	}
 

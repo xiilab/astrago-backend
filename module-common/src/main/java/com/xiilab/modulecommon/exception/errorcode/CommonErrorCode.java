@@ -14,6 +14,8 @@ public enum CommonErrorCode implements ErrorCode {
 	INVALID_PARAMETER(HttpStatus.BAD_REQUEST.value(), "global.exception.badRequest"),
 	RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "global.exception.notFound"),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "global.exception.internalServerError"),
+	UNAUTHORIZED_ERROR(HttpStatus.UNAUTHORIZED.value(), "인증에 실패했습니다. 올바른 사용자명과 비밀번호를 입력해주세요"),
+	CONFLICT_ERROR(HttpStatus.CONFLICT.value(), "중복된 요청입니다. 기존 데이터를 확인하고 다시 시도해주세요."),
 	// data
 	NUMBER_ROUND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "반올림 실패하였습니다."),
 	DATA_FORMAT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR.value(), "데이터 포멧 실패하였습니다."),
