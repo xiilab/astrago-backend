@@ -182,7 +182,7 @@ public class WorkloadHistoryRepoCustomImpl implements WorkloadHistoryRepoCustom 
 	}
 
 	private BooleanExpression loeExpiredTimes(){
-		LocalDateTime today = LocalDate.now().atStartOfDay();
+		LocalDateTime today = LocalDateTime.now();
 		return workloadEntity.expirationTime.loe(today);
 	}
 
