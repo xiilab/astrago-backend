@@ -56,4 +56,17 @@ public class PrometheusRepositoryImpl implements PrometheusRepository {
 			.bodyToMono(String.class)
 			.block();
 	}
+
+/*	@Override
+	public String getHistoryMetricByQuery(String promql, String endDate, long step) {
+		WebClient webClient = WebClient.builder()
+			.baseUrl(prometheusURL)
+			.build();
+		return webClient
+			.get()
+			.uri("/api/v1/query_range?query={promql}&start={startDate}&end={endDate}&step={step}", promql, endDate, step)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
+	}*/
 }

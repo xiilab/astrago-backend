@@ -886,6 +886,9 @@ create table if not exists TB_WORKSPACE_SETTING
         primary key
 );
 
+ALTER TABLE TB_WORKSPACE_SETTING
+ADD COLUMN IF NOT EXISTS workloadPendingCreateYN ENUM('Y', 'N') NULL DEFAULT 'Y';
+
 create table if not exists TB_PLUGIN
 (
     PLUGIN_ID bigint auto_increment
@@ -943,3 +946,39 @@ create table if not exists TB_RESOURCE_OPITMIZATION_WORKLOAD
         foreign key (resourceOptimizationJob_ID) references TB_RESOURCE_OPITMIZATION_JOB (ID)
 );
 
+create table if not exists TB_BOARD
+(
+    READ_COUNT         int             not null,
+    BOARD_ID           bigint auto_increment primary key,
+    MOD_DATE           datetime(6)     null,
+    POPUP_END_DTM      datetime(6)     null,
+    POPUP_START_DTM    datetime(6)     null,
+    REG_DATE           datetime(6)     null,
+    CONTENTS           text     null,
+    REG_USER_ID        varchar(255)    null,
+    REG_USER_NAME      varchar(255)    null,
+    REG_USER_REAL_NAME varchar(255)    null,
+    TITLE              varchar(255)    not null,
+    BOARD_TYPE         enum ('NOTICE') not null,
+    DELETE_YN          enum ('Y', 'N') not null,
+    POPUP_YN           enum ('Y', 'N') null
+);
+
+create table if not exists TB_BOARD_ATTACHED_FILE
+(
+    BOARD_ATTACHED_FILE_ID    bigint auto_increment primary key,
+    BOARD_ID           bigint       null,
+    DATA_SIZE          bigint       null,
+    MOD_DATE           datetime(6)  null,
+    REG_DATE           datetime(6)  null,
+    FILE_EXTENSION     varchar(255) null,
+    ORIGIN_FILENAME    varchar(255) not null,
+    REG_USER_ID        varchar(255) null,
+    REG_USER_NAME      varchar(255) null,
+    REG_USER_REAL_NAME varchar(255) null,
+    SAVE_FILENAME      varchar(255) null,
+    SAVE_PATH          varchar(255) null,
+    DELETE_YN          enum ('Y', 'N')  not null,
+    constraint FK4tso4tos4pgjp2w0qmx3lq2wq
+        foreign key (BOARD_ID) references TB_BOARD (BOARD_ID)
+);

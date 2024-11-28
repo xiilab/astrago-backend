@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 
 import com.xiilab.modulek8s.node.dto.GpuInfoDTO;
 import com.xiilab.modulek8s.node.repository.NodeRepository;
-import com.xiilab.modulek8s.workload.service.WorkloadModuleService;
 
 import lombok.RequiredArgsConstructor;
 

@@ -80,6 +80,7 @@ public class NodeFacadeService {
 				nodeDTO.percentCalculation();
 			}
 		}
+
 		return nodeList;
 	}
 

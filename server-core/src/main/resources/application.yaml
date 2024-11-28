@@ -47,7 +47,7 @@ spring:
 # 연결할 keycloak server 정보
 keycloak:
   realm: astrago
-  auth-server-url: http://10.61.3.12:30080/auth/
+  auth-server-url: http://10.61.3.12:30080/auth
   ssl-required: external
   resource: astrago-client
   use-resource-role-mappings: true
@@ -84,9 +84,19 @@ server:
 prometheus:
   url: http://10.61.3.12:30090/
 
+editor:
+  root-file-upload-path: /root/astrago
+  attach-file-upload-path: /board/attaches
+  content-file-upload-path: /board/contents
+
 tus:
   upload-path: /root/astrago/tus/meta
   expire-period: 60000
 
 springdoc:
   use-fqn: true
+harbor:
+  #  url: https://harbor.xiilab.com:32443
+  url: http://10.61.3.161:30002
+  id: admin
+  password: Harbor12345
