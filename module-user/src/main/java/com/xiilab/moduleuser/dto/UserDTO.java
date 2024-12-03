@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,7 +83,7 @@ public class UserDTO {
 			this.userName = userRepresentation.getUsername();
 			this.firstName = userRepresentation.getFirstName();
 			this.lastName = userRepresentation.getLastName();
-			this.userFullName = lastName + firstName;
+			this.userFullName = (Objects.isNull(lastName) ? "" : lastName) + (Objects.isNull(firstName) ? "" : firstName);
 			this.email = userRepresentation.getEmail();
 			
 			// je.kim signUpPath 은 ASTRAGO 으로 하드코딩
