@@ -10,4 +10,9 @@ public record JobVolumeVO(
 	public JobVolumeVO(String name, String pvcName, String subPath) {
 		this(0L, "", name, pvcName, subPath);
 	}
+	
+	// je.kim my-disk 용도의 생성자
+	public JobVolumeVO(String name, String pvcName, String mountPath , String subPath) {
+		this(0L, mountPath , name, pvcName, subPath);
+	}
 }

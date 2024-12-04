@@ -7,6 +7,7 @@ import com.xiilab.modulek8s.common.enumeration.ResourceType;
 import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.enums.SecretType;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -31,6 +32,11 @@ public class SecretVO extends K8SResourceReqVO {
 	}
 
 	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
+
+	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
 			.withName(getUniqueResourceName())
@@ -42,4 +48,6 @@ public class SecretVO extends K8SResourceReqVO {
 	protected ResourceType getType() {
 		return ResourceType.SECRET;
 	}
+
+	
 }

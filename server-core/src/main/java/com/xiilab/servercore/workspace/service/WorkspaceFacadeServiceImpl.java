@@ -26,6 +26,7 @@ import com.xiilab.modulecommon.alert.event.WorkspaceUserAlertEvent;
 import com.xiilab.modulecommon.dto.MailDTO;
 import com.xiilab.modulecommon.enums.AuthType;
 import com.xiilab.modulecommon.enums.GPUType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadStatus;
 import com.xiilab.modulecommon.exception.K8sException;
 import com.xiilab.modulecommon.exception.RestApiException;
@@ -46,6 +47,9 @@ import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeService;
 import com.xiilab.modulek8s.resource_quota.dto.ResourceQuotaResDTO;
 import com.xiilab.modulek8s.resource_quota.dto.TotalResourceQuotaDTO;
 import com.xiilab.modulek8s.resource_quota.service.ResourceQuotaService;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
+import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
+import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.response.abst.AbstractModuleWorkloadResDTO;
 import com.xiilab.modulek8s.workspace.dto.RecentlyWorkloadDTO;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
@@ -100,6 +104,7 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 	private final GroupService groupService;
 	private final ClusterService clusterService;
 	private final WorkspaceService workspaceService;
+	private final VolumeService volumeService;
 	private final WorkspaceAlertSetService workspaceAlertSetService;
 	private final WorkspaceSettingRepo workspaceSettingRepo;
 	private final WorkspaceAlertService workspaceAlertService;
@@ -134,6 +139,22 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 		if (workloadList != null && workloadList.size() > 0) {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_DELETE_FAILED);
 		}
+
+		// 한자연 전용 PV / PVC 네임 추측
+		String pvName = workspaceName + "-mydisk-pv";
+		// String pvcName = workspaceName + "-mydisk-pvc";
+		String pvcName = "mydisk-pvc";
+
+		try {
+			// 한자연 PVC 삭제
+			volumeService.deletePVC(pvcName, workspaceName);
+			// 한자연 PV 삭제
+			volumeService.deletePV(pvName);	
+			log.info("네임 스페이스 {} PV : {} / PVC: {} 삭제 완료" , workspaceName , pvName, pvcName);
+		} catch (Exception e) {
+			log.error("네임 스페이스 {} PV : {} / PVC: {} 삭제 실패" , workspaceName , pvName, pvcName ,e);
+		}
+
 
 		//워크스페이스 삭제
 		workspaceModuleFacadeService.deleteWorkspaceByName(workspaceName);
@@ -220,7 +241,38 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.description(workspace.getDescription())
 			.users(applicationForm.getUserIds())
 			.build(), userInfoDTO);
+
 		workspaceAlertSetService.saveAlertSet(workspace.getResourceName());
+
+		
+		String pvName = workspace.getResourceName() + "-mydisk-pv";
+		// String pvcName = workspace.getResourceName() + "-mydisk-pvc";
+		String pvcName = "mydisk-pvc";
+		log.info("워크스페이스 {} 생성 스토리지 pv : {} pvc : {} 생성" , workspace.getResourceName() , pvName , pvcName);
+		
+		// 한자연 전용 PV 생성 (아니 프론트엔드 개발자인 내가 백엔드 개발을?!)
+		volumeService.createPV(
+				CreatePV.builder()
+				.pvName(pvName)
+				.pvcName(pvcName)
+				.namespace(workspace.getResourceName())
+				.storageType(StorageType.NFS)
+				.ip("10.10.50.118") // 한자연 마켓플레이스 아이피 
+				.storagePath("/kadap-portal") // 패스
+				.requestVolume(100)
+				.build()
+			);
+
+		// 한자연 전용 PVC 생성 
+		volumeService.createPVC(
+				CreatePVC.builder()
+					.namespace(workspace.getResourceName())
+					.pvcName(pvcName)
+					.requestVolume(100)
+					.build()
+		);
+
+		
 
 		//오너, 초대받은 유저들의 알림 초기 세팅
 		String ownerId = userInfoDTO.getId();

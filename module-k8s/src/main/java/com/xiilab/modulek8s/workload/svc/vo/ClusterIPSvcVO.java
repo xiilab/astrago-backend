@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.workload.svc.dto.request.CreateClusterIPSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -82,5 +83,10 @@ public class ClusterIPSvcVO extends K8SResourceReqVO {
 				.withPort(80)
 				.withTargetPort(new IntOrString(80))
 				.build();
+	}
+
+	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
 	}
 }

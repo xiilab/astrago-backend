@@ -31,7 +31,7 @@ public class ResourceQuotaModiVO extends K8SResourceReqVO {
 	private int limitGpu;
 
 	@Override
-	public HasMetadata createResource() {
+	public HasMetadata createResource(String userUUID) {
 		return new ResourceQuotaBuilder()
 			.withMetadata(createMeta())
 			.withSpec(createSpec())
@@ -73,5 +73,10 @@ public class ResourceQuotaModiVO extends K8SResourceReqVO {
 				LIMITS_GPU_KEY.getKey(), new Quantity(String.valueOf(this.limitGpu))
 			))
 			.build();
+	}
+
+	@Override
+	public HasMetadata createResource() {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
 	}
 }

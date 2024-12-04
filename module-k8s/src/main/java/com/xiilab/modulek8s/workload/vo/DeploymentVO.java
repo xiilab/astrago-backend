@@ -1,8 +1,10 @@
 package com.xiilab.modulek8s.workload.vo;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -14,6 +16,7 @@ import com.xiilab.modulek8s.workload.dto.request.CreateModelDeployment;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.PodSecurityContext;
@@ -40,6 +43,8 @@ public class DeploymentVO extends WorkloadVO {
 	private String dockerImage;
 	private String datasetName;
 	private String modelName;
+
+	
 
 	public static DeploymentVO dtoToEntity(ConnectTestDTO connectTestDTO) {
 		return DeploymentVO.builder()
@@ -79,6 +84,19 @@ public class DeploymentVO extends WorkloadVO {
 			.dockerImage(createModelDTO.getDockerImage())
 			.modelName(createModelDTO.getModelName())
 			.build();
+	}
+
+	@Override
+	public KubernetesResource createSpec(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createSpec'");
+	}
+	@Override
+	public PodSpec createPodSpec(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createPodSpec'");
+	}
+	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
 	}
 
 	@Override
@@ -181,4 +199,5 @@ public class DeploymentVO extends WorkloadVO {
 	public WorkloadType getWorkloadType() {
 		return null;
 	}
+	
 }

@@ -92,7 +92,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	@Override
 	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
-		Job resource = (Job)createResource(batchJobVO.createResource());
+		Job resource = (Job)createResource(batchJobVO.createResource(batchJobVO.getUserUUID()));
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
@@ -101,7 +101,8 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	@Override
 	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
-		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource());
+		// je.kim 자바 ㅗ 먹엉 
+		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource(interactiveJobVO.getUserUUID()));
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());

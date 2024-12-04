@@ -86,4 +86,9 @@ public class StorageClassVO extends K8SResourceReqVO {
 		annotation.put(AnnotationField.CREATOR_FULL_NAME.getField(), getCreatorFullName());
 		return annotation;
 	}
+
+	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
 }

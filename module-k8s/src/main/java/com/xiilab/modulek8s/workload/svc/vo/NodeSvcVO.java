@@ -14,6 +14,7 @@ import com.xiilab.modulek8s.common.vo.K8SResourceReqVO;
 import com.xiilab.modulek8s.workload.svc.dto.request.CreateSvcReqDTO;
 import com.xiilab.modulek8s.workload.svc.enums.SvcType;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -107,5 +108,10 @@ public class NodeSvcVO extends K8SResourceReqVO {
 			.workloadResourceName(createSvcReqDTO.getWorkloadResourceName())
 			.ports(createSvcReqDTO.getPorts().stream().map(port -> new SvcPortVO(port.name(), port.port())).toList())
 			.build();
+	}
+
+	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
 	}
 }

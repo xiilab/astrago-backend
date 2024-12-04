@@ -30,6 +30,11 @@ public class VolumeVO extends K8SResourceReqVO {
 	private int requestVolume;
 
 	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
+
+	@Override
 	public HasMetadata createResource() {
 		return new PersistentVolumeClaimBuilder()
 			.withMetadata(createMeta())
@@ -91,4 +96,6 @@ public class VolumeVO extends K8SResourceReqVO {
 		annotation.put(AnnotationField.CREATOR_USER_NAME.getField(), getCreatorUserName());
 		return annotation;
 	}
+
+	
 }

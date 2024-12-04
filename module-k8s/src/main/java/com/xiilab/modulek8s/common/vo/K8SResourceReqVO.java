@@ -62,6 +62,9 @@ public abstract class K8SResourceReqVO {
 
 	//k8s resource 객체를 생성하는 메소드
 	public abstract HasMetadata createResource();
+	
+	// 한자연 전용
+	public abstract HasMetadata createResource(String userUUID);
 
 	//k8s Resource의 ObjectMeta를 정의하기 위한 메소드
 	protected abstract ObjectMeta createMeta();

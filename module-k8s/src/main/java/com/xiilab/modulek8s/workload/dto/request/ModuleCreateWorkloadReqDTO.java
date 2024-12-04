@@ -39,6 +39,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.gpuName(this.gpuName)
 			.gpuOnePerMemory(this.gpuOnePerMemory)
 			.resourcePresetId(this.resourcePresetId)
+			.userUUID(this.userUUID) // je.kim 한자연 전용 
 			.build();
 	}
 
@@ -72,6 +73,7 @@ public class ModuleCreateWorkloadReqDTO extends CreateWorkloadReqDTO {
 			.gpuOnePerMemory(this.gpuOnePerMemory)
 			.resourcePresetId(this.resourcePresetId)
 			.expirationTime(this.expirationTime)
+			.userUUID(this.userUUID)
 			.build();
 	}
 }

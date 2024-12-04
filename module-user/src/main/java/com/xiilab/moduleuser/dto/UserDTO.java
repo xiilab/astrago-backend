@@ -75,6 +75,7 @@ public class UserDTO {
 		private String userFullName;
 		private String firstName;
 		private String lastName;
+		private String userUUID; //모비젠 데이터 포털 전용 UUID
 		@Setter
 		private Integer ownerWorkspaceCount;
 
@@ -110,6 +111,8 @@ public class UserDTO {
 			// je.kim approvalYN 은 true 으로 하드코딩
 			// this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
 			this.approval = "true";
+			// je.kim 모비젠 데이터 포털 전용 UUID
+			this.userUUID = userRepresentation.getAttributes().get(UserAttribute.USER_UUID.getKey()).get(0);
 			this.auth = getUserRole(userRepresentation.getRealmRoles());
 			if (!CollectionUtils.isEmpty(groupReps)) {
 				this.groups = groupReps.stream()

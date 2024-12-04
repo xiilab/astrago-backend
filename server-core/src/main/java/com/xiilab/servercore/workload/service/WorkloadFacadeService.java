@@ -227,6 +227,10 @@ public class WorkloadFacadeService {
 			CreateWorkloadReqDTO moduleDTO = createWorkloadReqDTO.toModuleDTO(initContainerUrl);
 			moduleDTO.modifyImage(image);
 
+			// je.kim 모비젠 UUID 주입
+			moduleDTO.modifyUserUUID(userInfoDTO.getUserUUID());
+			
+
 			// 노드 자원량 확인
 			WorkspaceResourceSettingDTO workspaceResourceSetting = workspaceSettingService.getWorkspaceResourceSetting();
 

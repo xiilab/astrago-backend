@@ -1,11 +1,13 @@
 package com.xiilab.modulek8s.workload.vo;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.util.CollectionUtils;
@@ -25,6 +27,8 @@ import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
 import io.fabric8.kubernetes.api.model.ObjectFieldSelectorBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -48,12 +52,29 @@ public class InteractiveJobVO extends WorkloadVO {
 	private String command;        // 워크로드 명령
 	private String jobName;
 	private String ide;
+	private String userUUID; // je.kim 한자연 UUID
+
 
 	@Override
-	public Deployment createResource() {
+	public KubernetesResource createSpec() {
+		throw new UnsupportedOperationException("Unimplemented method 'createSpec'");
+	}
+
+	@Override
+	public PodSpec createPodSpec() {
+		throw new UnsupportedOperationException("Unimplemented method 'createPodSpec'");
+	}
+
+	@Override
+	public HasMetadata createResource() {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
+
+	@Override
+	public Deployment createResource(String userUUID) {
 		return new DeploymentBuilder()
 			.withMetadata(createMeta())
-			.withSpec(createSpec())
+			.withSpec(createSpec(userUUID))
 			.build();
 	}
 
@@ -130,7 +151,7 @@ public class InteractiveJobVO extends WorkloadVO {
 
 	// 스펙 정의
 	@Override
-	public DeploymentSpec createSpec() {
+	public DeploymentSpec createSpec(String userUUID) {
 		return new DeploymentSpecBuilder()
 			.withReplicas(1)
 			.withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
@@ -139,7 +160,7 @@ public class InteractiveJobVO extends WorkloadVO {
 				.withAnnotations(getPodAnnotationMap())
 				.withLabels(Collections.singletonMap(LabelField.APP.getField(), jobName))
 				.endMetadata()
-				.withSpec(createPodSpec())
+				.withSpec(createPodSpec(userUUID))
 				.build()
 			)
 			.build();
@@ -147,7 +168,7 @@ public class InteractiveJobVO extends WorkloadVO {
 
 	// 파드 및 잡 상세 스펙 정의
 	@Override
-	public PodSpec createPodSpec() {
+	public PodSpec createPodSpec(String userUUID) {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
 		podSpecBuilder.withHostname("astrago");
 		// 스케줄러 지정
@@ -168,6 +189,20 @@ public class InteractiveJobVO extends WorkloadVO {
 		addDefaultVolume(podSpecBuilder);
 		addVolumes(podSpecBuilder, datasets);
 		addVolumes(podSpecBuilder, models);
+
+		List<JobVolumeVO> katechMydisk = new CopyOnWriteArrayList<>(){{
+			// name , pvcName , subpath
+			add(
+				new JobVolumeVO(
+					"mydisk-pvc" , 
+					"mydisk-pvc" , 
+					Paths.get("/root" , "/kadap" , "/MyDisk").toString() , 
+					Paths.get("/USER", userUUID).toString()
+				)
+			);
+		}}; 
+		addVolumes(podSpecBuilder, katechMydisk);
+
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withTerminationGracePeriodSeconds(20L)
@@ -342,4 +377,6 @@ public class InteractiveJobVO extends WorkloadVO {
 			map.put(prefix + id, "true");
 		}
 	}
+
+	
 }
