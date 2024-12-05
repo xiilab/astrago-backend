@@ -1,5 +1,5 @@
-# FROM amazoncorretto:17
-FROM harbor.xiilab.com:32443/library/amazoncorretto:17
+FROM amazoncorretto:17
+# FROM harbor.xiilab.com:32443/library/amazoncorretto:17
 
 ENV LC_ALL=C.UTF-8
 
