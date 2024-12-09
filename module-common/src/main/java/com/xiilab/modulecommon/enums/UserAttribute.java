@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum UserAttribute {
 	SIGN_UP_PATH("signUpPath"),
 	WORKSPACE_CREATE_LIMIT("workspaceCreateLimit"),
-	APPROVAL_YN("approvalYN")
+	APPROVAL_YN("approvalYN"),
+	USER_UUID("user_uuid") // 모비젠 데이터 포털 전용 UUID
 	;
 
 	private final String key;

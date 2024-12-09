@@ -76,4 +76,9 @@ public class ResourceQuotaReqVO extends K8SResourceReqVO {
 			))
 			.build();
 	}
+
+	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
 }

@@ -29,6 +29,7 @@ public class UserSummary {
 	private final List<UserGroupDTO> userGroupDTOList;
 	private AuthType authType;
 	private String group;
+	private String userUUID; // 모비젠 데이터 포털 전용 UUID
 
 	public UserSummary(UserRepresentation userRepresentation, List<GroupRepresentation> groupRepresentationList) {
 		this.uid = userRepresentation.getId();
@@ -50,6 +51,9 @@ public class UserSummary {
 		this.enable = String.valueOf(userRepresentation.isEnabled());
 		// je.kim approvalYN 은 true 으로 하드코딩
 		// this.approval = userRepresentation.getAttributes().get(UserAttribute.APPROVAL_YN.getKey()).get(0);
+		// je.kim 모비젠 데이터 포털 전용 UUID
+		this.userUUID = userRepresentation.getAttributes().get(UserAttribute.USER_UUID.getKey()).get(0);
+		
 		this.approval = "true";
 		this.userGroupDTOList = groupRepresentationList != null ?
 			groupRepresentationList.stream()

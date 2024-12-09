@@ -1,10 +1,12 @@
 package com.xiilab.modulek8s.workload.vo;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.util.CollectionUtils;
@@ -12,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.JsonConvertUtil;
 import com.xiilab.modulecommon.util.ValidUtils;
@@ -25,12 +28,19 @@ import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.EnvVarSourceBuilder;
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
 import io.fabric8.kubernetes.api.model.ObjectFieldSelectorBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.PersistentVolume;
+import io.fabric8.kubernetes.api.model.PersistentVolumeBuilder;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.PodSpecFluent;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.JobSpec;
@@ -48,12 +58,74 @@ public class BatchJobVO extends WorkloadVO {
 	private String command;        // 워크로드 명령
 	private Map<String, String> parameter;        // 사용자가 입력한 hyper parameter
 	private String jobName;
+	private String userUUID; // je.kim 한자연 UUID
+
 
 	@Override
-	public Job createResource() {
+	public KubernetesResource createSpec() {
+		throw new UnsupportedOperationException("Unimplemented method 'createSpec'");
+	}
+
+	@Override
+	public PodSpec createPodSpec() {
+		throw new UnsupportedOperationException("Unimplemented method 'createPodSpec'");
+	}
+
+	@Override
+	public HasMetadata createResource() {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
+
+	/**
+	 * createMyDiskPv
+	 * @return
+	 */
+	public PersistentVolume createMyDiskPv() {
+		String pvName = jobName + "-mydisk-pvc";
+		return new PersistentVolumeBuilder()
+			.withNewMetadata()
+				.withName(pvName)
+                .addToLabels("type", StorageType.NFS.name())
+			.endMetadata()
+            	.withNewSpec()
+            	    .withCapacity(Map.of("storage", new Quantity("100Gi")))
+            	    .withAccessModes("ReadWriteMany")
+            	    .withNewNfs()
+						.withServer("10.10.50.118") // 마켓플레이스 주소
+						.withPath("/kadap-portal") // 저장소 위치
+						.withReadOnly(false)
+            	    .endNfs()
+            	.endSpec()
+            	.build();
+	}
+
+	/**
+	 * createMyDiskPvc
+	 * @return
+	 */
+    public PersistentVolumeClaim createMyDiskPvc() {
+        String pvcName = jobName + "-mydisk-pvc";
+		String pvName = jobName + "-mydisk-pv";
+		return new PersistentVolumeClaimBuilder()
+			.withNewMetadata()
+				.withName(pvcName)
+				.withNamespace(workspace)
+			.endMetadata()
+			.withNewSpec()
+				.withAccessModes(List.of("ReadWriteMany"))
+				.withNewResources()
+             	    .addToRequests("storage", new Quantity("100Gi"))
+             	.endResources()
+             	.withVolumeName(pvName)
+            .endSpec()
+			.build();
+    }
+
+	@Override
+	public Job createResource(String userUUID) {
 		return new JobBuilder()
 			.withMetadata(createMeta())
-			.withSpec(createSpec())
+			.withSpec(createSpec(userUUID))
 			.build();
 	}
 
@@ -125,7 +197,7 @@ public class BatchJobVO extends WorkloadVO {
 
 	// 스펙 정의
 	@Override
-	public JobSpec createSpec() {
+	public JobSpec createSpec(String userUUID) {
 		return new JobSpecBuilder()
 			// .withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
 			.withTtlSecondsAfterFinished(20)
@@ -133,7 +205,7 @@ public class BatchJobVO extends WorkloadVO {
 			.withNewMetadata()
 			.withAnnotations(getPodAnnotationMap())
 			.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
-			.withSpec(createPodSpec())
+			.withSpec(createPodSpec(userUUID))
 			.endTemplate()
 			.withBackoffLimit(0)
 			.build();
@@ -141,7 +213,7 @@ public class BatchJobVO extends WorkloadVO {
 
 	// 파드 및 잡 상세 스펙 정의
 	@Override
-	public PodSpec createPodSpec() {
+	public PodSpec createPodSpec(String userUUID) {
 		PodSpecBuilder podSpecBuilder = new PodSpecBuilder();
 		podSpecBuilder.withHostname("astrago");
 		// 노드 지정
@@ -165,6 +237,22 @@ public class BatchJobVO extends WorkloadVO {
 		addVolumes(podSpecBuilder, this.datasets);
 		addVolumes(podSpecBuilder, this.models);
 
+		String pvcName = jobName + "-mydisk-pvc";
+
+		// 한자연 전용
+		List<JobVolumeVO> katechMydisk = new CopyOnWriteArrayList<>(){{
+			// name , pvcName , subpath
+			add(
+				new JobVolumeVO(
+					"mydisk-pvc" , 
+					pvcName , 
+					Paths.get("/root" , "/kadap" , "/MyDisk").toString() , 
+					"USER/" + userUUID 
+				)
+			);
+		}}; 
+		addVolumes(podSpecBuilder, katechMydisk);
+
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
 			.withRestartPolicy("Never")
 			.withTerminationGracePeriodSeconds(20L)
@@ -178,8 +266,12 @@ public class BatchJobVO extends WorkloadVO {
 		if (this.gpuType != GPUType.MPS) {
 			addDefaultVolumeMountPath(podSpecContainer);
 		}
+		
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
+		// 한자연 마이 디스크
+		addVolumeMount(podSpecContainer, katechMydisk);
+
 		if(!(this.image.imageType() == ImageType.HUB)){
 			addContainerSourceCode(podSpecContainer);
 		}

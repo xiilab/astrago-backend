@@ -32,6 +32,11 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 	}
 
 	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
+
+	@Override
 	protected ObjectMeta createMeta() {
 		return new ObjectMetaBuilder()
 			.withName(pvcMetaName) //vo-uuid
@@ -59,4 +64,6 @@ public class PersistentVolumeClaimVO extends K8SResourceReqVO {
 	protected ResourceType getType() {
 		return ResourceType.PVC;
 	}
+
+	
 }

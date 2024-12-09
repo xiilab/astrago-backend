@@ -45,6 +45,7 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	protected Integer resourcePresetId;
 
 	protected LocalDateTime expirationTime; //je.kim 한자연 커스텀 : 종료예정시간 추가
+	protected String userUUID; // je.kim 한자연 커스텀 : 마이디스크 추가
 	
 
 	protected void initializeCollection() {
@@ -69,5 +70,9 @@ public class CreateWorkloadReqDTO extends K8SResourceReqDTO {
 	}
 	public void modifyImage(ModuleImageReqDTO image){
 		this.image = image;
+	}
+
+	public void modifyUserUUID(String userUUID) {
+		this.userUUID = userUUID;
 	}
 }

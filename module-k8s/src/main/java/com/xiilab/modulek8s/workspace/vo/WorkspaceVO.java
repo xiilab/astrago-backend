@@ -54,6 +54,11 @@ public class WorkspaceVO {
 		protected ResourceType getType() {
 			return ResourceType.WORKSPACE;
 		}
+
+		@Override
+		public HasMetadata createResource(String userUUID) {
+			throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+		}
 	}
 
 	@Getter

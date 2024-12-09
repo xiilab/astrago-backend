@@ -232,7 +232,13 @@ public abstract class WorkloadVO extends K8SResourceReqVO {
 
 	public abstract KubernetesResource createSpec();
 
+	// 한자연 전용 
+	public abstract KubernetesResource createSpec(String userUUID);
+
 	public abstract PodSpec createPodSpec();
+
+	// 한자연 전용
+	public abstract PodSpec createPodSpec(String userUUID);
 
 	public abstract List<ContainerPort> convertContainerPort();
 

@@ -34,6 +34,11 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 	private String dellVolumeId;
 
 	@Override
+	public HasMetadata createResource(String userUUID) {
+		throw new UnsupportedOperationException("Unimplemented method 'createResource'");
+	}
+
+	@Override
 	public HasMetadata createResource() {
 		return new PersistentVolumeBuilder()
 			.withMetadata(createMeta())
@@ -87,4 +92,6 @@ public class PersistentVolumeVO extends K8SResourceReqVO {
 			.withClaimRef(createObjectReference())
 			.build();
 	}
+
+	
 }
