@@ -50,6 +50,7 @@ import com.xiilab.modulek8s.workload.vo.JobVolumeVO;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.OwnerReference;
+import io.fabric8.kubernetes.api.model.PersistentVolume;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSourceBuilder;
@@ -92,17 +93,49 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	@Override
 	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
-		Job resource = (Job)createResource(batchJobVO.createResource(batchJobVO.getUserUUID()));
+
+		// je.kim 자바 ㅗ 먹엉 
+		String userUUID = batchJobVO.getUserUUID();
+		// ㅗ 두번 먹엉 
+		Job resource = batchJobVO.createResource(userUUID);
+		// 한자연 마이 디스크 PV / PVC 생성
+		PersistentVolume persistentVolume = batchJobVO.createMyDiskPv();
+		PersistentVolumeClaim persistentVolumeClaim = batchJobVO.createMyDiskPvc();
+
+		log.info("MyDisk - {} , {} 생성" , persistentVolume.getMetadata().getName(), persistentVolumeClaim.getMetadata().getName());
+		// ㅗ 세번 먹엉
+		createResource(persistentVolume);
+		createResource(persistentVolumeClaim);
+		
+		// ㅗㅗㅗㅗㅗ
+
+
+		Job job = (Job)createResource(resource);
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(batchJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(batchJobVO.getModels());
-		return new CreateJobResDTO(resource, codesInfoMap, datasetInfoMap, modelInfoMap);
+		return new CreateJobResDTO(job, codesInfoMap, datasetInfoMap, modelInfoMap);
 	}
 
 	@Override
 	public CreateJobResDTO createInteractiveJobWorkload(InteractiveJobVO interactiveJobVO) {
+		
 		// je.kim 자바 ㅗ 먹엉 
-		Deployment resource = (Deployment)createResource(interactiveJobVO.createResource(interactiveJobVO.getUserUUID()));
+		String userUUID = interactiveJobVO.getUserUUID();
+		// ㅗ 두번 먹엉 
+		Deployment deployment = interactiveJobVO.createResource(userUUID);
+		// 한자연 마이 디스크 PV / PVC 생성
+		PersistentVolume persistentVolume = interactiveJobVO.createMyDiskPv();
+		PersistentVolumeClaim persistentVolumeClaim = interactiveJobVO.createMyDiskPvc();
+
+		log.info("MyDisk - {} , {} 생성" , persistentVolume.getMetadata().getName(), persistentVolumeClaim.getMetadata().getName());
+		// ㅗ 세번 먹엉
+		createResource(persistentVolume);
+		createResource(persistentVolumeClaim);
+		
+		// ㅗㅗㅗㅗㅗ
+		Deployment resource = (Deployment)createResource(deployment);
+		
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
 		Map<Long, Map<String, String>> datasetInfoMap = getVolumesInfoMap(interactiveJobVO.getDatasets());
 		Map<Long, Map<String, String>> modelInfoMap = getVolumesInfoMap(interactiveJobVO.getModels());
@@ -1100,6 +1133,11 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	/**
+	 * k8s 에서 생성한다.
+	 * @param hasMetadata
+	 * @return
+	 */
 	private HasMetadata createResource(HasMetadata hasMetadata) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			return kubernetesClient.resource(hasMetadata).create();
@@ -1197,6 +1235,13 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	private String deleteJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			// mydisk PV , PVC 제거
+			String pvName = workloadName + "-mydisk-pv";
+			String pvcName = workloadName + "-mydisk-pvc";
+			log.info("pv : {} , pvc : {} 제거한다." , pvName , pvcName);
+			kubernetesClient.persistentVolumes().withName(pvName).delete();
+			kubernetesClient.persistentVolumeClaims().inNamespace(workSpaceName).withName(pvcName).delete();
+			
 			kubernetesClient.batch().v1().jobs().inNamespace(workSpaceName).withName(workloadName).delete();
 			return workloadName;
 		}
@@ -1204,6 +1249,14 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 
 	private String deleteInteractiveJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			
+			// mydisk PV , PVC 제거
+			String pvName = workloadName + "-mydisk-pv";
+			String pvcName = workloadName + "-mydisk-pvc";
+			log.info("pv : {} , pvc : {} 제거한다." , pvName , pvcName);
+			kubernetesClient.persistentVolumes().withName(pvName).delete();
+			kubernetesClient.persistentVolumeClaims().inNamespace(workSpaceName).withName(pvcName).delete();
+	
 			kubernetesClient.apps().deployments().inNamespace(workSpaceName).withName(workloadName).delete();
 			return workloadName;
 		}

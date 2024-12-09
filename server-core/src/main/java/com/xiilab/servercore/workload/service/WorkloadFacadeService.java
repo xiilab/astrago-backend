@@ -55,6 +55,7 @@ import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.node.dto.ResponseDTO;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePV;
 import com.xiilab.modulek8s.storage.volume.dto.request.CreatePVC;
+import com.xiilab.modulek8s.storage.volume.service.VolumeService;
 import com.xiilab.modulek8s.workload.dto.request.CreateWorkloadReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleCodeReqDTO;
 import com.xiilab.modulek8s.workload.dto.request.ModuleImageReqDTO;
@@ -150,6 +151,8 @@ public class WorkloadFacadeService {
 	private final StorageService storageService;
 	private final MonitorFacadeService monitorFacadeService;
 	private final WorkspaceSettingService workspaceSettingService;
+	private final VolumeService volumeService;
+
 	@Value("${astrago.private-registry-url}")
 	private String privateRegistryUrl;
 

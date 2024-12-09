@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.xiilab.modulecommon.enums.GPUType;
 import com.xiilab.modulecommon.enums.ImageType;
+import com.xiilab.modulecommon.enums.StorageType;
 import com.xiilab.modulecommon.enums.WorkloadType;
 import com.xiilab.modulecommon.util.ValidUtils;
 import com.xiilab.modulek8s.common.enumeration.AnnotationField;
@@ -32,10 +33,15 @@ import io.fabric8.kubernetes.api.model.KubernetesResource;
 import io.fabric8.kubernetes.api.model.ObjectFieldSelectorBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.PersistentVolume;
+import io.fabric8.kubernetes.api.model.PersistentVolumeBuilder;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.PodSpecFluent;
 import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
@@ -78,10 +84,52 @@ public class InteractiveJobVO extends WorkloadVO {
 			.build();
 	}
 
+
+	/**
+	 * 한자연 마이디스크 PV 정보
+	 */
+	public PersistentVolume createMyDiskPv() {
+		String pvName = jobName + "-mydisk-pv";
+		return new PersistentVolumeBuilder()
+			.withNewMetadata()
+				.withName(pvName)
+                .addToLabels("type", StorageType.NFS.name())
+			.endMetadata()
+            	.withNewSpec()
+            	    .withCapacity(Map.of("storage", new Quantity("100Gi")))
+            	    .withAccessModes("ReadWriteMany")
+            	    .withNewNfs()
+						.withServer("10.10.50.118") // 마켓플레이스 주소
+						.withPath("/kadap-portal") // 저장소 위치
+						.withReadOnly(false)
+            	    .endNfs()
+            	.endSpec()
+            	.build();
+	}
+
+	public PersistentVolumeClaim createMyDiskPvc() {
+		String pvcName = jobName + "-mydisk-pvc";
+		String pvName = jobName + "-mydisk-pv";
+		return new PersistentVolumeClaimBuilder()
+			.withNewMetadata()
+				.withNamespace(workspace)
+				.withName(pvcName)
+			.endMetadata()
+			.withNewSpec()
+				.withAccessModes(List.of("ReadWriteMany"))
+				.withNewResources()
+             	    .addToRequests("storage", new Quantity("100Gi"))
+             	.endResources()
+             	.withVolumeName(pvName)
+            .endSpec()
+			.build();
+	}
+
+
 	// 메타데이터 정의
 	@Override
 	public ObjectMeta createMeta() {
-		jobName = getUniqueResourceName();
+		jobName = getUniqueResourceName(); // 잡네임 생성
 		return new ObjectMetaBuilder()
 			.withName(jobName)
 			.withNamespace(workspace)
@@ -190,14 +238,15 @@ public class InteractiveJobVO extends WorkloadVO {
 		addVolumes(podSpecBuilder, datasets);
 		addVolumes(podSpecBuilder, models);
 
+		String pvcName = jobName + "-mydisk-pvc";
 		List<JobVolumeVO> katechMydisk = new CopyOnWriteArrayList<>(){{
 			// name , pvcName , subpath
 			add(
 				new JobVolumeVO(
 					"mydisk-pvc" , 
-					"mydisk-pvc" , 
+					pvcName, 
 					Paths.get("/root" , "/kadap" , "/MyDisk").toString() , 
-					Paths.get("/USER", userUUID).toString()
+					"USER/" + userUUID 
 				)
 			);
 		}}; 
@@ -218,6 +267,8 @@ public class InteractiveJobVO extends WorkloadVO {
 		}
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
+		addVolumeMount(podSpecContainer, katechMydisk);
+
 		addContainerSourceCode(podSpecContainer);
 		addContainerResource(podSpecContainer);
 
@@ -377,6 +428,4 @@ public class InteractiveJobVO extends WorkloadVO {
 			map.put(prefix + id, "true");
 		}
 	}
-
-	
 }

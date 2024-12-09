@@ -140,20 +140,20 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			throw new RestApiException(WorkspaceErrorCode.WORKSPACE_DELETE_FAILED);
 		}
 
-		// 한자연 전용 PV / PVC 네임 추측
-		String pvName = workspaceName + "-mydisk-pv";
-		// String pvcName = workspaceName + "-mydisk-pvc";
-		String pvcName = "mydisk-pvc";
+		// // 한자연 전용 PV / PVC 네임 추측
+		// String pvName = workspaceName + "-mydisk-pv";
+		// // String pvcName = workspaceName + "-mydisk-pvc";
+		// String pvcName = "mydisk-pvc";
 
-		try {
-			// 한자연 PVC 삭제
-			volumeService.deletePVC(pvcName, workspaceName);
-			// 한자연 PV 삭제
-			volumeService.deletePV(pvName);	
-			log.info("네임 스페이스 {} PV : {} / PVC: {} 삭제 완료" , workspaceName , pvName, pvcName);
-		} catch (Exception e) {
-			log.error("네임 스페이스 {} PV : {} / PVC: {} 삭제 실패" , workspaceName , pvName, pvcName ,e);
-		}
+		// try {
+		// 	// 한자연 PVC 삭제
+		// 	volumeService.deletePVC(pvcName, workspaceName);
+		// 	// 한자연 PV 삭제
+		// 	volumeService.deletePV(pvName);	
+		// 	log.info("네임 스페이스 {} PV : {} / PVC: {} 삭제 완료" , workspaceName , pvName, pvcName);
+		// } catch (Exception e) {
+		// 	log.error("네임 스페이스 {} PV : {} / PVC: {} 삭제 실패" , workspaceName , pvName, pvcName ,e);
+		// }
 
 
 		//워크스페이스 삭제
@@ -243,34 +243,6 @@ public class WorkspaceFacadeServiceImpl implements WorkspaceFacadeService {
 			.build(), userInfoDTO);
 
 		workspaceAlertSetService.saveAlertSet(workspace.getResourceName());
-
-		
-		String pvName = workspace.getResourceName() + "-mydisk-pv";
-		// String pvcName = workspace.getResourceName() + "-mydisk-pvc";
-		String pvcName = "mydisk-pvc";
-		log.info("워크스페이스 {} 생성 스토리지 pv : {} pvc : {} 생성" , workspace.getResourceName() , pvName , pvcName);
-		
-		// 한자연 전용 PV 생성 (아니 프론트엔드 개발자인 내가 백엔드 개발을?!)
-		volumeService.createPV(
-				CreatePV.builder()
-				.pvName(pvName)
-				.pvcName(pvcName)
-				.namespace(workspace.getResourceName())
-				.storageType(StorageType.NFS)
-				.ip("10.10.50.118") // 한자연 마켓플레이스 아이피 
-				.storagePath("/kadap-portal") // 패스
-				.requestVolume(100)
-				.build()
-			);
-
-		// 한자연 전용 PVC 생성 
-		volumeService.createPVC(
-				CreatePVC.builder()
-					.namespace(workspace.getResourceName())
-					.pvcName(pvcName)
-					.requestVolume(100)
-					.build()
-		);
 
 		
 
