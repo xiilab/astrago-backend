@@ -91,7 +91,7 @@ public class BatchJobVO extends WorkloadVO {
             	    .withCapacity(Map.of("storage", new Quantity("100Gi")))
             	    .withAccessModes("ReadWriteMany")
             	    .withNewNfs()
-						.withServer("10.10.50.118") // 마켓플레이스 주소
+						.withServer("10.10.0.120") // 마켓플레이스 주소
 						.withPath("/kadap-portal") // 저장소 위치
 						.withReadOnly(false)
             	    .endNfs()

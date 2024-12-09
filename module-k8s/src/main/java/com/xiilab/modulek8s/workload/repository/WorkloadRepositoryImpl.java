@@ -94,21 +94,17 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	@Override
 	public CreateJobResDTO createBatchJobWorkload(BatchJobVO batchJobVO) {
 
-		// je.kim 자바 ㅗ 먹엉 
+		// je.kim 
 		String userUUID = batchJobVO.getUserUUID();
-		// ㅗ 두번 먹엉 
 		Job resource = batchJobVO.createResource(userUUID);
 		// 한자연 마이 디스크 PV / PVC 생성
 		PersistentVolume persistentVolume = batchJobVO.createMyDiskPv();
 		PersistentVolumeClaim persistentVolumeClaim = batchJobVO.createMyDiskPvc();
 
 		log.info("MyDisk - {} , {} 생성" , persistentVolume.getMetadata().getName(), persistentVolumeClaim.getMetadata().getName());
-		// ㅗ 세번 먹엉
 		createResource(persistentVolume);
 		createResource(persistentVolumeClaim);
-		
-		// ㅗㅗㅗㅗㅗ
-
+	
 
 		Job job = (Job)createResource(resource);
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(batchJobVO.getCodes());
@@ -122,18 +118,15 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		
 		// je.kim 자바 ㅗ 먹엉 
 		String userUUID = interactiveJobVO.getUserUUID();
-		// ㅗ 두번 먹엉 
 		Deployment deployment = interactiveJobVO.createResource(userUUID);
 		// 한자연 마이 디스크 PV / PVC 생성
 		PersistentVolume persistentVolume = interactiveJobVO.createMyDiskPv();
 		PersistentVolumeClaim persistentVolumeClaim = interactiveJobVO.createMyDiskPvc();
 
 		log.info("MyDisk - {} , {} 생성" , persistentVolume.getMetadata().getName(), persistentVolumeClaim.getMetadata().getName());
-		// ㅗ 세번 먹엉
 		createResource(persistentVolume);
 		createResource(persistentVolumeClaim);
 		
-		// ㅗㅗㅗㅗㅗ
 		Deployment resource = (Deployment)createResource(deployment);
 		
 		Map<Long, Map<String, String>> codesInfoMap = getCodesInfoMap(interactiveJobVO.getCodes());
@@ -1247,6 +1240,12 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 	}
 
+	/**
+	 * 잡 제거
+	 * @param workSpaceName
+	 * @param workloadName
+	 * @return
+	 */
 	private String deleteInteractiveJob(String workSpaceName, String workloadName) {
 		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
 			
