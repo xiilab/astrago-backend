@@ -179,6 +179,7 @@ public class FindWorkloadResDTO extends ResDTO {
 				.nodeName(workloadEntity.getNodeName())
 				.startTime(DataConverterUtil.convertLDTToString(workloadEntity.getStartTime(), "yyyy-MM-dd HH:mm:ss"))
 				.endTime(DataConverterUtil.convertLDTToString(workloadEntity.getEndTime(), "yyyy-MM-dd HH:mm:ss"))
+				.expirationTime(workloadEntity.getExpirationTime())
 				.build();
 		}
 	}
