@@ -81,7 +81,7 @@ public class BatchJobVO extends WorkloadVO {
 	 * @return
 	 */
 	public PersistentVolume createMyDiskPv() {
-		String pvName = jobName + "-mydisk-pvc";
+		String pvName = jobName + "-mydisk-pv";
 		return new PersistentVolumeBuilder()
 			.withNewMetadata()
 				.withName(pvName)
