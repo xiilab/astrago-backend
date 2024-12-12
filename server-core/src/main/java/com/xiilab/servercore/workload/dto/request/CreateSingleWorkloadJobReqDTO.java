@@ -14,6 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class CreateSingleWorkloadJobReqDTO extends CreateWorkloadJobReqDTO {
 	private float cpuRequest;
+
 	private float memRequest;
 	private int gpuRequest;
 
