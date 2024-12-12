@@ -23,7 +23,7 @@ import reactor.netty.http.client.HttpClient;
 @Slf4j
 public class BitBucketApi {
 	private WebClient webClient;
-	private String domain;
+	private String apiDomain;
 	private String projectKey;
 	private String repositorySlug;
 
@@ -37,30 +37,21 @@ public class BitBucketApi {
 			log.error("Username is null.");
 			throw new RestApiException(CodeErrorCode.BITBUCKET_CREDENTIALS_REQUIRED_MESSAGE);
 		}
+
 		initializeRepositoryClient(gitCloneURL, userName, token);
 	}
 
 	private void initializeRepositoryClient(String gitCloneURL, String userName, String token) {
-		String domain = RepositoryUrlUtils.extractDomain(gitCloneURL);
+		String apiDomain = RepositoryUrlUtils.extractDomain(gitCloneURL);
 		String repositoryName = RepositoryUrlUtils.convertRepoUrlToRepoName(CodeType.BIT_BUCKET, gitCloneURL);
-		String projectKey = "";
-		String repositorySlug = "";
 
-		String[] splitRepoName = repositoryName.split("/");
-		if (splitRepoName.length == 2) {
-			projectKey = splitRepoName[0].toUpperCase();
-			repositorySlug = splitRepoName[1];
-		} else if (splitRepoName.length == 3) {
-			projectKey = splitRepoName[1].toUpperCase();
-			repositorySlug = splitRepoName[2];
-		} else {
-			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
-		}
+		String[] pathSegments = repositoryName.split("/");
+		String[] parsedRepoDetails = parseProjectKeyAndRepositorySlug(pathSegments);
 
-		this.domain = domain;
-		this.webClient = createWebClient(domain, userName, token);
-		this.projectKey = projectKey;
-		this.repositorySlug = repositorySlug;
+		this.apiDomain = apiDomain;
+		this.webClient = createWebClient(userName, token);
+		this.projectKey = parsedRepoDetails[0];
+		this.repositorySlug = parsedRepoDetails[1];
 	}
 
 	public boolean isRepoConnected() {
@@ -73,8 +64,8 @@ public class BitBucketApi {
 	}
 
 	public List<String> getBranchList() {
-		log.info("Branch List restAPI URL: \"{}/rest/api/latest/projects/{}/repos/{}/branches\"", this.domain, this.projectKey, this.repositorySlug);
-		return webClient.get()
+		log.info("Branch List restAPI URL: \"{}/rest/api/latest/projects/{}/repos/{}/branches\"", this.apiDomain, this.projectKey, this.repositorySlug);
+		return this.webClient.get()
 			.uri("/rest/api/latest/projects/{projectKey}/repos/{repositorySlug}/branches", this.projectKey, this.repositorySlug)
 			.retrieve()
 			.bodyToFlux(Map.class)
@@ -84,7 +75,7 @@ public class BitBucketApi {
 			.block();
 	}
 
-	private WebClient createWebClient(String bitBucketApiBaseUri, String userName, String token) {
+	private WebClient createWebClient(String userName, String token) {
 		try {
 			SslContext sslContext = SslContextBuilder
 				.forClient()
@@ -95,16 +86,26 @@ public class BitBucketApi {
 			return !Objects.isNull(token) ?
 				WebClient.builder()
 					.clientConnector(new ReactorClientHttpConnector(httpClient))
-					.baseUrl(bitBucketApiBaseUri)
-					.defaultHeaders(hearder -> hearder.setBasicAuth(userName, token))
+					.baseUrl(this.apiDomain)
+					.defaultHeaders(header -> header.setBasicAuth(userName, token))
 					.build() :
 				WebClient.builder()
-					.baseUrl(bitBucketApiBaseUri)
+					.baseUrl(this.apiDomain)
 					.clientConnector(new ReactorClientHttpConnector(httpClient))
 					.build();
 		} catch (SSLException e) {
 			log.error("SSLException error.");
 			throw new RestApiException(CodeErrorCode.CONNECTION_ERROR_MESSAGE);
+		}
+	}
+
+	private String[] parseProjectKeyAndRepositorySlug(String[] pathSegments) {
+		if (pathSegments.length == 2) {
+			return new String[] { pathSegments[0].toUpperCase(), pathSegments[1] };
+		} else if (pathSegments.length == 3) {
+			return new String[] { pathSegments[1].toUpperCase(), pathSegments[2] };
+		} else {
+			throw new RestApiException(CodeErrorCode.UNSUPPORTED_REPOSITORY_ERROR_CODE);
 		}
 	}
 }

@@ -154,4 +154,6 @@ public interface WorkloadModuleService {
 	List<Pod> getWorkloadByWorkloadName(String resourceName);
 
 	Map<String, Event> getWorkloadRecentlyEvent(List<String> workloadName, String workspaceName);
+
+	WorkloadResDTO.UserResourceUsage findWorkloadResourceUsageListByUserId(String userId);
 }

@@ -23,6 +23,7 @@ import com.xiilab.modulecommon.exception.RestApiException;
 import com.xiilab.modulecommon.exception.errorcode.UserErrorCode;
 import com.xiilab.modulecommon.service.MailService;
 import com.xiilab.modulecommon.util.MailServiceUtils;
+import com.xiilab.modulek8s.facade.workload.WorkloadModuleFacadeService;
 import com.xiilab.modulek8s.facade.workspace.WorkspaceModuleFacadeServiceImpl;
 import com.xiilab.modulek8s.workspace.dto.WorkspaceDTO;
 import com.xiilab.modulek8sdb.common.enums.PageInfo;
@@ -36,6 +37,7 @@ import com.xiilab.moduleuser.service.UserService;
 import com.xiilab.moduleuser.vo.UserReqVO;
 import com.xiilab.servercore.alert.systemalert.service.AlertService;
 import com.xiilab.servercore.alert.systemalert.service.SystemAlertSetService;
+import com.xiilab.servercore.user.dto.UserResDTO;
 import com.xiilab.servercore.workspace.repository.WorkspaceSettingRepo;
 
 import io.micrometer.common.util.StringUtils;
@@ -53,6 +55,7 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 	private final ApplicationEventPublisher eventPublisher;
 	private final WorkspaceSettingRepo workspaceSettingRepo;
 	private final WorkspaceModuleFacadeServiceImpl workspaceModuleFacadeService;
+	private final WorkloadModuleFacadeService workloadModuleFacadeService;
 
 	@Override
 	public void joinUser(UserReqVO userReqVO, String groupId) {
@@ -285,6 +288,17 @@ public class UserFacadeServiceImpl implements UserFacadeService {
 			.collect(Collectors.toSet());
 
 		return workspaces.contains(workspaceName) ? WorkspaceRole.ROLE_OWNER : WorkspaceRole.ROLE_USER;
+	}
+
+	@Override
+	public List<UserResDTO.FindResourceUsage> findUserResourceUsageList() {
+		UserDTO.PageUsersDTO userList = userService.getUserList(1, Integer.MAX_VALUE, null);
+		return userList.getUsers().stream().map(
+			userSummary -> UserResDTO.FindResourceUsage.of(
+				workloadModuleFacadeService.findWorkloadResourceUsageListByUserId(userSummary.getUid()),
+				userSummary
+			)
+		).toList();
 	}
 
 	private void sendMail(MailDTO mailDTO) {

@@ -480,4 +480,9 @@ public class WorkloadModuleServiceImpl implements WorkloadModuleService {
 	public List<Pod> getWorkloadByWorkloadName(String resourceName) {
 		return workloadRepository.getWorkloadsByWorkloadName(resourceName);
 	}
+
+	@Override
+	public WorkloadResDTO.UserResourceUsage findWorkloadResourceUsageListByUserId(String userId) {
+		return workloadRepository.findWorkloadResourceUsageListByUserId(userId);
+	}
 }

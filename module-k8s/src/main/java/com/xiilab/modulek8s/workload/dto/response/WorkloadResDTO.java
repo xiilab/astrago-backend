@@ -58,4 +58,29 @@ public class WorkloadResDTO {
 			}
 		}
 	}
+
+	// @Builder
+	@Getter
+	public static class UserResourceUsage {
+		private int cpuUsage = 0;
+		private float memoryUsage = 0;
+		private int normalGpuUsage = 0;
+		private int splitGpuUsage = 0;
+
+		public void addCpu(int cpu) {
+			cpuUsage += cpu;
+		}
+
+		public void addMemory(float mem) {
+			memoryUsage += mem;
+		}
+
+		public void addNormalGpu(int normalGpuAmount) {
+			normalGpuUsage += normalGpuAmount;
+		}
+
+		public void addDivisionGpu(int splitGpu) {
+			splitGpuUsage += splitGpu;
+		}
+	}
 }

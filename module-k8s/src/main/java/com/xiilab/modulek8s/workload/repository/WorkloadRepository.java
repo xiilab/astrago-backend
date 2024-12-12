@@ -199,4 +199,5 @@ public interface WorkloadRepository {
 
 	//workload의 image를 커밋하는 Job 생성
 	void commitImage(CommitImageJobVO commitImageJobVO);
+	WorkloadResDTO.UserResourceUsage findWorkloadResourceUsageListByUserId(String userId);
 }

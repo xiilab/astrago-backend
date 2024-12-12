@@ -457,4 +457,11 @@ public class WorkloadModuleFacadeServiceImpl implements WorkloadModuleFacadeServ
 		return workloadModuleService.getJobPod(workspaceName, workloadName, workloadType);
 	}
 
+
+	@Override
+	public WorkloadResDTO.UserResourceUsage findWorkloadResourceUsageListByUserId(String userId) {
+		return workloadModuleService.findWorkloadResourceUsageListByUserId(userId);
+	}
+
+
 }

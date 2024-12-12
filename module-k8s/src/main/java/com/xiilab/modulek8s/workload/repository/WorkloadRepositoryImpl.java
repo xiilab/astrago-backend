@@ -6,11 +6,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.kubeflow.v2beta1.MPIJob;
@@ -57,6 +59,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
@@ -230,7 +233,7 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 	}
 
 	@Override
-	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName){
+	public StorageResDTO editAstragoDeployment(CreateStorageReqDTO createStorageReqDTO, String pvcName) {
 		try (KubernetesClient client = k8sAdapter.configServer()) {
 
 			PersistentVolumeClaim pvc = client.persistentVolumeClaims()
@@ -1236,5 +1239,78 @@ public class WorkloadRepositoryImpl implements WorkloadRepository {
 		}
 
 		return volumesMap;
+	}
+
+	@Override
+	public WorkloadResDTO.UserResourceUsage findWorkloadResourceUsageListByUserId(String userId) {
+		try (KubernetesClient kubernetesClient = k8sAdapter.configServer()) {
+			List<Job> jobList = kubernetesClient.batch()
+				.v1()
+				.jobs()
+				.inAnyNamespace()
+				.withLabel("creator-id", userId)
+				.list()
+				.getItems();
+			List<Deployment> deploymentList = kubernetesClient.apps()
+				.deployments()
+				.inAnyNamespace()
+				.withLabel("creator-id", userId)
+				.list()
+				.getItems();
+
+			WorkloadResDTO.UserResourceUsage userResourceUsage = new WorkloadResDTO.UserResourceUsage();
+			jobList.forEach(job -> aggregateResourceUsage(job, userResourceUsage));
+			deploymentList.forEach(deployment -> aggregateResourceUsage(deployment, userResourceUsage));
+			return userResourceUsage;
+		}
+	}
+
+	private void aggregateResourceUsage(HasMetadata hasMetadata, WorkloadResDTO.UserResourceUsage userResourceUsage) {
+		Map<String, Quantity> requests = getRequests(hasMetadata);
+
+		userResourceUsage.addCpu(parseCpu(requests.get("cpu")));
+		userResourceUsage.addMemory(parseMemory(requests.get("memory")));
+		userResourceUsage.addNormalGpu(sumGpuResources(requests, false));
+		userResourceUsage.addDivisionGpu(sumGpuResources(requests, true));
+	}
+
+	private Map<String, Quantity> getRequests(HasMetadata hasMetadata) {
+		if (hasMetadata instanceof Job job) {
+			return Optional.ofNullable(
+					job.getSpec().getTemplate().getSpec().getContainers().get(0).getResources().getRequests())
+				.orElseGet(Collections::emptyMap);
+		} else if (hasMetadata instanceof Deployment deployment) {
+			return Optional.ofNullable(
+					deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getResources().getRequests())
+				.orElseGet(Collections::emptyMap);
+		}
+
+		return Collections.emptyMap();
+	}
+
+	private int parseCpu(Quantity quantity) {
+		return Optional.ofNullable(quantity)
+			.map(Quantity::getAmount)
+			.map(Integer::parseInt)
+			.orElse(0);
+	}
+
+	private float parseMemory(Quantity quantity) {
+		return Optional.ofNullable(quantity)
+			.map(Quantity::getAmount)
+			.map(amount -> amount.replaceAll("[^0-9.]", ""))
+			.map(Float::parseFloat)
+			.orElse(0.0f);
+	}
+
+	private int sumGpuResources(Map<String, Quantity> requests, boolean isGpuSplit) {
+		return requests.entrySet().stream()
+			.filter(entry -> isGpuSplit ?
+				entry.getKey().startsWith("nvidia.com/gpu") : entry.getKey().equals("nvidia.com/gpu"))
+			.mapToInt(entry -> Optional.ofNullable(entry.getValue())
+				.map(Quantity::getAmount)
+				.map(Integer::parseInt)
+				.orElse(0))
+			.sum();
 	}
 }

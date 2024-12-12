@@ -11,6 +11,7 @@ import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.vo.UserReqVO;
+import com.xiilab.servercore.user.dto.UserResDTO;
 
 public interface UserFacadeService {
 	//회원가입
@@ -61,4 +62,5 @@ public interface UserFacadeService {
 	boolean isAccessAuthorityWorkspaceNotAdmin(String userId, String workspaceName);
 
 	WorkspaceRole getWorkspaceAuthority(String userId, String workspaceName);
+	List<UserResDTO.FindResourceUsage> findUserResourceUsageList();
 }

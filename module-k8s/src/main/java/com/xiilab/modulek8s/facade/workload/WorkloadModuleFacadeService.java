@@ -92,4 +92,5 @@ public interface WorkloadModuleFacadeService {
 	List<Pod> getWorkloadByWorkloadName(String resourceName);
 
 	GpuInfoDTO getGpuInfoByNodeName(String gpuName, String nodeName);
+	WorkloadResDTO.UserResourceUsage findWorkloadResourceUsageListByUserId(String userId);
 }

@@ -305,6 +305,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterGPU(String nodeName) {
 		List<Node> nodeList = getNodeList(nodeName);
+		// List<Pod> podList = getRunningPod();
 		List<Pod> podList = getRunningPod();
 		// 모든 노드의 GPU total 값을 합산
 		long totalGpuCapacity = totalCapacity(nodeList, GPU);
@@ -322,6 +323,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	@Override
 	public ResponseDTO.ResponseClusterDTO getDashboardClusterMIG(String nodeName) {
 		List<Node> nodeList = getNodeList(nodeName);
+		// List<Pod> podList = getRunningPod();
 		List<Pod> podList = getRunningPod();
 		// 모든 노드의 GPU total 값을 합산
 		long totalGpuCapacity = totalCapacity(nodeList, "MIG");
@@ -806,7 +808,7 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 	}
 
 	private List<Pod> getRunningPod(){
-		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+		/*try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
 			List<Pod> pods = kubernetesClient.pods().inAnyNamespace().list().getItems();
 			return pods.stream()
 				.filter(pod -> pod.getStatus()
@@ -814,8 +816,17 @@ public class K8sMonitorRepositoryImpl implements K8sMonitorRepository {
 					.stream()
 					.anyMatch(podCondition -> podCondition.getType().equals("Ready") && podCondition.getStatus()
 						.equals("True"))).toList();
+		}*/
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			return kubernetesClient.pods().inAnyNamespace().list().getItems();
 		}
 	}
+
+	/*private List<Pod> getRunningPod(){
+		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {
+			return kubernetesClient.pods().inAnyNamespace().list().getItems();
+		}
+	}*/
 
 	public Long getCpuCore(String nodeName) {
 		try (KubernetesClient kubernetesClient = monitorK8SAdapter.configServer()) {

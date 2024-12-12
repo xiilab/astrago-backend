@@ -21,6 +21,7 @@ import com.xiilab.moduleuser.dto.UpdateUserDTO;
 import com.xiilab.moduleuser.dto.UserDTO;
 import com.xiilab.moduleuser.dto.UserSearchCondition;
 import com.xiilab.moduleuser.vo.UserReqVO;
+import com.xiilab.servercore.user.dto.UserResDTO;
 import com.xiilab.servercore.user.service.UserFacadeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -134,5 +135,11 @@ public class UserController {
 	public ResponseEntity<HttpStatus> joinAdmin(@RequestBody @Valid UserReqVO userReqVO) {
 		userFacadeService.joinAdmin(userReqVO);
 		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("/resources")
+	@Operation(summary = "사용자 리소스 사용량 목록")
+	public ResponseEntity<List<UserResDTO.FindResourceUsage>> findUserResourceUsageList() {
+		return new ResponseEntity<>(userFacadeService.findUserResourceUsageList(), HttpStatus.OK);
 	}
 }
