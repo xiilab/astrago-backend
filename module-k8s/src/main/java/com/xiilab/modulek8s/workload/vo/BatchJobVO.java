@@ -208,7 +208,7 @@ public class BatchJobVO extends WorkloadVO {
 				.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
 				.withSpec(createPodSpec(userUUID))
 				.endTemplate()
-				.withBackoffLimit(6)
+				.withBackoffLimit(1)
 				.build();
 	}
 
