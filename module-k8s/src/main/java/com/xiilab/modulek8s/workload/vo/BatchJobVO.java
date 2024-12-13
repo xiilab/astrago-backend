@@ -52,14 +52,13 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public class BatchJobVO extends WorkloadVO {
-	private List<JobEnvVO> envs;        //env 정의
-	private List<JobPortVO> ports;        //port 정의
-	private String workingDir;        // 명령어를 실행 할 path
-	private String command;        // 워크로드 명령
-	private Map<String, String> parameter;        // 사용자가 입력한 hyper parameter
+	private List<JobEnvVO> envs; // env 정의
+	private List<JobPortVO> ports; // port 정의
+	private String workingDir; // 명령어를 실행 할 path
+	private String command; // 워크로드 명령
+	private Map<String, String> parameter; // 사용자가 입력한 hyper parameter
 	private String jobName;
 	private String userUUID; // je.kim 한자연 UUID
-
 
 	@Override
 	public KubernetesResource createSpec() {
@@ -78,55 +77,57 @@ public class BatchJobVO extends WorkloadVO {
 
 	/**
 	 * createMyDiskPv
+	 * 
 	 * @return
 	 */
 	public PersistentVolume createMyDiskPv() {
 		String pvName = jobName + "-mydisk-pv";
 		return new PersistentVolumeBuilder()
-			.withNewMetadata()
+				.withNewMetadata()
 				.withName(pvName)
-                .addToLabels("type", StorageType.NFS.name())
-			.endMetadata()
-            	.withNewSpec()
-            	    .withCapacity(Map.of("storage", new Quantity("100Gi")))
-            	    .withAccessModes("ReadWriteMany")
-            	    .withNewNfs()
-						.withServer("10.10.0.120") // 마켓플레이스 주소
-						.withPath("/kadap-portal") // 저장소 위치
-						.withReadOnly(false)
-            	    .endNfs()
-            	.endSpec()
-            	.build();
+				.addToLabels("type", StorageType.NFS.name())
+				.endMetadata()
+				.withNewSpec()
+				.withCapacity(Map.of("storage", new Quantity("100Gi")))
+				.withAccessModes("ReadWriteMany")
+				.withNewNfs()
+				.withServer("10.10.0.120") // 마켓플레이스 주소
+				.withPath("/kadap-portal") // 저장소 위치
+				.withReadOnly(false)
+				.endNfs()
+				.endSpec()
+				.build();
 	}
 
 	/**
 	 * createMyDiskPvc
+	 * 
 	 * @return
 	 */
-    public PersistentVolumeClaim createMyDiskPvc() {
-        String pvcName = jobName + "-mydisk-pvc";
+	public PersistentVolumeClaim createMyDiskPvc() {
+		String pvcName = jobName + "-mydisk-pvc";
 		String pvName = jobName + "-mydisk-pv";
 		return new PersistentVolumeClaimBuilder()
-			.withNewMetadata()
+				.withNewMetadata()
 				.withName(pvcName)
 				.withNamespace(workspace)
-			.endMetadata()
-			.withNewSpec()
+				.endMetadata()
+				.withNewSpec()
 				.withAccessModes(List.of("ReadWriteMany"))
 				.withNewResources()
-             	    .addToRequests("storage", new Quantity("100Gi"))
-             	.endResources()
-             	.withVolumeName(pvName)
-            .endSpec()
-			.build();
-    }
+				.addToRequests("storage", new Quantity("100Gi"))
+				.endResources()
+				.withVolumeName(pvName)
+				.endSpec()
+				.build();
+	}
 
 	@Override
 	public Job createResource(String userUUID) {
 		return new JobBuilder()
-			.withMetadata(createMeta())
-			.withSpec(createSpec(userUUID))
-			.build();
+				.withMetadata(createMeta())
+				.withSpec(createSpec(userUUID))
+				.build();
 	}
 
 	// 메타데이터 정의
@@ -134,20 +135,19 @@ public class BatchJobVO extends WorkloadVO {
 	public ObjectMeta createMeta() {
 		jobName = getUniqueResourceName();
 		return new ObjectMetaBuilder()
-			.withName(jobName)
-			.withNamespace(workspace)
-			.withAnnotations(
-				getAnnotationMap()
-			).withLabels(
-				getLabelMap()
-			)
-			.build();
+				.withName(jobName)
+				.withNamespace(workspace)
+				.withAnnotations(
+						getAnnotationMap())
+				.withLabels(
+						getLabelMap())
+				.build();
 	}
 
 	private Map<String, String> getAnnotationMap() {
 		String imageCredentialId = "";
 		if (getImage() != null && getImage().credentialVO() != null && !ObjectUtils.isEmpty(
-			getImage().credentialVO().credentialId())) {
+				getImage().credentialVO().credentialId())) {
 			imageCredentialId = String.valueOf(getImage().credentialVO().credentialId());
 		}
 
@@ -165,16 +165,16 @@ public class BatchJobVO extends WorkloadVO {
 		annotationMap.put(AnnotationField.DATASET_IDS.getField(), getJobVolumeIds(this.datasets));
 		annotationMap.put(AnnotationField.MODEL_IDS.getField(), getJobVolumeIds(this.models));
 		annotationMap.put(AnnotationField.CODE_IDS.getField(), getJobCodeIds(this.codes));
-		annotationMap.put(AnnotationField.IMAGE_ID.getField(), ValidUtils.isNullOrZero(getImage().id()) ?
-			"" : String.valueOf(getImage().id()));
+		annotationMap.put(AnnotationField.IMAGE_ID.getField(),
+				ValidUtils.isNullOrZero(getImage().id()) ? "" : String.valueOf(getImage().id()));
 		annotationMap.put(AnnotationField.PARAMETER.getField(), JsonConvertUtil.convertMapToJson(this.parameter));
 		annotationMap.put(AnnotationField.GPU_TYPE.getField(), this.gpuType.name());
 		annotationMap.put(AnnotationField.NODE_NAME.getField(), this.nodeName);
 		annotationMap.put(AnnotationField.GPU_NAME.getField(), this.gpuName);
 		annotationMap.put(AnnotationField.GPU_ONE_PER_MEMORY.getField(),
-			ValidUtils.isNullOrZero(this.gpuOnePerMemory) ? "" : String.valueOf(this.gpuOnePerMemory));
+				ValidUtils.isNullOrZero(this.gpuOnePerMemory) ? "" : String.valueOf(this.gpuOnePerMemory));
 		annotationMap.put(AnnotationField.RESOURCE_PRESET_ID.getField(),
-			ValidUtils.isNullOrZero(this.resourcePresetId) ? "" : String.valueOf(this.resourcePresetId));
+				ValidUtils.isNullOrZero(this.resourcePresetId) ? "" : String.valueOf(this.resourcePresetId));
 
 		return annotationMap;
 	}
@@ -199,16 +199,17 @@ public class BatchJobVO extends WorkloadVO {
 	@Override
 	public JobSpec createSpec(String userUUID) {
 		return new JobSpecBuilder()
-			// .withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(), jobName)).endSelector()
-			.withTtlSecondsAfterFinished(20)
-			.withNewTemplate()
-			.withNewMetadata()
-			.withAnnotations(getPodAnnotationMap())
-			.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
-			.withSpec(createPodSpec(userUUID))
-			.endTemplate()
-			.withBackoffLimit(0)
-			.build();
+				// .withNewSelector().withMatchLabels(Map.of(LabelField.APP.getField(),
+				// jobName)).endSelector()
+				.withTtlSecondsAfterFinished(20)
+				.withNewTemplate()
+				.withNewMetadata()
+				.withAnnotations(getPodAnnotationMap())
+				.withLabels(Map.of(LabelField.APP.getField(), jobName)).endMetadata()
+				.withSpec(createPodSpec(userUUID))
+				.endTemplate()
+				.withBackoffLimit(6)
+				.build();
 	}
 
 	// 파드 및 잡 상세 스펙 정의
@@ -230,7 +231,7 @@ public class BatchJobVO extends WorkloadVO {
 		if (!ObjectUtils.isEmpty(this.secretName)) {
 			podSpecBuilder.addNewImagePullSecret(this.secretName);
 		}
-		if(!(this.image.imageType() == ImageType.HUB)){
+		if (!(this.image.imageType() == ImageType.HUB)) {
 			cloneGitRepo(podSpecBuilder, this.codes);
 		}
 		addDefaultVolume(podSpecBuilder);
@@ -240,25 +241,25 @@ public class BatchJobVO extends WorkloadVO {
 		String pvcName = jobName + "-mydisk-pvc";
 
 		// 한자연 전용
-		List<JobVolumeVO> katechMydisk = new CopyOnWriteArrayList<>(){{
-			// name , pvcName , subpath
-			add(
-				new JobVolumeVO(
-					"mydisk-pvc" , 
-					pvcName , 
-					Paths.get("/root" , "/kadap" , "/MyDisk").toString() , 
-					"USER/" + userUUID 
-				)
-			);
-		}}; 
+		List<JobVolumeVO> katechMydisk = new CopyOnWriteArrayList<>() {
+			{
+				// name , pvcName , subpath
+				add(
+						new JobVolumeVO(
+								"mydisk-pvc",
+								pvcName,
+								Paths.get("/root", "/kadap", "/MyDisk").toString(),
+								"USER/" + userUUID));
+			}
+		};
 		addVolumes(podSpecBuilder, katechMydisk);
 
 		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer = podSpecBuilder
-			.withRestartPolicy("Never")
-			.withTerminationGracePeriodSeconds(20L)
-			.addNewContainer()
-			.withName(getUniqueResourceName())
-			.withImage(image.name());
+				.withRestartPolicy("Never")
+				.withTerminationGracePeriodSeconds(20L)
+				.addNewContainer()
+				.withName(getUniqueResourceName())
+				.withImage(image.name());
 
 		addContainerPort(podSpecContainer);
 		addContainerEnv(podSpecContainer);
@@ -266,13 +267,13 @@ public class BatchJobVO extends WorkloadVO {
 		if (this.gpuType != GPUType.MPS) {
 			addDefaultVolumeMountPath(podSpecContainer);
 		}
-		
+
 		addVolumeMount(podSpecContainer, datasets);
 		addVolumeMount(podSpecContainer, models);
 		// 한자연 마이 디스크
 		addVolumeMount(podSpecContainer, katechMydisk);
 
-		if(!(this.image.imageType() == ImageType.HUB)){
+		if (!(this.image.imageType() == ImageType.HUB)) {
 			addContainerSourceCode(podSpecContainer);
 		}
 		addContainerResource(podSpecContainer);
@@ -281,30 +282,30 @@ public class BatchJobVO extends WorkloadVO {
 	}
 
 	private void addDefaultVolumeMountPath(
-		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+			PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.addNewVolumeMount()
-			.withName("shmdir")
-			.withMountPath("/dev/shm")
-			.endVolumeMount();
+				.withName("shmdir")
+				.withMountPath("/dev/shm")
+				.endVolumeMount();
 	}
 
 	private void addVolumeMount(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer,
-		List<JobVolumeVO> volumes) {
+			List<JobVolumeVO> volumes) {
 		if (!CollectionUtils.isEmpty(volumes)) {
 			volumes.forEach(volume -> {
 				if (volume.subPath() == null) {
 					podSpecContainer
-						.addNewVolumeMount()
-						.withName(volume.pvName())
-						.withMountPath(volume.mountPath())
-						.endVolumeMount();
+							.addNewVolumeMount()
+							.withName(volume.pvName())
+							.withMountPath(volume.mountPath())
+							.endVolumeMount();
 				} else {
 					podSpecContainer
-						.addNewVolumeMount()
-						.withName(volume.pvName())
-						.withMountPath(volume.mountPath())
-						.withSubPath(volume.subPath())
-						.endVolumeMount();
+							.addNewVolumeMount()
+							.withName(volume.pvName())
+							.withMountPath(volume.mountPath())
+							.withSubPath(volume.subPath())
+							.endVolumeMount();
 				}
 			});
 		}
@@ -312,9 +313,9 @@ public class BatchJobVO extends WorkloadVO {
 
 	private void addContainerResource(PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		podSpecContainer.withNewResources()
-			.addToRequests(getWorkloadResourceMap())
-			.addToLimits(getWorkloadResourceMap())
-			.endResources();
+				.addToRequests(getWorkloadResourceMap())
+				.addToLimits(getWorkloadResourceMap())
+				.endResources();
 	}
 
 	/**
@@ -323,11 +324,10 @@ public class BatchJobVO extends WorkloadVO {
 	 * @param podSpecContainer
 	 */
 	private void addContainerSourceCode(
-		PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
+			PodSpecFluent<PodSpecBuilder>.ContainersNested<PodSpecBuilder> podSpecContainer) {
 		if (!CollectionUtils.isEmpty(codes)) {
 			AtomicInteger index = new AtomicInteger(1);
-			codes.forEach(codeReq ->
-				podSpecContainer
+			codes.forEach(codeReq -> podSpecContainer
 					.addNewVolumeMount()
 					.withName("git-clone-" + index.getAndIncrement())
 					.withMountPath(codeReq.mountPath())
@@ -360,54 +360,47 @@ public class BatchJobVO extends WorkloadVO {
 	@Override
 	public List<ContainerPort> convertContainerPort() {
 		return ports.stream()
-			.map(port -> new ContainerPortBuilder()
-				.withName(port.name())
-				.withContainerPort(port.port())
-				.build()
-			).toList();
+				.map(port -> new ContainerPortBuilder()
+						.withName(port.name())
+						.withContainerPort(port.port())
+						.build())
+				.toList();
 	}
 
 	@Override
 	public List<EnvVar> convertEnv() {
 		List<EnvVar> envVars = envs.stream()
-			.map(env -> new EnvVarBuilder()
-				.withName(env.name())
-				.withValue(env.value())
-				.build()
-			).toList();
+				.map(env -> new EnvVarBuilder()
+						.withName(env.name())
+						.withValue(env.value())
+						.build())
+				.toList();
 		List<EnvVar> result = new ArrayList<>(envVars);
 		// GPU 미사용시, GPU 접근 막는 환경변수
 		if (ValidUtils.isNullOrZero(this.gpuRequest)) {
 			result.add(new EnvVarBuilder()
-				.withName("NVIDIA_VISIBLE_DEVICES")
-				.withValue("none")
-				.build()
-			);
+					.withName("NVIDIA_VISIBLE_DEVICES")
+					.withValue("none")
+					.build());
 		}
 		if (super.image.imageType() == ImageType.HUB) {
 			result.add(new EnvVarBuilder()
-				.withName("POD_NAME")
-				.withValueFrom(new EnvVarSourceBuilder()
-					.withFieldRef(new ObjectFieldSelectorBuilder()
-						.withFieldPath("metadata.name")
-						.build()
-					)
-					.build()
-				)
-				.build()
-			);
+					.withName("POD_NAME")
+					.withValueFrom(new EnvVarSourceBuilder()
+							.withFieldRef(new ObjectFieldSelectorBuilder()
+									.withFieldPath("metadata.name")
+									.build())
+							.build())
+					.build());
 
 			result.add(new EnvVarBuilder()
-				.withName("POD_NAMESPACE")
-				.withValueFrom(new EnvVarSourceBuilder()
-					.withFieldRef(new ObjectFieldSelectorBuilder()
-						.withFieldPath("metadata.namespace")
-						.build()
-					)
-					.build()
-				)
-				.build()
-			);
+					.withName("POD_NAMESPACE")
+					.withValueFrom(new EnvVarSourceBuilder()
+							.withFieldRef(new ObjectFieldSelectorBuilder()
+									.withFieldPath("metadata.namespace")
+									.build())
+							.build())
+					.build());
 		}
 
 		return result;
